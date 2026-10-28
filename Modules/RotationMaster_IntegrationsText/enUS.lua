@@ -22,20 +22,30 @@ local E = {
 -- 251b444e
 [3925] = "View and copy full debugger output and errors.",
 -- 5919ba77
+-- Context: Label above the test-arguments box in the Lua workbench when editing a condition: the
+--     values come from the Test dialog.
 [3926] = "Arguments from Test",
 -- d683fe35
+-- Context: Label above the test-arguments box in the Lua workbench query panel: the values passed
+--     to the function when it is run.
 [3927] = "Test arguments",
 -- 77022d7f
+-- Context: Tooltip of the search icon button in the Lua workbench toolbar: opens the Lua API
+--     knowledge base window.
 [3928] = "API knowledge",
 -- 3848b912
 [3929] = "Test arguments must be a Lua table.",
 -- 2566379c
+-- Context: Section title in the Lua workbench help: explains the Debug button.
 [3930] = "Debug current buffer",
 -- a5e13d1f
+-- Context: Section title in the Lua workbench help: explains the terminal shown under the code
+--     while debugging.
 [3931] = "Debugger terminal",
 -- 4252a548
 [3932] = "Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback.",
 -- 45da73fa
+-- Context: Section title in the Lua workbench help: explains the Play button.
 [3933] = "Run current buffer",
 -- 3803ce92
 [3934] = "The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops.",
@@ -44,14 +54,22 @@ local E = {
 -- 494c893e
 [3936] = "Preview rendered. Use Output for printed messages.",
 -- fe11778c
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: this
+--     version was checked against Rotation Master's tests (lowercase).
 [3937] = "source-tested",
 -- 2d58ec3c
+-- Context: Name of the addon "MobInfo2" shown in the Integrations settings list; stays unchanged.
 [3938] = "MobInfo2",
 -- 052d7753
+-- Context: Name of the addon "WeakAuras" shown in the Integrations settings list; stays unchanged.
 [3939] = "WeakAuras",
 -- ca47b1c5
+-- Context: Name of the addon "ForeverAuras" shown in the Integrations settings list; stays
+--     unchanged.
 [3940] = "ForeverAuras",
 -- 58a1df11
+-- Context: Name of the addon "EllesmereUI Action Bars" shown in the Integrations settings list;
+--     stays unchanged.
 [3941] = "EllesmereUI Action Bars",
 -- b7f9153c
 [3942] = "Optional character statistics conditions.",
@@ -68,8 +86,12 @@ local E = {
 -- d5beae79
 [3948] = "Optional action-bar glow support.",
 -- a9c76027
+-- Context: Name of the boss mod addon "DBM" (Deadly Boss Mods) shown in the Integrations settings
+--     list; stays unchanged.
 [3949] = "DBM",
 -- 8f02be3c
+-- Context: Name of the addon "Titan Panel" shown in the Integrations settings list; stays
+--     unchanged.
 [3950] = "Titan Panel",
 -- fde6df5e
 [3951] = "Boss-mod timers and encounter stage for the Boss Mod conditions.",
@@ -88,32 +110,52 @@ local E = {
 -- c5f7562c
 [3958] = "Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",
 -- 3b4269d3
+-- Context: Group heading in Integrations settings for action bar addons (ElvUI, Bartender4 ...).
 [3959] = "Action bars",
 -- 25bd3377
+-- Context: Column heading in the Integrations table: the addon's name.
 [3960] = "Addon",
 -- c7b26f73
+-- Context: Group heading in Integrations settings for addons that supply data to conditions
+--     (Extended Character Stats, MobInfo2).
 [3961] = "Condition data",
 -- a1a45d5e
+-- Context: Group heading in Integrations settings for the Questie integration (reacts to quest
+--     events).
 [3962] = "Quest callbacks",
 -- 1c8da9fe
+-- Context: Group heading in Integrations settings for addons that receive Rotation Master's
+--     recommendations (WeakAuras, ForeverAuras).
 [3963] = "Recommendation notifications",
 -- 57fd7a0c
+-- Context: Status text of an addon row in the Integrations table: this addon is the one in use
+--     among alternatives.
 [3964] = "Selected",
 -- 83189b98
+-- Context: Group heading in Integrations settings for the Lua editor addons that can replace the
+--     built-in editor.
 [3965] = "Lua editor integrations",
 -- d509e493
+-- Context: Name of the built-in choice among the Lua editor integrations: Rotation Master's own
+--     editor, no addon used.
 [3966] = "Native",
 -- 9b41ba20
+-- Context: Status text of an addon row in the Integrations table: the addon is not loaded in the
+--     game.
 [3967] = "Not loaded",
 -- c1658000
+-- Context: Status text of an addon row in the Integrations table: the addon is loaded and Rotation
+--     Master can work with it.
 [3968] = "Supported",
 -- 920e413c
+-- Context: Column heading in the Integrations table: the integration's status.
 [3969] = "Status",
 -- c243becf
 [3970] = "Built-in Lua editor.",
 -- 280f5418
 [3971] = "Registered Lua editor provider.",
 -- 123d19ad
+-- Context: Provider name in the addon download links dialog: the CurseForge website.
 [3972] = "CurseForge",
 -- 616316df
 [3973] = "Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project.",
@@ -124,6 +166,8 @@ local E = {
 -- e5feed28
 [3976] = "Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.",
 -- 0f8b7255
+-- Context: Provider name in the addon download links dialog: the Tukui website (the ElvUI author's
+--     site).
 [3977] = "Tukui",
 -- d8b491c3
 [3978] = "Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic.",
@@ -132,6 +176,7 @@ local E = {
 -- a2effecc
 [3980] = "Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified.",
 -- 9d1c6e3d
+-- Context: Provider name in the addon download links dialog: the WoWInterface website.
 [3981] = "WoWInterface",
 -- a6028afe
 [3982] = "Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork.",
@@ -156,16 +201,22 @@ local E = {
 -- c2c950fc
 [3992] = "Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",
 -- b7e3e4aa
+-- Context: Choice in the popup shown for an integration row that is not the one in use: stop using
+--     the addon (verb). The other choice is Select.
 [3993] = "Disable",
 -- 71294f63
+-- Context: Provider name in the addon download links dialog: the Wago Addons website.
 [3994] = "Wago Addons",
 -- cb095b30
 [3995] = "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
 -- f911e414
+-- Context: Provider name in the addon download links dialog: GitHub.
 [3996] = "GitHub",
 -- fa52322b
 [3997] = "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
 -- 7e99b47e
+-- Context: Provider name in the addon download links dialog: an older WoWInterface page that is no
+--     longer the main source.
 [3998] = "WoWInterface — historical",
 -- 36486dd2
 [3999] = "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
@@ -176,8 +227,10 @@ local E = {
 -- 45e882f4
 [4002] = "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
 -- f76b7810
+-- Context: Provider name in the addon download links dialog: the WowUp Hub website.
 [4003] = "WowUp Hub",
 -- b16446d4
+-- Context: Provider name in the addon download links dialog: the addon author's own website.
 [4004] = "Official website",
 -- 57361449
 [4005] = "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
@@ -186,6 +239,7 @@ local E = {
 -- 7eac4e12
 [4007] = "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
 -- a9a99921
+-- Context: Provider name in the addon download links dialog: the WoWAce website.
 [4008] = "WoWAce",
 -- 845e7b22
 [4009] = "CurseForge — LUI Core",
@@ -198,10 +252,14 @@ local E = {
 -- d2fe1b41
 [4013] = "GitHub — Musca Auras",
 -- 6db87668
+-- Context: Provider name in the addon download links dialog: the LittleWigs project page on
+--     CurseForge.
 [4014] = "CurseForge — LittleWigs",
 -- 64cbe742
 [4015] = "CurseForge — DBM Dungeons",
 -- 9e310fe7
+-- Context: Provider name in the addon download links dialog: the EllesmereUI project page on
+--     CurseForge.
 [4016] = "CurseForge — EllesmereUI",
 -- 0ae11d12
 [4017] = "CurseForge — EllesmereUI Action Bars",
@@ -248,12 +306,17 @@ local E = {
 -- c315f2a3
 [4038] = "Wago Addons — TotemTimers Classic",
 -- c8e5998f
+-- Context: Label in the integration status text, followed by a colon and the version number: the
+--     addon's programming interface (API).
 [4039] = "API",
 -- 50bb7ec6
+-- Context: Name of the addon "Masque" (button skins) shown in the Integrations settings list; stays
+--     unchanged.
 [4040] = "Masque",
 -- 17d346ab
 [4041] = "Optional preview-button skins; configure skins with /masque.",
 -- 35d2f575
+-- Context: Group heading in Integrations settings for the Masque button skin addon.
 [4042] = "Button skins",
 }
 for id, text in pairs(E) do

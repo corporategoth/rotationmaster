@@ -36,6 +36,8 @@ addon.translation = {
 --     report does not sample gameplay.
 [3045] = "打开可复制的运行时报告：已测量的评估调用、原生耗时以及总分配/释放计数器。缺失的指标保持为不可用。测量只覆盖评估调用，不包括所有插件事件或渲染。阅读报告不会对游戏进行采样。",
 -- 0eebb1cd English: Enable observation cache
+-- Context: Help topic title (General settings help) for the option in the performance section that
+--     turns the observation cache on or off.
 [3046] = "启用观测缓存",
 -- 5309abf9 English: Optional reuse of repeated getCached and getRetryCached lookups. Observation
 --     caching is off by default to reduce table allocations; enabling it can help conditions that
@@ -70,22 +72,40 @@ addon.translation = {
 --     Missing, disabled or invalid dependencies keep consumers unavailable.
 [3050] = "在此 Lua 函数体中选择一个源辅助函数及其名称，例如 custom.ready 或 utils.getCached。即使源名称与本地名称相同，它们也是依赖记录；不同的本地名称是可选的别名。这些记录用于在加载、导出和可用性检查时识别辅助函数。接受自动补全会自动记录依赖。输入一个调用并不会推断出依赖：请显式添加其完整限定名，或接受自动补全。WoW 全局变量和现有插件 API 仍可直接使用。命名空间是此回调私有的，不提供 self。在命名空间的点号调用中请显式传入方法接收者；object:method(x) 是 object.method(object, x) 的简写。点击绑定的源名称可打开其函数；旁边的箭头可更改映射。有待处理的编辑时，导航前会提供“应用”“放弃”或“取消”。重命名函数、命名空间或绑定不会重写代码。缺失、已禁用或无效的依赖会使使用它们的项目保持不可用。",
 -- 476ed166 English: Validity Function
+-- Context: Yellow heading in the custom condition help: the function that checks the condition
+--     itself is valid (all required fields have valid values).
 [3051] = "有效性函数",
 -- fb4e0028 English: Evaluation Function
+-- Context: Yellow heading in the custom condition help: the function that evaluates the condition
+--     at run time and returns true or false.
 [3052] = "评估函数",
 -- d7868586 English: Print Function
+-- Context: Yellow heading in the custom condition help: the function that produces the condition's
+--     one-line summary text.
 [3053] = "输出函数",
 -- d548d39d English: Widget Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     editing widgets.
 [3054] = "控件函数",
 -- e136f1bc English: Help Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     own help page.
 [3055] = "帮助函数",
 -- 4efca0d1 English: About
+-- Context: Name of the About page of the settings window (version, author, credits and links); also
+--     the title of its help window.
 [3056] = "关于",
 -- 96c34a07 English: Invalid
+-- Context: Status label (with icon) in the rotation help: the rotation or step is not valid, so it
+--     cannot be used.
 [3057] = "无效",
 -- 29ab8f0c English: Currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     true right now (shown green).
 [3058] = "当前已满足",
 -- 28f0d12b English: Not currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     not true right now (shown red).
 [3059] = "当前未满足",
 -- 82e28aca English: True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations
 --     page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or
@@ -109,6 +129,8 @@ addon.translation = {
 --     timers, are not tracked. Unavailable when no boss mod is enabled or loaded.
 [3062] = "比较首领模块中某个首领技能计时条的剩余时间，该技能以其法术 ID 标识；计时条运行时，编辑器会列出它们及其 ID。计时条是首领模块的预测，可能会偏移、暂停或取消。当该技能没有正在运行的计时条时，此条件为假，因此“小于 5 秒”只有在计时条确实正在倒数时才为真。没有法术 ID 的计时条（例如开怪或重生计时）不会被追踪。未启用或未加载首领模块时为不可用。",
 -- 68c38a65 English: Sound Alert
+-- Context: Yellow heading in the rotation help, in the announcements part: the sound that can be
+--     played along with an announcement.
 [3063] = "声音警报",
 -- 7a0ac7f9 English: Any (OR) checks children in order and stops at the first match. An empty group
 --     does not match. Encountered unavailable data remains unavailable; later children are skipped.
@@ -119,6 +141,8 @@ addon.translation = {
 --     change it.
 [3065] = "每个循环都有一个标识符（ID），显示在优先级旁边：输入 /rm set <id> 选择它（不区分大小写），输入 /rm set auto 返回自动切换，输入 /rm list 查看所有标识符。内置循环的标识符是固定的；你自己的循环的标识符由名称生成，直到你修改它。",
 -- 5530025a English: Choosing a rotation
+-- Context: Heading in the rotation help: how the addon decides which rotation is used. Noun phrase
+--     with gerund.
 [3066] = "选择循环",
 -- 359bbdff English: Automatic switching tries the enabled rotations in priority order, yours and
 --     Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first
@@ -210,10 +234,15 @@ addon.translation = {
 --     also affects RM child windows.
 [3085] = "列表和冷却视图使用扁平滚动条或鼠标滚轮。图表视图使用滚轮缩放，拖动空白处可平移。窗口缩放会在松开滑块时生效，也会影响 RM 的子窗口。",
 -- e90e0aef English: Highlight preview
+-- Context: Help topic title in General settings help for the highlight preview (the example that
+--     shows the chosen highlight).
 [3086] = "高亮预览",
 -- aafdf428 English: Add category
+-- Context: Help topic title in the Conditions help for the Add category button.
 [3087] = "添加分类",
 -- 539a15c9 English: Choose and edit
+-- Context: Section title in the condition editor help: how to choose a condition type and edit its
+--     fields.
 [3088] = "选择和编辑",
 -- cfb4186c English: Click a condition type to search or browse categories. Dismissing the picker or
 --     choosing the same type keeps its fields. Click the condition summary to edit its fields. The
@@ -238,6 +267,8 @@ addon.translation = {
 --     only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable.
 [3093] = "点击守卫文本可编辑分支条件。“评估条件”使用该条件；“总是为真 / 总是为假”会跳过它。“假”在左侧，显示为红色；“真”在右侧，显示为绿色。分支图标会隐藏两个分支但不更改它们。点击“真”或“假”只折叠该分支；其隐藏数量仍然可见。强制分支中的灰色卡片无法到达。",
 -- 55129537 English: Conditions and state
+-- Context: Section title in the rotation editor help for the cards that combine conditions and the
+--     state they show.
 [3094] = "条件与状态",
 -- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
 --     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
@@ -256,14 +287,18 @@ addon.translation = {
 --     group append when clicked or insert where dropped.
 [3097] = "将卡片拖入一个高亮显示的空隙，或使用左侧的“上移 / 下移”箭头。开始拖动时按住 Ctrl，可带上该卡片及其后所有同级卡片。组总是会带上其子项。不可用的移动显示为灰色。Ctrl+点击或 Shift+点击可选择多张卡片进行组合；拖动已有的选择会移动整个选择。“复制”会复制卡片；“拆分组”会移除其外层包装；红色垃圾桶会删除它。“添加条件”和“添加组”在点击时追加到末尾，或在拖放处插入。",
 -- adb0a440 English: Editing settings
+-- Context: Section title in the settings help: how text fields and the Apply/Discard draft work.
 [3098] = "编辑设置",
 -- 1352b3ca English: Highlight effects
+-- Context: Section title in the rotation editor help for the highlight effect options of an action
+--     card.
 [3099] = "高亮效果",
 -- fc1e5a5a English: If / Unless toggles negation. Enabled / Disabled keeps the saved fields while
 --     skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch
 --     icon hides or shows its children. Gray descendants cannot be reached.
 [3100] = "“如果 / 除非”用于切换取反。“启用 / 禁用”会保留已保存的字段，但跳过评估。“全部 / 任意”在 AND / OR 之间切换。点击组名称可重命名；分支图标可隐藏或显示其子项。灰色的后代项无法到达。",
 -- 0e86051f English: Names and details
+-- Context: Section title in the rotation editor help: how to rename steps and open their details.
 [3101] = "名称与详情",
 -- e0d1f576 English: Search or filter the rotation roster, then select a rotation. Blue Built In
 --     rotations use the same editor but remain read-only; Duplicate makes an editable copy. The
@@ -276,17 +311,25 @@ addon.translation = {
 --     Red borders mark invalid or incomplete data.
 [3103] = "问号按钮会打开该主题的完整帮助。将鼠标悬停在控件上可查看简短提示。撤销 / 重做影响草稿。“应用”会保存；“放弃”或“取消”会丢弃草稿更改。红色边框标示无效或不完整的数据。",
 -- d68ae9c9 English: Using this page
+-- Context: Section title at the top of the help for the Functions and Integrations pages: a short
+--     guide to the page.
 [3104] = "使用此页面",
 -- 642f28cb English: Version, author, credits and project links are shown here. Click a link field
 --     to select its text for copying.
 [3105] = "此处显示版本、作者、致谢和项目链接。点击链接字段可选中其文本以便复制。",
 -- 9cea69fd English: Window controls
+-- Context: Section title in the help: the buttons and controls of the window frame.
 [3106] = "窗口控件",
 -- efe10c80 English: Primary
+-- Context: Help topic title for the settings made for the first (primary) talent specialization;
+--     used only when the game has no word for it.
 [3107] = "主要",
 -- 62f2ccff English: Secondary
+-- Context: Help topic title for the settings made for the second (secondary) talent specialization;
+--     used only when the game has no word for it.
 [3108] = "次要",
 -- a91d0087 English: Delete category
+-- Context: Help topic title in the Conditions help for the Delete category button.
 [3109] = "删除分类",
 -- 315dca68 English: Rename the selected category in Manage categories. Built-in categories cannot
 --     be renamed or deleted.
@@ -310,14 +353,18 @@ addon.translation = {
 --     Switch membership remain available.
 [3117] = "在选择器的“其他”分类中隐藏此条件。显式的命名分类和“切换”成员资格仍然可用。",
 -- 4a954399 English: Condition order
+-- Context: Help topic title in the Conditions help: how to reorder conditions and categories.
 [3118] = "条件顺序",
 -- 54375409 English: Apply / Cancel
+-- Context: Help topic title for the pair of buttons that save or abandon changes in the announce
+--     and effect editors.
 [3119] = "应用 / 取消",
 -- af06c200 English: Choose a named category or Other, then use Apply beside the destination to
 --     stage the move. Page Apply saves all pending changes. Use Switch Condition separately for
 --     automatic-switch availability.
 [3120] = "选择一个命名分类或“其他”，然后使用目标旁边的“应用”来暂存移动。页面上的“应用”会保存所有待处理的更改。是否可用于自动切换请单独使用“切换条件”设置。",
 -- 304b61a5 English: Select several cards
+-- Context: Section title in the rotation editor help: how to select more than one rotation card.
 [3121] = "选择多张卡片",
 -- 1e77459b English: Ctrl-click cards to add or remove them from the selection; Shift-click selects
 --     the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box
@@ -366,10 +413,15 @@ addon.translation = {
 --     read the spell being cast, the condition is unavailable, including under NOT.
 [3130] = "在编辑器中选取的法术按法术 ID 匹配，因此该条件在所有客户端语言下都有效。除非勾选了“使用这个确切的法术等级”，否则该法术的任何等级都会匹配。以法术名称保存的条件仍按该名称匹配。如果客户端无法读取正在施放的法术，该条件不可用，在 NOT 下同样如此。",
 -- 51b10901 English: Navigating rotations
+-- Context: Section title in the rotation editor help: zooming, panning and switching views.
 [3131] = "浏览循环",
 -- 35f68027 English: Enabled / Disabled
+-- Context: Help topic title in the Announces help for the checkbox that switches an announcement on
+--     or off.
 [3132] = "启用 / 禁用",
 -- 922d8056 English: Announcement substitutions
+-- Context: Help topic title in the Announces help: the {{target}}, {{spell}} and {{event}}
+--     placeholders that can be put into announcement text.
 [3133] = "通报替换变量",
 -- 63ff2d53 English: New, Duplicate, Import/Export and Compare
 [3134] = "新建、复制、导入/导出和比较",
@@ -544,6 +596,8 @@ addon.translation = {
 --     changes priority and stays in the draft until Apply.
 [3175] = "使用左侧的箭头，或将物品行拖入高亮显示的插入空隙。按住 Ctrl 拖动会将该行及其后所有条目一起移动。浮动预览会标示你正在移动的内容。超出开头或结尾的移动不可用。重新排序会改变优先级，并在点击“应用”前保留在草稿中。",
 -- 2b906316 English: Bind / Unbind
+-- Context: Help topic title in the item set help for the buttons that connect an item set to a
+--     macro/action button or remove the link.
 [3176] = "绑定 / 解绑",
 -- 81abb5f4 English: Outside combat, apply pending item-set edits before binding. Drag the set (its
 --     row in the list, or the Bind pill) onto any action bar slot; an occupied slot swaps, leaving
@@ -563,6 +617,7 @@ addon.translation = {
 --     marker.
 [3179] = "右上角的红色垃圾桶会在确认后永久移除所选的已保存物品组。在最终警告前请先处理待处理的编辑。之后循环或条件中的引用需要改用其他物品组。删除时会同步处理动作条上仍匹配的已绑定动作，如果解绑失败则保留该物品组；下一个选中项打开时不会带有未保存的删除标记。",
 -- 49c1588e English: Undo / Redo
+-- Context: Help topic title in the item set help for the undo and redo buttons.
 [3180] = "撤销 / 重做",
 -- cd68dbfd English: Undo and Redo travel through recent item-set draft edits, including
 --     replacements, additions, ordering and row removals. They are unavailable when that direction
@@ -580,6 +635,8 @@ addon.translation = {
 --     inspects differences without merging or modifying either set.
 [3183] = "使用侧边栏下方的按钮来新建、复制、传输或比较物品组。“复制”会创建一个独立的配置文件副本。“导入”会显示来源名称，并可创建一个重命名的副本或替换所选列表；“应用”会保存暂存的结果。“比较”会检查差异，但不会合并或修改任何一个物品组。",
 -- 147db4bf English: Legacy macro buttons
+-- Context: Help topic title in the item set help: older macro buttons made before the current
+--     system.
 [3184] = "旧版宏按钮",
 -- 77908784 English: Legacy clients may allow /click to invoke an RM item-set button separately from
 --     action-bar binding. The name is RM_ followed by the set name with non-alphanumeric characters
@@ -624,8 +681,11 @@ addon.translation = {
 --     destinations. Switch membership is independent.
 [3194] = "在条件列表下方，“导入/导出”会打开所选的自定义定义以便传输和代码审查；内置条件不可用。在“管理分类”中，可传输某个分类中按顺序排列的条件标识符。命名分类与“其他”是互斥的目标。“切换”成员资格是独立的。",
 -- 936a161c English: Editor
+-- Context: Help topic title in Integrations settings help for the Lua editor options.
 [3195] = "编辑器",
 -- 0c601351 English: Optional addons
+-- Context: Help topic title in Integrations help: the list of other addons Rotation Master can work
+--     with.
 [3196] = "可选插件",
 -- 0413ac9a English: Undo and Redo edit the Lua body. Reset restores the saved body or new-function
 --     template and can be undone. Check syntax executes no custom Lua. Apply saves the body and
@@ -639,6 +699,7 @@ addon.translation = {
 --     imported Lua. Only apply code you trust.
 [3198] = "“包含自定义函数依赖项”会将其源码与所选定义一同导出。不勾选时，依赖包只记录所需辅助函数的身份和版本。“检查源码”会显示每个导入的 Lua 函数体。对每个原始名称和目标，选择“复用”“替换”或使用新标识符。“应用导入”会保存经过检查的完整依赖包，并可能注册导入的 Lua。只应用你信任的代码。",
 -- b696d1d1 English: Arguments and returns
+-- Context: Section title in the Functions help: how the Arguments and Returns lists work.
 [3199] = "参数和返回值",
 -- 2be54423 English: Choose an existing namespace from the suggestions or type a new dotted
 --     namespace. Built In namespaces follow source files; custom namespaces are implied by saved
@@ -958,6 +1019,8 @@ addon.translation = {
 --     not install or enable other addons.
 [3276] = "点击插件名称会打开可复制的官方发布页和源码链接，涵盖所有可用的提供平台。版本筛选依据相应插件身份所声明的支持；兼容性未知的项目仍会显示。仅凭较早的发布日期并不能证明不兼容。所列出的游戏版本支持描述的是发布者的发布证据，而不是对该集成在你客户端上的认证。部分集成只有历史版本或未经验证的版本。“未加载”表示 RM 无法使用；“受支持”表示一个可用但没有启用开关的集成。内嵌的函数库不在此列。Rotation Master 不会安装或启用其他插件。",
 -- 6c182d42 English: Apply / Discard
+-- Context: Help topic title for the buttons that save or abandon edits in an item list dialog and
+--     the window.
 [3277] = "应用 / 放弃",
 -- d04a65ba English: Edits stay in a draft until Apply. Discard abandons pending changes. Leaving
 --     with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect
@@ -999,6 +1062,7 @@ addon.translation = {
 --     contents.
 [3284] = "按 Enter 或离开文本字段即可暂存其值；“应用”会保存草稿。无效文本会保持红色，必须在应用前更正；“放弃”可以丢弃它。可搜索的选择器在点击时打开，并随输入进行筛选。分节标题可折叠或展开其内容。",
 -- 53a70ff7 English: Editing this list
+-- Context: Help topic title at the top of the item list dialog help.
 [3285] = "编辑此列表",
 -- d71ea291 English: This window edits only the item list you opened. Search or drag items into the
 --     fields, then arrange preferred items first. A named item set is shared by its other users; a
@@ -1037,6 +1101,8 @@ addon.translation = {
 --     an existing destination, and leaves incomplete records unavailable until repaired.
 [3293] = "没有记录所有者的旧循环会保留在存档中。“恢复未分配的循环”会打开当前配置文件和角色的存档以供查看或复制。选择“职业”或“此角色”即可认领一个。认领会保留其标识符和证据，拒绝已存在的目标，并让不完整的记录在修复前保持不可用。",
 -- 4886d663 English: Enable Questie integration
+-- Context: Help topic title in Integrations help for the checkbox that turns on the Questie
+--     integration.
 [3294] = "启用 Questie 集成",
 -- 3a9724aa English: Review supported addons, detected versions and status by integration type.
 --     Expand or collapse each integration group. Click an addon name to choose a copyable release
@@ -1068,8 +1134,11 @@ addon.translation = {
 --     has produced a report and while a capture is running.
 [3300] = "打开可复制的施法回执报告。在施法采集产生报告之前以及采集运行期间，此按钮保持禁用。",
 -- 472590ae English: Provider
+-- Context: Column heading in the addon download links dialog: the website that hosts the download
+--     (e.g. CurseForge).
 [3301] = "提供平台",
 -- e7a241de English: URL
+-- Context: Column heading in the addon download links dialog: the web address of the download page.
 [3302] = "URL",
 -- 8ea4edb6 English: Select URL for copying (Ctrl+C)
 [3303] = "选中 URL 以便复制（Ctrl+C）",
@@ -1250,8 +1319,11 @@ addon.translation = {
 --     changed text, closed transfer or changed profile retires this Help.
 [3352] = "此视图显示导入后的循环：名称、专精、切换条件、步骤和冷却。它是只读的，使用副本，不会保存或更改任何内容。关闭它后，可在传输对话框中选择目标并导入。文本更改、传输关闭或配置文件更改时，此帮助将失效。",
 -- 5ac254c6 English: Macro invocation
+-- Context: Help topic title in the Announces help: an example of how a macro calls an announcement.
 [3353] = "宏调用",
 -- 94a47c93 English: Supplied macro unit
+-- Context: Help topic title in the Announces help: the unit that a macro passes to the
+--     announcement.
 [3354] = "宏提供的单位",
 -- c3039a0d English: Invoke this saved identifier directly from your macro. The supplied unit
 --     controls Announcement target conditions and Whisper; there is no implicit target.

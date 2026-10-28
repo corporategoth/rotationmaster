@@ -34,46 +34,69 @@ local E = {
 -- e7cb84d8
 [3821] = "Memory capture complete. Use General > Memory report or /rm perf memory report to view and copy it.",
 -- e4d45a37
+-- %s #1: %s #1: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3823] = "Capture stopped. Use /rm perf %s report to view and copy it.",
 -- 6f8012ee
+-- %g #1: %g #1: the capture length in seconds, e.g. 10
+-- %s #2: %s #2: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3824] = "Capture started for %g seconds. Close configuration, then use /rm perf %s report.",
 -- e8370df2
+-- %d #1: %d #1: the longest allowed capture length in seconds, e.g. 60
 [3825] = "Choose a duration from 1 to %d seconds.",
 -- e670bdea
+-- %s #1: %s #1: the active evaluation engine, "lean" or "standard" (shown as-is), e.g. "lean"
 [3827] = "Evaluation engine: %s",
 -- 61606866
+-- %s #1: %s #1: the name of the capture that is running, e.g. "CPU profile"
 [3828] = "%s is running. Stop it or wait for completion.",
 -- d2b17a1b
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3829] = "No %s report is available. Start a capture first.",
 -- ac026dc1
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3830] = "No %s is running.",
 -- 4eaf7cbc
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
+-- %s #2: %s #2: why it is unavailable, a short code (shown as-is) or "Unknown", e.g. "missing-profiler-api"
 [3831] = "%s is unavailable: %s",
 -- 6c8f579f
+-- Context: Title of the report window with the memory capture results.
 [3832] = "Memory capture",
 -- a8a89538
+-- %s #1: %s #1: why the memory capture is unavailable, a short code (shown as-is), e.g. "missing-memory-api"
 [3834] = "Memory capture is unavailable: %s",
 -- 8a6ec49e
 [3835] = "Memory capture stopped. Open Memory report to copy the observations.",
 -- bcdd68d0
 [3836] = "Memory capture ended with unavailable observations. Open Memory report for details.",
 -- 7a63fb47
+-- Context: Title of the report window with the runtime profile results.
 [3837] = "Runtime profile",
 -- 80ef0822
 [3838] = "Runtime capture started for 10 seconds. Close configuration, then open Runtime report.",
 -- 0ec2f69a
+-- %s #1: %s #1: why the runtime capture is unavailable, a short code (shown as-is), e.g. "missing-native-profiler"
 [3839] = "Runtime capture is unavailable: %s",
 -- 58dc403d
 [3840] = "Runtime capture ended without complete measurements. Open Runtime report for details.",
 -- 00457437
+-- Context: Title of the report window with the CPU profile results.
 [3841] = "CPU profile",
 -- abd8722f
+-- Context: Title of the report window and first line of its text, for the test of the game's
+--     built-in profiler (no real measurement).
 [3842] = "Native profiler probe",
 -- a704d2a5
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test call received as arguments.
 [3843] = "Callback arguments",
 -- a19d7778
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: how
+--     many times the test callback was called.
 [3844] = "Callback calls",
 -- fb275c4f
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test callback returned.
 [3845] = "Callback returns",
 -- ec06c9e1
 [3846] = "Capability probe only; no evaluator or gameplay was measured.",
@@ -84,16 +107,27 @@ local E = {
 -- 5f85500c
 [3849] = "Native profiler probe is unavailable.",
 -- 0674f152
+-- Context: Result value in the native profiler probe report (lowercase): the call finished
+--     normally.
 [3850] = "call completed",
 -- fa259a8b
+-- Context: Result value in the native profiler probe report (lowercase): the call raised an error.
 [3851] = "call failed",
 -- 60ec9bb7
+-- Context: Result value in the native profiler probe report (lowercase): the result had an
+--     unexpected shape.
 [3852] = "malformed",
 -- 611f3162
+-- Context: Result value in the native profiler probe report (lowercase): the callback was called
+--     twice or more.
 [3853] = "more than one",
 -- b4a98437
+-- Context: Result value in the native profiler probe report (lowercase): this step was not carried
+--     out.
 [3854] = "not run",
 -- d2aaba53
+-- Context: Result value in the native profiler probe report (lowercase): the measurement is
+--     unavailable because the game state changed.
 [3855] = "unavailable (context changed)",
 -- 0e625cbe
 [3856] = "CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting.",
@@ -104,6 +138,7 @@ local E = {
 -- 201fb573
 [3859] = "No CPU capture is running.",
 -- 8d375d61
+-- %s #1: %s #1: why the CPU capture is unavailable, a short code (shown as-is), e.g. "script-profile-disabled"
 [3860] = "CPU capture is unavailable: %s",
 -- c0afc6b0
 [3861] = "CPU capture started for 10 seconds. Close configuration to measure normal gameplay, then open CPU report.",
@@ -112,16 +147,23 @@ local E = {
 -- 71629344
 [3863] = "CPU capture could not produce valid measurements. Open CPU report for details.",
 -- 6996067a
+-- Context: Title of the window that lists Rotation Master's recorded Lua errors.
 [3864] = "Rotation Master errors",
 -- 9a85b2b4
 [3865] = "Review the report, then select Copy and press Ctrl+C. Reload after fixing a paused callback.",
 -- 2c882357
+-- Context: Button in the errors window: shows the earlier error in the list.
 [3866] = "Previous error",
 -- 2da271a8
+-- Context: Button in the errors window: shows the next error in the list.
 [3867] = "Next error",
 -- 6396d0fc
+-- Context: Button in the errors window: empties the list of Rotation Master's recorded errors. 'RM'
+--     is short for Rotation Master.
 [3868] = "Clear RM errors",
 -- 2956e06a
+-- Context: Label of the drag handle in the corner of the errors window: drag to change the window
+--     size.
 [3869] = "Resize",
 -- 4d7325d3
 [3870] = "No Rotation Master errors have been captured this session.",
@@ -130,18 +172,22 @@ local E = {
 -- 2a1ab28d
 [3872] = "Include original text (may contain names or code)",
 -- c29de79e
+-- Context: Title of the report window with the glow diagnostic results.
 [3873] = "Glow diagnostic",
 -- 41e36336
 [3874] = "Glow diagnostic saved.",
 -- 5691cd23
+-- %d #1: %d #1: how many seconds the glow diagnostic keeps watching, e.g. 10
 [3875] = "Glow diagnostic saved. Watching for %d seconds.",
 -- 820421f2
 [3876] = "Glow watch finished. Run /rm debug glow show to view it.",
 -- 6eb70331
+-- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
 [3877] = "Glow stops at: %s",
 -- d918e458
 [3878] = "No glow diagnostic is saved yet. Run /rm debug glow.",
 -- 5e41a846
+-- Context: Title of the report window with the talent diagnostic results.
 [3879] = "Talent diagnostic",
 -- c728736f
 [3880] = "Talent diagnostic saved.",
@@ -150,12 +196,16 @@ local E = {
 -- bdd4e1fa
 [3883] = "Advice: not available; presentation: not available; ordinary-cast proof: not available.",
 -- 66a2de57
+-- %d #1: %d #1: the number of cast attempts recorded, e.g. 42
+-- %d #2: %d #2: the number of cast results recorded, e.g. 40
 [3884] = "Attempts: %d; results: %d",
 -- 78937d68
 [3885] = "Capture: unavailable",
 -- a9079be6
+-- %s #1: %s #1: why the capture ended, a short code (shown as-is), e.g. "stopped"
 [3886] = "Capture: complete; reason=%s",
 -- f9bf7230
+-- %s #1: %s #1: why the capture is unavailable, a short code (shown as-is), e.g. "disabled"
 [3887] = "Capture: unavailable; reason=%s",
 -- 47972aa9
 [3888] = "Cast capture cleared.",
@@ -172,14 +222,21 @@ local E = {
 -- 1dbab8ec
 [3894] = "Cast capture stopped. Open Cast report to inspect receipts.",
 -- 5963707b
+-- Context: Title of the report window with the spell cast receipt capture results.
 [3895] = "Cast receipt report",
 -- ef1fabff
+-- %s #1: %s #1: the game client family, e.g. "retail"
+-- %s #2: %s #2: the game version, e.g. "11.0.2"
+-- %s #3: %s #3: the game build number, e.g. "56313"
+-- %s #4: %s #4: the interface (TOC) number, e.g. "110002"
+-- %s #5: %s #5: the game locale code, e.g. "enUS"
 [3896] = "Client: family=%s version=%s build=%s interface=%s locale=%s",
 -- 9cf1f5cb
 [3897] = "Counts describe receipt rows, not gameplay opportunities.",
 -- cdda6d4b
 [3898] = "Damage: unavailable (no damage observations or encounter denominator).",
 -- 7a8de1c2
+-- %s #1: %s #1: the length of the capture in seconds, e.g. 10.5
 [3899] = "Duration: %s seconds",
 -- eaab562c
 [3900] = "Healer: unavailable (no effective healing, absorbs or mana observations).",
@@ -192,16 +249,26 @@ local E = {
 -- 1821370f
 [3904] = "Producer: UNIT_SPELLCAST adapter",
 -- 6e486b5a
+-- %d #1: %d #1: the number of records captured, e.g. 120
 [3905] = "Records: %d",
 -- a46835a4
+-- %d #1: %d #1: the number of channelled-spell receipts, e.g. 3
+-- %d #2: %d #2: the number of receipts of unmodelled kinds, e.g. 0
 [3906] = "Receipt kinds: channel=%d unmodeled=%d",
 -- 7ffcd926
+-- %d #1: %d #1: receipts of the kind "sent", e.g. 40
+-- %d #2: %d #2: receipts of the kind "start", e.g. 40
+-- %d #3: %d #3: receipts of the kind "success", e.g. 38
+-- %d #4: %d #4: receipts of the kind "failed", e.g. 1
+-- %d #5: %d #5: receipts of the kind "interrupted", e.g. 1
+-- %d #6: %d #6: receipts of the kind "stop", e.g. 0
 [3907] = "Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d",
 -- 672aa08d
 [3908] = "Rotation Master cast receipt diagnostics",
 -- 7c09baa2
 [3909] = "Rotation attribution: unavailable; capture seconds are not encounter seconds.",
 -- 19f6c4f8
+-- %d #1: %d #1: how many rows are left out of the report, e.g. 25
 [3910] = "Rows omitted: %d",
 -- bed3540d
 [3911] = "Scoring: unavailable",
@@ -210,10 +277,21 @@ local E = {
 -- 16603b59
 [3913] = "Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.",
 -- c7dc0ff3
+-- %d #1: %d #1: number of "advice" rows, e.g. 40
+-- %d #2: %d #2: number of "presentation" rows, e.g. 40
+-- %d #3: %d #3: number of "visible" rows, e.g. 30
+-- %d #4: %d #4: number of "hidden" rows, e.g. 10
+-- %d #5: %d #5: number of "unknown" rows, e.g. 0
+-- %d #6: %d #6: number of "retired" rows, e.g. 0
 [3914] = "Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).",
 -- c419fb3c
 [3915] = "Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.",
 -- fe67ade9
+-- %s #1: %s #1: number of START rows observed, e.g. 40 (or "?" when unknown)
+-- %s #2: %s #2: number of rows that matched, e.g. 38
+-- %s #3: %s #3: number of rows that mismatched, e.g. 1
+-- %s #4: %s #4: number of rows excluded, e.g. 1
+-- %s #5: %s #5: number of rows with unknown status, e.g. 0
 [3916] = "START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).",
 -- 159c3cdb
 [3917] = "START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.",
@@ -224,10 +302,12 @@ local E = {
 -- 6b48ba81
 [3920] = "Usage: /rm debug timeline [seconds|show|stop]",
 -- 50b2861c
+-- %d #1: %d #1: how many seconds the timeline diagnostic keeps watching, e.g. 10
 [3921] = "Timeline diagnostic saved. Watching for %d seconds.",
 -- 8c8e2d53
 [3922] = "Timeline diagnostic saved.",
 -- cfb45a68
+-- Context: Title of the report window with the timeline diagnostic results.
 [3923] = "Timeline diagnostic",
 -- 3b2ae94e
 [3924] = "No timeline diagnostic is saved yet. Run /rm debug timeline.",

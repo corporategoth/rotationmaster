@@ -14,16 +14,25 @@ addon.translation = {
 -- 251b444e English: View and copy full debugger output and errors.
 [3925] = "디버거 전체 출력과 오류를 보고 복사합니다.",
 -- 5919ba77 English: Arguments from Test
+-- Context: Label above the test-arguments box in the Lua workbench when editing a condition: the
+--     values come from the Test dialog.
 [3926] = "테스트의 인수",
 -- d683fe35 English: Test arguments
+-- Context: Label above the test-arguments box in the Lua workbench query panel: the values passed
+--     to the function when it is run.
 [3927] = "테스트 인수",
 -- 77022d7f English: API knowledge
+-- Context: Tooltip of the search icon button in the Lua workbench toolbar: opens the Lua API
+--     knowledge base window.
 [3928] = "API 정보",
 -- 3848b912 English: Test arguments must be a Lua table.
 [3929] = "테스트 인수는 Lua 테이블이어야 합니다.",
 -- 2566379c English: Debug current buffer
+-- Context: Section title in the Lua workbench help: explains the Debug button.
 [3930] = "현재 버퍼 디버그",
 -- a5e13d1f English: Debugger terminal
+-- Context: Section title in the Lua workbench help: explains the terminal shown under the code
+--     while debugging.
 [3931] = "디버거 터미널",
 -- 4252a548 English: Play runs the current buffer once without debugging. Condition callbacks use
 --     the fields configured in Test; functions use Test arguments. Returns, printed output and full
@@ -31,6 +40,7 @@ addon.translation = {
 --     callback.
 [3932] = "재생은 현재 버퍼를 디버깅 없이 한 번 실행합니다. 조건 콜백은 테스트에서 설정한 필드를, 함수는 테스트 인수를 사용합니다. 반환값, 출력 내용, 전체 오류는 출력에서 볼 수 있습니다. 실행해도 원본 변경 사항이 적용되거나 실행 중인 콜백이 대체되지 않습니다.",
 -- 45da73fa English: Run current buffer
+-- Context: Section title in the Lua workbench help: explains the Play button.
 [3933] = "현재 버퍼 실행",
 -- 3803ce92 English: The Debug button starts a separate session and pauses at the first executable
 --     line or breakpoint. Continue resumes execution, Step over advances past the current
@@ -46,14 +56,22 @@ addon.translation = {
 -- 494c893e English: Preview rendered. Use Output for printed messages.
 [3936] = "미리보기를 렌더링했습니다. 출력된 메시지는 출력에서 확인하세요.",
 -- fe11778c English: source-tested
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: this
+--     version was checked against Rotation Master's tests (lowercase).
 [3937] = "원본 기준 테스트됨",
 -- 2d58ec3c English: MobInfo2
+-- Context: Name of the addon "MobInfo2" shown in the Integrations settings list; stays unchanged.
 [3938] = "MobInfo2",
 -- 052d7753 English: WeakAuras
+-- Context: Name of the addon "WeakAuras" shown in the Integrations settings list; stays unchanged.
 [3939] = "WeakAuras",
 -- ca47b1c5 English: ForeverAuras
+-- Context: Name of the addon "ForeverAuras" shown in the Integrations settings list; stays
+--     unchanged.
 [3940] = "ForeverAuras",
 -- 58a1df11 English: EllesmereUI Action Bars
+-- Context: Name of the addon "EllesmereUI Action Bars" shown in the Integrations settings list;
+--     stays unchanged.
 [3941] = "EllesmereUI Action Bars",
 -- b7f9153c English: Optional character statistics conditions.
 [3942] = "선택적인 캐릭터 능력치 조건입니다.",
@@ -70,8 +88,12 @@ addon.translation = {
 -- d5beae79 English: Optional action-bar glow support.
 [3948] = "선택적인 행동 단축바 반짝임 지원입니다.",
 -- a9c76027 English: DBM
+-- Context: Name of the boss mod addon "DBM" (Deadly Boss Mods) shown in the Integrations settings
+--     list; stays unchanged.
 [3949] = "DBM",
 -- 8f02be3c English: Titan Panel
+-- Context: Name of the addon "Titan Panel" shown in the Integrations settings list; stays
+--     unchanged.
 [3950] = "Titan Panel",
 -- fde6df5e English: Boss-mod timers and encounter stage for the Boss Mod conditions.
 [3951] = "보스 모드 조건용 보스 모드 타이머와 우두머리 전투 단계입니다.",
@@ -97,32 +119,52 @@ addon.translation = {
 --     matching file; exact patch and RM integration behavior may be unverified.
 [3958] = "공식 프로젝트 페이지입니다. 배포자는 Retail과 Classic Era를 표기합니다. 맞는 파일을 선택하세요. 정확한 패치와 RM 연동 동작은 검증되지 않았을 수 있습니다.",
 -- 3b4269d3 English: Action bars
+-- Context: Group heading in Integrations settings for action bar addons (ElvUI, Bartender4 ...).
 [3959] = "행동 단축바",
 -- 25bd3377 English: Addon
+-- Context: Column heading in the Integrations table: the addon's name.
 [3960] = "애드온",
 -- c7b26f73 English: Condition data
+-- Context: Group heading in Integrations settings for addons that supply data to conditions
+--     (Extended Character Stats, MobInfo2).
 [3961] = "조건 데이터",
 -- a1a45d5e English: Quest callbacks
+-- Context: Group heading in Integrations settings for the Questie integration (reacts to quest
+--     events).
 [3962] = "퀘스트 콜백",
 -- 1c8da9fe English: Recommendation notifications
+-- Context: Group heading in Integrations settings for addons that receive Rotation Master's
+--     recommendations (WeakAuras, ForeverAuras).
 [3963] = "추천 알림",
 -- 57fd7a0c English: Selected
+-- Context: Status text of an addon row in the Integrations table: this addon is the one in use
+--     among alternatives.
 [3964] = "선택됨",
 -- 83189b98 English: Lua editor integrations
+-- Context: Group heading in Integrations settings for the Lua editor addons that can replace the
+--     built-in editor.
 [3965] = "Lua 편집기 연동",
 -- d509e493 English: Native
+-- Context: Name of the built-in choice among the Lua editor integrations: Rotation Master's own
+--     editor, no addon used.
 [3966] = "기본",
 -- 9b41ba20 English: Not loaded
+-- Context: Status text of an addon row in the Integrations table: the addon is not loaded in the
+--     game.
 [3967] = "불러오지 않음",
 -- c1658000 English: Supported
+-- Context: Status text of an addon row in the Integrations table: the addon is loaded and Rotation
+--     Master can work with it.
 [3968] = "지원됨",
 -- 920e413c English: Status
+-- Context: Column heading in the Integrations table: the integration's status.
 [3969] = "상태",
 -- c243becf English: Built-in Lua editor.
 [3970] = "기본 제공 Lua 편집기입니다.",
 -- 280f5418 English: Registered Lua editor provider.
 [3971] = "등록된 Lua 편집기 제공자입니다.",
 -- 123d19ad English: CurseForge
+-- Context: Provider name in the addon download links dialog: the CurseForge website.
 [3972] = "CurseForge",
 -- 616316df English: Classic Era and TBC. Other editions are unverified; Forever Extended Character
 --     Stats is a different project.
@@ -134,6 +176,8 @@ addon.translation = {
 -- e5feed28 English: Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.
 [3976] = "Classic Era, TBC, Mists Classic. Retail과 Forever 릴리스는 검증되지 않았습니다.",
 -- 0f8b7255 English: Tukui
+-- Context: Provider name in the addon download links dialog: the Tukui website (the ElvUI author's
+--     site).
 [3977] = "Tukui",
 -- d8b491c3 English: Official release channel. Publisher TOC lists Retail, Forever, Classic Era,
 --     TBC, Mists and Wrath Classic.
@@ -145,6 +189,7 @@ addon.translation = {
 --     unverified.
 [3980] = "Retail, Classic Era, TBC, Mists Classic용 릴리스가 따로 있습니다. Forever는 검증되지 않았습니다.",
 -- 9d1c6e3d English: WoWInterface
+-- Context: Provider name in the addon download links dialog: the WoWInterface website.
 [3981] = "WoWInterface",
 -- a6028afe English: Primary LUI Core updates for Retail. Fresh installs use the author-linked full
 --     bundle below; Classic uses a separate fork.
@@ -176,18 +221,24 @@ addon.translation = {
 --     action buttons is unverified.
 [3992] = "Classic Era, TBC, Wrath, Cataclysm, Mists Classic. RM 행동 버튼과의 호환성은 검증되지 않았습니다.",
 -- b7e3e4aa English: Disable
+-- Context: Choice in the popup shown for an integration row that is not the one in use: stop using
+--     the addon (verb). The other choice is Select.
 [3993] = "끄기",
 -- 71294f63 English: Wago Addons
+-- Context: Provider name in the addon download links dialog: the Wago Addons website.
 [3994] = "Wago Addons",
 -- cb095b30 English: Official project page. Publisher lists Classic Era, TBC, Classic progression.
 --     Choose the matching file; exact patch and RM integration behavior may be unverified.
 [3995] = "공식 프로젝트 페이지입니다. 배포자는 Classic Era, TBC, Classic progression을 표기합니다. 맞는 파일을 선택하세요. 정확한 패치와 RM 연동 동작은 검증되지 않았을 수 있습니다.",
 -- f911e414 English: GitHub
+-- Context: Provider name in the addon download links dialog: GitHub.
 [3996] = "GitHub",
 -- fa52322b English: Official source repository. Choose the release for your game edition; source
 --     availability does not certify integration behavior.
 [3997] = "공식 원본 저장소입니다. 게임 버전에 맞는 릴리스를 선택하세요. 원본이 공개되어 있다고 연동 동작이 보증되지는 않습니다.",
 -- 7e99b47e English: WoWInterface — historical
+-- Context: Provider name in the addon download links dialog: an older WoWInterface page that is no
+--     longer the main source.
 [3998] = "WoWInterface — 과거",
 -- 36486dd2 English: Official historical release page. Current patch compatibility is unverified;
 --     inspect the release details before downloading.
@@ -201,8 +252,10 @@ addon.translation = {
 --     matching file; exact patch and RM integration behavior may be unverified.
 [4002] = "공식 프로젝트 페이지입니다. 배포자는 Retail, Forever, TBC를 표기합니다. 맞는 파일을 선택하세요. 정확한 패치와 RM 연동 동작은 검증되지 않았을 수 있습니다.",
 -- f76b7810 English: WowUp Hub
+-- Context: Provider name in the addon download links dialog: the WowUp Hub website.
 [4003] = "WowUp Hub",
 -- b16446d4 English: Official website
+-- Context: Provider name in the addon download links dialog: the addon author's own website.
 [4004] = "공식 웹사이트",
 -- 57361449 English: Official project page. Publisher lists Forever, Classic Era, TBC, Classic
 --     progression. Choose the matching file; exact patch and RM integration behavior may be
@@ -216,6 +269,7 @@ addon.translation = {
 --     unverified.
 [4007] = "공식 프로젝트 페이지입니다. 배포자는 Retail, Forever, Classic Era, Classic progression, TBC를 표기합니다. 맞는 파일을 선택하세요. 정확한 패치와 RM 연동 동작은 검증되지 않았을 수 있습니다.",
 -- a9a99921 English: WoWAce
+-- Context: Provider name in the addon download links dialog: the WoWAce website.
 [4008] = "WoWAce",
 -- 845e7b22 English: CurseForge — LUI Core
 [4009] = "CurseForge — LUI Core",
@@ -228,10 +282,14 @@ addon.translation = {
 -- d2fe1b41 English: GitHub — Musca Auras
 [4013] = "GitHub — Musca Auras",
 -- 6db87668 English: CurseForge — LittleWigs
+-- Context: Provider name in the addon download links dialog: the LittleWigs project page on
+--     CurseForge.
 [4014] = "CurseForge — LittleWigs",
 -- 64cbe742 English: CurseForge — DBM Dungeons
 [4015] = "CurseForge — DBM Dungeons",
 -- 9e310fe7 English: CurseForge — EllesmereUI
+-- Context: Provider name in the addon download links dialog: the EllesmereUI project page on
+--     CurseForge.
 [4016] = "CurseForge — EllesmereUI",
 -- 0ae11d12 English: CurseForge — EllesmereUI Action Bars
 [4017] = "CurseForge — EllesmereUI Action Bars",
@@ -296,11 +354,16 @@ addon.translation = {
 -- c315f2a3 English: Wago Addons — TotemTimers Classic
 [4038] = "Wago Addons — TotemTimers Classic",
 -- c8e5998f English: API
+-- Context: Label in the integration status text, followed by a colon and the version number: the
+--     addon's programming interface (API).
 [4039] = "API",
 -- 50bb7ec6 English: Masque
+-- Context: Name of the addon "Masque" (button skins) shown in the Integrations settings list; stays
+--     unchanged.
 [4040] = "Masque",
 -- 17d346ab English: Optional preview-button skins; configure skins with /masque.
 [4041] = "선택적인 미리보기 버튼 스킨입니다. 스킨은 /masque로 설정하세요.",
 -- 35d2f575 English: Button skins
+-- Context: Group heading in Integrations settings for the Masque button skin addon.
 [4042] = "버튼 스킨",
 }

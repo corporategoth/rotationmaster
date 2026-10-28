@@ -14,16 +14,25 @@ addon.translation = {
 -- 251b444e English: View and copy full debugger output and errors.
 [3925] = "Ver y copiar toda la salida y los errores del depurador.",
 -- 5919ba77 English: Arguments from Test
+-- Context: Label above the test-arguments box in the Lua workbench when editing a condition: the
+--     values come from the Test dialog.
 [3926] = "Argumentos de Prueba",
 -- d683fe35 English: Test arguments
+-- Context: Label above the test-arguments box in the Lua workbench query panel: the values passed
+--     to the function when it is run.
 [3927] = "Argumentos de prueba",
 -- 77022d7f English: API knowledge
+-- Context: Tooltip of the search icon button in the Lua workbench toolbar: opens the Lua API
+--     knowledge base window.
 [3928] = "Conocimiento de la API",
 -- 3848b912 English: Test arguments must be a Lua table.
 [3929] = "Los argumentos de prueba deben ser una tabla de Lua.",
 -- 2566379c English: Debug current buffer
+-- Context: Section title in the Lua workbench help: explains the Debug button.
 [3930] = "Depurar el búfer actual",
 -- a5e13d1f English: Debugger terminal
+-- Context: Section title in the Lua workbench help: explains the terminal shown under the code
+--     while debugging.
 [3931] = "Terminal del depurador",
 -- 4252a548 English: Play runs the current buffer once without debugging. Condition callbacks use
 --     the fields configured in Test; functions use Test arguments. Returns, printed output and full
@@ -31,6 +40,7 @@ addon.translation = {
 --     callback.
 [3932] = "Ejecutar lanza el búfer actual una vez sin depurar. Los callbacks de condición usan los campos configurados en Prueba; las funciones usan los Argumentos de prueba. Los retornos, la salida impresa y los errores completos están disponibles en Salida. Ejecutar no aplica los cambios del código ni sustituye el callback en vivo.",
 -- 45da73fa English: Run current buffer
+-- Context: Section title in the Lua workbench help: explains the Play button.
 [3933] = "Ejecutar el búfer actual",
 -- 3803ce92 English: The Debug button starts a separate session and pauses at the first executable
 --     line or breakpoint. Continue resumes execution, Step over advances past the current
@@ -46,14 +56,22 @@ addon.translation = {
 -- 494c893e English: Preview rendered. Use Output for printed messages.
 [3936] = "Vista previa renderizada. Usa Salida para ver los mensajes impresos.",
 -- fe11778c English: source-tested
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: this
+--     version was checked against Rotation Master's tests (lowercase).
 [3937] = "probado con el código",
 -- 2d58ec3c English: MobInfo2
+-- Context: Name of the addon "MobInfo2" shown in the Integrations settings list; stays unchanged.
 [3938] = "MobInfo2",
 -- 052d7753 English: WeakAuras
+-- Context: Name of the addon "WeakAuras" shown in the Integrations settings list; stays unchanged.
 [3939] = "WeakAuras",
 -- ca47b1c5 English: ForeverAuras
+-- Context: Name of the addon "ForeverAuras" shown in the Integrations settings list; stays
+--     unchanged.
 [3940] = "ForeverAuras",
 -- 58a1df11 English: EllesmereUI Action Bars
+-- Context: Name of the addon "EllesmereUI Action Bars" shown in the Integrations settings list;
+--     stays unchanged.
 [3941] = "EllesmereUI Action Bars",
 -- b7f9153c English: Optional character statistics conditions.
 [3942] = "Condiciones opcionales de estadísticas del personaje.",
@@ -70,8 +88,12 @@ addon.translation = {
 -- d5beae79 English: Optional action-bar glow support.
 [3948] = "Compatibilidad opcional con el resplandor de barras de acción.",
 -- a9c76027 English: DBM
+-- Context: Name of the boss mod addon "DBM" (Deadly Boss Mods) shown in the Integrations settings
+--     list; stays unchanged.
 [3949] = "DBM",
 -- 8f02be3c English: Titan Panel
+-- Context: Name of the addon "Titan Panel" shown in the Integrations settings list; stays
+--     unchanged.
 [3950] = "Titan Panel",
 -- fde6df5e English: Boss-mod timers and encounter stage for the Boss Mod conditions.
 [3951] = "Temporizadores y fase del encuentro del mod de jefes para las condiciones de Mod de jefes.",
@@ -97,32 +119,52 @@ addon.translation = {
 --     matching file; exact patch and RM integration behavior may be unverified.
 [3958] = "Página oficial del proyecto. El autor indica Retail y Classic Era. Elige el archivo correspondiente; puede que el parche exacto y el comportamiento de la integración con RM no estén verificados.",
 -- 3b4269d3 English: Action bars
+-- Context: Group heading in Integrations settings for action bar addons (ElvUI, Bartender4 ...).
 [3959] = "Barras de acción",
 -- 25bd3377 English: Addon
+-- Context: Column heading in the Integrations table: the addon's name.
 [3960] = "Addon",
 -- c7b26f73 English: Condition data
+-- Context: Group heading in Integrations settings for addons that supply data to conditions
+--     (Extended Character Stats, MobInfo2).
 [3961] = "Datos de condiciones",
 -- a1a45d5e English: Quest callbacks
+-- Context: Group heading in Integrations settings for the Questie integration (reacts to quest
+--     events).
 [3962] = "Callbacks de misiones",
 -- 1c8da9fe English: Recommendation notifications
+-- Context: Group heading in Integrations settings for addons that receive Rotation Master's
+--     recommendations (WeakAuras, ForeverAuras).
 [3963] = "Notificaciones de recomendaciones",
 -- 57fd7a0c English: Selected
+-- Context: Status text of an addon row in the Integrations table: this addon is the one in use
+--     among alternatives.
 [3964] = "Seleccionado",
 -- 83189b98 English: Lua editor integrations
+-- Context: Group heading in Integrations settings for the Lua editor addons that can replace the
+--     built-in editor.
 [3965] = "Integraciones de editor Lua",
 -- d509e493 English: Native
+-- Context: Name of the built-in choice among the Lua editor integrations: Rotation Master's own
+--     editor, no addon used.
 [3966] = "Nativo",
 -- 9b41ba20 English: Not loaded
+-- Context: Status text of an addon row in the Integrations table: the addon is not loaded in the
+--     game.
 [3967] = "No cargado",
 -- c1658000 English: Supported
+-- Context: Status text of an addon row in the Integrations table: the addon is loaded and Rotation
+--     Master can work with it.
 [3968] = "Compatible",
 -- 920e413c English: Status
+-- Context: Column heading in the Integrations table: the integration's status.
 [3969] = "Estado",
 -- c243becf English: Built-in Lua editor.
 [3970] = "Editor Lua integrado.",
 -- 280f5418 English: Registered Lua editor provider.
 [3971] = "Proveedor de editor Lua registrado.",
 -- 123d19ad English: CurseForge
+-- Context: Provider name in the addon download links dialog: the CurseForge website.
 [3972] = "CurseForge",
 -- 616316df English: Classic Era and TBC. Other editions are unverified; Forever Extended Character
 --     Stats is a different project.
@@ -134,6 +176,8 @@ addon.translation = {
 -- e5feed28 English: Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.
 [3976] = "Classic Era, TBC y Mists Classic. Las versiones de Retail y Forever no están verificadas.",
 -- 0f8b7255 English: Tukui
+-- Context: Provider name in the addon download links dialog: the Tukui website (the ElvUI author's
+--     site).
 [3977] = "Tukui",
 -- d8b491c3 English: Official release channel. Publisher TOC lists Retail, Forever, Classic Era,
 --     TBC, Mists and Wrath Classic.
@@ -145,6 +189,7 @@ addon.translation = {
 --     unverified.
 [3980] = "Versiones separadas para Retail, Classic Era, TBC y Mists Classic. Forever no está verificado.",
 -- 9d1c6e3d English: WoWInterface
+-- Context: Provider name in the addon download links dialog: the WoWInterface website.
 [3981] = "WoWInterface",
 -- a6028afe English: Primary LUI Core updates for Retail. Fresh installs use the author-linked full
 --     bundle below; Classic uses a separate fork.
@@ -176,18 +221,24 @@ addon.translation = {
 --     action buttons is unverified.
 [3992] = "Classic Era, TBC, Wrath, Cataclysm y Mists Classic. La compatibilidad con los botones de acción de RM no está verificada.",
 -- b7e3e4aa English: Disable
+-- Context: Choice in the popup shown for an integration row that is not the one in use: stop using
+--     the addon (verb). The other choice is Select.
 [3993] = "Desactivar",
 -- 71294f63 English: Wago Addons
+-- Context: Provider name in the addon download links dialog: the Wago Addons website.
 [3994] = "Wago Addons",
 -- cb095b30 English: Official project page. Publisher lists Classic Era, TBC, Classic progression.
 --     Choose the matching file; exact patch and RM integration behavior may be unverified.
 [3995] = "Página oficial del proyecto. El autor indica Classic Era, TBC y Classic Progression. Elige el archivo correspondiente; puede que el parche exacto y el comportamiento de la integración con RM no estén verificados.",
 -- f911e414 English: GitHub
+-- Context: Provider name in the addon download links dialog: GitHub.
 [3996] = "GitHub",
 -- fa52322b English: Official source repository. Choose the release for your game edition; source
 --     availability does not certify integration behavior.
 [3997] = "Repositorio oficial del código. Elige la versión de tu edición del juego; la disponibilidad del código no certifica el comportamiento de la integración.",
 -- 7e99b47e English: WoWInterface — historical
+-- Context: Provider name in the addon download links dialog: an older WoWInterface page that is no
+--     longer the main source.
 [3998] = "WoWInterface — histórico",
 -- 36486dd2 English: Official historical release page. Current patch compatibility is unverified;
 --     inspect the release details before downloading.
@@ -201,8 +252,10 @@ addon.translation = {
 --     matching file; exact patch and RM integration behavior may be unverified.
 [4002] = "Página oficial del proyecto. El autor indica Retail, Forever y TBC. Elige el archivo correspondiente; puede que el parche exacto y el comportamiento de la integración con RM no estén verificados.",
 -- f76b7810 English: WowUp Hub
+-- Context: Provider name in the addon download links dialog: the WowUp Hub website.
 [4003] = "WowUp Hub",
 -- b16446d4 English: Official website
+-- Context: Provider name in the addon download links dialog: the addon author's own website.
 [4004] = "Sitio web oficial",
 -- 57361449 English: Official project page. Publisher lists Forever, Classic Era, TBC, Classic
 --     progression. Choose the matching file; exact patch and RM integration behavior may be
@@ -216,6 +269,7 @@ addon.translation = {
 --     unverified.
 [4007] = "Página oficial del proyecto. El autor indica Retail, Forever, Classic Era, Classic Progression y TBC. Elige el archivo correspondiente; puede que el parche exacto y el comportamiento de la integración con RM no estén verificados.",
 -- a9a99921 English: WoWAce
+-- Context: Provider name in the addon download links dialog: the WoWAce website.
 [4008] = "WoWAce",
 -- 845e7b22 English: CurseForge — LUI Core
 [4009] = "CurseForge — LUI Core",
@@ -228,10 +282,14 @@ addon.translation = {
 -- d2fe1b41 English: GitHub — Musca Auras
 [4013] = "GitHub — Musca Auras",
 -- 6db87668 English: CurseForge — LittleWigs
+-- Context: Provider name in the addon download links dialog: the LittleWigs project page on
+--     CurseForge.
 [4014] = "CurseForge — LittleWigs",
 -- 64cbe742 English: CurseForge — DBM Dungeons
 [4015] = "CurseForge — DBM Dungeons",
 -- 9e310fe7 English: CurseForge — EllesmereUI
+-- Context: Provider name in the addon download links dialog: the EllesmereUI project page on
+--     CurseForge.
 [4016] = "CurseForge — EllesmereUI",
 -- 0ae11d12 English: CurseForge — EllesmereUI Action Bars
 [4017] = "CurseForge — EllesmereUI Action Bars",
@@ -296,11 +354,16 @@ addon.translation = {
 -- c315f2a3 English: Wago Addons — TotemTimers Classic
 [4038] = "Wago Addons — TotemTimers Classic",
 -- c8e5998f English: API
+-- Context: Label in the integration status text, followed by a colon and the version number: the
+--     addon's programming interface (API).
 [4039] = "API",
 -- 50bb7ec6 English: Masque
+-- Context: Name of the addon "Masque" (button skins) shown in the Integrations settings list; stays
+--     unchanged.
 [4040] = "Masque",
 -- 17d346ab English: Optional preview-button skins; configure skins with /masque.
 [4041] = "Aspectos opcionales para los botones de la vista previa; configúralos con /masque.",
 -- 35d2f575 English: Button skins
+-- Context: Group heading in Integrations settings for the Masque button skin addon.
 [4042] = "Aspectos de botones",
 }

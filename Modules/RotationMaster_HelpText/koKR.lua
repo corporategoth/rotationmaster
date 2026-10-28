@@ -36,6 +36,8 @@ addon.translation = {
 --     report does not sample gameplay.
 [3045] = "복사 가능한 실행 보고서를 엽니다: 측정된 평가 호출, 기본 경과 시간, 총 할당/해제 카운터. 없는 지표는 사용할 수 없음으로 남습니다. 측정 범위는 평가 호출뿐이며 모든 애드온 이벤트나 렌더링은 포함하지 않습니다. 보고서를 읽어도 게임 플레이를 측정하지 않습니다.",
 -- 0eebb1cd English: Enable observation cache
+-- Context: Help topic title (General settings help) for the option in the performance section that
+--     turns the observation cache on or off.
 [3046] = "관찰 캐시 사용",
 -- 5309abf9 English: Optional reuse of repeated getCached and getRetryCached lookups. Observation
 --     caching is off by default to reduce table allocations; enabling it can help conditions that
@@ -70,22 +72,40 @@ addon.translation = {
 --     Missing, disabled or invalid dependencies keep consumers unavailable.
 [3050] = "이 Lua 본문에서 사용할 원본 도우미와 그 이름을 선택하세요(예: custom.ready 또는 utils.getCached). 원본 이름과 로컬 이름이 같아도 이것은 의존성 기록이며, 다른 로컬 이름은 선택적인 별칭입니다. 이 기록으로 불러오기, 내보내기, 사용 가능 여부 확인에 필요한 도우미를 식별합니다. 자동 완성을 수락하면 의존성이 자동으로 기록됩니다. 호출을 직접 입력해도 의존성은 추론되지 않으므로, 전체 이름을 명시적으로 추가하거나 자동 완성을 수락하세요. WoW 전역 함수와 기존 애드온 API는 계속 직접 사용할 수 있습니다. 네임스페이스는 이 콜백 전용이며 self를 제공하지 않습니다. 네임스페이스의 점(.) 호출에서는 메서드 수신자를 명시적으로 전달하세요. object:method(x)는 object.method(object, x)의 축약형입니다. 연결된 원본 이름을 클릭하면 해당 함수가 열리고, 옆의 화살표로 연결을 바꿉니다. 편집 중인 내용이 있으면 이동하기 전에 적용, 변경 취소 또는 취소를 묻습니다. 함수, 네임스페이스, 연결 이름을 바꿔도 코드는 다시 작성되지 않습니다. 의존성이 없거나 비활성화되었거나 잘못되면 이를 사용하는 쪽도 사용할 수 없습니다.",
 -- 476ed166 English: Validity Function
+-- Context: Yellow heading in the custom condition help: the function that checks the condition
+--     itself is valid (all required fields have valid values).
 [3051] = "유효성 함수",
 -- fb4e0028 English: Evaluation Function
+-- Context: Yellow heading in the custom condition help: the function that evaluates the condition
+--     at run time and returns true or false.
 [3052] = "평가 함수",
 -- d7868586 English: Print Function
+-- Context: Yellow heading in the custom condition help: the function that produces the condition's
+--     one-line summary text.
 [3053] = "출력 함수",
 -- d548d39d English: Widget Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     editing widgets.
 [3054] = "위젯 함수",
 -- e136f1bc English: Help Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     own help page.
 [3055] = "도움말 함수",
 -- 4efca0d1 English: About
+-- Context: Name of the About page of the settings window (version, author, credits and links); also
+--     the title of its help window.
 [3056] = "정보",
 -- 96c34a07 English: Invalid
+-- Context: Status label (with icon) in the rotation help: the rotation or step is not valid, so it
+--     cannot be used.
 [3057] = "잘못됨",
 -- 29ab8f0c English: Currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     true right now (shown green).
 [3058] = "현재 충족됨",
 -- 28f0d12b English: Not currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     not true right now (shown red).
 [3059] = "현재 충족되지 않음",
 -- 82e28aca English: True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations
 --     page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or
@@ -109,6 +129,8 @@ addon.translation = {
 --     timers, are not tracked. Unavailable when no boss mod is enabled or loaded.
 [3062] = "기술의 주문 ID로 식별되는 우두머리 기술 하나에 대한 보스 모드 타이머의 남은 시간을 비교합니다. 타이머가 실행 중이면 편집기에 ID와 함께 목록이 표시됩니다. 타이머는 보스 모드의 예측이므로 바뀌거나 일시 정지되거나 취소될 수 있습니다. 해당 기술의 타이머가 실행 중이 아니면 조건은 거짓이므로, '5초 미만'은 타이머가 실제로 줄어드는 동안에만 참입니다. 풀링이나 재생성 타이머처럼 주문 ID가 없는 바는 추적하지 않습니다. 보스 모드가 활성화되지 않았거나 불러오지 않았으면 사용할 수 없습니다.",
 -- 68c38a65 English: Sound Alert
+-- Context: Yellow heading in the rotation help, in the announcements part: the sound that can be
+--     played along with an announcement.
 [3063] = "소리 경보",
 -- 7a0ac7f9 English: Any (OR) checks children in order and stops at the first match. An empty group
 --     does not match. Encountered unavailable data remains unavailable; later children are skipped.
@@ -119,6 +141,8 @@ addon.translation = {
 --     change it.
 [3065] = "모든 로테이션에는 우선순위 옆에 표시되는 식별자(ID)가 있습니다. /rm set <id>를 입력하면 해당 로테이션을 선택하고(대소문자 구분 없음), /rm set auto는 자동 전환으로 되돌리며, /rm list는 모든 식별자를 보여 줍니다. 기본 제공 로테이션의 식별자는 고정되어 있으며, 내 로테이션의 식별자는 변경하기 전까지 이름에서 만들어집니다.",
 -- 5530025a English: Choosing a rotation
+-- Context: Heading in the rotation help: how the addon decides which rotation is used. Noun phrase
+--     with gerund.
 [3066] = "로테이션 선택",
 -- 359bbdff English: Automatic switching tries the enabled rotations in priority order, yours and
 --     Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first
@@ -210,10 +234,15 @@ addon.translation = {
 --     also affects RM child windows.
 [3085] = "목록과 재사용 대기시간은 평면 스크롤바나 마우스 휠을 사용합니다. 다이어그램은 휠로 확대/축소하고 빈 공간을 끌어 이동합니다. 창 크기 비율은 슬라이더를 놓을 때 적용되며 RM 하위 창에도 영향을 줍니다.",
 -- e90e0aef English: Highlight preview
+-- Context: Help topic title in General settings help for the highlight preview (the example that
+--     shows the chosen highlight).
 [3086] = "강조 미리보기",
 -- aafdf428 English: Add category
+-- Context: Help topic title in the Conditions help for the Add category button.
 [3087] = "분류 추가",
 -- 539a15c9 English: Choose and edit
+-- Context: Section title in the condition editor help: how to choose a condition type and edit its
+--     fields.
 [3088] = "선택 및 편집",
 -- cfb4186c English: Click a condition type to search or browse categories. Dismissing the picker or
 --     choosing the same type keeps its fields. Click the condition summary to edit its fields. The
@@ -238,6 +267,8 @@ addon.translation = {
 --     only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable.
 [3093] = "조건 텍스트를 클릭해 분기 조건을 편집하세요. 평가는 그 조건을 사용하고, 항상 참 / 항상 거짓은 건너뜁니다. 거짓은 왼쪽(빨강), 참은 오른쪽(초록)입니다. 분기 아이콘은 두 갈래를 바꾸지 않고 숨깁니다. 참이나 거짓을 클릭하면 그 갈래만 접히며, 숨긴 개수는 계속 표시됩니다. 강제된 갈래의 회색 카드는 도달할 수 없습니다.",
 -- 55129537 English: Conditions and state
+-- Context: Section title in the rotation editor help for the cards that combine conditions and the
+--     state they show.
 [3094] = "조건 및 상태",
 -- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
 --     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
@@ -256,14 +287,18 @@ addon.translation = {
 --     group append when clicked or insert where dropped.
 [3097] = "카드를 강조 표시된 빈칸으로 끌어 놓거나 왼쪽의 위 / 아래 화살표를 사용하세요. 끌기를 시작할 때 Ctrl을 누르고 있으면 그 카드와 뒤따르는 모든 같은 수준 카드를 함께 옮깁니다. 그룹은 항상 하위 항목을 함께 옮깁니다. 할 수 없는 이동은 회색입니다. Ctrl-클릭 또는 Shift-클릭으로 여러 카드를 선택해 그룹화하고, 기존 선택을 끌면 선택 전체가 이동합니다. 복제는 카드를 복사하고, 그룹 분리는 감싼 그룹을 없애며, 빨간 휴지통은 삭제합니다. 조건 추가와 그룹 추가는 클릭하면 끝에 추가하고 끌어 놓으면 그 위치에 삽입합니다.",
 -- adb0a440 English: Editing settings
+-- Context: Section title in the settings help: how text fields and the Apply/Discard draft work.
 [3098] = "설정 편집",
 -- 1352b3ca English: Highlight effects
+-- Context: Section title in the rotation editor help for the highlight effect options of an action
+--     card.
 [3099] = "강조 효과",
 -- fc1e5a5a English: If / Unless toggles negation. Enabled / Disabled keeps the saved fields while
 --     skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch
 --     icon hides or shows its children. Gray descendants cannot be reached.
 [3100] = "만약 / 아니라면은 부정을 전환합니다. 활성 / 비활성은 저장된 필드를 유지한 채 평가를 건너뜁니다. 모두 / 아무거나는 AND / OR를 바꿉니다. 그룹 이름을 클릭해 바꾸고, 분기 아이콘으로 하위 항목을 숨기거나 표시하세요. 회색 하위 항목은 도달할 수 없습니다.",
 -- 0e86051f English: Names and details
+-- Context: Section title in the rotation editor help: how to rename steps and open their details.
 [3101] = "이름 및 세부 정보",
 -- e0d1f576 English: Search or filter the rotation roster, then select a rotation. Blue Built In
 --     rotations use the same editor but remain read-only; Duplicate makes an editable copy. The
@@ -276,17 +311,25 @@ addon.translation = {
 --     Red borders mark invalid or incomplete data.
 [3103] = "물음표는 해당 주제의 전체 도움말을 엽니다. 컨트롤에 마우스를 올리면 간단한 설명이 나옵니다. 실행 취소 / 다시 실행은 초안에 적용됩니다. 적용하면 저장되고, 변경 취소나 취소는 초안 변경 사항을 버립니다. 빨간 테두리는 잘못되었거나 미완성인 데이터를 표시합니다.",
 -- d68ae9c9 English: Using this page
+-- Context: Section title at the top of the help for the Functions and Integrations pages: a short
+--     guide to the page.
 [3104] = "이 페이지 사용법",
 -- 642f28cb English: Version, author, credits and project links are shown here. Click a link field
 --     to select its text for copying.
 [3105] = "버전, 제작자, 제작진, 프로젝트 링크가 표시됩니다. 링크 필드를 클릭하면 복사할 수 있도록 텍스트가 선택됩니다.",
 -- 9cea69fd English: Window controls
+-- Context: Section title in the help: the buttons and controls of the window frame.
 [3106] = "창 조작",
 -- efe10c80 English: Primary
+-- Context: Help topic title for the settings made for the first (primary) talent specialization;
+--     used only when the game has no word for it.
 [3107] = "주",
 -- 62f2ccff English: Secondary
+-- Context: Help topic title for the settings made for the second (secondary) talent specialization;
+--     used only when the game has no word for it.
 [3108] = "보조",
 -- a91d0087 English: Delete category
+-- Context: Help topic title in the Conditions help for the Delete category button.
 [3109] = "분류 삭제",
 -- 315dca68 English: Rename the selected category in Manage categories. Built-in categories cannot
 --     be renamed or deleted.
@@ -310,14 +353,18 @@ addon.translation = {
 --     Switch membership remain available.
 [3117] = "선택 목록의 기타 분류에서 이 조건을 숨깁니다. 이름 있는 분류와 전환에 명시적으로 속한 경우는 계속 사용할 수 있습니다.",
 -- 4a954399 English: Condition order
+-- Context: Help topic title in the Conditions help: how to reorder conditions and categories.
 [3118] = "조건 순서",
 -- 54375409 English: Apply / Cancel
+-- Context: Help topic title for the pair of buttons that save or abandon changes in the announce
+--     and effect editors.
 [3119] = "적용 / 취소",
 -- af06c200 English: Choose a named category or Other, then use Apply beside the destination to
 --     stage the move. Page Apply saves all pending changes. Use Switch Condition separately for
 --     automatic-switch availability.
 [3120] = "이름 있는 분류나 기타를 선택한 뒤 대상 옆의 적용으로 이동을 준비하세요. 페이지의 적용은 모든 대기 중인 변경 사항을 저장합니다. 자동 전환 사용 여부는 전환 조건에서 따로 설정하세요.",
 -- 304b61a5 English: Select several cards
+-- Context: Section title in the rotation editor help: how to select more than one rotation card.
 [3121] = "여러 카드 선택",
 -- 1e77459b English: Ctrl-click cards to add or remove them from the selection; Shift-click selects
 --     the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box
@@ -366,10 +413,15 @@ addon.translation = {
 --     read the spell being cast, the condition is unavailable, including under NOT.
 [3130] = "편집기에서 고른 주문은 주문 ID로 일치시키므로 조건이 모든 클라이언트 언어에서 작동합니다. 이 정확한 주문 등급 사용을 선택하지 않으면 해당 주문의 모든 등급이 일치합니다. 주문 이름으로 저장된 조건은 계속 그 이름으로 일치합니다. 시전 중인 주문을 클라이언트가 읽을 수 없으면 조건은 사용할 수 없음이며, NOT 아래에서도 마찬가지입니다.",
 -- 51b10901 English: Navigating rotations
+-- Context: Section title in the rotation editor help: zooming, panning and switching views.
 [3131] = "로테이션 탐색",
 -- 35f68027 English: Enabled / Disabled
+-- Context: Help topic title in the Announces help for the checkbox that switches an announcement on
+--     or off.
 [3132] = "활성 / 비활성",
 -- 922d8056 English: Announcement substitutions
+-- Context: Help topic title in the Announces help: the {{target}}, {{spell}} and {{event}}
+--     placeholders that can be put into announcement text.
 [3133] = "알림 치환자",
 -- 63ff2d53 English: New, Duplicate, Import/Export and Compare
 [3134] = "새로 만들기, 복제, 가져오기/내보내기, 비교",
@@ -544,6 +596,8 @@ addon.translation = {
 --     changes priority and stays in the draft until Apply.
 [3175] = "왼쪽 화살표를 사용하거나, 아이템 행을 강조 표시된 삽입 빈칸으로 끌어 놓으세요. Ctrl-끌기는 그 행과 뒤따르는 모든 항목을 함께 옮깁니다. 떠 있는 미리보기로 무엇을 옮기는지 확인할 수 있습니다. 처음이나 끝을 넘어가는 이동은 할 수 없습니다. 순서를 바꾸면 우선순위가 바뀌며, 적용하기 전까지 초안으로 남습니다.",
 -- 2b906316 English: Bind / Unbind
+-- Context: Help topic title in the item set help for the buttons that connect an item set to a
+--     macro/action button or remove the link.
 [3176] = "연결 / 연결 해제",
 -- 81abb5f4 English: Outside combat, apply pending item-set edits before binding. Drag the set (its
 --     row in the list, or the Bind pill) onto any action bar slot; an occupied slot swaps, leaving
@@ -563,6 +617,7 @@ addon.translation = {
 --     marker.
 [3179] = "오른쪽 위의 빨간 휴지통은 확인 후 선택한 저장 세트를 영구 제거합니다. 마지막 경고 전에 대기 중인 편집을 해결하세요. 이후 로테이션이나 조건의 참조에는 다른 세트가 필요합니다. 삭제 시 여전히 일치하는 연결된 단축바 동작을 정리하며, 연결 해제에 실패하면 세트를 유지합니다. 다음 선택은 저장되지 않은 삭제 표시 없이 열립니다.",
 -- 49c1588e English: Undo / Redo
+-- Context: Help topic title in the item set help for the undo and redo buttons.
 [3180] = "실행 취소 / 다시 실행",
 -- cd68dbfd English: Undo and Redo travel through recent item-set draft edits, including
 --     replacements, additions, ordering and row removals. They are unavailable when that direction
@@ -580,6 +635,8 @@ addon.translation = {
 --     inspects differences without merging or modifying either set.
 [3183] = "사이드바 아래 버튼으로 세트를 만들고, 복제하고, 전송하고, 비교하세요. 복제는 독립적인 프로필 사본을 만듭니다. 가져오기는 원본 이름을 보여 주며, 이름을 바꾼 사본을 만들거나 선택한 목록을 대체할 수 있고, 적용하면 준비된 결과가 저장됩니다. 비교는 어느 세트도 병합하거나 바꾸지 않고 차이를 살펴봅니다.",
 -- 147db4bf English: Legacy macro buttons
+-- Context: Help topic title in the item set help: older macro buttons made before the current
+--     system.
 [3184] = "기존 매크로 버튼",
 -- 77908784 English: Legacy clients may allow /click to invoke an RM item-set button separately from
 --     action-bar binding. The name is RM_ followed by the set name with non-alphanumeric characters
@@ -624,8 +681,11 @@ addon.translation = {
 --     destinations. Switch membership is independent.
 [3194] = "조건 목록 아래의 가져오기/내보내기는 선택한 사용자 정의를 전송 및 코드 검토용으로 엽니다. 기본 제공 조건에서는 비활성화됩니다. 분류 관리에서는 분류의 순서 있는 조건 식별자를 전송합니다. 이름 있는 분류와 기타는 서로 배타적인 대상입니다. 전환 소속은 별개입니다.",
 -- 936a161c English: Editor
+-- Context: Help topic title in Integrations settings help for the Lua editor options.
 [3195] = "편집기",
 -- 0c601351 English: Optional addons
+-- Context: Help topic title in Integrations help: the list of other addons Rotation Master can work
+--     with.
 [3196] = "선택 애드온",
 -- 0413ac9a English: Undo and Redo edit the Lua body. Reset restores the saved body or new-function
 --     template and can be undone. Check syntax executes no custom Lua. Apply saves the body and
@@ -639,6 +699,7 @@ addon.translation = {
 --     imported Lua. Only apply code you trust.
 [3198] = "사용자 함수 의존성 포함을 선택하면 선택한 정의와 함께 그 원본을 내보냅니다. 선택하지 않으면 묶음에 필요한 도우미의 식별자와 버전만 기록합니다. 원본 검토는 가져오는 모든 Lua 본문을 보여 줍니다. 각 원래 이름과 대상을 재사용, 대체 또는 새 식별자로 해결하세요. 가져오기 적용은 검토한 묶음 전체를 저장하며 가져온 Lua를 등록할 수 있습니다. 신뢰하는 코드만 적용하세요.",
 -- b696d1d1 English: Arguments and returns
+-- Context: Section title in the Functions help: how the Arguments and Returns lists work.
 [3199] = "인수와 반환값",
 -- 2be54423 English: Choose an existing namespace from the suggestions or type a new dotted
 --     namespace. Built In namespaces follow source files; custom namespaces are implied by saved
@@ -958,6 +1019,8 @@ addon.translation = {
 --     not install or enable other addons.
 [3276] = "애드온 이름을 누르면 사용 가능한 배포처의 공식 릴리스와 원본 링크를 복사할 수 있게 열립니다. 버전 필터는 해당 애드온이 밝힌 지원 범위를 따르며, 호환성을 알 수 없는 항목도 표시됩니다. 릴리스 날짜가 오래되었다는 것만으로 호환되지 않는다고 볼 수는 없습니다. 표시된 게임 버전 지원은 배포자의 릴리스 정보이며, 내 클라이언트에서의 연동을 보증하지 않습니다. 일부 연동은 과거 또는 검증되지 않은 릴리스만 있습니다. 불러오지 않음은 RM에서 사용할 수 없다는 뜻이고, 지원됨은 켜기 스위치가 없는 사용 가능한 연동입니다. 내장 라이브러리는 제외됩니다. Rotation Master는 다른 애드온을 설치하거나 켜지 않습니다.",
 -- 6c182d42 English: Apply / Discard
+-- Context: Help topic title for the buttons that save or abandon edits in an item list dialog and
+--     the window.
 [3277] = "적용 / 변경 취소",
 -- d04a65ba English: Edits stay in a draft until Apply. Discard abandons pending changes. Leaving
 --     with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect
@@ -999,6 +1062,7 @@ addon.translation = {
 --     contents.
 [3284] = "Enter를 누르거나 텍스트 필드를 벗어나면 값이 준비되며, 적용하면 초안이 저장됩니다. 잘못된 텍스트는 빨간색으로 남으며 적용하기 전에 수정해야 하고, 변경 취소로 버릴 수 있습니다. 검색 가능한 선택 목록은 클릭하면 열리고 입력하는 대로 필터링됩니다. 섹션 제목을 클릭하면 내용을 접거나 펼칩니다.",
 -- 53a70ff7 English: Editing this list
+-- Context: Help topic title at the top of the item list dialog help.
 [3285] = "이 목록 편집",
 -- d71ea291 English: This window edits only the item list you opened. Search or drag items into the
 --     fields, then arrange preferred items first. A named item set is shared by its other users; a
@@ -1037,6 +1101,8 @@ addon.translation = {
 --     an existing destination, and leaves incomplete records unavailable until repaired.
 [3293] = "소유자가 기록되지 않은 이전 로테이션은 보관함에 남습니다. 소유자 없는 로테이션 복구는 현재 프로필과 캐릭터 보관함을 열어 살펴보거나 복사할 수 있게 합니다. 채택하려면 직업 또는 이 캐릭터를 선택하세요. 채택은 식별자와 근거를 보존하고, 기존 대상이 있으면 거부하며, 미완성 기록은 수정될 때까지 사용할 수 없음으로 둡니다.",
 -- 4886d663 English: Enable Questie integration
+-- Context: Help topic title in Integrations help for the checkbox that turns on the Questie
+--     integration.
 [3294] = "Questie 연동 사용",
 -- 3a9724aa English: Review supported addons, detected versions and status by integration type.
 --     Expand or collapse each integration group. Click an addon name to choose a copyable release
@@ -1068,8 +1134,11 @@ addon.translation = {
 --     has produced a report and while a capture is running.
 [3300] = "복사 가능한 시전 수신 보고서를 엽니다. 시전 측정으로 보고서가 만들어지기 전과 측정 중에는 비활성화됩니다.",
 -- 472590ae English: Provider
+-- Context: Column heading in the addon download links dialog: the website that hosts the download
+--     (e.g. CurseForge).
 [3301] = "제공자",
 -- e7a241de English: URL
+-- Context: Column heading in the addon download links dialog: the web address of the download page.
 [3302] = "URL",
 -- 8ea4edb6 English: Select URL for copying (Ctrl+C)
 [3303] = "복사할 URL 선택 (Ctrl+C)",
@@ -1250,8 +1319,11 @@ addon.translation = {
 --     changed text, closed transfer or changed profile retires this Help.
 [3352] = "이 화면은 가져온 뒤의 로테이션을 보여 줍니다: 이름, 전문화, 전환 조건, 단계, 재사용 대기시간. 읽기 전용이며 사본으로 작동하고 아무것도 저장하거나 변경하지 않습니다. 닫은 뒤 전송 창에서 대상을 고르고 가져오세요. 텍스트가 바뀌거나, 전송 창이 닫히거나, 프로필이 바뀌면 이 도움말은 종료됩니다.",
 -- 5ac254c6 English: Macro invocation
+-- Context: Help topic title in the Announces help: an example of how a macro calls an announcement.
 [3353] = "매크로 호출",
 -- 94a47c93 English: Supplied macro unit
+-- Context: Help topic title in the Announces help: the unit that a macro passes to the
+--     announcement.
 [3354] = "전달된 매크로 유닛",
 -- c3039a0d English: Invoke this saved identifier directly from your macro. The supplied unit
 --     controls Announcement target conditions and Whisper; there is no implicit target.

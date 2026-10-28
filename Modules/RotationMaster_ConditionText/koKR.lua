@@ -14,8 +14,13 @@ addon.translation = {
 -- d3742617 English: the number of {item} you are carrying {comparison} {quantity}
 [3393] = "소지한 {item}의 개수가 {comparison} {quantity}",
 -- ee0ed821 English: {stat} {comparison} {value}
+-- Context: Sentence template for the summary of an Extended Character Stats condition. The words in
+--     {braces} are filled in and must stay unchanged: {stat} the statistic name, {comparison} e.g.
+--     'is at least', {value} the number.
 [3394] = "{stat} {comparison} {value}",
 -- 9aabc8c2 English: {stat} {comparison} {value}%
+-- Context: Same template as the previous one but the value is a percentage; the '%' after {value}
+--     stays.
 [3395] = "{stat} {comparison} {value}%",
 -- 6be74ff6 English: The number of {members} members{pets} within {distance} yards of {unit} whose
 --     health deficit {qualifier} {threshold} {comparison} {value}
@@ -54,12 +59,21 @@ addon.translation = {
 --     yards of {unit} {comparison} {threshold}%
 [3407] = "{unit} 기준 {distance}미터 이내 구성원({members}{pets})의 {operation} 마나 비율이 {comparison} {threshold}%",
 -- e2f99617 English: Own Buff
+-- Context: Checkbox in the buff condition editor: only count buffs that you cast yourself. Also a
+--     help heading.
 [3408] = "자신의 강화 효과",
 -- 6a63971b English: Own Debuff
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you applied yourself.
+--     Also a help heading.
 [3409] = "자신의 약화 효과",
 -- c83645d3 English: Dispellable
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you can dispel. Also a
+--     help heading.
 [3410] = "해제 가능",
 -- fe483cd0 English: your own %s
+-- Context: Part of a buff or debuff summary: %s is the buff/debuff name, giving 'your own Renew'.
+--     Used when the 'only my own' option is on.
+-- %s #1: %s #1: the buff or debuff name, e.g. "Power Word: Fortitude" (the sentence reads "your own" followed by it)
 [3411] = "자신의 %s",
 -- fd008b93 English: {unit} {{!have|do not have}} {aura}
 [3412] = "{unit}: {aura} {{!있음|없음}}",
@@ -72,237 +86,454 @@ addon.translation = {
 -- b6de011b English: the number of stacks of {aura} on {unit} {comparison} {quantity}
 [3416] = "{unit}에 걸린 {aura} 중첩 수가 {comparison} {quantity}",
 -- 0a2d00cc English: that is dispellable
+-- Context: Phrase appended to a debuff summary when the Dispellable option is on, e.g. '... of type
+--     Magic that is dispellable'.
 [3417] = "해제 가능한",
 -- 0021d5fe English: Enemy
+-- Context: Checkbox in the number-of-units-in-range condition: count enemies (unchecked counts
+--     non-enemies). Also a help heading.
 [3418] = "적",
 -- 974b3bbb English: <level>
+-- Context: Placeholder in a level-condition summary shown until a level is entered; keep the angle
+--     brackets.
 [3419] = "<레벨>",
 -- 6a59c476 English: %s's level
+-- Context: Phrase in a level-condition summary, %s is a unit's name or description: 'the target's
+--     level'. The apostrophe-s makes it possessive.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [3420] = "%s의 레벨",
 -- d7e82e52 English: your level
+-- Context: Phrase in a level-condition summary for the player's own level; the alternative form
+--     uses a unit.
 [3421] = "플레이어 레벨",
 -- 8e99cd98 English: Relative
+-- Context: Checkbox in the unit level condition: the entered level is relative to the player's own
+--     level. Also a help heading.
 [3422] = "상대",
 -- c35070bc English: Resistance
+-- Context: Label of the comparison in the resistance condition (the amount of resistance), and its
+--     help heading.
 [3423] = "저항력",
 -- e16703f1 English: Spell School
+-- Context: Label of the dropdown in the resistance condition: which school of magic (Fire, Frost
+--     ...). Also a help heading.
 [3424] = "주문 계열",
 -- a4d50fb8 English: Partial
+-- Context: Checkbox in the resistance condition: count partial immunity too. Also a help heading.
 [3425] = "부분",
 -- a4130d7d English: Rank
+-- Context: Label of the comparison in the talent condition: the number of points in a talent.
 [3426] = "등급",
 -- 55ca6cfd English: %s or %d others
+-- Context: Item list text: %s is the first item, %d how many other items there are, giving 'Item or
+--     3 others'.
+-- %s #1: %s #1: the first item, as a link or name, e.g. "[Healthstone]"
+-- %d #2: %d #2: how many other items are in the list, e.g. 2
 [3427] = "%s 외 %d개",
 -- 7d538635 English: a %s item set item
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [3428] = "%s 아이템 세트의 아이템",
 -- 7db896a5 English: time until %s health reaches %s%%
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [3429] = "%s 생명력이 %s%%가 될 때까지 남은 시간",
 -- d7514051 English: time until %s health reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [3430] = "%s 생명력이 %s가 될 때까지 남은 시간",
 -- 9db8edbd English: time until %s health deficit reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health deficit (missing health) that is waited for, e.g. 20000
 [3431] = "%s 생명력 손실량이 %s가 될 때까지 남은 시간",
 -- 54bc9c29 English: including pets
+-- Context: Phrase added to a unit-count summary when pets are included, shown in parentheses:
+--     'including pets'.
 [3432] = "소환수 포함",
 -- 17b8d67a English: <unit>
+-- Context: Placeholder in condition summaries shown until a unit is chosen; keep the angle
+--     brackets.
 [3433] = "<유닛>",
 -- f5c3527b English: <action>
+-- Context: Placeholder in condition summaries shown until an action is chosen (e.g. a kind of
+--     action performed); keep the angle brackets.
 [3434] = "<동작>",
 -- de16c890 English: <item>
+-- Context: Placeholder in condition summaries shown until an item is chosen; keep the angle
+--     brackets.
 [3435] = "<아이템>",
 -- 92c7c398 English: <role>
+-- Context: Placeholder in condition summaries shown until a role (tank/healer/damage) is chosen;
+--     keep the angle brackets.
 [3436] = "<역할>",
 -- 5eacbf77 English: <class>
+-- Context: Placeholder in condition summaries shown until a class is chosen; keep the angle
+--     brackets.
 [3437] = "<직업>",
 -- 1107a6db English: <creature type>
+-- Context: Placeholder in condition summaries shown until a creature type is chosen; keep the angle
+--     brackets.
 [3438] = "<생물 유형>",
 -- 763c736c English: <classification>
+-- Context: Placeholder in condition summaries shown until a classification (normal, elite, boss
+--     ...) is chosen; keep the angle brackets.
 [3439] = "<등급>",
 -- 32a8619d English: <talent>
+-- Context: Placeholder in condition summaries shown until a talent is chosen; keep the angle
+--     brackets.
 [3440] = "<특성>",
 -- 226723c3 English: <talent tree>
+-- Context: Placeholder in condition summaries shown until a talent tree is chosen; keep the angle
+--     brackets.
 [3441] = "<특성 트리>",
 -- 903fbb57 English: <glyph>
+-- Context: Placeholder in condition summaries shown until a glyph is chosen; keep the angle
+--     brackets.
 [3442] = "<문양>",
 -- cb9c16d7 English: <rune type>
+-- Context: Placeholder in condition summaries shown until a rune type (Death Knight) is chosen;
+--     keep the angle brackets.
 [3443] = "<룬 유형>",
 -- 9137bf37 English: <buff>
+-- Context: Placeholder in condition summaries shown until a buff is chosen; keep the angle
+--     brackets.
 [3444] = "<강화 효과>",
 -- 729e2db0 English: <debuff>
+-- Context: Placeholder in condition summaries shown until a debuff is chosen; keep the angle
+--     brackets.
 [3445] = "<약화 효과>",
 -- 985669df English: <element>
+-- Context: Placeholder in totem condition summaries shown until a totem element is chosen; keep the
+--     angle brackets.
 [3446] = "<원소>",
 -- ebb7e176 English: <totem>
+-- Context: Placeholder in totem condition summaries shown until a totem is chosen; keep the angle
+--     brackets.
 [3447] = "<토템>",
 -- 8b998a99 English: <threat>
+-- Context: Placeholder in threat condition summaries shown until a threat level is chosen; keep the
+--     angle brackets.
 [3448] = "<위협 수준>",
 -- 0316e1e6 English: <form>
+-- Context: Placeholder in the shapeshift condition summary shown until a form is chosen; keep the
+--     angle brackets.
 [3449] = "<변신>",
 -- 22cc14cd English: <zone>
+-- Context: Placeholder in the zone condition summary shown until a zone name is entered; keep the
+--     angle brackets.
 [3450] = "<지역>",
 -- 7be59ec0 English: <name>
+-- Context: Placeholder in the pet-name condition summary shown until a name is entered; keep the
+--     angle brackets.
 [3451] = "<이름>",
 -- 131a415a English: <distance>
+-- Context: Placeholder in distance-based condition summaries shown until a distance is entered;
+--     keep the angle brackets.
 [3452] = "<거리>",
 -- b0b287ea English: <quantity>
+-- Context: Placeholder in item-count and item-set-count summaries shown until a number is entered;
+--     keep the angle brackets.
 [3453] = "<수량>",
 -- 5cf485b5 English: <school>
+-- Context: Placeholder in resistance condition summaries shown until a spell school is chosen; keep
+--     the angle brackets.
 [3454] = "<계열>",
 -- 6327939f English: <control type>
+-- Context: Placeholder in the loss-of-control summary shown until a control type (stun, fear ...)
+--     is chosen; keep the angle brackets.
 [3455] = "<제어 상실 유형>",
 -- e5cd35fd English: <operation>
+-- Context: Placeholder in group health summaries shown until a math operation (average, lowest ...)
+--     is chosen; keep the angle brackets.
 [3456] = "<연산>",
 -- be607902 English: <stat>
+-- Context: Placeholder in stat condition summaries shown until a statistic is chosen; keep the
+--     angle brackets.
 [3457] = "<능력치>",
 -- e31b37e6 English: %s with %s
+-- Context: Summary sentence for the health forecast condition: first %s is the comparison ('time
+--     until your health reaches 30% is at most 5 seconds'), second %s is the burn-rate mode (e.g.
+--     'both' or a trend setting).
+-- %s #1: %s #1: the comparison sentence about the time until the health target is reached, e.g. "time until your target's health reaches 30% is less than 10 seconds"
+-- %s #2: %s #2: the burn-rate mode, e.g. "both" or "recent" (translated)
 [3458] = "%s, %s",
 -- 0a09d74b English: the number of talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree, e.g. "Arcane"
 [3459] = "%s 특성 점수의 수 (%s)",
 -- 3155a253 English: %s resistance to %s
+-- Context: Phrase in the resistance summary: first %s is a unit (possessive, 'your'), second %s is
+--     the school, e.g. 'your resistance to Fire'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [3460] = "%s %s 저항력",
 -- 0f044feb English: Operation
+-- Context: Label of the dropdown in the group health condition and its help heading: the math
+--     operation (average, lowest ...).
 [3461] = "연산",
 -- 37bac495 English: Count
+-- Context: Label of the comparison in the class count condition (how many party/raid members) and
+--     its help heading.
 [3462] = "개수",
 -- 822bab8d English: Quantity
+-- Context: Label of the comparison in the item-in-bags condition: how many of the item are carried.
+--     Also a help heading.
 [3463] = "수량",
 -- 498024de English: Same Group
+-- Context: Checkbox in the units-in-range conditions: only count units in your own raid group. Also
+--     a help heading.
 [3464] = "같은 그룹",
 -- f56f56f0 English: Include Pets
+-- Context: Checkbox in the units-in-range conditions: also count pets. Also a help heading.
 [3465] = "소환수 포함",
 -- 0417caa6 English: %s health
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'your health'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3466] = "%s 생명력",
 -- d3e6835a English: %s health deficit
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'target's health deficit'
+--     (how much health is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3467] = "%s 생명력 손실량",
 -- 0b7f509c English: %s mana
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3468] = "%s 마나",
 -- c26c9d56 English: %s mana deficit
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana deficit' (how much
+--     mana is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3469] = "%s 마나 손실량",
 -- 38e9ce41 English: %s power
+-- Context: Phrase in power condition summaries (rage, energy, etc.); %s is whose power, e.g. 'your
+--     power'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3470] = "%s 자원",
 -- 8e8bafed English: %s power deficit
+-- Context: Phrase in power condition summaries; %s is whose power, e.g. 'your power deficit' (how
+--     much is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3471] = "%s 자원 부족량",
 -- ee7787cd English: %s point total
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point total'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3472] = "%s 점수 합계",
 -- 30f011ad English: %s point deficit
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point deficit' (how many are missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3473] = "%s 점수 부족량",
 -- 309b1607 English: Rune Type
+-- Context: Label of the dropdown in the Death Knight rune condition: which kind of rune. Also a
+--     help heading.
 [3474] = "룬 유형",
 -- 4a6d5ef7 English: the number of %s runes available
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [3475] = "사용 가능한 %s 룬 수",
 -- 02c78980 English: cooldown on your next %s rune
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [3476] = "다음 %s 룬 재사용 대기시간",
 -- 2bfe8a1c English: the %s
+-- Context: Wraps a cooldown or recharge comparison in the summary: %s is the comparison text,
+--     giving 'the cooldown on X is at most 5 seconds'.
+-- %s #1: %s #1: a comparison about a cooldown, charges or recharge time, e.g. "cooldown on [Fireball] is less than 5 seconds"
 [3477] = "%s",
 -- f95180b3 English: cooldown on %s
+-- Context: Phrase in spell cooldown summaries; %s is the spell link, e.g. 'cooldown on Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3478] = "%s 재사용 대기시간",
 -- cae44083 English: %s seconds
+-- Context: Number of seconds in a summary; %s is the number, e.g. '5 seconds'.
+-- %s #1: %s #1: the number of seconds, e.g. 10
 [3479] = "%s초",
 -- 381a8e96 English: Seconds
+-- Context: Label of the comparison in the spell cooldown condition: a number of seconds. Also a
+--     help heading.
 [3480] = "초",
 -- de838855 English: Stage
+-- Context: Label of the comparison in the boss mod stage condition: the current encounter stage
+--     number.
 [3481] = "단계",
 -- b1097936 English: Encounter ID (blank for any)
 [3482] = "우두머리 전투 ID (비우면 모두)",
 -- 8002bd2a English: Boss ability spell ID
 [3483] = "우두머리 기술 주문 ID",
 -- 938af2ed English: Running timers:
+-- Context: Prefix in the boss mod timer description, followed by a list of the running timers.
 [3484] = "실행 중인 타이머:",
 -- db93de5e English: No boss-mod timers are running.
 [3485] = "실행 중인 보스 모드 타이머가 없습니다.",
 -- d25fe6e9 English: No boss-mod encounter is in progress.
 [3486] = "진행 중인 보스 모드 우두머리 전투가 없습니다.",
 -- bb8c3466 English: Boss mod data unavailable: %s
+-- %s #1: %s #1: why the boss mod data is unavailable, a short code (shown as-is), e.g. "adapter-unavailable"
 [3487] = "보스 모드 데이터를 사용할 수 없음: %s",
 -- 163f58b8 English: Current encounter: %s (ID %s), stage %s
+-- %s #1: %s #1: the encounter name, e.g. "Ragnaros"
+-- %s #2: %s #2: the encounter ID, or "none", e.g. "672"
+-- %s #3: %s #3: the encounter stage number, e.g. 2
 [3488] = "현재 우두머리 전투: %s (ID %s), %s단계",
 -- d0ee75f0 English: your boss mod reports encounter %s {{!is|is not}} in progress
+-- %s #1: %s #1: the boss encounter ID, e.g. "672"
 [3489] = "보스 모드 기준 우두머리 전투 %s {{!진행 중|진행 중 아님}}",
 -- 9f2947bc English: your boss mod {{!reports|does not report}} an encounter in progress
 [3490] = "보스 모드가 진행 중인 우두머리 전투를 {{!보고함|보고하지 않음}}",
 -- 772d9f0d English: the boss-mod encounter stage
 [3491] = "보스 모드 우두머리 전투 단계",
 -- 03f1bf98 English: the boss-mod timer for %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Hellfire (spell ID 1949)"
 [3492] = "%s에 대한 보스 모드 타이머",
 -- aac06d0a English: Seconds until the boss mod expects the ability. A paused timer keeps its
 --     remaining time.
 [3493] = "보스 모드가 해당 기술을 예상하는 시점까지 남은 초입니다. 일시 정지된 타이머는 남은 시간을 유지합니다.",
 -- a3b0ec0a English: number of charges on %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3494] = "%s 충전 횟수",
 -- d3f9533d English: Charges
+-- Context: Label of the comparison in the spell charges condition (number of charges). Also a help
+--     heading.
 [3495] = "충전",
 -- d9f8ffbe English: %s casts ago
+-- Context: Phrase in spell-cast history summaries; %s is a count, e.g. '3 casts ago'.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [3496] = "%s회 시전 전",
 -- ebffec66 English: %s seconds ago
+-- Context: Phrase in history summaries; %s is a number of seconds, e.g. '5 seconds ago'.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [3497] = "%s초 전",
 -- 093ae2d4 English: %s actions ago
+-- Context: Phrase in action-history summaries; %s is a count, e.g. '2 actions ago'.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [3498] = "%s회 행동 전",
 -- 61bb6794 English: %s {{!was|was not}} cast %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
+-- %s #2: %s #2: when it was cast, e.g. "fewer than 3 casts ago" or "more than 5 seconds ago"
 [3499] = "%s: %s {{!시전함|시전하지 않음}}",
 -- 7a55e41d English: %s {{!were|were not}} %s %s
+-- %s #1: %s #1: the unit; the "were" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3500] = "%s: %s {{!있음|없음}} (%s)",
 -- 089cd4ce English: %s {{!was|was not}} %s %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3501] = "%s: %s {{!있음|없음}} (%s)",
 -- d72cc5dd English: the remaining time
+-- Context: Phrase in buff/debuff duration summaries: the time left on the aura.
 [3502] = "남은 시간",
 -- 5242ce0a English: Stacks
+-- Context: Label of the comparison in the buff stacks condition (application count). Also a help
+--     heading.
 [3503] = "중첩",
 -- 6f54bbcb English: <debuff type>
+-- Context: Placeholder in debuff-type summaries shown until a type (Magic, Poison ...) is chosen;
+--     keep the angle brackets.
 [3504] = "<약화 효과 유형>",
 -- cf1e1b18 English: Debuff Type
+-- Context: Label of the dropdown in the debuff type condition: Magic, Curse, Disease, Poison. Also
+--     a help heading.
 [3505] = "약화 효과 유형",
 -- 2464ac36 English: Check If Not Carrying
 [3506] = "소지하지 않아도 확인",
 -- cc1059c6 English: , even if you do not currently have one
 [3507] = ", 현재 소지하지 않았더라도",
 -- 7e67190c English: Control Type
+-- Context: Label of the dropdown in the loss-of-control condition: the kind of control (stun, fear
+--     ...). Also a help heading.
 [3508] = "제어 유형",
 -- e4a034d6 English: time remaining on %s
+-- Context: Phrase in the loss-of-control summary; %s is the control type, e.g. 'time remaining on
+--     stun'.
+-- %s #1: %s #1: the type of loss-of-control effect, e.g. "Stun" or "Silence"
 [3509] = "%s 남은 시간",
 -- b7d036de English: School Blocked
+-- Context: Label of the dropdown in the school lockout condition: which school is locked. Also a
+--     help heading.
 [3510] = "계열 차단됨",
 -- 48c8596c English: time remaining on block of your %s abilities
+-- %s #1: %s #1: the spell school that is blocked, e.g. "Fire"
 [3511] = "%s 계열 기술 차단 남은 시간",
 -- 2f024fe4 English: humanoid
+-- Context: Option in the shapeshift form dropdown: not shapeshifted. Also named in the form help
+--     text; lowercase.
 [3512] = "인간형",
 -- e112b377 English: humanoid form
+-- Context: Phrase in the form summary when no shapeshift form is active: 'humanoid form'.
 [3513] = "인간형",
 -- 2e0e960a English: Form
+-- Context: Label of the dropdown in the shapeshift condition (also stances and stealth). Also a
+--     help heading.
 [3514] = "변신",
 -- 4d95bdd5 English: the number of %s members%s within %s yards of %s
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [3515] = "구성원(%s%s) 중 %s미터 이내에 있는 수(기준: %s)",
 -- 4c543e99 English: the number of enemies on which you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [3516] = "위협 수준이 최소 %s인 적의 수",
 -- bd310339 English: closer than %s yards
+-- Context: Phrase in the distance summary: %s is a number, e.g. 'closer than 10 yards'.
+-- %s #1: %s #1: the distance in yards, e.g. 10
 [3517] = "%s미터보다 가까움",
 -- 30d28f49 English: allies
+-- Context: Plural noun in the unit-count summary: friendly units.
 [3518] = "아군",
 -- d0110013 English: enemies
+-- Context: Plural noun in the unit-count summary: hostile units.
 [3519] = "적",
 -- 7002c54a English: Number of %s within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3520] = "%s미터 이내 %s 수",
 -- f9d6358c English: Number of %ss in the %s
+-- %s #1: %s #1: the class name, e.g. "Mage" (the "s" after %s is a plural ending in English)
+-- %s #2: %s #2: the group, "Party" or "Raid", e.g. "Raid"
 [3521] = "%s 수 (%s)",
 -- 796861d3 English: the time remaining on %s channel
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3522] = "%s 주문 정신 집중 남은 시간",
 -- 029b1c92 English: the time remaining on %s cast
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3523] = "%s 주문 시전 남은 시간",
 -- 4bca01ec English: no PVP
+-- Context: Option in the zone PVP dropdown and its summary: the zone has no PVP rules.
 [3524] = "PvP 없음",
 -- 5e23ec6a English: Mode
+-- Context: Label of the dropdown in the zone PVP condition: the zone's PVP status. Also a help
+--     heading.
 [3525] = "모드",
 -- d50c7904 English: Other (scenario)
+-- Context: Option in the instance type dropdown and its summary: the instance is none of the usual
+--     types (a scenario).
 [3526] = "기타 (시나리오)",
 -- f6fe5e59 English: SubZone
+-- Context: Checkbox in the zone condition: compare the sub zone instead of the zone name. Also a
+--     help heading.
 [3527] = "세부 지역",
 -- 2c7564b7 English: %s (set %d)
+-- Context: Item set name with its number: first %s is the set name, %d its set number.
+-- %s #1: %s #1: the name of the set bonus (item set), e.g. "Plate of the Dread Lord"
+-- %d #2: %d #2: the item set ID, e.g. 1234
 [3528] = "%s (세트 %d)",
 -- eb179560 English: %s, %d equipped
+-- Context: Item set entry in the dropdown of sets you wear: first %s is the set label, %d how many
+--     pieces are equipped.
+-- %s #1: %s #1: the item set, as its name and ID or "item set 1234", e.g. "Plate of the Dread Lord (set 1234)"
+-- %d #2: %d #2: how many pieces of the set are equipped, e.g. 4
 [3529] = "%s, %d개 착용",
 -- d5c50d7b English: <action bar>
+-- Context: Placeholder in the action context summary shown until an action bar is chosen; keep the
+--     angle brackets.
 [3530] = "<행동 단축바>",
 -- fbf90b5a English: <enchant>
+-- Context: Placeholder in the weapon enchant summary shown until an enchant ID is entered; keep the
+--     angle brackets.
 [3531] = "<마법부여>",
 -- 23127ea1 English: <item set>
+-- Context: Placeholder in item set summaries shown until a set is chosen; keep the angle brackets.
 [3532] = "<아이템 세트>",
 -- 7c027705 English: A rotation of your own is used only on your own bar unless its switch condition
 --     requires another action context with this condition; it is then used, and its buttons found,
@@ -311,18 +542,26 @@ addon.translation = {
 -- fcefef14 English: Currently: no temporary enchant
 [3534] = "현재: 임시 마법부여 없음",
 -- f1ce6167 English: Currently: temporary enchant %d
+-- %d #1: %d #1: the ID of the temporary weapon enchant now active, e.g. 5400
 [3535] = "현재: 임시 마법부여 %d",
 -- ef4a5266 English: Enchant ID
+-- Context: Label of the edit box in the weapon enchant condition: the numeric ID of the temporary
+--     enchant. Also a help heading.
 [3536] = "마법부여 ID",
 -- 77078c59 English: Equipped Sets
+-- Context: Label of the dropdown in the item set condition listing the sets you currently wear.
 [3537] = "착용한 세트",
 -- 4eb9c836 English: Item Set ID
+-- Context: Label of the edit box in the item set condition: the numeric ID of an item set. Also a
+--     help heading.
 [3538] = "아이템 세트 ID",
 -- 27e95eae English: Matches the bar you are acting through: your own, a vehicle, a possessed (mind
 --     controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from
 --     Wrath, pet battles only on Retail.
 [3539] = "현재 동작에 사용하는 단축바와 일치합니다: 자신의 단축바, 탈것, 지배한(정신 지배) 유닛, 대체 단축바 또는 애완동물 대전. 탈것과 대체 단축바는 리치 왕의 분노부터, 애완동물 대전은 리테일에만 있습니다.",
 -- dd05d0e2 English: Pieces
+-- Context: Label of the comparison in the item set condition: number of set pieces equipped. Also a
+--     help heading.
 [3540] = "부위",
 -- 4f9a6625 English: The game's item set (for example a tier set). Sets you are wearing are offered
 --     in the list; the count is taken from your equipped items' metadata and stays unavailable
@@ -334,30 +573,50 @@ addon.translation = {
 --     imbue. The current enchant ID of the selected hand is shown below the field.
 [3543] = "무기의 임시 마법부여: 독, 오일, 숫돌 또는 무기 강화. 선택한 손의 현재 마법부여 ID가 필드 아래에 표시됩니다.",
 -- de2d2147 English: item set %d
+-- Context: Fallback name for an item set whose name is not known; %d is the set number.
+-- %d #1: %d #1: the item set ID, e.g. 1234
 [3544] = "아이템 세트 %d",
 -- a693df35 English: the number of {set} pieces you have equipped {comparison} {quantity}
 [3545] = "착용한 {set} 세트 아이템 수가 {comparison} {quantity}",
 -- 84463f60 English: you {{!are|are not}} acting through %s
+-- %s #1: %s #1: the action bar or context, e.g. "Main action bar"
 [3546] = "%s 통해 동작 {{!중|중 아님}}",
 -- c16cbdbc English: your %s weapon {{!has|does not have}} temporary enchant %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: the temporary enchant ID, e.g. "5400"
 [3547] = "%s 무기에 임시 마법부여 %s {{!있음|없음}}",
 -- 9e163ca5 English: the time remaining on your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3548] = "%s 무기 효과의 남은 시간",
 -- 6153a726 English: the number of stacks of your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3549] = "%s 무기 효과의 중첩 수",
 -- 4320f428 English: Your %s weapon %s
+-- Context: Sentence in weapon speed summaries: first %s is the weapon (main hand, off hand,
+--     ranged), second %s is the comparison, e.g. 'Your main hand weapon attack speed is at least 2
+--     seconds'.
+-- %s #1: %s #1: which weapon, "ranged", "off hand" or "main hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the attack speed or swing time, e.g. "attack speed is less than 2 seconds"
 [3550] = "%s 무기: %s",
 -- 1f8df0f5 English: off hand
+-- Context: Weapon slot in summaries: the off-hand weapon (lowercase).
 [3551] = "보조장비",
 -- c8f1b901 English: main hand
+-- Context: Weapon slot in summaries: the main-hand weapon (lowercase).
 [3552] = "주장비",
 -- c4756181 English: attack speed
+-- Context: Quantity compared in the weapon speed summary: how many seconds one swing takes
+--     (lowercase).
 [3553] = "공격 속도",
 -- 736e26ef English: Attack Speed
+-- Context: Label of the comparison in the weapon attack speed condition and its help heading.
 [3554] = "공격 속도",
 -- d30240f8 English: swing time remaining
+-- Context: Quantity compared in the swing timer summary: the time left until the next swing
+--     (lowercase).
 [3555] = "자동 공격까지 남은 시간",
 -- 0f6a6d02 English: Swing Time Remaining
+-- Context: Label of the comparison in the swing timer condition and its help heading.
 [3556] = "자동 공격까지 남은 시간",
 -- ec8bc0f2 English: Pet Spell History Memory (seconds)
 [3557] = "소환수 주문 기록 보존 시간 (초)",
@@ -403,6 +662,9 @@ addon.translation = {
 --     boundary, missing data or restricted data stays unavailable, including under NOT.
 [3569] = "가능하면 기본 공격 사거리 검사를 사용합니다. 그렇지 않으면 LibRangeCheck의 공개 구간으로 근거리와 5미터 밖을 구분하며, 이 추정이 모든 대상의 정확한 근접 거리를 보장하지는 않습니다. 구간이 경계에 걸치거나 데이터가 없거나 제한되면 NOT 아래에서도 사용할 수 없음으로 남습니다.",
 -- 2c7c2760 English: recharge time on %s
+-- Context: Phrase in spell recharge summaries; %s is the spell link, e.g. 'recharge time on
+--     Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3570] = "%s 충전 시간",
 -- a407140e English: Seconds until the next spell charge. Full charges and inactive recharge timers
 --     report zero. Missing, restricted, or non-charge spell data stays unavailable.
@@ -421,6 +683,7 @@ addon.translation = {
 --     replaces it; viewing does not convert it.
 [3575] = "이 참조는 다른 특성 구성에 속합니다. 특성을 직접 선택하면 대체되며, 보기만 해서는 변환되지 않습니다.",
 -- a08e2044 English: Historical talent slot %s (unavailable)
+-- %s #1: %s #1: the old talent slot number, e.g. 7
 [3576] = "이전 특성 칸 %s (사용할 수 없음)",
 -- d511337a English: This client uses a different talent system. This reference is preserved but
 --     cannot be evaluated.
@@ -436,12 +699,20 @@ addon.translation = {
 --     the condition is unavailable, including under NOT.
 [3579] = "태세는 해당 주문으로 선택하므로, 새 태세를 익혀도 조건이 계속 작동하며 모든 클라이언트 언어에서도 작동합니다. 태세의 모든 등급이 일치합니다. 목록에는 태세 단축바에 있는 태세가 먼저 나오고, 그다음에 이 클라이언트에서 내 직업의 다른 태세가 나옵니다. 태세 단축바 칸으로 저장된 조건은 태세를 고르기 전까지 그 칸을 유지합니다. 활성 태세를 클라이언트가 읽을 수 없으면 조건은 사용할 수 없음이며, NOT 아래에서도 마찬가지입니다.",
 -- 114a5b8b English: Stance bar slot %s (%s)
+-- %s #1: %s #1: the stance bar slot number, e.g. 2
+-- %s #2: %s #2: the name of the stance in that slot, e.g. "Defensive Stance"
 [3580] = "태세 단축바 칸 %s (%s)",
 -- 2eaf81a4 English: %s cast progress
+-- Context: Phrase in cast progress summaries; %s is a unit, e.g. 'target's cast progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3581] = "%s 시전 진행도",
 -- 4df1232e English: %s channel progress
+-- Context: Phrase in channel progress summaries; %s is a unit, e.g. 'target's channel progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3582] = "%s 정신집중 진행도",
 -- 4664827f English: Progress
+-- Context: Label of the comparison in the cast/channel progress conditions: percent completed. Also
+--     a help heading.
 [3583] = "진행도",
 -- 8b7f75d4 English: How much of the current cast of {unit} is done, from 0% when it starts to 100%
 --     when it completes. It follows haste and pushback, because it is measured against the cast's
@@ -456,13 +727,18 @@ addon.translation = {
 --     cannot be read, it is unavailable, including under NOT.
 [3585] = "{unit}의 현재 정신집중이 얼마나 진행되었는지를 시작 시 0%에서 종료 시 100%까지로 나타냅니다. 틱은 정신집중 동안 일정한 간격이므로 K틱 정신집중의 N번째 틱은 가속과 관계없이 N/K에 해당합니다. 정신 분열(3틱)을 두 번째 틱 뒤에 끊으려면 66% 이상을 사용하세요. 시전 지연은 정신집중을 줄이며 진행도도 그에 따라 달라집니다. 대상이 정신집중 중이 아니면 연산자와 관계없이 이 조건은 성공하지 않으며, 정신집중 시간을 읽을 수 없으면 사용할 수 없음이고 NOT 아래에서도 마찬가지입니다.",
 -- 51b0dd92 English: Talent tree %s
+-- Context: Fallback name for a talent tree that has no known name; %s is its number.
+-- %s #1: %s #1: the talent tree number, e.g. 2
 [3586] = "특성 트리 %s",
 -- d695f0be English: This client does not expose a Classic talent-tree layout. The saved tree
 --     reference is preserved.
 [3587] = "이 클라이언트는 클래식 특성 트리 구성을 제공하지 않습니다. 저장된 트리 참조는 보존됩니다.",
 -- 87d6a3d4 English: Talent tree
+-- Context: Label of the dropdown in the talent condition for choosing a Classic talent tree (e.g.
+--     Arms, Fury, Protection).
 [3588] = "특성 트리",
 -- fd027208 English: the number of points spent in %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3589] = "%s에 투자한 점수",
 -- 7661e068 English: Talent tree selects the Classic tree whose spent points are compared. Public
 --     points are read again on the next evaluation; missing or restricted points are unavailable,
@@ -494,86 +770,139 @@ addon.translation = {
 --     not bypass the action's implicit ownership, usability and range checks.
 [3596] = "아이템 사용 가능은 요구 레벨과 활성화된 아이템 재사용 대기시간을 확인합니다. 진행 중인 재사용 대기시간은 읽을 수 있는 전역 재사용 대기시간과 함께 끝날 때만 인정됩니다. 이 조건은 동작의 암묵적인 소유, 사용 가능 여부, 사거리 확인을 우회하지 않습니다.",
 -- e22e898a English: %s totem {{!is|is not}} active
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [3597] = "%s 토템 {{!활성|비활성}}",
 -- b0cc0e08 English: %s {{!are|are not}} %s
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your target" or "closer than 10 yards"
 [3598] = "%s: %s {{!맞음|아님}}",
 -- 93814226 English: %s {{!are|are not}} currently casting
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3599] = "%s {{!시전 중|시전 중 아님}}",
 -- 7e8e3a71 English: {unit} {{!are|are not}} currently casting {spell}
 [3600] = "{unit}: {spell} {{!시전 중|시전 중 아님}}",
 -- b5ad374e English: %s {{!are|are not}} currently channeling
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3601] = "%s {{!정신 집중 중|정신 집중 중 아님}}",
 -- e2a66ca1 English: {unit} {{!are|are not}} currently channeling {spell}
 [3602] = "{unit}: {spell} {{!정신 집중 중|정신 집중 중 아님}}",
 -- e30aee86 English: %s {{!has|does not have}} a debuff of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3603] = "%s: %s 유형 약화 효과 {{!있음|없음}}",
 -- abd3a229 English: %s {{!has|does not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3604] = "%s: 내가 건 %s 유형 약화 효과 {{!있음|없음}}",
 -- c12a1e93 English: %s {{!has|does not have}} a stealable buff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3605] = "%s: 훔칠 수 있는 강화 효과 {{!있음|없음}}",
 -- 8cf6f25f English: %s {{!have|do not have}} a stealable buff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3606] = "%s: 훔칠 수 있는 강화 효과 {{!있음|없음}}",
 -- ec3d55c7 English: %s {{!have|do not have}} a debuff of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3607] = "%s: %s 유형 약화 효과 {{!있음|없음}}",
 -- 5a1ec624 English: %s {{!have|do not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3608] = "%s: 내가 건 %s 유형 약화 효과 {{!있음|없음}}",
 -- f06faf9e English: %s {{!is|is not}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your focus target" or "closer than 10 yards"
 [3609] = "%s: %s {{!맞음|아님}}",
 -- 9f491513 English: %s class {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the class name, e.g. "Mage"
 [3610] = "%s 직업: %s {{!맞음|아님}}",
 -- 19a6a0f4 English: %s creature type {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the creature type, e.g. "Undead"
 [3611] = "%s 생물 유형: %s {{!맞음|아님}}",
 -- f7f4eee9 English: %s classification {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the unit classification, e.g. "Rare Elite"
 [3612] = "%s 분류: %s {{!맞음|아님}}",
 -- 7d66ae03 English: %s {{!is|is not}} active
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 [3613] = "%s {{!활성|비활성}}",
 -- 8f9c8fcf English: %s {{!is|is not}} active or pending
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3614] = "%s {{!활성 또는 대기 중|활성 또는 대기 중 아님}}",
 -- ad8a0ce2 English: %s {{!is|is not}} active where %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3615] = "%s {{!활성|비활성}}, 조건: %s",
 -- fb5dc62c English: %s {{!is|is not}} available
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3616] = "%s {{!사용 가능|사용 불가}}",
 -- cb0383c3 English: %s {{!is|is not}} beyond melee range
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3617] = "%s {{!근접 사거리 밖|근접 사거리 안}}",
 -- 309913f6 English: %s {{!are|are not}} beyond melee range
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3618] = "%s {{!근접 사거리 밖|근접 사거리 안}}",
 -- 03733067 English: %s {{!is|is not}} currently casting
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3619] = "%s {{!시전 중|시전 중 아님}}",
 -- a1cfb513 English: %s {{!is|is not}} currently channeling
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3620] = "%s {{!정신 집중 중|정신 집중 중 아님}}",
 -- 31089dcd English: {unit} {{!is|is not}} currently casting {spell}
 [3621] = "{unit}: {spell} {{!시전 중|시전 중 아님}}",
 -- 99f8dade English: {unit} {{!is|is not}} currently channeling {spell}
 [3622] = "{unit}: {spell} {{!정신 집중 중|정신 집중 중 아님}}",
 -- 31ab9f8e English: %s {{!is|is not}} immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3623] = "%s: %s {{!면역|면역 아님}}",
 -- 872345c0 English: %s {{!are|are not}} immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3624] = "%s: %s {{!면역|면역 아님}}",
 -- 5b36d6f3 English: %s role {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [3625] = "%s 역할: %s {{!맞음|아님}}",
 -- 72a91bd3 English: %s {{!is|is not}} in range
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3626] = "%s {{!사거리 내|사거리 밖}}",
 -- a9486ed1 English: %s {{!is|is not}} sometimes immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3627] = "%s: 가끔 %s {{!면역|면역 아님}}",
 -- f4b3cec6 English: %s {{!are|are not}} sometimes immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3628] = "%s: 가끔 %s {{!면역|면역 아님}}",
 -- 893b04d1 English: %s {{!will|will not}} run
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [3629] = "%s {{!실행 예정|실행 안 함}}",
 -- 29755793 English: %s channeled spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3630] = "%s 정신 집중 주문 차단 {{!가능|불가}}",
 -- 372c957d English: %s spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3631] = "%s 주문 차단 {{!가능|불가}}",
 -- 970cadca English: You {{!know|do not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Fireball (spell ID 133)"
 [3632] = "%s {{!습득함|습득하지 않음}}",
 -- 6306f609 English: Your %s weapon {{!is|is not}} enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3633] = "%s 무기 마법부여 {{!있음|없음}}",
 -- 715d2919 English: Your pet {{!knows|does not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Bite (spell ID 17253)"
 [3634] = "소환수가 %s {{!습득함|습득하지 않음}}",
 -- a0f98b32 English: you {{!are|are not}} at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [3635] = "위협 수준 최소 %s, 대상 %s: {{!해당|해당 없음}}",
 -- fa0b7d5f English: you {{!are|are not}} in %s
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [3636] = "%s 상태 {{!맞음|아님}}",
 -- aaf9e864 English: your instance type {{!is|is not}} %s
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3637] = "인스턴스 유형: %s {{!맞음|아님}}",
 -- 30f15e23 English: you {{!are|are not}} in a group
 [3638] = "그룹에 {{!속해 있음|속해 있지 않음}}",
@@ -588,24 +917,33 @@ addon.translation = {
 -- 9993a0fe English: you {{!are|are not}} stealthed
 [3643] = "{{!은신 중|은신 중 아님}}",
 -- 3216151b English: you {{!are|are not}} talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [3644] = "%s 특성을 {{!배움|배우지 않음}}",
 -- 0d61ee4d English: you {{!have|do not have}} %s active
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [3645] = "%s {{!활성|비활성}}",
 -- 568fa9d4 English: you {{!have|do not have}} a %s totem active where %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3646] = "%s 토템 {{!활성|비활성}}, 조건: %s",
 -- 06e77f0d English: you {{!have|do not have}} a pet
 [3647] = "소환수 {{!있음|없음}}",
 -- 8be0937e English: you {{!have|do not have}} a pet named {name}
 [3648] = "{name} 소환수 {{!있음|없음}}",
 -- 011430be English: your primary talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3649] = "주 특성 트리: %s {{!맞음|아님}}",
 -- 1ebc1187 English: the zone's PVP status {{!is|is not}} %s
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [3650] = "지역 PvP 상태: %s {{!맞음|아님}}",
 -- 0bcca767 English: {{!in|not in}} {zone}
 [3651] = "{zone}{{!에 있음|에 없음}}",
 -- c14661e2 English: Time in combat
+-- Context: Name of the measure compared in the combat-time condition summary: how long the player
+--     has been in combat (followed by 'is at least 10 seconds').
 [3652] = "전투 시간",
 -- 33629208 English: %s {{!is|is not}} auto-repeating
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3653] = "%s {{!자동 반복 중|자동 반복 중 아님}}",
 -- 9544d41a English: Tests whether the selected spell is currently auto-repeating, such as Shoot or
 --     Auto Shot. This is different from a spell being current or queued: a queued cast alone does
@@ -651,6 +989,7 @@ addon.translation = {
 -- b9151b16 English: Assisted Combat {{!is|is not}} suggesting a spell
 [3667] = "전투 보조가 주문을 {{!제안하는 중|제안하지 않는 중}}",
 -- 43bf497e English: Assisted Combat {{!suggests|does not suggest}} %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3668] = "전투 보조가 %s 주문을 {{!제안함|제안하지 않음}}",
 -- 6c9594a9 English: Matches when Blizzard's Assisted Combat suggests this spell as the next cast.
 --     An override counts as its base spell, and the base spell as its override. With no spell
@@ -661,6 +1000,7 @@ addon.translation = {
 --     this condition is unavailable rather than false, including under NOT.
 [3670] = "전투 보조는 Retail에 있습니다(Forever에도 선언되어 있습니다). 게임이 이 캐릭터나 전문화에 제공하지 않거나 제안을 읽을 수 없으면, 이 조건은 거짓이 아니라 NOT 아래에서도 사용할 수 없음입니다.",
 -- 32c737f7 English: %s {{!is|is not}} in Blizzard's Assisted Combat rotation
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3671] = "%s 주문이 Blizzard의 전투 보조 로테이션에 {{!속함|속하지 않음}}",
 -- ae726224 English: Matches when this spell is one Blizzard's Assisted Combat can suggest for your
 --     current specialization. Its current override and its base spell count too. Use it to
@@ -681,12 +1021,21 @@ addon.translation = {
 --     cannot be read, including under NOT.
 [3676] = "클라이언트에 전투 보조 API가 없거나 그 응답을 읽을 수 없을 때만 사용할 수 없음이며, NOT 아래에서도 마찬가지입니다.",
 -- 6f6ccc8f English: rune spell %s
+-- Context: Fallback name for a rune with no known spell name; %s is the spell ID (Season of
+--     Discovery rune condition).
+-- %s #1: %s #1: the spell ID of the rune, e.g. 400000
 [3677] = "룬 주문 %s",
 -- 7bf70ccc English: rune %s
+-- Context: Fallback name for a rune with no known name; %s is the rune ID (Season of Discovery rune
+--     condition).
+-- %s #1: %s #1: the rune number, e.g. 12
 [3678] = "룬 %s",
 -- 54791384 English: you {{!have|do not have}} the rune %s engraved
+-- %s #1: %s #1: the name of the engraved rune, e.g. "Rune of the Fire"
 [3679] = "룬 %s이(가) 각인되어 {{!있음|있지 않음}}",
 -- e999d0a1 English: <rune>
+-- Context: Placeholder in the engraved-rune summary shown until a rune is chosen; keep the angle
+--     brackets.
 [3680] = "<룬>",
 -- 4e0d82c9 English: Your runes have not loaded yet. Reopen this condition shortly, or enter an ID
 --     below.
@@ -695,14 +1044,24 @@ addon.translation = {
 --     unavailable here.
 [3682] = "이 캐릭터는 룬을 각인할 수 없습니다. 아래에 ID로 입력한 룬은 유지되지만 여기서는 사용할 수 없습니다.",
 -- 7294ffa8 English: Slot %d
+-- Context: Fallback name for an equipment slot group in the rune condition's slot dropdown; %d is
+--     the slot number.
+-- %d #1: %d #1: the equipment slot category number, e.g. 5
 [3683] = "칸 %d",
 -- 1eccb682 English: Equipment Slot
+-- Context: Label of the dropdown in the rune condition: the equipment slot (chest, hands, legs ...)
+--     the rune is engraved on.
 [3684] = "장비 칸",
 -- f55862c6 English: Rune
+-- Context: Label of the dropdown in the rune condition: which rune. Also a help heading.
 [3685] = "룬",
 -- 577a2fa4 English: Rune Spell ID
+-- Context: Label of the edit box in the rune condition: the ID of a spell the rune teaches. Also
+--     part of a help heading.
 [3686] = "룬 주문 ID",
 -- b84ca6e3 English: Rune ID
+-- Context: Label of the edit box in the rune condition: the rune's own numeric ID, for runes that
+--     teach no spell. Also part of a help heading.
 [3687] = "룬 ID",
 -- a698651e English: Matches when a Season of Discovery rune is engraved on one of your equipped
 --     items. Passive runes count too, which a known-spell test cannot see.
@@ -720,33 +1079,54 @@ addon.translation = {
 [3691] = "각인은 발견의 시즌 서버에만 있습니다. 그 밖의 곳과 로그인 후 룬을 불러오기 전까지 이 조건은 거짓이 아니라 사용할 수 없음이며, NOT 아래에서도 마찬가지입니다. 7단계 어깨 룬은 각인이 아니므로 인식되지 않습니다. 이것은 죽음의 기사 룬 조건이 아닙니다.",
 -- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
 --     and evaluated.
+-- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
 [3692] = "지금은 특성을 나열할 수 없습니다 (%s). 아래에 입력한 노드 ID는 유지되고 평가됩니다.",
 -- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
 --     and evaluated.
 [3693] = "특성은 자신의 직업에 대해서만 나열할 수 있습니다. 아래에 입력한 노드 ID는 유지되고 평가됩니다.",
 -- 7417e36a English: Class talents
+-- Context: Group heading in the talent dropdown: talents shared by all specializations of the
+--     class.
 [3694] = "직업 특성",
 -- 9900921e English: Specialization talents
+-- Context: Group heading in the talent dropdown: talents of the chosen specialization only.
 [3695] = "전문화 특성",
 -- 6eaab468 English: Class and specialization talents
 [3696] = "직업 및 전문화 특성",
 -- 7d26d446 English: Hero talents: %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3697] = "영웅 특성: %s",
 -- cb9e8664 English: Tier
+-- Context: Label of the dropdown in the Classic grid talent condition: which row (tier) of talents.
 [3698] = "단계",
 -- 1ba2a4e3 English: Tier %d (level %d)
+-- Context: Entry in the talent tier dropdown; first %d is the tier number, second %d the character
+--     level at which it unlocks.
+-- %d #1: %d #1: the talent tier, 1 to 6, e.g. 3
+-- %d #2: %d #2: the character level at which the tier unlocks, e.g. 30
 [3699] = "%d단계 (레벨 %d)",
 -- 8dfbb734 English: %s (choice)
+-- Context: Talent name in the talent dropdown when the talent is one of two or more choices at a
+--     node; %s is the talent name.
+-- %s #1: %s #1: the name of a talent that is one of several choices on its node, e.g. "Improved Blink"
 [3700] = "%s (선택)",
 -- e8871b70 English: Talents
+-- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3701] = "특성",
 -- d6f5d4a1 English: Talent Node ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
 [3702] = "특성 노드 ID",
 -- 3e359295 English: Choice Entry ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
+--     choice node.
 [3703] = "선택 항목 ID",
 -- 986b4c09 English: talent node %s
+-- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
+--     12345'.
+-- %s #1: %s #1: the talent node ID, e.g. 82000
 [3704] = "특성 노드 %s",
 -- 905d8751 English: the number of ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3705] = "%s 단계 수",
 -- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
@@ -772,74 +1152,117 @@ addon.translation = {
 --     any talent change. Retail has no such trees.
 [3710] = "Forever는 예외입니다. 특성 트리는 현재 활성 구성의 세 특성 트리 중 하나이며(특성 창에 표시되는 순서), 그 점수는 특성이 바뀔 때마다 다시 읽습니다. Retail에는 이런 트리가 없습니다.",
 -- bd69e217 English: Brewmaster
+-- Context: Specialization name (Monk, tank). Used in the specialization condition.
 [3711] = "양조",
 -- de575836 English: Windwalker
+-- Context: Specialization name (Monk, melee damage). Used in the specialization condition.
 [3712] = "풍운",
 -- 7b362214 English: Mistweaver
+-- Context: Specialization name (Monk, healer). Used in the specialization condition.
 [3713] = "운무",
 -- 24983899 English: Feral
+-- Context: Specialization name (Druid, cat form damage). Used in the specialization condition.
 [3714] = "야성",
 -- 1d228f25 English: Guardian
+-- Context: Specialization name (Druid, bear form tank). Used in the specialization condition.
 [3715] = "수호",
 -- e1304437 English: Havoc
+-- Context: Specialization name (Demon Hunter, damage). Used in the specialization condition.
 [3716] = "파멸",
 -- f67321da English: Vengeance
+-- Context: Specialization name (Demon Hunter, tank). Used in the specialization condition.
 [3717] = "복수",
 -- 7e6e6092 English: Devourer
+-- Context: Specialization name (Demon Hunter, third specialization). Used in the specialization
+--     condition.
 [3718] = "포식",
 -- e1a21b9f English: Devastation
+-- Context: Specialization name (Evoker, damage). Used in the specialization condition.
 [3719] = "황폐",
 -- 9ca6fa0d English: Preservation
+-- Context: Specialization name (Evoker, healer). Used in the specialization condition.
 [3720] = "보존",
 -- 9647da85 English: Augmentation
+-- Context: Specialization name (Evoker, support damage). Used in the specialization condition.
 [3721] = "증강",
 -- 679dfacd English: One-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in one hand.
 [3722] = "한손 도끼",
 -- 763d2d16 English: Two-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in two hands.
 [3723] = "양손 도끼",
 -- f09abd25 English: Bows
+-- Context: Weapon type name (item subclass), plural: bows.
 [3724] = "활",
 -- 1105a900 English: Guns
+-- Context: Weapon type name (item subclass), plural: guns.
 [3725] = "총",
 -- 23a81b2e English: One-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in one hand.
 [3726] = "한손 둔기",
 -- 87982fd9 English: Two-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in two hands.
 [3727] = "양손 둔기",
 -- d3efea7f English: Polearms
+-- Context: Weapon type name (item subclass), plural: polearms.
 [3728] = "장창",
 -- db31cc85 English: One-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in one hand.
 [3729] = "한손 도검",
 -- 80c5ae37 English: Two-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in two hands.
 [3730] = "양손 도검",
 -- 43176c16 English: Warglaives
+-- Context: Weapon type name (item subclass), plural: warglaives.
 [3731] = "전쟁검",
 -- 62105c37 English: Staves
+-- Context: Weapon type name (item subclass), plural: staves.
 [3732] = "지팡이",
 -- bd0d3b19 English: Fist Weapons
+-- Context: Weapon type name (item subclass), plural: fist weapons.
 [3733] = "장착 무기",
 -- 72d13cd4 English: Daggers
+-- Context: Weapon type name (item subclass), plural: daggers.
 [3734] = "단검",
 -- 5cc449eb English: Thrown
+-- Context: Weapon type name (item subclass): thrown weapons.
 [3735] = "투척 무기",
 -- 806891f5 English: Crossbows
+-- Context: Weapon type name (item subclass), plural: crossbows.
 [3736] = "석궁",
 -- 7edc4dae English: Wands
+-- Context: Weapon type name (item subclass), plural: wands.
 [3737] = "마법봉",
 -- b9d0aded English: Fishing Poles
+-- Context: Weapon type name (item subclass), plural: fishing poles.
 [3738] = "낚싯대",
 -- d041f0fe English: <specialization>
+-- Context: Placeholder in the specialization summary shown until a specialization is chosen; keep
+--     the angle brackets.
 [3739] = "<전문화>",
 -- 077ba255 English: your specialization {{!is|is not}} %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
 [3740] = "내 전문화가 %s {{!맞음|아님}}",
 -- 79689782 English: Slot
+-- Context: Label of the dropdown in the weapon type condition: which equipment slot is checked.
 [3741] = "칸",
 -- d72c5ffe English: <slot>
+-- Context: Placeholder in the weapon type summary shown until a slot is chosen; keep the angle
+--     brackets.
 [3742] = "<칸>",
 -- ecdfbb4c English: <weapon type>
+-- Context: Placeholder in the weapon type summary shown until a weapon type is chosen; keep the
+--     angle brackets.
 [3743] = "<무기 유형>",
 -- cd3e4c2f English: weapon type %d
+-- Context: Fallback name for a weapon type that has no known name; %d is the item subclass number.
+-- %d #1: %d #1: the weapon type number, used when the game gives no name, e.g. 7
 [3744] = "무기 유형 %d",
 -- 5e915dd9 English: your %s slot {{!holds|does not hold}} %s
+-- %s #1: %s #1: the equipment slot, e.g. "main hand"
+-- %s #2: %s #2: the kind of item or weapon type, e.g. "Two-Handed Sword" or "Shield"
 [3745] = "내 %s 칸에 %s이(가) {{!있음|없음}}",
 -- da3a44eb English: you {{!are|are not}} mounted
 [3746] = "탈것을 {{!타고 있음|타고 있지 않음}}",
@@ -856,10 +1279,16 @@ addon.translation = {
 -- f623619b English: a boss encounter {{!is|is not}} in progress
 [3752] = "우두머리 전투가 {{!진행 중|진행 중이 아님}}",
 -- 6a7230fc English: difficulty %d
+-- Context: Fallback name for a dungeon or raid difficulty without a known name; %d is the
+--     difficulty ID.
+-- %d #1: %d #1: the difficulty ID, used when the game gives no name, e.g. 14
 [3753] = "난이도 %d",
 -- 0dc49fb5 English: Instance ID
+-- Context: Label of the edit box in the instance condition: the numeric ID of the instance.
 [3754] = "인스턴스 ID",
 -- 2454a15f English: You are in %s (instance ID %d).
+-- %s #1: %s #1: the instance name, e.g. "Molten Core"
+-- %d #2: %d #2: the instance ID, e.g. 409
 [3755] = "현재 위치: %s (인스턴스 ID %d).",
 -- f9099ef5 English: The instance you are in cannot be read right now.
 [3756] = "지금은 현재 인스턴스를 읽을 수 없습니다.",
@@ -871,38 +1300,55 @@ addon.translation = {
 -- be48718c English: the number of players in your group
 [3759] = "그룹의 플레이어 수",
 -- 567825fa English: the number of group members whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3760] = "지정된 역할이 %s인 그룹원 수",
 -- 63780dda English: the number of dead or ghost members of your group
 [3761] = "죽었거나 유령 상태인 그룹원 수",
 -- f81258cf English: hero talent tree %d
+-- Context: Fallback name for a hero talent tree that has no known name; %d is its numeric ID.
+-- %d #1: %d #1: the hero talent tree ID, e.g. 31
 [3762] = "영웅 특성 계열 %d",
 -- 9fb8f548 English: you {{!have|have not}} chosen a hero talent tree
 [3763] = "영웅 특성 계열을 {{!선택함|선택하지 않음}}",
 -- 48f1d066 English: your hero talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3764] = "영웅 특성 계열이 %s {{!임|아님}}",
 -- d18f5f74 English: <hero talent tree>
+-- Context: Placeholder in the hero talent tree summary shown until a tree is chosen; keep the angle
+--     brackets.
 [3765] = "<영웅 특성 계열>",
 -- 613b90e8 English: Any hero talent tree
 [3766] = "모든 영웅 특성 계열",
 -- f55aa333 English: Hero talent tree ID (blank for any)
 [3767] = "영웅 특성 계열 ID (비우면 모두)",
 -- dacd0c2e English: %s {{!is|is not}} glowing with a proc
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3768] = "%s에 발동 반짝임이 {{!있음|없음}}",
 -- 1f8204e7 English: Trinket Slot
+-- Context: Label of the dropdown in the item cooldown condition: use a trinket slot instead of a
+--     named item. Also a help heading.
 [3769] = "장신구 칸",
 -- a088a328 English: the cooldown on your %s
+-- %s #1: %s #1: the trinket slot, e.g. "Trinket 1"
 [3770] = "%s의 재사용 대기시간",
 -- a1b86dcf English: <trinket slot>
+-- Context: Placeholder in the item cooldown summary shown until a trinket slot is chosen; keep the
+--     angle brackets.
 [3771] = "<장신구 칸>",
 -- e949e9a1 English: your pet {{!is|is not}} %s
+-- %s #1: %s #1: the pet mood, e.g. "Happy"
 [3772] = "소환수 행복도가 %s {{!임|아님}}",
 -- ae72b05a English: <mood>
+-- Context: Placeholder in the Hunter pet happiness summary shown until a mood is chosen; keep the
+--     angle brackets.
 [3773] = "<행복도>",
 -- d203280c English: the damage in your Stagger pool
 [3774] = "Stagger 풀에 쌓인 피해량",
 -- 89eb5572 English: your Stagger as a percent of your maximum health
 [3775] = "최대 생명력 대비 Stagger 비율",
 -- 88f6385c English: %s percent
+-- Context: A percentage in a summary; %s is the number, e.g. '50 percent'.
+-- %s #1: %s #1: the percentage number, e.g. 40
 [3776] = "%s퍼센트",
 -- 132e5dce English: As a percent of maximum health
 [3777] = "최대 생명력의 비율로",
@@ -910,41 +1356,62 @@ addon.translation = {
 --     maximum health when the box is ticked.
 [3778] = "Stagger 풀에 쌓여 있는 피해량입니다. 체크하면 같은 값을 최대 생명력의 비율로 비교합니다.",
 -- 551d172c English: your Eclipse bar {{!is|is not}} heading toward %s
+-- %s #1: %s #1: the Eclipse direction, e.g. "Lunar" or "Solar"
 [3779] = "일식/월식 막대가 %s 쪽으로 {{!향함|향하지 않음}}",
 -- cc6d2f75 English: <Eclipse>
+-- Context: Placeholder in the Eclipse summary shown until a direction is chosen; keep the angle
+--     brackets.
 [3780] = "<일식/월식>",
 -- acd890d7 English: your Eclipse energy
+-- Context: Name of the measure in the Eclipse summary: the Eclipse bar value (lowercase; follows
+--     'is at least').
 [3781] = "일식/월식 에너지",
 -- 3080873d English: The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar
 --     Eclipse).
 [3782] = "일식/월식 막대의 값으로, -100(완전한 월식)부터 100(완전한 일식)까지입니다.",
 -- a3b50c47 English: State
+-- Context: Label of the dropdown in the player state condition: which state (mounted, swimming
+--     ...).
 [3783] = "상태",
 -- ec9b10a4 English: Dead
+-- Context: Option in the player state dropdown: the player is dead.
 [3784] = "사망",
 -- df1bc498 English: Ghost
+-- Context: Option in the player state dropdown: the player has released and is a ghost.
 [3785] = "유령",
 -- 4d3a12b0 English: you {{!are|are not}} dead
 [3786] = "사망 {{!상태임|상태가 아님}}",
 -- 0cc73293 English: you {{!are|are not}} a ghost
 [3787] = "유령 {{!상태임|상태가 아님}}",
 -- cf0dba5a English: you {{!are|are not}} %s
+-- %s #1: %s #1: the player state, e.g. "mounted" (this generic fallback shows a placeholder such as "<state>")
 [3788] = "%s 상태{{!임|가 아님}}",
 -- 1ff78f4d English: <state>
+-- Context: Placeholder in the player state summary shown until a state is chosen; keep the angle
+--     brackets.
 [3789] = "<상태>",
 -- fd369188 English: <measure>
+-- Context: Placeholder in the group count summary shown until a measure is chosen; keep the angle
+--     brackets.
 [3790] = "<측정 항목>",
 -- ebf940f2 English: Measure
+-- Context: Label of the dropdown in the Eclipse condition: whether to compare the bar's energy or
+--     its direction.
 [3791] = "측정 항목",
 -- 9c8a9579 English: Direction
+-- Context: Option in the Eclipse measure dropdown: the direction the bar is moving; the other
+--     option is Energy.
 [3792] = "방향",
 -- b675e8c2 English: Players in the group
 [3793] = "그룹의 플레이어",
 -- ca604d55 English: Tanks
+-- Context: Option in the group count dropdown: players with the tank role (plural).
 [3794] = "방어 전담",
 -- 7ad6d8d0 English: Healers
+-- Context: Option in the group count dropdown: players with the healer role (plural).
 [3795] = "치유 전담",
 -- 552833e2 English: Damage dealers
+-- Context: Option in the group count dropdown: players with the damage role (plural).
 [3796] = "공격 전담",
 -- 96362b07 English: Dead or ghost members
 [3797] = "죽었거나 유령 상태인 그룹원",
@@ -953,22 +1420,34 @@ addon.translation = {
 -- 98436f9a English: the percent of your group that is dead or a ghost
 [3799] = "죽었거나 유령 상태인 그룹원의 비율",
 -- 50e66626 English: the percent of your group whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3800] = "지정된 역할이 %s인 그룹원의 비율",
 -- 389a3660 English: the percent of your group counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3801] = "%s(으)로 집계되는 그룹원의 비율",
 -- 622e5828 English: the number of group members counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3802] = "%s(으)로 집계되는 그룹원 수",
 -- 658bb8cf English: ranged
+-- Context: Weapon slot in summaries: the ranged weapon (lowercase).
 [3803] = "원거리",
 -- 80c798fc English: type %s
+-- Context: Part of the instance summary; %s is the instance type, e.g. 'type Dungeon'.
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3804] = "유형 %s",
 -- 78aee9bb English: difficulty %s
+-- Context: Part of the instance summary; %s is the difficulty name, e.g. 'difficulty Heroic'.
+-- %s #1: %s #1: the difficulty name, e.g. "Heroic"
 [3805] = "난이도 %s",
 -- 5e900d17 English: ID %s
+-- Context: Part of the instance summary; %s is the instance ID number, e.g. 'ID 33'.
+-- %s #1: %s #1: the instance ID, e.g. 409
 [3806] = "인스턴스 ID %s",
 -- 08c231ad English: you {{!are|are not}} in an instance (%s)
+-- %s #1: %s #1: the instance details separated by commas, e.g. "type Raid, difficulty Heroic, ID 409"
 [3807] = "인스턴스(%s)에 {{!있음|있지 않음}}",
 -- 364397ab English: Any difficulty
+-- Context: Option at the top of the instance difficulty dropdown: do not restrict by difficulty.
 [3808] = "모든 난이도",
 -- bd945e03 English: None (use the item above)
 [3809] = "없음 (위의 아이템 사용)",
@@ -1008,6 +1487,8 @@ addon.translation = {
 --     Burning Crusade and Mists of Pandaria but not on Retail or Forever.
 [3816] = "근접 무기 대신 자동 사격이나 지팡이 사격을 측정합니다. 보조장비와 원거리 중 하나만 선택하세요. 남은 시간에는 전투 기록이 필요하므로 Classic Era, 불타는 성전, 판다리아의 안개에서는 작동하지만 리테일과 Forever에서는 작동하지 않습니다.",
 -- a8b3d1b8 English: Number of %s in combat within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3817] = "전투 중인 %s의 %s미터 이내 수",
 -- e7ccbb83 English: Count only units that are in combat. For enemies that is the ones fighting
 --     right now, not every enemy whose nameplate is visible. A unit whose combat state the game

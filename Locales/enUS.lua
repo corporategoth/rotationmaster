@@ -19,6 +19,8 @@ local S = {
 -- 465830f3
 [84] = { "/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again.", "/rm set [auto||profile]  - Switch to a specific rotation, or use automatic switching again." },
 -- d580a703
+-- Context: Name of a Built In rotation for TBC Shaman, Enhancement spec, based on an Icy Veins
+--     guide; a trailing site name in parentheses.
 [834] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Name", "Enhancement (Icy Veins)" },
 -- a97cd0b7
 [835] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Description", "Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you." },
@@ -31,84 +33,174 @@ local S = {
 -- c334526c
 [839] = { "Default.TBC.Shaman.Elemental.IcyVeins.Description", "Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism." },
 -- 6c2dcf2e
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on a Wowhead guide;
+--     the site name is in parentheses.
 [840] = { "Default.TBC.Shaman.Elemental.Wowhead.Name", "Elemental (Wowhead)" },
 -- c4c0aa4c
 [841] = { "Default.TBC.Shaman.Elemental.Wowhead.Description", "Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain Lightning on cooldown with Lightning Bolts in between (while leveling only with Elemental Mastery or Clearcasting), Flame Shock only while moving, Earth Shock to finish a target that would die before a cast lands. Same totem, shield and cooldown reminders as the Icy Veins variant." },
 -- bb13bf18
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on the NextActionTBC
+--     addon's logic; the source is in parentheses.
 [842] = { "Default.TBC.Shaman.Elemental.NextAction.Name", "Elemental (NextActionTBC)" },
 -- 2ec2f692
 [843] = { "Default.TBC.Shaman.Elemental.NextAction.Description", "NextActionTBC's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. Keeps Flame Shock on the target, Chain Lightning only against two or more enemies while above 30% mana, Lightning Bolt otherwise. Reminds you of Lightning Shield, a weapon imbue, Elemental Mastery and Bloodlust/Heroism; totems stay manual." },
 -- 6a3c6c77
+-- Context: Name of a Built In rotation for TBC Shaman, Restoration spec (the spec name
+--     Restoration).
 [844] = { "Default.TBC.Shaman.Restoration.Name", "Restoration" },
 -- e6f434e0
 [845] = { "Default.TBC.Shaman.Restoration.Description", "Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you." },
 -- 87587359
 [952] = { "AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.", "AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated." },
 -- f831a06b
+-- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1396] = { "TalentTree.Arms", "Arms" },
 -- 8d6b26d9
+-- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1397] = { "TalentTree.Fury", "Fury" },
 -- 0e97ad02
+-- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
+--     Tree dropdown of talent conditions.
 [1398] = { "TalentTree.Protection", "Protection" },
 -- 56eee6a5
+-- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
+--     talent conditions; not the magic school.
 [1399] = { "TalentTree.Holy", "Holy" },
 -- 1d79fa22
+-- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
+--     of talent conditions.
 [1400] = { "TalentTree.Retribution", "Retribution" },
 -- 5d6f7884
+-- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
+--     dropdown of talent conditions.
 [1401] = { "TalentTree.Beast Mastery", "Beast Mastery" },
 -- 03f000fc
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1402] = { "TalentTree.Marksmanship", "Marksmanship" },
 -- 8302496d
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1403] = { "TalentTree.Survival", "Survival" },
 -- 727eeac8
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1404] = { "TalentTree.Assassination", "Assassination" },
 -- 49fcf2c7
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1405] = { "TalentTree.Combat", "Combat" },
 -- fca36d62
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1406] = { "TalentTree.Subtlety", "Subtlety" },
 -- a1b14db9
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1407] = { "TalentTree.Discipline", "Discipline" },
 -- 4c764cb6
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1408] = { "TalentTree.Shadow", "Shadow" },
 -- 8a7961ab
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1409] = { "TalentTree.Blood", "Blood" },
 -- 17636dd6
+-- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
+--     and rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1410] = { "TalentTree.Frost", "Frost" },
 -- 4de5fe95
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1411] = { "TalentTree.Unholy", "Unholy" },
 -- 4309e83a
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1412] = { "TalentTree.Elemental", "Elemental" },
 -- b12b36cf
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1413] = { "TalentTree.Enhancement", "Enhancement" },
 -- 6a3c6c77
+-- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1414] = { "TalentTree.Restoration", "Restoration" },
 -- 93006d61
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1415] = { "TalentTree.Arcane", "Arcane" },
 -- c141faa8
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1416] = { "TalentTree.Fire", "Fire" },
 -- ed64274f
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1417] = { "TalentTree.Affliction", "Affliction" },
 -- c0e4afa6
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1418] = { "TalentTree.Demonology", "Demonology" },
 -- e848f2c5
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1419] = { "TalentTree.Destruction", "Destruction" },
 -- d05e07b7
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1420] = { "TalentTree.Balance", "Balance" },
 -- 454d4a9c
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1421] = { "TalentTree.Feral Combat", "Feral Combat" },
 -- 17636dd6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Frost).
 [1422] = { "Default.TBC.Mage.Frost.Name", "Frost" },
 -- 35223466
 [1423] = { "Default.TBC.Mage.Frost.Description", "Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you." },
 -- 7c2241f3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1424] = { "Default.TBC.Mage.FireIcyVeins.Name", "Fire (Icy Veins)" },
 -- 1e584220
 [1425] = { "Default.TBC.Mage.FireIcyVeins.Description", "Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball fills, Fire Blast is for moving; Blast Wave, Dragon's Breath and Flamestrike for three or more enemies. Reminders: Molten, Mage or Ice Armor, Combustion below 20% target health, mana gem, Evocation and the shared Mage utilities." },
 -- c3a8c4ee
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1426] = { "Default.TBC.Mage.FireWowhead.Name", "Fire (Wowhead)" },
 -- a335455e
 [1427] = { "Default.TBC.Mage.FireWowhead.Description", "Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority." },
 -- 93006d61
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Arcane).
 [1428] = { "Default.TBC.Mage.Arcane.Name", "Arcane" },
 -- d64a2c81
 [1429] = { "Default.TBC.Mage.Arcane.Description", "Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation." },
@@ -117,10 +209,16 @@ local S = {
 -- 6fc82107
 [1742] = { "Default.TBC.Paladin.Retribution.Wowhead.Description", "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade." },
 -- 89f00a09
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = { "Default.TBC.Paladin.Retribution.IcyVeins.Name", "Retribution (Icy Veins)" },
 -- c68e9ea0
 [1744] = { "Default.TBC.Paladin.Retribution.IcyVeins.Description", "Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once per target, Seal of Righteousness (Command only with a slow weapon, Blood or Martyr once learned), Crusader Strike, Hammer of Wrath and Judgement on cooldown, Consecration on two or more enemies, Exorcism on Undead and Demons, and Holy Shock for Holy levelers. Same reminders as the Wowhead variant." },
 -- 85d846bd
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / Twist).
 [1745] = { "Default.TBC.Paladin.Retribution.Twist.Name", "Retribution seal twisting" },
 -- 34a6a34f
 [1746] = { "Default.TBC.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist seals (level 64+, Seal of Command and Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of Command (rank 1) early and switches to Blood or Martyr in the last 0.4 seconds, Crusader Strike between twists, judges only Blood or Martyr, Exorcism and Consecration only as fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer; latency is not accounted for." },
@@ -129,6 +227,10 @@ local S = {
 -- c9c2efbf
 [1748] = { "Default.TBC.Paladin.Protection.Wowhead.Description", "Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you." },
 -- 80b938a1
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1749] = { "Default.TBC.Paladin.Protection.IcyVeins.Name", "Protection (Icy Veins)" },
 -- 3ae9045e
 [1750] = { "Default.TBC.Paladin.Protection.IcyVeins.Description", "Icy Veins' tanking, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader when nobody keeps it up, Righteousness (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, then Avenger's Shield and Hammer of Wrath on cooldown. Same reminders as the Wowhead variant without Avenging Wrath." },
@@ -141,22 +243,40 @@ local S = {
 -- 63b194ff
 [1754] = { "Default.TBC.Paladin.Holy.Wowhead.Description", "Wowhead's raid tank healing, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade." },
 -- 4396ff42
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1755] = { "Default.TBC.Hunter.Ranged.Wowsims.Name", "Ranged DPS (wowsims)" },
 -- 2b43c4a1
 [1756] = { "Default.TBC.Hunter.Ranged.Wowsims.Description", "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you." },
 -- 825c84d1
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1757] = { "Default.TBC.Hunter.Ranged.Wowhead.Name", "Ranged DPS (Wowhead)" },
 -- fb9ad1ee
 [1758] = { "Default.TBC.Hunter.Ranged.Wowhead.Description", "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended wowsims ranged premade, off by default: enable it and disable that one, or raise its priority." },
 -- 469b61e4
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1759] = { "Default.TBC.Rogue.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
 -- a600e4ad
 [1760] = { "Default.TBC.Rogue.DPS.Wowsims.Description", "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you." },
 -- 5f9b3940
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1761] = { "Default.TBC.Rogue.DPS.Wowhead.Name", "Melee DPS (Wowhead)" },
 -- 19e52877
 [1762] = { "Default.TBC.Rogue.DPS.Wowhead.Description", "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- d05e07b7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Balance).
 [1763] = { "Default.TBC.Druid.Balance.Name", "Balance" },
 -- 8177cc43
 [1764] = { "Default.TBC.Druid.Balance.Description", "Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low." },
@@ -165,14 +285,24 @@ local S = {
 -- 43a0ca32
 [1766] = { "Default.TBC.Druid.Feral.IcyVeins.Description", "Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro)." },
 -- 4c55a525
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1767] = { "Default.TBC.Druid.Feral.Wowhead.Name", "Feral (Wowhead)" },
 -- 9092413a
 [1768] = { "Default.TBC.Druid.Feral.Wowhead.Description", "Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off by default: enable it and disable that one, or raise its priority. Rip whenever it is down at four combo points and Ferocious Bite only on a target about to die (no bite-weaving); bears spend free global cooldowns on Lacerate before Swipe. Innervate when a cat runs low on mana. Otherwise the same as the Icy Veins variant." },
 -- 6a3c6c77
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Restoration).
 [1769] = { "Default.TBC.Druid.Restoration.Name", "Restoration" },
 -- da5557c1
 [1770] = { "Default.TBC.Druid.Restoration.Description", "Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you." },
 -- 469b61e4
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1771] = { "Default.TBC.Warrior.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
 -- e30bf8c3
 [1772] = { "Default.TBC.Warrior.DPS.Wowsims.Description", "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you." },
@@ -181,26 +311,50 @@ local S = {
 -- c50ff4f3
 [1774] = { "Default.TBC.Warrior.DPS.IcyVeins.Description", "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- 871d5911
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1775] = { "Default.TBC.Warrior.Protection.Wowhead.Name", "Tank (Wowhead)" },
 -- 91dfa1ce
 [1776] = { "Default.TBC.Warrior.Protection.Wowhead.Description", "Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block (with a shield equipped) against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you." },
 -- ea76d926
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1777] = { "Default.TBC.Warrior.Protection.IcyVeins.Name", "Tank (Icy Veins)" },
 -- aa141592
 [1778] = { "Default.TBC.Warrior.Protection.IcyVeins.Description", "Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you and you carry a shield. Taunting and other utility stay with you. An alternative to the recommended Wowhead tank premade, off by default: enable it and disable that one, or raise its priority." },
 -- 3adec7ba
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1779] = { "Default.TBC.Priest.DpsIcyVeins.Name", "Damage (Icy Veins)" },
 -- 9b0711bb
 [1780] = { "Default.TBC.Priest.DpsIcyVeins.Description", "Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. A Mind Flay past its first tick is cut short for a ready Mind Blast, or Shadow Word: Death above half health. Shields and healing stay with you." },
 -- ce79d246
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1781] = { "Default.TBC.Priest.DpsWowhead.Name", "Damage (Wowhead)" },
 -- fe006eaa
 [1782] = { "Default.TBC.Priest.DpsWowhead.Description", "Damage after Wowhead's guides, an alternative to the recommended Icy Veins damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your health drops, and a dying target gets spells instead of the wand. Otherwise the same as the recommended premade." },
 -- d0f0e9e6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1783] = { "Default.TBC.Priest.HealerWowhead.Name", "Healer (Wowhead)" },
 -- d31781e0
 [1784] = { "Default.TBC.Priest.HealerWowhead.Description", "Healing in a group when Holy or Discipline is your main talent tree. It advises on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and whenever ready, Renew, Power Word: Shield in emergencies, dispels, Circle of Healing or Prayer of Healing for group damage, Binding, Flash and Greater Heal, and Greater Heal rank 1 as a cheap top-up. With an enemy targeted it offers light damage." },
 -- 45321807
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1785] = { "Default.TBC.Priest.HealerIcyVeins.Name", "Healer (Icy Veins)" },
 -- e31d4277
 [1786] = { "Default.TBC.Priest.HealerIcyVeins.Description", "Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. An alternative to the recommended Wowhead healer premade, off by default: enable it and disable that one, or raise its priority." },
@@ -209,10 +363,16 @@ local S = {
 -- da4da042
 [1788] = { "Default.TBC.Warlock.DpsIcyVeins.Description", "Every talent tree from level 1 to 70. Curse, then Unstable Affliction, Immolate, Corruption and Siphon Life as learned, Shadow Bolt or Incinerate; Nightfall and Backlash procs first; Seed, Hellfire and Shadowfury for three or more enemies. Solo it drains when hurt, Life Taps, wands, and uses Drain Soul or a finisher on a dying target. Reminders: Fel Armor, Demon Armor or Demon Skin, your demon, sacrifice, Soul Link, Amplify Curse and Soulshatter. Fears and other curses stay with you." },
 -- e3790b25
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1789] = { "Default.TBC.Warlock.DpsWowhead.Name", "Drain-tank (Wowhead)" },
 -- 522ed69f
 [1790] = { "Default.TBC.Warlock.DpsWowhead.Description", "Warlock after Wowhead's guides, an alternative to the recommended Icy Veins Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the recommended premade." },
 -- e5b321d7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, WoW
+--     Forever (variant key: DPS).
 [1937] = { "Default.Forever.Rogue.DPS.Name", "Melee DPS" },
 -- f8f8f256
 [1938] = { "Default.Forever.Rogue.DPS.Description", "Melee damage for every Rogue specialization from level 1 to 60, built from Icy Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister Strike for the fifth point), Hemorrhage, Backstab when the target is not facing you, else Sinister Strike. From Stealth it opens with Premeditation, Cheap Shot when solo, Garrote for Subtlety on group elites, else Ambush or Garrote. It keeps Slice and Dice and Venom up, uses Expose Armor in groups on elites when no warrior has five Sunders, then spends five points on Rupture (Subtlety, long fights) or Eviscerate, and never builds past five. Reminders: poisons on each weapon, Kick, Blade Flurry and Adrenaline Rush on packs and elites, Cold Blood, Evasion, Feint, Thistle Tea and Preparation. Left to you: Vanish, Sprint, Kidney Shot, Blind, Sap and positioning. Forever restricts combat data, so Rotation Master lists this premade for reference and does not select it automatically yet." },
@@ -225,22 +385,36 @@ local S = {
 -- 919f756d
 [1942] = { "Default.Forever.Rogue.Subtlety.Wowhead.Description", "Wowhead's Subtlety: Premeditation and Garrote on every opener, and Vanish (then Preparation) used in the rotation to open with Garrote again once the last one has run out. Slice and Dice kept up, Expose Armor in groups, Rupture as the five-point finisher, Hemorrhage as the only builder. This spends Vanish, your escape, on damage: choose it deliberately. It applies with Subtlety as your main talent tree, Dirty Deeds talented and Premeditation known. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- 6a3c6c77
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Restoration).
 [1943] = { "Default.Forever.Shaman.Restoration.Name", "Restoration" },
 -- d54e5a0a
 [1944] = { "Default.Forever.Shaman.Restoration.Description", "Healing once Restoration is your main talent tree with 16 points (Mana Tide Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use Nature's Swiftness, Cure Poison and Cure Disease, Riptide on a target without it, Chain Heal in a group, Healing Wave. You pick who to heal by targeting them; health and mana are hidden from addons on Forever, so when to use Nature's Swiftness and Lesser Healing Wave is your call. With a hostile target and nothing to heal: Fire Nova and Chain Lightning on packs, Stormstrike and Earth Shock if you know Stormstrike, Flame Shock on elites and bosses, Lightning Bolt, then melee. Reminders: Water Shield, the Earth Shock interrupt, Mana Tide and group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf." },
 -- 4309e83a
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Elemental).
 [1945] = { "Default.Forever.Shaman.Elemental.Name", "Elemental" },
 -- 2fcd0801
 [1946] = { "Default.Forever.Shaman.Elemental.Description", "Ranged Elemental once Elemental is your main talent tree with 21 points (Lava Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid every guide recommends). Pulls with Lightning Bolt (Chain Lightning on a pack), casts only instants while moving, uses Fire Nova and Chain Lightning on three or more enemies, keeps Flame Shock up, Lava Burst on cooldown, Stormstrike and Earth Shock if you know Stormstrike, Fire Nova on Clearcasting in groups, then Lightning Bolt. Reminders: shield, weapon imbue, Searing or Magma Totem, group totems, Elemental Mastery, interrupt. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call. Left to you: Earthbind kiting, Frost Shock, Purge and other totems." },
 -- d580a703
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1947] = { "Default.Forever.Shaman.Enhancement.Name", "Enhancement (Icy Veins)" },
 -- 339ec7e4
 [1948] = { "Default.Forever.Shaman.Enhancement.Description", "Melee Enhancement from level 1 to 60, and the default for any Shaman before Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on cooldown, an instant Lightning Bolt at five Maelstrom Weapon stacks, Fire Nova (with a Fire totem down) and Flame Shock on three or more enemies, Earth Shock into the Stormstrike debuff, Flame Shock in groups, and Earth Shock on cooldown; Lightning Bolt fills the gap while the target is out of reach. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call (the Wowhead premade saves mana instead). Reminders: weapon imbue (Windfury, else Flametongue, else Rockbiter), Water or Lightning Shield, the Earth Shock interrupt, Searing or Magma Totem, group totems, Rage of the Farseer, Stoneclaw Totem. Left to you: totem presets, Frost Shock, Purge and other totems." },
 -- eb2363b2
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1949] = { "Default.Forever.Shaman.Enhancement.Wowhead.Name", "Enhancement, mana-efficient (Wowhead)" },
 -- abc72f43
 [1950] = { "Default.Forever.Shaman.Enhancement.Wowhead.Description", "Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority." },
 -- 7e8fd1de
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS).
 [1951] = { "Default.Forever.Warlock.DPS.Name", "All trees" },
 -- 157e4fa1
 [1952] = { "Default.Forever.Warlock.DPS.Description", "Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate and Bane of Agony (Destruction precasts Shadow Bolt), uses Nightfall and Decimation procs, keeps Demonic Brand up with Searing Pain. While moving it casts only instants. On packs: Hellfire in a group, Rain of Fire, Corruption and Agony. Then Bane of Doom on elites and bosses or Bane of Agony, Curse of the Elements in groups and on elites, Immolate, Corruption, Siphon Life, Conflagrate and Shadowburn; solo it fills with Wrack, Drain Life (with a drain talent) or the wand; otherwise Incinerate or Shadow Bolt. Reminders: armor, a demon (Succubus, else Voidwalker, else Imp), Fel Domination, Demonic Sacrifice with Demonic Pact, Soul Link, weapon stones, Amplify Curse and Bane of Havoc for a second enemy. Left to you: sending the pet in, other curses, Fear, Healthstones and other targets. Health and mana are hidden from addons on Forever, so the execute window (Drain Soul, Shadowburn as the killing blow), Life Tap, Health Funnel and draining when hurt are your call." },
@@ -249,10 +423,18 @@ local S = {
 -- 8573424f
 [1954] = { "Default.Forever.Warlock.DPS.IcyVeins.Description", "Icy Veins' Warlock leveling: the wand is the solo filler, Voidwalker is the default demon, Affliction and Destruction sacrifice their demon and play without one (from 41 and 55), Demonology keeps Demonic Brand up and uses Immolate only as a filler, and Destruction puts Bane of Havoc on the durable enemy of a pack and Conflagrates on cooldown once Incinerate is known. Choose it instead of the recommended Warlock premade if you follow Icy Veins. Health, mana and time to die are hidden from addons on Forever, so Drain Life when hurt, Life Tap and which targets will live long enough for DoTs are your call. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- b9f016be
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1955] = { "Default.Forever.Warlock.DPS.Wowhead.Name", "All trees (Wowhead)" },
 -- 02cc5c3e
 [1956] = { "Default.Forever.Warlock.DPS.Wowhead.Description", "Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight; health and mana are hidden on Forever, so Life Tap is your call), Demonology keeps Demonic Brand up and Agonies only big targets, Destruction puts Agony, Corruption and Immolate on every mob, Conflagrates just before Immolate ends, saves Shadowburn for the killing blow and wands with the Voidwalker. Amplify Curse on every cooldown; Curse of the Elements and Bane of Doom only on elites and bosses; no pack section. Wowhead's guides stop at level 30. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- 80b938a1
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1957] = { "Default.Forever.Warrior.Protection.Name", "Protection (Icy Veins)" },
 -- 95bdeac5
 [1958] = { "Default.Forever.Warrior.Protection.Description", "Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies Thunder Clap on cooldown, Demoralizing Shout, Shield Slam, Revenge and Rend. On one target: Shield Slam, Revenge, Demoralizing Shout, Rend, Sunder Armor (five on elites) and Thunder Clap on dangerous targets. Reminders: Battle Shout, Bloodrage, Shield Bash, Shield Block while you hold the target, Heroic Strike while Shield Slam and Revenge are both recovering, Cleave on packs; Taunt and Shield Wall are listed but off. Rage, health and the target's mana are hidden from addons on Forever, so the rage thresholds, casters and Last Stand are your call. Left to you: swapping to Battle Stance to Charge before Vanguard, taunting other enemies and picking up loose ones." },
@@ -269,6 +451,8 @@ local S = {
 -- 469a4f88
 [1964] = { "Default.Forever.Warrior.DPS.WarcraftTavern.Description", "Warcraft Tavern's always-spend list for groups and raids: five Sunder Armors first, Execute above everything below 20%, Overpower, Rend until Bloodthirst, Mortal Strike, Bloodthirst, Whirlwind, Spearing Strike on cooldown, Slam once Improved Slam is taken; Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold or spare-rage Hamstring), Recklessness on cooldown with Death Wish beside it. Choose it instead of the Icy Veins premade if you play in groups and do not need to save rage between pulls. An alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
 -- d05e07b7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Balance).
 [1965] = { "Default.Forever.Druid.Balance.Name", "Balance" },
 -- fdac9d3d
 [1966] = { "Default.Forever.Druid.Balance.Description", "Balance from level 1 to 60, and the default for any Forever Druid no other premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while moving, refreshes Moonfire, Insect Swarm and, in a group, Faerie Fire. Hurricane when three or more enemies are fighting you, then your own Moonfire and Insect Swarm, Starfire while Eclipse charges or Clearcasting are up, and Wrath; when you cannot afford Wrath it lets you melee. Health and mana are hidden from addons on Forever, so healing yourself and judging whether a target is worth a DoT are your call. Reminders: Mark of the Wild, Thorns while solo, Moonkin Form, a pre-pull Rejuvenation while solo, Nature's Grasp when a mob is on you, Innervate whenever it is ready in combat while solo. Form changes, crowd control, Barkskin and target choice stay with you. Built from level-30 beta guides; level 31–60 steps follow the class design and are untested." },
@@ -281,6 +465,8 @@ local S = {
 -- 420ae9f2
 [1970] = { "Default.Forever.Druid.Feral.Description", "Cat and Bear in one premade, chosen by your form; it takes over once Feral is your main talent tree (or has 11 points), or when you shift into Cat or Bear Form. Cat: Ravage or Shred from Prowl, Faerie Fire, Rip at four combo points, Ferocious Bite once Rip runs, Rake, then Shred when the target is not facing you (Claw otherwise). Bear: Faerie Fire and Feral Charge at range, Demoralizing Roar in a group or on two enemies, Primal Bite, Swipe on three or more, Lacerate, Swipe. In caster form it suggests Cat Form (Bear before you have Cat). Reminders: Maul whenever you can afford it in Bear Form, Enrage, Berserk on big pulls or elites, Innervate while solo, Mark of the Wild, Thorns. Health, energy, rage and mana are hidden from addons on Forever, so powershifting, Frenzied Regeneration and healing yourself are your call. Taunts, interrupts and positioning stay with you." },
 -- 6a3c6c77
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Restoration).
 [1971] = { "Default.Forever.Druid.Restoration.Name", "Restoration" },
 -- 2bcf6375
 [1972] = { "Default.Forever.Druid.Restoration.Description", "Group healing after Warcraft Tavern, once Restoration is your main talent tree with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild Growth, Regrowth and Rejuvenation when missing, Healing Touch. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing. On a hostile target: Moonfire, Insect Swarm, Wrath. Reminders: Innervate in combat, Nature's Swiftness on a friendly target in combat, Remove Curse and Abolish Poison, Mark of the Wild; Tranquility is yours. You pick who to heal and the spell rank; solo Restoration uses the Balance premade." },
@@ -289,14 +475,26 @@ local S = {
 -- 62addd5b
 [1974] = { "Default.Forever.Druid.RestorationIcyVeins.Description", "Icy Veins' HoT-first healing, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs running, Swiftmend on a HoT target, then Wild Growth (health is hidden on Forever, so the target you pick decides who is healed). Innervate on cooldown. Otherwise the same reminders and hostile-target list as the Restoration premade." },
 -- 8335d07b
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1975] = { "Default.Forever.Hunter.Ranged.Name", "Ranged (Wowhead)" },
 -- 5c5cdd9b
 [1976] = { "Default.Forever.Hunter.Ranged.Description", "Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper Shot while Rapid Killing lasts, Auto Shot. Then your own Serpent Sting, Summon Hawk twice and Arcane Shot once on their shared cooldown (Arcane Shot on cooldown before Summon Hawk), Sniper Shot under Rapid Killing or on elites, Aimed Shot. Two or more enemies fighting you: Multi-Shot instead of Aimed Shot, Explosive Trap with three near you, Volley on five. Moving: instant shots only. A mob in melee range gets Raptor Strike and Mongoose Bite. Reminders: Aspect of the Hawk (Monkey before it), Trueshot Aura, pet calling and reviving, Rapid Fire, Bestial Wrath and Blood Fury on elites or in dungeons, Intimidation when a mob is on you. Pet commands, feeding, kiting and Feign Death stay with you; disable the pet reminders if you play Lone Wolf. It never reads your mana or anyone's health, which Forever hides from addons, so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours." },
 -- a82fce4f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1977] = { "Default.Forever.Hunter.RangedMobalytics.Name", "Ranged, mana-saving (Mobalytics)" },
 -- 530b5b4d
 [1978] = { "Default.Forever.Hunter.RangedMobalytics.Description", "Mobalytics' mana-saving leveling style, an alternative to the recommended Wowhead ranged premade, off by default: enable it and disable that one, or raise its priority. Keeps your Serpent Sting up, one Summon Hawk out, Aimed Shot (Multi-Shot on two or more enemies), and never Arcane Shot once Summon Hawk is known; its second Hawk on a healthy target is left out, as Forever hides target health. Same pull, melee, movement and reminders as the Wowhead premade." },
 -- 5f8e7ecc
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1979] = { "Default.Forever.Hunter.Survival.Name", "Survival melee (Wowhead)" },
 -- 8da10e55
 [1980] = { "Default.Forever.Hunter.Survival.Description", "Dual-wield melee Survival once Survival is your main talent tree with 21 points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise). Pull with Hunter's Mark and Serpent Sting, then Mongoose Bite, Strider Kick, Raptor Strike and Counterattack, with Explosive Trap on three or more enemies. Out of melee it shoots: Serpent Sting, Arcane Shot, Aimed Shot, Auto Shot. Reminders: Aspect of the Beast, Hunter's Mark (Expose Prey needs it), Rapid Fire and Blood Fury on elites or in dungeons, Deterrence while you hold the target's attention, pet care (health is hidden on Forever, so Mend Pet is yours). An optional Immolation Trap step is off by default." },
@@ -305,10 +503,14 @@ local S = {
 -- bce9f264
 [1982] = { "Default.Forever.Hunter.SurvivalWeave.Description", "Wowhead's in-and-out weave for a two-handed Survival Hunter, an alternative to the recommended Survival melee premade, off by default: enable it and disable that one, or raise its priority. In melee: Mongoose Bite and Raptor Strike; when Raptor Strike is more than 2.5 seconds away, Strider Kick and step out. Out of melee: Serpent Sting, Arcane Shot, Aimed Shot and Auto Shot until Raptor Strike is nearly ready, then back in. You do the moving; RM follows your range." },
 -- 17636dd6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Frost).
 [1983] = { "Default.Forever.Mage.Frost.Name", "Frost" },
 -- 115d3d5e
 [1984] = { "Default.Forever.Mage.Frost.Description", "Frost from level 1 to 60, and the Forever Mage default before talent spells (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of Frost or a frozen target (also while Frostbolt is still casting, to cancel or batch), Cone of Cold at five Winter's Chill stacks, Arcane Missiles on Missile Barrage, Frostbolt, and a wand when solo and you cannot afford Frostbolt. Moving: Ice Lance, else Fire Blast. Three or more enemies fighting you: Cone of Cold; five or more: Blizzard, or Arcane Explosion with a mob on you. Warcraft Tavern's Flamestrike and Arcane Explosion AoE is included but off. Reminders: Arcane Intellect, armor (Ice or Frost solo, Mage Armor in a group, never replacing one you chose), Ice Barrier, Counterspell, Remove Lesser Curse, Frost Nova when a mob reaches you, Cold Snap. Health and mana are hidden from addons on Forever, so finishing low targets with Fire Blast, Evocation and Ice Block are your call; Blink, kiting, Polymorph and mana gems stay with you too." },
 -- c141faa8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Fire).
 [1985] = { "Default.Forever.Mage.Fire.Name", "Fire" },
 -- 0f5f59f3
 [1986] = { "Default.Forever.Mage.Fire.Description", "Fire once Fire is your main talent tree with 11 points (Pyroblast's tier). Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three Heating Up stacks, Ice Lance on Fingers of Frost or a frozen target (Fire/Frost hybrids), Fire Blast on cooldown, Scorch to keep your five Fire Vulnerability stacks on elites, Frostfire Bolt (from 40) or Fireball, wand when solo and you cannot afford a spell. Moving: Fire Blast or Ice Lance. Four or more enemies fighting you: Flamestrike, Blast Wave, Arcane Explosion. Scorch starts the stacks only once you have Improved Scorch; a close-range Scorch is off until you enable it. Reminders: Combustion and Presence of Mind on elites, plus the Mage upkeep reminders." },
@@ -317,14 +519,22 @@ local S = {
 -- 34690108
 [1988] = { "Default.Forever.Mage.FireIcyVeins.Description", "Icy Veins' Fire leveling build without Improved Scorch, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Pulls with Pyroblast, uses Fire Blast to spend Wake of Fire, Scorch as the mob closes (target health is hidden on Forever, so its low-target finishers are yours), then Frostfire Bolt (from 40) or Fireball. Same AoE, movement, wand and reminders as the Fire premade, without Combustion and Presence of Mind." },
 -- 93006d61
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Arcane).
 [1989] = { "Default.Forever.Mage.Arcane.Name", "Arcane" },
 -- c17e7c93
 [1990] = { "Default.Forever.Mage.Arcane.Description", "Arcane once Arcane is your main talent tree with 11 points and you know Arcane Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile Barrage, Arcane Blast on Clearcasting, Arcane Wrath at three Arcane Blast stacks, Arcane Blast up to four stacks on elites and two on other targets while you can afford it (mana is hidden on Forever), then Frostfire Bolt, Frostbolt or Fireball to fish for Missile Barrage, and a wand when solo and you cannot afford a spell. Without Arcane Wrath (the older beta design) Fire Blast spends the stacks. Moving: Fire Blast. Three or more enemies fighting you: Arcane Explosion. Reminders: Presence of Mind and Arcane Power on elites (Arcane Power no longer waits for half your mana), plus the Mage upkeep reminders." },
 -- 1d79fa22
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Retribution).
 [1991] = { "Default.Forever.Paladin.Retribution.Name", "Retribution" },
 -- 4d5c0907
 [1992] = { "Default.Forever.Paladin.Retribution.Description", "Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged once on an elite target, then Seal of Command with a slow (3.0 s) weapon, else Seal of Righteousness. Then Holy Strike on cooldown, Holy Shock and Light's Vigil for a Shockadin, Exorcism on Undead and Demons, Consecration on three or more enemies, Hammer of Wrath when it can be cast, and melee. Judgement is off the global cooldown, so it is a reminder whenever a seal is up. Other reminders: your aura and Blessing (Retribution Aura and Kings once learned; yours are kept). Optional step, off by default: Hammer of Justice before a Seal of Command Judgement. Mana, health and the swing timer are hidden from addons on Forever, so mana saving, healing yourself, Lay on Hands and Twist of Light seal swapping are your call. Built from level-30 beta guides." },
 -- 2ba64aad
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1993] = { "Default.Forever.Paladin.Protection.Name", "Protection (Wowhead)" },
 -- 65aad40e
 [1994] = { "Default.Forever.Paladin.Protection.Description", "Tanking, once Protection is your main talent tree or you turn on Righteous Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt), Swift Judgement to reset it. Two or more enemies engaged: Consecration, Exorcism and Holy Wrath on Undead and Demons, Holy Strike. One enemy: Exorcism on Undead and Demons, Holy Strike, Consecration. Reminders: Righteous Fury, Seal of Fury, Judgement on cooldown, Holy Shield while tanking, your aura and Blessing. Health and mana are hidden from addons on Forever, so Templar's Bulwark and Lay on Hands are your call. Pulling, positioning and other taunts stay with you." },
@@ -333,6 +543,8 @@ local S = {
 -- 7d470fde
 [1996] = { "Default.Forever.Paladin.ProtectionIcyVeins.Description", "Icy Veins' tanking style, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Consecration first whenever you can afford it, on one enemy too; Judgement is kept for taunts (no on-cooldown reminder), with Swift Judgement to reset it; then Holy Strike and Exorcism on Undead and Demons. Same tank reminders otherwise." },
 -- 56eee6a5
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Holy).
 [1997] = { "Default.Forever.Paladin.Holy.Name", "Holy" },
 -- 23d8ec27
 [1998] = { "Default.Forever.Paladin.Holy.Description", "Group healing once Holy is your main talent tree with 21 points (Holy Shock's tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current friendly target: Holy Shock on a target with your Light's Vigil, Light's Vigil in combat, Cleanse or Purify, Holy Shock while moving, Holy Light with Infusion of Light, Flash of Light as the main heal. On an enemy: Judgement of Light when Seal of Light is up, Holy Shock, Light's Vigil, Holy Strike, Exorcism. Reminders: Seal of Light when you have no seal, Divine Favor in combat on a friendly target, your aura and Blessing. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency Holy Shocks, big Holy Lights and Lay on Hands are your call." },
@@ -353,6 +565,9 @@ local S = {
 -- 787c3a6e
 [2006] = { "Default.Forever.Priest.Healer.Description", "Group healing once Discipline or Holy is your main talent tree and you do not know Shadowform. Heals your current friendly target: before the pull Power Word: Shield, Prayer of Mending and Renew; Dispel Magic and Abolish or Cure Disease; Prayer of Mending; Holy Nova on Holy Purpose; Penance; Renew when missing; Heal (Lesser Heal before it). On an enemy: Shadow Word: Pain, Holy Fire, Penance, Smite, wand. Reminders: Inner Fire, Fortitude, Divine Spirit, Power Infusion on another player, Inner Focus in combat and the racial spells. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency heals, Prayer of Healing, Binding Heal, Greater and Flash Heal, Desperate Prayer and Dark Sacrifice are your call. You pick who to heal and the rank; a Discipline healer before Penance (20–29) selects it by hand." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Blood). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2007] = { "Default.Retail.DeathKnight.Blood.Name", "Blizzard Assisted" },
 -- d2ca4d91
 [2008] = { "Default.Retail.DeathKnight.Blood.Description", "Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Vampiric Blood and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call. Active mitigation timing, Anti-Magic Shell, taunts and trinkets stay with you." },
@@ -361,10 +576,17 @@ local S = {
 -- 8314e483
 [2010] = { "Default.Retail.DeathKnight.BloodGuide.Description", "Reference only, off by default: the guides' Blood priority. In Midnight combat your buffs and the target's debuffs are hidden from addons, so the steps that read them wait there; read it, or clone it to experiment. Health and runic power are hidden on Retail, so Death Strike is used whenever you can afford it. Pulls with Death's Caress. Death Strike; Marrowrend (Death's Caress out of melee) when Bone Shield is missing, under five charges, about to expire, or Exterminate is up; during Gift of the San'layn, Death Strike, one Blood Boil, Death and Decay on Crimson Scourge and Heart Strike; Death and Decay on Crimson Scourge or four enemies; Vampiric Strike; Consumption; Blood Boil on Boiling Point, a missing Blood Plague or full charges; Heart Strike. Reminders: Raise Dead, Vampiric Blood, Reaper's Mark, Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders." },
 -- 2b5ecbd1
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2011] = { "Default.Retail.DeathKnight.BloodSimc.Name", "Deathbringer reference (SimulationCraft)" },
 -- 8ed0754d
 [2012] = { "Default.Retail.DeathKnight.BloodSimc.Description", "Reference only, off by default: SimulationCraft's Deathbringer list, which spends runic power on Death Strike for damage. Hidden combat data keeps it from running in Midnight combat, and runic power is hidden on Retail, so there is no cap dump. Death and Decay whenever it is down, Reaper's Mark, Marrowrend on Exterminate, Death's Caress for Bone Shield while runes are short (else Marrowrend), Death Strike, Blood Boil, Consumption outside Dancing Rune Weapon, Heart Strike. Reminders: Raise Dead, Dancing Rune Weapon, Vampiric Blood and the utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2013] = { "Default.Retail.DeathKnight.Frost.Name", "Blizzard Assisted" },
 -- 9750dd93
 [2014] = { "Default.Retail.DeathKnight.Frost.Description", "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Breath of Sindragosa and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call." },
@@ -373,10 +595,18 @@ local S = {
 -- 91f86ae6
 [2016] = { "Default.Retail.DeathKnight.FrostGuide.Description", "Reference only, off by default: the guides' Frost priority. Killing Machine, Rime and Razorice are hidden in Midnight combat, so it cannot run there; runic power is hidden on Retail, so there is no cap check. Obliterate on two Killing Machines or one with three runes, Frost Strike into five Razorice with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike, Obliterate; three or more enemies swap in Frostscythe and Glacial Advance; Howling Blast out of melee. Reminders: Remorseless Winter, Pillar of Frost, Breath of Sindragosa and Frostwyrm's Fury in Pillar, Reaper's Mark, Raise Dead, Empower Rune Weapon at two charges, plus the utility reminders." },
 -- 0d4e8b80
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2017] = { "Default.Retail.DeathKnight.FrostWowhead.Name", "Reference (Wowhead)" },
 -- 6899840b
 [2018] = { "Default.Retail.DeathKnight.FrostWowhead.Description", "Reference only, off by default: Wowhead's Frost order, which puts its cooldowns in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is hidden on Retail, so there is no cap check. Empower Rune Weapon at two charges, Reaper's Mark, Pillar of Frost, Breath of Sindragosa, Frostwyrm's Fury; then Obliterate on two Killing Machines or one with Exterminate, Howling Blast on Rime, Obliterate on Killing Machine, Empower Rune Weapon for a new one, Frost Strike, Obliterate, Howling Blast. Three or more enemies swap in Frostscythe and Glacial Advance." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Unholy). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2019] = { "Default.Retail.DeathKnight.Unholy.Name", "Blizzard Assisted" },
 -- c11d2249
 [2020] = { "Default.Retail.DeathKnight.Unholy.Description", "Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it raises your ghoul and uses Army of the Dead and Dark Transformation itself); it waits while you cast or channel. Alongside it: Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call." },
@@ -385,14 +615,25 @@ local S = {
 -- d0121955
 [2022] = { "Default.Retail.DeathKnight.UnholyGuide.Description", "Reference only, off by default: the guides' Unholy priority. Procs and plagues are hidden in Midnight combat, so it cannot run there; runic power and the target's health are hidden on Retail, so the execute window and the San'layn runic power spend are left out. Raise Dead without a ghoul; Festering Scythe to keep its plague haste up; Soul Reaper on Reaping; Putrefy during Dark Transformation; Death Coil (Epidemic on four or more enemies) on Sudden Doom or Forbidden Knowledge; Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Reminders: Army of the Dead, Dark Transformation, Outbreak when your plagues are missing, plus the utility reminders." },
 -- df190019
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2023] = { "Default.Retail.DeathKnight.UnholySimc.Name", "Reference (SimulationCraft)" },
 -- 100d5361
 [2024] = { "Default.Retail.DeathKnight.UnholySimc.Description", "Reference only, off by default: SimulationCraft's Unholy list, which spends Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic power and target health are hidden on Retail, so the cap and execute checks are left out. Festering Scythe upkeep, Soul Reaper in Dark Transformation, Death Coil on Sudden Doom, Putrefy in Dark Transformation, Death Coil in Dark Transformation or Forbidden Knowledge and whenever Army of the Dead is over 5 seconds away, Scourge Strike with Lesser Ghoul charges, Festering Strike. Three or more enemies: Epidemic for Death Coil and Festering Strike below three charges. Reminders: Outbreak, Death and Decay on packs, Army of the Dead, Dark Transformation." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2025] = { "Default.Retail.DeathKnight.Initial.Name", "Blizzard Assisted" },
 -- 16bdde1a
 [2026] = { "Default.Retail.DeathKnight.Initial.Description", "Recommended before you choose a specialization (while the game reports the Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Death Knight premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Havoc). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2027] = { "Default.Retail.DemonHunter.Havoc.Name", "Blizzard Assisted" },
 -- c4a310af
 [2028] = { "Default.Retail.DemonHunter.Havoc.Description", "Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the game's assistant leaves to you: Metamorphosis and The Hunt in combat, Vengeful Retreat if you have Inertia or Exergy, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Movement, Darkness and trinkets stay with you." },
@@ -401,6 +642,9 @@ local S = {
 -- 6f8624ec
 [2030] = { "Default.Retail.DemonHunter.HavocGuide.Description", "Reference only, off by default: the guides' Havoc priority. Your procs, Metamorphosis and Essence Break are hidden from addons in Midnight combat, so this list cannot run there; read it, or clone it to experiment. Fury is hidden on Retail, so Felblade does not wait for room. Aldrachi Reaver: Reaver's Glaive when neither Rending Strike nor Glaive Flurry is up, Chaos Strike on Rending Strike. Fel-Scarred: Essence Break, Blade Dance and Chaos Strike in Metamorphosis. Then Blade Dance and Chaos Strike inside Essence Break, Immolation Aura at two charges, Eye Beam, Felblade for Inertia, Essence Break when Eye Beam is over 4 seconds away, Blade Dance, Immolation Aura on two enemies, Chaos Strike, Felblade, Immolation Aura, Throw Glaive, Fel Rush. Reminders: Metamorphosis once Eye Beam and Blade Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Vengeance). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2031] = { "Default.Retail.DemonHunter.Vengeance.Name", "Blizzard Assisted" },
 -- ad54981d
 [2032] = { "Default.Retail.DemonHunter.Vengeance.Description", "Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the assistant leaves to you: Demon Spikes, Fiery Brand, Fel Devastation and Metamorphosis whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Infernal Strike, Darkness, taunts and trinkets stay with you." },
@@ -409,26 +653,50 @@ local S = {
 -- 74b5fdc3
 [2034] = { "Default.Retail.DemonHunter.VengeanceGuide.Description", "Reference only, off by default: Wowhead's Vengeance order with Icy Veins' hero-tree goals. Your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so spenders wait only for their cost and builders do not avoid capping. Aldrachi Reaver: Reaver's Glaive, Fracture on Rending Strike, Soul Cleave on Glaive Flurry. Then Fracture at full charges, Spirit Bomb on three or more enemies, Immolation Aura, Sigil of Flame, Soul Cleave against one target, Fel Devastation, Soul Cleave, Fracture, Felblade, Throw Glaive. Rotation Master cannot count Soul Fragments, so Spirit Bomb follows the enemy count. Reminders: Demon Spikes when it is down, Metamorphosis, Fiery Brand, Sigil of Spite, Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur." },
 -- df190019
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2035] = { "Default.Retail.DemonHunter.VengeanceSimc.Name", "Reference (SimulationCraft)" },
 -- d4f52cf1
 [2036] = { "Default.Retail.DemonHunter.VengeanceSimc.Description", "Reference only, off by default: SimulationCraft's Vengeance lists. Hidden combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its Fury thresholds are left out. Aldrachi Reaver: Sigil of Flame and Immolation Aura first, Metamorphosis, the Reaver's Glaive cycle with Felblade, Fiery Brand, Sigil of Spite, Spirit Bomb on packs, Soul Carver in Fiery Demise, then Fracture, Soul Cleave, Felblade, Fel Devastation. Annihilator: spend a ready Voidfall with Spirit Bomb or Soul Cleave, Fracture at two Voidfall stacks, Metamorphosis, Spirit Bomb, Sigil of Spite, Fracture at full charges, Immolation Aura, Sigil of Flame, Fracture, Soul Cleave, Felblade, Throw Glaive. Reminders: Demon Spikes, Disrupt, Blur." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Devourer). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2037] = { "Default.Retail.DemonHunter.Devourer.Name", "Blizzard Assisted" },
 -- ca03d1af
 [2038] = { "Default.Retail.DemonHunter.Devourer.Description", "Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel Void Ray. Alongside it, reminders for what the assistant leaves to you: Void Metamorphosis, The Hunt and Voidblade whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2039] = { "Default.Retail.DemonHunter.DevourerGuide.Name", "Reference (Icy Veins)" },
 -- 5da6da74
 [2040] = { "Default.Retail.DemonHunter.DevourerGuide.Description", "Reference only, off by default: Icy Veins' Annihilator priority. Most of your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so Void Ray waits only for its cost. Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation when it is not burning, Voidblade and The Hunt once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray, Consume. Inside it: Devour on Soulburst, Void Ray, the Void-Scarred strikes if you have them, Collapsing Star, Cull, Devour, Soul Immolation. Rotation Master cannot count Soul Fragments, so Reap and Cull go on cooldown. Reminders: Disrupt and Blur." },
 -- df190019
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2041] = { "Default.Retail.DemonHunter.DevourerSimc.Name", "Reference (SimulationCraft)" },
 -- 0228846e
 [2042] = { "Default.Retail.DemonHunter.DevourerSimc.Description", "Reference only, off by default: SimulationCraft's Annihilator list, which enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in Midnight combat. Outside: Voidblade with Devourer's Bite on up to three enemies and a full Void Metamorphosis, Void Metamorphosis, Consume on Soulburst, Reap, Void Ray, Soul Immolation on packs, Consume. Inside: Devour on Soulburst against one target, The Hunt and Voidblade with Devourer's Bite, Void Ray on packs, Collapsing Star, Cull, Void Ray, Soul Immolation, Devour. Reminders: Disrupt and Blur." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2043] = { "Default.Retail.DemonHunter.Initial.Name", "Blizzard Assisted" },
 -- a6d0d810
 [2044] = { "Default.Retail.DemonHunter.Initial.Description", "Recommended before you choose a specialization (while the game reports the Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Demon Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Balance). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2045] = { "Default.Retail.Druid.Balance.Name", "Blizzard Assisted" },
 -- 3941b2ad
 [2046] = { "Default.Retail.Druid.Balance.Description", "Recommended for Balance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation) in combat, Solar Beam on an interruptible cast, Moonkin Form and Mark of the Wild between pulls, and Barkskin and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Solar Beam lights only where the game shows them; health is hidden on Retail, so when to use Barkskin is your call." },
@@ -437,6 +705,9 @@ local S = {
 -- 9253fca4
 [2048] = { "Default.Retail.Druid.BalanceGuide.Description", "Reference only, off by default: the guides' Balance priority. Your DoTs, Eclipse and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Astral Power is hidden on Retail, so Starsurge spends at its cost instead of before the cap. Pulls with Moonkin Form and Wrath. Sunfire and Moonfire when missing or about to fall off; Eclipse when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos; New, Half and Full Moon; Wild Mushroom in an Eclipse; Starsurge whenever you can afford it; Starfire in a Lunar Eclipse or on packs, else Wrath. Reminders: Celestial Alignment or Incarnation, Fury of Elune and Force of Nature before an Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Feral). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2049] = { "Default.Retail.Druid.Feral.Name", "Blizzard Assisted" },
 -- e3e320b6
 [2050] = { "Default.Retail.Druid.Feral.Description", "Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Berserk (or Incarnation) in combat, Skull Bash on an interruptible cast, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, and Cat Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use the defensives is your call." },
@@ -445,6 +716,9 @@ local S = {
 -- 2be7f2bb
 [2052] = { "Default.Retail.Druid.FeralGuide.Description", "Reference only, off by default: the guides' Feral priority. Bleeds and procs are hidden in Midnight combat (combo points are not), so it cannot run there; energy is hidden on Retail. Opens with Cat Form, Prowl and Rake. Chomp; Ferocious Bite on Apex Predator's Craving; at five combo points Primal Wrath on two or more enemies, Rip when missing or in its last seconds, else Ferocious Bite, waiting for energy rather than building past five; below five, Rake when missing or about to fall off, Lunar Inspiration Moonfire, Swipe on three or more enemies, Shred. Reminders: Tiger's Fury whenever it is ready in combat, Berserk or Incarnation and Feral or Frantic Frenzy (at two points or fewer) in Tiger's Fury, Convoke in Tiger's Fury and Berserk with Rip up, Skull Bash, Survival Instincts, plus the utility reminders. Snapshotting is left to you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Guardian). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2053] = { "Default.Retail.Druid.Guardian.Name", "Blizzard Assisted" },
 -- 2a16fe9b
 [2054] = { "Default.Retail.Druid.Guardian.Description", "Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; Assisted Combat plays for damage only. Alongside it, reminders for what it leaves to you: Berserk (or Incarnation) and Convoke the Spirits in combat, Ironfur, Frenzied Regeneration, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, Skull Bash on an interruptible cast, and Bear Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so Skull Bash lights only where the game shows them; health and rage are hidden on Retail, so when to use the defensives is your call and Ironfur cannot wait for a rage threshold." },
@@ -453,6 +727,10 @@ local S = {
 -- 32ed36e2
 [2056] = { "Default.Retail.Druid.GuardianGuide.Description", "Reference only, off by default: the guides' Guardian priority. Debuffs and procs are hidden in Midnight combat, so it cannot run there; rage and health are hidden on Retail, so the 80-rage Raze and Maul dump is left to you. Thrash and Mangle on cooldown, Red Moon on a single target, Moonfire when missing or on Galactic Guardian, Swipe. Reminders whenever they are ready in combat: Ironfur, Frenzied Regeneration, Survival Instincts; Bear Form between pulls; Berserk or Incarnation, Lunar Beam, Convoke, Heart of the Wild, Skull Bash, plus the utility reminders." },
 -- beb78fe5
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2057] = { "Default.Retail.Druid.GuardianSimc.Name", "Defensive reference (SimulationCraft)" },
 -- f0f6bfc8
 [2058] = { "Default.Retail.Druid.GuardianSimc.Description", "Reference only, off by default: SimulationCraft's Guardian list, which spends rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage is hidden on Retail, so its rage thresholds are left out. Ironfur in Berserk; Thrash when missing, about to fall off or under three stacks; Maul on Gory Fur; Thrash on three or more enemies; Mangle while Red Moon ticks; Red Moon; Mangle; Thrash; Moonfire; Swipe. Its cat-form weaving is left out. Reminders: Bear Form, Frenzied Regeneration, Survival Instincts, Berserk or Incarnation, Lunar Beam, Convoke, Skull Bash, plus the utility reminders." },
@@ -461,10 +739,16 @@ local S = {
 -- fc05cf7d
 [2060] = { "Default.Retail.Druid.Restoration.Description", "Recommended for Restoration. With an enemy targeted it highlights Blizzard's Assisted Combat suggestion, Blizzard's Restoration damage list in cat or caster form. Otherwise it suggests Icy Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence in combat, Swiftmend on a Rejuvenation, Wild Growth in a group in combat, Regrowth on Clearcasting or five Abundance stacks, Rejuvenation when missing. Health and mana are hidden on Retail, so these follow the target you choose, not how hurt anyone is; your heals over time are hidden in Midnight combat, so the steps that read them wait there. Whom to heal, and every healing cooldown, is yours. Reminders: Innervate, Barkskin and your racial cooldown whenever they are ready in combat, Mark of the Wild between pulls." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2061] = { "Default.Retail.Druid.Initial.Name", "Blizzard Assisted" },
 -- 65160bfe
 [2062] = { "Default.Retail.Druid.Initial.Description", "Recommended before you choose a specialization (while the game reports the Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Druid premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Devastation). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2063] = { "Default.Retail.Evoker.Devastation.Name", "Blizzard Assisted" },
 -- 4950c9f2
 [2064] = { "Default.Retail.Evoker.Devastation.Description", "Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast, channel Disintegrate or hold an empowered spell. Choosing the empower rank is up to you. Alongside it, reminders in combat for Dragonrage, Deep Breath and Tip the Scales, Quell on an interruptible cast and Obsidian Scales whenever it is ready, and out of combat Blessing of the Bronze when it is missing and Source of Magic on a friendly target in your group. Enemy casts are hidden in combat, so Quell lights only where the game shows them; health is hidden on Retail, so when to use Obsidian Scales is your call." },
@@ -473,22 +757,39 @@ local S = {
 -- 3db659f5
 [2066] = { "Default.Retail.Evoker.DevastationGuide.Description", "Reference only, off by default: the optimal Devastation priority. Procs, cooldowns and the target's burn are hidden in Midnight combat, so it cannot run there; read it, or clone it to experiment. Pulls with Living Flame. Scalecommander (Mass Disintegrate known): Eternity Surge, Fire Breath, Deep Breath on two or more enemies, Disintegrate with Mass Disintegrate charges, Pyre on five or more, Disintegrate, Living Flame on Burnout with Leaping Flames, Unbound Flame below two Essence Bursts, Azure Sweep. Flameshaper: Eternity Surge, Fire Breath when its burn is missing or ending, Pyre on five or more, Disintegrate, Deep Breath on four or more, Unbound Flame, Living Flame on Burnout with Leaping Flames, Azure Sweep. Then Azure Strike while moving, Living Flame, Azure Strike. Use empowers at rank 1 on one target (Icy Veins). Reminders: Dragonrage, Tip the Scales in Dragonrage or with Fire Breath ready, Deep Breath for Scalecommander, plus the utility reminders." },
 -- bf31f812
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Augmentation). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2067] = { "Default.Retail.Evoker.Augmentation.Name", "Icy Veins" },
 -- 02c50a1b
 [2068] = { "Default.Retail.Evoker.Augmentation.Description", "Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one of the few buffs the game still shows addons in Midnight combat, so its upkeep works there. Out of combat: Blistering Scales on a friendly group target without it, Living Flame on an enemy. Then Ebon Might when missing or under 4 seconds, and on cooldown unless Breath of Eons is ready; Prescience; Fire Breath; Upheaval; Eruption in Ebon Might or with two Essence Bursts; Azure Strike; Living Flame. Hidden buffs only skip their own step in combat. Reminders: Breath of Eons and Deep Breath (you aim them), Tip the Scales with Fire Breath ready, Time Skip with Fire Breath and Upheaval both cooling, plus the utility reminders. Prescience and Blistering Scales go on your target: choosing the ally, and the empower rank, is up to you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: AugmentationAssisted). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2069] = { "Default.Retail.Evoker.AugmentationAssisted.Name", "Blizzard Assisted" },
 -- 9442cdce
 [2070] = { "Default.Retail.Evoker.AugmentationAssisted.Description", "Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the recommended Icy Veins Augmentation premade, off by default: enable it and disable that one, or raise its priority. It recasts Ebon Might only after it has fallen off, and waits while you cast or hold an empowered spell. Reminders in combat for Breath of Eons, Deep Breath, Tip the Scales and Time Skip, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic as in the other Evoker premades." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2071] = { "Default.Retail.Evoker.Preservation.Name", "Reference (Icy Veins)" },
 -- 21ab41c4
 [2072] = { "Default.Retail.Evoker.Preservation.Description", "Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom to heal, and Blizzard has no Assisted Combat rotation for healers, so this premade does not heal. It reminds you of Blessing of the Bronze and Source of Magic out of combat, and when your target is an enemy it suggests damage: Fire Breath, Disintegrate, Living Flame, and Azure Strike while moving. Quell and Obsidian Scales reminders as in the other Evoker premades. Healing stays with you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2073] = { "Default.Retail.Evoker.Initial.Name", "Blizzard Assisted" },
 -- 63133e23
 [2074] = { "Default.Retail.Evoker.Initial.Description", "Recommended before you choose a specialization (while the game reports the Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Evoker premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: BeastMastery). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2075] = { "Default.Retail.Hunter.BeastMastery.Name", "Blizzard Assisted" },
 -- c71902c5
 [2076] = { "Default.Retail.Hunter.BeastMastery.Description", "Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Bloodshed and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call. Trinkets, Misdirection and pet care stay with you." },
@@ -497,6 +798,9 @@ local S = {
 -- cad4949f
 [2078] = { "Default.Retail.Hunter.BeastMasteryGuide.Description", "Reference only, off by default: the optimized Beast Mastery priority. Charges, cooldowns and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Focus is hidden on Retail. Calls your pet, marks the target before the pull. Barbed Shot just before Bestial Wrath or before it caps; Bestial Wrath; Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off; Cobra Shot on Cobra Fang; Cobra Shot; Barbed Shot when Cobra Shot is unaffordable. Dark Ranger: Black Arrow during Withering Fire and Wailing Arrow as it ends. Three or more enemies (two with Beast Cleave): Wild Thrash to start Beast Cleave, then Kill Command, Barbed Shot and Cobra Shot while it lasts. Reminders: Bloodshed and the Assisted premade's utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Marksmanship). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2079] = { "Default.Retail.Hunter.Marksmanship.Name", "Blizzard Assisted" },
 -- 494a0bb6
 [2080] = { "Default.Retail.Hunter.Marksmanship.Description", "Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Trueshot and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call." },
@@ -505,18 +809,32 @@ local S = {
 -- d525da1a
 [2082] = { "Default.Retail.Hunter.MarksmanshipGuide.Description", "Reference only, off by default: the optimized Marksmanship priority, which spends Precise Shots before the next Aimed Shot. Procs and charges are hidden in Midnight combat, so it cannot run there; Focus is hidden on Retail, so the 70-Focus Multi-Shot dump on packs is left out. Marks the target and opens with Aimed Shot. Sentinel: Explosive Shot, Volley, Trueshot, Moonlight Chakram before its window ends, Aimed Shot in Trueshot without Precise Shots, Rapid Fire, Kill Shot, Multi-Shot (two enemies with Aspect of the Hydra) or Arcane Shot on Precise Shots, Aimed Shot, Moonlight Chakram, Steady Shot. Dark Ranger: Black Arrow on Precise Shots first, no Explosive Shot during Lock and Load, Aimed Shot before it caps, Wailing Arrow. Three or more enemies with Trick Shots: Explosive Shot, Volley, Multi-Shot to apply Trick Shots, Trueshot, then Rapid Fire and Aimed Shot while it lasts. Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Survival). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2083] = { "Default.Retail.Hunter.Survival.Name", "Blizzard Assisted" },
 -- fc59d6b9
 [2084] = { "Default.Retail.Hunter.Survival.Description", "Recommended for Survival. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Takedown and your racial cooldown in combat, Muzzle on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call." },
 -- df190019
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2085] = { "Default.Retail.Hunter.SurvivalGuide.Name", "Reference (SimulationCraft)" },
 -- 1b766914
 [2086] = { "Default.Retail.Hunter.SurvivalGuide.Description", "Reference only, off by default: SimulationCraft's Survival priority, where Kill Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike spend it. Tip of the Spear and charges are hidden in Midnight combat, so it cannot run there. Calls your pet, marks the target and opens with Wildfire Bomb. Sentinel: Kill Command without Tip of the Spear, Boomstick, Wildfire Bomb on Sentinel's Mark, Kill Command before a ready Takedown, Takedown, Moonlight Chakram, Raptor Strike, then Kill Command, Wildfire Bomb and Takedown. Pack Leader: Kill Command on Howl of the Pack Leader, then Takedown, Wildfire Bomb, Boomstick and Raptor Strike with Tip of the Spear. Three or more enemies: Boomstick and Wildfire Bomb before Takedown, Raptor Swipe. Reminders: Aspect of the Eagle out of melee and the utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2087] = { "Default.Retail.Hunter.Initial.Name", "Blizzard Assisted" },
 -- ea9140e9
 [2088] = { "Default.Retail.Hunter.Initial.Description", "Recommended before you choose a specialization (while the game reports the Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Arcane). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2089] = { "Default.Retail.Mage.Arcane.Name", "Blizzard Assisted" },
 -- 074da909
 [2090] = { "Default.Retail.Mage.Arcane.Description", "Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Arcane Surge in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Prismatic Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call. Mirror Image, Alter Time, Blink and trinkets stay with you." },
@@ -525,6 +843,9 @@ local S = {
 -- ade56803
 [2092] = { "Default.Retail.Mage.ArcaneGuide.Description", "Reference only, off by default: the guides' Arcane priority. Arcane Salvo and Clearcasting are hidden from addons in Midnight combat (only Arcane Charges stay visible), so it cannot run there; mana is hidden on Retail, so the low-mana Evocation is yours; read it, or clone it to experiment. Pulls with Arcane Blast. Sunfury: Arcane Missiles on Clearcasting below 12 Salvo, Prismatic Bolt outside Arcane Soul, Arcane Barrage at four charges with 12 Salvo and Clearcasting or 25 Salvo, or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on three enemies or at no charges, Arcane Blast. Spellslinger (Splintering Sorcery known): Prismatic Bolt, Orb on packs, Barrage at 20 Salvo (only at four charges against two or more enemies), Missiles on Clearcasting below 15 Salvo, Orb and Pulse below three charges (no Pulse in Arcane Surge), Arcane Blast. Arcane Barrage when Blast cannot be cast. Reminders: Arcane Surge, Touch of the Magi after a Barrage or Prismatic Bolt in or well before Surge, Presence of Mind at no charges after a Barrage, plus the Assisted premade's reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Fire). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2093] = { "Default.Retail.Mage.Fire.Name", "Blizzard Assisted" },
 -- 42f4c6c3
 [2094] = { "Default.Retail.Mage.Fire.Description", "Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Combustion in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Blazing Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call." },
@@ -533,6 +854,9 @@ local S = {
 -- 77d0e2fa
 [2096] = { "Default.Retail.Mage.FireGuide.Description", "Reference only, off by default: the guides' Fire priority. Hot Streak, Heating Up, Pyroclasm and Fire Blast charges are hidden in Midnight combat, so it cannot run there. Fire Blast while a cast is finishing to turn Heating Up into Hot Streak; pulls with Pyroblast. Pyroblast (Flamestrike on four or more enemies) on Hyperthermia, Meteor, Pyroblast on Hot Streak, Fire Blast on Heating Up inside Combustion, Pyroblast on Pyroclasm, Scorch on Heat Shimmer or while moving, Fire Blast on Heating Up, then Frostfire Bolt or Fireball. Reminders: Combustion as a hard cast finishes, Blazing Barrier and the utility reminders. Waiting for Firestarter and timing Meteor into Combustion stay with you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2097] = { "Default.Retail.Mage.Frost.Name", "Blizzard Assisted" },
 -- 4d8c78c6
 [2098] = { "Default.Retail.Mage.Frost.Description", "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Summon Water Elemental when you have the talent and no elemental, Arcane Intellect out of combat, Counterspell on an interruptible cast, Ice Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call." },
@@ -541,6 +865,9 @@ local S = {
 -- ae1059e6
 [2100] = { "Default.Retail.Mage.FrostGuide.Description", "Reference only, off by default: the guides' Frost priority for each hero tree. Procs, Freezing stacks and cooldowns are hidden in Midnight combat, so it cannot run there. Pulls with Frostfire Bolt or Frostbolt. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one or two enemies, Flurry on Brain Freeze without Thermal Void, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen Orb, Blizzard on Freezing Rain with three enemies, Ice Lance on Fingers of Frost with Thermal Void or at twelve Freezing, Flurry, Ice Nova or Cone of Cold on five, then Glacial Spike or Frostfire Bolt. Spellslinger: Comet Storm, Flurry on Brain Freeze, Ice Lance on two Fingers, Frozen Orb, Glacial Spike when ready, Blizzard on Freezing Rain, Ice Lance on Fingers of Frost or six Freezing, Ray of Frost, Flurry, Ice Nova or Cone of Cold on four, Blizzard on seven, then Glacial Spike or Frostbolt. Ice Lance while moving. Reminders: Summon Water Elemental, Ice Barrier and the utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2101] = { "Default.Retail.Mage.Initial.Name", "Blizzard Assisted" },
 -- f9d1d4a4
 [2102] = { "Default.Retail.Mage.Initial.Description", "Recommended before you choose a specialization (while the game reports the Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Mage premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
@@ -549,10 +876,18 @@ local S = {
 -- 60341e2f
 [2104] = { "Default.Retail.Monk.Brewmaster.Description", "Recommended for Brewmaster. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Assisted Combat presses no brews, so, as Icy Veins advises, the brews are reminders beside it: Black Ox Brew, Invoke Niuzao, Purifying Brew, Celestial Brew or Celestial Infusion and Touch of Death light whenever they are ready in combat (Rotation Master cannot read Stagger yet, so how heavy it is stays your call). Also Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat; enemy casts are hidden in combat, so the interrupt lights only where the game shows them, and health is hidden on Retail, so when to use Fortifying Brew is your call." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2105] = { "Default.Retail.Monk.BrewmasterGuide.Name", "Reference (Icy Veins)" },
 -- a07ba74a
 [2106] = { "Default.Retail.Monk.BrewmasterGuide.Description", "Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so it cannot run there. Pulls with Keg Smash. Blackout Kick; Chi Burst (Master of Harmony); Tiger Palm on Blackout Combo; Keg Smash at full charges or with Empty Barrel; Breath of Fire; Rushing Jade Wind before Exploding Keg; Chi Burst (Shado-Pan); Keg Smash; Rushing Jade Wind and Spinning Crane Kick on three or more enemies; Tiger Palm; Expel Harm. Reminders: Black Ox Brew once Purifying and Celestial Brew are spent, Invoke Niuzao, Purifying Brew, Celestial Brew or Infusion, Touch of Death, plus the utility reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Windwalker). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2107] = { "Default.Retail.Monk.Windwalker.Name", "Blizzard Assisted" },
 -- ac8fdaae
 [2108] = { "Default.Retail.Monk.Windwalker.Description", "Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it already keeps Combo Strikes); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch of Karma in combat, Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use Fortifying Brew is your call." },
@@ -561,26 +896,50 @@ local S = {
 -- 44ec6b35
 [2110] = { "Default.Retail.Monk.WindwalkerGuide.Description", "Reference only, off by default: Icy Veins' Conduit of the Celestials priority. Every step keeps Combo Strikes (never the spell you cast last); Chi and your own casts stay readable, but Heart of the Jade Serpent, Zenith, Blackout Kick! and Dance of Chi-Ji are hidden in Midnight combat, so it cannot run there; energy is hidden on Retail, so the Tiger Palm before the energy cap is left out. Whirling Dragon Punch with Xuen over 10 seconds away; Zenith Stomp when low on Chi or as Zenith ends; Celestial Conduit without Heart; Fists of Fury as Heart ends; Celestial Conduit, Invoke Xuen, Fists of Fury, Whirling Dragon Punch, Strike of the Windlord; Blackout Kick when short of Chi for Fists; Rushing Wind Kick, Rising Sun Kick; Blackout Kick on two Blackout Kick! charges or in Zenith; Spinning Crane Kick in Zenith or on Dance of Chi-Ji; Touch of Death; Tiger Palm, Blackout Kick, Slicing Winds as fillers. Reminder: Touch of Karma, plus the utility reminders." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2111] = { "Default.Retail.Monk.Mistweaver.Name", "Reference (Icy Veins)" },
 -- 671bd99c
 [2112] = { "Default.Retail.Monk.Mistweaver.Description", "Reference only, off by default. Blizzard offers no Assisted Combat list for healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks and procs are hidden from addons, so healing advice is not possible; choose your heals yourself. On a hostile target it suggests the fistweaving filler, Rising Sun Kick, Blackout Kick and Tiger Palm; on a friendly target or none it suggests nothing. Reminders: Spear Hand Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2113] = { "Default.Retail.Monk.Initial.Name", "Blizzard Assisted" },
 -- 7799708b
 [2114] = { "Default.Retail.Monk.Initial.Description", "Recommended before you choose a specialization (while the game reports the Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Monk premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2115] = { "Default.Retail.Paladin.Retribution.Name", "Blizzard Assisted" },
 -- d3e8f0e2
 [2116] = { "Default.Retail.Paladin.Retribution.Description", "Recommended for Retribution in Midnight. In combat the game now hides buffs, debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation) on your action bars, and stops while you cast or have no enemy targeted. It also reminds you of what that suggestion never covers: an aura between pulls, Rebuke on an interruptible cast, and Divine Protection whenever it is ready in combat. Health is hidden on Retail, so when to use Divine Protection and Lay on Hands is your call. Trinkets and racials stay with you." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2117] = { "Default.Retail.Paladin.Retribution.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 66c84fb8
 [2118] = { "Default.Retail.Paladin.Retribution.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably there. Hammer of Light; a free Divine Purpose spender; at 5 Holy Power while Wake of Ashes is cooling, the spender; Wake of Ashes; Divine Toll; Blade of Justice on Art of War; Hammer of Wrath before it caps; at 3 or more Holy Power, Divine Storm on two or more enemies (or with Empyrean Power), else Final Verdict; Hammer of Wrath; Blade of Justice; Judgment; Templar Strike or Crusader Strike. Holy Power stays visible in combat, so its spending points work there. Reminders: Avenging Wrath, Execution Sentence with Wake of Ashes ready, aura, Rebuke, defensives." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2119] = { "Default.Retail.Paladin.Protection.Name", "Blizzard Assisted" },
 -- 3e1487eb
 [2120] = { "Default.Retail.Paladin.Protection.Description", "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and stops while you cast or have no enemy targeted. Reminders for what it leaves out: an aura between pulls, Rebuke on an interruptible cast, and Ardent Defender and Guardian of Ancient Kings whenever they are ready in combat. Health is hidden on Retail, so when to use them, and Lay on Hands, is your call. Taunting and positioning stay with you." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2121] = { "Default.Retail.Paladin.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
 -- f169797b
 [2122] = { "Default.Retail.Paladin.Protection.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order needs the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat. Consecration before the pull; then Divine Toll, Hammer of Light, Consecration when you are not standing in it, Avenger's Shield with Vanguard, Shield of the Righteous at 3 or more Holy Power, Hammer of Wrath, Judgment, Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light, Consecration. Reminders: Avenging Wrath or Sentinel, Holy Bulwark, Sacred Weapon outside Avenging Wrath, defensives, aura, Rebuke." },
@@ -589,22 +948,40 @@ local S = {
 -- 356b61a8
 [2124] = { "Default.Retail.Paladin.Protection.Wowhead.Description", "Reference only, off by default: Wowhead's tank order. Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll at 0 Holy Power, Blessed Hammer or Hammer of the Righteous, and Consecration only as the filler. Health is hidden on Retail, so Word of Glory below half health is left to you. Same reminders as the Icy Veins reference." },
 -- bf31f812
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2125] = { "Default.Retail.Paladin.Holy.Name", "Icy Veins" },
 -- ce9bbe93
 [2126] = { "Default.Retail.Paladin.Holy.Description", "Holy in Midnight, for reference: Rotation Master picks a spell, not a target, and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns turning over on whatever you target and leaves deciding who needs healing to you. Holy Power stays visible in combat, so it is spent at 5 first and at 3 or more after your other heals. On a friendly target: Eternal Flame or Word of Glory at 5 Holy Power, Flash of Light on Infusion of Light, Holy Shock, Eternal Flame or Word of Glory at 3 or more, Holy Light, Flash of Light; Light of Dawn is left to you. On an enemy: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous at 3 or more, Judgment, Crusader Strike, Consecration. Reminders in combat: Divine Toll, Holy Prism, Holy Bulwark or Sacred Weapon, Beacon of Virtue on a friendly target, Divine Protection; an aura between pulls; Rebuke. Lay on Hands is left to you. Avenging Wrath and Aura Mastery are left to you." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2127] = { "Default.Retail.Paladin.Initial.Name", "Blizzard Assisted" },
 -- 4c581641
 [2128] = { "Default.Retail.Paladin.Initial.Description", "Recommended before you choose a specialization (while the game reports the Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Paladin premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2129] = { "Default.Retail.Priest.Shadow.Name", "Blizzard Assisted" },
 -- e88d5282
 [2130] = { "Default.Retail.Priest.Shadow.Description", "Recommended for Shadow in Midnight. In combat the game now hides your DoTs, buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps your DoTs, Shadowform and Voidform going and lets Mind Flay finish), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Power Infusion in the 20 seconds after you cast Voidform, Shadowform and Power Word: Fortitude between pulls, Silence on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Desperate Prayer is your call." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2131] = { "Default.Retail.Priest.Shadow.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 1cbf9308
 [2132] = { "Default.Retail.Priest.Shadow.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are hidden on Retail, so the Insanity-cap Madness, the Shadow Word: Death execute and Desperate Prayer are left to you. Vampiric Touch before the pull; Tentacle Slam to apply Vampiric Touch; Vampiric Touch and Shadow Word: Pain refreshed in their last 30%; Shadow Word: Madness when it is ending or in Voidform; Void Blast during Madness; Tentacle Slam at two charges; Void Torrent; Mind Blast; Tentacle Slam; Mind Flay: Insanity during Madness; Void Volley; Death and Pain while moving; Mind Flay, clipped for a ready Mind Blast. Reminders: Halo, Voidform with both DoTs up, Power Infusion in Voidform." },
 -- 6a76d2e3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2133] = { "Default.Retail.Priest.Discipline.Name", "Atonement (Icy Veins)" },
 -- c8fa3896
 [2134] = { "Default.Retail.Priest.Discipline.Description", "Discipline in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this runs the damage that heals through Atonement and leaves deciding who to heal to you. On a friendly target: Power Word: Shield (Void Shield), Penance, Flash Heal. On an enemy: Shadow Word: Pain when you have not cast it for 12 seconds, Mind Blast, Penance, Shield, Shadow Word: Death, Void Blast, Smite. Reminders in combat: Power Word: Radiance, Evangelism, Ultimate Penitence, Pain Suppression on a friendly target; Fortitude between pulls. Desperate Prayer is your call. Raid ramps before big damage are yours to time." },
@@ -613,90 +990,172 @@ local S = {
 -- e33c171d
 [2136] = { "Default.Retail.Priest.Discipline.Wowhead.Description", "Reference only, off by default: Wowhead's Season 1 Oracle order, which keeps Shadow Word: Pain up by reading the debuff that Midnight hides in combat. Shadow Word: Pain, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; Penance first on a friendly target. Same reminders as the Icy Veins premade." },
 -- bf31f812
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2137] = { "Default.Retail.Priest.Holy.Name", "Icy Veins" },
 -- d7f52f6f
 [2138] = { "Default.Retail.Priest.Holy.Description", "Holy in Midnight, for reference: the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending and procs moving on whatever you target and leaves triage to you. On a friendly target: Holy Word: Sanctify, Holy Word: Serenity, Prayer of Mending, Prayer of Healing with Surge of Light, Benediction, Prayer of Healing with Lightweaver, Flash Heal with Surge of Light, Prayer of Healing in a group, Holy Nova while moving, Flash Heal. On an enemy: Holy Word: Chastise, Holy Fire, Holy Nova while moving, Smite. Reminders: Apotheosis, Divine Hymn and Halo in combat, Guardian Spirit on a friendly target (health is hidden on Retail, so whether it is about to die is your call), Fortitude. Desperate Prayer is yours." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2139] = { "Default.Retail.Priest.Initial.Name", "Blizzard Assisted" },
 -- 4b29903d
 [2140] = { "Default.Retail.Priest.Initial.Description", "Recommended before you choose a specialization (while the game reports the Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Priest premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2141] = { "Default.Retail.Rogue.Assassination.Name", "Blizzard Assisted" },
 -- ea331596
 [2142] = { "Default.Retail.Rogue.Assassination.Description", "Recommended for Assassination in Midnight. In combat the game now hides your bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which handles the stealth opener, Garrote, Rupture, Envenom, Deathmark and Kingsbane), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: a lethal and a non-lethal poison and Stealth between pulls, Vanish when you are out of stealth in combat, Kick on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Crimson Vial is your call." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2143] = { "Default.Retail.Rogue.Assassination.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 04026a9b
 [2144] = { "Default.Retail.Rogue.Assassination.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order keeps bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its energy pooling is left out. From stealth Garrote, then Ambush. Garrote in its last 30% while you are not at full combo points, Rupture at 5+ in its last 30%; at 5+ combo points Coup de Grace or Envenom; below, Crimson Tempest on three or more enemies, Fan of Knives on two or more close by, Ambush, Mutilate. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2145] = { "Default.Retail.Rogue.Outlaw.Name", "Blizzard Assisted" },
 -- bb9cc61b
 [2146] = { "Default.Retail.Rogue.Outlaw.Description", "Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the Eyes and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Vanish when you are out of stealth in combat, Kick. Health is hidden on Retail, so Crimson Vial is your call. Keep It Rolling stays with you: the game hides how many Roll the Bones buffs you have." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2147] = { "Default.Retail.Rogue.Outlaw.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 3a3eecef
 [2148] = { "Default.Retail.Rogue.Outlaw.IcyVeins.Description", "Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in combat. From stealth Ambush. One combo point short of full or more: Between the Eyes, Killing Spree, Coup de Grace, Dispatch. Otherwise Ambush with Audacity, Pistol Shot at six Opportunity stacks (three when low on combo points), Ambush, Sinister Strike. Reminders: Roll the Bones with no roll up, Adrenaline Rush at two or fewer combo points, Blade Flurry kept up on two or more enemies, Blade Rush, Preparation when Adrenaline Rush, Between the Eyes and Blade Rush are all cooling. Keep It Rolling stays manual." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2149] = { "Default.Retail.Rogue.Subtlety.Name", "Blizzard Assisted" },
 -- 96f6f8ea
 [2150] = { "Default.Retail.Rogue.Subtlety.Description", "Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance, Secret Technique and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Kick on an interruptible cast. Health is hidden on Retail, so Crimson Vial is your call." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2151] = { "Default.Retail.Rogue.Subtlety.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 5fff6443
 [2152] = { "Default.Retail.Rogue.Subtlety.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order holds Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which Midnight hides in combat. Stealthed before the pull: Shadowstrike. One combo point short of full or more: Eviscerate with Darkest Night, Secret Technique in Shadow Dance, Coup de Grace, Black Powder on three or more enemies, Eviscerate. Otherwise Shadowstrike, Shuriken Storm on two or more, Gloomblade or Backstab. Reminders: Goremaw's Bite in Shadow Dance, Shadow Blades with Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points when Secret Technique is ready or Shadow Blades is up, Vanish out of stealth at two or fewer combo points." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2153] = { "Default.Retail.Rogue.Initial.Name", "Blizzard Assisted" },
 -- 797e018d
 [2154] = { "Default.Retail.Rogue.Initial.Description", "Recommended before you choose a specialization (while the game reports the Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Rogue premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2155] = { "Default.Retail.Shaman.Elemental.Name", "Blizzard Assisted" },
 -- 14b1a04b
 [2156] = { "Default.Retail.Shaman.Elemental.Description", "Recommended for Elemental in Midnight. In combat the game now hides Flame Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Fire or Storm Elemental and Nature's Swiftness in combat, Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps your weapon and shield imbues), Wind Shear on an interruptible cast (it lights only where the game lets the cast be read), Astral Shift whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2157] = { "Default.Retail.Shaman.Elemental.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 8fc57d38
 [2158] = { "Default.Retail.Shaman.Elemental.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat; Maelstrom is hidden on Retail, so the spenders go at their cost instead of near full Maelstrom. Stormkeeper and Lava Burst before the pull. On three or more engaged enemies: Stormkeeper, Ancestral Swiftness, Flame Shock, Chain Lightning with Stormkeeper, Elemental Blast, Earthquake, Lava Burst on Lava Surge, Tempest, Chain Lightning. Otherwise Stormkeeper, Ancestral Swiftness, Flame Shock and Voltaic Blaze in their last 30% outside Master of the Elements, Lava Burst to start it, Tempest and Stormkeeper's Lightning Bolt inside it, Elemental Blast or Earth Shock inside it, Voltaic Blaze, Tempest, Flame Shock or Frost Shock while moving, Elemental Blast or Earth Shock whenever you can afford it, Lightning Bolt. Reminders: Ascendance once Stormkeeper is used, elementals, Spiritwalker's Grace, and the shared ones." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2159] = { "Default.Retail.Shaman.Enhancement.Name", "Blizzard Assisted" },
 -- 2b518620
 [2160] = { "Default.Retail.Shaman.Enhancement.Description", "Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and Sundering), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift." },
 -- 5c90fed4
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = { "Default.Retail.Shaman.Enhancement.Stormbringer.Name", "Stormbringer reference (SimulationCraft)" },
 -- 4890c5e6
 [2162] = { "Default.Retail.Shaman.Enhancement.Stormbringer.Description", "Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning for its buff, Tempest at 10 Maelstrom Weapon, Chain Lightning at 9, Crash Lightning, Lava Lash, Sundering. Then Primordial Storm at 9, Voltaic Blaze or Flame Shock when Flame Shock is missing, Sundering, Crash Lightning for its buff, Lava Lash for Lashing Flames, Windstrike, Tempest or Lightning Bolt at 10 (8 with Voltaic Blaze or Crash Lightning about ready), Stormstrike at two charges, Lava Lash, Stormstrike, Voltaic Blaze, Crash Lightning, Lightning Bolt at 5, Flame Shock. Reminders: Doom Winds, Ascendance outside Doom Winds, Feral Spirit, and the shared ones." },
 -- 33731fb7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2163] = { "Default.Retail.Shaman.Enhancement.Totemic.Name", "Totemic reference (SimulationCraft)" },
 -- 4485ad39
 [2164] = { "Default.Retail.Shaman.Enhancement.Totemic.Description", "Reference only, off by default: SimulationCraft's Totemic list reads Flame Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning, Chain Lightning at 5 Maelstrom Weapon. Then Voltaic Blaze or Flame Shock when Flame Shock is missing, Surging Totem, Sundering, Lava Lash with Hot Hand or Whirling Fire, Crash Lightning for its buff, Primordial Storm at 10, Windstrike, Crash Lightning and Stormstrike in Doom Winds, Lightning Bolt at 5, Crash Lightning, Lava Lash, Stormstrike, Voltaic Blaze, Flame Shock. Same reminders as the Stormbringer reference." },
 -- bf31f812
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Restoration). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2165] = { "Default.Retail.Shaman.Restoration.Name", "Icy Veins" },
 -- 6bac9c2a
 [2166] = { "Default.Retail.Shaman.Restoration.Description", "Restoration in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this orders your healing tools by readiness on whatever you target and leaves deciding who to heal to you. On a friendly target: Healing Stream Totem, Unleash Life, Healing Rain in a group, Surging Totem, Riptide, Chain Heal in a group, Healing Wave. On an enemy: Flame Shock when missing, Lava Burst, Lightning Bolt. Reminders: Water Shield, Earth Shield on a friendly target and Skyfury between pulls; Nature's Swiftness in combat; Healing Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2167] = { "Default.Retail.Shaman.Initial.Name", "Blizzard Assisted" },
 -- 75442137
 [2168] = { "Default.Retail.Shaman.Initial.Description", "Recommended before you choose a specialization (while the game reports the Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Shaman premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2169] = { "Default.Retail.Warlock.Affliction.Name", "Blizzard Assisted" },
 -- be7ca540
 [2170] = { "Default.Retail.Warlock.Affliction.Description", "Recommended for Affliction in Midnight. In combat the game now hides your DoTs, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps Agony and Corruption, spends shards on Unstable Affliction and handles Grimoire of Sacrifice), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed your demon, Command Demon on an interruptible cast (it lights only where the game lets the cast be read), Dark Pact and Unending Resolve whenever they are ready in combat (health is hidden on Retail, so when to use them is your call)." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2171] = { "Default.Retail.Warlock.Affliction.IcyVeins.Name", "Reference (Icy Veins)" },
 -- d01f383a
 [2172] = { "Default.Retail.Warlock.Affliction.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft (Soul Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in combat. Haunt before the pull; Seed of Corruption on three or more engaged enemies without your Corruption; Haunt; Agony and Corruption or Wither under 3 seconds; Dark Harvest at two shards or fewer; Unstable Affliction at 5 shards; Malefic Grasp, else Shadow Bolt, on two Nightfall; Unstable Affliction on Shard Instability or at 4 shards; Drain Soul; Shadow Bolt. Reminders: Summon Darkglare once Dark Harvest is cooling, Malevolence, your Felhunter, and the shared ones." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2173] = { "Default.Retail.Warlock.Demonology.Name", "Blizzard Assisted" },
 -- c6249f11
 [2174] = { "Default.Retail.Warlock.Demonology.Description", "Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Demonic Tyrant while the Dreadstalkers you called in the last 12 seconds are out, Grimoire: Imp Lord, Grimoire: Fel Ravager and Summon Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2175] = { "Default.Retail.Warlock.Demonology.IcyVeins.Name", "Reference (Icy Veins)" },
 -- 631224a9
 [2176] = { "Default.Retail.Warlock.Demonology.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist) order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat. Power Siphon, Demonbolt and Shadow Bolt before the pull; then Power Siphon at one Demonic Core or none, Grimoire: Imp Lord, Grimoire: Fel Ravager, Summon Doomguard, Call Dreadstalkers, Summon Demonic Tyrant at 5 shards, Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3 shards or more, Infernal Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2177] = { "Default.Retail.Warlock.Destruction.Name", "Blizzard Assisted" },
 -- e652e84a
 [2178] = { "Default.Retail.Warlock.Destruction.Description", "Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire, Malevolence), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Infernal in combat, an Imp between pulls unless you sacrificed your demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you." },
 -- df190019
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2179] = { "Default.Retail.Warlock.Destruction.Simc.Name", "Reference (SimulationCraft)" },
 -- ad764c7b
 [2180] = { "Default.Retail.Warlock.Destruction.Simc.Description", "Reference only, off by default: SimulationCraft's order reads Immolate, Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and Incinerate before the pull; on three or more engaged enemies Rain of Fire at 3 shards and Cataclysm; then Soul Fire at 4 shards or fewer, Chaos Bolt only at 5, Conflagrate at two charges or below 4 shards without Backdraft, Summon Infernal, Malevolence, Wither or Immolate in its last 30%, Ruination, Cataclysm, Infernal Bolt at 3 shards or fewer, Incinerate." },
@@ -705,26 +1164,47 @@ local S = {
 -- f093635c
 [2182] = { "Default.Retail.Warlock.Destruction.IcyVeins.Description", "Reference only, off by default: Icy Veins' Hellcaller order, which spends shards on Chaos Bolt before they cap and uses Shadowburn and Channel Demonfire on cooldown. Rain of Fire on three or more engaged enemies; Wither or Immolate kept up; Summon Infernal; Malevolence; Shadowburn; Soul Fire below 4 shards; Chaos Bolt at 4 or more; Cataclysm; Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2183] = { "Default.Retail.Warlock.Initial.Name", "Blizzard Assisted" },
 -- 9f1e219f
 [2184] = { "Default.Retail.Warlock.Initial.Description", "Recommended before you choose a specialization (while the game reports the Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warlock premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2185] = { "Default.Retail.Warrior.Arms.Name", "Blizzard Assisted" },
 -- 182c0efa
 [2186] = { "Default.Retail.Warrior.Arms.Description", "Recommended for Arms in Midnight. In combat the game now hides rage, Rend, Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Heroic Strike (a core button the suggestion never uses), Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel on an interruptible cast (it lights only where the game lets the cast be read), Die by the Sword whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
 -- b82b4f60
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2187] = { "Default.Retail.Warrior.Arms.Slayer.Name", "Slayer reference (SimulationCraft)" },
 -- 4c91f0b4
 [2188] = { "Default.Retail.Warrior.Arms.Slayer.Description", "Reference only, off by default: the Slayer order from SimulationCraft, Icy Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which Midnight hides in combat. Charge to open; Sweeping Strikes on two or more engaged enemies; Rend before Colossus Smash when it is running out; Ravager just before Colossus Smash; Execute at two Sudden Death; Colossus Smash; Bladestorm in Colossus Smash or Avatar; Heroic Strike; Overpower at two Opportunist; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Slam. Reminders: Avatar with Colossus Smash ready, Die by the Sword, Battle Shout, Pummel." },
 -- 8a86f34e
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2189] = { "Default.Retail.Warrior.Arms.Colossus.Name", "Colossus reference (SimulationCraft)" },
 -- 5b252489
 [2190] = { "Default.Retail.Warrior.Arms.Colossus.Description", "Reference only, off by default: the Colossus order from SimulationCraft and Icy Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat. Charge to open; Sweeping Strikes on two or more; Mortal Strike below five Colossal Might; Rend before Colossus Smash; Ravager; Execute at two Sudden Death; Colossus Smash; Champion's Spear; Demolish in Colossus Smash with Colossal Might; Heroic Strike; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Bladestorm on two or more; Slam. Reminders: Avatar, Die by the Sword, Battle Shout, Pummel." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2191] = { "Default.Retail.Warrior.Fury.Name", "Blizzard Assisted" },
 -- b7ca5a34
 [2192] = { "Default.Retail.Warrior.Fury.Description", "Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Recklessness, Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
 -- b82b4f60
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2193] = { "Default.Retail.Warrior.Fury.Slayer.Name", "Slayer reference (SimulationCraft)" },
 -- 082fcea6
 [2194] = { "Default.Retail.Warrior.Fury.Slayer.Description", "Reference only, off by default: SimulationCraft's Slayer order reads Enrage, Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so Rampage waits only for its cost. Charge to open; Whirlwind for its buff on two or more engaged enemies; Rampage when Enrage is ending; in Recklessness Rampage, Bladestorm, Execute on Sudden Death, Odyn's Fury; Crushing Blow; Bloodbath; Execute; Odyn's Fury; Raging Blow; Rampage; Bloodthirst; Whirlwind. Reminders: Recklessness, Avatar, Enraged Regeneration, Battle Shout, Pummel." },
@@ -733,26 +1213,45 @@ local S = {
 -- 44b6f930
 [2196] = { "Default.Retail.Warrior.Fury.Thane.Description", "Reference only, off by default: the Mountain Thane order from SimulationCraft and Icy Veins weaves Thunder Blast and reads buffs Midnight hides in combat. Charge to open; Whirlwind for its buff on two or more; Rampage when Enrage is missing or ending (rage is hidden on Retail, so there is no 100-rage Rampage); Bloodbath in Recklessness; Thunder Blast at two stacks; Crushing Blow; Bloodbath; Rampage in Recklessness; Thunder Blast in Avatar; Raging Blow; Thunder Blast; Rampage; Bloodthirst; Execute; Odyn's Fury; Thunder Clap; Whirlwind. Same reminders as the Slayer reference." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2197] = { "Default.Retail.Warrior.Protection.Name", "Blizzard Assisted" },
 -- c6991b2c
 [2198] = { "Default.Retail.Warrior.Protection.Description", "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion for your damage and threat, and stops while you cast or have no enemy targeted. The suggestion never casts Shield Block or Ignore Pain, so both are reminders whenever they are usable and your target is attacking you; the game hides rage, so Ignore Pain will light more often than you need it. Other reminders: Avatar, Demoralizing Shout and Champion's Spear in combat, Shield Wall and Last Stand whenever they are ready in combat (health is hidden on Retail, so when to use them is your call), Taunt in a group when your target attacks someone else, Battle Shout between pulls, Pummel." },
 -- 6befdd35
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2199] = { "Default.Retail.Warrior.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
 -- b8b51708
 [2200] = { "Default.Retail.Warrior.Protection.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and health are hidden on Retail. Charge to open; Ravager; Thunder Blast at two stacks; Demolish at five Colossal Might; Shield Charge; Thunder Blast; Shield Slam; Thunder Clap; Execute; Revenge; Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain, Avatar, Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand whenever they are ready in combat, Battle Shout, Pummel." },
 -- 00b5eb13
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2201] = { "Default.Retail.Warrior.Initial.Name", "Blizzard Assisted" },
 -- 2e97cda9
 [2202] = { "Default.Retail.Warrior.Initial.Description", "Recommended before you choose a specialization (while the game reports the Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warrior premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
 -- d05e07b7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance).
 [2203] = { "Default.Era.Druid.Balance.Name", "Balance" },
 -- df418098
 [2204] = { "Default.Era.Druid.Balance.Description", "Balance from level 1 to 60, and the Druid default before talents or when no other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on a Nature's Grace proc), Moonfire and Insect Swarm kept on targets that will live while your mana is above 30%, Hurricane when three or more enemies are on you, Faerie Fire in a group, instants while moving, melee when out of mana. In Cat or Bear Form it gives the Feral advice instead. Reminders: Mark of the Wild, Thorns when solo, Omen of Clarity, Moonkin Form when you are in no form, Innervate, Nature's Grasp. Downranking Starfire, roots and target choice stay with you." },
 -- 3c5a26cc
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2205] = { "Default.Era.Druid.Balance.IcyVeins.Name", "Balance (Icy Veins)" },
 -- 72e2ae3e
 [2206] = { "Default.Era.Druid.Balance.IcyVeins.Description", "Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Starfire and nothing else, no Moonfire or Insect Swarm, Hurricane when three or more enemies are on you, Wrath only before Starfire is learned. Same reminders as the recommended premade." },
 -- 24983899
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Feral).
 [2207] = { "Default.Era.Druid.Feral.Name", "Feral" },
 -- 46898c22
 [2208] = { "Default.Era.Druid.Feral.Description", "Feral cat and bear from level 10 when Feral is your main talent tree; your form decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned and on long fights outside raids, Bite under 63 energy), Rake outside raids, Shred from behind or Claw when the target is on you, and a powershift (Cat Form again) when far short of energy with Furor 5/5 and mana to spare. Bear: Enrage when starved, Demoralizing Roar on packs and elites unless a warrior's Shout is up, Swipe on two or more and with spare rage, Faerie Fire (Feral) otherwise. Caster form: shift. Reminders: Maul every swing, Tiger's Fury before a pull, Manual Crowd Pummeler, Innervate, Frenzied Regeneration. Positioning stays with you." },
@@ -769,14 +1268,24 @@ local S = {
 -- ee7a8843
 [2214] = { "Default.Era.Druid.Feral.Wowhead.Description", "The cat of the recommended Feral premade with Wowhead's geared raid bear: Maul every swing (tab-Maul packs yourself), Swipe only with 60 rage to spare, Faerie Fire (Feral) otherwise, no Demoralizing Roar and no Enrage in combat. An alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority." },
 -- 6a3c6c77
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration).
 [2215] = { "Default.Era.Druid.Restoration.Name", "Restoration" },
 -- 877af0fd
 [2216] = { "Default.Era.Druid.Restoration.Description", "Restoration from level 10 when Restoration is your main talent tree. Heals your current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your own HoT, Rejuvenation and Regrowth kept rolling, Regrowth as the main heal with Improved Regrowth, full Healing Touch below 45% or on a Nature's Grace proc, rank 4 Healing Touch otherwise. On an enemy: Moonfire, Insect Swarm and Wrath. Silent in Cat or Bear Form. Reminders: Mark of the Wild, Omen of Clarity, Nature's Swiftness, Tranquility, Innervate, Rebirth, poison and curse removal. Choosing whom to heal stays with you." },
 -- b765b6c7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2217] = { "Default.Era.Druid.Restoration.WarcraftTavern.Name", "Restoration (Warcraft Tavern)" },
 -- 8cdc97b9
 [2218] = { "Default.Era.Druid.Restoration.WarcraftTavern.Description", "Warcraft Tavern's damage tiers, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target, with no HoT upkeep while damage is low: Swiftmend below 40%, rank 5 Regrowth below 50%, Rejuvenation and rank 3 Regrowth below 75%, full Healing Touch on a Nature's Grace proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade." },
 -- d6247adc
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2219] = { "Default.SoD.Druid.Balance.Name", "Balance (SoD)" },
 -- 5bcfabec
 [2220] = { "Default.SoD.Druid.Balance.Description", "Season of Discovery Balance from level 1 to 60, and the default for any Druid no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and Moonfire on targets that will live, Starfire only when Starsurge or Lunar Eclipse empowers it, Wrath as the filler, Hurricane on six or more enemies (four with Gale Winds engraved), Insect Swarm only while moving. Runes are used as you engrave them. In Cat or Bear Form it gives the Feral advice. Reminders: Moonkin Form, Starfall, instant Healing Touch on a dying friend, curse and poison removal, Wild Growth on a hurt group, Innervate. Spreading DoTs to other targets stays with you." },
@@ -785,14 +1294,26 @@ local S = {
 -- babf9f32
 [2222] = { "Default.SoD.Druid.Balance.IcyVeins.Description", "Icy Veins' Season of Discovery list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Starsurge on cooldown, Hurricane on four or more enemies (for Gale Winds), Starfire when Starsurge empowers it, Moonfire, Sunfire and Insect Swarm all kept up, Wrath as the filler. Reminders as the recommended premade." },
 -- c4d16f19
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2223] = { "Default.SoD.Druid.Balance.Wowhead.Name", "Balance (SoD, Wowhead)" },
 -- 75dabca6
 [2224] = { "Default.SoD.Druid.Balance.Wowhead.Description", "Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath to open, Starsurge on cooldown, Hurricane on six or more, Insect Swarm only while moving, Sunfire and Moonfire kept up, Wrath while your Sunfire has under 5 seconds when Elune's Fires is engraved to extend it, Starfire on Lunar Eclipse, Wrath otherwise. Reminders as the recommended premade." },
 -- 3e1ff241
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2225] = { "Default.SoD.Druid.Feral.Name", "Feral cat (SoD)" },
 -- e7b0a6ca
 [2226] = { "Default.SoD.Druid.Feral.Description", "Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe (Cat) on four or more enemies, the Mangle debuff, Clearcasting on Shred, Rip at five combo points while Savage Roar has 8 seconds left, Rake, Shred from behind or Mangle from the front, powershift with Furor 5/5, Faerie Fire refresh last. In Bear Form it gives the tank advice. Reminders: Tiger's Fury at 60 energy or less, Berserk with Tiger's Fury, Maul, Innervate. Positioning stays with you." },
 -- 3c52079f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2227] = { "Default.SoD.Druid.Tank.Name", "Bear tank (SoD)" },
 -- 6ae09c71
 [2228] = { "Default.SoD.Druid.Tank.Description", "Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown, Lacerate, Swipe; on three or more enemies Mangle under Berserk and Swipe. In Cat Form it plays the cat list for off-tanking; in caster form it shifts to Bear. Reminders: Maul with 30 rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you." },
@@ -801,10 +1322,16 @@ local S = {
 -- 83e89d4a
 [2230] = { "Default.SoD.Druid.Tank.Wowsims.Description", "Off by default; for experts whose gear also grants Savage Roar. The wowsims Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade." },
 -- 24f21f83
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2231] = { "Default.SoD.Druid.Restoration.Name", "Restoration (SoD)" },
 -- ba307284
 [2232] = { "Default.SoD.Druid.Restoration.Description", "Season of Discovery Restoration, chosen when Lifebloom is engraved (or Restoration is your main tree without another legs rune). Heals your current friendly target: instant Healing Touch after Nature's Swiftness or Fury of Stormrage, Wild Growth when two or more nearby are hurt, Swiftmend on your HoT for Efflorescence or below 40%, three Lifebloom stacks refreshed with a second left, Rejuvenation, Regrowth below 60%, Nourish, rank 4 Healing Touch. On an enemy: Sunfire, Moonfire, Wrath. Reminders: Tree of Life and Survival Instincts in heavy moments, Nature's Swiftness, Tranquility, Innervate, Rebirth, Revive, dispels. Choosing whom to heal stays with you." },
 -- 3f0b51a2
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Classic Era (variant key: Ranged).
 [2233] = { "Default.Era.Hunter.Ranged.Name", "Ranged" },
 -- 9b31e6a0
 [2234] = { "Default.Era.Hunter.Ranged.Description", "Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark, Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot, Arcane Shot and Multi-Shot only while mana is above half, Concussive Shot to kite before you have a pet. In a group, Aimed Shot and Multi-Shot right after an Auto Shot so it is never delayed, Serpent Sting outside raids, Arcane Shot only before Aimed Shot or on a dying target. Melee buttons when an enemy is too close, instants while moving, Multi-Shot and Volley on three or more enemies. Reminders: Hawk (Monkey before it), Trueshot Aura, pet care, Rapid Fire, Bestial Wrath and racials on elites and in instances, Intimidation and Feign Death. Traps, Wing Clip, Feed Pet, Tranquilizing Shot and positioning stay with you." },
@@ -817,14 +1344,24 @@ local S = {
 -- afe0ee0b
 [2238] = { "Default.Era.Hunter.Ranged.Wowsims.Description", "Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used." },
 -- 1fa5802f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2239] = { "Default.SoD.Hunter.Ranged.Name", "Ranged (SoD)" },
 -- 09b14a5d
 [2240] = { "Default.SoD.Hunter.Ranged.Description", "Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot legs rune: Multi-Shot at four Trick Shots, Kill Shot during Rapid Fire and on targets in execute, Chimera Shot, then Explosive Trap and Arcane Shot while Multi-Shot is cooling. Without it: Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune, right after an Auto Shot), traps just before Chimera Shot is ready (Frost Trap only to feed Lock and Load), Explosive Shot, Steady Shot, Multi-Shot, Arcane Shot. Melee buttons when an enemy is too close, instants while moving, traps, Multi-Shot and Volley on three or more enemies. Reminders: Hawk, Viper below 10% mana, Heart of the Lion, Trueshot Aura, pet care (none with Lone Wolf engraved), Focus Fire at five Frenzy stacks, Rapid Fire, racials and Bestial Wrath on elites and in instances. With Lock and Load engraved, a Frost Trap before the pull. Melee weaving and positioning stay with you." },
 -- fb035172
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2241] = { "Default.SoD.Hunter.Melee.Name", "Melee (SoD)" },
 -- 4c275cc2
 [2242] = { "Default.SoD.Hunter.Melee.Description", "Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff up, Mongoose Bite at four Raptor Fury stacks, Wyvern Strike on Clever Strikes, Raptor Strike on every reset, then Mongoose Bite, Wyvern Strike, Flanking Strike and Carve; Immolation Trap and Wing Clip only in empty moments. Carve and Explosive Trap on three or more enemies; Serpent Sting and shots while you cannot reach the target. Reminders: Aspect of the Falcon (Hawk before 60), Viper below 5% mana, pet care (none with Lone Wolf engraved), Rapid Fire and racials once Flanking Strike has stacked, Bestial Wrath. Positioning and pet commands stay with you." },
 -- 17636dd6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Frost).
 [2243] = { "Default.Era.Mage.Frost.Name", "Frost" },
 -- c7006e3e
 [2244] = { "Default.Era.Mage.Frost.Description", "Frost from level 1 to 60, also for Arcane builds and the Mage default before talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on raid bosses; Arcane Missiles once a mob reaches you if you have Improved Arcane Missiles; Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast while moving with mana to spare; Fire Blast and the wand finish ordinary mobs when solo; wand when out of mana. Reminders: armor (Ice Armor solo, Mage Armor in a group, never replacing one you chose), Arcane Intellect, conjuring and using mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Cold Snap, Arcane Power and Presence of Mind. Off by default: the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill. Blink, Polymorph, kiting and target choice stay with you." },
@@ -833,18 +1370,32 @@ local S = {
 -- 18ab65f6
 [2246] = { "Default.Era.Mage.Frost.IcyVeins.Description", "Blizzard leveling after Icy Veins' AoE grinding guide, chosen automatically when you play solo with Improved Blizzard. From two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is cooling, Blizzard once nothing is next to you, Arcane Explosion when they are; Frostbolt on a single target, Fire Blast and the wand to finish. Mana Shield and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you." },
 -- c141faa8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire).
 [2247] = { "Default.Era.Mage.Fire.Name", "Fire" },
 -- 2a7f1272
 [2248] = { "Default.Era.Mage.Fire.Description", "Fire from level 10 to 60, chosen when you have Fire points and none in Frost, or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind; Scorch keeps five Fire Vulnerability stacks with Improved Scorch on targets that will live; Fire Blast and Scorch finish; Fireball fills. Three or more engaged enemies: Blast Wave, Flamestrike, Arcane Explosion, Cone of Cold, Blizzard. Reminders: Combustion at five Scorch stacks on elites and long fights, armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Presence of Mind. Off by default: weaving Fire Blast whenever it is ready." },
 -- 76354bcf
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2249] = { "Default.Era.Mage.Fire.WarcraftTavern.Name", "Fire (Warcraft Tavern)" },
 -- 83ffa7ee
 [2250] = { "Default.Era.Mage.Fire.WarcraftTavern.Description", "Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Combustion is spent at the pull on elites and bosses instead of waiting for Scorch stacks; Pyroblast opens; Scorch keeps five stacks with Improved Scorch; Fireball fills; Fire Blast only while moving. Packs: Flamestrike first, then Arcane Explosion, Cone of Cold and Blast Wave close in, Blizzard at range. Same reminders as the Fire premade." },
 -- 91d3c82e
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2251] = { "Default.SoD.Mage.Fire.Name", "Fire (SoD)" },
 -- 67a08e15
 [2252] = { "Default.SoD.Mage.Fire.Description", "Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets that will live; Scorch with Improved Scorch while Fire Vulnerability is below two stacks or about to fade; Living Flame on cooldown; Balefire Bolt at five Fire Vulnerability stacks, never at four Balefire stacks or more (the fifth kills you); Frostfire Bolt, else Fireball. Living Bomb, Living Flame and Fire Blast while moving; Living Flame, Living Bomb, Blast Wave, Cone of Cold, Flamestrike and Blizzard on packs. Reminders: Fire Blast with Overheat, Combustion, Icy Veins and Cold Snap, Molten or other armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, curse removal, Ice Block. Spreading Living Bomb across targets stays with you." },
 -- 0f6cec9f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2253] = { "Default.SoD.Mage.Frost.Name", "Frost (SoD)" },
 -- b6fc82b9
 [2254] = { "Default.SoD.Mage.Frost.Description", "Season of Discovery Frost from level 10, chosen when Frost is your main tree. Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into Deep Freeze; Balefire Bolt on a Brain Freeze proc and otherwise when safe, never at four Balefire stacks or more; Living Bomb and Living Flame when engraved; Spellfrost Bolt, else Frostfire Bolt, else Frostbolt. Ice Lance, Frozen Orb, Living Bomb and Fire Blast while moving; Frozen Orb, Living Flame, Living Bomb, Blizzard and Cone of Cold on packs. Reminders: Frozen Orb, Icy Veins, Cold Snap, armor, mana gems and the other Mage reminders. Queuing a spell as a bolt lands stays with you." },
@@ -853,22 +1404,36 @@ local S = {
 -- 5ff1d58c
 [2256] = { "Default.SoD.Mage.Frost.WarcraftTavern.Description", "Warcraft Tavern's Phase 4 Frost build on Fire runes, an alternative to the recommended Season of Discovery Frost premade, off by default: enable it and disable that one, or raise its priority. Pyroblast opens; Pyroblast on Hot Streak; Living Bomb kept up; Scorch to five stacks with Improved Scorch; Balefire Bolt only on a Brain Freeze proc and never at four Balefire stacks or more; Frostfire Bolt fills. Living Bomb and Fire Blast while moving; Living Bomb, Cone of Cold and Blizzard on packs. Reminders: Fire Blast with Overheat, Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders." },
 -- 3a7614c3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2257] = { "Default.SoD.Mage.Arcane.Name", "Arcane (SoD)" },
 -- a0acdff9
 [2258] = { "Default.SoD.Mage.Arcane.Description", "Season of Discovery Arcane damage, chosen when Arcane is your main tree and Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe, never at four Balefire stacks or more; Living Flame on cooldown; Arcane Blast fills. Arcane Barrage and Fire Blast while moving; Living Flame and Arcane Explosion on packs. Reminders: Arcane Power on elites and long fights, Presence of Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders." },
 -- a23552e6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2259] = { "Default.SoD.Mage.Healer.Name", "Healer (SoD)" },
 -- 83b2fb47
 [2260] = { "Default.SoD.Mage.Healer.Description", "Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half health, Regeneration when your Temporal Beacon is missing, Mass Regeneration, Temporal Anomaly. With an enemy target, damage that heals your beacons: Spellfrost Bolt for Frost healers, otherwise Arcane Missiles on Missile Barrage, Arcane Barrage at two Arcane Blast stacks, Balefire Bolt when safe (never at four Balefire stacks or more) and Arcane Blast. Reminders: Arcane Power, Presence of Mind, Frozen Orb and the other Mage reminders. Off by default: Arcane Explosion on packs, and Ice Lance and Deep Freeze for Frost healers. While you channel Mass Regeneration the next spell already shows, so you can cancel it at once (its direct healing is small). Choosing whom to heal stays with you." },
 -- 1d79fa22
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution).
 [2261] = { "Default.Era.Paladin.Retribution.Name", "Retribution" },
 -- 623b26cb
 [2262] = { "Default.Era.Paladin.Retribution.Description", "Melee Retribution from level 1 to 60, and the default for any Paladin no other premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and judges it once; otherwise keeps a seal up (Command with a weapon of 3.5 seconds or slower, else Righteousness), Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Judgement on cooldown, Consecration while Vengeance is up or on two or more close enemies. Reminders: Sanctity, Retribution or Devotion Aura, Blessing of Wisdom solo or Might in a group, a heal between fights, Divine Shield, Divine Protection or Lay on Hands when you are about to die. Seal twisting is a separate premade; target choice and positioning stay with you." },
 -- a2754c34
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution / Twist).
 [2263] = { "Default.Era.Paladin.Retribution.Twist.Name", "Retribution, seal twisting" },
 -- 34017594
 [2264] = { "Default.Era.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist seals. For a Retribution Paladin with Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last 0.4 seconds before a swing and back again, Judgement whenever it is ready, Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Consecration with Vengeance. Needs a lot of mana and good timing. Same reminders as the Retribution premade." },
 -- 0e97ad02
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Protection).
 [2265] = { "Default.Era.Paladin.Protection.Name", "Protection" },
 -- 8b566adc
 [2266] = { "Default.Era.Paladin.Protection.Description", "Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree. Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement to pull, Holy Shield kept up, Consecration and Holy Wrath (Undead and Demons) when two or more enemies are on you, otherwise Judgement of the Crusader once, then Judgement and Consecration with mana to spare, Exorcism on Undead and Demons. Reminders: Righteous Fury, Devotion Aura, Sanctuary, Kings or Might, Lay on Hands when nearly dead. Taunting, Blessing of Kings spam and spell ranks stay with you." },
@@ -877,10 +1442,16 @@ local S = {
 -- 6af9c398
 [2268] = { "Default.Era.Paladin.Protection.IcyVeins.Description", "Icy Veins' raid tanking with Wowhead's Wisdom rotation, an alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Keeps Seal of Wisdom up and judges it whenever the target lacks Judgement of Wisdom, otherwise judges only to pull; Holy Shield, Consecration every cooldown, Holy Wrath on Undead and Demon packs, Exorcism, and Greater Blessing of Kings as the threat filler in a raid. Same reminders as the recommended premade." },
 -- 56eee6a5
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Holy).
 [2269] = { "Default.Era.Paladin.Holy.Name", "Holy" },
 -- 9d4ec18a
 [2270] = { "Default.Era.Paladin.Holy.Description", "Healing in a group with the Holy tree, from level 10. Acts on your friendly target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move, maximum-rank Holy Light below 40%, rank-6 Holy Light below 65%, maximum-rank Flash of Light below 85%, rank-4 Flash of Light below 95%. With an enemy in melee range: Seal of Wisdom and, outside raids, Judgement. Reminders: Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. Choosing whom to heal stays with you; soloing Holy Paladins get the Retribution premade." },
 -- 8094efdd
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2271] = { "Default.SoD.Paladin.Retribution.Name", "Retribution (SoD)" },
 -- 0cc623b4
 [2272] = { "Default.SoD.Paladin.Retribution.Description", "Season of Discovery melee from level 1 to 60, and the default for any Paladin there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism, casts Divine Storm at three Holy Power, then by weapon speed: with a two-hander of 3.3 seconds or slower, Crusader Strike, Exorcism, Divine Storm and Judgement; with a faster one, Judgement only as the seal runs out, then Exorcism, Crusader Strike and Divine Storm. Consecration with mana or three close enemies, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Hammer of Wrath with mana to spare (always with Improved Hammer of Wrath engraved). Runes are used as you engrave them. Reminders: Sanctity Aura, a Blessing, Avenging Wrath with Aura Mastery, a heal between fights, Divine Shield when about to die." },
@@ -897,18 +1468,34 @@ local S = {
 -- 1def9d31
 [2278] = { "Default.SoD.Paladin.Retribution.Stacking.Description", "Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up." },
 -- 68461fe5
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2279] = { "Default.SoD.Paladin.Shockadin.Name", "Shockadin (SoD, wowsims)" },
 -- 9a1756b6
 [2280] = { "Default.SoD.Paladin.Shockadin.Description", "Off by default; enable it if you deal damage with the Holy tree. It applies with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power, Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade." },
 -- 924f353b
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2281] = { "Default.SoD.Paladin.Protection.Name", "Protection (SoD)" },
 -- 58619700
 [2282] = { "Default.SoD.Paladin.Protection.Description", "Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull with Holy Shield, Avenger's Shield and Exorcism, Holy Shield kept up; on one target Hammer of the Righteous, Shield of Righteousness, Exorcism, Avenger's Shield, Judgement, Divine Storm, Consecration; with three or more enemies on you Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism. Reminders: Righteous Fury, Holy Shield before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below 40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else." },
 -- 29a17682
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2283] = { "Default.SoD.Paladin.Protection.Wowsims.Name", "Protection (SoD, wowsims)" },
 -- f2677084
 [2284] = { "Default.SoD.Paladin.Protection.Wowsims.Description", "The wowsims tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade." },
 -- e757b87a
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2285] = { "Default.SoD.Paladin.Holy.Name", "Holy (SoD)" },
 -- 45b566d4
 [2286] = { "Default.SoD.Paladin.Holy.Description", "Season of Discovery healing in a group, chosen by an engraved Beacon of Light, Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your friendly target: Cleanse, Holy Shock while moving or below 30%, Divine Light (Holy Light when mana is under half) below 60%, Flash of Light below 90%. With an enemy in melee range it only keeps a seal up. Reminders: Beacon of Light and Sacred Shield on the target that lacks them, Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. The guides behind it are from Phase 4; choosing whom to heal stays with you." },
@@ -917,6 +1504,8 @@ local S = {
 -- 12186f26
 [2288] = { "Default.SoD.Paladin.Holy.Wowhead.Description", "Wowhead's Phase 4 healing order for crit-heavy gear, an alternative to the recommended Season of Discovery Holy premade, off by default: enable it and disable that one, or raise its priority. Divine Light or Holy Light below 75%, then Cleanse, Holy Shock for small deficits or while moving, Flash of Light below 95%. Same reminders as the recommended premade." },
 -- 0c874f58
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Dps).
 [2289] = { "Default.Era.Priest.Dps.Name", "Damage" },
 -- 3af8cf40
 [2290] = { "Default.Era.Priest.Dps.Description", "Damage from level 1 to 60, and the Priest default whenever the healer premade does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a shield when solo, then Holy Fire (without Shadowform), Mind Blast or Smite. Shadow Word: Pain once per target that will live, Mind Blast on cooldown, Mind Flay as the filler (Smite and Holy Nova before you have it), and the wand on a dying target or when your mana runs low while solo. Vampiric Embrace and Devouring Plague on long fights, never in raids. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus with Mind Blast, Psychic Scream when two enemies reach you at half health, Fade when your target turns on you, Desperate Prayer. Target choice, multi-dotting and downranking stay with you." },
@@ -929,10 +1518,16 @@ local S = {
 -- f3ea634f
 [2294] = { "Default.Era.Priest.Dps.Wowsims.Description", "The recommended damage priority with wowsims' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority." },
 -- a491a33c
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Healer).
 [2295] = { "Default.Era.Priest.Healer.Name", "Healer" },
 -- dae36c27
 [2296] = { "Default.Era.Priest.Healer.Description", "Chosen in a group when Holy or Discipline is your main talent tree. Heals the friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer of Healing when three of your party are hurt, Greater Heal (Heal or Lesser Heal before you learn it) below half health, Renew while moving or on light damage, then Heal rank 3 as the efficient top-up. Out of combat it offers Fortitude on your target. Targeting an enemy gives Shadow Word: Pain and Smite. Reminders: Inner Fire, Fortitude, Divine Spirit, Inner Focus, Desperate Prayer; Power Infusion is off by default. Choosing whom to heal and downranking stay with you." },
 -- 999e9eba
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2297] = { "Default.SoD.Priest.Dps.Name", "Damage (SoD)" },
 -- 63f3ee22
 [2298] = { "Default.SoD.Priest.Dps.Description", "Damage on Season of Discovery realms, from level 1 to 60, using the runes you have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite before Shadowform). Void Plague, Shadow Word: Pain and Vampiric Touch kept up (refreshed near the end only without Pain and Suffering engraved), Mind Blast on cooldown, Mind Flay on Melting Faces, Shadow Word: Death while you are above half health, then Mind Spike as the filler, or Mind Flay with the Phase 8 six-piece set. Void Zone and Mind Sear on four or more enemies. The wand on a dying solo target. Reminders: Inner Fire, Fortitude, Homunculi, Shadowfiend, Eye of the Void and Dispersion, Inner Focus, Psychic Scream, Fade, Desperate Prayer." },
@@ -941,6 +1536,10 @@ local S = {
 -- 296f399b
 [2300] = { "Default.SoD.Priest.Dps.Wowhead.Description", "The Wowhead and Warcraft Tavern way for Season of Discovery, an alternative to the recommended Season of Discovery damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast waits for three of your Mind Spike stacks on the target (it is cast normally until you engrave Mind Spike), Mind Flay only on Melting Faces, Mind Spike as the filler. Everything else matches the recommended premade." },
 -- a23552e6
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2301] = { "Default.SoD.Priest.Healer.Name", "Healer (SoD)" },
 -- 37b39f3b
 [2302] = { "Default.SoD.Priest.Healer.Description", "Chosen on Season of Discovery realms in a group when Holy or Discipline is your main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending before the pull and whenever ready, Shield below half health, Penance, instant Flash Heal on Surge of Light, emergency Flash Heal, dispels, Circle of Healing and Prayer of Healing when three of your party are hurt, Greater Heal below half health, Renew while moving or on light damage, then Heal. Targeting an enemy gives Pain, Void Plague, Penance, Holy Fire and Smite. Reminders include Shadowfiend, Pain Suppression on a dying target, Power Word: Barrier and Spirit of the Redeemer when the party is hurt." },
@@ -949,6 +1548,8 @@ local S = {
 -- 25158fb1
 [2304] = { "Default.SoD.Priest.Healer.WarcraftTavern.Description", "Warcraft Tavern's Serendipity loop, built for Serendipity and Soul Warding, an alternative to the recommended Season of Discovery healer premade, off by default: enable it and disable that one, or raise its priority. Prayer of Mending on cooldown, Shield on your target whenever it can take one (with Soul Warding engraved; else below half health), Penance on heavy damage, Circle of Healing for three hurt, Greater Heal or Prayer of Healing at three Serendipity stacks, Renew on minor damage, and Flash Heal on minor injuries to build the stacks (with Serendipity engraved; else below 30%)." },
 -- e5b321d7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Classic Era (variant key: DPS).
 [2305] = { "Default.Era.Rogue.DPS.Name", "Melee DPS" },
 -- b5cd3c00
 [2306] = { "Default.Era.Rogue.DPS.Description", "Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you." },
@@ -961,6 +1562,10 @@ local S = {
 -- 29c60f99
 [2310] = { "Default.Era.Rogue.DPS.Wowsims.Description", "The wowsims \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade." },
 -- b33d1254
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2311] = { "Default.SoD.Rogue.DPS.Name", "Melee DPS (SoD)" },
 -- d3dc0f9a
 [2312] = { "Default.SoD.Rogue.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them; built from wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation." },
@@ -973,10 +1578,16 @@ local S = {
 -- b718caf6
 [2316] = { "Default.SoD.Rogue.DPS.Zockify.Description", "Zockify's lean Season of Discovery list, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. No bleeds and no Expose Armor. Poisoned Knife at four poison stacks, Slice and Dice when missing (from two points, four with Saber Slash), Envenom at five, then the glove-rune builder. The Vanish and Cold Blood burst stays with you." },
 -- ebb8b9e3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2317] = { "Default.SoD.Rogue.Tank.Name", "Tank (SoD)" },
 -- d50349d8
 [2318] = { "Default.SoD.Rogue.Tank.Description", "Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you." },
 -- b12b36cf
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Enhancement).
 [2319] = { "Default.Era.Shaman.Enhancement.Name", "Enhancement" },
 -- 5faeab70
 [2320] = { "Default.Era.Shaman.Enhancement.Description", "Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you." },
@@ -985,6 +1596,8 @@ local S = {
 -- bc01445d
 [2322] = { "Default.Era.Shaman.Enhancement.WarcraftTavern.Description", "Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority. Windfury Weapon as soon as you learn it, Stormstrike, Flame Shock before any direct shock, then Earth Shock while your threat is low, or Frost Shock in a group once it is high; Magma and Chain Lightning on packs. Same totems and reminders as the recommended premade." },
 -- 4309e83a
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Elemental).
 [2323] = { "Default.Era.Shaman.Elemental.Name", "Elemental" },
 -- 5ee9955c
 [2324] = { "Default.Era.Shaman.Elemental.Description", "Elemental from level 10 (most points in Elemental); built from Icy Veins and Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame Shock, else Frost Shock. Solo with the target in melee: Earth Shock above 30% health, then melee. On three or more enemies: Fire Nova and Magma totems when you are in melee, and Chain Lightning. Chain Lightning under Elemental Mastery or Clearcasting, otherwise Lightning Bolt. Reminders: Lightning Shield, Rockbiter outside raids, Searing or Magma, Mana Spring or Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you." },
@@ -993,6 +1606,8 @@ local S = {
 -- d02c941a
 [2326] = { "Default.Era.Shaman.Elemental.Wowsims.Description", "The wowsims Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders." },
 -- 6a3c6c77
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Restoration).
 [2327] = { "Default.Era.Shaman.Restoration.Name", "Restoration" },
 -- 5119f4dc
 [2328] = { "Default.Era.Shaman.Restoration.Description", "Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's Swiftness below 30%, Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Chain Heal when three group members near you are below 85%, otherwise Healing Wave below 90%. On an enemy it fights: Earth Shock interrupt, Chain Lightning on packs, Flame Shock, Lightning Bolt from range, melee. Reminders: Lightning Shield and Rockbiter solo, Mana Tide in a group, Mana Spring, Strength of Earth, Searing. Choosing whom to heal, downranking and Tremor or cleansing totems stay with you; keeping Healing Way on the tank is listed off." },
@@ -1001,14 +1616,26 @@ local S = {
 -- 7528f628
 [2330] = { "Default.Era.Shaman.Restoration.WarcraftTavern.Description", "Warcraft Tavern's Restoration, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. Chain Heal is the heal for anyone below 90%, with Lesser Healing Wave for someone about to die; Healing Wave is only for an assigned tank healer with Healing Way (listed off). Same cures, damage on enemies and totem reminders as the recommended premade." },
 -- 37e5b161
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2331] = { "Default.SoD.Shaman.Enhancement.Name", "Enhancement (SoD)" },
 -- 929796a6
 [2332] = { "Default.SoD.Shaman.Enhancement.Description", "Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you." },
 -- 0fb65642
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2333] = { "Default.SoD.Shaman.Elemental.Name", "Elemental (SoD)" },
 -- f9d25821
 [2334] = { "Default.SoD.Shaman.Elemental.Description", "Season of Discovery Elemental from level 10 (most points in Elemental); built from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you." },
 -- 24f21f83
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2335] = { "Default.SoD.Shaman.Restoration.Name", "Restoration (SoD)" },
 -- ff16512c
 [2336] = { "Default.SoD.Shaman.Restoration.Description", "Season of Discovery Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Healing Rain when three group members near you are below 85%, Chain Heal when two are (at once on a Power Surge proc), Riptide below 95% for Tidal Waves, Healing Wave below 90%. On an enemy it fights. Reminders: Water Shield (Lightning Shield before), Earth Shield on your friendly target or yourself, Shamanistic Rage, Mana Tide, Mana Spring and Strength of Earth. Choosing whom to heal and Tremor or cleansing totems stay with you." },
@@ -1017,6 +1644,8 @@ local S = {
 -- 8ecde7ce
 [2338] = { "Default.SoD.Shaman.Tank.Description", "Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems." },
 -- 2628a00c
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Classic Era (variant key: DPS).
 [2339] = { "Default.Era.Warlock.DPS.Name", "Every tree" },
 -- 67b0af4c
 [2340] = { "Default.Era.Warlock.DPS.Description", "Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you." },
@@ -1029,10 +1658,18 @@ local S = {
 -- 95411363
 [2344] = { "Default.Era.Warlock.DPS.IcyVeins.Description", "Icy Veins' list for realms with the 16-debuff limit, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. In raids only your curse and Corruption, then Shadow Bolt, with no Immolate and no Siphon Life. Leveling and dungeons play as the recommended premade." },
 -- 4f0bc39e
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2345] = { "Default.SoD.Warlock.Tank.Name", "Tank (SoD, Metamorphosis)" },
 -- 1e24cbef
 [2346] = { "Default.SoD.Warlock.Tank.Description", "Season of Discovery tank, chosen once Metamorphosis is engraved; built from wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you." },
 -- 91d3c82e
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2347] = { "Default.SoD.Warlock.Fire.Name", "Fire (SoD)" },
 -- b3afd0ce
 [2348] = { "Default.SoD.Warlock.Fire.Description", "Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish; instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony); Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders: Fel Armor, the Imp, Amplify Curse and the safety reminders." },
@@ -1049,10 +1686,14 @@ local S = {
 -- aff32cb7
 [2354] = { "Default.SoD.Warlock.Shadow.Wowsims.Description", "The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade." },
 -- e5b321d7
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: DPS).
 [2355] = { "Default.Era.Warrior.DPS.Name", "Melee DPS" },
 -- c080d284
 [2356] = { "Default.Era.Warrior.DPS.Description", "Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you." },
 -- c0b21fb1
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: Protection).
 [2357] = { "Default.Era.Warrior.Protection.Name", "Tank" },
 -- 6949294b
 [2358] = { "Default.Era.Warrior.Protection.Description", "Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing Shout and Battle Shout for threat. Then Revenge, Shield Slam, Bloodthirst, Sunder Armor to five, Demoralizing Shout on elites, Sunder Armor as the filler, and Rend before Shield Slam or Bloodthirst. Shield Slam and Shield Block only with a shield on. Reminders: Battle Shout, Shield Block while the target hits you, Bloodrage, Heroic Strike and Cleave from 50 rage, Shield Bash, Last Stand. Taunt, Shield Wall and Death Wish are listed off; Battle Stance for Execute (the DPS premade takes over) and Challenging Shout stay with you." },
@@ -1061,6 +1702,10 @@ local S = {
 -- 3acacdc7
 [2360] = { "Default.Era.Warrior.Protection.IcyVeins.Description", "Icy Veins' \"sunderless\" tanking for groups where four or more players hear your shout (Phase 5 Battle Shout onward), an alternative to the recommended tank premade, off by default: enable it and disable that one, or raise its priority. Demoralizing Shout kept up, Revenge, Shield Slam or Bloodthirst, then Battle Shout as the threat filler instead of Sunder Armor; Shield Slam and Shield Block only with a shield on. Same reminders as the recommended tank; go back to Sunder when focusing one target in a crowd." },
 -- b33d1254
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2361] = { "Default.SoD.Warrior.DPS.Name", "Melee DPS (SoD)" },
 -- dbdfa29c
 [2362] = { "Default.SoD.Warrior.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off." },
@@ -1073,26 +1718,43 @@ local S = {
 -- d1f081a4
 [2366] = { "Default.SoD.Warrior.DPS.IcyVeins.Description", "Icy Veins' Season of Discovery Fury and Arms pages, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Execute near the top below 20% or on Sudden Death, Slam on Blood Surge, Bloodthirst or Mortal Strike, Whirlwind, Overpower, Raging Blow, then Quick Strike and Hamstring only above 60 rage; no Rend; Heroic Strike only above 80 rage. Same reminders as the recommended premade." },
 -- ebb8b9e3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2367] = { "Default.SoD.Warrior.Tank.Name", "Tank (SoD)" },
 -- 93f460da
 [2368] = { "Default.SoD.Warrior.Tank.Description", "Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
+--     the specialization.
 [2369] = { "Default.MoP.DeathKnight.Blood.Name", "Recommended" },
 -- 235cf9c7
 [2370] = { "Default.MoP.DeathKnight.Blood.Description", "Recommended for Blood tanks, chosen in the Blood specialization. Pulls from range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood Shield is missing (from 80), and before all four Frost and Unholy runes sit full; Rune Strike near 90 runic power (Death Coil at 80 before you learn it); Outbreak, else Icy Touch and Plague Strike, for diseases, and Blood Boil to refresh them from 68; Soul Reaper under 35%; Heart Strike (Blood Strike before 60) on two Blood runes; Crimson Scourge on Death and Decay while diseases last, else Blood Boil; Blood Tap at eleven charges; then Death Strike, Heart Strike, Rune Strike and Horn of Winter. Three enemies on you: Death and Decay, a disease spread (Blood Boil with Roiling Blood, else Pestilence) and Blood Boil. Reminders: Blood Presence when you have none, Bone Shield, Horn of Winter, Mind Freeze, Rune Tap, Vampiric Blood, Icebound Fortitude, Empower Rune Weapon and Death Pact by your health, Dancing Rune Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so Anti-Magic Shell (off) and big defensives are yours." },
 -- a7eb3532
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2371] = { "Default.MoP.DeathKnight.Blood.Wowsims.Name", "Health-reactive (wowsims)" },
 -- a92e9e2e
 [2372] = { "Default.MoP.DeathKnight.Blood.Wowsims.Description", "An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one." },
 -- 747fb182
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: FrostDualWield).
 [2373] = { "Default.MoP.DeathKnight.FrostDualWield.Name", "Two weapons" },
 -- 0c806576
 [2374] = { "Default.MoP.DeathKnight.FrostDualWield.Description", "Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast (Death Grip solo). Death Strike on Dark Succor or below 35% health, Blood Tap at eleven charges, diseases (Unholy Blight, Outbreak, Howling Blast, Plague Strike), Soul Reaper under 35%, Frost Strike on Killing Machine or above 89 runic power, Howling Blast on Rime or with both Frost or both Death runes ready, Obliterate on two Unholy runes below 77 runic power, Frost Strike above 76, Obliterate, Howling Blast, Plague Leech before diseases fade with Outbreak ready, Frost Strike at 40, Horn of Winter. Three enemies on you: a disease spread, Death and Decay and Howling Blast. Reminders: Frost Presence, Pillar of Frost, Raise Dead, Empower Rune Weapon with every rune down, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss." },
 -- 9562e8af
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Frost).
 [2375] = { "Default.MoP.DeathKnight.Frost.Name", "Two-hander" },
 -- d33a6f74
 [2376] = { "Default.MoP.DeathKnight.Frost.Description", "Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost specialization whenever the two-weapon premade does not apply. Same opening, diseases, survival and AoE as the two-weapon premade, then Obliterate on Killing Machine, Frost Strike above 76 runic power, Howling Blast on Rime, Obliterate whenever a rune pair is full, Obliterate, Howling Blast, Plague Leech, Frost Strike at 40 and Horn of Winter. Before Obliterate (58) Death Strike spends your Unholy runes. Same reminders as the two-weapon premade." },
 -- 4de5fe95
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Unholy).
 [2377] = { "Default.MoP.DeathKnight.Unholy.Name", "Unholy" },
 -- 5c6efba1
 [2378] = { "Default.MoP.DeathKnight.Unholy.Description", "Recommended for Unholy, and the premade for any Death Knight Blood and Frost do not claim, including one without a specialization. Pulls from range with Outbreak or Icy Touch (Death Grip solo). Death Strike on Dark Succor or below 35% health, diseases (Unholy Blight, Outbreak, Plague Strike, Icy Touch), Blood Tap at eleven charges, Soul Reaper under 35%, Dark Transformation at five Shadow Infusion stacks, Death Coil near the runic power cap, Death and Decay on a target that will live, Scourge Strike, Death Coil on Sudden Doom or at 40, Outbreak while Unholy Strength is up, Festering Strike (Blood Strike before you learn it), Plague Leech, Horn of Winter. Three enemies on you: a disease spread, Death and Decay, Blood Boil and Icy Touch on a Frost rune. Reminders: Unholy Presence, your ghoul, Summon Gargoyle under Bloodlust or on a long elite fight, Unholy Frenzy, Empower Rune Weapon, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss; Anti-Magic Shell is off." },
@@ -1101,14 +1763,23 @@ local S = {
 -- 457f3061
 [2380] = { "Default.MoP.DeathKnight.Unholy.Wowsims.Description", "An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one." },
 -- 5ea8498f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2381] = { "Default.MoP.Druid.Unspecialized.Name", "Before a specialization" },
 -- 3efc9d82
 [2382] = { "Default.MoP.Druid.Unspecialized.Description", "For levels 1 to 9, or any druid who has not chosen a specialization yet; the specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends five combo points (or two on a dying target) on Ferocious Bite and builds with Mangle; in Bear Form it uses Mangle and Maul. Otherwise it pulls with Wrath, keeps Moonfire on targets that will last, casts Wrath (Moonfire while moving) and suggests Rejuvenation on yourself when you are below half health and alone. It stops while you cast, travel or have no enemy targeted." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
+--     specialization.
 [2383] = { "Default.MoP.Druid.Balance.Name", "Recommended" },
 -- 625c32c1
 [2384] = { "Default.MoP.Druid.Balance.Description", "Recommended for Balance from level 10, after Wowhead's Phase 5 list and wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
+--     specialization.
 [2385] = { "Default.MoP.Druid.Feral.Name", "Recommended" },
 -- 008c4d0b
 [2386] = { "Default.MoP.Druid.Feral.Description", "Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual." },
@@ -1117,22 +1788,38 @@ local S = {
 -- 34b2bf98
 [2388] = { "Default.MoP.Druid.Feral.IcyVeins.Description", "Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the recommended Feral premade: enable it and disable that one, or raise its priority. Same opener, Savage Roar, Healing Touch and AoE, but combo points above 25% target health go only to Rip and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends five points before you learn Rip). Rake refreshes at two seconds, Thrash only on Clearcasting, and Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
+--     specialization.
 [2389] = { "Default.MoP.Druid.Guardian.Name", "Recommended" },
 -- b19b167d
 [2390] = { "Default.MoP.Druid.Guardian.Description", "Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default)." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2391] = { "Default.MoP.Druid.Restoration.Name", "Recommended" },
 -- de6705ed
 [2392] = { "Default.MoP.Druid.Restoration.Description", "Recommended for Restoration from level 10, after Wowhead's Phase 5 group healing. Heals your current friendly target, or you with no target; choosing whom to heal is up to you. Swiftmend on a target with your HoT when it is low, when Harmony has dropped, or into Wild Growth with Soul of the Forest; Wild Growth when three people nearby are hurt; instant Healing Touch on Nature's Swiftness; Regrowth on Clearcasting or a dying target; Rejuvenation; then Healing Touch and Nourish while standing still. An attackable target gets Moonfire and Wrath. Reminders: Lifebloom stacks and Ironbark on your focus (set the tank as focus), Wild Mushroom: Bloom on group damage, Force of Nature, Incarnation, Nature's Vigil, Nature's Swiftness, Innervate, Nature's Cure, Cenarion Ward, Barkskin, Mark of the Wild. Wild Mushroom placement, Tranquility and Genesis reminders are off by default." },
 -- f3d02e30
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2393] = { "Default.MoP.Druid.Restoration.Wowhead.Name", "Tank healing (Wowhead)" },
 -- 28164e24
 [2394] = { "Default.MoP.Druid.Restoration.Wowhead.Description", "Wowhead's single-target tank-healing order, an alternative to the recommended Restoration premade for when you are assigned to the tank: enable it and disable that one, or raise its priority. Keep the tank targeted: it keeps three Lifeblooms and Rejuvenation on it, uses Regrowth for heavy damage, Nourish for light damage, Healing Touch once Lifebloom and Rejuvenation are rolling and the tank is below half, and Swiftmend to keep it topped up. Same reminders as the recommended premade." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: BeastMastery). The standard recommended rotation for
+--     the specialization.
 [2395] = { "Default.MoP.Hunter.BeastMastery.Name", "Recommended" },
 -- 74d539a0
 [2396] = { "Default.MoP.Hunter.BeastMastery.Description", "Chosen automatically in the Beast Mastery specialization. Opens with Hunter's Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is about to be ready), A Murder of Crows, Lynx Rush, Dire Beast and your tier-six shot when talented, Focus Fire at five Frenzy stacks (or four about to fall off) but not during Bestial Wrath, Serpent Sting on targets that will live, Cobra Shot to refresh it, Arcane Shot at 80 focus or during Bestial Wrath, then Cobra Shot (Steady Shot before 81). With two or more enemies fighting you it keeps Beast Cleave up with Multi-Shot, saves Kill Command for spare focus on big packs and suggests Explosive Trap from three. Reminders: pet out, revived and mended, Aspect of the Hawk or Iron Hawk, Counter Shot, Fervor, and Bestial Wrath, Rapid Fire, Stampede and racials when the fight is worth it (an elite, a dungeon or raid, or a target that will live). Trap placement, Misdirection, Feign Death and defensives stay with you; Exhilaration and Deterrence reminders are off by default." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Marksmanship). The standard recommended rotation for
+--     the specialization.
 [2397] = { "Default.MoP.Hunter.Marksmanship.Name", "Recommended" },
 -- a1f9c291
 [2398] = { "Default.MoP.Hunter.Marksmanship.Description", "Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot, then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on targets that will live, Aimed Shot whenever Fire! makes it instant, Kill Shot, your talents, and a hard-cast Aimed Shot while the target is above 80% health, under Rapid Fire or Bloodlust, at 85 focus or when Chimera Shot is a few seconds away. Arcane Shot only while you are moving; otherwise Steady Shot. Four or more enemies: Chimera Shot, instant Aimed Shot, Multi-Shot, Kill Shot, Explosive Trap. Same reminders as the other Hunter premades. If you prefer spending spare focus on Arcane Shot, use the Arcane Shot variant." },
@@ -1141,14 +1828,23 @@ local S = {
 -- c5e2dc12
 [2400] = { "Default.MoP.Hunter.Marksmanship.IcyVeins.Description", "An alternative to the Marksmanship premade, as Icy Veins, Method, wowtbc.gg and Hekili play it: Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or Bloodlust, and spare focus goes to Arcane Shot at 60 instead. Steady Focus is refreshed under 4 seconds; on four or more enemies Multi-Shot comes first. Off by default: enable it and disable the Marksmanship premade, or raise its priority." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Survival). The standard recommended rotation for the
+--     specialization.
 [2401] = { "Default.MoP.Hunter.Survival.Name", "Recommended" },
 -- 1d1f9ae1
 [2402] = { "Default.MoP.Hunter.Survival.Description", "Chosen automatically in the Survival specialization. Opens with Hunter's Mark, Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on targets that will live, your talents, Serpent Sting kept up by Cobra Shot, Arcane Shot at 75 focus, with Thrill of the Hunt, or at 55 when Black Arrow is not coming up, then Cobra Shot (Steady Shot before 81). Two or more enemies: Multi-Shot first on Lock and Load with full focus, Explosive Shot up to five targets, Kill Shot, Black Arrow, Explosive Trap from three, Multi-Shot to spend. Same reminders as the other Hunter premades; traps for Lock and Load procs stay with you." },
 -- 5ea8498f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2403] = { "Default.MoP.Hunter.Unspecialized.Name", "Before a specialization" },
 -- d00315ae
 [2404] = { "Default.MoP.Hunter.Unspecialized.Description", "For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization. Pulls with Hunter's Mark and Arcane Shot, then Serpent Sting on targets that will live, Multi-Shot on three or more enemies, Arcane Shot, Steady Shot and Auto Shot. Reminds you to call, revive and mend your pet and to keep Aspect of the Hawk up." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Arcane). The standard recommended rotation for the
+--     specialization.
 [2405] = { "Default.MoP.Mage.Arcane.Name", "Recommended" },
 -- 4f5292d5
 [2406] = { "Default.MoP.Mage.Arcane.Description", "Recommended for Arcane, from level 10 to 90 (selected in the Arcane specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc is spent with Missiles, and without one Arcane Barrage comes out once your mana drops below 90%. Above 95% mana it keeps blasting, which is how the simulator plays it. Missiles is never left sitting on two procs, Barrage is cast before Alter Time snaps back, and with two or more enemies Barrage goes out every four charges; Cone of Cold and Arcane Explosion when five are close. Keeps your talented bomb up, and Fire Blast or Ice Lance while moving without Ice Floes. Reminders: Arcane Power and Alter Time at four charges with a proc, Frost Armor (Molten before 54), Arcane Brilliance, Counterspell, Mana Gem, Mirror Image, Ice Barrier, Ice Floes, Rune of Power or Invocation. Time Warp, Spellsteal and Presence of Mind are off; Rune of Power still needs placing by hand." },
@@ -1157,6 +1853,9 @@ local S = {
 -- 1cacc0fe
 [2408] = { "Default.MoP.Mage.Arcane.IcyVeins.Description", "The guides' Arcane rule (Icy Veins, Wowhead, Method, wowtbc.gg), an alternative to the recommended Arcane premade: at four Arcane Charges, Arcane Missiles if a proc is up, otherwise Arcane Barrage, whatever your mana; Missiles only at four charges. Everything else (Alter Time, bombs, AoE, moving, reminders) matches the recommended one, except that Arcane Power is suggested at four charges without waiting for a proc. Off by default: enable it and disable the recommended Arcane premade, or raise its priority." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Fire). The standard recommended rotation for the
+--     specialization.
 [2409] = { "Default.MoP.Mage.Fire.Name", "Recommended" },
 -- 82cfe9d2
 [2410] = { "Default.MoP.Mage.Fire.Description", "Recommended for Fire, from level 10 to 90 (selected in the Fire specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns Heating Up into a Pyroblast! proc, which is cast at once unless Combustion is about to come off cooldown; then it waits for the next Heating Up while you cast Fireball. Combustion lights right after a Pyroblast while Ignite and the Pyroblast burn are on the target; the addon cannot see how big Ignite is, so judge a weak one yourself. Keeps your talented bomb up, spreads with Inferno Blast when two or more enemies fight you, Cone of Cold and Arcane Explosion for five close by, Scorch on the move. Reminders: Molten Armor, Presence of Mind, Alter Time with both procs, Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Dragon's Breath, Time Warp and Spellsteal are off." },
@@ -1165,22 +1864,38 @@ local S = {
 -- 7c4a7543
 [2412] = { "Default.MoP.Mage.Fire.IcyVeins.Description", "Icy Veins', Method's and wowtbc.gg's Fire play, an alternative to the recommended Fire premade: a Pyroblast! proc is held until a Heating Up joins it, then cast together with your Fireball, and spent alone only when it is about to expire. Everything else matches the recommended one. Off by default: enable it and disable the recommended Fire premade, or raise its priority." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Frost). The standard recommended rotation for the
+--     specialization.
 [2413] = { "Default.MoP.Mage.Frost.Name", "Recommended" },
 -- a656a280
 [2414] = { "Default.MoP.Mage.Frost.Description", "Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice Lance on one Fingers of Frost, Frostbolt; from 87 a proc is held for Alter Time when it is less than 10 seconds away. With two or more enemies: Frozen Orb, Cone of Cold and Arcane Explosion when they are close, Blizzard when four stand still. Ice Lance and Fire Blast on the move without Ice Floes. Reminders: Water Elemental, Freeze on anything but a boss (place it yourself), Icy Veins timed with Alter Time, Alter Time at two Fingers of Frost in Icy Veins, Frost Armor (Molten before 54), Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Cold Snap, Presence of Mind, Time Warp and Spellsteal are off." },
 -- 5ea8498f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2415] = { "Default.MoP.Mage.Unspecialized.Name", "Before a specialization" },
 -- aa9bffd1
 [2416] = { "Default.MoP.Mage.Unspecialized.Description", "For levels 1 to 9, and any Mage who has not chosen a specialization yet. Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once learned, Arcane Explosion when three or more enemies are in melee range. Reminders: Frost Nova when a mob reaches you, Counterspell, and Molten Armor and Arcane Brilliance if you reach them. Choosing a specialization at 10 switches to that specialization's premade." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster). The standard recommended rotation for
+--     the specialization.
 [2417] = { "Default.MoP.Monk.Brewmaster.Name", "Recommended" },
 -- 94fb9e53
 [2418] = { "Default.MoP.Monk.Brewmaster.Description", "Picked automatically in the Brewmaster specialization. Keeps Shuffle up with Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once below 35%), Jab to spend energy, Tiger Palm for Tiger Power and as the free filler (Jab builds Chi before level 34), and Touch of Death when it is usable. From range out of combat: Chi Wave, Dizzying Haze, Clash or Keg Smash. On three or more enemies: Rushing Jade Wind, Breath of Fire and Spinning Crane Kick only while Shuffle has time left. Reminders: Sturdy Ox, Legacy of the Emperor, Purifying Brew on Heavy Stagger (Moderate when Shuffle is banked), Elusive Brew from six stacks, Guard with Power Guard, Chi Brew, Xuen, Fortifying Brew, Dampen Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert Harm, Zen Meditation and Provoke stay with you." },
 -- fbb1d180
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2419] = { "Default.MoP.Monk.Brewmaster.Offensive.Name", "Damage first (wowsims)" },
 -- e83b14c9
 [2420] = { "Default.MoP.Monk.Brewmaster.Offensive.Description", "An alternative to the Brewmaster premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's damage-first list for a tank who outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for damage, and no routine Purifying Brew or Guard (Purifying Brew only lights on the tier-15 Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Windwalker). The standard recommended rotation for
+--     the specialization.
 [2421] = { "Default.MoP.Monk.Windwalker.Name", "Recommended" },
 -- d0726f89
 [2422] = { "Default.MoP.Monk.Windwalker.Description", "Picked automatically in the Windwalker specialization. Touch of Death when usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker procs, Fists of Fury when you are standing still and its channel will not cap your energy, Jab when two Chi are missing (Expel Harm instead when hurt), Blackout Kick without starving the next Rising Sun Kick. On two or more enemies Rising Sun Kick keeps its debuff up and Spinning Crane Kick or Rushing Jade Wind joins from three. Reminders: Fierce Tiger, Legacy of the Emperor and of the White Tiger, Tigereye Brew at 19 stacks (15 with Chi to spend, 10 under Bloodlust or near the end of a fight), Energizing Brew at low energy, Chi Brew, Xuen, Storm, Earth, and Fire on two enemies (you cast it on the second one), Touch of Karma, defensives and Spear Hand Strike. Energy-to-cap checks are energy thresholds, so tune them to your haste." },
@@ -1189,14 +1904,23 @@ local S = {
 -- c894fb14
 [2424] = { "Default.MoP.Monk.Windwalker.Simc.Description", "An alternative to the Windwalker premade, off by default: enable it and disable that one, or raise its priority. The original SimulationCraft list that the Hekili and MaxDps addons ship: Tiger Power refreshed at three seconds, Rising Sun Kick first while its debuff is missing, Fists of Fury saved for Tigereye Brew (active or 15 stacks), Tigereye Brew at 20 stacks or at 15 with Chi and both buffs up. On three or more enemies it spends on Spinning Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Mistweaver). The standard recommended rotation for
+--     the specialization.
 [2425] = { "Default.MoP.Monk.Mistweaver.Name", "Recommended" },
 -- 2d084655
 [2426] = { "Default.MoP.Monk.Mistweaver.Description", "Picked automatically in the Mistweaver specialization. With a friendly target it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are hurt, Expel Harm and your Chi talent for Chi, Rushing Jade Wind or Spinning Crane Kick for a hurt group, Surging Mist on five Vital Mists, Soothing Mist when the target is below 80%, then Enveloping Mist and Surging Mist inside that channel. With an enemy target it fistweaves: Tiger Palm and Blackout Kick on Muscle Memory to keep Tiger Power and Serpent's Zeal, Blackout Kick when Chi is full, Surging Mist on five Vital Mists, Renewing Mist and Expel Harm for Chi, Jab. Reminders: Wise Serpent, Legacy of the Emperor, the Jade Serpent Statue in a group, Mana Tea in quiet moments, Thunder Focus Tea, Chi Brew, Life Cocoon on a friend below 35%, Xuen, Detox, defensives, Spear Hand Strike. You choose whom to heal; Revival (reminder off) and Healing Sphere stay with you." },
 -- 5ea8498f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2427] = { "Default.MoP.Monk.Unspecialized.Name", "Before a specialization" },
 -- e00ba6b1
 [2428] = { "Default.MoP.Monk.Unspecialized.Description", "For levels 1 to 9, or any monk who has not chosen a specialization; a specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Retribution). The standard recommended rotation for
+--     the specialization.
 [2429] = { "Default.MoP.Paladin.Retribution.Name", "Recommended" },
 -- a115bc01
 [2430] = { "Default.MoP.Paladin.Retribution.Description", "Recommended for Retribution, from level 10 in the Retribution specialization. Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends Templar's Verdict at full Holy Power or on a free proc before generating more, then Hammer of Wrath, Crusader Strike, Judgment and Exorcism, and Templar's Verdict at 3 when nothing else is ready. In Avenging Wrath it spends at once and puts Judgment ahead of Crusader Strike. Two or more enemies on you switch to Divine Storm, with Hammer of the Righteous when four are close. Pulls from range with Judgment or Exorcism, and suggests Word of Glory when you are solo and in danger. Reminders: Seal of Truth when another seal is active or none (Seal of Righteousness is kept), Blessing of Kings or Might, Rebuke, Avenging Wrath and Guardian of Ancient Kings with Inquisition up on elites, Holy Avenger in wings, Execution Sentence and Light's Hammer, and Divine Protection and Lay on Hands when low. Seal of Righteousness for packs and glyph choices stay with you." },
@@ -1205,6 +1929,9 @@ local S = {
 -- efa8e3a8
 [2432] = { "Default.MoP.Paladin.Retribution.WarcraftTavern.Description", "An alternative to the recommended Retribution premade, off by default: enable it and disable that one, or raise its priority. Exorcism on every cooldown and Art of War reset comes first; Inquisition is cast at any Holy Power when it is missing and refreshed at 3 in its last 20 seconds; then Crusader Strike, Judgment, Templar's Verdict and Hammer of Wrath (first in wings with Sanctified Wrath). Two or more enemies use Crusader Strike, Light's Hammer, Judgment, Divine Storm and Hammer of Wrath. Avenging Wrath and Guardian of Ancient Kings are suggested only on elites. The guide's Seal of Righteousness on any cleave is left to you." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2433] = { "Default.MoP.Paladin.Protection.Name", "Recommended" },
 -- 0c1b3a03
 [2434] = { "Default.MoP.Paladin.Protection.Description", "Recommended for Protection, from level 10 in the Protection specialization. Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, your level-90 talent, Consecration, Holy Wrath and Sacred Shield. Three or more enemies on you switch to Avenger's Shield, Consecration, Hammer of the Righteous, Judgment and Holy Wrath. Shield of the Righteous, Eternal Flame and Word of Glory are off the global cooldown, so they light beside the rotation: Shield of the Righteous whenever you can afford it, Eternal Flame on yourself when it is running out with 3 Holy Power and three Bastion of Glory stacks, Word of Glory below half health without that talent. Other reminders: Righteous Fury, Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Sacred Shield, Avenging Wrath and Holy Avenger while you are tanking, and Guardian of Ancient Kings, Ardent Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage, so plan big defensives yourself." },
@@ -1213,18 +1940,30 @@ local S = {
 -- 0709f739
 [2436] = { "Default.MoP.Paladin.Protection.Wowsims.Description", "An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2437] = { "Default.MoP.Paladin.Holy.Name", "Recommended" },
 -- ba77c874
 [2438] = { "Default.MoP.Paladin.Holy.Description", "For Holy, from level 10 in the Holy specialization. With a friend targeted it heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt, else Eternal Flame on a target without it, else Word of Glory; Holy Shock on cooldown; Infusion of Light into Holy Radiance or Divine Light, three Selfless Healer stacks into Holy Radiance or Flash of Light; Flash of Light below 35%; Holy Radiance for a hurt group; Divine Light, then Holy Light to top off. With an enemy targeted it deals damage: Holy Shock, Judgment, Crusader Strike, Holy Prism, Execution Sentence, Hammer of Wrath, Denounce. Reminders: Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Beacon of Light and Sacred Shield on your focus (set the tank as focus), Divine Plea below 60% mana, Light's Hammer and your healing cooldowns when three people are below 70%, Lay on Hands on a dying target. Choosing whom to heal, dispels and mouseover healing stay with you." },
 -- 5ea8498f
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2439] = { "Default.MoP.Paladin.Unspecialized.Name", "Before a specialization" },
 -- fce883af
 [2440] = { "Default.MoP.Paladin.Unspecialized.Description", "For levels 1 to 9, and any paladin who has not chosen a specialization yet; a specialization's premade takes over as soon as you pick one. Pulls from range with Judgment, then Crusader Strike and Judgment, with Hammer of Justice when you are solo and below half health and Word of Glory below 40%. Reminders: Seal of Command (Seal of Truth from 24) when you are not in it, Blessing of Kings, Rebuke, and Flash of Light out of combat when you are hurt." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Discipline). The standard recommended rotation for
+--     the specialization.
 [2441] = { "Default.MoP.Priest.Discipline.Name", "Recommended" },
 -- 360a55ef
 [2442] = { "Default.MoP.Priest.Discipline.Description", "Discipline healing from level 10 to 90, chosen in the Discipline specialization. Target a friend to heal them: Power Word: Shield when they are low, before the pull and about every 12 seconds for Rapture; Flash Heal on Surge of Light; Penance; Flash Heal when they are very low; Binding Heal when you are both hurt; Prayer of Mending; Prayer of Healing and your tier-6 talent when three allies are hurt; Greater Heal; Renew while moving; Heal to top up. Under Spirit Shell it suggests Prayer of Healing or Greater Heal. Target an enemy to heal through Atonement: Penance, Power Word: Solace or Holy Fire, your tier-6 talent on packs, Shadow Word: Pain when solo, Smite. Reminders: Inner Fire, Fortitude, Archangel at five Evangelism, Inner Focus, Pain Suppression on a dying target, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, Spirit Shell timing (a reminder you can switch on), Power Word: Barrier, Void Shift and Grace stacks on the tank." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2443] = { "Default.MoP.Priest.Holy.Name", "Recommended" },
 -- 1d7fb6cd
 [2444] = { "Default.MoP.Priest.Holy.Description", "Holy healing from level 10 to 90, chosen in the Holy specialization. Target a friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when they are about to die; Flash Heal on Surge of Light; Prayer of Mending; Flash Heal when very low; Binding Heal when you are both hurt; in a group with three allies hurt, Circle of Healing, Holy Word: Sanctuary in Chakra: Sanctuary, your tier-6 talent and Prayer of Healing; Renew; Greater Heal when low or at two Serendipity; Heal. Target an enemy to deal damage: Holy Word: Chastise, Power Word: Solace or Holy Fire, Shadow Word: Pain when solo, your tier-6 talent on packs, Smite. An empty chakra is filled for you (Sanctuary in a raid, Serenity in a party, Chastise solo) and never swapped. Reminders: Inner Fire, Fortitude, Guardian Spirit on a dying target, Divine Hymn when five allies are badly hurt, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, placing Holy Word: Sanctuary, Lightwell and Void Shift." },
@@ -1233,6 +1972,9 @@ local S = {
 -- 007307b5
 [2446] = { "Default.MoP.Priest.Holy.IcyVeins.Description", "Off by default. Icy Veins' Holy order, picked by your chakra. In Chakra: Sanctuary: Holy Word: Sanctuary when three allies are hurt, Renew, Circle of Healing, Prayer of Mending, Prayer of Healing, then Binding Heal and Flash Heal only in emergencies. Otherwise: Renew, Holy Word: Serenity, Prayer of Mending, Greater Heal, Heal, Binding Heal, Flash Heal, Power Word: Shield last, and Flash Heal as the filler before you learn Heal. Same switch, reminders and damage list as the recommended Holy premade; enable it and disable that one to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Shadow). The standard recommended rotation for the
+--     specialization.
 [2447] = { "Default.MoP.Priest.Shadow.Name", "Recommended" },
 -- 6c0c75e0
 [2448] = { "Default.MoP.Priest.Shadow.Description", "Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind Blast is ready or still six seconds away), Mind Blast, Shadow Word: Death below 20% health, Mind Flay while your Devouring Plague is up if you took Solace and Insanity, Shadow Word: Pain and Vampiric Touch refreshed near the end on a target that will live, Mind Spike on Surge of Darkness, Halo, Cascade or Divine Star at their best range, then Mind Flay. A Mind Flay is cut short for Mind Blast or Shadow Word: Death, or after its second tick; other channels are never interrupted. While moving it suggests instants only. On five or more enemies: your tier-6 talent, DoTs on your target and Mind Sear. Reminders: Shadowform, Inner Fire, Fortitude, Silence on interruptible casts, Shadowfiend or Mindbender and Power Infusion on long fights, Vampiric Embrace, Desperate Prayer and Dispersion when low. Left to you: DoTs on other targets and where Mind Sear lands." },
@@ -1241,10 +1983,16 @@ local S = {
 -- 0e01e728
 [2450] = { "Default.MoP.Priest.Shadow.WarcraftTavern.Description", "Off by default. Warcraft Tavern's Shadow order: Devouring Plague at three Shadow Orbs, Shadow Word: Death below 20%, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Spike on Surge of Darkness, your tier-6 talent, Mind Flay. Unlike the recommended Shadow premade it never raises Mind Flay under Devouring Plague and does not hold Devouring Plague for Mind Blast. Same opener, movement, pack and reminder steps; enable it and disable the recommended one to use it." },
 -- 442034ab
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2451] = { "Default.MoP.Priest.Unspecialized.Name", "Unspecialized" },
 -- 31c78194
 [2452] = { "Default.MoP.Priest.Unspecialized.Description", "For levels 1 to 9, or any priest who has not chosen a specialization yet. On an enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal when they are low, otherwise Power Word: Shield. Reminders: Inner Fire, and a shield on yourself when you are solo and hurt. Choosing a specialization at 10 switches to its own premade." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
+--     the specialization.
 [2453] = { "Default.MoP.Rogue.Assassination.Name", "Recommended" },
 -- be1774f6
 [2454] = { "Default.MoP.Rogue.Assassination.Description", "Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning." },
@@ -1253,6 +2001,9 @@ local S = {
 -- 584543ab
 [2456] = { "Default.MoP.Rogue.Assassination.IcyVeins.Description", "Off by default. The Icy Veins and Method order: Vanish on cooldown for a stealthed Mutilate, Vendetta on cooldown when the fight is long enough, Envenom only at five points, Rupture kept up, Dispatch below 35% or on Blindside, Mutilate. Four to eight enemies: Fan of Knives with Rupture at three points or more; nine or more: Fan of Knives and Envenom only. The recommended Assassination premade follows the newer Phase 5 advice instead; to use this one, enable it and disable the recommended one." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
+--     specialization.
 [2457] = { "Default.MoP.Rogue.Combat.Name", "Recommended" },
 -- 43003559
 [2458] = { "Default.MoP.Rogue.Combat.Description", "Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up from two points and Revealing Strike on the target, spends five points only while Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint and positioning behind the target for Ambush." },
@@ -1261,26 +2012,46 @@ local S = {
 -- 610b2100
 [2460] = { "Default.MoP.Rogue.Combat.IcyVeins.Description", "Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern, Method and wowtbc.gg order from before the Siege of Orgrimmar patch: Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single-target fight and Eviscerate, with Sinister Strike as the builder. Same reminders and pack play as the recommended Combat premade. Choose it only if you follow those guides; enable it and disable the recommended one." },
 -- 972be132
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2461] = { "Default.MoP.Rogue.Combat.Hekili.Name", "Anticipation (Hekili)" },
 -- a677df00
 [2462] = { "Default.MoP.Rogue.Combat.Hekili.Description", "Off by default. The Hekili MoP order for Combat with Anticipation: Revealing Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four Anticipation charges or Shadow Blades coming back, then Slice and Dice, Rupture on one or two long-lived targets, Crimson Tempest at seven enemies and Eviscerate; Slice and Dice is refreshed early at 11 Bandit's Guile stacks; Fan of Knives from four enemies. It applies only with Anticipation talented. Enable it and disable the recommended Combat premade to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
+--     specialization.
 [2463] = { "Default.MoP.Rogue.Subtlety.Name", "Recommended" },
 -- 53ec1c4b
 [2464] = { "Default.MoP.Rogue.Subtlety.Description", "Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked for Death; Hemorrhage to keep its bleed; Backstab (with a dagger) when the target is not attacking you, otherwise Hemorrhage. Against three or more enemies: Slice and Dice, Crimson Tempest, Eviscerate and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Shadow Dance at 75 energy with Slice and Dice and Rupture up, Vanish when Find Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and Expose Armor (listed but off)." },
 -- a7cbb172
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = { "Default.MoP.Rogue.Subtlety.WarcraftTavern.Name", "Subterfuge (Warcraft Tavern)" },
 -- 01394d1f
 [2466] = { "Default.MoP.Rogue.Subtlety.WarcraftTavern.Description", "Chosen automatically instead of the Shadow Focus premade when your tier-1 talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger, finishers at five points and then Ambush as often as it lands. Two or three enemies: keep Rupture up and spend five points on Crimson Tempest instead of Eviscerate; four or more add Fan of Knives. One target: Slice and Dice, Rupture, Eviscerate, Hemorrhage for its bleed, Backstab from behind with a dagger, else Hemorrhage. Shadow Dance and Vanish are reminders at 60 energy with Slice and Dice up; timing them to trinket procs, as Tavern suggests, is up to you." },
 -- 442034ab
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2467] = { "Default.MoP.Rogue.Unspecialized.Name", "Unspecialized" },
 -- 60f6bea5
 [2468] = { "Default.MoP.Rogue.Unspecialized.Description", "For levels 1 to 9, or a rogue who has not chosen a specialization yet; each specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot when solo, Ambush or Sinister Strike; suggests Stealth out of combat; Slice and Dice from two points, Recuperate and Kidney Shot when solo and hurt, Eviscerate at four points (two when the target is about to die), Sinister Strike. Reminders: poisons once learned, Kick, Evasion solo." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Elemental). The standard recommended rotation for the
+--     specialization.
 [2469] = { "Default.MoP.Shaman.Elemental.Name", "Recommended" },
 -- 013214a9
 [2470] = { "Default.MoP.Shaman.Elemental.Description", "Recommended for Elemental from level 10, chosen in the Elemental specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury), Unleash Elements with Unleashed Fury, Flame Shock when it is missing or about to run out on a target that will live, Lava Burst into Flame Shock (and on every Lava Surge), Elemental Blast, Earth Shock at six Lightning Shield charges while Flame Shock has 6 seconds left, Chain Lightning on two enemies, Lightning Bolt. Four or more enemies on you: Magma in melee, free Lava Bursts, Lava Beam in Ascendance, Chain Lightning. While moving it shows only instants. Reminders: Lightning Shield, Flametongue, Searing Totem, Fire Elemental on elites and bosses, Elemental Mastery, Ascendance after a Lava Burst, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Thunderstorm for mana, Shamanistic Rage and Astral Shift when low. Earthquake and Earth Elemental are listed but off. Left to you: Spiritwalker's Grace, Flame Shock on extra targets and where to stand." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Enhancement). The standard recommended rotation for
+--     the specialization.
 [2471] = { "Default.MoP.Shaman.Enhancement.Name", "Recommended" },
 -- 30126acf
 [2472] = { "Default.MoP.Shaman.Enhancement.Description", "Recommended for Enhancement from level 10, chosen in the Enhancement specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements with Unleashed Fury, Elemental Blast and Lightning Bolt at five Maelstrom Weapon (or woven at three when your next swing is over a second away), Stormblast in Ascendance, Stormstrike (Primal Strike before 26), Lava Lash, Flame Shock under Unleash Flame, Unleash Elements, Earth Shock. Two or more enemies on you: Chain Lightning instead of Lightning Bolt, Lava Lash to spread Flame Shock, Fire Nova from four, Magma from six. Reminders: Lightning Shield, Windfury on the main hand and Flametongue on the off hand, Searing Totem, Fire Elemental, Feral Spirit, Ascendance after Stormstrike, Elemental Mastery, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth Elemental is listed but off." },
@@ -1293,18 +2064,31 @@ local S = {
 -- 1509ab70
 [2476] = { "Default.MoP.Shaman.Enhancement.IcyVeins.Description", "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. Icy Veins' order: Stormstrike, then Lava Lash before spending Maelstrom Weapon, Lightning Bolt at five stacks or from three when it lands before your next swing, Unleash Elements then Flame Shock, Earth Shock. On four or more enemies it spreads Flame Shock with Lava Lash and uses Fire Nova; Chain Lightning replaces Lightning Bolt on packs. Shamanistic Rage is suggested on cooldown in combat; other reminders as the recommended premade." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2477] = { "Default.MoP.Shaman.Restoration.Name", "Recommended" },
 -- 786ac591
 [2478] = { "Default.MoP.Shaman.Restoration.Description", "Recommended for Restoration from level 10, chosen in the Restoration specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater Healing Wave under Ancestral Swiftness, Healing Surge below 35%, Purify Spirit on Magic or Curses, Unleash Elements then Healing Rain when three allies nearby are hurt, Riptide, Chain Heal for group damage, Greater Healing Wave below 60%, Healing Wave below 90%. With an attackable target it deals damage instead (Flame Shock, Lava Burst, Elemental Blast, Lightning Bolt). Reminders: Water Shield, Earthliving, Earth Shield on your focus, Healing Stream when someone is hurt, Mana Tide, Healing Tide for heavy group damage, Elemental Mastery or Ancestral Guidance, Ancestral Swiftness on a low target, Spiritwalker's Grace while moving, Bloodlust, Wind Shear. Ascendance and Spirit Link Totem are listed but off: use them when your raid assigns them." },
 -- 98ae06d3
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2479] = { "Default.MoP.Shaman.Restoration.Hekili.Name", "Health ladder (Hekili)" },
 -- db083550
 [2480] = { "Default.MoP.Shaman.Restoration.Hekili.Description", "Off by default; same switch as the recommended Restoration premade, so enable it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your target and Healing Stream and Healing Rain going whenever they are down, then heals by the average health of your group within 40 yards: Chain Heal below 80%, Healing Wave on a target below 70%, Greater Healing Wave below 60%, Healing Surge below 40%, with Healing Tide, Ancestral Guidance and Mana Tide on the same ladder. An attackable target gets damage plus Earth Shock." },
 -- 442034ab
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2481] = { "Default.MoP.Shaman.Unspecialized.Name", "Unspecialized" },
 -- 8c70a307
 [2482] = { "Default.MoP.Shaman.Unspecialized.Description", "For levels 1 to 9, and any Shaman who has not chosen a specialization yet; every specialization premade takes over once you pick one. Lightning Bolt to pull from range, Healing Surge when you are low and alone, Primal Strike, Earth Shock, and Lightning Bolt while out of melee range. Keeps Lightning Shield up." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Affliction). The standard recommended rotation for
+--     the specialization.
 [2483] = { "Default.MoP.Warlock.Affliction.Name", "Recommended" },
 -- e15e8094
 [2484] = { "Default.MoP.Warlock.Affliction.Description", "Recommended for Affliction from level 10 to 90 (chosen in the Affliction specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn and Soul Swap, keeps Agony, Corruption and Unstable Affliction up (refreshing them early while Dark Soul: Misery is up), casts Haunt whenever it runs low and you have two shards (or in Dark Soul), channels Drain Soul for a shard when Haunt is ending and you have none, Drain Soul below 20%, otherwise Malefic Grasp (Shadow Bolt before 42). Seed of Corruption on three or more enemies (with Soulburn on six). Moving: instants and Fel Flame. Reminders: your pet, Dark Intent, Curse of the Elements in a group, Dark Soul, Doomguard or Infernal, Grimoire of Service or Sacrifice, Life Tap, defensives. Left to you: spreading DoTs to other targets and Soul Swap moves between them." },
@@ -1313,6 +2097,9 @@ local S = {
 -- fd7bdbbd
 [2486] = { "Default.MoP.Warlock.Affliction.WarcraftTavern.Description", "Off by default. Warcraft Tavern's and Method's shard policy: the same DoT upkeep as the recommended Affliction premade, but Haunt is saved for four shards or Dark Soul: Misery, and below 20% Soulburn and Soul Swap refresh every DoT whenever you have a shard. Enable it and disable the recommended Affliction premade to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Demonology). The standard recommended rotation for
+--     the specialization.
 [2487] = { "Default.MoP.Warlock.Demonology.Name", "Recommended" },
 -- daf1315b
 [2488] = { "Default.MoP.Warlock.Demonology.Description", "Recommended for Demonology from level 10 to 90 (chosen in the Demonology specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of Gul'dan into Metamorphosis when a one-stack Shadowflame is about to drop, Metamorphosis with Dark Soul: Knowledge (or near full fury), Soul Fire at two Molten Core stacks or below 25%, Hellfire on four or more enemies, Shadow Bolt. In Metamorphosis: Doom, Touch of Chaos to keep Corruption up, Soul Fire on Molten Core, Immolation Aura or Void Ray on packs, Touch of Chaos, and a cue to leave it when Dark Soul is down and fury is at 300 or less. Reminders: Felguard (or Wrathguard), Dark Intent, Dark Soul, Imp Swarm, Grimoire: Felguard, Doomguard or Infernal, Life Tap, Health Funnel solo. Left to you: Felstorm (pet autocast) and Demonic Leap." },
@@ -1321,14 +2108,23 @@ local S = {
 -- 96ffba45
 [2490] = { "Default.MoP.Warlock.Demonology.Guide.Description", "Off by default. The guide consensus (Method, wowtbc.gg, Warcraft Tavern, Wowhead): the recommended Demonology premade, except that in caster form Metamorphosis waits for 900 fury or Dark Soul and Soul Fire is only cast at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Enable it and disable the recommended Demonology premade to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Destruction). The standard recommended rotation for
+--     the specialization.
 [2491] = { "Default.MoP.Warlock.Destruction.Name", "Recommended" },
 -- b2f67ea8
 [2492] = { "Default.MoP.Warlock.Destruction.Description", "For Destruction from level 10 to 90 (chosen in the Destruction specialization). Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers on Chaos Bolt (Shadowburn below 20%) at 3.5 embers or in Dark Soul: Instability, uses Backdraft on Incinerate, and fills with Incinerate; a dying target gets Shadowburn. On three or more enemies: Rain of Fire and Fire and Brimstone on four, then Immolate, Conflagrate and Incinerate, and a cue to switch Fire and Brimstone off when your embers run out. Moving: Shadowburn, Conflagrate, Fel Flame. Reminders: your pet or Grimoire of Sacrifice, Flames of Xoroth, Dark Intent, Dark Soul, Havoc on two or more enemies (cast it on the second target yourself), Doomguard or Infernal, Ember Tap and defensives." },
 -- 442034ab
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2493] = { "Default.MoP.Warlock.Unspecialized.Name", "Unspecialized" },
 -- a4d9e0da
 [2494] = { "Default.MoP.Warlock.Unspecialized.Description", "For a Warlock without a specialization (levels 1 to 9, or later before you choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt. Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Arms). The standard recommended rotation for the
+--     specialization.
 [2495] = { "Default.MoP.Warrior.Arms.Name", "Recommended" },
 -- 6b5ddd88
 [2496] = { "Default.MoP.Warrior.Arms.Description", "Recommended for Arms from level 10 to 90, picked in the Arms specialization. Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing or about to end, Mortal Strike, Storm Bolt in the Smash window, Dragon Roar and Bladestorm outside it. Below 20% health: Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood. Otherwise Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam. Two or more enemies fighting you add Sweeping Strikes, Thunder Clap for Deep Wounds, Bladestorm and Dragon Roar. Victory Rush below 70% health; Battle Shout for rage. Reminders: a shout when none is up, Battle Stance, Berserker Rage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap in the window, Pummel, Die by the Sword and Enraged Regeneration when low. Shattering Throw is listed but off. Left to you: canceling Bladestorm, stance dancing and positioning." },
@@ -1337,6 +2133,9 @@ local S = {
 -- 5a0547fa
 [2498] = { "Default.MoP.Warrior.Arms.IcyVeins.Description", "Off by default. The Icy Veins and Wowhead Arms order: outside the Colossus Smash window it uses Overpower and Slams only above 80 rage, banking rage for the window instead of Slamming as filler. In the window: Mortal Strike, Slam, Overpower, Heroic Throw. Below 20% health: Colossus Smash, Mortal Strike, Execute, Overpower, Dragon Roar. Sweeping Strikes on two enemies, a Thunder Clap pack list on three or more. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Arms premade. Enable it and disable that one to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Fury). The standard recommended rotation for the
+--     specialization.
 [2499] = { "Default.MoP.Warrior.Fury.Name", "Recommended" },
 -- 32c50d3a
 [2500] = { "Default.MoP.Warrior.Fury.Description", "Recommended for Fury from level 10 to 90, picked in the Fury specialization. Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one with Recklessness), Raging Blow as the window closes, Bloodthirst, Colossus Smash, Storm Bolt, Dragon Roar outside the window, Execute here with Single-Minded Fury (one-handers), Bladestorm while Bloodthirst cools, with Titan's Grip (two-handers) one more Raging Blow outside the window, Execute, Wild Strike on Bloodsurge, Raging Blow keeping a charge for the next window, Wild Strike, Heroic Throw, Battle Shout for rage. Two or more enemies fighting you add Bladestorm, Dragon Roar, Whirlwind for Meat Cleaver and cleaving Raging Blows. Reminders: a shout when none is up, Battle Stance, Berserker Rage for Enrage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap, Pummel and defensives when low. Left to you: canceling Bladestorm." },
@@ -1345,10 +2144,16 @@ local S = {
 -- d7f3d28a
 [2502] = { "Default.MoP.Warrior.Fury.IcyVeins.Description", "Off by default. Icy Veins' Fury order spends Bladestorm or Dragon Roar first inside the Colossus Smash window, and puts Execute ahead of Bloodthirst below 20% health. Outside the window: Colossus Smash, Bloodthirst, Raging Blow only at two charges, Wild Strike on Bloodsurge, shout, Wild Strike. Four or more enemies: Bloodthirst for Enrage, Whirlwind to three Meat Cleaver stacks, Raging Blow. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Fury premade. Enable it and disable that one to use it." },
 -- d70604e8
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2503] = { "Default.MoP.Warrior.Protection.Name", "Recommended" },
 -- f3fe2f00
 [2504] = { "Default.MoP.Warrior.Protection.Description", "Tanking from level 10 to 90, picked in the Protection specialization. Charge or Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon Roar, Bladestorm, Shockwave on three enemies and Thunder Clap on cooldown on three or more. Then Revenge for the last rage of a Shield Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory Rush below 60% health, Revenge, Thunder Clap for Weakened Blows, Execute, Storm Bolt, a shout for rage and Devastate (Sunder Armor before 26). Reminders: Defensive Stance, a shout when none is up, Shield Block whenever it is down, Shield Barrier when hurt with rage to spare, Heroic Strike or Cleave on Ultimatum, Incite or near the cap, Demoralizing Shout, Berserker Rage, Enraged Regeneration, Last Stand and Shield Wall when low, your offensive cooldowns, Pummel. Taunt and Heroic Leap are listed but off. Left to you: whom to taunt, and Block versus Barrier against magic." },
 -- 442034ab
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2505] = { "Default.MoP.Warrior.Unspecialized.Name", "Unspecialized" },
 -- 9e4fdb28
 [2506] = { "Default.MoP.Warrior.Unspecialized.Description", "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance." },
@@ -1362,32 +2167,60 @@ local E = {
 -- 492353a5
 [1] = "/rm perf probe - Check native profiler access.",
 -- 3e47dffa
+-- Context: Button label in General settings, Diagnostics area: starts a 10-minute memory-usage
+--     capture. Also the heading of its help entry.
 [4] = "Capture memory (10m)",
 -- b84bcf99
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     memory capture. Also the heading of its help entry.
 [5] = "Memory report",
 -- 07027ca8
+-- Context: Button label in General settings, Diagnostics area: replaces the 'Capture memory' button
+--     while a capture runs and stops it.
 [6] = "Stop memory capture",
 -- 9eff4745
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second capture of which
+--     addon functions use CPU time. Also a help entry heading.
 [7] = "Capture runtime (10s)",
 -- ceb34b2f
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     runtime capture. Also a help entry heading.
 [8] = "Runtime report",
 -- b6ce788d
+-- Context: Subtitle (second heading line) of the condition-text window, used when it shows a text
+--     report of a rotation's conditions; the noun 'report'.
 [9] = "Report",
 -- a518abfe
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second CPU profile of
+--     the addon. Also a help entry heading.
 [10] = "Capture CPU (10s)",
 -- b7aa6f62
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished CPU
+--     capture. Also a help entry heading.
 [11] = "CPU report",
 -- 17eb3c01
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     disabled' (the shipped default state of a built-in rotation).
 [12] = "disabled",
 -- fb9cf756
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     enabled' (the shipped default state of a built-in rotation).
 [13] = "enabled",
 -- fa79d474
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), shown after 'Callback
+--     arguments:' etc.: the callback received exactly the expected arguments.
 [14] = "exact",
 -- 5acbfff1
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g. 'Callback
+--     arguments: mismatch': the observed value differs from what was expected.
 [15] = "mismatch",
 -- 4d4c7eee
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g.
+--     'C_AddOnProfiler: present': the game API exists.
 [16] = "present",
 -- 7a0d9159
+-- Context: Status word in the Native profiler probe report (CPU diagnostics): the game restricts
+--     the checked capability.
 [17] = "restricted",
 -- a9283b41
 [18] = "Bypass observation cache (reload required)",
@@ -1398,58 +2231,110 @@ local E = {
 -- 6139ce5b
 [21] = "Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.",
 -- a30d7f9f
+-- %s #1: %s #1: the observation-cache mode the game session is running now, one of the words "cached" or "direct" (shown translated), e.g. "cached"
+-- %s #2: %s #2: the mode that will be used after the next UI reload, "cached" or "direct", e.g. "direct"
 [22] = "Observation cache: %s\nNext reload: %s",
 -- 3673014e
+-- Context: Status word in diagnostic reports: observation caching mode 'cached' (results of lookups
+--     are reused); the alternative is 'direct'.
 [23] = "cached",
 -- d15690f0
+-- Context: Status word in diagnostic reports: observation caching mode 'direct' (every lookup is
+--     read again); the alternative is 'cached'.
 [24] = "direct",
 -- b279b4aa
+-- %s #1: %s #1: the observation-cache mode that is active now, "cached" or "direct" (shown translated), e.g. "direct"
 [25] = "Cache diagnostic saved for the next reload. Active mode: %s.",
 -- 6ea030dd
 [26] = "Cache diagnostic is unavailable.",
 -- c0f60371
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button 'Cancel capture' of the old CPU diagnostics (now replaced by the Stop
+--     button).
 [27] = "Cancel capture",
 -- c1aa81e6
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: a short technical reason code for why the data is invalid, e.g. "invalid-owner" (shown as-is; do not translate)
 [28] = "Invalid rotation ownership data in profile %s (%s); record preserved.",
 -- 6ee818aa
+-- Context: Tooltip of a small icon button next to a function binding row in the custom-function
+--     editor: opens the source code of the bound helper function.
 [29] = "View source",
 -- 576aa29b
+-- Context: Tooltip of a dropdown-arrow icon button on a function binding row: lets you choose a
+--     different source helper function for that dependency.
 [30] = "Change source helper",
 -- 33ba28a9
+-- Context: Button in the custom-function editor that expands or collapses the list of functions
+--     this function depends on; %d is how many dependencies there are.
+-- %d #1: %d #1: the number of function bindings (dependencies) in the list, e.g. 3
 [31] = "Dependencies (%d)",
 -- d28ff2b8
+-- Context: Heading of a help section (and the Functions help topic) explaining the dependency list
+--     of a custom function; also the dependency list's name.
 [32] = "Function dependencies",
 -- d038ddbf
+-- Context: Button in the custom-function editor's dependency list: adds a new dependency (a helper
+--     function this function calls).
 [33] = "Add dependency",
 -- ffdb8428
+-- Context: Button/tooltip in the custom-function editor's dependency list: removes this dependency
+--     row.
 [34] = "Remove dependency",
 -- 1f5ef520
+-- Context: Name of a decorative overlay (a glowing arcane ring graphic) in the overlay picker for
+--     rotation icons.
 [35] = "Arcane Ring",
 -- e3dfa9b3
+-- Context: Name of a decorative overlay (glowing ember corners graphic) in the overlay picker for
+--     rotation icons.
 [36] = "Ember Corners",
 -- ed0b6679
+-- Context: Name of a decorative overlay (frost shard graphics) in the overlay picker for rotation
+--     icons.
 [37] = "Frost Shards",
 -- 4a5ff6e0
+-- Context: Name of a decorative overlay (nature vines graphic) in the overlay picker for rotation
+--     icons.
 [38] = "Nature Vines",
 -- 67f985cc
+-- Context: Name of a decorative overlay (a lightning sweep graphic) in the overlay picker for
+--     rotation icons.
 [39] = "Lightning Sweep",
 -- 37476fc2
+-- Context: Name of a decorative overlay (holy light rays graphic) in the overlay picker for
+--     rotation icons.
 [40] = "Holy Rays",
 -- 693a2003
+-- Context: Name of a decorative overlay (shadowy claw marks graphic) in the overlay picker for
+--     rotation icons.
 [41] = "Shadow Claws",
 -- 1e58829b
+-- Context: Name of a decorative overlay (a rune-marked diamond graphic) in the overlay picker for
+--     rotation icons.
 [42] = "Rune Diamond",
 -- 0dcf5b86
+-- Context: Name of a decorative overlay (an arcane ring in neutral, uncolored style) in the overlay
+--     picker for rotation icons.
 [43] = "Neutral Arcane Ring",
 -- 84f6ccc1
+-- Context: Tooltip of a dropdown-arrow button in the settings form that opens the picker of
+--     decorative overlay textures.
 [44] = "Choose overlay",
 -- 084e6cf7
+-- Context: Option in the 'Applies to' choice (checkbox in the rotation adoption page, and shown in
+--     pending-change lists): the setting applies to the current character only, as opposed to the
+--     whole class.
 [45] = "This character",
 -- 6687458b
+-- Context: Label for a choice/field saying whom a rotation applies to: this character or the whole
+--     class (adoption page, pending-change list, help section heading).
 [46] = "Applies to",
 -- d172148e
+-- %s #1: %s #1: which kind of legacy per-character data conflicts, the internal table name (shown as-is), e.g. "itemsets" or "announces"
 [47] = "Legacy character %s data conflicts with the active profile; character data preserved.",
 -- 0da554c3
+-- %s #1: %s #1: the profile name, e.g. "Default"
 [48] = "Invalid rotation fallback configuration in profile %s; data preserved.",
 -- 86637dd3
 [49] = "Condition summary unavailable: invalid template or values.",
@@ -1480,10 +2365,15 @@ local E = {
 -- 7a633806
 [62] = "The current source could not be compiled. Fix it before testing again.",
 -- 0e916101
+-- Context: Button that reloads/refreshes the display: in the Lua debugger output window and in the
+--     rotation adoption page.
 [63] = "Refresh",
 -- 5f623ee6
+-- Context: Title of the Lua debugger output window (shows the debugger's full output and errors).
 [64] = "Debug output",
 -- b2439bcb
+-- Context: Noun: button in the Lua workbench that opens the debugger output window (also that
+--     window's subtitle); also a column/row label for one result in the collection compare view.
 [65] = "Output",
 -- fccce64b
 [66] = "Set values in Test before debugging this condition.",
@@ -1492,22 +2382,46 @@ local E = {
 -- 2f3f04fc
 [68] = "Localized Rotation Master text, indexed by its English key.",
 -- a8283ade
+-- Context: Button/tooltip in the condition and custom-function editors: undoes the last edit
+--     (verb).
 [69] = "Undo",
 -- 74273989
+-- Context: Button/tooltip in the condition and custom-function editors: redoes the edit that was
+--     just undone (verb).
 [70] = "Redo",
 -- 7dac8415
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [71] = "Invalid item reference for announce %s:%s; reference preserved; announcement disabled.",
 -- 048f2dd8
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [72] = "Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement.",
 -- bde1631d
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [73] = "Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled.",
 -- c3f0309d
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [74] = "Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition.",
 -- b496eb37
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: the name of the minimap setting holding the bad number (shown as-is), e.g. "minimapPos" or "radius"
 [75] = "Non-finite minimap value in profile %s: %s.",
 -- 504dd0b6
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
+-- %d #3: %d #3: the position of the step in the rotation, counting from 1, e.g. 4
 [76] = "Invalid effect ID for rotation step %s:%s:%d.",
 -- d485d6e1
+-- %s #1: %s #1: where the effect is stored, "global" or "profile:" and the profile name, e.g. "global"
+-- %s #2: %s #2: the effect's ID, e.g. "a1b2c3d4"
+-- %s #3: %s #3: the unrecognised effect type value, e.g. "unknown_type" (shown as-is)
 [77] = "Unknown effect type for %s:%s (%s); record preserved.",
 -- 9148825e
 [78] = "/rm help                - This text.",
@@ -1530,32 +2444,56 @@ local E = {
 -- 71773a7c
 [88] = "No rotation is currently active.",
 -- f5951390
+-- %s #1: %s #1: the name of the active rotation, e.g. "Frost Single Target"
 [89] = "The current rotation is |cFFFFFFFF%s|cFF7BC653",
 -- 1122c922
+-- %s #1: %s #1: the name of the rotation the player chose, e.g. "Frost Single Target"
 [90] = "Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653",
 -- b406bd3a
+-- %s #1: %s #1: the rotation name the player typed after the slash command, e.g. "Frost AoE"
 [91] = "Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization.",
 -- f6b5a992
+-- Context: Chat warning when a slash command option is not recognized (/rm ...); %s is the option
+--     typed; the color codes must stay.
+-- %s #1: %s #1: the unrecognised option the player typed after the slash command, e.g. "foo"
 [92] = "Invalid option |cFFFFFFFF%s|cFFB212B7",
 -- 56693a8f
+-- Context: Chat message printed at addon startup; %s is the addon version number.
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
 [93] = "Starting up version %s",
 -- 45d8dada
+-- %s #1: %s #1: the name of the rotation that was selected automatically, e.g. "Frost Single Target"
 [94] = "Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653",
 -- d4f91385
 [95] = "No rotation is active as there is none suitable to automatically switch to.",
 -- fe0d07c7
+-- Context: Minimap menu checkbox / chat message: the automatic battle rotation (recommendations) is
+--     turned on; status text.
 [96] = "Battle rotation enabled",
 -- d3cca26b
+-- Context: Minimap button tooltip line (red) / chat message: the automatic battle rotation is
+--     turned off; status text.
 [97] = "Battle rotation disabled",
 -- 8b75ea84
+-- Context: Title line in the minimap menu and tooltip above the name of the rotation currently in
+--     use.
 [98] = "Current Rotation",
 -- 11d80e12
+-- Context: Entry in the minimap menu rotation list: let Rotation Master pick the rotation
+--     automatically (the alternative is picking one by hand).
 [99] = "Automatic Switching",
 -- ea046a56
+-- Context: Key-binding name shown in the game's Key Bindings screen; %s is the addon name; the
+--     colored '/rm toggle' slash command must stay.
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
 [100] = "Toggle %s |cFF00FFFF/rm toggle|r",
 -- 0ee9fb73
+-- Context: Chat message when running the /rm check or /rm repair command: the saved settings
+--     database is being validated.
 [101] = "Validating database integrity",
 -- a256b212
+-- %d #1: %d #1: the talent tier (row), 1 to 7, e.g. 3
+-- %d #2: %d #2: the talent column, 1 to 3, e.g. 2
 [102] = "[Tier: %d, Column: %d]",
 -- d634fd5e
 [103] = "Autoswitch rotation list has been updated.",
@@ -1568,288 +2506,503 @@ local E = {
 -- cc9f8575
 [107] = "Active rotation is incomplete and may not work correctly!",
 -- 9e4feae8
+-- %.02f #1: %.02f #1: the cache hit rate as a percentage with two decimals, e.g. 87.35 (the %% after it is a literal percent sign)
 [108] = "Cache hit rate at %.02f%%",
 -- 6a0a0288
+-- Context: Name of the 'Spells' category of conditions; also a category in the icon picker (icons
+--     showing spells/magic).
 [109] = "Spells",
 -- fb8e7a1a
+-- Context: Name of the 'Items' condition category; also the label for an items entry when comparing
+--     collections, and an icon-picker category.
 [110] = "Items",
 -- 966dac79
+-- Context: Name of the 'Buffs' condition category (auras on a unit); also a category/tag in the
+--     icon picker.
 [111] = "Buffs",
 -- 49fcf2c7
+-- Context: Name of the 'Combat' condition category; also a category/tag in the icon picker.
 [112] = "Combat",
 -- 1405a63e
+-- Context: Name of the 'Character' condition category (conditions about your own character, class,
+--     level); also an icon-picker category.
 [113] = "Character",
 -- f97e9da0
+-- Context: Name of the catch-all condition category for conditions that fit no other category (a
+--     dropdown option / group heading); the adjective 'Other'.
 [114] = "Other",
 -- f94a59f5
+-- Context: Name of the 'Spatial' condition category (zone, distance, proximity conditions); also an
+--     icon-picker category.
 [115] = "Spatial",
 -- 494ca78f
+-- Context: Dropdown option meaning 'an ad-hoc custom item set': choose it instead of a saved
+--     reusable item set, then enter items by hand.
 [116] = "Custom",
 -- 56b9b63d
+-- Context: Button in the item settings that binds the selected item to action-bar slots (verb);
+--     when slots are bound its label becomes 'Slots ... · Unbind'.
 [117] = "Bind",
 -- dca68375
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Unbind' for item sets bound to action bar slots (now shown as
+--     'Slots ... · Unbind').
 [118] = "Unbind",
 -- 67236b42
 [119] = "{unit} {stacks} {comparison} {quantity}",
 -- ebc99a61
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is less than N'
+--     (numeric comparison).
 [120] = "is less than",
 -- 103999f5
 [121] = "is less than or equal to",
 -- 4ccdd13e
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is greater than N'
+--     (numeric comparison).
 [122] = "is greater than",
 -- 31742930
 [123] = "is greater than or equal to",
 -- cb9f4031
+-- Context: Comparison operator in a condition's dropdown: 'is equal to' (also used for the negated
+--     'is not' operator set where it is reversed).
 [124] = "is equal to",
 -- f3bab6c4
 [125] = "is not equal to",
 -- 46fd28a6
 [126] = "is evenly divisible by",
 -- bb0347a4
+-- Context: Unit name used inside condition sentences, e.g. 'Health of you'; here the player's own
+--     character as the subject.
 [127] = "you",
 -- ae77a704
+-- Context: Unit name used inside condition sentences: the player's pet.
 [128] = "your pet",
 -- 5c6909af
+-- Context: Unit name used inside condition sentences: the player's current target.
 [129] = "your target",
 -- c03e55b9
+-- Context: Unit name used inside condition sentences: the player's focus target (only for game
+--     versions that have a focus target).
 [130] = "your focus target",
 -- b3cccabc
+-- Context: Unit name used inside condition sentences: the unit the mouse pointer is over.
 [131] = "your mouseover target",
 -- 475bae27
+-- Context: Unit name used inside condition sentences: the target of the player's pet.
 [132] = "your pet's target",
 -- 36be7c3f
+-- Context: Unit name used inside condition sentences: the target of the player's target.
 [133] = "your target's target",
 -- ad57c70e
 [134] = "your focus target's target",
 -- f445919a
 [135] = "your mouseover target's target",
 -- 4d040d3f
+-- Context: Possessive unit word used in condition sentences, e.g. 'your health': the player's own
+--     character.
 [136] = "your",
 -- 0f29cbcd
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's (e.g. 'your pet's
+--     health').
 [137] = "your pet's",
 -- 86535199
+-- Context: Possessive unit phrase used in condition sentences: the player's target's (e.g. 'your
+--     target's health').
 [138] = "your target's",
 -- b263b9c4
+-- Context: Possessive unit phrase used in condition sentences: the player's focus target's (only
+--     for game versions with a focus target).
 [139] = "your focus target's",
 -- 9c1fb6c2
+-- Context: Possessive unit phrase used in condition sentences: the mouseover unit's (e.g. 'your
+--     mouseover target's health').
 [140] = "your mouseover target's",
 -- 4df38978
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's target's (e.g.
+--     'your pet's target's health').
 [141] = "your pet's target's",
 -- 6c2c38e9
+-- Context: Possessive unit phrase used in condition sentences: the target of your target's (e.g.
+--     'your target's target's health').
 [142] = "your target's target's",
 -- 5028affe
 [143] = "your focus target's target's",
 -- 32961613
 [144] = "your mouseover target's target's",
 -- 71f18ea0
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was
+--     healed ('your target healed ...').
 [145] = "healed",
 -- 4ddc4e8a
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     dodged.
 [146] = "dodged",
 -- 6973dddd
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     blocked.
 [147] = "blocked",
 -- 63d04dee
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was hit
+--     by an attack.
 [148] = "hit",
 -- 0e347254
+-- Context: Past-tense verb phrase in the Last Combat Action condition's action dropdown: the unit
+--     was hit by a critical strike.
 [149] = "critically hit",
 -- 4f0a566d
 [150] = "hit with a crushing blow",
 -- fb785161
 [151] = "hit with a glancing blow",
 -- 1c33629a
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack missed.
 [152] = "missed",
 -- 2fe44909
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     parried.
 [153] = "parried",
 -- 57ac7325
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     resisted.
 [154] = "resisted",
 -- d9460674
+-- Context: Option in an anchor-position dropdown (where a highlight/frame attaches to the screen or
+--     an icon): the exact center.
 [155] = "Center",
 -- 1cb2052a
+-- Context: Option in an anchor-position dropdown: the top-left corner.
 [156] = "Top Left",
 -- dccff16f
+-- Context: Option in an anchor-position dropdown: the top-right corner.
 [157] = "Top Right",
 -- 7499760f
+-- Context: Option in an anchor-position dropdown: the bottom-left corner.
 [158] = "Bottom Left",
 -- 09b28cd7
+-- Context: Option in an anchor-position dropdown: the bottom-right corner.
 [159] = "Bottom Right",
 -- 271eac34
+-- Context: Option in an anchor-position dropdown: the middle of the top edge.
 [160] = "Top Center",
 -- 6818850e
+-- Context: Option in an anchor-position dropdown: the middle of the bottom edge.
 [161] = "Bottom Center",
 -- 24b15e35
+-- Context: Option in an anchor-position dropdown: the middle of the left edge.
 [162] = "Left Center",
 -- 8f0626ff
+-- Context: Option in an anchor-position dropdown: the middle of the right edge.
 [163] = "Right Center",
 -- bdbea4f8
+-- Context: Title of the icon picker window, where you choose an icon for a condition or rotation;
+--     imperative 'Select an icon'.
 [164] = "Select Icon",
 -- 99a52df3
+-- Context: Bold term in the Custom Condition help text: the field that holds the condition's unique
+--     key/identifier (a name used in code).
 [165] = "Key",
 -- eef729cf
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Custom Condition' for the custom condition editor/help.
 [166] = "Custom Condition",
 -- e0b9479a
+-- Context: Window title of the condition editor when no number is shown (verb + noun: you edit a
+--     condition); also the title of the Edit Condition dialog in the rotation editor.
 [167] = "Edit Condition",
 -- 526e0087
+-- Context: Field label for the free-text description: in the custom condition help, and as a row
+--     label when comparing two collections.
 [168] = "Description",
 -- d689600f
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On register' callback (code run after the
+--     condition is registered).
 [169] = "Post-Registration Function",
 -- 2bd03442
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On unregister' callback (code run before the
+--     condition is unregistered).
 [170] = "Pre-Unregistration Function",
 -- eaf0fe0a
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warrior. The game's own localized class names are used in class
+--     pickers; use the standard WoW class name.
 [171] = "Warrior",
 -- a7d973a7
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Paladin. Use the standard WoW class name for your language.
 [172] = "Paladin",
 -- 680ce380
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Hunter. Use the standard WoW class name for your language.
 [173] = "Hunter",
 -- 0b8cdd9e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Rogue. Use the standard WoW class name for your language.
 [174] = "Rogue",
 -- 909a4523
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Priest. Use the standard WoW class name for your language.
 [175] = "Priest",
 -- 483f6fa9
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Death Knight. Use the standard WoW class name for your language.
 [176] = "Death Knight",
 -- 0953e68a
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Shaman. Use the standard WoW class name for your language.
 [177] = "Shaman",
 -- e181bc01
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Mage. Use the standard WoW class name for your language.
 [178] = "Mage",
 -- 6e7e607f
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warlock. Use the standard WoW class name for your language.
 [179] = "Warlock",
 -- a670c8d2
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Monk. Use the standard WoW class name for your language.
 [180] = "Monk",
 -- 274814f1
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Druid. Use the standard WoW class name for your language.
 [181] = "Druid",
 -- 66b96f76
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Demon Hunter. Use the standard WoW class name for your language.
 [182] = "Demon Hunter",
 -- 628bf77a
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Beast').
 [183] = "Beast",
 -- 4a70eb4d
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Dragonkin').
 [184] = "Dragonkin",
 -- 83bd7784
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Demon').
 [185] = "Demon",
 -- 4309e83a
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Elemental').
 [186] = "Elemental",
 -- db5bea37
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Giant').
 [187] = "Giant",
 -- a5bb6066
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Undead').
 [188] = "Undead",
 -- d2253641
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Humanoid').
 [189] = "Humanoid",
 -- 14e2f7b4
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Critter').
 [190] = "Critter",
 -- 39bf205e
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Mechanical').
 [191] = "Mechanical",
 -- dc12bec5
+-- Context: Creature type in the Creature condition's dropdown for units with no creature type (WoW
+--     'Not specified'); also shown where a value is missing in condition text.
 [192] = "Not specified",
 -- 8f7ae0c0
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Totem'); also the label of the
+--     Totem condition's dropdown choosing the totem slot (Fire, Earth, Water, Air).
 [193] = "Totem",
 -- 87f8c315
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Non-combat Pet', i.e.
+--     companion/vanity pets).
 [194] = "Non-combat Pet",
 -- b2098aeb
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Gas Cloud' units, such as in
+--     raid encounters).
 [195] = "Gas Cloud",
 -- a703e47b
+-- Context: Unit classification in the Classification condition's dropdown: a world boss.
 [196] = "World Boss",
 -- 7c32325f
+-- Context: Unit classification in the Classification condition's dropdown: a rare elite mob.
 [197] = "Rare Elite",
 -- 1d6953e0
+-- Context: Unit classification in the Classification condition's dropdown: an elite mob.
 [198] = "Elite",
 -- 291d2a97
+-- Context: Unit classification in the Classification condition's dropdown: a rare mob.
 [199] = "Rare",
 -- a7248eeb
+-- Context: Unit classification in the Classification condition's dropdown: an ordinary (normal)
+--     mob.
 [200] = "Normal",
 -- 73fba898
+-- Context: Unit classification in the Classification condition's dropdown: a trivial (low-level,
+--     grey) mob.
 [201] = "Trivial",
 -- 9befa3c6
+-- Context: Unit classification in the Classification condition's dropdown: a 'minus' mob, a
+--     weaker-than-normal mob (e.g. swarm adds).
 [202] = "Minus",
 -- c0b21fb1
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Tank').
 [203] = "Tank",
 -- caece7f5
+-- Context: Group role in the Role condition's dropdown and its help text: damage dealer
+--     (abbreviation for damage per second).
 [204] = "DPS",
 -- a491a33c
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Healer').
 [205] = "Healer",
 -- ed1a5a81
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Magic').
 [206] = "Magic",
 -- 7bce5b94
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Disease').
 [207] = "Disease",
 -- d5a78b99
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Poison').
 [208] = "Poison",
 -- 88b3d8ee
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Curse').
 [209] = "Curse",
 -- c6e5d717
+-- Context: Debuff type in the Debuff Type condition's dropdown: an enrage effect on a hostile unit
+--     (dispelled by e.g. Tranquilizing Shot).
 [210] = "Enrage",
 -- 77d7cd99
+-- Context: PvP zone status option in the PvP condition dropdown and help ('You are in an arena');
+--     also instance mode 'Arena' in the Instance Mode condition.
 [211] = "Arena",
 -- b2fb8b8a
 [212] = "Controlled by your faction",
 -- 9f22dfe6
+-- Context: PvP zone status option in the PvP condition's dropdown and help: a contested zone,
+--     controlled by neither faction.
 [213] = "Contested",
 -- bdd63a7e
 [214] = "Controlled by opposing faction",
 -- 5f18bd94
+-- Context: PvP zone status option in the PvP condition's dropdown: a sanctuary where PvP is
+--     impossible.
 [215] = "Sanctuary (no PVP)",
 -- 7d73fb0c
+-- Context: PvP zone status option in the PvP condition's dropdown: a combat zone where players are
+--     flagged for PvP automatically.
 [216] = "Combat (auto-flagged)",
 -- dacf1516
+-- Context: Instance mode option in the Instance condition's dropdown: you are not in any instance
+--     (the open world).
 [217] = "Outside",
 -- 40964db2
+-- Context: Instance mode option in the Instance condition's dropdown: a PvP battleground.
 [218] = "Battleground",
 -- 73054bd6
+-- Context: Instance mode option in the Instance condition's dropdown: a five-player dungeon; also
+--     used as the dungeon group of difficulty names.
 [219] = "Dungeon",
 -- 7dabeb63
+-- Context: Group-type word: the Raid checkbox in group conditions ('check the whole raid, not only
+--     the party'); also an instance mode option.
 [220] = "Raid",
 -- c141faa8
+-- Context: Name of the Fire totem slot in the Totem condition's dropdown; also a spell school
+--     (Fire) and an icon-picker category.
 [221] = "Fire",
 -- b7c9b5cc
+-- Context: Name of the Earth totem slot in the Totem condition's dropdown.
 [222] = "Earth",
 -- 7ca7dea9
+-- Context: Name of the Water totem slot in the Totem condition's dropdown.
 [223] = "Water",
 -- aa42ff59
+-- Context: Name of the Air totem slot in the Totem condition's dropdown.
 [224] = "Air",
 -- 735beee2
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the lowest value
+--     among units; also its help term.
 [225] = "Minimum",
 -- e17f73ea
+-- Context: Adjective used inside a condition sentence, e.g. 'the lowest health of ...' (the Minimum
+--     operation).
 [226] = "lowest",
 -- 66c9ab17
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the highest value
+--     among units; also its help term.
 [227] = "Maximum",
 -- 4d8fa801
+-- Context: Adjective used inside a condition sentence, e.g. 'the highest health of ...' (the
+--     Maximum operation).
 [228] = "highest",
 -- b38ae2c5
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the mean value
+--     among units; also its help term.
 [229] = "Average",
 -- 184df936
+-- Context: Adjective used inside a condition sentence, e.g. 'the average health of ...' (the
+--     Average operation).
 [230] = "average",
 -- 8fd58c92
+-- Context: Threat-level option in the Threat condition's dropdown and its help: you are in no
+--     danger of taking threat from the tank.
 [231] = "no threat risk",
 -- 748beef5
 [232] = "higher threat than tank",
 -- bee526bf
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit but not
+--     top of the threat table, so you may lose it.
 [233] = "tanking, at risk",
 -- f40da142
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit and are
+--     not at risk of losing it.
 [234] = "tanking, secure",
 -- 0f179dbf
+-- Context: Placeholder shown in red in a condition's text when a value is not yet filled in;
+--     literally the angle-bracketed word 'value'.
 [235] = "<value>",
 -- 98bf8ca2
+-- Context: Placeholder shown in a condition's text when the comparison operator is not yet chosen
+--     (e.g. '<operator> 3 actions ago'); keep the angle brackets.
 [236] = "<operator>",
 -- 77300ce2
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label of the main enable checkbox (now just 'Enable' in General settings).
 [237] = "Enable Rotation Master",
 -- 1e28d34e
+-- Context: Label of the polling interval slider in General settings (seconds between rotation
+--     recommendation refreshes); also a help heading.
 [238] = "Polling Interval (seconds)",
 -- 96414600
 [239] = "Idle Re-check Interval (seconds)",
 -- 9e4deebb
 [240] = "Auto-Switch Re-check Interval (seconds)",
 -- 43deba51
+-- Context: Checkbox in General settings: recommend spells even when the unit lacks the mana for
+--     them; also a help heading.
 [241] = "Ignore Mana",
 -- 3427b677
+-- Context: Checkbox in General settings: recommend spells even when the target is out of range;
+--     also a help heading.
 [242] = "Ignore Range",
 -- 4764e65b
 [243] = "Skip rotation entries or disable cooldown highlights because you don't have enough to cast them.",
 -- e6b6aad8
+-- Context: Section heading in General settings for options about the highlight effect (effect,
+--     magnification, color, anchor).
 [244] = "Effect Options",
 -- cfa79416
+-- Context: Label of the highlight size multiplier (zoom of the effect) in General settings,
+--     rotation steps and the effect editor; also a help heading.
 [245] = "Magnification",
 -- 48aae415
+-- Context: Label of the highlight color picker in General settings and in the rotation step editor
+--     (the color of the bar highlight); also a help heading.
 [246] = "Highlight Color",
 -- 6d031af1
+-- Context: Label of the step position field in the rotation step editor (where in the rotation list
+--     the step sits); also a help term and a line in change summaries.
 [247] = "Position",
 -- f4a13303
+-- Context: Section heading in General settings (Classic clients only): fields for naming your
+--     primary and secondary talent specializations.
 [248] = "Specialization Names",
 -- 1cfb0bd9
+-- Context: Section heading in General settings for options controlling the lines Rotation Master
+--     adds to spell and item tooltips.
 [249] = "Tooltips",
 -- 4e430b3e
 [250] = "Show Rotation Master in tooltips",
@@ -1858,32 +3011,54 @@ local E = {
 -- e0ebe3cd
 [252] = "List rotations in spell and item tooltips",
 -- 9c73797e
+-- Context: Checkbox in General settings, Tooltips section: also list the rotation's conditions in
+--     spell/item tooltips; also a help heading.
 [253] = "Include rotation conditions",
 -- c6b7619f
 [254] = "Names listed per tooltip line",
 -- 7fb301ab
 [255] = "Rotation Master item sets",
 -- 6a361b20
+-- Context: Prefix label of a line in spell and item tooltips, followed by the names of the
+--     rotations that use that spell or item.
 [256] = "Rotation Master rotations",
 -- 9204c375
+-- Context: Rotation name in a tooltip line when that rotation is disabled; %s is the rotation name.
+-- %s #1: %s #1: the name of a rotation that is turned off, e.g. "Frost Single Target"
 [257] = "%s (disabled)",
 -- d5b57b61
+-- Context: Suffix at the end of a tooltip line listing names, when more exist than are shown; %d is
+--     how many were left out.
+-- %d #1: %d #1: how many further rotations are not listed, e.g. 3
 [258] = "(+%d more)",
 -- d440fcce
+-- Context: Section heading in General settings for debugging options (log level, detailed
+--     profiling).
 [259] = "Debugging Options",
 -- 12fe4737
+-- Context: Label of the log verbosity dropdown in General settings, Debugging section; also a help
+--     heading and a comparison row label.
 [260] = "Log Level",
 -- c0ebb7d6
+-- Context: Option in the Log Level dropdown: only minimal addon chat output.
 [261] = "Quiet",
 -- 1a03bd2f
+-- Context: Option in the Log Level dropdown: extra debug messages are printed.
 [262] = "Debug",
 -- 2cd57109
+-- Context: Option in the Log Level dropdown: the most detailed log messages.
 [263] = "Verbose",
 -- f2438f82
+-- Context: Checkbox in General settings, Debugging section: collect detailed performance timing of
+--     the addon; also a help heading.
 [264] = "Detailed Profiling",
 -- 0ca3f824
+-- Context: Label of a setting that turns off automatic rotation switching; shown as a row name when
+--     comparing two profile collections.
 [265] = "Disable Auto-Switching",
 -- 9ac1f2c5
+-- Context: Checkbox in General settings: show or hide the Rotation Master button on the minimap;
+--     also a help heading.
 [266] = "Minimap Icon",
 -- 7de50af6
 [267] = "Spell History Memory (seconds)",
@@ -1894,8 +3069,12 @@ local E = {
 -- 67e53fcd
 [270] = "Live Status Update Frequency (seconds)",
 -- 8e8f30f5
+-- Context: Checkbox in General settings: turn off the highlight Rotation Master draws on action bar
+--     buttons; also a help heading.
 [271] = "Disable Bar Highlighting",
 -- 7079e1f5
+-- Context: Label of a slider in General settings: how many upcoming spells the preview window
+--     shows; also a help heading.
 [272] = "Preview Spells",
 -- e2f5f378
 [273] = "This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled.",
@@ -1906,14 +3085,25 @@ local E = {
 -- 30ef2bc9
 [276] = "Default effects have changed since the previous release, do you want to reset the effect list?",
 -- 6db7e56b
+-- Context: Title of the transfer dialog and its help for importing or exporting a rotation as text.
 [277] = "Import/Export Rotation",
 -- a66223ca
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an item set as text
+--     (like 'Import/Export Rotation').
 [278] = "Import/Export Item Set",
 -- 87c5e6a6
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an effect as text (like
+--     'Import/Export Rotation').
 [279] = "Import/Export Effect",
 -- 1318e3a7
+-- Context: Title of the transfer dialog for importing or exporting a custom condition as text.
 [280] = "Import/Export Condition",
 -- a04def9c
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting a condition category as
+--     text.
 [281] = "Import/Export Condition Group",
 -- 6de338e2
 [282] = "Copy and paste this text share your rotation with others, or import someone else's.",
@@ -1924,20 +3114,38 @@ local E = {
 -- a0928dd2
 [285] = "Copy and paste this text share your custom condition with others, or import someone else's.",
 -- 277089d9
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'bytes' (size of text).
 [286] = "bytes",
 -- 5ea44c39
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'lines' (number of text lines).
 [287] = "lines",
 -- d4121e17
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Parse Error' for a failed import of text.
 [288] = "Parse Error",
 -- f3bb01ec
+-- Context: Default name for a duplicated item (rotation, condition, profile): 'Copy of ...'; %s is
+--     the original name.
+-- %s #1: %s #1: the name of the item being copied (a rotation, effect, item set or condition), e.g. "Frost Single Target"
 [289] = "Copy of %s",
 -- 64780145
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Note on an imported entry: 'Imported on <date>'; %c is a date and time
+--     formatted by the game.
+-- %c #1: %c #1: not a value but a date format code; the game replaces it with the current local date and time when an effect is imported, e.g. "10/28/26 13:45:00". Keep %c exactly.
 [290] = "Imported on %c",
 -- 42191ef4
+-- Context: Button label (and help term) for the dialog that exports or imports a definition as
+--     text; slash separates the two actions.
 [291] = "Import/Export",
 -- 2cff9baa
+-- Context: Button in the import dialog: imports the pasted text (verb).
 [292] = "Import",
 -- 821e6678
+-- Context: Checkbox label and help heading: allow this condition type to be used when automatically
+--     choosing a rotation (switch conditions).
 [293] = "Switch Condition",
 -- acba80e5
 [294] = "No other rotations match.",
@@ -1948,504 +3156,957 @@ local E = {
 -- a60ad1de
 [297] = "THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE",
 -- a857b1ff
+-- Context: Name of the second tab in the rotation view (steps used for cooldowns, as opposed to the
+--     main rotation); also a comparison row label.
 [298] = "Cooldowns",
 -- 57b5e2fc
+-- Context: Name of the first tab in the rotation view (the main rotation steps); also a generic
+--     label for a rotation entry.
 [299] = "Rotation",
 -- 39921a74
+-- Context: Name of a condition category/filter (conditions that can be used for automatically
+--     switching rotations) in condition lists.
 [300] = "Switch",
 -- e061b3f5
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Condition Options'.
 [301] = "Condition Options",
 -- 07724428
+-- Context: Name of the top-level 'Rotations' tab in the settings window; also a row label when
+--     comparing collections.
 [302] = "Rotations",
 -- 49c266ba
+-- Context: Heading of the help text for the search box above the condition list (verb/noun).
 [303] = "Search",
 -- baaddf70
+-- Context: Label for the kind of something: the effect type dropdown in effect settings, and the
+--     step type in the rotation editor; also a column in comparisons.
 [304] = "Type",
 -- e28411a3
+-- Context: Effect type in the effect type dropdown (an icon/texture overlay effect); also the label
+--     of the texture picker.
 [305] = "Texture",
 -- 2252d5cf
+-- Context: Label of the highlight effect dropdown in General settings and rotation steps (the
+--     visual glow style); also a comparison row label.
 [306] = "Effect",
 -- 5817280a
+-- Context: Effect type in the effect type dropdown: a glow of moving pixel lines around the button.
 [307] = "Pixel",
 -- 09968fe6
+-- Context: Effect type in the effect type dropdown: a glow of orbiting sparkles like a pet autocast
+--     border.
 [308] = "Auto Cast",
 -- f534ed97
+-- Context: Effect type in the effect type dropdown: the standard Blizzard button glow.
 [309] = "Glow",
 -- 96afc081
+-- Context: Effect type in the effect type dropdown: a dazzling flashing glow.
 [310] = "Dazzle",
 -- fd4a5f3d
+-- Context: Effect type in the effect type dropdown: an animated texture effect.
 [311] = "Animate",
 -- f7a403c6
+-- Context: Effect type in the effect type dropdown: a texture that pulses (grows and shrinks).
 [312] = "Pulse",
 -- c3613b17
+-- Context: Effect type in the effect type dropdown: a texture that rotates.
 [313] = "Rotate",
 -- 0740f4ba
+-- Context: Heading of the list of sequence steps in the custom effect editor (an effect built from
+--     a series of frames).
 [314] = "Sequence",
 -- 4e1f49a9
+-- Context: Label of the dropdown choosing which cast event (started, stopped, succeeded...)
+--     triggers an announcement; also a help heading.
 [315] = "Event",
 -- 358511c8
+-- Context: Name of the 'Effects' settings tab; refers to highlight effects.
 [316] = "Effects",
 -- 4ea6bdd3
+-- Context: Name of the 'Item Sets' settings tab and help topic.
 [317] = "Item Sets",
 -- 7c326a4b
+-- Context: Name of the 'Announces' settings tab (announcements sent when spells are cast); also a
+--     comparison row label.
 [318] = "Announces",
 -- 535e52e4
+-- Context: Name of the 'Profiles' settings tab; also the title of the profile transfer dialog.
 [319] = "Profiles",
 -- 3b26a542
+-- Context: Label of the number-of-lines setting of the Pixel effect.
 [320] = "Lines",
 -- 16b6668d
+-- Context: Label of a speed setting of an effect (how fast it animates, in cycles per second).
 [321] = "Frequency",
 -- 1de3df70
+-- Context: Label of the number-of-steps setting of the Rotate effect.
 [322] = "Steps",
 -- fae1c6f1
+-- Context: Checkbox in the Rotate effect settings: rotate in the opposite direction.
 [323] = "Reverse",
 -- 1968034b
+-- Context: Label of the rotation angle (degrees, 0-359) of a sequence step in the effect editor.
 [324] = "Angle",
 -- adc95605
+-- Context: Label of the line length setting of the Pixel effect.
 [325] = "Length",
 -- 7b594414
+-- Context: Label of the line thickness setting of the Pixel effect.
 [326] = "Thickness",
 -- e73735cf
+-- Context: Label of the number-of-particles setting of the Auto Cast effect.
 [327] = "Particles",
 -- f102986b
+-- Context: Label of a size/zoom setting: effect scale, and the UI scale slider of the configuration
+--     window.
 [328] = "Scale",
 -- 1709305c
+-- Context: Name of the Level condition (character level of a unit); also its operator field label
+--     in the condition editor.
 [329] = "Level",
 -- 75081b59
+-- Context: Status text / button state: the item (condition, step, rotation) is turned off; also
+--     prefixes a condition's text when disabled.
 [330] = "Disabled",
 -- 92c1cdfd
+-- Context: Status text / toggle button state: the item (condition, function, definition) is turned
+--     on.
 [331] = "Enabled",
 -- b79cac92
+-- Context: Button/tooltip opening the help for the current editor or condition; also a comparison
+--     row label.
 [332] = "Help",
 -- 8c89911a
+-- Context: Name of the Time Until Health condition (estimated seconds until a unit reaches a health
+--     value).
 [333] = "Time Until Health",
 -- dd1e6bab
 [334] = "Time Until Health Percentage",
 -- 2184a4e3
+-- Context: Name of the Runner condition (the mob tends to flee at low health, per the MobInfo2
+--     addon).
 [335] = "Runner",
 -- 0a10734e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text fragment '%s will run' for the Runner condition; %s is a unit.
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [336] = "%s will run",
 -- 93bea368
+-- Context: Name of the Resistant condition (a unit resists a magic school above a value).
 [337] = "Resistant",
 -- 384f6084
+-- Context: Name of the Immune condition (a unit is immune to a magic school).
 [338] = "Immune",
 -- ecbc89cd
+-- Context: Cast event in the announcement Event dropdown: the cast has started; also a help
+--     heading.
 [339] = "Started",
 -- 1a4f630a
+-- Context: Cast event in the announcement Event dropdown: the cast was stopped/cancelled by you;
+--     also a help heading.
 [340] = "Stopped",
 -- 6d9a6f97
+-- Context: Cast event in the announcement Event dropdown: the cast completed successfully.
 [341] = "Succeeded",
 -- 132d124d
+-- Context: Cast event in the announcement Event dropdown: the cast was interrupted (e.g. by an
+--     enemy).
 [342] = "Interrupted",
 -- 031a8f0f
+-- Context: Cast event in the announcement Event dropdown: the cast failed; also a validation status
+--     ('Failed') in the condition source preview.
 [343] = "Failed",
 -- a5c19c9f
+-- Context: Cast event in the announcement Event dropdown: the cast was delayed (pushback).
 [344] = "Delayed",
 -- 93006d61
+-- Context: Magic school name (Arcane) in the school dropdown of the Resistant/Immune conditions.
 [345] = "Arcane",
 -- 17636dd6
+-- Context: Magic school name (Frost) in the school dropdown; also a Death Knight rune type (Frost
+--     rune) in the rune condition help.
 [346] = "Frost",
 -- 56eee6a5
+-- Context: Magic school name (Holy) in the school dropdown of the Resistant/Immune conditions.
 [347] = "Holy",
 -- c71ce8cc
+-- Context: Magic school name (Nature) in the school dropdown; also an icon-picker category.
 [348] = "Nature",
 -- 4c764cb6
+-- Context: Magic school name (Shadow) in the school dropdown of the Resistant/Immune conditions.
 [349] = "Shadow",
 -- 113ed31a
 [350] = "Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time.",
 -- 215b6920
 [351] = "Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition.",
 -- 1359626e
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position up; also a help heading.
 [352] = "Move Up",
 -- db60f7a9
+-- Context: Menu entry/button: moves the selected list entry to the top; also a help heading.
 [353] = "Move to Top",
 -- 89abfab0
+-- Context: Menu entry/button: moves the selected list entry to the bottom; also a help heading.
 [354] = "Move to Bottom",
 -- b58330ac
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position down; also a help heading.
 [355] = "Move Down",
 -- 45986160
+-- Context: Label of the dropdown in the Conditions page for choosing the category to move a
+--     condition into (verb phrase 'Move to'); also a help heading.
 [356] = "Move To",
 -- 7e6fefff
+-- Context: Checkbox label: hide this condition from the Other category in the condition picker
+--     (adjective); also a comparison row label.
 [357] = "Hidden",
 -- 02cdaabf
+-- Context: Button in the rotation list and rotation steps: makes a copy of the selected entry
+--     (verb); also a help heading.
 [358] = "Duplicate",
 -- 4a787020
+-- Context: Label of the dropdown choosing which kind of action to look for (e.g. healed, dodged,
+--     missed) in the Last Combat Action conditions; also a help heading for the announcement action
+--     type.
 [359] = "Action Type",
 -- 4e43f098
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Option label 'No Action' (a step that does nothing).
 [360] = "No Action",
 -- 63c5b771
+-- Context: Name of the Spell choice: the spell name/ID entry field label in conditions, the step
+--     type 'Spell' and a help term; noun.
 [361] = "Spell",
 -- c8a18067
+-- Context: Name of the Pet Spell choice: a step/announcement type that uses a spell of your pet;
+--     also used in pet spell condition help.
 [362] = "Pet Spell",
 -- a4d187b1
+-- Context: Step type dropdown entry in the rotation step editor: a step that fires for any spell,
+--     not a specific one.
 [363] = "Any Spell",
 -- 652bcc3a
+-- Context: Label of the item entry field (an item name or ID) in conditions; also the step type
+--     'Item' and a help term; noun.
 [364] = "Item",
 -- 97d4be89
+-- Context: Heading of the conditions section of a rotation step/announcement and a help heading;
+--     also a comparison row label.
 [365] = "Conditions",
 -- c6877c9a
 [366] = "NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field.",
 -- 464557d7
+-- %s #1: %s #1: a clickable spell link for the spell that became available, e.g. "[Fireball]" (or "Unknown spell (133)" when the game has no data)
 [367] = "%s is now available!",
 -- 2ab52f92
+-- Context: Label of the Announce checkbox/section in a rotation step (announce when the step
+--     triggers) and a help heading (verb/noun); also a comparison row label.
 [368] = "Announce",
 -- f961b619
+-- Context: Label of the dropdown in a rotation step choosing a sound to play when announcing.
 [369] = "Audible Announce",
 -- dc937b59
+-- Context: Dropdown option meaning 'no selection' or an empty value (e.g. no active rotation, no
+--     sound, no channel).
 [370] = "None",
 -- 51247512
+-- Context: Dropdown option (announce channel) meaning raid chat when in a raid, otherwise party
+--     chat; also used inside condition text as 'members of raid or party'.
 [371] = "Raid or Party",
 -- 272e43a2
+-- Context: Announce channel dropdown option: send the announcement to party chat only; also a help
+--     heading.
 [372] = "Party Only",
 -- be5b8dfd
+-- Context: Announce channel dropdown option: send the announcement as a raid warning message; also
+--     a help heading.
 [373] = "Raid Warning",
 -- 64f3cd06
+-- Context: Announce channel dropdown option: say (normal /say chat); also the chat-type of an
+--     announcement macro.
 [374] = "Say",
 -- 938af47b
+-- Context: Announce channel dropdown option: yell (/yell chat); also the chat-type of an
+--     announcement macro.
 [375] = "Yell",
 -- 5027e850
+-- Context: Announce channel dropdown option: perform a built-in emote; also the Emote field label
+--     in the announcement help.
 [376] = "Emote",
 -- ff3a450e
+-- Context: Announce channel dropdown option: show the message only to you, not to others.
 [377] = "Local Only",
 -- 71988c4d
+-- Context: Label of a free-text field (the announcement text) and the schema field type 'Text' (a
+--     string) in custom function and schema editors.
 [378] = "Text",
 -- b0ef44de
+-- Context: Label of the item set dropdown in item conditions and the item set choice in
+--     announcements; noun.
 [379] = "Item Set",
 -- 434702dc
 [380] = "Click the icon above to bind to your action bar",
 -- e71efd0e
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [381] = "time until %s is at %s%% health",
 -- 4104ecce
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [382] = "time until %s is at %s health",
 -- cd7e49ac
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health deficit amount (missing health) that is waited for, e.g. 20000
 [383] = "time until %s is at %s health defecit",
 -- 6344ed2a
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [384] = "The %s health defecit of %s members%s within %d yards of %s",
 -- b4b2caae
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [385] = "The %s health of %s members%s within %d yards of %s",
 -- 1bbec37f
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [386] = "The number %s members%s within %d yards of %s whose",
 -- 91765b2b
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [387] = "The %s health percentage of %s members%s within %d yards of %s",
 -- 13a2b471
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [388] = "The number %s members%s within %d yards of %s whose health percentage",
 -- 52cf9fe9
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [389] = "The %s mana defecit of %s members%s within %d yards of %s",
 -- 0a50ee9b
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [390] = "The %s mana of %s members%s within %d yards of %s",
 -- ed32b716
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [391] = "The %s mana percentage of %s members%s within %d yards of %s",
 -- 66dd29aa
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [392] = "The number %s members%s within %d yards of %s whose mana percentage",
 -- bd972cc4
+-- Context: Name of the logical AND group condition: all conditions inside it must be true (a
+--     condition type in the condition picker).
 [393] = "AND",
 -- 829e5b28
+-- Context: Name of the logical OR group condition: at least one condition inside it must be true.
 [394] = "OR",
 -- 8be3365c
+-- Context: Name of the logical NOT group condition: negates the condition inside it; also used as a
+--     prefix in condition text.
 [395] = "NOT",
 -- f733d042
+-- Context: Placeholder shown in a condition list where a condition has a missing or unknown type;
+--     keep the angle brackets.
 [396] = "<INVALID CONDITION>",
 -- b2295de9
 [397] = "Please Choose ...",
 -- 9f24f04e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label 'Condition Type'.
 [398] = "Condition Type",
 -- df00fd14
+-- Context: Window title of the condition editor for the condition at a numbered position; %d is its
+--     position in the list.
+-- %d #1: %d #1: the position of the condition in the rotation step, counting from 1, e.g. 2
 [399] = "Edit Condition #%d",
 -- 55490a4b
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Up' (move up arrow).
 [400] = "Up",
 -- b86d11af
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Down' (move down arrow).
 [401] = "Down",
 -- 3124aba4
+-- Context: Placeholder shown in a condition's text where no spell has been chosen yet; keep the
+--     angle brackets.
 [402] = "<spell>",
 -- 99cd36a3
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [403] = "Your talent is a %s role",
 -- 8436c454
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [404] = "%s is in a %s role",
 -- 71fafa0a
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is a %s' (singular, e.g. 'your target is a Beast');
+--     unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [405] = "%s is a %s",
 -- f9030f9e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are a %s' (plural subject); unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [406] = "%s are a %s",
 -- 1c5be7b4
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s' (plural subject); unit, then a thing.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [407] = "%s have %s",
 -- 82320b64
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s' (singular subject); unit, then a thing.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [408] = "%s has %s",
 -- 3313549c
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is %s' (singular subject); subject, then a state.
+-- %s #1: %s #1: the first unit, e.g. "your target"
+-- %s #2: %s #2: the unit it is compared with (or a distance such as "closer than 10 yards"), e.g. "your focus target"
 [409] = "%s is %s",
 -- 4902371e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are %s' (plural subject); subject, then a state.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the distance phrase, e.g. "closer than 10 yards"
 [410] = "%s are %s",
 -- 2564e907
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s were %s' (plural subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action ("were" is used for the player), e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [411] = "%s were %s",
 -- 96aacc3d
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s was %s' (singular subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [412] = "%s was %s",
 -- 368387c7
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s where %s' (plural subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [413] = "%s have %s where %s",
 -- f161aa55
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s where %s' (singular subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, e.g. "Rend"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [414] = "%s has %s where %s",
 -- 38277209
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [415] = "you are talented in %s",
 -- 32da26d1
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree it is in, e.g. "Arcane"
 [416] = "talent points in %s (%s)",
 -- 85d523f6
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template "%s's resistance to %s"; unit, then a magic school.
+-- %s #1: %s #1: the unit whose resistance is checked, possessive form, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [417] = "%s's resistance to %s",
 -- 0cad0ea7
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [418] = "%s is sometimes immune to %s",
 -- e23ffa5e
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is immune to %s'; unit, then a magic school.
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [419] = "%s is immune to %s",
 -- 6d19eba6
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template 'you have %s glyph'; %s is a glyph name.
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [420] = "you have %s glyph",
 -- 4e545960
+-- Context: Label of the unit dropdown in conditions (which unit is checked: you, your target, ...)
+--     and a help term; noun.
 [421] = "Unit",
 -- 14736a2e
+-- Context: Name of the Role condition (tank, DPS or healer) and the label of its role dropdown.
 [422] = "Role",
 -- 4f3a9bd0
+-- Context: Name of the Class condition and the label of its class dropdown; also a scope option
+--     (class vs. this character).
 [423] = "Class",
 -- 0df08730
+-- Context: Name of the Class In Group condition: counts group members of a given class.
 [424] = "Class In Group",
 -- e23f2e34
+-- Context: Name of the Is Same As condition: true when two units are the same unit.
 [425] = "Is Same As",
 -- 03d5b2de
+-- Context: Name of the Creature Type condition (beast, demon, ...) and label of its dropdown.
 [426] = "Creature Type",
 -- a1cf0927
+-- Context: Name of the Unit Classification condition (normal, elite, boss...) and label of its
+--     dropdown.
 [427] = "Unit Classification",
 -- caa2e08f
+-- Context: Label of the talent dropdown in the Talent condition (a specific talent).
 [428] = "Talent",
 -- 1aff4871
+-- Context: Name of the Glyph condition: true while you have a given glyph (an item) applied.
 [429] = "Glyph",
 -- b8790e72
+-- Context: Label of the talent tree/group dropdown in the Talent condition and title of the talent
+--     picker popup.
 [430] = "Talent Tree",
 -- 291101a0
+-- Context: Label of the dropdown holding the comparison operator (is less than, equal to ...) in
+--     conditions, and a help term.
 [431] = "Operator",
 -- b7bdf7a2
+-- Context: Name of the Distance condition (yards to a unit) and label of its distance field.
 [432] = "Distance",
 -- 7a347089
+-- Context: Name of the Distance Count condition: how many units are within a given distance.
 [433] = "Distance Count",
 -- 47da413b
+-- Context: Unit word 'yards' (distance unit). No direct call site in the current code; it appeared
+--     in distance conditions' text.
 [434] = "yards",
 -- 55898449
+-- Context: Label of the health value field in health-based conditions (e.g. 'Health Within Range')
+--     and the operator widget's value name; noun.
 [435] = "Health",
 -- 3c01b3e3
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a health deficit comparison ('%s health deficit'; sic 'defecit' in the English
+--     key); %s is a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [436] = "%s health defecit",
 -- 59f92800
+-- Context: Name of the Health Percentage condition (a unit's health as a percent of its maximum) in
+--     the condition picker.
 [437] = "Health Percentage",
 -- 066ffe4a
+-- Context: Label of the mana value field in mana conditions (e.g. 'Mana Within Range'); noun.
 [438] = "Mana",
 -- ba32a92b
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a mana deficit comparison ('%s mana deficit'; sic 'defecit' in the key); %s is a
+--     value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [439] = "%s mana defecit",
 -- 42dccab0
+-- Context: Name of the Mana Percentage condition (a unit's mana as a percent of its maximum).
 [440] = "Mana Percentage",
 -- 848e9656
+-- Context: Name of the Power condition (a unit's raw resource such as rage or energy) and the label
+--     of its value field.
 [441] = "Power",
 -- 0e4dfe83
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a power deficit comparison ('%s power deficit'; sic 'defecit' in the key); %s is
+--     a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [442] = "%s power defecit",
 -- 6a612b86
+-- Context: Name of the Power Percentage condition (a unit's resource as a percent of its maximum).
 [443] = "Power Percentage",
 -- 77deabe2
+-- Context: Name of the Points condition (combo points) and the label of its value field.
 [444] = "Points",
 -- 8208acbf
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s points' (combo points); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [445] = "%s points",
 -- 49e3a963
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s point deficit' (sic 'defecit' in the key; combo points missing
+--     from max); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [446] = "%s point defecit",
 -- 5af0278b
+-- Context: Name of the Runes condition (Death Knight runes available) and the label of its count
+--     field.
 [447] = "Runes",
 -- d62be657
+-- Context: Name of the Rune Cooldown condition (seconds until a rune type is ready).
 [448] = "Rune Cooldown",
 -- 9ba5f80d
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s runes available'; %s is a number.
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [449] = "%s runes available",
 -- 61084a6e
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'cooldown on %s rune'; %s is a rune type.
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [450] = "cooldown on %s rune",
 -- 8a7961ab
+-- Context: Death Knight rune type (Blood) in the Runes and Rune Cooldown conditions' rune dropdown.
 [451] = "Blood",
 -- 4de5fe95
+-- Context: Death Knight rune type (Unholy) in the Runes and Rune Cooldown conditions' rune
+--     dropdown.
 [452] = "Unholy",
 -- fcd6fea7
+-- Context: Death Knight rune type (Death) in the Runes and Rune Cooldown conditions' rune dropdown.
 [453] = "Death",
 -- 8a166eb0
+-- Context: Name of the Character Stat condition (a stat such as strength or armor) and the label of
+--     its stat dropdown.
 [454] = "Character Stat",
 -- 0a79e909
+-- Context: Name of the Extended Character Stat condition (stats provided by the
+--     ExtendedCharacterStats addon).
 [455] = "Extended Character Stat",
 -- 9cd14132
 [456] = "Extended Character Stat Percentage",
 -- d2923546
+-- Context: Name of the Spell Available condition (a spell is castable/known and available).
 [457] = "Spell Available",
 -- b1557241
+-- Context: Name of the Pet Spell Available condition (a pet spell is available).
 [458] = "Pet Spell Available",
 -- d24390ed
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is available'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [459] = "%s is available",
 -- b2561670
+-- Context: Name of the Spell In Range condition (the spell can reach the target).
 [460] = "Spell In Range",
 -- 67ef960b
 [461] = "Pet Spell In Range",
 -- 12692f41
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in range'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [462] = "%s is in range",
 -- 8baec846
+-- Context: Name of the Spell Cooldown condition (seconds until a spell can be cast again); also the
+--     title of its help.
 [463] = "Spell Cooldown",
 -- f7254914
+-- Context: Name of the Pet Spell Cooldown condition (seconds until a pet spell can be cast again).
 [464] = "Pet Spell Cooldown",
 -- 9e4f8469
+-- Context: Name of the Boss Mod Encounter condition (an encounter reported by a boss mod addon such
+--     as DBM/BigWigs is active).
 [465] = "Boss Mod Encounter",
 -- fd1f1e3c
 [466] = "Boss Mod Encounter Stage",
 -- c07ffee7
+-- Context: Name of the Boss Mod Timer condition (seconds until a boss ability, from a boss mod
+--     addon).
 [467] = "Boss Mod Timer",
 -- 140bedbf
+-- Context: Lowercase word 'none' inserted in a status line 'Current encounter: ..., ID none, stage
+--     ...' when there is no encounter ID.
 [468] = "none",
 -- f73bf30c
 [469] = "Spell Active or Pending",
 -- c8ada1d7
 [470] = "Pet Spell Active or Pending",
 -- 85f5aca6
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [471] = "%s is active or pending",
 -- fdb533df
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     name of the Spell Time Remaining condition (time left on a spell).
 [472] = "Spell Time Remaining",
 -- 3422640c
 [473] = "Pet Spell Time Remaining",
 -- 369bb5dd
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'remaining time on %s'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [474] = "remaining time on %s",
 -- 0ce37091
+-- Context: Name of the Spell Charges condition (how many charges of a spell are available).
 [475] = "Spell Charges",
 -- b9dd94ce
+-- Context: Name of the Pet Spell Charges condition (charges of a pet spell).
 [476] = "Pet Spell Charges",
 -- bd7612e8
 [477] = "Spell Cast History Time",
 -- e16b6508
+-- Context: Name of the Spell Cast History condition (a spell was cast N casts ago).
 [478] = "Spell Cast History",
 -- 26483687
 [479] = "Pet Spell Cast History Time",
 -- 6f884dd0
 [480] = "Pet Spell Cast History",
 -- 193bb945
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s was cast'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [481] = "%s was cast",
 -- 0d112e0c
 [482] = "Combat Action History Time",
 -- ec517441
+-- Context: Name of the Combat Action History condition (a combat event such as dodged/healed N
+--     actions ago).
 [483] = "Combat Action History",
 -- 9c434f34
+-- %s #1: %s #1: the number of casts, e.g. 3
 [484] = "fewer than %s casts ago",
 -- 5966470f
+-- %s #1: %s #1: the number of casts, e.g. 3
 [485] = "at most %s casts ago",
 -- c1a41894
+-- %s #1: %s #1: the number of casts, e.g. 3
 [486] = "more than %s casts ago",
 -- fd9a7c72
+-- %s #1: %s #1: the number of casts, e.g. 3
 [487] = "at least %s casts ago",
 -- c53b5aea
+-- Context: Phrase in condition text for the equals operator in cast history: '... exactly N casts
+--     ago'; %s is the number.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [488] = "exactly %s casts ago",
 -- 770b3b3e
+-- %s #1: %s #1: the number of casts, e.g. 3
 [489] = "other than %s casts ago",
 -- 75504648
+-- %s #1: %s #1: the number of casts, e.g. 3
 [490] = "a multiple of %s casts ago",
 -- 3619f661
+-- %s #1: %s #1: the number of actions, e.g. 3
 [491] = "fewer than %s actions ago",
 -- 90c5ca9f
+-- %s #1: %s #1: the number of actions, e.g. 3
 [492] = "at most %s actions ago",
 -- 03dcab2c
+-- %s #1: %s #1: the number of actions, e.g. 3
 [493] = "more than %s actions ago",
 -- 7688d933
+-- %s #1: %s #1: the number of actions, e.g. 3
 [494] = "at least %s actions ago",
 -- 506a71d6
+-- Context: Phrase in condition text for the equals operator in combat action history: '... exactly
+--     N actions ago'; %s is the number.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [495] = "exactly %s actions ago",
 -- 1a4b6a11
+-- %s #1: %s #1: the number of actions, e.g. 3
 [496] = "other than %s actions ago",
 -- a5094423
+-- %s #1: %s #1: the number of actions, e.g. 3
 [497] = "a multiple of %s actions ago",
 -- 27db12a6
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [498] = "less than %s seconds ago",
 -- 4e0556a9
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [499] = "at most %s seconds ago",
 -- 9644de21
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [500] = "more than %s seconds ago",
 -- 75c46f7d
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [501] = "at least %s seconds ago",
 -- a431b13b
+-- Context: Phrase in condition text for the equals operator in time-based history: '... exactly N
+--     seconds ago'; %s is the number.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [502] = "exactly %s seconds ago",
 -- 4ac319b9
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [503] = "other than %s seconds ago",
 -- 2b2e3c59
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [504] = "a multiple of %s seconds ago",
 -- ae4f356c
+-- Context: Name of the Any Spell Available condition (any spell by name/ID, regardless of
+--     specialization).
 [505] = "Any Spell Available",
 -- 11a84a9d
 [506] = "Any Spell In Range",
 -- 6a50cd59
+-- Context: Name of the Any Spell Cooldown condition (seconds until any chosen spell is ready).
 [507] = "Any Spell Cooldown",
 -- 56ef0943
 [508] = "Any Spell Time Remaining",
 -- a8212106
+-- Context: Name of the Any Spell Charges condition (charges of any chosen spell).
 [509] = "Any Spell Charges",
 -- ae1e1aed
+-- Context: Name of the Buff Present condition (an aura is on the unit).
 [510] = "Buff Present",
 -- 8fb4de97
+-- Context: Name of the Buff Time Remaining condition (seconds left on a buff).
 [511] = "Buff Time Remaining",
 -- 666e85fc
+-- Context: Name of the Buff Stacks condition (the application count of a buff).
 [512] = "Buff Stacks",
 -- 16ace6d6
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'stacks of %s'; %s is an aura.
+-- %s #1: %s #1: the buff or debuff, as a spell name or "your own" followed by it, e.g. "Sunder Armor"
 [513] = "stacks of %s",
 -- b4f4e6c4
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text word 'stacks' (aura application count).
 [514] = "stacks",
 -- 78fcf705
+-- Context: Name of the Has Stealable Buff condition (a unit has a buff you can steal or purge).
 [515] = "Has Stealable Buff",
 -- 7588c154
+-- %s #1: %s #1: the unit, e.g. "your target"
 [516] = "%s has a stealable buff",
 -- c057197d
+-- Context: Name of the Debuff Present condition (a debuff is on the unit).
 [517] = "Debuff Present",
 -- e12d628f
+-- Context: Name of the Debuff Time Remaining condition (seconds left on a debuff).
 [518] = "Debuff Time Remaining",
 -- 68627f3e
+-- Context: Name of the Debuff Stacks condition (the application count of a debuff).
 [519] = "Debuff Stacks",
 -- fe1e836d
+-- Context: Name of the Debuff Type Present condition (e.g. Magic, Curse, Poison, Disease on the
+--     unit).
 [520] = "Debuff Type Present",
 -- 23f8a0cb
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s have a %s debuff' (plural subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [521] = "%s have a %s debuff",
 -- 7ab4967e
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s has a %s debuff' (singular subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [522] = "%s has a %s debuff",
 -- a7b891f5
+-- Context: Name of the Totem Present condition (a totem of a given element is active).
 [523] = "Totem Present",
 -- 0c3d3d7f
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s totem is active'; %s is a totem element.
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [524] = "%s totem is active",
 -- e885c330
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active'; %s is a totem/spell.
+-- %s #1: %s #1: a clickable spell link for the totem or ability, e.g. "[Searing Totem]"
 [525] = "%s is active",
 -- 66da3d47
+-- Context: Name of the Specific Totem Present condition (a particular totem spell is active).
 [526] = "Specific Totem Present",
 -- 5bf50471
+-- Context: Name of the Totem Time Remaining condition (seconds left on an active totem).
 [527] = "Totem Time Remaining",
 -- 7543785b
 [528] = "Specific Totem Time Remaining",
 -- 68fb02a4
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [529] = "you have a %s totem active with %s",
 -- a25252ca
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active with %s'; first %s a totem, second a detail (such as
+--     time left).
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [530] = "%s is active with %s",
 -- 2fa842db
+-- Context: Name of the Have Item Equipped condition (you wear a given item).
 [531] = "Have Item Equipped",
 -- 5554bebd
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you have %s equipped'; %s is an item.
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [532] = "you have %s equipped",
 -- 8e3be399
 [533] = "Have Item In Bags",
 -- ef20a8e9
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Healing Potion]"
 [534] = "the number of %s you are carrying",
 -- 86a036a1
+-- Context: Name of the Item Available condition (you have the item and can use it).
 [535] = "Item Available",
 -- e01cd9e7
+-- Context: Name of the Item In Range condition (the item can reach the target).
 [536] = "Item In Range",
 -- 64d7247f
+-- Context: Name of the Item Cooldown condition (seconds until an item is usable again).
 [537] = "Item Cooldown",
 -- 1b0ab573
+-- Context: Name of the In Combat condition; also a checkbox label in the Distance Count condition
+--     meaning 'only count units in combat'.
 [538] = "In Combat",
 -- 630eade3
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are in combat' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [539] = "%s are in combat",
 -- 89608711
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in combat' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [540] = "%s is in combat",
 -- a9bae210
+-- Context: Name of the Have Pet condition (you currently have a pet).
 [541] = "Have Pet",
 -- 924d4ef6
 [542] = "you have a pet",
 -- 02734b33
+-- Context: Name of the Have Named Pet condition (your pet has a given name).
 [543] = "Have Named Pet",
 -- 0c21cff5
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [544] = "you have a pet named %s",
 -- 526a40a4
+-- Context: Name of the Stealth condition (the player is stealthed); noun.
 [545] = "Stealth",
 -- daac7bb8
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are stealthed'.
 [546] = "you are stealthed",
 -- d9237cea
+-- Context: Name of the In Control condition (you are not stunned, feared, or otherwise lost
+--     control).
 [547] = "In Control",
 -- 7eea2830
 [548] = "you are in control of your character",
@@ -2454,24 +4115,40 @@ local E = {
 -- 7843bc0f
 [550] = "Loss Of Control Blocked",
 -- 8dac743c
+-- Context: Name of the Moving condition (the player is moving).
 [551] = "Moving",
 -- 09284586
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are moving'.
 [552] = "you are moving",
 -- 56aa198a
+-- Context: Name of the Threat condition (your threat level against a unit) and the label of its
+--     threat-level dropdown.
 [553] = "Threat",
 -- ffa83e17
+-- Context: Name of the Threat Count condition (the number of units on which you have at least a
+--     threat level).
 [554] = "Threat Count",
 -- c74406db
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [555] = "you are at least %s on %s",
 -- 99157067
+-- Context: Name of the Shapeshift Form condition (the druid/shaman form you are in).
 [556] = "Shapeshift Form",
 -- 89016283
+-- Context: Name of the Attackable condition (the unit can be attacked by you).
 [557] = "Attackable",
 -- b3478c03
+-- Context: Name of the Hostile condition (the unit is an enemy).
 [558] = "Hostile",
 -- 46e36b4f
+-- Context: Name of the Allies Within Range condition (number of allies within a distance of a
+--     unit).
 [559] = "Allies Within Range",
 -- afdfa696
+-- Context: Name of the Health Within Range condition (health statistic over units within a
+--     distance).
 [560] = "Health Within Range",
 -- a4d0252f
 [561] = "Health Count Within Range",
@@ -2480,6 +4157,7 @@ local E = {
 -- 324a4bd3
 [563] = "Health Percentage Count Within Range",
 -- 8b7e70d8
+-- Context: Name of the Mana Within Range condition (mana statistic over units within a distance).
 [564] = "Mana Within Range",
 -- 94049799
 [565] = "Mana Count Within Range",
@@ -2488,22 +4166,39 @@ local E = {
 -- 953ff9c3
 [567] = "Mana Percentage Count Within Range",
 -- d709e95d
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is an enemy'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [568] = "%s is an enemy",
 -- 7024062a
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is attackable'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [569] = "%s is attackable",
 -- cd29bb25
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 30
 [570] = "number of %s members%s within %d yards",
 -- bb1fa7ca
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
 [571] = "number of %s members%s within %s yards",
 -- ffc1e6b0
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [572] = "number of enemies you are at least %s",
 -- 1fc58dea
+-- %s #1: %s #1: the unit, in the possessive form, e.g. "your target's"
 [573] = "you {{!are|are not}} on %s threat table",
 -- dbcea100
+-- %s #1: %s #1: the unit, e.g. "your target"
 [574] = "you {{!have|do not have}} at least as much threat on %s as its tank",
 -- 1a38484b
+-- %s #1: %s #1: the unit, e.g. "your target"
 [575] = "you {{!are|are not}} tanking %s",
 -- f893e9b8
+-- %s #1: %s #1: the unit, e.g. "your target"
 [576] = "you {{!are|are not}} securely tanking %s",
 -- 050bc6fc
 [577] = "the number of enemies whose threat table you are on",
@@ -2514,100 +4209,180 @@ local E = {
 -- 39546907
 [580] = "the number of enemies you are securely tanking",
 -- d173b87e
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [581] = "you are in %s form",
 -- 38ffcb03
+-- Context: Name of the Channeling condition (a unit is channeling any spell).
 [582] = "Channeling",
 -- a423f878
+-- Context: Name of the Specific Spell Channeling condition (a unit is channeling a chosen spell).
 [583] = "Specific Spell Channeling",
 -- c5db67ca
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [584] = "%s are currently channeling",
 -- f58eece7
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [585] = "%s is currently channeling",
 -- 6960967b
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [586] = "%s are currently channeling %s",
 -- 53ed0bfb
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [587] = "%s is currently channeling %s",
 -- 4c2aeef1
+-- Context: Name of the Channel Time Remaining condition (seconds left on a unit's current channel).
 [588] = "Channel Time Remaining",
 -- e38783fe
 [589] = "time remaining on spell channel",
 -- 39c51722
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Channel Interruptible condition name (now spelled 'Interruptible').
 [590] = "Channel Interruptable",
 -- 09453a79
+-- Context: Name of the Channel Interruptible condition (the unit's current channel can be
+--     interrupted).
 [591] = "Channel Interruptible",
 -- 2a35e090
+-- %s #1: %s #1: the unit, e.g. "your target"
 [592] = "%s's channeled spell is interruptable",
 -- 0c9e7b06
+-- Context: Name of the Casting condition (a unit is casting any spell); also an icon-picker
+--     category.
 [593] = "Casting",
 -- bc401bef
+-- Context: Name of the Specific Spell Casting condition (a unit is casting a chosen spell).
 [594] = "Specific Spell Casting",
 -- 53cc77b2
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [595] = "%s are currently casting",
 -- f8e91c91
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [596] = "%s is currently casting",
 -- 9ec6cde4
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [597] = "%s are currently casting %s",
 -- 79bdf263
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [598] = "%s is currently casting %s",
 -- 8f9d9bf5
+-- Context: Name of the Cast Time Remaining condition (seconds until a unit's current cast
+--     completes).
 [599] = "Cast Time Remaining",
 -- 24812186
 [600] = "time remaining on spell cast",
 -- e2513da8
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Cast Interruptible condition name (now spelled 'Interruptible').
 [601] = "Cast Interruptable",
 -- d5c12268
+-- Context: Name of the Cast Interruptible condition (the unit's current cast can be interrupted).
 [602] = "Cast Interruptible",
 -- 8b182833
+-- %s #1: %s #1: the unit, e.g. "your target"
 [603] = "%s's spell is interruptable",
 -- 0d2970f9
+-- Context: Name of the PVP Flagged condition (a unit is flagged for player-versus-player combat).
 [604] = "PVP Flagged",
 -- d27e8fdc
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are PVP flagged' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [605] = "%s are PVP flagged",
 -- c67f02e4
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is PVP flagged' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [606] = "%s is PVP flagged",
 -- 0489205b
+-- Context: Name of the Zone PVP condition (the PvP status of the area you are in).
 [607] = "Zone PVP",
 -- d09a2928
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [608] = "zone is a %s zone",
 -- 425f2336
+-- Context: Name of the Instance condition (what kind of instance you are in: dungeon, raid,
+--     battleground...).
 [609] = "Instance",
 -- e96c4ff4
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [610] = "you are in a %s instance",
 -- 6480caf6
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'in %s'; %s is a zone or instance.
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [611] = "in %s",
 -- a8a06e4a
+-- Context: Name of the Zone condition (the zone or subzone you are in) and the label of its text
+--     field.
 [612] = "Zone",
 -- 782fc4e1
+-- Context: Name of the In Group condition (you are in a party or raid).
 [613] = "In Group",
 -- b097d347
 [614] = "you are in a group",
 -- c299367b
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition name 'In Raid' (replaced by the Raid checkbox in the In Group
+--     condition).
 [615] = "In Raid",
 -- 8985f5e8
 [616] = "you are in a raid",
 -- 8bf8ef16
+-- Context: Name of the Outdoors condition (you are in an outdoor area).
 [617] = "Outdoors",
 -- 2fcb5d37
+-- Context: Instance mode option in the Instance condition: a solo scenario; also a difficulty group
+--     name.
 [618] = "Scenario",
 -- 0229c086
 [619] = "you are in a outdoors",
 -- 4340b353
+-- Context: Name of the Weapon Enchant Present condition (a weapon has a temporary enchant/imbue).
 [620] = "Weapon Enchant Present",
 -- 61ab108b
 [621] = "Different season or game rules",
 -- 6abe675a
+-- Context: Name of the Action Context condition (which action bar is in use: yours, a vehicle,
+--     override...) and the label of its dropdown.
 [622] = "Action Context",
 -- 615c9003
 [623] = "Advice is suspended: no rotation applies while you are using another action bar.",
 -- e9860cd7
 [624] = "Item Set Pieces Equipped",
 -- e0317f0c
+-- Context: Name of the Weapon Enchant Type condition (which temporary weapon enchant is applied).
 [625] = "Weapon Enchant Type",
 -- 32eedbe8
+-- Context: Value in the Action Context dropdown: you are in a pet battle (Retail only); lowercase
+--     phrase read in a sentence.
 [626] = "a pet battle",
 -- a688c1ab
+-- Context: Value in the Action Context dropdown: you control a possessed (mind controlled) unit;
+--     lowercase phrase read in a sentence.
 [627] = "a possessed unit",
 -- 7e4e79e6
+-- Context: Value in the Action Context dropdown: you are in a vehicle; lowercase phrase read in a
+--     sentence.
 [628] = "a vehicle",
 -- 1f7bee61
 [629] = "an override action bar",
@@ -2616,52 +4391,92 @@ local E = {
 -- 6d49f98c
 [631] = "Weapon Enchant Time Remaining",
 -- 872198ac
+-- Context: Name of the Weapon Enchant Stacks condition (the stack count of a temporary weapon
+--     enchant).
 [632] = "Weapon Enchant Stacks",
 -- 9a08c36b
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the remaining time or on the stack count, e.g. "the remaining time is greater than 10 seconds"
 [633] = "Your %s weapon buff has %s",
 -- 5aebbe0c
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "off hand"
 [634] = "Your %s weapon is enchanted",
 -- bfd173c2
+-- Context: Equipment slot / checkbox label for the off-hand weapon slot in weapon and enchant
+--     conditions; noun.
 [635] = "Off Hand",
 -- f0fa1c9c
+-- Context: Name of the Weapon Swing Time condition (time until your next auto-attack swing).
 [636] = "Weapon Swing Time",
 -- 8439ecbd
 [637] = "Weapon Swing Time Remaining",
 -- a258b30f
+-- Context: Checkbox label for an item set: it is a global set shared by all characters; also a help
+--     heading.
 [638] = "Global",
 -- 601196cf
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count both damage
+--     and healing taken by the unit.
 [639] = "Damage and Heals",
 -- 9d0e8a5a
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only damage
+--     taken by the unit.
 [640] = "Damage Only",
 -- 26316d67
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only healing
+--     received by the unit.
 [641] = "Heals Only",
 -- 64cff131
+-- Context: Label for the combat action kind (hit, miss, parried...) field in the Combat Action
+--     History condition; noun, also a comparison row label.
 [642] = "Action",
 -- cd70c6b9
 [643] = "Time Since Combat Start",
 -- d49f3af6
+-- %s #1: %s #1: the comparison wording, e.g. "is greater than"
+-- %s #2: %s #2: the number of seconds, e.g. 10
 [644] = "Time in combat is %s %s seconds",
 -- ffedb1c8
+-- Context: Button that copies a text report to the clipboard (error window, condition text window);
+--     verb + noun.
 [645] = "Copy report",
 -- 7d9eb7ac
+-- Context: Button/tooltip of the window close icon (X) in dialogs; verb.
 [646] = "Close",
 -- 67f981b6
 [647] = "/rm errors              - View and copy Rotation Master errors.",
 -- 496d05e2
+-- Context: Name of the Spell Known condition (you or your pet know/have learned a spell).
 [648] = "Spell Known",
 -- 034f8d39
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'You know %s'; %s is a spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Fireball (spell ID 133)"
 [649] = "You know %s",
 -- 5a072a25
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'Your pet knows %s'; %s is a pet spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Bite (spell ID 17253)"
 [650] = "Your pet knows %s",
 -- 41c1fdac
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Template '%s
+--     (spell ID %s)'; spell name, then numeric spell ID.
+-- %s #1: %s #1: the spell name, e.g. "Fireball"
+-- %s #2: %s #2: the spell ID, e.g. 133
 [651] = "%s (spell ID %s)",
 -- 02ac5ded
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Spell
+--     ID' for a numeric spell identifier.
 [652] = "Spell ID",
 -- 1be30861
+-- Context: Checkbox label in the Spell Known condition: the spell is a pet spell; also the step
+--     type description 'Pet spell' in the rotation reference.
 [653] = "Pet spell",
 -- 33579e22
 [654] = "Unavailable conditions or unsupported data",
 -- 6289fcfd
+-- %s #1: %s #1: the name or description of the condition, e.g. "Pet happiness"
+-- %s #2: %s #2: the reason it cannot work here, as a short phrase (translated), e.g. "this edition has no pet happiness"
 [655] = "%s is not available on this client (%s).",
 -- d0e9a0bb
 [656] = "the combat log is not available to addons on this client",
@@ -2670,30 +4485,47 @@ local E = {
 -- 32d80509
 [658] = "this power is secret on this client",
 -- 38e49184
+-- %s #1: %s #1: the name of the active rotation followed by "(manual)" or "(automatic)", or "None", e.g. "Frost Single Target (automatic)"
 [659] = "Active rotation: %s",
 -- 95ebda6b
 [660] = "a fallback saved for this character takes precedence",
 -- 53e0ff34
+-- Context: Word in the 'Active rotation: NAME (automatic)' status line: the rotation was chosen by
+--     automatic switching, not manually.
 [661] = "automatic",
 -- 81600971
+-- Context: Label for a cooldown entry by position in a path description, e.g. 'Cooldown 2'; %d is
+--     the position number.
+-- %d #1: %d #1: the number of the cooldown in the list, counting from 1, e.g. 2
 [662] = "Cooldown %d",
 -- 55899740
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 3
 [663] = "%d Built In rotations are disabled.",
 -- 6fbad292
+-- %d #1: %d #1: how many other Built In rotations are disabled, e.g. 4
 [664] = "%d other Built In rotations are disabled (for another specialization, level or edition).",
 -- 856a3f22
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [665] = "%s: disabled by you (turn it back on in Rotations, in its Built In view).",
 -- ceaa0803
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [666] = "%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view).",
 -- 4fd646c3
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [667] = "then the fallback (%s)",
 -- 1e1885f9
+-- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
 [668] = "Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.",
 -- 724799e1
+-- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
 [669] = "Automatic switching would choose: %s",
 -- 07d344c2
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 2
+-- %s #2: %s #2: their names, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [670] = "%d Built In disabled: %s",
 -- fd523668
+-- Context: Pill/badge at the top of the rotation editor for a rotation that cannot be edited (a
+--     Built In); adjective.
 [671] = "Read-Only",
 -- 75920f9f
 [672] = "Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.",
@@ -2702,34 +4534,58 @@ local E = {
 -- 7772b5b6
 [674] = "Import preview: the metadata is shown as imported and cannot be edited here.",
 -- b5444cba
+-- Context: Part of a rotation's applicability description: the rotation needs at least this
+--     character level; %d is the level, e.g. 'level 60+'.
+-- %d #1: %d #1: the lowest character level, shown with a plus sign, e.g. 60
 [675] = "level %d+",
 -- 7ae623fd
+-- Context: Name of the Classic 'Season of Mastery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [676] = "Season of Mastery",
 -- 20bc4e56
+-- Context: Name of the Classic 'Season of Discovery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [677] = "Season of Discovery",
 -- e913447f
+-- Context: Game ruleset name in rotation applicability text: Hardcore realms (one life).
 [678] = "Hardcore",
 -- 61123c4d
+-- Context: Name of the Classic 'Anniversary' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [679] = "Anniversary",
 -- 935f9eea
+-- Context: Name of the Classic 'Anniversary Hardcore' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [680] = "Anniversary Hardcore",
 -- 20170cbb
+-- Context: Game ruleset name in rotation applicability text: Self-Found characters (no trading).
 [681] = "Self-Found",
 -- db93324d
+-- Context: Game ruleset name in rotation applicability text: normal (standard) realms, not seasonal
+--     or special rulesets.
 [682] = "Standard realms",
 -- b82c4d13
+-- Context: Part of a rotation's applicability text: the game season; %s is the season number.
+-- %s #1: %s #1: the season number, e.g. 3
 [683] = "Season %s",
 -- 889ec415
+-- Context: Part of a rotation's applicability text: a game mode; %s is its name.
+-- %s #1: %s #1: the game mode number, e.g. 2
 [684] = "Game mode %s",
 -- f06a6bb8
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [685] = "Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now.",
 -- e87b125e
+-- Context: Revision label of a built-in rotation, e.g. 'Revision 3'; %s is the revision number.
+-- %s #1: %s #1: the revision number of the Built In rotation, e.g. 4
 [686] = "Revision %s",
 -- da0fa84c
 [687] = "you switched it off (turn it back on in Rotations)",
 -- 20c39307
 [688] = "it ships disabled, an alternative to the recommended one (turn it on in Rotations)",
 -- 27a5b813
+-- %s #1: %s #1: the rotation's identifier, e.g. "frost"
+-- %s #2: %s #2: the same identifier, used in the slash command, e.g. "frost"
 [689] = "Identifier: %s (/rm set %s)",
 -- 70f29af6
 [690] = "The fallback is always /rm set default.",
@@ -2742,52 +4598,76 @@ local E = {
 -- 763698c5
 [694] = "has an invalid identifier",
 -- 24adb964
+-- %s #1: %s #1: the identifier the player typed, e.g. "auto"
 [695] = "%s is reserved for /rm set.",
 -- a33e5083
 [696] = "An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters.",
 -- a15a0c4c
+-- %s #1: %s #1: the name of the rotation that already has this identifier, e.g. "Frost Single Target"
+-- %s #2: %s #2: the identifier, e.g. "frost"
 [697] = "%s already uses the identifier %s.",
 -- 2f1b1b88
+-- %s #1: %s #1: the current specialization with its class, e.g. "Frost Mage"
 [698] = "Rotations for %s (use /rm set <id>):",
 -- 01e5a59a
+-- Context: Status in a rotation list line: the player has turned this Built In rotation off.
 [699] = "disabled by you",
 -- 3f88443b
+-- Context: Status in a rotation list line: this Built In rotation is shipped turned off by default.
 [700] = "ships disabled",
 -- 4ac2f70c
 [701] = "not for this character now",
 -- e8fe279c
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "it has incomplete or unsupported data"
 [702] = "cannot be selected: %s",
 -- 96879611
+-- Context: Status word in a rotation list line: this rotation is the one currently in use.
 [703] = "active",
 -- b24d6d33
+-- Context: Status word in a rotation list line: this rotation could be selected but is not the
+--     current one.
 [704] = "ready",
 -- 5c7ee207
+-- Context: Kind word in parentheses in a rotation list line: the default fallback rotation.
 [705] = "fallback",
 -- 5eb2da9c
+-- Context: Kind word in parentheses in a rotation list line: a rotation you created (as opposed to
+--     Built In).
 [706] = "yours",
 -- 7079adcd
 [707] = "The rotation list opened in a window you can copy from.",
 -- e9131331
 [708] = "Rotations and their identifiers",
 -- 855192f1
+-- %s #1: %s #1: the identifier the player typed, e.g. "frost"
 [709] = "More than one rotation uses the identifier %s. Give one of them another identifier in Rotations.",
 -- 674aaa2c
+-- %s #1: %s #1: the identifiers that can be used now, separated by commas, e.g. "frost, fire"
 [710] = "Identifiers you can use now: %s (or auto). /rm list shows every rotation.",
 -- 3843971d
+-- Context: Label of the read-only identifier field of a rotation in the rotation editor;
+--     abbreviation of 'identifier'.
 [711] = "ID",
 -- d60dbba0
+-- Context: Label of the priority number of a rotation in the rotation editor (order in which
+--     automatic selection tries rotations).
 [712] = "Priority",
 -- bc5b45ae
+-- Context: Button in the rotation editor: reset the profile's override of the enable setting back
+--     to the Built In's shipped default.
 [713] = "Reset to default",
 -- 4273cc49
 [714] = "Use the Built In as it ships: its own Enabled setting and priority.",
 -- c6ea26d1
+-- %s #1: %s #1: whether the Built In rotation ships turned on, the word "enabled" or "disabled" (translated), e.g. "enabled"
 [715] = "Your setting for this profile. The Built In ships %s.",
 -- 7f5ac649
 [716] = "As the Built In ships. Click to change it for this profile.",
 -- c3b9f3c3
+-- %d #1: %d #1: the priority the Built In rotation ships with, e.g. 5
 [717] = "Your priority for this profile; the Built In ships with %d.",
 -- 5a1f096a
+-- Context: Button in the rotation browser: turn the selected Built In rotation on (verb phrase).
 [718] = "Turn on",
 -- 6d128898
 [719] = "Turn this Built In back on for this profile.",
@@ -2800,40 +4680,59 @@ local E = {
 -- 72e45f33
 [723] = "Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.",
 -- 73074f60
+-- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [724] = "Same priority as %s: both can be selected at once, and the tie is decided by name.",
 -- 6f39ad0a
+-- %s #1: %s #1: the names of the rotations that can be selected together with this one, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [725] = "Can be selected together with %s: only priority decides which is chosen.",
 -- 382c83c2
+-- Context: Part of a rotation's applicability text: the WoW expansion range; both %s are expansion
+--     numbers, e.g. 'expansions 2–3'.
+-- %s #1: %s #1: the first expansion the rotation loads for, e.g. 0 (a "?" when not limited)
+-- %s #2: %s #2: the last expansion the rotation loads for, e.g. 4 (a "?" when not limited)
 [726] = "expansions %s–%s",
 -- 5042b611
+-- %s #1: %s #1: the list of limits separated by " · ", e.g. "Mage · level 60+ · expansions 0–4"
 [727] = "Loads only for: %s. Its specializations and switch condition decide the rest.",
 -- eedcafc1
+-- %s #1: %s #1: the names of the Built In rotations that were turned back on, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [728] = "Built In rotations turned back on (they had been switched off without your choice): %s",
 -- ebed0a8c
 [729] = "Disabled Built In rotations",
 -- dd2bac9e
 [730] = "Open Rotations, select the Built In and turn it back on to make it selectable.",
 -- f79331ec
+-- Context: Label for the default fallback rotation in a list of rotation choices; %s is its name.
+-- %s #1: %s #1: the name of the fallback rotation, e.g. "Default"
 [731] = "Fallback (%s)",
 -- 372d7008
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [732] = "has an action type this version does not understand (%s)",
 -- d566274f
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [733] = "has an invalid setting (%s)",
 -- 8cccea3a
 [734] = "has an invalid switch priority",
 -- d17ef091
+-- %s #1: %s #1: a short internal problem code, e.g. "invalid-id" (shown as-is; do not translate)
 [735] = "has a problem (%s)",
 -- 5fd06eb7
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [736] = "has a setting this version does not understand (%s)",
 -- d80aa866
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': its
+--     item list is empty.
 [737] = "has no items",
 -- 60b19b4c
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [738] = "is missing a required setting (%s)",
 -- 85bfd4b6
 [739] = "it has incomplete or unsupported data",
 -- f8b96220
 [740] = "It has incomplete or unsupported data",
 -- d7edee09
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': the
+--     rotation is turned off.
 [741] = "it is disabled",
 -- bc0bcb96
 [742] = "it is for another class",
@@ -2848,20 +4747,28 @@ local E = {
 -- 7d8492c5
 [747] = "it is for another WoW edition",
 -- f66da926
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-unavailable" (shown as-is; do not translate)
 [748] = "it is unavailable (%s)",
 -- 3539504f
 [749] = "it needs context Rotation Master cannot read yet",
 -- 6c8b3a05
 [750] = "it uses a condition, item set or function that is disabled",
 -- 36bde66f
+-- Context: Word in the 'Active rotation: NAME (manual)' status line: the rotation was chosen by
+--     hand.
 [751] = "manual",
 -- 561c4c93
+-- Context: Label for the 'false' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'No 2'.
+-- %d #1: %d #1: the number of the card inside the "No" (false) branch of a condition, counting from 1, e.g. 2
 [752] = "No %d",
 -- 61097c5a
+-- %s #1: %s #1: the specialization with its class, e.g. "Frost Mage"
 [753] = "no fallback rotation is saved for %s",
 -- 994142c1
 [754] = "No rotation can run until your specialization is available.",
 -- 2e4e47d8
+-- %s #1: %s #1: why the rotation cannot be selected, a sentence from the game (translated), e.g. "it is for Fire Mage"
 [755] = "Reason: %s. Type /rm why to check every rotation.",
 -- 21b77ae0
 [756] = "/rm why                 - Explain why each rotation can or cannot be selected.",
@@ -2874,34 +4781,57 @@ local E = {
 -- 16254d19
 [760] = "/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.",
 -- 79eeac12
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-store-unavailable" (shown as-is; do not translate)
 [761] = "rotations cannot be read (%s)",
 -- 6a8fd6ba
+-- %s #1: %s #1: the rotation name, with its identifier in square brackets when one is set, e.g. "Frost Single Target [frost]"
 [762] = "Rotation %s cannot be selected.",
 -- 9e742006
+-- Context: Label naming the top-level settings of a rotation when describing where in a rotation a
+--     problem is.
 [763] = "Rotation settings",
 -- c8da2839
+-- Context: Label for a rotation step by position in a path description; %d is its position, e.g.
+--     'Rotation step 3'.
+-- %d #1: %d #1: the number of the step in the rotation list, counting from 1, e.g. 3
 [764] = "Rotation step %d",
 -- 707d01e5
+-- Context: Name of a rotation with its source appended, e.g. 'Fire Mage (Built In)'; %s is the
+--     rotation name.
+-- %s #1: %s #1: the name of a Built In rotation, e.g. "Frost Mage Leveling"
 [765] = "%s (Built In)",
 -- 19f8d44d
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
+-- %s #2: %s #2: why it cannot be selected, a short phrase, e.g. "it is for Fire Mage"
 [766] = "%s: cannot be selected, %s.",
 -- d707c233
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
+-- %s #2: %s #2: the specialization number or ID, e.g. "64"
+-- %s #3: %s #3: the character level, e.g. "70" (a "?" when unknown)
 [767] = "Specialization: %s (%s), level %s",
 -- 861decdd
+-- Context: Label for a spell step identified only by its spell ID; %d is the spell ID.
+-- %d #1: %d #1: the spell ID, shown when the spell name is not known, e.g. 133
 [768] = "Spell %d",
 -- 1ed10cef
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [769] = "%s: ready",
 -- 9cb0ddf3
 [770] = "the game build is unavailable",
 -- 32258c52
+-- %s #1: %s #1: the specializations that do have a fallback, separated by commas, e.g. "Fire Mage, Arcane Mage"
 [771] = "(there is one for %s)",
 -- 1ac2e769
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "Rotation step 3 has an invalid setting (duration)."
 [772] = "This rotation cannot be selected. %s.",
 -- bd35de7b
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [773] = "uses a condition that is disabled in Settings (%s)",
 -- e766db43
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [774] = "uses a condition this client does not have (%s)",
 -- 7ee51c30
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [775] = "uses a custom condition whose function is unavailable (%s)",
 -- 9c4983d1
 [776] = "uses a highlight effect that no longer exists",
@@ -2912,6 +4842,9 @@ local E = {
 -- 0f312508
 [779] = "Why rotations are or are not selected",
 -- 0887c156
+-- Context: Label for the 'true' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'Yes 1'.
+-- %d #1: %d #1: the number of the card inside the "Yes" (true) branch of a condition, counting from 1, e.g. 2
 [780] = "Yes %d",
 -- 2d0f9721
 [781] = "you are using another action bar",
@@ -2922,24 +4855,40 @@ local E = {
 -- 795c5030
 [784] = "your specialization is not available yet",
 -- 7139bb28
+-- Context: Specialization name for characters that have not picked a specialization yet (Initial).
 [785] = "No specialization",
 -- 49271412
+-- Context: Name of the first talent group on Classic clients (primary talents / spec).
 [786] = "Primary talents",
 -- 1793e848
+-- Context: Name of the second talent group on Classic clients (secondary talents / dual spec).
 [787] = "Secondary talents",
 -- 87a671ab
+-- Context: Name of a talent group by number on Classic clients; %d is the group number.
+-- %d #1: %d #1: the talent group number, e.g. 3
 [788] = "Talent group %d",
 -- 7ff78404
+-- %s #1: %s #1: either a difficulty name or a talent-group name, e.g. "Heroic" or "Primary talents"
+-- %s #2: %s #2: either the kind of content or the talent tree it belongs to, e.g. "Raid" or "Frost"
 [789] = "%s (%s)",
 -- 108db4c4
+-- Context: Text shown for a specialization ID the addon does not recognize.
 [790] = "Unknown specialization",
 -- a9e9b05e
+-- Context: Dropdown option in the rotation specialization selector: the rotation is not tied to a
+--     specialization.
 [791] = "Any specialization",
 -- e4db2902
+-- Context: Dropdown/filter option in the rotation browser: show rotations for all specializations.
 [792] = "All specializations",
 -- ca573462
+-- Context: Fragment in 'You are playing %s; this rotation is for ...': the player has no
+--     specialization yet.
 [793] = "no specialization yet",
 -- 254dcb81
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...'; %s
+--     lists the specializations it is for.
+-- %s #1: %s #1: the specializations the rotation is for, separated by commas, e.g. "Frost Mage, Fire Mage"
 [794] = "it is for %s",
 -- 82612d65
 [795] = "has an invalid specialization list",
@@ -2950,12 +4899,20 @@ local E = {
 -- 008ab39e
 [798] = "The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.",
 -- 3e93e3f4
+-- %s #1: %s #1: the specialization the player is in now, with its class, e.g. "Frost Mage"
+-- %s #2: %s #2: the specialization this fallback rotation is for, e.g. "Fire Mage"
 [799] = "You are playing %s; this fallback is for %s, so it is not used now.",
 -- 70ef639a
+-- %s #1: %s #1: the specialization the player is in now, with its class, or "no specialization yet", e.g. "Frost Mage"
+-- %s #2: %s #2: the specializations this rotation is for, separated by commas, e.g. "Fire Mage"
 [800] = "You are playing %s; this rotation is for %s, so it is not selectable now.",
 -- 10eeff18
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
 [801] = "you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer",
 -- d2039939
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
+-- %s #2: %s #2: its internal number or ID, e.g. "0"
+-- %s #3: %s #3: the specializations the editor offers, separated by commas, e.g. "Arcane, Fire, Frost"
 [802] = "You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.",
 -- 97aa7322
 [803] = "this client has no ranged slot",
@@ -2974,12 +4931,20 @@ local E = {
 -- 2e996f7c
 [810] = "this edition has no point resource",
 -- 364e833a
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different WoW edition (e.g. Classic vs Retail).
 [811] = "Different WoW edition",
 -- fbb263cb
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different class.
 [812] = "Different class",
 -- 178bde4c
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different specialization.
 [813] = "Different specialization",
 -- b7964470
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation needs a
+--     different action context (e.g. vehicle bar).
 [814] = "Different action context",
 -- 46d39e12
 [815] = "Character level is unavailable",
@@ -2988,6 +4953,8 @@ local E = {
 -- d34ab535
 [817] = "Game build is unavailable",
 -- 139114dc
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different game client build.
 [818] = "Different game build",
 -- a55c1483
 [819] = "Required context is not supported yet",
@@ -2998,32 +4965,53 @@ local E = {
 -- ca12b41f
 [822] = "Built In · read-only",
 -- d11d9681
+-- %s #1: %s #1: the lowest character level the Built In rotation is for, e.g. 1
+-- %s #2: %s #2: the highest character level, or "?" when there is no limit, e.g. 60
+-- %s #3: %s #3: the revision number, e.g. 4
 [823] = "Level range: %s–%s; revision %s",
 -- a0b53ded
 [824] = "Available for this character",
 -- a77cc377
+-- %s #1: %s #1: why the Built In rotation is not available, a short phrase (translated), e.g. "Different class"
 [825] = "Not available for this character: %s",
 -- 91f1e71a
+-- Context: Checkbox/button in the Built In rotation panel: turn this Built In rotation on for your
+--     profile.
 [826] = "Enable Built In",
 -- 763de8e1
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [827] = "Could not update this Built In rotation: %s",
 -- ba6d03f9
+-- Context: Button in the Built In rotation panel: copy the read-only Built In into your own
+--     editable rotation (verb phrase).
 [828] = "Clone to edit",
 -- e1ad50fb
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [829] = "Could not duplicate this Built In rotation: %s",
 -- ac89ec89
+-- %d #1: %d #1: the position in a numbered list, counting from 1, e.g. 2
+-- %s #2: %s #2: the text of that list entry, e.g. "Cast Frostbolt"
 [830] = "%d. %s",
 -- 36021c12
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Message
+--     'Condition preview unavailable' for a condition that could not be previewed.
 [831] = "Condition preview unavailable",
 -- caf85b08
+-- Context: Heading of the list of sources/citations for a rotation (where the Built In was derived
+--     from).
 [832] = "Sources",
 -- ca184496
+-- Context: Status/heading text: something is unavailable (help for a missing subject, debugger
+--     status, validation).
 [833] = "Unavailable",
 -- b177f0bb
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [846] = "Could not duplicate this rotation: %s",
 -- efaafe62
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [847] = "Could not duplicate this step: %s",
 -- 5ad38304
+-- Context: Word in a rotation comparison: the compared field has no value in the current rotation.
 [848] = "absent",
 -- 4303eed3
 [849] = "This comparison could not be completed.",
@@ -3032,12 +5020,22 @@ local E = {
 -- 70277515
 [851] = "No differences.",
 -- 783ee9d8
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the new value, e.g. "Frostbolt"
 [852] = "Added %s: %s",
 -- cbd1cc0c
+-- %s #1: %s #1: where in the rotation the setting was, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the removed value, e.g. "Frostbolt"
 [853] = "Removed %s: %s",
 -- 9ffda67b
+-- %s #1: %s #1: where in the rotation the step is, as a path, e.g. "rotation[3]"
+-- %s #2: %s #2: the old priority (position), e.g. 3
+-- %s #3: %s #3: the new priority (position), e.g. 1
 [854] = "Moved %s: priority %s → %s",
 -- 496c1fce
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].spell"
+-- %s #2: %s #2: the old value, e.g. "Frostbolt"
+-- %s #3: %s #3: the new value, e.g. "Ice Lance"
 [855] = "Changed %s: %s → %s",
 -- 222fd90b
 [856] = "Read-only comparison. Priority moves are listed; rotations are not merged.",
@@ -3048,6 +5046,8 @@ local E = {
 -- e4e1807d
 [859] = "Differences from the current Built In rotation",
 -- f44ec53e
+-- Context: Heading in the rotation comparison: fields changed both by you and by the new Built In
+--     version.
 [860] = "Overlapping field edits",
 -- d1d87a47
 [861] = "No overlapping field edits detected. Priority order still needs review.",
@@ -3056,46 +5056,71 @@ local E = {
 -- c72b77cf
 [863] = "Some display text was truncated. Rotation data has not been changed.",
 -- 184940bb
+-- Context: Title of the rotation comparison window; also the button in the rotation editor that
+--     opens it (verb phrase).
 [864] = "Compare rotations",
 -- ad26c965
+-- %s #1: %s #1: the name of the player's own rotation, e.g. "Frost Single Target"
 [865] = "Your rotation: %s",
 -- d30f9619
+-- Context: Label of the dropdown choosing what to compare the rotation against in the comparison
+--     window.
 [866] = "Compare against",
 -- 5cbf27df
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     comparison' to copy the comparison result to the clipboard.
 [867] = "Copy comparison",
 -- 7f25ffda
 [868] = "Review the differences, then select Copy and press Ctrl+C.",
 -- 9078f91f
+-- %s #1: %s #1: why the comparison cannot be shown, a short reason, e.g. "the rotation could not be read"
 [869] = "Comparison unavailable: %s",
 -- 73484f4d
+-- Context: Placeholder name for a spell whose name cannot be read; %s is the spell ID.
+-- %s #1: %s #1: the spell ID that the game does not know, e.g. 133
 [870] = "Unknown spell (%s)",
 -- e328ada9
+-- Context: Name of the Beyond Melee Range condition (the target is farther than melee distance).
 [871] = "Beyond Melee Range",
 -- 2652c653
+-- %s #1: %s #1: the unit that is out of reach, e.g. "your target"
 [872] = "%s is beyond melee range",
 -- 4aaede20
+-- Context: Heading for the conditions used to automatically switch rotations in a comparison or
+--     reference view; also a comparison row label.
 [873] = "Switch conditions",
 -- 4e9a0f45
+-- Context: Title of a cooldown step card in a rotation reference: a highlight that is independent
+--     of the sequence.
 [874] = "Optional highlight",
 -- 6ba1c0c2
+-- Context: Title of a sequential step card in a rotation reference; %s is its position number.
+-- %s #1: %s #1: the step's position in the priority list, counting from 1, e.g. 3
 [875] = "Priority %s",
 -- 38728cc5
 [876] = "Stop the sequence here",
 -- b1fb02b4
+-- %s #1: %s #1: the name of the item or item set, e.g. "Healthstone"
 [877] = "Item or item set: %s",
 -- 0bbc45af
 [878] = "Use this exact spell rank",
 -- 59291ee2
 [879] = "No steps in this section.",
 -- 6f32b2f4
+-- Context: Heading in the rotation comparison and reference: the cooldown steps that highlight
+--     independently.
 [880] = "Optional highlights",
 -- 6f79a2fd
 [881] = "These reminders highlight independently whenever their conditions are met.",
 -- 681ceb51
+-- Context: Heading in the rotation comparison and reference: the main steps where the first
+--     eligible one is recommended.
 [882] = "Sequential priority",
 -- 89166303
 [883] = "The first eligible step is recommended. Later steps provide alternatives.",
 -- 2624dd07
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'View
+--     full rotation' to open the complete rotation in the viewer.
 [884] = "View full rotation",
 -- d1843213
 [885] = "Built In rotation reference",
@@ -3104,30 +5129,45 @@ local E = {
 -- a77963c6
 [887] = "Additional settings changed. Copy diagnostic details to inspect all fields.",
 -- 8597bf22
+-- Context: Column title in the comparison window: the rotation as it was when it was cloned from
+--     the Built In.
 [888] = "At cloning",
 -- 9cc733fc
+-- Context: Column title in the comparison window: the rotation you picked in the list.
 [889] = "Selected rotation",
 -- c9e13168
+-- Context: Column title in the comparison window: the user's own rotation.
 [890] = "Your rotation",
 -- dd2e2975
+-- Context: Message in a comparison column: there is no step matching the one in the other column.
 [891] = "No corresponding step",
 -- 6b02e0d3
+-- Context: Status tag in a rotation comparison row (shown in green): this step was added.
 [892] = "Added",
 -- 4118fb4f
+-- Context: Status tag in a rotation comparison row (shown in red): this step was removed.
 [893] = "Removed",
 -- 2a6141e4
+-- Context: Status tag in a rotation comparison row (shown in amber): this step was changed.
 [894] = "Changed",
 -- b11c9047
+-- Context: Status tag in a rotation comparison row (shown in blue): this step moved to a different
+--     position.
 [895] = "Moved",
 -- 88b6f742
+-- Context: Status tag in a rotation comparison row: nothing changed in this step.
 [896] = "Unchanged",
 -- f5f36595
+-- Context: Title of the diagnostic details report in the comparison window.
 [897] = "Comparison diagnostic details",
 -- 61d7fa13
 [898] = "Press Ctrl+C to copy the selected diagnostic details.",
 -- bb35fd44
+-- Context: Label of the dropdown choosing the comparison direction/view in the comparison window.
 [899] = "Comparison view",
 -- c489054c
+-- Context: Button that copies diagnostic details about a rotation or comparison to the clipboard
+--     (verb).
 [900] = "Copy diagnostic details",
 -- 383100d5
 [901] = "Built In updates since cloning",
@@ -3136,38 +5176,56 @@ local E = {
 -- b3ec34b2
 [903] = "Current Built In rotation",
 -- e6b8f377
+-- Context: Placeholder text in a rotation reference for an item that cannot be identified.
 [904] = "Unknown item",
 -- 36f3765b
+-- Context: Label for an item identified by ID or name; %s is the item ID or name.
+-- %s #1: %s #1: the item ID or name that the game cannot resolve, e.g. 5512
 [905] = "Item %s",
 -- 710f81fe
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [906] = "Item set: %s",
 -- 3ec02e0c
+-- Context: Message in a rotation reference card: the step has a type the addon does not know.
 [907] = "Unknown action type",
 -- b3fee308
+-- Context: Step type description in a rotation reference: a spell cast by the player.
 [908] = "Player spell",
 -- aebfceb4
 [909] = "Player or pet spell",
 -- c910d474
+-- Context: Name of the 'General' settings tab.
 [910] = "General",
 -- 839ffbca
 [911] = "Copy this export, or paste a rotation and preview it. Import creates a new editable copy.",
 -- 2c7dec65
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Rotation text' for the exported text of a rotation.
 [912] = "Rotation text",
 -- 9d89d908
 [913] = "Name for imported copy",
 -- 05ca5c89
+-- Context: Default name given to a rotation created by importing text.
 [914] = "Imported rotation",
 -- a0d7b2fa
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     export' to copy exported text to the clipboard.
 [915] = "Copy export",
 -- ab5c8e55
+-- Context: Button in the import dialog: preview what the import would change before applying it
+--     (verb phrase); also a help heading.
 [916] = "Preview import",
 -- ebc64351
+-- Context: Button in the import dialog (replace mode): compare the import with the existing entry
+--     before applying (verb phrase).
 [917] = "Compare import",
 -- ed144b77
+-- Context: Title of the window previewing an import, read-only.
 [918] = "Import preview",
 -- 53fb6864
 [919] = "Import as new rotation",
 -- 89411b23
+-- %s #1: %s #1: why the export is not possible, a short reason, e.g. "nothing selected"
 [920] = "Export unavailable: %s",
 -- 4ea0b645
 [921] = "Preview a pasted rotation before importing it.",
@@ -3176,94 +5234,136 @@ local E = {
 -- a3396230
 [923] = "Text changed. Compare again before importing.",
 -- 815a23ae
+-- %s #1: %s #1: what is wrong with the import, a short reason, e.g. "unknown field"
 [924] = "This import cannot be shown in full (%s). Use Check import for details.",
 -- c409c01f
+-- %s #1: %s #1: why the import cannot be previewed, a short reason, e.g. "invalid-format"
 [925] = "Import preview unavailable: %s",
 -- 7fa00152
 [926] = "Ready to import as a new copy.",
 -- 8bc94920
+-- %s #1: %s #1: why the import cannot be applied, a short reason, e.g. "the rotation is for another class"
 [927] = "This import cannot be applied: %s",
 -- d1e71918
 [928] = "Legacy export: WoW edition and class scope were not supplied.",
 -- 898a9c6d
+-- %s #1: %s #1: why the import failed, a short reason, e.g. "invalid-data"
 [929] = "Could not import this rotation: %s",
 -- 29b67037
+-- Context: Column title in the comparison window: the rotation being imported.
 [930] = "Incoming rotation",
 -- de9f057a
+-- Context: Condition text for an empty condition list: the step always applies; also status text.
 [931] = "Always",
 -- d51cec9c
 [932] = "Condition reference (code is not run).",
 -- 40afa4aa
+-- Context: Button in the import dialog: check the pasted import text for problems (verb phrase).
 [933] = "Check import",
 -- 817bfd7b
 [934] = "This import window is out of date. Close it and open it again.",
 -- e301820a
+-- Context: Heading of the column showing the entry being imported, in the import preview.
 [935] = "Incoming",
 -- a7b182f8
+-- Context: Heading of the list of problems found in an import report.
 [936] = "Problems",
 -- 8a7525b1
+-- Context: Heading of the list of notes (informational messages) in an import report.
 [937] = "Notes",
 -- 2191a0b7
 [938] = "No problems found.",
 -- 460c60bd
 [939] = "This import can be applied.",
 -- 03f266f9
+-- %d #1: %d #1: the number of settings shown, e.g. 12
 [940] = "Fields shown: %d",
 -- 77810b90
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Field order' in custom function documentation (order of the fields).
 [941] = "Field order",
 -- bbd21338
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Required fields' in custom condition documentation.
 [942] = "Required fields",
 -- e68b36b1
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Parameters' in custom function documentation (a function's input values).
 [943] = "Parameters",
 -- ea33a267
+-- %s #1: %s #1: the name of the code field being compared, e.g. "evaluate", "print" or "widget" (shown as-is)
 [944] = "Code: %s",
 -- bd795f03
+-- %d #1: %d #1: how many settings are left out of the list, e.g. 5
 [945] = "%d more settings are not shown.",
 -- 1a5d255a
+-- %d #1: %d #1: how many characters of the code are cut off, e.g. 1200
 [946] = "... %d more characters not shown.",
 -- 0ee9b450
 [947] = "This is a dependency bundle. Import opens the bundle review.",
 -- 2a6f7cb8
+-- Context: Button in the Built In rotation panel: export the Built In rotation as text (verb
+--     phrase).
 [948] = "Export Built In",
 -- 57152733
+-- Context: Fallback title of a comparison view tab/dropdown entry in the comparison window.
 [949] = "Comparison",
 -- c849416a
 [950] = "A condition could not be validated. Use /rm errors for details.",
 -- dba2cedf
 [951] = "A custom validator changed the condition while checking it. Fix the validator before applying.",
 -- 60a0d835
+-- Context: Button in the condition editor: add a single condition to the list (verb phrase).
 [953] = "Add condition",
 -- da431313
+-- Context: Name of the AND group type in the condition editor: all inner conditions must be true.
 [954] = "All (AND)",
 -- fca19d27
+-- Context: Name of the OR group type in the condition editor: any inner condition may be true.
 [955] = "Any (OR)",
 -- 31e392d1
+-- Context: Button in editors that saves the pending changes (verb).
 [956] = "Apply",
 -- d9c7876b
 [957] = "Apply or cancel the open condition before editing another.",
 -- 19766ed6
+-- Context: Button/tooltip in dialogs that closes the dialog without saving (verb).
 [958] = "Cancel",
 -- 838e8c5b
 [959] = "Changes not applied.",
 -- 270bc3e1
+-- Context: Placeholder text in condition text where no condition is chosen yet; imperative.
 [960] = "Choose a condition",
 -- 03557ba7
 [961] = "Complete the selected condition's fields before applying.",
 -- 5399c49c
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Disable condition' on a condition card.
 [962] = "Disable condition",
 -- ebae65ff
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Enable condition' on a condition card.
 [963] = "Enable condition",
 -- 2015044c
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Label/placeholder 'Find condition type' for the condition type search.
 [964] = "Find condition type",
 -- 65d9d4e3
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Condition
+--     card action 'Group with %s'; %s names another condition.
+-- %s #1: %s #1: how the condition is grouped, "All" or "Any", e.g. "Any"
 [965] = "Group with %s",
 -- e3de7bbd
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Error text
+--     'Invalid disabled flag' for a condition with an invalid disabled value.
 [966] = "Invalid disabled flag",
 -- a1ed1d35
+-- Context: Name of the NOT group type in the condition editor: negates the inner condition.
 [967] = "Not (NOT)",
 -- cf440966
 [968] = "Only the first 200 conditions are shown. Other conditions are preserved.",
 -- 5ac0b06f
+-- Context: Button/tooltip on a condition card: remove this condition (verb phrase).
 [969] = "Remove condition",
 -- f2f59bcc
 [970] = "Select a child on the left to edit its fields. Use Add condition to extend this group.",
@@ -3282,12 +5382,16 @@ local E = {
 -- 79bdd6f5
 [977] = "This draft refers to missing data. Resolve those references before applying.",
 -- b57ef478
+-- Context: Button/tooltip on a condition card: remove the group but keep its inner conditions
+--     (verb).
 [978] = "Ungroup",
 -- e70375d8
 [979] = "Ungroup requires a group with at most one child.",
 -- 608c89a1
+-- %s #1: %s #1: the internal name of the condition, e.g. "BUFF"
 [980] = "Unknown condition: %s",
 -- e77e940c
+-- Context: Title for a step with no condition in the condition editor: it always applies.
 [981] = "Always (no condition)",
 -- 422835ec
 [982] = "An empty AND group always matches. Add a condition to restrict it.",
@@ -3298,22 +5402,28 @@ local E = {
 -- 877196c3
 [985] = "The original rotation or step was removed or replaced. Cancel this draft and reopen the current one.",
 -- 7412ffde
+-- Context: Checkbox in the comparison window: also show steps that did not change.
 [986] = "Show unchanged steps",
 -- 4b23882b
+-- %s #1: %s #1: how many steps are hidden because they did not change, e.g. 7
 [987] = "%s unchanged steps hidden.",
 -- 128afc72
 [988] = "No other rotations to compare.",
 -- 4e170ba0
+-- Context: Name of the Spell Recharge Time condition (seconds until the next charge of a spell).
 [989] = "Spell Recharge Time",
 -- d0db4227
 [990] = "Pet Spell Recharge Time",
 -- 6852f826
 [991] = "Any Spell Recharge Time",
 -- 62d868ef
+-- Context: Heading in the rotation comparison: the name of the rotation changed.
 [992] = "Rotation names",
 -- a0e34049
+-- Context: Label in a rotation reference: this step has a name you typed.
 [993] = "Custom step name",
 -- f5945a5c
+-- Context: Label in a rotation reference: this step's name is generated from its action.
 [994] = "Automatic step name",
 -- 3b913c3a
 [995] = "Spell search data is unavailable.",
@@ -3326,26 +5436,44 @@ local E = {
 -- 473d3033
 [999] = "Known and referenced spells. Enter a spell ID or link to find another spell.",
 -- e04de746
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Placeholder/label 'Search rotations' for the search box in the rotation browser.
 [1000] = "Search rotations",
 -- a52ace42
+-- Context: Option label meaning all of the items: the condition category 'All' filter and the 'All'
+--     side of an AND group toggle.
 [1001] = "All",
 -- 019a32de
+-- Context: Rotation kind in the rotation browser: a rotation shipped with the addon (Built In);
+--     also a filter option. Keep the term consistent with other 'Built In' strings.
 [1002] = "Built In",
 -- 5ca6606f
 [1003] = "No rotations match this search.",
 -- 68f12a84
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'New
+--     rotation' to create an empty rotation.
 [1004] = "New rotation",
 -- 325e8493
+-- Context: Rotation kind in the rotation browser: the default fallback rotation used when none
+--     applies.
 [1005] = "Fallback",
 -- 71e6453b
+-- Context: Counter below the rotation browser list; the first %d is how many rotations are shown,
+--     the second how many exist in total.
+-- %d #1: %d #1: how many rotations are listed now, e.g. 3
+-- %d #2: %d #2: how many rotations exist in total, e.g. 12
 [1006] = "%d of %d rotations",
 -- cae7d57b
+-- Context: Step type in the rotation step editor: the step stops the rotation (no further
+--     recommendation); also a help heading.
 [1007] = "Stop",
 -- 05a85640
 [1008] = "Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.",
 -- a4f32e85
 [1009] = "When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button.",
 -- 5c68c9c6
+-- Context: Heading in a rotation reference for the automatic final step the addon appends (the
+--     basic attack) when nothing else applies.
 [1010] = "Implicit final fallback",
 -- d56153b6
 [1011] = "Also suppress auto-attack (Attack or Shoot)",
@@ -3354,30 +5482,46 @@ local E = {
 -- 2c950c8c
 [1013] = "Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop.",
 -- 762ebb70
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Group
+--     name' for the name of a condition category group.
 [1014] = "Group name",
 -- 9d5097a8
+-- Context: Dropdown option in the condition picker that shows conditions of every category.
 [1015] = "All categories",
 -- 848b0fa0
 [1016] = "Choose or search condition type",
 -- 0f8a2a34
+-- %s #1: %s #1: the name of the missing field, e.g. "spell" (or "?" when unknown)
 [1017] = "Incomplete: %s is required",
 -- f9575aeb
 [1018] = "Invalid or unsupported condition fields",
 -- 010b483d
+-- Context: Summary line in a collection comparison: how many conditions an entry has; %d is the
+--     count.
+-- %d #1: %d #1: the number of conditions in the category, e.g. 8
 [1019] = "%d conditions",
 -- c417805d
 [1020] = "Expand to edit fields",
 -- a063783d
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Negate each' (apply NOT to each selected condition).
 [1021] = "Negate each",
 -- a9ee2142
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
+-- %s #2: %s #2: the author, e.g. "PreZ"
 [1022] = "Version: %s  ·  Author: %s",
 -- e2311633
 [1023] = "Configure rotations, conditions and highlights in the Rotation Master window.",
 -- 23010764
+-- Context: Large button on the addon's settings page in the game's Options window: opens the
+--     Rotation Master configuration window.
 [1024] = "Open Options",
 -- b764cdc0
+-- Context: Placeholder shown when a value cannot be determined (unknown encounter name, unknown
+--     client edition, unknown addon version or author).
 [1025] = "Unknown",
 -- a9080cb3
+-- %d #1: %d #1: the window scale as a percentage, e.g. 100 (the %% after it is a literal percent sign)
 [1026] = "Scale: %d%%",
 -- 17a87f02
 [1027] = "Right-click the title bar to close.",
@@ -3388,68 +5532,117 @@ local E = {
 -- f4326302
 [1030] = "Click to add group name",
 -- f2b59370
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Negate condition' on a condition card.
 [1031] = "Negate condition",
 -- 56693400
 [1032] = "Enable or disable condition",
 -- 7a2fb682
 [1033] = "Switch All / Any",
 -- ca7981b4
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'Off'.
 [1034] = "Off",
 -- 13001175
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'On'.
 [1035] = "On",
 -- a8566033
+-- Context: Not referenced directly by the current code (legacy or built dynamically). State word
+--     'Negated' for a condition that is inverted (NOT).
 [1036] = "Negated",
 -- bc47dc21
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New condition' (create a condition).
 [1037] = "New condition",
 -- f66edce3
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New All group' (create an AND group).
 [1038] = "New All group",
 -- fb19b6a9
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New Any group' (create an OR group).
 [1039] = "New Any group",
 -- 36a53913
 [1040] = "Drag into the tree to insert",
 -- 25f7b372
+-- Context: Button in the condition editor and rotation view: collapse every card in the list; verb
+--     phrase.
 [1041] = "Collapse all",
 -- a3e586be
+-- Context: Button in the condition editor and rotation view: expand every card in the list; verb
+--     phrase.
 [1042] = "Expand all",
 -- d4d773af
+-- Context: Button in the condition editor: wrap the selected conditions in an AND group (all must
+--     be true); verb phrase.
 [1043] = "Group as All",
 -- e658538c
+-- Context: Button in the condition editor: wrap the selected conditions in an OR group (any may be
+--     true); verb phrase.
 [1044] = "Group as Any",
 -- 27e78c35
+-- Context: Drag-and-drop tooltip in the condition editor: moving several selected conditions; %d is
+--     how many.
+-- %d #1: %d #1: how many conditions are being dragged, e.g. 3
 [1045] = "Move %d conditions",
 -- 8fa50cbc
+-- Context: Drag-and-drop tooltip in the condition editor: a new condition is being inserted at the
+--     drop position; verb phrase.
 [1046] = "Insert condition",
 -- f54d0e38
+-- Context: Button/tooltip on a condition card: make a copy of this condition (verb phrase).
 [1047] = "Duplicate condition",
 -- e21f935f
+-- Context: Button that copies the shown text to the clipboard (transfer dialog); also a column
+--     heading in the help window.
 [1048] = "Copy",
 -- 2b505597
+-- Context: Toggle label: match any one of several things; condition group operator button (OR) and
+--     the tag filter mode pill in the rotation browser.
 [1049] = "Any",
 -- 3fe9bd3a
 [1050] = "Resolve the wrapper's name or unsupported fields before removing its negation.",
 -- e49e9c8f
 [1051] = "Not evaluated: an enclosing group is disabled",
 -- 754e2703
+-- Context: Counter label showing how many cards/conditions are selected; %d is the count.
+-- %d #1: %d #1: how many items are selected, e.g. 3
 [1052] = "%d selected",
 -- 4e3bbfa6
+-- Context: Title of a conditional branch step (a step that chooses between two paths based on a
+--     condition) in a rotation reference; noun phrase.
 [1053] = "Conditional branch",
 -- 9c46a836
+-- Context: Branch step mode: the branch decides by evaluating its condition.
 [1054] = "Evaluate condition",
 -- 049e212e
+-- Context: Branch step mode: the branch always takes the true path.
 [1055] = "Always true",
 -- 4d15e741
+-- Context: Branch step mode: the branch always takes the false path; also condition text for a
+--     negated empty condition.
 [1056] = "Always false",
 -- 0f8c87a3
+-- Context: Message in a rotation reference: the branch step has a mode the addon does not know.
 [1057] = "Unknown branch mode",
 -- 3cbc87c7
+-- Context: Boolean result word: true; the true arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1058] = "True",
 -- 60a33e6c
+-- Context: Boolean result word: false; the false arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1059] = "False",
 -- 06f1af3a
 [1060] = "Rotation tree cannot be displayed.",
 -- 1e3abf61
+-- Context: Toggle on a condition card showing the condition applies normally (reads like 'If ...');
+--     the alternative is 'Unless'.
 [1061] = "If",
 -- b89c64be
+-- Context: Toggle on a condition card showing the condition is negated (reads like 'Unless ...');
+--     the alternative is 'If'.
 [1062] = "Unless",
 -- ea2dca67
 [1063] = "If matches this condition; Unless negates it.",
@@ -3458,6 +5651,8 @@ local E = {
 -- 8898675a
 [1065] = "Condition description truncated; the draft is unchanged.",
 -- df796c65
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New group'.
 [1066] = "New group",
 -- 17c23d28
 [1067] = "Drag card headers to move; drag New into a gap.",
@@ -3484,26 +5679,42 @@ local E = {
 -- 777f6a10
 [1078] = "Rotation Master information and credits.",
 -- 72a43eab
+-- Context: Name of the Burning Crusade Classic game edition (abbreviation), shown in the window
+--     footer and in rotation applicability text.
 [1079] = "TBC",
 -- d63015c7
+-- Context: Name of the Classic Era game edition (vanilla Classic), shown in the window footer and
+--     in rotation applicability text.
 [1080] = "Classic Era",
 -- 7d4352ca
+-- Context: Name of the Classic Progression game edition (Classic servers that advance through
+--     expansions), shown in the window footer.
 [1081] = "Classic Progression",
 -- cdb38c8d
+-- Context: Name of the Retail game edition (current live WoW), shown in the window footer and
+--     rotation applicability text.
 [1082] = "Retail",
 -- 55f980cf
+-- Context: Name of the Classic 'Forever' game edition (a client that stays on one expansion), shown
+--     in the window footer.
 [1083] = "Forever",
 -- 21b6a798
+-- Context: Version label used when the addon runs from source (an unpackaged development build)
+--     instead of a release version.
 [1084] = "Development",
 -- 57a9e910
+-- Context: Hint in the window footer: right-clicking the Rotation Master window closes it.
 [1085] = "Right-click to close",
 -- 5e2f1cfb
 [1086] = "Drag to resize the list. Double-click to reset.",
 -- 22270ce0
 [1087] = "Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.",
 -- ba118bf7
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Language name
+--     'English' in a language list.
 [1088] = "English",
 -- b5a229ac
+-- Context: Label of the website link in the About area of the configuration window; noun.
 [1089] = "Website",
 -- 8149bb52
 [1090] = "English is the installed translation; other languages use English until translated.",
@@ -3512,216 +5723,339 @@ local E = {
 -- 8c4b42bc
 [1092] = "Optional addon settings.",
 -- fe166e78
+-- Context: Status text in the condition editor footer: this condition cannot be edited (a Built
+--     In).
 [1093] = "Read-only condition",
 -- e2d0a549
+-- Context: Button/tooltip that deletes the selected entry (rotation, item set, effect,
+--     announcement...); verb, also a help heading.
 [1094] = "Delete",
 -- 9d85c78b
 [1095] = "Only the first 200 rotation cards are shown. Other cards are preserved.",
 -- 61aed01b
 [1096] = "Branches select one arm, then rejoin the following priority. Forced modes skip condition evaluation.",
 -- 79b92f59
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New action' (add a spell/item step).
 [1097] = "New action",
 -- 7f445154
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New branch' (add a conditional branch step).
 [1098] = "New branch",
 -- 6f0d96c6
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New optional' (add an optional highlight step).
 [1099] = "New optional",
 -- 1abcf34a
 [1100] = "Drag into a gap, or click to append.",
 -- eb1a70e3
+-- Context: Button in editors that throws away the pending changes and restores the saved state
+--     (verb).
 [1101] = "Discard",
 -- cd272c87
 [1102] = "Changes applied.",
 -- c7f93783
+-- Context: Default button text for a picker button that has no value chosen yet (verb: choose).
 [1103] = "Choose",
 -- d8dba008
 [1104] = "Items: separate item IDs or names with commas",
 -- dfd0e008
+-- Context: Dropdown entry in a rotation step's effect chooser: do not override, use the effect from
+--     the profile settings.
 [1105] = "Use profile effect",
 -- eea6c6fc
 [1106] = "Color: red, green, blue, alpha (0–1); blank inherits",
 -- 31b888e2
+-- Context: Tooltip of a small reset button next to a step's highlight position fields: use the
+--     profile's position setting instead.
 [1107] = "Use profile position",
 -- a581aec9
+-- Context: Tooltip/label of the horizontal (X) offset field of a highlight position.
 [1108] = "Horizontal offset",
 -- 923e59df
+-- Context: Tooltip/label of the vertical (Y) offset field of a highlight position.
 [1109] = "Vertical offset",
 -- fda1b8a0
+-- Context: Footer text in the Rotation Master window; %s is the author's name.
+-- %s #1: %s #1: the author name, e.g. "PreZ"
 [1110] = "Created by %s",
 -- 64464db9
+-- Context: Title of the dialog warning that the rotation editor has unsaved changes when you
+--     navigate away.
 [1111] = "Unsaved rotation changes",
 -- 4c8f5e18
 [1112] = "Apply this draft, discard its changes, or keep editing.",
 -- f1a25223
 [1113] = "The draft could not be applied. Complete the marked fields or Cancel to keep editing.",
 -- dd7a42d2
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     place' for dragging an item to a position.
 [1114] = "Drag to place",
 -- a7b99a64
+-- Context: Button in the condition text window: copy the complete condition text to the clipboard
+--     (verb phrase).
 [1115] = "Copy full condition",
 -- 81a5118e
+-- Context: Title of the window showing a condition's full text in readable form.
 [1116] = "Full condition text",
 -- 21b111cb
+-- Context: Button that resets a value (highlight color or position) to the default; also the name
+--     of the built-in default rotation.
 [1117] = "Default",
 -- c9a3dbb0
 [1118] = "Click to add branch name",
 -- ab0a9cf9
+-- Context: Name of the section of a rotation that holds the condition used for automatic switching,
+--     in change summaries and path descriptions.
 [1119] = "Switch condition",
 -- 18f3acc3
 [1120] = "No switch condition: this rotation can be selected automatically whenever its specialization and level apply.",
 -- 464c4ffd
+-- Context: Button in the Conditions page (custom condition row): edit this custom condition; verb.
 [1121] = "Edit",
 -- 7515ddaa
+-- Context: Tooltip of the delete button in the rotation editor: deletes the rotation (verb phrase).
 [1122] = "Delete rotation",
 -- bc48b710
 [1123] = "Discard this new rotation",
 -- 6390ba9c
+-- Context: Button in the rotation view: adds a new spell/item action step to the main rotation
+--     (verb phrase).
 [1124] = "Add action",
 -- 1947a735
+-- Context: Button in the rotation view: adds a new conditional branch step to the rotation (verb
+--     phrase).
 [1125] = "Add branch",
 -- 48dfa1a9
+-- Context: Button in the rotation view: adds a new cooldown (optional highlight) step (verb
+--     phrase).
 [1126] = "Add cooldown",
 -- cfb5635b
 [1127] = "Delete this custom rotation and its unsaved draft? This cannot be undone.",
 -- d1afca1a
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Rotation details'.
 [1128] = "Rotation details",
 -- 2f839a00
 [1129] = "Complete the highlighted input fields before applying.",
 -- 6d81521d
 [1130] = "Drop in a highlighted gap.",
 -- dcd1d522
+-- Context: Label of the name field (rotation, effect, item set, announcement, category); noun, also
+--     a help heading and comparison row label.
 [1131] = "Name",
 -- bb82fca1
+-- %s #1: %s #1: what input is incomplete, a short phrase, e.g. "Spell is required"
 [1132] = "Incomplete input: %s",
 -- 0a392308
 [1133] = "Click condition text on any card to view or edit its conditions.",
 -- 286353b7
+-- Context: Button in a rotation step: open the condition read-only (for a Built In); verb phrase.
 [1134] = "View condition",
 -- 61514750
+-- Context: Button in a rotation step: open the condition editor to change the step's condition;
+--     verb phrase.
 [1135] = "Edit condition",
 -- 19a05c66
 [1136] = "Cycle between summary, fields and name only. Drag the name to move the card.",
 -- 9eddf573
+-- Context: Button in the rotation editor (and the title of its dialog) for the rotation's
+--     description, tags and author; noun.
 [1137] = "Metadata",
 -- 8fe26115
 [1138] = "This rotation cannot run until its incomplete or unavailable data is resolved.",
 -- 40a9941b
+-- Context: Title of the window listing validation problems found in the rotation.
 [1139] = "Rotation validation",
 -- 5677f1c7
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Preview effect' to show how a highlight effect looks.
 [1140] = "Preview effect",
 -- 44e4c2fb
 [1141] = "Show or hide branch paths",
 -- 5735b9a9
 [1142] = "Expand or collapse the card. Click action or condition text for details.",
 -- 2478da41
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Click
+--     to expand' on a collapsed section.
 [1143] = "Click to expand",
 -- 94901258
+-- Context: Button in the condition editor: add an empty AND group (a bracket of conditions); verb
+--     phrase.
 [1144] = "Add group",
 -- ad19b82b
 [1145] = "Click to append; drag into a gap to insert.",
 -- 36e5aa8a
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Preview highlight' for the highlight preview.
 [1146] = "Preview highlight",
 -- 5e4de8d1
 [1147] = "This previews the glow used on action buttons. Click the preview icon again to close.",
 -- 1094644b
 [1148] = "Choose a highlight effect in the action details or General settings.",
 -- e3cb6179
+-- Context: Title of the help window for the rotation metadata dialog.
 [1149] = "Rotation metadata",
 -- d95082a2
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Author' (who wrote the rotation).
 [1150] = "Author",
 -- 2919fe85
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Realm' (author's realm).
 [1151] = "Realm",
 -- 969ccbd3
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Email' (author's email address).
 [1152] = "Email",
 -- dd167905
+-- Context: Column heading in the integrations list: the addon version; also a metadata field.
 [1153] = "Version",
 -- b8bece73
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Use
+--     changes' to apply the edited values.
 [1154] = "Use changes",
 -- b02bc1bc
 [1155] = "Use changes updates the draft. Apply the rotation to save it.",
 -- 38274b15
 [1156] = "Built In rotation: duplicate it to edit its metadata.",
 -- 0e570ca6
+-- Context: Fallback heading for a rotation source/citation without its own title; noun.
 [1157] = "Source",
 -- 9d7de300
+-- %s #1: %s #1: the invalid saved metadata value as text, e.g. "true" (shown as-is)
 [1158] = "Saved metadata is invalid (%s). Editing these fields replaces it.",
 -- 6b73191a
+-- Context: Label of the color field in the rotation step effect settings and the title of the color
+--     picker; also a help heading.
 [1159] = "Color",
 -- 2e51d20c
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Placeholder
+--     'Choose an effect' for the effect dropdown.
 [1160] = "Choose an effect",
 -- d1a44f24
+-- Context: Tooltip of a reset button next to a step's color: use the color from the profile
+--     settings.
 [1161] = "Use profile color",
 -- b840b1dd
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Checkbox
+--     label 'Center the highlight'.
 [1162] = "Center the highlight",
 -- 6dc46510
 [1163] = "Move highlight; hold Shift for ten pixels",
 -- 294bb35f
+-- Context: Tooltip of a play button next to the sound dropdown: plays the chosen sound; imperative.
 [1164] = "Preview sound",
 -- fa39a479
 [1165] = "Sound preview is unavailable.",
 -- ac2276b9
 [1166] = "Choose an available sound to preview.",
 -- d6807b3f
+-- Context: Tooltip of the check mark button in the color picker: accepts the chosen color.
 [1167] = "Use color",
 -- 8807635f
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Offsets' for the highlight position offsets.
 [1168] = "Offsets",
 -- de5a6f78
+-- Context: Abbreviation (letter V) on the vertical-offset field of a highlight position; tooltip is
+--     'Vertical offset'.
 [1169] = "V",
 -- 44bd7ae6
+-- Context: Abbreviation (letter H) on the horizontal-offset field of a highlight position; tooltip
+--     is 'Horizontal offset'.
 [1170] = "H",
 -- 36c4ddbf
 [1171] = "RGBA channels accept decimal values from 0 to 1.",
 -- a5163f27
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
+-- %s #2: %s #2: the name of the window or section, e.g. "Edit Condition #2"
 [1172] = "%s: %s",
 -- 76b2629a
+-- Context: Name of the addon in a window title/subtitle (brand name; keep untranslated if the addon
+--     name is not localized).
 [1173] = "Rotation Master",
 -- 39b36d38
+-- Context: Generic word for a single condition: window heading/context in the condition editor.
 [1174] = "Condition",
 -- 0924a671
+-- Context: Section name for cooldown steps (optional highlights) in change summaries and the step
+--     editor; noun.
 [1175] = "Cooldown",
 -- d85693fc
+-- Context: Header text for an AND group of conditions on a condition card: all of the following
+--     must be true.
 [1176] = "All of",
 -- f44e288e
+-- Context: Header text for an OR group of conditions on a condition card: any of the following may
+--     be true.
 [1177] = "Any of",
 -- 0ec5ba4e
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Action
+--     bar binding'.
 [1178] = "Action bar binding",
 -- 380684a5
+-- Context: Button in the Announces settings page: create a new announcement; verb phrase.
 [1179] = "Add announcement",
 -- 1005d35c
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Add
+--     custom condition' to create a custom condition.
 [1180] = "Add custom condition",
 -- 8fce42d6
+-- Context: Button in the Effects settings page: create a new highlight effect; verb phrase.
 [1181] = "Add effect",
 -- d1a0b329
+-- Context: Button in item set editors: add an item to the set; verb phrase, also a help heading.
 [1182] = "Add item",
 -- da10655e
+-- Context: Button and heading in the Item Sets settings page: create a new item set; verb phrase.
 [1183] = "Add item set",
 -- 839bd5e0
+-- Context: Button in the effect sequence editor: add a step (frame) to the sequence; verb phrase.
 [1184] = "Add step",
 -- 96f2ac95
 [1185] = "An item from this set must be available before binding.",
 -- 2a5562d3
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Bind
+--     item set' to bind an item set to action bar slots.
 [1186] = "Bind item set",
 -- 292c06f0
+-- Context: Label of the category dropdown for a condition and a heading in the icon picker; noun.
 [1187] = "Category",
 -- 8adaa206
 [1188] = "Choose an action first.",
 -- eb58aed0
 [1189] = "Choose an item first.",
 -- b269dc4e
+-- Context: Heading on the Profiles page above a short list of slash commands.
 [1190] = "Commands",
 -- eebdd24a
+-- Context: Button in confirmation prompts: confirm the action; verb.
 [1191] = "Confirm",
 -- 29bbf82e
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     and reset' in the profile tools.
 [1192] = "Copy and reset",
 -- 2da43a1c
+-- Context: Label of the dropdown in the Profiles page: copy settings from another profile into the
+--     current one; also a help heading.
 [1193] = "Copy from profile",
 -- 47cc49a7
 [1194] = "Copy this text to export. Import replaces the selected settings.",
 -- 61d30d99
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Create profile'.
 [1195] = "Create profile",
 -- 70aede1c
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Current profile'.
 [1196] = "Current profile",
 -- 47311af4
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Delete profile'.
 [1197] = "Delete profile",
 -- 526f44a0
+-- %s #1: %s #1: the name of the profile to delete, e.g. "Default"
 [1198] = "Delete profile %s? This cannot be undone.",
 -- 0a1b391c
 [1199] = "Delete this custom condition? Existing rotations using it will become unavailable.",
@@ -3730,14 +6064,20 @@ local E = {
 -- bfb176a2
 [1201] = "Delete this item set and its binding? Rotations referencing it will need another item set.",
 -- 5342e09f
+-- Context: Checkbox in General settings, Recommendations section: turns Rotation Master
+--     recommendations on or off; verb; also a help heading.
 [1202] = "Enable",
 -- eccca39d
 [1203] = "Enter a name first.",
 -- 27bf030d
 [1204] = "Enter a profile name first.",
 -- dab97264
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'History and preview'.
 [1205] = "History and preview",
 -- 9b10587f
+-- Context: Label of the identifier field (a unique key for an announcement or custom condition);
+--     noun.
 [1206] = "Identifier",
 -- c6af6542
 [1207] = "Invalid effect.",
@@ -3746,38 +6086,59 @@ local E = {
 -- 6987106d
 [1209] = "Invalid item list.",
 -- c8edea5f
+-- Context: Label of an item row in a list by position; %d is the position number.
+-- %d #1: %d #1: the position of the item in the item set, counting from 1, e.g. 2
 [1210] = "Item %d",
 -- 08bc6729
 [1211] = "Items in priority order",
 -- 9024c197
+-- Context: Heading of a section listing web links (Profiles page; help window).
 [1212] = "Links",
 -- dba20004
+-- Context: Label of the text field for the name of a new profile.
 [1213] = "New profile name",
 -- a6a2aa10
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Status text
+--     'Not bound' for an item set with no action bar binding.
 [1214] = "Not bound",
 -- 14908ce9
 [1215] = "Profile changes apply immediately. Rotations and settings belong to the active profile.",
 -- 0738ee00
+-- Context: Section heading in General settings for the options controlling recommendations.
 [1216] = "Recommendations",
 -- e8781b01
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Remove binding'.
 [1217] = "Remove binding",
 -- e89af9bb
+-- %s #1: %s #1: the name of the profile to copy from, e.g. "Raiding"
 [1218] = "Replace the current profile with %s?",
 -- daee7606
+-- Context: Button that resets the current editor or item set to the saved or default state (verb);
+--     also a help heading.
 [1219] = "Reset",
 -- 15d5cb3f
+-- Context: Button in the Profiles page: reset the current profile to defaults (verb phrase); also a
+--     help heading.
 [1220] = "Reset current profile",
 -- 4ddce508
+-- Context: Tooltip/help heading for the button that puts the preview window back to its default
+--     position.
 [1221] = "Reset preview position",
 -- 7986b163
 [1222] = "Reset this profile to its defaults? Custom rotations and settings in it will be replaced.",
 -- 2a78025d
+-- Context: Placeholder text on a dropdown button that has nothing selected; also the 'Select'
+--     option in an integrations choice (verb).
 [1223] = "Select",
 -- 10151a40
+-- Context: Label for a step row by position in a comparison; %d is the position.
+-- %d #1: %d #1: the number of the step, counting from 1, e.g. 3
 [1224] = "Step %d",
 -- b1912f1a
 [1225] = "This name is already in use.",
 -- 52656e81
+-- Context: Step type name for a conditional branch step (as in 'Branch'); noun.
 [1226] = "Branch",
 -- b8e156bb
 [1227] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted.",
@@ -3786,8 +6147,10 @@ local E = {
 -- 07c1af16
 [1229] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list.",
 -- 584f475e
+-- Context: Title of the help window for the condition editor.
 [1230] = "Condition editor",
 -- dae8a15b
+-- Context: Heading in the help for the rotation metadata dialog: the description and author fields.
 [1231] = "Description and attribution",
 -- 0bff7d0e
 [1232] = "Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.",
@@ -3796,8 +6159,12 @@ local E = {
 -- 0305e247
 [1234] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected.",
 -- 2c02392e
+-- Context: Heading in help text explaining AND/OR/NOT groups and the If/Unless and Enabled/Disabled
+--     toggles in the condition editor.
 [1235] = "Groups and toggles",
 -- 3d69858e
+-- Context: Heading in help text describing the Help (question mark) button and how saving works
+--     (Undo/Redo/Apply) in the editor.
 [1236] = "Help and saving",
 -- 99855946
 [1237] = "Move, copy and remove",
@@ -3806,18 +6173,25 @@ local E = {
 -- 95b23356
 [1239] = "These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
 -- 00a767bc
+-- Context: Placeholder name for a spell that cannot be found by ID (announcement list, reference
+--     catalog).
 [1240] = "Unknown spell",
 -- 52ffc6a8
+-- Context: Placeholder shown for an item whose name has not loaded from the server yet.
 [1241] = "Item data loading",
 -- d6572bd2
 [1242] = "No matches.",
 -- 18fdd549
+-- Context: Button that creates a new entry (rotation, item set, effect, condition category...);
+--     verb.
 [1243] = "New",
 -- 7f406b7e
 [1244] = "No matching items.",
 -- f9ad9fda
 [1245] = "Click a result or enter an item name, ID or link.",
 -- a4ae750b
+-- Context: Label of the anchor point dropdown for a highlight (which part of the button the
+--     highlight attaches to); also a help heading.
 [1246] = "Anchor",
 -- 1edc56cd
 [1247] = "Return the preview window to the center of the screen.",
@@ -3828,10 +6202,16 @@ local E = {
 -- c3cf199e
 [1250] = "Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets.",
 -- 49cf9ec6
+-- Context: Heading and button on the Conditions page: switch to managing condition categories (add,
+--     rename, reorder).
 [1251] = "Manage categories",
 -- eda2efcd
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Back
+--     to conditions' to return from category management to the condition list.
 [1252] = "Back to conditions",
 -- 8137101b
+-- Context: Status text on the Conditions page: the selected category is built in and cannot be
+--     edited.
 [1253] = "Built-in category",
 -- d7c828bc
 [1254] = "Delete this category? Its conditions will remain available under Other.",
@@ -3846,82 +6226,128 @@ local E = {
 -- f2bafb3c
 [1259] = "Move the selected condition to a named category or Other. Use Switch Condition separately for automatic-switch availability.",
 -- 85a39ab3
+-- Context: Boolean value word 'Yes' (true) in condition text and comparison views.
 [1260] = "Yes",
 -- 1ea442a1
+-- Context: Boolean value word 'No' (false) in condition text and comparison views.
 [1261] = "No",
 -- f8bfdb1e
+-- Context: Checkbox in the comparison window: also list entries that are identical on both sides.
 [1262] = "Show unchanged",
 -- 8307fb6b
+-- %d #1: %d #1: the number of fields that differ, e.g. 4
 [1263] = "Changed fields: %d",
 -- e888155d
+-- Context: Button and window title prefix for comparing two entries (rotations, profiles,
+--     collections); verb.
 [1264] = "Compare",
 -- 72bb9089
+-- Context: Subtitle/badge on windows that only display data and cannot be edited; adjective.
 [1265] = "Read-only",
 -- e21330cf
+-- Context: Default name given to an item set created by importing text.
 [1266] = "Imported item set",
 -- ef86a0ed
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     reorder' for reorderable list entries.
 [1267] = "Drag to reorder",
 -- 9b6766d2
+-- %s #1: %s #1: the numeric item ID, e.g. 5512
 [1268] = "Item ID: %s",
 -- fe76866f
+-- %s #1: %s #1: the item reference as stored (a name or link text), e.g. "Healthstone"
 [1269] = "Item reference: %s",
 -- 1f439481
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Adjective
+--     'Built-in' (shipped with the addon).
 [1270] = "Built-in",
 -- 36619693
+-- Context: Status text for a condition that ships with the addon (as opposed to a custom one), on
+--     the Conditions page.
 [1271] = "Built-in condition",
 -- 1a63dcb7
+-- Context: Name for a condition you wrote yourself in the Lua editor, in settings and editor
+--     titles; noun phrase.
 [1272] = "Custom condition",
 -- c3b0c07b
+-- Context: Fallback name for a game icon with no known name in the icon picker.
 [1273] = "Game icon",
 -- b33708ba
+-- Context: Group heading in the icon picker: the icons that come from the game's macro icon list.
 [1274] = "Game icons",
 -- a35abcd6
+-- Context: Label of the icon field of a condition category/custom condition and a comparison row
+--     label; noun.
 [1275] = "Icon",
 -- 41ca9dad
+-- Context: Group heading in the icon picker: the item icons from the game.
 [1276] = "Item icons",
 -- 059e5b06
+-- Context: Group heading in the icon picker: icons of spells your character knows.
 [1277] = "Known spells",
 -- bb50071a
+-- Context: Button on the category management page: go back to editing individual conditions.
 [1278] = "Manage conditions",
 -- 1ff57a29
+-- Context: Tooltip of the next-page button in the icon picker; imperative.
 [1279] = "Next",
 -- e71ca826
+-- Context: Page indicator in the icon picker; the first %d is the current page, the second the
+--     total pages.
+-- %d #1: %d #1: the current page, e.g. 2
+-- %d #2: %d #2: the total number of pages, e.g. 14
 [1280] = "Page %d of %d",
 -- a57b08a4
+-- Context: Tooltip of the previous-page button in the icon picker; imperative.
 [1281] = "Previous",
 -- fe3f2a5d
+-- Context: Button in the Profiles page: make the selected profile the active one (verb phrase);
+--     also a help heading.
 [1282] = "Activate profile",
 -- 5608b89a
+-- Context: Status/button text in the Profiles page: the selected profile is already the active one.
 [1283] = "Active profile",
 -- 1946c44c
 [1284] = "Apply pending changes before leaving? Use Cancel on the page to discard them.",
 -- 92b4440b
+-- Context: Announce channel dropdown option: play a sound instead of showing text.
 [1285] = "Audible",
 -- b8b1d894
+-- Context: Comparison row label: the condition categories (groups) in a profile.
 [1286] = "Categories",
 -- ddd736ba
 [1287] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.",
 -- 40ac9c5e
 [1288] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.",
 -- bd245266
+-- Context: Comparison row label: the list of Built In rotations that your rotations were cloned
+--     from.
 [1289] = "Clone sources",
 -- 72e094ed
+-- Context: Comparison row label: records of past rotation comparisons.
 [1290] = "Comparison history",
 -- 61062ba2
 [1291] = "Complete the effect settings before applying.",
 -- 2a6b24ad
+-- Context: Label on the settings page: the credits line (people who contributed); noun, followed by
+--     a colon and names.
 [1292] = "Credits",
 -- b91bfdbb
+-- Context: Comparison row label: your saved preferences about Built In rotations (enabled or
+--     disabled).
 [1293] = "Built In preferences",
 -- a1ceb156
 [1294] = "Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.",
 -- 66cf8407
 [1295] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.",
 -- 6d5af309
+-- Context: Comparison row label for the 'Ignore Mana' setting in a profile.
 [1296] = "Ignore mana",
 -- 96bb8a4a
+-- Context: Comparison row label for the 'Ignore Range' setting in a profile.
 [1297] = "Ignore range",
 -- 7df60b64
+-- Context: Comparison row label: the records of imported entries.
 [1298] = "Imports",
 -- fa4ba363
 [1299] = "Invalid announcement.",
@@ -3932,42 +6358,65 @@ local E = {
 -- 0fabe810
 [1302] = "Leave combat before changing action bar bindings.",
 -- c011d609
+-- Context: Label on the settings page: the license line, followed by a colon and the license name.
 [1303] = "License",
 -- e7fdbd0c
+-- Context: Label on the settings page: the list of translations, followed by a colon.
 [1304] = "Localizations",
 -- aac6c842
 [1305] = "No rotations in this profile.",
 -- 15ba8148
+-- Context: Comparison row label for the position of the preview window setting.
 [1306] = "Preview position",
 -- 08f04b51
+-- Context: Comparison row label: the collection of all rotations in a profile.
 [1307] = "Rotation library",
 -- 7bde8757
 [1308] = "Search or drag a spell here",
 -- 21c38898
+-- Context: Drag-and-drop tooltip in the rotation editor: moving several selected step cards; %d is
+--     how many.
+-- %d #1: %d #1: how many selected cards are being dragged, e.g. 3
 [1309] = "Move %d selected cards",
 -- 6c0b9d10
+-- Context: Tooltip of a bulk button in the rotation/condition editor: duplicate every selected card
+--     (verb phrase).
 [1310] = "Duplicate selected cards",
 -- 30a9f853
+-- Context: Tooltip of a bulk button in the rotation/condition editor: enable every selected card
+--     (verb phrase).
 [1311] = "Enable selected cards",
 -- d3b30c10
+-- Context: Tooltip of a bulk button in the rotation/condition editor: disable every selected card
+--     (verb phrase).
 [1312] = "Disable selected cards",
 -- 48d65c02
+-- Context: Tooltip of a bulk button in the rotation/condition editor: delete every selected card
+--     (verb phrase).
 [1313] = "Delete selected cards",
 -- cea4d2e0
+-- Context: Tooltip of a bulk button in the rotation editor: deselect all cards (verb phrase).
 [1314] = "Clear selection",
 -- c58ed264
+-- %s #1: %s #1: the spell being cast by the target, e.g. "Fireball"
 [1315] = "Target casting: %s",
 -- ffaf018a
+-- %s #1: %s #1: the spell being cast by the focus target, e.g. "Fireball"
 [1316] = "Focus casting: %s",
 -- 0b303a00
+-- %s #1: %s #1: the spell being channelled by the target, e.g. "Arcane Missiles"
 [1317] = "Target channeling: %s",
 -- 2a66fe87
+-- %s #1: %s #1: the spell being channelled by the focus target, e.g. "Arcane Missiles"
 [1318] = "Focus channeling: %s",
 -- f6b58a2a
+-- %s #1: %s #1: a spell the player cast recently, e.g. "Frostbolt"
 [1319] = "Recently cast: %s",
 -- db04a504
+-- %s #1: %s #1: the item equipped in the first trinket slot, e.g. "Trinket of the Sun"
 [1320] = "Trinket 1: %s",
 -- 93b4d929
+-- %s #1: %s #1: the item equipped in the second trinket slot, e.g. "Trinket of the Moon"
 [1321] = "Trinket 2: %s",
 -- b31f1cc4
 [1322] = "No equipped trinket to insert.",
@@ -3986,16 +6435,26 @@ local E = {
 -- b0413d32
 [1329] = "Settings changed elsewhere. Cancel to reload them before applying.",
 -- 1973cc09
+-- Context: Item set binding button when slots are bound; first part is the bound action bar slot
+--     numbers (%s), pressing it unbinds.
+-- %s #1: %s #1: the slot numbers the item set is bound to, separated by commas, e.g. "13, 14"
 [1330] = "Slots %s · Unbind",
 -- 46124e02
+-- Context: Label of the sound dropdown in an announcement and a help heading; also a comparison row
+--     label.
 [1331] = "Sound",
 -- 410cc927
+-- Context: Placeholder shown in a comparison where a setting is a nested table rather than a simple
+--     value.
 [1332] = "Structured settings",
 -- 1ed6b5ea
+-- Context: Fallback name for a rotation that has no name.
 [1333] = "Unnamed rotation",
 -- 62704b0c
 [1334] = "Use arrows or drag rows in the condition sidebar to reorder within the selected category. In Manage categories, the same controls order the categories themselves.",
 -- 8e37953d
+-- Context: Label of the numeric value field in the Stagger and group state conditions (the value
+--     the operator compares to); noun.
 [1335] = "Value",
 -- 2d11fd64
 [1336] = "Choose an action and complete the announcement before applying.",
@@ -4008,30 +6467,44 @@ local E = {
 -- c0f78e20
 [1340] = "Choose a new named copy or replace the selected editable entry. Review the destination before importing.",
 -- 83b12c22
+-- Context: Button in the transfer dialog: clears the text box (verb).
 [1341] = "Clear",
 -- e25a9c83
 [1342] = "Confirm the Lua import, then review it before saving.",
 -- 8aaf46c6
+-- Context: Default placeholder name for an imported custom condition when its name cannot be read;
+--     written in capital letters with an underscore.
 [1343] = "IMPORTED_CONDITION",
 -- 8237a9a5
+-- Context: Title of the window comparing imported text with the existing entry; also a help
+--     heading.
 [1344] = "Import comparison",
 -- 9d886886
+-- Context: Default name given to an announcement created by importing text.
 [1345] = "Imported announcement",
 -- 456358c4
+-- Context: Default name given to a condition category created by importing text.
 [1346] = "Imported category",
 -- a77b0984
+-- Context: Default name given to an effect created by importing text.
 [1347] = "Imported effect",
 -- 2f91d1e1
+-- Context: Default name given to a profile created by importing text.
 [1348] = "Imported profile",
 -- ec38d3c0
 [1349] = "Invalid custom condition.",
 -- a265e30c
+-- Context: Placeholder in the import dialog: the imported text did not contain a name.
 [1350] = "Name not supplied",
 -- fb66a1af
+-- Context: Label in the import dialog preceding the name found in the imported text, followed by a
+--     colon.
 [1351] = "Original name",
 -- 327093d7
 [1352] = "Ready to import. Choose replacement or a named copy.",
 -- 0d9a1fb4
+-- Context: Checkbox in the import dialog: overwrite the entry currently selected instead of
+--     creating a new one.
 [1353] = "Replace selected entry",
 -- a84aab9e
 [1354] = "That condition identifier already exists.",
@@ -4042,42 +6515,68 @@ local E = {
 -- ae820bc2
 [1357] = "Use letters, numbers and underscores for the condition identifier.",
 -- 24c87ffc
+-- %s #1: %s #1: the part of the custom condition that failed the check, e.g. "evaluate" or "Definition"
+-- %s #2: %s #2: the detail of the failure, e.g. "unexpected symbol near end"
 [1358] = "Check %s: %s",
 -- 8e09cadd
+-- Context: Button in the Lua editors: check the code for syntax errors without running it (verb
+--     phrase).
 [1359] = "Check syntax",
 -- 1ae4fec7
+-- Context: Tooltip of the icon button in the custom condition editor: opens the icon picker;
+--     imperative.
 [1360] = "Choose icon",
 -- 18156f45
 [1361] = "Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.",
 -- a53c11ee
 [1362] = "Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua.",
 -- 9813fafb
+-- Context: Label naming the whole definition of a custom condition (its callbacks and fields) in
+--     errors and comparison rows; noun.
 [1363] = "Definition",
 -- 9b8e27c6
+-- Context: Heading in help text for the code editor (Undo, Redo, Reset, Check syntax, Apply).
 [1364] = "Editing code",
 -- 966591fe
+-- Context: Name of the evaluate callback tab of a custom condition: the code that decides if the
+--     condition is true; noun.
 [1365] = "Evaluate",
 -- 7b08f80e
+-- Context: Heading and label for the schema of a custom condition's fields (their names and types).
 [1366] = "Field schema",
 -- 1aab5f2f
+-- Context: Name of the callback tab of a custom condition: the code that builds the condition's
+--     editing widgets; noun.
 [1367] = "Fields UI",
 -- 43dab9e3
 [1368] = "Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs.",
 -- 6a696870
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     registered.
 [1369] = "On register",
 -- 06f9af14
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     unregistered.
 [1370] = "On unregister",
 -- 8e76a94a
+-- Context: Name of the callback tab of a custom condition: code that builds the condition's text
+--     summary; noun.
 [1371] = "Summary",
 -- d9f668a3
 [1372] = "Syntax checked. No custom code was executed.",
 -- 39286cd6
 [1373] = "The custom condition changed elsewhere. Reopen it before saving.",
 -- 6e33a7dd
+-- Context: Heading in help text warning that custom Lua code has full addon access and only trusted
+--     code should be imported.
 [1374] = "Trusted code",
 -- 40611abb
+-- Context: Name of the callback tab of a custom condition: code that validates the condition's
+--     fields; verb used as a tab name.
 [1375] = "Validate",
 -- 7c39c16d
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Filter option
+--     'All tags' in the rotation browser tag filter.
 [1376] = "All tags",
 -- 08c83906
 [1377] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
@@ -4086,12 +6585,19 @@ local E = {
 -- 36b7b9b3
 [1379] = "Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.",
 -- 1331275b
+-- Context: Label of the rotation tags field and of the tag filter in the rotation browser; plural
+--     noun.
 [1380] = "Tags",
 -- 1dd4ab9e
+-- Context: Label of the rotation's priority for automatic switching in change summaries and
+--     comparisons; noun phrase.
 [1381] = "Switch priority",
 -- 1e51f6c3
+-- Context: Priority line in a rotation browser entry; %d is the priority number.
+-- %d #1: %d #1: the rotation's switch priority, e.g. 5
 [1382] = "Priority %d",
 -- defa7982
+-- Context: Text shown in place of a priority number when the stored priority is not valid.
 [1383] = "Invalid priority",
 -- 1501b340
 [1384] = "Switch priority must be a whole number between -100000 and 100000.",
@@ -4100,38 +6606,67 @@ local E = {
 -- a37462ad
 [1386] = "Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.",
 -- 2040fdbd
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1387] = "Invalid switch priority for %s:%s; explicit repair resets it to zero.",
 -- babdd022
+-- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
+--     (Classic ranked spells).
+-- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
 [1388] = "%s (any rank)",
 -- a80c618c
 [1389] = "Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.",
 -- 264ad9c0
+-- Context: Name of the Cast Progress condition (how far the current cast has progressed, in
+--     percent).
 [1390] = "Cast Progress",
 -- 02ad1e66
+-- Context: Name of the Channel Progress condition (how far the current channel has progressed, in
+--     percent).
 [1391] = "Channel Progress",
 -- b19c05d2
+-- Context: Name of the Talent Tree Points condition (points spent in a talent tree; Classic).
 [1392] = "Talent Tree Points",
 -- ef4ebbe8
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text fragment 'points spent in %s'; %s is a talent tree.
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1393] = "points spent in %s",
 -- 4fd19fe4
+-- Context: Name of the Primary Talent Tree condition (the tree in which you have the most points;
+--     Classic).
 [1394] = "Primary Talent Tree",
 -- cffd0628
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1395] = "your primary talent tree is %s",
 -- 31e9be18
+-- Context: Rotation editor: label of the view-mode toggle button while the list layout is active
+--     (clicking switches to the diagram), and the "Diagram" option in the General settings "Default
+--     rotation view" dropdown. Names a way of viewing a rotation, not an action.
 [1430] = "Diagram view",
 -- 5d8c3e1b
+-- Context: "List" option of the rotation view: the compact tree list. Shown on the rotation
+--     editor's view-mode toggle button and as an entry in the General settings "Default rotation
+--     view" dropdown.
 [1431] = "List view",
 -- 0dca2dc5
 [1432] = "Switch between the diagram and compact tree list. This changes only the view.",
 -- bc7b631a
+-- Context: Tooltip of the minus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram smaller (verb).
 [1433] = "Zoom out",
 -- 0e47f09a
+-- Context: Tooltip of the plus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram larger (verb).
 [1434] = "Zoom in",
 -- ed28d6c9
 [1435] = "Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged.",
 -- a7f6faca
 [1436] = "Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved.",
 -- b1fd3756
+-- Context: Announcement output channel: sends the message as a custom emote. Entry in the channel
+--     dropdown of an announcement output (shown only for emote outputs) and a topic title in the
+--     Announces help.
 [1437] = "Custom emote",
 -- 6dd86cd7
 [1438] = "Use spell recipient ({{target}})",
@@ -4140,6 +6675,8 @@ local E = {
 -- 38f252ac
 [1440] = "Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
 -- c546b857
+-- Context: General settings: label of the dropdown that chooses whether rotations open as a diagram
+--     or a list by default; also a help topic title and a row label in the profile comparison.
 [1441] = "Default rotation view",
 -- d11b9246
 [1442] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid.",
@@ -4150,52 +6687,93 @@ local E = {
 -- ffcd3171
 [1445] = "Drag one entry; Ctrl-drag moves it and all following siblings.",
 -- 773001f9
+-- Context: Small count label on the stacked hover card of the rotation view, e.g. "3 cards"; %d is
+--     the number of cards stacked together.
+-- %d #1: %d #1: the number of cards being dragged, e.g. 3
 [1446] = "%d cards",
 -- 454b5fb4
+-- Context: Suffix on a True/False branch button in the rotation diagram when part of that branch is
+--     folded away; %d is the number of hidden steps. Keeps its leading space, appended right after
+--     "True" or "False".
+-- %d #1: %d #1: the number of cards hidden inside the folded branch, e.g. 4 (the text starts with a space and follows "True" or "False")
 [1447] = " (%d hidden)",
 -- 9db3d1ae
 [1448] = "Click to fold or unfold this branch arm. Other cards and conditions are unchanged.",
 -- a7c224a3
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1449] = "%s {{!are|are not}} PVP flagged",
 -- a2e6fde9
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1450] = "%s {{!are|are not}} a %s",
 -- a9c26592
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1451] = "%s {{!are|are not}} currently casting %s",
 -- c0e4c355
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [1452] = "%s {{!are|are not}} currently channeling %s",
 -- df4ccc9d
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1453] = "%s {{!are|are not}} in combat",
 -- afbc6f6d
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1454] = "%s {{!has|does not have}} %s",
 -- 450074be
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1455] = "%s {{!has|does not have}} a %s debuff",
 -- e7bdefdc
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1456] = "%s {{!have|do not have}} %s",
 -- 4d5d691c
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1457] = "%s {{!have|do not have}} %s where %s",
 -- abf6cfd4
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1458] = "%s {{!have|do not have}} a %s debuff",
 -- 79e495d3
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1459] = "%s {{!is|is not}} PVP flagged",
 -- 491c7ee4
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1460] = "%s {{!is|is not}} a %s",
 -- 09b32050
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1461] = "%s {{!is|is not}} active with %s",
 -- c58e76ae
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1462] = "%s {{!is|is not}} an enemy",
 -- 2c1ba7dc
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1463] = "%s {{!is|is not}} attackable",
 -- 742f7cb6
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1464] = "%s {{!is|is not}} currently casting %s",
 -- ae551afe
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [1465] = "%s {{!is|is not}} in a %s role",
 -- f6ca7ce9
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1466] = "%s {{!is|is not}} in combat",
 -- 0af84407
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1467] = "%s's channeled spell {{!is|is not}} interruptable",
 -- 7240fa38
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1468] = "%s's spell {{!is|is not}} interruptable",
 -- 8c1704ad
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [1469] = "Your talent {{!is|is not}} a %s role",
 -- c66f7ad7
 [1470] = "is not evenly divisible by",
@@ -4208,40 +6786,63 @@ local E = {
 -- 92bbf51d
 [1474] = "is not less than or equal to",
 -- 970de09b
+-- Context: Wrapper used when describing a negated condition group in text: the %s is the
+--     description of the conditions, so it reads like "not (<conditions>)".
+-- %s #1: %s #1: the full text of the condition that is being negated, e.g. "you are in combat"
 [1475] = "not (%s)",
 -- d4c2a5ad
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [1476] = "you {{!are|are not}} in %s form",
 -- 330c2126
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [1477] = "you {{!are|are not}} in a %s instance",
 -- 0f79bc56
 [1478] = "you {{!are|are not}} in a outdoors",
 -- 25ce1dd9
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [1479] = "you {{!have|do not have}} %s equipped",
 -- f5b5e754
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [1480] = "you {{!have|do not have}} %s glyph",
 -- 7c1be9a0
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1481] = "you {{!have|do not have}} a %s totem active with %s",
 -- 6691324c
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [1482] = "you {{!have|do not have}} a pet named %s",
 -- 8fbf9338
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [1483] = "zone {{!is|is not}} a %s zone",
 -- 07e00292
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [1484] = "{{!in|not in}} %s",
 -- f9337f4a
 [1485] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.",
 -- 085df392
 [1486] = "Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.",
 -- 90f64b52
+-- Context: Tooltip of the minus icon button beside the Priority box in the rotation editor header:
+--     lowers the rotation's priority number (verb phrase).
 [1487] = "Decrease priority",
 -- c31a4a7d
+-- Context: Tooltip of the plus icon button beside the Priority box in the rotation editor header:
+--     raises the rotation's priority number (verb phrase).
 [1488] = "Increase priority",
 -- 0abba441
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (laid out in a row); the other choice is "Vertical". Also a help topic title.
 [1489] = "Horizontal",
 -- 727cd3a6
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (stacked in a column); the other choice is "Horizontal". Also a row label in the profile
+--     comparison.
 [1490] = "Vertical",
 -- 6e9ad9af
 [1491] = "Lock preview position and size",
 -- fc3dbf19
+-- Context: General settings: label of the slider that sets the transparency of the preview window;
+--     also a help topic title and a profile comparison row.
 [1492] = "Preview window opacity",
 -- a625f9d4
 [1493] = "Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio.",
@@ -4252,30 +6853,51 @@ local E = {
 -- 10d580ca
 [1496] = "Lock position and size",
 -- 0e556ee1
+-- Context: Entry in the preview window's right-click menu: opens the General settings page.
 [1497] = "Open General settings",
 -- f65ed2ec
+-- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
+--     differs between the saved and unsaved version.
 [1498] = "View Changes",
 -- b5c120b3
+-- Context: Left column heading of the View Changes dialog: the version currently stored, before the
+--     pending edits.
 [1499] = "Saved",
 -- 6250d572
+-- Context: Right column heading of the View Changes dialog: the draft with pending edits that have
+--     not been applied yet.
 [1500] = "Unsaved",
 -- bc6e0973
+-- Context: Row label prefix in the View Changes dialog, shown as "Pending input: <field>": text
+--     typed into a field that has not been committed yet.
 [1501] = "Pending input",
 -- 4b96e273
+-- Context: Value shown in the "Saved" column of View Changes for a custom widget whose content
+--     cannot be compared; indicates the saved side was not examined.
 [1502] = "Not inspected",
 -- 12be1b12
 [1503] = "Custom widget has pending input.",
 -- 70e5c0fd
+-- Context: Default left column heading in the comparison dialog when the first item has no name:
+--     the entry currently selected in the list. Also used when comparing an import.
 [1504] = "Selected entry",
 -- f6cf1462
+-- Context: Default right column heading in the comparison dialog when the second item has no name:
+--     the entry it is compared with.
 [1505] = "Compared entry",
 -- 002a5d77
+-- Context: Name of a rotation-step option (checkbox) that makes the step use its own custom name;
+--     shown as a row label when two profiles are compared.
 [1506] = "Use step name",
 -- 6dd777d2
+-- Context: General settings: label of the slider for the size of the icons in the preview window;
+--     also a row label in the profile comparison.
 [1507] = "Preview icon size",
 -- 9710bd5e
 [1508] = "Add or search tags",
 -- 93bc41f4
+-- Context: Placeholder text in the search box of the tag picker (when new tags cannot be created):
+--     invites the user to type to filter existing tags.
 [1509] = "Search tags",
 -- bdb18f62
 [1510] = "Click to remove this tag. Right-click to choose its color.",
@@ -4284,50 +6906,77 @@ local E = {
 -- 6054cb39
 [1512] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
 -- 616f48c1
+-- Context: Fallback row label in View Changes for unsaved edits whose individual field name is not
+--     known; stands for "form fields".
 [1513] = "Fields",
 -- 7f553822
 [1514] = "Search...",
 -- 9fd728c6
+-- Context: Button in the Conditions settings roster header that adds a new custom condition (verb).
 [1515] = "Add",
 -- b5a66eb6
+-- Context: Row label in View Changes shown when the comparison was cut short, followed by the note
+--     that only the first 512 conditions per side are shown; a noun.
 [1516] = "Comparison limit",
 -- 2dc363a7
 [1517] = "Showing the first 512 conditions per side.",
 -- 1710782c
+-- Context: Weapon-related icons: an icon name in the icon picker's group list, and a category
+--     filter chip in the picker.
 [1518] = "Weapon",
 -- 15b61974
+-- Context: Icon name in the icon picker: a map/location marker (noun).
 [1519] = "Location",
 -- 909cb811
+-- Context: Icon name in the icon picker: a book (noun, the object).
 [1520] = "Book",
 -- 289aff12
+-- Context: Icon name in the icon picker: a question mark (noun).
 [1521] = "Question",
 -- 5919dcd4
+-- Context: Icon name in the icon picker: crossed swords (plural noun).
 [1522] = "Swords",
 -- 480d4be7
+-- Context: Icon name in the icon picker: a shield (noun, the item). Also used as an equipment
+--     category in the equipped-item condition.
 [1523] = "Shield",
 -- 44bc3799
+-- Context: Icon name in the icon picker: healing (a heart/cross style icon).
 [1524] = "Healing",
 -- 41e68f2c
+-- Context: Icon name in the icon picker: a lightning bolt (noun).
 [1525] = "Lightning",
 -- b5e0cd8a
+-- Context: Icon name in the icon picker: potions (plural noun).
 [1526] = "Potions",
 -- e4eb1806
+-- Context: Icon name in the icon picker: food (noun).
 [1527] = "Food",
 -- a592855d
+-- Context: Icon name in the icon picker: armor (noun, the item type).
 [1528] = "Armor",
 -- 39bbb719
+-- Context: Icon name in the icon picker: several people (plural; a group icon).
 [1529] = "Groups",
 -- 34ca0e76
+-- Context: Icon name in the icon picker: a group of people (singular noun; a group icon).
 [1530] = "Group",
 -- d461a493
+-- Context: Option in the Lua editor syntax-highlighting dropdown: the editor picks highlighting by
+--     itself.
 [1531] = "Automatic",
 -- b8715031
 [1532] = "Built In syntax highlighting",
 -- cf416625
+-- Context: Option in the Lua editor syntax-highlighting dropdown: no highlighting, just plain text.
 [1533] = "Plain text",
 -- 090512d9
+-- Context: Top-level tab of the settings window (next to General, Conditions, Functions ...):
+--     integrations with other addons.
 [1534] = "Integrations",
 -- 90c92d4c
+-- Context: Title of the Lua editor help window, and the name of a Lua editor settings row in the
+--     profile comparison.
 [1535] = "Lua editor",
 -- d8cfde4d
 [1536] = "Choose optional addon integrations.",
@@ -4342,30 +6991,44 @@ local E = {
 -- f1fa67bf
 [1541] = "Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
 -- dfab6835
+-- %s #1: %s #1: why the custom condition is invalid, a short reason, e.g. "unexpected symbol near end"
 [1542] = "Invalid condition: %s",
 -- a3d021a9
+-- %s #1: %s #1: the description of the condition, e.g. "In Combat"
 [1543] = "Unavailable condition: %s",
 -- ffb313cc
 [1544] = "This condition definition is disabled. Rotations using it are unavailable.",
 -- 12f67f85
 [1545] = "Availability",
 -- ef8f927d
+-- Context: Row text and tooltip in the custom condition source preview when a condition has no
+--     named field yet: invites editing the condition's input fields (verb phrase).
 [1546] = "Edit fields",
 -- 9f088dbe
+-- Context: Checkbox at the top right of the schema editor of a custom condition: switches to the
+--     raw schema editor (equivalent text form) instead of the graphical field editor.
 [1547] = "Advanced",
 -- bd82cf16
+-- Context: Value type in the condition field type dropdown: a numeric value.
 [1548] = "Number",
 -- a066ff92
+-- Context: Value type in the condition field type dropdown: true/false.
 [1549] = "Boolean",
 -- 5f3107cf
+-- Context: Value type in the condition field type dropdown: a list of conditions.
 [1550] = "Condition list",
 -- c5025e68
+-- Context: Value type in the condition field type dropdown: a record, i.e. a table of named values
+--     (key/value map).
 [1551] = "Record / map",
 -- 58e1de5e
 [1552] = "Allowed types / list alternatives",
 -- a9b310ef
+-- %s #1: %s #1: what is wrong with the field schema, a short code or the field key, e.g. "invalid-required-fields" (shown as-is)
 [1553] = "Invalid field schema: %s",
 -- 76900f1b
+-- Context: Label of the back-navigation control in the embedded Lua editor's API knowledge window
+--     (go to the previous page).
 [1554] = "Back",
 -- 02dbfe6e
 [1555] = "Named fields. Choose a type, then edit its children for nested data.",
@@ -4374,8 +7037,11 @@ local E = {
 -- 130a1408
 [1557] = "Showing the first 200 fields. Use Advanced schema for larger definitions.",
 -- 5f42d901
+-- Context: Button in the field schema editor: adds a new input field to the custom condition (verb
+--     phrase).
 [1558] = "Add field",
 -- cb4190b5
+-- Context: Tooltip of the colored swatch in a tag entry in a selector list: the tag's color.
 [1559] = "Tag color",
 -- 08b91fc6
 [1560] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.",
@@ -4388,14 +7054,21 @@ local E = {
 -- 047aff36
 [1564] = "No native Lua editor has been opened this session.",
 -- 5472dd28
+-- Context: Title of the report window that shows Lua editor input diagnostics, for testers to copy.
 [1565] = "Lua input diagnostics",
 -- 5c126363
+-- Context: Title of a test dialog (Lua editor input probe): checks the game's native text input.
 [1566] = "Native input test",
 -- 6043d2ec
+-- Context: Subtitle in the header of the native input test dialog (short noun phrase).
 [1567] = "Input test",
 -- 5a832570
+-- Context: Button in the native input test dialog, and the status text that follows it: use the
+--     game's default font in the sample box.
 [1568] = "Stock font",
 -- d92ba9ef
+-- Context: Button in the native input test dialog, and the status text that follows it: use
+--     Rotation Master's own font in the sample box. "RM" is short for Rotation Master.
 [1569] = "RM font",
 -- c7b373e3
 [1570] = "Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.",
@@ -4410,6 +7083,8 @@ local E = {
 -- 9ee41d20
 [1575] = "Show input diagnostics for this open Lua editor.",
 -- 6ecc3df6
+-- Context: Small label in the custom condition source pane, in front of the category dropdown that
+--     moves the condition into another category (verb, imperative).
 [1576] = "Move",
 -- 9e3bd238
 [1577] = "Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.",
@@ -4454,8 +7129,12 @@ local E = {
 -- 95a1b634
 [1597] = "Release resources when the condition is removed or replaced.",
 -- 7f816072
+-- Context: Heading for a function's argument list: in the generated function documentation and in
+--     the function source pane.
 [1598] = "Arguments",
 -- 16dcaa92
+-- Context: Heading for a function's return values: in the generated function documentation and in
+--     the function source pane.
 [1599] = "Returns",
 -- b92993e1
 [1600] = "Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.",
@@ -4464,34 +7143,46 @@ local E = {
 -- d24ed6ad
 [1602] = "The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.",
 -- 521fc51f
+-- %s #1: %s #1: the file path of the packaged helper, e.g. "Functions/text.lua"
 [1603] = "Packaged helper from %s.",
 -- 75e942e5
+-- Context: Top-level settings tab listing the user-written Lua functions; also the fallback title
+--     in the function bundle import/export dialog.
 [1604] = "Functions",
 -- 786697a7
 [1605] = "Browse packaged helpers and edit reusable custom Lua functions.",
 -- fc6e1f0d
+-- %s #1: %s #1: why the function cannot be used, a short code, e.g. "disabled-function" (shown as-is)
 [1606] = "Function unavailable: %s",
 -- 2abb9d73
+-- Context: Tooltip of the name box of an argument row in the function source pane (noun phrase).
 [1607] = "Argument name",
 -- 6956b2bc
 [1608] = "Add argument",
 -- b38d87b4
 [1609] = "Add return",
 -- 355cc18a
+-- Context: Heading of the function source pane for a function that ships with Rotation Master
+--     (read-only).
 [1610] = "Built-in function",
 -- 0d1f23b5
+-- Context: Heading of the function source pane for a function written by the user (editable).
 [1611] = "Custom function",
 -- 4dcab896
 [1612] = "Delete this function? Existing dependents will become unavailable.",
 -- 3ac00ae7
 [1613] = "Deletion staged. Apply to remove this function.",
 -- f2dc99c6
+-- Context: Row label in the comparison of two custom functions: the function's list of bindings
+--     (aliases to other helper functions).
 [1614] = "Function bindings",
 -- b19e02e9
 [1615] = "Alias",
 -- e64bbf11
 [1616] = "This alias is already in use.",
 -- c8037103
+-- Context: Word before the name in the function bundle review list: marks the entry as a function
+--     (the alternative is Condition); followed by ": name".
 [1617] = "Function",
 -- a94fd0ee
 [1618] = "Add binding",
@@ -4512,46 +7203,73 @@ local E = {
 -- e3b56b53
 [1626] = "Review the dependency bundle before applying it.",
 -- e0ad4daf
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1627] = "Function bindings (%d)",
 -- 1f10215d
 [1628] = "Aliases are local names in your Lua body. Changing an alias does not rewrite the body.",
 -- f81e71de
+-- Context: Conflict action in the function bundle import: keep the function already present and
+--     discard the imported one (dropdown entry).
 [1629] = "Reuse existing",
 -- c72a3c56
+-- Context: Conflict action in the function bundle import: overwrite the function already present
+--     with the imported one (dropdown entry).
 [1630] = "Replace existing",
 -- 548fcd9a
 [1631] = "Import with new identifier",
 -- 4759498a
+-- Context: Conflict action in the function bundle import: add the imported entry as a new item
+--     (dropdown entry).
 [1632] = "Create",
 -- 41d342bd
+-- Context: Subtitle and heading of the dialog that shows the source code of a bundle entry so it
+--     can be inspected before the import is applied.
 [1633] = "Review source",
 -- 195aae02
+-- Context: Label in the function bundle review: the identifier the entry has in the bundle, shown
+--     as "<label>: <id>".
 [1634] = "Original identifier",
 -- 8bec02bf
+-- Context: Label and edit-box title in the function bundle review: the identifier the entry will
+--     get after import.
 [1635] = "Destination identifier",
 -- 32e8d276
+-- Context: Label of the dropdown in the function-source review dialog that selects which callback
+--     (a part of the code) to view.
 [1636] = "Callback",
 -- 222b67d3
 [1637] = "Include custom function dependencies",
 -- df750ab9
+-- Context: Button in the function bundle import dialog: checks the pasted bundle and lists what
+--     would change, without applying it.
 [1638] = "Review import",
 -- 454d876b
+-- Context: Button in the function bundle review dialog: carries out the import (verb).
 [1639] = "Apply import",
 -- b7143073
+-- Context: Title of the dialog for exporting/importing a bundle of functions together with the
+--     functions they depend on.
 [1640] = "Function dependency bundle",
 -- 44fc47f3
 [1641] = "Review the complete bundle before applying an import. Imported Lua can execute when registered; only apply code you trust.",
 -- b5ca2246
 [1642] = "Review each original name, destination and dependency below. Apply import saves the complete reviewed bundle.",
 -- 0f2dd42f
+-- Context: Label of the dropdown in the function bundle review that chooses what to do when an
+--     identifier already exists (Reuse, Replace, ...).
 [1643] = "Conflict action",
 -- 4e81098c
+-- Context: Label of the edit box in the function bundle review holding the display name the
+--     imported entry will have.
 [1644] = "Imported name",
 -- 8e818b1f
+-- Context: Label in the function bundle review, followed by a list: the existing functions or
+--     conditions that already use the one being replaced.
 [1645] = "Existing dependents",
 -- 75c417a1
 [1646] = "This imported definition is disabled. Its dependents remain unavailable.",
 -- 2643e762
+-- Context: Heading in the function bundle review for the functions the import depends on.
 [1647] = "Required functions",
 -- 103c8bbb
 [1648] = "Paste a bundle above, then review its original names, destinations and required functions.",
@@ -4562,8 +7280,12 @@ local E = {
 -- 9d60841e
 [1651] = "Check",
 -- b64ac05f
+-- Context: Checkbox in the condition test dialog: keeps re-running the test repeatedly while the
+--     dialog stays open (live updating).
 [1652] = "Live",
 -- 324b134f
+-- Context: Title of a help topic: the preview of an effect in the effect editor, and the preview
+--     window's sample in General settings help. A noun.
 [1653] = "Preview",
 -- a31ec5d7
 [1654] = "The preview failed. Use /rm errors for details.",
@@ -4572,8 +7294,12 @@ local E = {
 -- c1ab4306
 [1656] = "Condition check",
 -- 0fa00491
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's fields user interface.
 [1657] = "Fields UI preview",
 -- 367bba74
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's help page.
 [1658] = "Help preview",
 -- 59e490f3
 [1659] = "Edit detached test values below. Check validates them before evaluating. Live is opt-in; test values are saved separately from the condition source.",
@@ -4586,16 +7312,21 @@ local E = {
 -- 6a255986
 [1663] = "Skipped: invalid test values",
 -- 4607aa3d
+-- %s #1: %s #1: the validation result, one of "Passed", "Failed" or "Unavailable" (translated), e.g. "Passed"
 [1664] = "Validation: %s",
 -- 436fe71b
+-- Context: Result word in the condition test dialog: the test passed.
 [1665] = "Passed",
 -- 4c852a7e
+-- %s #1: %s #1: the result of the test evaluation, a short phrase such as "True", "False" or "Skipped: invalid test values" (translated), e.g. "True"
 [1666] = "Evaluation: %s",
 -- 55a7b6a1
 [1667] = "Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback.",
 -- 106d8f1b
 [1668] = "Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live.",
 -- 5d331ffe
+-- Context: Title of a section in the custom condition editor's help: the page that documents public
+--     helper functions (noun phrase).
 [1669] = "Functions reference",
 -- 64334745
 [1670] = "The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.",
@@ -4606,10 +7337,16 @@ local E = {
 -- 4087dcf1
 [1673] = "Complete the highlighted test inputs before checking.",
 -- 532eaabd
+-- Context: Button in the custom condition editor, and the dialog subtitle: runs the condition once
+--     with sample input (verb).
 [1674] = "Test",
 -- e031e0df
+-- Context: Button and tooltip in the Lua workbench query panel: runs the entered code once with the
+--     test arguments (verb phrase).
 [1675] = "Run test",
 -- 312acdf1
+-- Context: Title of the dialog that tries a custom condition with sample values (verb phrase used
+--     as a title).
 [1676] = "Test condition",
 -- 34fb96f5
 [1677] = "Debugger output",
@@ -4622,20 +7359,28 @@ local E = {
 -- fba588f1
 [1681] = "Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.",
 -- deba1c35
+-- Context: Checkbox in the argument/return type editor of the function source pane: the value may
+--     also be nil (empty).
 [1682] = "Nullable",
 -- fbf338e4
 [1683] = "Add return value",
 -- c75ed23e
 [1684] = "Lua returns multiple values in order. Each row documents one result.",
 -- f968686c
+-- Context: Tooltip of the button on the code editor corner in the function source pane: enlarges
+--     the editor to fill the pane (verb phrase).
 [1685] = "Expand code editor",
 -- cc81db61
+-- Context: Tooltip of the same button after the editor is enlarged: shrinks it back to its normal
+--     size (verb phrase).
 [1686] = "Restore code editor",
 -- cb050073
 [1687] = "Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name.",
 -- cfaec007
 [1688] = "Local name in code",
 -- d076565e
+-- Context: Column caption in the function bindings table: the existing function the alias points
+--     to.
 [1689] = "Source helper",
 -- b49f05b5
 [1690] = "Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.",
@@ -4644,6 +7389,7 @@ local E = {
 -- f07f87d9
 [1692] = "Delete this announcement?",
 -- da985348
+-- %s #1: %s #1: the Lua type name of the symbol, e.g. "number" or "string"
 [1693] = "Type: %s",
 -- 78a0b485
 [1694] = "Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client.",
@@ -4660,6 +7406,9 @@ local E = {
 -- 902c5c44
 [1700] = "Rotation Master built-in function",
 -- 0443c4a6
+-- Context: Heading in the Lua editor's hover text for a symbol that is a plain value provided by
+--     Rotation Master (not a function); the alternatives are 'Rotation Master custom function' and
+--     'Rotation Master built-in function'.
 [1701] = "Rotation Master value",
 -- 1a845fe0
 [1702] = "Global function (documentation unavailable on this client)",
@@ -4670,6 +7419,8 @@ local E = {
 -- cb214676
 [1705] = "Functions are shared across profiles after Apply. Call custom utilities as functions.name(...); accepting completion adds the dependency binding. Typed calls need a binding under Function bindings. Built In examples show dot or colon explicitly.",
 -- d03262ba
+-- Context: Checkbox in Integrations settings (Lua editor section): shows line numbers in the Lua
+--     code editors; also a help topic title.
 [1706] = "Show line numbers",
 -- f12fff00
 [1707] = "Line-number visibility applies to every condition and function code editor.",
@@ -4678,6 +7429,8 @@ local E = {
 -- 38416c88
 [1709] = "Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
 -- 50c3cb6e
+-- Context: First entry of the namespace filter dropdown on the Functions page: show functions from
+--     every namespace.
 [1710] = "All namespaces",
 -- 5605815a
 [1711] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
@@ -4686,16 +7439,23 @@ local E = {
 -- 5226404c
 [1713] = "Existing API",
 -- e572edc2
+-- Context: Column caption in the function bindings table and tooltip of the alias field: the name a
+--     binding is called inside the Lua code.
 [1714] = "Name in code",
 -- c4e4e7ab
+-- Context: Label of the namespace box in the function source pane and a help section title: the
+--     dotted group name under which a function is listed.
 [1715] = "Namespace",
 -- c6d86222
 [1716] = "Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply.",
 -- 76209725
 [1717] = "Private utility-function namespace. It contains only explicit bindings for this callback.",
 -- 481da3a7
+-- Context: Row title and add-button text in the function source pane: one function argument (noun).
+--     The same place has "Return".
 [1718] = "Argument",
 -- e0836fce
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1719] = "Bindings (%d)",
 -- 6ecb5a70
 [1720] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
@@ -4704,12 +7464,16 @@ local E = {
 -- 2199cecc
 [1722] = "Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.",
 -- 6b0143d0
+-- Context: Row title and add-button text in the function source pane: one function return value
+--     (noun). The same place has "Argument".
 [1723] = "Return",
 -- 2584fdfb
 [1724] = "Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?",
 -- 79fbb27b
 [1725] = "Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?",
 -- 2266dd0b
+-- Context: Heading of a section in the argument editor help: explains the controls on an argument's
+--     card.
 [1726] = "Card controls",
 -- 1f03f52f
 [1727] = "Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.",
@@ -4726,18 +7490,27 @@ local E = {
 -- 438e9a47
 [1733] = "Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.",
 -- 42e8bcf1
+-- Context: Condition category in the icon picker's category list: debuff-related icons (plural
+--     noun).
 [1734] = "Debuffs",
 -- e89b30aa
+-- Context: Condition category in the icon picker's category list: resources such as mana and rage.
 [1735] = "Resources",
 -- 8f0d1b30
+-- Context: Condition category in the icon picker's category list: pet-related icons.
 [1736] = "Pet",
 -- 7c400199
+-- Context: Condition category in the icon picker's category list: logical operators (and/or/not).
 [1737] = "Logic",
 -- 9e471951
+-- Context: Condition category in the icon picker's category list: environment (weather, zone ...).
 [1738] = "Environment",
 -- 33b93476
+-- Context: Condition category in the icon picker's category list: time-related icons.
 [1739] = "Time",
 -- 66f9cfa2
+-- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
+--     Also an icon name in the icon picker.
 [1740] = "Spell Auto-Repeat Active",
 -- a97bc1c7
 [1791] = "Apply changes to this selected item list. Other settings keep their own Apply action.",
@@ -4746,58 +7519,88 @@ local E = {
 -- 550c388b
 [1793] = "The item list changed elsewhere. Close and reopen it before applying.",
 -- 67559dc7
+-- %s #1: %s #1: the internal key of the settings page, e.g. "profiles" (shown as-is)
 [1794] = "Native settings page unavailable: %s",
 -- 0f6314b0
 [1795] = "The native rotation editor is unavailable.",
 -- 4850b174
+-- Context: Checkbox on a field card in the schema editor (and its help title): the field must be
+--     filled in before the condition can run.
 [1796] = "Required",
 -- 9bcec068
 [1797] = "Required field references need review. Apply keeps the displayed root requirements.",
 -- c463dfb4
 [1798] = "Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.",
 -- 8b8cd45b
+-- Context: Button in the condition editor: copies the plain-language description of the condition
+--     to the clipboard (verb phrase).
 [1799] = "Copy condition description",
 -- b5739be0
 [1800] = "This condition exceeds the supported editor limits.",
 -- df58aeb6
+-- Context: Effect type in the effect editor dropdown and Effects help: a glow in the style of the
+--     game's spell-proc highlight.
 [1801] = "Proc Glow",
 -- dce1c179
+-- Context: Help topic title and setting for the proc glow effect: how long one loop of the glow
+--     animation lasts.
 [1802] = "Loop duration",
 -- a4f0db33
+-- Context: Checkbox in the effect editor for the proc glow effect (and its help title): plays the
+--     start burst animation when the glow begins.
 [1803] = "Start burst",
 -- b89fd7fd
 [1804] = "Proc Glow is unavailable on this client; Pixel glow will be used.",
 -- 34ae0a26
+-- %s #1: %s #1: why the data cannot be used, a short code or reason, e.g. "unsupported-version" (shown as-is)
 [1805] = "Rotation data requires recovery: %s",
 -- 8b4e37b9
 [1806] = "Copies belong to your Class unless This character is selected. Replacement keeps its original owner.",
 -- 0faa3bd8
 [1807] = "Archive report truncated; saved data is unchanged.",
 -- 414c7fd3
+-- Context: Button in the banner that appears when older rotations lack an owner, and title of a
+--     help section/window: opens the unassigned rotation archive so they can be adopted.
 [1808] = "Recover unassigned rotations",
 -- 291f821c
+-- Context: Subtitle of the unassigned rotation recovery window: tells the user these rotations need
+--     an owner (class or character) before they can be used.
 [1809] = "Ownership required",
 -- cd16196a
 [1810] = "These records have no assigned owner. Choose Class or This character explicitly. No ownership is inferred from names, spells or profile history.",
 -- ce112847
+-- %s #1: %s #1: why the recovery list cannot be shown, a short code, e.g. "rotation-store-unavailable" (shown as-is)
 [1811] = "Recovery unavailable: %s",
 -- af7356f1
+-- Context: Title of the report window with the contents of the unassigned rotation archive.
 [1812] = "Unassigned rotation archive",
 -- d17af82d
+-- Context: Label in the recover window: the archive that belongs to a single character (see
+--     "Profile archive").
 [1813] = "Character archive",
 -- 8ce8b3ed
+-- Context: Label in the recover window: the archive that belongs to the whole profile (see
+--     "Character archive").
 [1814] = "Profile archive",
 -- 4064b908
 [1815] = "No unassigned rotations.",
 -- 46bb2f53
+-- %s #1: %s #1: the kind of archive, "Character archive" or "Profile archive" (translated), e.g. "Profile archive"
+-- %s #2: %s #2: the specialization number the record belongs to, e.g. 64
+-- %s #3: %s #3: the record's identifier, e.g. "a1b2c3d4"
 [1816] = "Archive: %s; specialization: %s; identifier: %s",
 -- a7232fd4
+-- Context: Button in the recover window: exports the archive's contents as text (verb phrase).
 [1817] = "Export archive",
 -- b650b12a
+-- Context: Button in the recover window: assigns the selected unowned rotation to a class or
+--     character (verb phrase).
 [1818] = "Adopt rotation",
 -- 2b1bc965
+-- %s #1: %s #1: why the record cannot be adopted, a short code, e.g. "missing-archival-body" (shown as-is)
 [1819] = "Could not adopt this record: %s",
 -- 041c7071
+-- %s #1: %s #1: the rotation name the player typed, e.g. "Frost AoE"
 [1820] = "More than one rotation is named %s. Select its Class or This character entry in the rotation browser.",
 -- 71ddae9f
 [1821] = "The fallback rotation is unavailable. Open Rotations to complete or recover it.",
@@ -4812,6 +7615,7 @@ local E = {
 -- d5cade7e
 [1826] = "Stock",
 -- 9286002a
+-- Context: Name of the addon "Questie" shown in the Integrations settings list; stays unchanged.
 [1827] = "Questie",
 -- 6dff3b3c
 [1828] = "Waiting for Questie.",
@@ -4826,10 +7630,16 @@ local E = {
 -- a414f778
 [1833] = "Questie adapter unavailable.",
 -- a0b302b0
+-- %s #1: %s #1: the Questie version, e.g. "9.7.1"
+-- %s #2: %s #2: how well it is tested, "source-tested" or "unverified" (translated), e.g. "unverified"
 [1834] = "Questie version: %s (%s)",
 -- 97b7e2db
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: the
+--     version has not been checked against Rotation Master's tests (lowercase).
 [1835] = "unverified",
 -- 0d6aeafd
+-- %s #1: %s #1: the game client family, e.g. "Classic Era"
+-- %s #2: %s #2: the compatibility status, "declared; unverified" or "unsupported" (translated), e.g. "unsupported"
 [1836] = "Client family: %s (%s)",
 -- ff3a37e2
 [1837] = "declared; unverified",
@@ -4840,60 +7650,109 @@ local E = {
 -- 0dfbd5e8
 [1840] = "Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used.",
 -- f0486ac1
+-- Context: Button in the Questie integration part of Integrations settings: checks again whether
+--     Questie is loaded and connected (verb phrase).
 [1841] = "Refresh Questie status",
 -- ee7e05e5
+-- Context: Heading above the list of supported addons in Integrations settings.
 [1842] = "Supported addons",
 -- 2fc99337
 [1843] = "Loaded; integration not connected.",
 -- 5b205b7f
+-- Context: Addon name followed by its version in the Integrations list; first %s is the addon name,
+--     second %s its version.
+-- %s #1: %s #1: the name of the add-on integration, e.g. "Questie"
+-- %s #2: %s #2: its version, e.g. "9.7.1"
 [1844] = "%s (version %s)",
 -- bad4af6a
 [1845] = "Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available.",
 -- 11b28c68
+-- Context: Name of the addon "ExtendedCharacterStats" shown in the Integrations settings list;
+--     stays unchanged.
 [1846] = "ExtendedCharacterStats",
 -- cbc21d63
+-- Context: Name of the addon "LuaWorkbench" (an external Lua editor) shown in the Integrations
+--     settings list; stays unchanged.
 [1847] = "LuaWorkbench",
 -- 696b160a
+-- Context: Name of the action bar addon "ElvUI" shown in the Integrations settings list; stays
+--     unchanged.
 [1848] = "ElvUI",
 -- fc95169b
+-- Context: Name of the action bar addon "Bartender4" shown in the Integrations settings list; stays
+--     unchanged.
 [1849] = "Bartender4",
 -- 73198132
+-- Context: Name of the action bar addon "ButtonForge" shown in the Integrations settings list;
+--     stays unchanged.
 [1850] = "ButtonForge",
 -- 42fa5fc0
+-- Context: Name of the addon "LUI" (interface suite with action bars) shown in the Integrations
+--     settings list; stays unchanged.
 [1851] = "LUI",
 -- efc3965e
+-- Context: Name of the action bar addon "Dominos" shown in the Integrations settings list; stays
+--     unchanged.
 [1852] = "Dominos",
 -- 14548eff
+-- Context: Name of the addon "AzeriteUI" (interface suite with action bars) shown in the
+--     Integrations settings list; stays unchanged.
 [1853] = "AzeriteUI",
 -- 7c811de6
+-- Context: Name of the addon "FarmingBar" shown in the Integrations settings list; stays unchanged.
 [1854] = "FarmingBar",
 -- e866b4e8
+-- Context: Name of the addon "TotemTimers" shown in the Integrations settings list; stays
+--     unchanged.
 [1855] = "TotemTimers",
 -- 06c879f3
+-- Context: Name of the addon "AzeriteUI6" shown in the Integrations settings list; stays unchanged.
 [1856] = "AzeriteUI6",
 -- 5bd55adb
+-- Context: Name of the boss-mod addon "BigWigs" shown in the Integrations settings list; stays
+--     unchanged.
 [1857] = "BigWigs",
 -- 1c91d8be
+-- Context: Group heading in Integrations settings for boss-mod addons (BigWigs, DBM) that supply
+--     encounter timers; also a help topic title.
 [1858] = "Boss mods",
 -- c5eddceb
+-- Context: Group heading in Integrations settings for addons that show panels at the top of the
+--     screen (Titan Panel); also a help topic title.
 [1859] = "Top panels",
 -- 22965568
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded and connected
+--     to Rotation Master.
 [1860] = "Connected",
 -- 8777e3a9
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded but its
+--     version cannot be used with Rotation Master.
 [1861] = "Incompatible",
 -- 56178c4b
 [1862] = "Loaded; connection not confirmed.",
 -- 3c586673
+-- Context: Button text in General settings that starts a 30-second spell cast recording; also a
+--     help topic title.
 [1863] = "Capture casts (30s)",
 -- b90c2cce
+-- Context: Label of the button/report in General settings that shows the finished cast recording;
+--     also a help topic title.
 [1864] = "Cast report",
 -- 548d9c5c
+-- Context: Button text in General settings, shown while the CPU recording is running: stops it
+--     (verb phrase).
 [1865] = "Stop CPU capture",
 -- 5ba35474
+-- Context: Button text in General settings, shown while the runtime recording is running: stops it
+--     (verb phrase).
 [1866] = "Stop runtime capture",
 -- 0f122dcf
+-- Context: Button text in General settings, shown while the cast recording is running: stops it
+--     (verb phrase).
 [1867] = "Stop cast capture",
 -- ba691ba0
+-- Context: Status word in the performance and analytics reports where a value could not be read
+--     (lowercase, fits in running text).
 [1868] = "unavailable",
 -- a43f31c1
 [1869] = "Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it.",
@@ -4904,40 +7763,53 @@ local E = {
 -- 78a6a8fe
 [1872] = "Built in",
 -- f85577f0
+-- Context: Column heading in the Integrations table: what the integration does and its state.
 [1873] = "Description / status",
 -- d9494bd4
 [1874] = "Editor options",
 -- b9c3bfb3
+-- Context: Column heading in the Integrations table over the checkbox or button that turns an
+--     integration on or lets the user choose it.
 [1875] = "Enable / Select",
 -- 1ce31af1
 [1876] = "Lua editors",
 -- 4207e3fc
+-- Context: Option in the Lua editor mode choice: no special editor, just the plain text box.
 [1877] = "None (plain editor)",
 -- c935b9fd
 [1878] = "Shared editor settings.",
 -- bea3f386
+-- Context: Heading above the Lua editor options in Integrations settings.
 [1879] = "Editor settings",
 -- 332b0b0a
 [1880] = "Enable built-in syntax highlighting",
 -- a1aa075c
+-- Context: Checkbox in Integrations settings (Lua editor section): turn on color highlighting of
+--     Lua syntax; also a help topic title.
 [1881] = "Syntax highlighting",
 -- dc3bae06
 [1882] = "Addon release pages",
 -- 365765f4
 [1883] = "Publisher listings describe release availability; integration behavior on this client may be unverified.",
 -- 839b59a4
+-- %s #1: %s #1: what is copied, e.g. "Rotation"
 [1884] = "Copy %s",
 -- 6377056a
 [1885] = "Release links checked: 2026-10-20.",
 -- 06a1145d
 [1886] = "CurseForge — LUI Classic",
 -- 26330782
+-- %d #1: %d #1: the number of the link, counting from 1, e.g. 2
 [1887] = "Copy link %d",
 -- 382bc741
+-- Context: Group heading in Integrations settings for the options that affect how the preview
+--     window looks (Masque skins).
 [1888] = "Preview appearance",
 -- 71e7edd7
 [1889] = "Skin preview buttons with Masque",
 -- 0e769600
+-- Context: Heading in General settings above the three sliders that set how many seconds of spell,
+--     combat and damage history are remembered.
 [1890] = "History",
 -- 46811e29
 [1891] = "Bypass observation cache",
@@ -4946,64 +7818,101 @@ local E = {
 -- 6b6e2380
 [1893] = "Bypass observation cache (pending)",
 -- 1fc91201
+-- Context: Label of the Masque skin dropdown in General settings for the preview buttons; also a
+--     help topic title.
 [1894] = "Skin",
 -- f24d3294
+-- Context: Name of the built-in default button skin choice in the Masque skin dropdown (no Masque
+--     skin applied).
 [1895] = "Blizzard Classic",
 -- a41fff13
 [1896] = "Preview skin is unavailable.",
 -- 8f31d7c7
+-- Context: Tooltip of the example icon shown in the preview window.
 [1897] = "Sample icon",
 -- a87bca24
 [1898] = "Saved manual choice is unavailable in the current context.",
 -- f51aa35f
+-- Context: Tooltip of the button in an announcement output that opens the editor for the conditions
+--     deciding when it is announced (verb phrase).
 [1899] = "Edit announcement conditions",
 -- 90b95311
+-- Context: Title of the announcement conditions editor window and a help topic title; noun phrase.
 [1900] = "Announcement conditions",
 -- b291861f
+-- Context: Unit choice in the condition editor when editing announcements: the person the spell is
+--     cast on.
 [1901] = "Spell recipient",
 -- 6edf74a9
 [1902] = "{unit} {{!is|is not}} in a raid",
 -- 60f5f5ce
+-- Context: Unit choice in the condition editor when editing announcement conditions: the target
+--     named in the announcement; also a label in condition summaries.
 [1903] = "Announcement target",
 -- fe664929
 [1904] = "Is Dead or Ghost",
 -- b2bdc8d6
+-- Context: Condition type title: the unit is friendly. Also an icon name in the icon picker.
 [1905] = "Is Friendly",
 -- 12062b75
 [1906] = "{unit} {{!is dead or a ghost|is alive}}",
 -- c1454135
+-- Context: Fallback title of the help window opened without a topic.
 [1907] = "Workbench Help",
 -- 3db65f8c
+-- Context: Help section title in the workbench window help: how to move around the window.
 [1908] = "Navigation",
 -- 293d404a
+-- Context: Help section title in the profile import/export dialog: where the imported profile will
+--     be placed.
 [1909] = "Destination",
 -- e5f16b07
+-- Context: Event text substituted for {{event}} in macro-driven announcements: the announcement was
+--     triggered by a macro.
 [1910] = "Via Macro",
 -- 79c3596b
+-- Context: Announcement type dropdown entry: the announcement is triggered from a macro or script
+--     call, not by casting; also a help topic title.
 [1911] = "Via Script/Macro",
 -- 73210659
 [1912] = "Use a unique Via Script/Macro identifier.",
 -- 41714d2c
+-- Context: Announcement channel dropdown entry: sends the message as a whisper to a player.
 [1913] = "Whisper",
 -- 02e363ed
 [1914] = "Use supplied macro target ({{target}})",
 -- 6ce2aa2e
+-- %s #1: %s #1: the macro command that calls the announcement, e.g. "/run RM_Annouce("FOO","mouseover",nil)"
 [1915] = "Macro call: %s",
 -- 5a435552
+-- Context: Checkbox in the custom condition source pane (and its help title): offers this condition
+--     type when editing announcement conditions.
 [1916] = "Announcement Condition",
 -- 028cd1c8
+-- Context: Entry in the Conditions settings category filter that lists conditions available for
+--     announcements.
 [1917] = "Announcement",
 -- d763075f
 [1918] = "Show this condition in the announcement condition editor.",
 -- e7ce9976
+-- Context: Heading for the list of outputs of an announcement (each output sends one message); also
+--     a help topic title and a comparison row.
 [1919] = "Outputs",
 -- 1a3f4334
+-- Context: Name of one announcement output in the list, numbered; %d is the position (1, 2, ...).
+-- %d #1: %d #1: the number of the announcement output, counting from 1, e.g. 2
 [1920] = "Output %d",
 -- cafb5358
+-- Context: Tooltip of the enable checkbox of an announcement output: tells whether the output is on
+--     or off.
 [1921] = "Output state",
 -- 1674ce8b
+-- Context: Button in the announcement editor: adds another output message to the announcement (verb
+--     phrase).
 [1922] = "Add output",
 -- ce4683e7
+-- Context: Announcement output type dropdown entry: send to a numbered chat channel; also a help
+--     topic title and a comparison row.
 [1923] = "Channel",
 -- 32c16791
 [1924] = "Complete this output or choose a destination available for this action type.",
@@ -5014,8 +7923,10 @@ local E = {
 -- 19489a96
 [1927] = "{unit} {{!are dead or a ghost|are alive}}",
 -- bb52ff6b
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1928] = "%s {{!are|are not}} an enemy",
 -- 5a04bf0d
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1929] = "%s {{!are|are not}} attackable",
 -- a551fec4
 [1930] = "{unit} {{!are|are not}} in a raid",
@@ -5028,42 +7939,68 @@ local E = {
 -- 64f6064c
 [1934] = "Group membership option is invalid.",
 -- e18851d3
+-- Context: Part of a condition description: appended after a dash and followed by the subject, e.g.
+--     "For Fireball"; %s is the subject name.
+-- %s #1: %s #1: the unit the condition applies to, e.g. "your target"
 [1935] = "For %s",
 -- 610c1d8d
+-- Context: Label in a condition description, followed by a list of saved field values.
 [1936] = "Saved settings",
 -- ddbcf067
+-- Context: Entry in the General settings log level dropdown: no messages at all.
 [2507] = "Silent",
 -- 35eb2a7f
+-- Context: Condition type title: equipped set pieces count. Also an icon name in the icon picker.
 [2508] = "Set Pieces",
 -- 64cd5df4
+-- Context: Condition type title: temporary weapon enchants (poison, imbue). Also an icon name in
+--     the icon picker.
 [2509] = "Weapon Imbue",
 -- 754e76f8
+-- Context: Condition type title: the spell currently recommended by Blizzard's Assisted Combat.
+--     Also an icon name in the icon picker.
 [2510] = "Assisted Combat Suggestion",
 -- 3fa562a1
+-- Context: Step description of a rotation step that follows the game's built-in rotation helper
+--     suggestion; also shown in the rotation help.
 [2511] = "Blizzard's suggestion",
 -- 90dc6c00
 [2512] = "Recommends the spell Blizzard's Assisted Combat suggests",
 -- 423a9284
 [2513] = "Assisted Combat Rotation Spell",
 -- 70a4e33d
+-- Context: Condition type title: whether Blizzard's Assisted Combat is available. Also an icon name
+--     in the icon picker.
 [2514] = "Assisted Combat Available",
 -- 4de7b468
+-- Context: General settings: label of the dropdown for how the suggested spell of Blizzard's
+--     Assisted Combat is highlighted; also a help topic title.
 [2515] = "Blizzard's suggestion highlight",
 -- 019a5647
+-- Context: Choice in that dropdown: only Rotation Master's own glow is shown.
 [2516] = "Rotation Master's glow",
 -- e24abd9f
+-- Context: Choice in that dropdown: only the game's native highlight is shown.
 [2517] = "Blizzard's Assisted Highlight",
 -- b6c1d862
+-- Context: Choice in that dropdown: both highlights are shown.
 [2518] = "Both",
 -- cd3a1b13
 [2519] = "Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off.",
 -- 9aab05d6
+-- Context: Condition type title: whether a given Season of Discovery rune is engraved. Also an icon
+--     name in the icon picker.
 [2520] = "Engraved Rune",
 -- ea43639d
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [2521] = "ranks in %s",
 -- 1dd73b64
+-- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
+--     from.
 [2522] = "Show talent tree",
 -- 3e590ed8
+-- Context: Heading label in the talent window and a source name in the talent condition editor for
+--     the hero talent trees.
 [2523] = "Hero Talents",
 -- 8107299a
 [2524] = "The talent tree cannot be shown during combat.",
@@ -5074,8 +8011,10 @@ local E = {
 -- 80ea0eae
 [2527] = "Click a talent to choose it for this condition.",
 -- 6f1df5fc
+-- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
 [2528] = "Selected: %s",
 -- 7a5e089f
+-- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [2529] = "Ranks: %d",
 -- 26722619
 [2530] = "Choose one of the talents on this node.",
@@ -5086,58 +8025,92 @@ local E = {
 -- 8a667e66
 [2533] = "Close the build shown in your own talent window first.",
 -- f831a06b
+-- Context: Specialization name (Warrior, first tree). Used in the specialization condition and
+--     rotation scope; follows the game's naming.
 [2534] = "Arms",
 -- 8d6b26d9
+-- Context: Specialization name (Warrior, second tree).
 [2535] = "Fury",
 -- 0e97ad02
+-- Context: Specialization name (Warrior or Paladin tank tree).
 [2536] = "Protection",
 -- 1d79fa22
+-- Context: Specialization name (Paladin damage tree).
 [2537] = "Retribution",
 -- 5d6f7884
+-- Context: Specialization name (Hunter, first tree).
 [2538] = "Beast Mastery",
 -- 03f000fc
+-- Context: Specialization name (Hunter, second tree).
 [2539] = "Marksmanship",
 -- 8302496d
+-- Context: Specialization name (Hunter, third tree).
 [2540] = "Survival",
 -- 727eeac8
+-- Context: Specialization name (Rogue, first tree).
 [2541] = "Assassination",
 -- fca36d62
+-- Context: Specialization name (Rogue, third tree).
 [2542] = "Subtlety",
 -- a1b14db9
+-- Context: Specialization name (Priest, first tree).
 [2543] = "Discipline",
 -- b12b36cf
+-- Context: Specialization name (Shaman, second tree).
 [2544] = "Enhancement",
 -- 6a3c6c77
+-- Context: Specialization name (Shaman or Druid healer tree).
 [2545] = "Restoration",
 -- ed64274f
+-- Context: Specialization name (Warlock, first tree).
 [2546] = "Affliction",
 -- c0e4afa6
+-- Context: Specialization name (Warlock, second tree).
 [2547] = "Demonology",
 -- e848f2c5
+-- Context: Specialization name (Warlock, third tree).
 [2548] = "Destruction",
 -- d05e07b7
+-- Context: Specialization name (Druid, first tree).
 [2549] = "Balance",
 -- 1f397413
+-- Context: Specialization name for a character of level 1 to 9 that has not chosen a specialization
+--     yet.
 [2550] = "Initial",
 -- 7214aeb1
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     specialization.
 [2551] = "Specialization",
 -- 20356d41
+-- Context: Fallback text for a specialization that has no known name; %d is the numeric
+--     specialization ID.
+-- %d #1: %d #1: the specialization number, used when the game gives no name, e.g. 64
 [2552] = "specialization %d",
 -- d22bb30c
+-- Context: Condition type title and dropdown label in the condition editor: the kind of weapon
+--     equipped.
 [2553] = "Weapon Type",
 -- ed3897f1
+-- Context: Equipment slot option in the equipped-item condition: the main-hand weapon slot.
 [2554] = "Main Hand",
 -- 3f0b51a2
+-- Context: Equipment slot option in the equipped-item condition and a checkbox label in the weapon
+--     condition: the ranged weapon slot.
 [2555] = "Ranged",
 -- 9e9c1c72
+-- Context: Category option in the equipped-item condition: the slot is empty.
 [2556] = "Nothing equipped",
 -- d1c5d83c
+-- Context: Category option in the equipped-item condition: any weapon.
 [2557] = "Any weapon",
 -- 723e86de
+-- Context: Category option in the equipped-item condition: a one-handed weapon.
 [2558] = "One-handed weapon",
 -- 432f6b17
+-- Context: Category option in the equipped-item condition: a two-handed weapon.
 [2559] = "Two-handed weapon",
 -- e55ba453
+-- Context: Category option in the equipped-item condition: a ranged weapon.
 [2560] = "Ranged weapon",
 -- ef734bb6
 [2561] = "Held in off hand",
@@ -5146,10 +8119,16 @@ local E = {
 -- 47e97838
 [2563] = "1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it.",
 -- cc735c50
+-- %d #1: %d #1: how many suggested spells are missing from the action bars, e.g. 3
 [2564] = "%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them.",
 -- 29258402
+-- Context: End of a spell list in a tooltip: %s is the first few spell names (comma-separated) not
+--     on the action bars, %d is how many more are not shown, giving 'A, B, C, and 4 more'.
+-- %s #1: %s #1: the names of the first missing spells, separated by commas, e.g. "Fireball, Frostbolt, Ice Lance"
+-- %d #2: %d #2: how many more are not listed, e.g. 4
 [2565] = "%s, and %d more",
 -- f657f763
+-- %s #1: %s #1: the names of the spells that are not on the action bars, separated by commas, e.g. "Fireball, Frostbolt"
 [2566] = "Not on your action bars: %s.",
 -- d60bbc94
 [2567] = "Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail).",
@@ -5158,22 +8137,33 @@ local E = {
 -- 9ec46751
 [2569] = "Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them.",
 -- c6fa3ead
+-- %s #1: %s #1: the skipped steps, separated by semicolons, each with its name and place, e.g. "Fireball (step 3); Frostbolt (cooldown)"
 [2570] = "Skipped, not on your action bars (they cannot be highlighted): %s.",
 -- 435eac3e
+-- Context: Location in a report line about an unbound rotation step (a step whose spell is not on
+--     the action bars): %s is the step's position number, e.g. 'step 3'.
+-- %s #1: %s #1: the number of the step in the rotation, counting from 1 (a "?" when unknown), e.g. 3
 [2571] = "step %s",
 -- 09182dd8
+-- Context: Location in a report line about an unbound rotation step: the step sits in the cooldowns
+--     section rather than the numbered list (lowercase).
 [2572] = "cooldown",
 -- c9e1a473
+-- Context: Headline on a rotation card when the condition is true right now.
 [2573] = "Currently Matches",
 -- 6fafaf30
 [2574] = "Does Not Currently Match",
 -- f70be4d8
+-- %s #1: %s #1: why the live status cannot be read, a short reason (translated), e.g. "unreadable right now"
 [2575] = "Unavailable: %s",
 -- a463bcd3
+-- Context: Reason shown in a card headline or tooltip when a condition's value cannot be read in
+--     the current situation (lowercase).
 [2576] = "unreadable right now",
 -- 8a0dcf23
 [2577] = "the condition could not be evaluated",
 -- 01e62ea3
+-- %d #1: %d #1: how many seconds ago the condition was last checked, e.g. 2
 [2578] = "Checked %d seconds ago.",
 -- 37822fb8
 [2579] = "Rotation Master is advising this step now.",
@@ -5182,46 +8172,79 @@ local E = {
 -- 42ee3bdd
 [2581] = "This rotation is advising now.",
 -- 81f39eb5
+-- Context: Option in the player state condition: the player is on a mount.
 [2582] = "Mounted",
 -- 54230802
+-- Context: Option in the player state condition: the player is swimming.
 [2583] = "Swimming",
 -- 6192f184
+-- Context: Option in the player state condition: the player is falling.
 [2584] = "Falling",
 -- 75a4c2fe
+-- Context: Option in the player state condition: the player is flying.
 [2585] = "Flying",
 -- 4ae9e2a1
 [2586] = "In a Rested Area",
 -- 5cc337a5
+-- Context: Condition type title: a boss fight is in progress. Also an icon name in the icon picker.
 [2587] = "Boss Encounter",
 -- 87a6b205
+-- Context: Label of the dropdown in the instance condition: the difficulty of the dungeon or raid.
 [2588] = "Instance Difficulty",
 -- fce1b615
+-- Context: Condition type title: the level of the Mythic+ keystone of the current dungeon. Also the
+--     title of its help page.
 [2589] = "Mythic+ Keystone Level",
 -- 26566745
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     hero talent tree. Also an icon name in the icon picker.
 [2590] = "Hero Talent Tree",
 -- 6115798c
+-- Context: Condition type title: the spell currently has the proc glow on its action button. Also
+--     an icon name in the icon picker.
 [2591] = "Spell Proc Glow",
 -- c563bae9
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the first
+--     trinket slot instead of a named item.
 [2592] = "Trinket 1",
 -- 4595f2ac
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the second
+--     trinket slot instead of a named item.
 [2593] = "Trinket 2",
 -- a91c3e5e
+-- Context: Condition type title and dropdown label in the condition editor: a Hunter pet's mood.
+--     Also an icon name in the icon picker.
 [2594] = "Pet Happiness",
 -- 37108f8a
+-- Context: Option in the Pet Happiness dropdown: the lowest of the three moods (the pet is
+--     unhappy).
 [2595] = "Unhappy",
 -- 47bd2907
+-- Context: Option in the Pet Happiness dropdown: the middle mood (the pet is content, neither happy
+--     nor unhappy).
 [2596] = "Content",
 -- 725accb5
+-- Context: Option in the Pet Happiness dropdown: the highest mood (the pet is happy).
 [2597] = "Happy",
 -- b575a12f
+-- Context: Condition type title: the Brewmaster's Stagger pool. Also the label of its comparison
+--     and its help page title.
 [2598] = "Stagger",
 -- fbfcff79
+-- Context: Label of the dropdown in the Eclipse condition: which Eclipse direction the bar is
+--     heading toward.
 [2599] = "Eclipse Direction",
 -- cc23ba6c
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Solar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Solar Eclipse'.
 [2600] = "a Solar Eclipse",
 -- 1dc3e526
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Lunar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Lunar Eclipse'.
 [2601] = "a Lunar Eclipse",
 -- f2fcd3f7
+-- Context: Label of the comparison in the Eclipse condition: the Eclipse bar's energy value; the
+--     other measure is Direction.
 [2602] = "Energy",
 -- d8877585
 [2603] = "only Retail has this",
@@ -5236,24 +8259,44 @@ local E = {
 -- 1eb43a88
 [2608] = "/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons.",
 -- aca68a8a
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2609] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations.",
 -- a64b8edb
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2610] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them.",
 -- 48845bff
+-- Context: Button in the banner about unassigned rotations: closes the banner without opening the
+--     archive (verb).
 [2611] = "Dismiss",
 -- e11a6591
+-- Context: Button in the recovery window that adopts every listed rotation at once: %d is how many
+--     rotations, %s is the destination (a class name or 'This character').
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2612] = "Adopt all %d for %s",
 -- c727dc7d
+-- %d #1: %d #1: how many rotations of this specialization will be adopted, e.g. 3
+-- %d #2: %d #2: the specialization number, e.g. 64
+-- %s #3: %s #3: who will own them, e.g. "your Mage class"
 [2613] = "Adopt all %d from specialization %d for %s",
 -- dcf0a82d
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2614] = "Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive.",
 -- bf328c9e
+-- %d #1: %d #1: how many rotations were adopted, e.g. 4
+-- %d #2: %d #2: how many were attempted, e.g. 5
+-- %s #3: %s #3: the names of those that were not adopted, separated by commas, e.g. "Old Fire"
 [2615] = "Adopted %d of %d. These stay in the archive: %s",
 -- 23bfc44f
+-- Context: Condition type title: groups simple player states (mounted, swimming, flying ...). Also
+--     an icon name in the icon picker.
 [2616] = "Player State",
 -- 68a2f69b
+-- Context: Condition type title: the number of players in the group. Also its help page title.
 [2617] = "Group Count",
 -- de24e677
+-- Context: Condition type title: the Druid Eclipse bar. Also its help page title.
 [2618] = "Eclipse",
 -- 5baf9a05
 [2619] = "your group's main tank",
@@ -5272,8 +8315,12 @@ local E = {
 -- 1f321239
 [2626] = "your group's assigned healer's",
 -- 343dc906
+-- Context: Phrase for the unit choice 'group leader' in condition summaries, e.g. '<this> {{!is|is
+--     not}} your group's leader'; the next string is its possessive form.
 [2627] = "your group's leader",
 -- 1d3180fa
+-- Context: Possessive form of 'your group's leader' used in condition summaries before a noun, e.g.
+--     'your group's leader's health'.
 [2628] = "your group's leader's",
 -- fad43537
 [2629] = "Absolute health target (negative means deficit) or percentage fraction.",
@@ -5580,6 +8627,7 @@ local E = {
 -- d27c5ef2
 [2780] = "Lookup key.",
 -- d746509f
+-- %s #1: %s #1: not a placeholder; it is the literal Lua pattern class for whitespace, shown to the user as text, e.g. "default %s for whitespace". Keep %s exactly as written.
 [2781] = "Lua pattern character-class separator, default %s for whitespace.",
 -- 3aeb0664
 [2782] = "Mark the positive wording as the primary named alternative.",
@@ -6102,6 +9150,8 @@ local E = {
 -- c383f3b4
 [3041] = "noheals selects damage only; nodmg selects healing only; other readable values select both.",
 -- 02586670
+-- %s #1: %s #1: the name of the game language, e.g. "German"
+-- %s #2: %s #2: the translators' names, separated by commas, e.g. "Anna, Boris"
 [4043] = "Translation (%s): %s",
 -- 7e412986
 -- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries

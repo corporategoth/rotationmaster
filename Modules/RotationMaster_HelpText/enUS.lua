@@ -488,30 +488,54 @@ if not T then return end
 -- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
 local E = {
 -- 0eebb1cd
+-- Context: Help topic title (General settings help) for the option in the performance section that
+--     turns the observation cache on or off.
 [3046] = "Enable observation cache",
 -- 476ed166
+-- Context: Yellow heading in the custom condition help: the function that checks the condition
+--     itself is valid (all required fields have valid values).
 [3051] = "Validity Function",
 -- fb4e0028
+-- Context: Yellow heading in the custom condition help: the function that evaluates the condition
+--     at run time and returns true or false.
 [3052] = "Evaluation Function",
 -- d7868586
+-- Context: Yellow heading in the custom condition help: the function that produces the condition's
+--     one-line summary text.
 [3053] = "Print Function",
 -- d548d39d
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     editing widgets.
 [3054] = "Widget Function",
 -- e136f1bc
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     own help page.
 [3055] = "Help Function",
 -- 4efca0d1
+-- Context: Name of the About page of the settings window (version, author, credits and links); also
+--     the title of its help window.
 [3056] = "About",
 -- 96c34a07
+-- Context: Status label (with icon) in the rotation help: the rotation or step is not valid, so it
+--     cannot be used.
 [3057] = "Invalid",
 -- 29ab8f0c
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     true right now (shown green).
 [3058] = "Currently satisfied",
 -- 28f0d12b
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     not true right now (shown red).
 [3059] = "Not currently satisfied",
 -- 68c38a65
+-- Context: Yellow heading in the rotation help, in the announcements part: the sound that can be
+--     played along with an announcement.
 [3063] = "Sound Alert",
 -- 0cda3eb2
 [3065] = "Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it.",
 -- 5530025a
+-- Context: Heading in the rotation help: how the addon decides which rotation is used. Noun phrase
+--     with gerund.
 [3066] = "Choosing a rotation",
 -- 359bbdff
 [3067] = "Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first that matches; a rotation with no switch condition always matches, so turn it off to keep it from being chosen. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority.",
@@ -550,10 +574,15 @@ local E = {
 -- c54e950a
 [3085] = "List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows.",
 -- e90e0aef
+-- Context: Help topic title in General settings help for the highlight preview (the example that
+--     shows the chosen highlight).
 [3086] = "Highlight preview",
 -- aafdf428
+-- Context: Help topic title in the Conditions help for the Add category button.
 [3087] = "Add category",
 -- 539a15c9
+-- Context: Section title in the condition editor help: how to choose a condition type and edit its
+--     fields.
 [3088] = "Choose and edit",
 -- cfb4186c
 [3089] = "Click a condition type to search or browse categories. Dismissing the picker or choosing the same type keeps its fields. Click the condition summary to edit its fields. The chevron switches between name only and summary; the double chevron closes the fields.",
@@ -566,6 +595,8 @@ local E = {
 -- 3edd382d
 [3093] = "Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides both arms without changing them. Click True or False to fold only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable.",
 -- 55129537
+-- Context: Section title in the rotation editor help for the cards that combine conditions and the
+--     state they show.
 [3094] = "Conditions and state",
 -- eacf49cb
 [3095] = "Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.",
@@ -574,26 +605,38 @@ local E = {
 -- 24e03e5b
 [3097] = "Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Hold Ctrl when starting a drag to carry the card and all following siblings. Groups always carry their children. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping; dragging an existing selection moves that selection. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped.",
 -- adb0a440
+-- Context: Section title in the settings help: how text fields and the Apply/Discard draft work.
 [3098] = "Editing settings",
 -- 1352b3ca
+-- Context: Section title in the rotation editor help for the highlight effect options of an action
+--     card.
 [3099] = "Highlight effects",
 -- fc1e5a5a
 [3100] = "If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached.",
 -- 0e86051f
+-- Context: Section title in the rotation editor help: how to rename steps and open their details.
 [3101] = "Names and details",
 -- e0d1f576
 [3102] = "Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation.",
 -- d68ae9c9
+-- Context: Section title at the top of the help for the Functions and Integrations pages: a short
+--     guide to the page.
 [3104] = "Using this page",
 -- 642f28cb
 [3105] = "Version, author, credits and project links are shown here. Click a link field to select its text for copying.",
 -- 9cea69fd
+-- Context: Section title in the help: the buttons and controls of the window frame.
 [3106] = "Window controls",
 -- efe10c80
+-- Context: Help topic title for the settings made for the first (primary) talent specialization;
+--     used only when the game has no word for it.
 [3107] = "Primary",
 -- 62f2ccff
+-- Context: Help topic title for the settings made for the second (secondary) talent specialization;
+--     used only when the game has no word for it.
 [3108] = "Secondary",
 -- a91d0087
+-- Context: Help topic title in the Conditions help for the Delete category button.
 [3109] = "Delete category",
 -- 315dca68
 [3110] = "Rename the selected category in Manage categories. Built-in categories cannot be renamed or deleted.",
@@ -612,12 +655,16 @@ local E = {
 -- 91c0665b
 [3117] = "Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available.",
 -- 4a954399
+-- Context: Help topic title in the Conditions help: how to reorder conditions and categories.
 [3118] = "Condition order",
 -- 54375409
+-- Context: Help topic title for the pair of buttons that save or abandon changes in the announce
+--     and effect editors.
 [3119] = "Apply / Cancel",
 -- af06c200
 [3120] = "Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability.",
 -- 304b61a5
+-- Context: Section title in the rotation editor help: how to select more than one rotation card.
 [3121] = "Select several cards",
 -- 1e77459b
 [3122] = "Ctrl-click cards to add or remove them from the selection; Shift-click selects the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). With several cards selected, the strip above the canvas groups them as All or Any, and Duplicate, Enable, Disable and Delete act on every selected card; one Undo reverses each. Drag any selected card to move the selection.",
@@ -638,20 +685,30 @@ local E = {
 -- c647cb40
 [3130] = "A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.",
 -- 51b10901
+-- Context: Section title in the rotation editor help: zooming, panning and switching views.
 [3131] = "Navigating rotations",
 -- 35f68027
+-- Context: Help topic title in the Announces help for the checkbox that switches an announcement on
+--     or off.
 [3132] = "Enabled / Disabled",
 -- 922d8056
+-- Context: Help topic title in the Announces help: the {{target}}, {{spell}} and {{event}}
+--     placeholders that can be put into announcement text.
 [3133] = "Announcement substitutions",
 -- 63ff2d53
 [3134] = "New, Duplicate, Import/Export and Compare",
 -- 50b0f89c
 [3174] = "Move Up / Move Down",
 -- 2b906316
+-- Context: Help topic title in the item set help for the buttons that connect an item set to a
+--     macro/action button or remove the link.
 [3176] = "Bind / Unbind",
 -- 49c1588e
+-- Context: Help topic title in the item set help for the undo and redo buttons.
 [3180] = "Undo / Redo",
 -- 147db4bf
+-- Context: Help topic title in the item set help: older macro buttons made before the current
+--     system.
 [3184] = "Legacy macro buttons",
 -- df1955d5
 [3192] = "Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments.",
@@ -660,14 +717,18 @@ local E = {
 -- a9dcdfe2
 [3194] = "Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.",
 -- 936a161c
+-- Context: Help topic title in Integrations settings help for the Lua editor options.
 [3195] = "Editor",
 -- 0c601351
+-- Context: Help topic title in Integrations help: the list of other addons Rotation Master can work
+--     with.
 [3196] = "Optional addons",
 -- 0413ac9a
 [3197] = "Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel.",
 -- 5e86a29a
 [3198] = "Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust.",
 -- b696d1d1
+-- Context: Section title in the Functions help: how the Arguments and Returns lists work.
 [3199] = "Arguments and returns",
 -- 2be54423
 [3200] = "Choose an existing namespace from the suggestions or type a new dotted namespace. Built In namespaces follow source files; custom namespaces are implied by saved functions and need no separate maintenance.",
@@ -678,6 +739,8 @@ local E = {
 -- e67ec7ba
 [3203] = "Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Return rows describe those results; moving them does not rewrite return statements. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.",
 -- 6c182d42
+-- Context: Help topic title for the buttons that save or abandon edits in an item list dialog and
+--     the window.
 [3277] = "Apply / Discard",
 -- d04a65ba
 [3278] = "Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.",
@@ -694,22 +757,31 @@ local E = {
 -- 27a02657
 [3284] = "Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
 -- 53a70ff7
+-- Context: Help topic title at the top of the item list dialog help.
 [3285] = "Editing this list",
 -- a0515628
 [3292] = "Rotations belong to the active settings profile. New copies use Class, shared by your characters of that class; Metadata can change this to This character. Built In rotations show only for their declared class or universal use. Equal identifiers in different owners remain separate entries.",
 -- 774a185e
 [3293] = "Older rotations without a recorded owner stay in an archive. Recover unassigned rotations opens the current profile and character archives for inspection or copying. Choose Class or This character to adopt one. Adoption preserves its identifier and evidence, refuses an existing destination, and leaves incomplete records unavailable until repaired.",
 -- 4886d663
+-- Context: Help topic title in Integrations help for the checkbox that turns on the Questie
+--     integration.
 [3294] = "Enable Questie integration",
 -- 472590ae
+-- Context: Column heading in the addon download links dialog: the website that hosts the download
+--     (e.g. CurseForge).
 [3301] = "Provider",
 -- e7a241de
+-- Context: Column heading in the addon download links dialog: the web address of the download page.
 [3302] = "URL",
 -- 8ea4edb6
 [3303] = "Select URL for copying (Ctrl+C)",
 -- 5ac254c6
+-- Context: Help topic title in the Announces help: an example of how a macro calls an announcement.
 [3353] = "Macro invocation",
 -- 94a47c93
+-- Context: Help topic title in the Announces help: the unit that a macro passes to the
+--     announcement.
 [3354] = "Supplied macro unit",
 -- b6082c37
 [3364] = "Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements.",

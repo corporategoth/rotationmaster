@@ -24,30 +24,42 @@ addon.translation = {
 --     perf probe
 [3822] = "用法：/rm perf cpu||runtime||memory [seconds||start||stop||report]，或 /rm perf probe",
 -- e4d45a37 English: Capture stopped. Use /rm perf %s report to view and copy it.
+-- %s #1: %s #1: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3823] = "擷取已停止。使用 /rm perf %s report 檢視並複製。",
 -- 6f8012ee English: Capture started for %g seconds. Close configuration, then use /rm perf %s
 --     report.
+-- %g #1: %g #1: the capture length in seconds, e.g. 10
+-- %s #2: %s #2: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3824] = "已開始擷取 %g 秒。請關閉設定介面，然後使用 /rm perf %s report。",
 -- e8370df2 English: Choose a duration from 1 to %d seconds.
+-- %d #1: %d #1: the longest allowed capture length in seconds, e.g. 60
 [3825] = "請選擇 1 到 %d 秒之間的時長。",
 -- 01fdff8c English: Usage: /rm perf engine [lean||standard]
 [3826] = "用法：/rm perf engine [lean||standard]",
 -- e670bdea English: Evaluation engine: %s
+-- %s #1: %s #1: the active evaluation engine, "lean" or "standard" (shown as-is), e.g. "lean"
 [3827] = "評估引擎：%s",
 -- 61606866 English: %s is running. Stop it or wait for completion.
+-- %s #1: %s #1: the name of the capture that is running, e.g. "CPU profile"
 [3828] = "%s正在執行。請停止它或等待其完成。",
 -- d2b17a1b English: No %s report is available. Start a capture first.
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3829] = "沒有可用的%s報告。請先開始擷取。",
 -- ac026dc1 English: No %s is running.
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3830] = "沒有正在執行的%s。",
 -- 4eaf7cbc English: %s is unavailable: %s
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
+-- %s #2: %s #2: why it is unavailable, a short code (shown as-is) or "Unknown", e.g. "missing-profiler-api"
 [3831] = "%s無法使用：%s",
 -- 6c8f579f English: Memory capture
+-- Context: Title of the report window with the memory capture results.
 [3832] = "記憶體擷取",
 -- f7cf9a31 English: Memory capture started for 10 minutes. Normal polling is unchanged; attribution
 --     refreshes at capture start and completion, with their cost reported.
 [3833] = "已開始 10 分鐘的記憶體擷取。一般輪詢不受影響；歸屬統計會在擷取開始與結束時重新整理，並回報其開銷。",
 -- a8a89538 English: Memory capture is unavailable: %s
+-- %s #1: %s #1: why the memory capture is unavailable, a short code (shown as-is), e.g. "missing-memory-api"
 [3834] = "記憶體擷取無法使用：%s",
 -- 8a6ec49e English: Memory capture stopped. Open Memory report to copy the observations.
 [3835] = "記憶體擷取已停止。開啟「記憶體報告」以複製觀測資料。",
@@ -55,24 +67,35 @@ addon.translation = {
 --     details.
 [3836] = "記憶體擷取結束，但部分觀測資料無法使用。詳情請開啟「記憶體報告」。",
 -- 7a63fb47 English: Runtime profile
+-- Context: Title of the report window with the runtime profile results.
 [3837] = "執行階段分析",
 -- 80ef0822 English: Runtime capture started for 10 seconds. Close configuration, then open Runtime
 --     report.
 [3838] = "已開始 10 秒的執行階段擷取。請關閉設定介面，然後開啟「執行階段報告」。",
 -- 0ec2f69a English: Runtime capture is unavailable: %s
+-- %s #1: %s #1: why the runtime capture is unavailable, a short code (shown as-is), e.g. "missing-native-profiler"
 [3839] = "執行階段擷取無法使用：%s",
 -- 58dc403d English: Runtime capture ended without complete measurements. Open Runtime report for
 --     details.
 [3840] = "執行階段擷取結束，但測量資料不完整。詳情請開啟「執行階段報告」。",
 -- 00457437 English: CPU profile
+-- Context: Title of the report window with the CPU profile results.
 [3841] = "CPU 分析",
 -- abd8722f English: Native profiler probe
+-- Context: Title of the report window and first line of its text, for the test of the game's
+--     built-in profiler (no real measurement).
 [3842] = "原生效能分析器探測",
 -- a704d2a5 English: Callback arguments
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test call received as arguments.
 [3843] = "回呼參數",
 -- a19d7778 English: Callback calls
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: how
+--     many times the test callback was called.
 [3844] = "回呼呼叫",
 -- fb275c4f English: Callback returns
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test callback returned.
 [3845] = "回呼傳回值",
 -- ec06c9e1 English: Capability probe only; no evaluator or gameplay was measured.
 [3846] = "僅為功能探測；未測量任何評估器或遊戲過程。",
@@ -83,16 +106,27 @@ addon.translation = {
 -- 5f85500c English: Native profiler probe is unavailable.
 [3849] = "原生效能分析器探測無法使用。",
 -- 0674f152 English: call completed
+-- Context: Result value in the native profiler probe report (lowercase): the call finished
+--     normally.
 [3850] = "呼叫完成",
 -- fa259a8b English: call failed
+-- Context: Result value in the native profiler probe report (lowercase): the call raised an error.
 [3851] = "呼叫失敗",
 -- 60ec9bb7 English: malformed
+-- Context: Result value in the native profiler probe report (lowercase): the result had an
+--     unexpected shape.
 [3852] = "格式錯誤",
 -- 611f3162 English: more than one
+-- Context: Result value in the native profiler probe report (lowercase): the callback was called
+--     twice or more.
 [3853] = "多於一個",
 -- b4a98437 English: not run
+-- Context: Result value in the native profiler probe report (lowercase): this step was not carried
+--     out.
 [3854] = "未執行",
 -- d2aaba53 English: unavailable (context changed)
+-- Context: Result value in the native profiler probe report (lowercase): the measurement is
+--     unavailable because the game state changed.
 [3855] = "無法使用（情境已變更）",
 -- 0e625cbe English: CPU capture requires WoW scriptProfile to be enabled before a reload. RM does
 --     not change this setting.
@@ -104,6 +138,7 @@ addon.translation = {
 -- 201fb573 English: No CPU capture is running.
 [3859] = "沒有正在執行的 CPU 擷取。",
 -- 8d375d61 English: CPU capture is unavailable: %s
+-- %s #1: %s #1: why the CPU capture is unavailable, a short code (shown as-is), e.g. "script-profile-disabled"
 [3860] = "CPU 擷取無法使用：%s",
 -- c0afc6b0 English: CPU capture started for 10 seconds. Close configuration to measure normal
 --     gameplay, then open CPU report.
@@ -113,17 +148,24 @@ addon.translation = {
 -- 71629344 English: CPU capture could not produce valid measurements. Open CPU report for details.
 [3863] = "CPU 擷取未能產生有效的測量資料。詳情請開啟「CPU 報告」。",
 -- 6996067a English: Rotation Master errors
+-- Context: Title of the window that lists Rotation Master's recorded Lua errors.
 [3864] = "Rotation Master 錯誤",
 -- 9a85b2b4 English: Review the report, then select Copy and press Ctrl+C. Reload after fixing a
 --     paused callback.
 [3865] = "檢視報告，然後選擇「複製」並按 Ctrl+C。修正已暫停的回呼後請重新載入。",
 -- 2c882357 English: Previous error
+-- Context: Button in the errors window: shows the earlier error in the list.
 [3866] = "上一個錯誤",
 -- 2da271a8 English: Next error
+-- Context: Button in the errors window: shows the next error in the list.
 [3867] = "下一個錯誤",
 -- 6396d0fc English: Clear RM errors
+-- Context: Button in the errors window: empties the list of Rotation Master's recorded errors. 'RM'
+--     is short for Rotation Master.
 [3868] = "清除 RM 錯誤",
 -- 2956e06a English: Resize
+-- Context: Label of the drag handle in the corner of the errors window: drag to change the window
+--     size.
 [3869] = "調整大小",
 -- 4d7325d3 English: No Rotation Master errors have been captured this session.
 [3870] = "本次工作階段未擷取到任何 Rotation Master 錯誤。",
@@ -132,18 +174,22 @@ addon.translation = {
 -- 2a1ab28d English: Include original text (may contain names or code)
 [3872] = "包含原始文字（可能含有名稱或程式碼）",
 -- c29de79e English: Glow diagnostic
+-- Context: Title of the report window with the glow diagnostic results.
 [3873] = "發光診斷",
 -- 41e36336 English: Glow diagnostic saved.
 [3874] = "發光診斷已儲存。",
 -- 5691cd23 English: Glow diagnostic saved. Watching for %d seconds.
+-- %d #1: %d #1: how many seconds the glow diagnostic keeps watching, e.g. 10
 [3875] = "發光診斷已儲存。正在觀察 %d 秒。",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3876] = "發光觀察已結束。執行 /rm debug glow show 查看。",
 -- 6eb70331 English: Glow stops at: %s
+-- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
 [3877] = "發光停止於：%s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3878] = "尚未儲存任何發光診斷。請執行 /rm debug glow。",
 -- 5e41a846 English: Talent diagnostic
+-- Context: Title of the report window with the talent diagnostic results.
 [3879] = "天賦診斷",
 -- c728736f English: Talent diagnostic saved.
 [3880] = "天賦診斷已儲存。",
@@ -156,12 +202,16 @@ addon.translation = {
 --     available.
 [3883] = "建議：無法使用；呈現：無法使用；一般施法證明：無法使用。",
 -- 66a2de57 English: Attempts: %d; results: %d
+-- %d #1: %d #1: the number of cast attempts recorded, e.g. 42
+-- %d #2: %d #2: the number of cast results recorded, e.g. 40
 [3884] = "嘗試次數：%d；結果數：%d",
 -- 78937d68 English: Capture: unavailable
 [3885] = "擷取：無法使用",
 -- a9079be6 English: Capture: complete; reason=%s
+-- %s #1: %s #1: why the capture ended, a short code (shown as-is), e.g. "stopped"
 [3886] = "擷取：已完成；原因=%s",
 -- f9bf7230 English: Capture: unavailable; reason=%s
+-- %s #1: %s #1: why the capture is unavailable, a short code (shown as-is), e.g. "disabled"
 [3887] = "擷取：無法使用；原因=%s",
 -- 47972aa9 English: Cast capture cleared.
 [3888] = "施法擷取已清除。",
@@ -179,14 +229,21 @@ addon.translation = {
 -- 1dbab8ec English: Cast capture stopped. Open Cast report to inspect receipts.
 [3894] = "施法擷取已停止。開啟「施法報告」以檢視回條。",
 -- 5963707b English: Cast receipt report
+-- Context: Title of the report window with the spell cast receipt capture results.
 [3895] = "施法回條報告",
 -- ef1fabff English: Client: family=%s version=%s build=%s interface=%s locale=%s
+-- %s #1: %s #1: the game client family, e.g. "retail"
+-- %s #2: %s #2: the game version, e.g. "11.0.2"
+-- %s #3: %s #3: the game build number, e.g. "56313"
+-- %s #4: %s #4: the interface (TOC) number, e.g. "110002"
+-- %s #5: %s #5: the game locale code, e.g. "enUS"
 [3896] = "用戶端：系列=%s 版本=%s 組建=%s 介面=%s 語言=%s",
 -- 9cf1f5cb English: Counts describe receipt rows, not gameplay opportunities.
 [3897] = "計數描述的是回條列數，而不是遊戲中的機會次數。",
 -- cdda6d4b English: Damage: unavailable (no damage observations or encounter denominator).
 [3898] = "傷害：無法使用（沒有傷害觀測或首領戰分母）。",
 -- 7a8de1c2 English: Duration: %s seconds
+-- %s #1: %s #1: the length of the capture in seconds, e.g. 10.5
 [3899] = "時長：%s 秒",
 -- eaab562c English: Healer: unavailable (no effective healing, absorbs or mana observations).
 [3900] = "治療者：無法使用（沒有有效治療、吸收或法力觀測）。",
@@ -199,16 +256,26 @@ addon.translation = {
 -- 1821370f English: Producer: UNIT_SPELLCAST adapter
 [3904] = "產生者：UNIT_SPELLCAST 轉接器",
 -- 6e486b5a English: Records: %d
+-- %d #1: %d #1: the number of records captured, e.g. 120
 [3905] = "記錄數：%d",
 -- a46835a4 English: Receipt kinds: channel=%d unmodeled=%d
+-- %d #1: %d #1: the number of channelled-spell receipts, e.g. 3
+-- %d #2: %d #2: the number of receipts of unmodelled kinds, e.g. 0
 [3906] = "回條類型：引導=%d 未建模=%d",
 -- 7ffcd926 English: Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d
+-- %d #1: %d #1: receipts of the kind "sent", e.g. 40
+-- %d #2: %d #2: receipts of the kind "start", e.g. 40
+-- %d #3: %d #3: receipts of the kind "success", e.g. 38
+-- %d #4: %d #4: receipts of the kind "failed", e.g. 1
+-- %d #5: %d #5: receipts of the kind "interrupted", e.g. 1
+-- %d #6: %d #6: receipts of the kind "stop", e.g. 0
 [3907] = "回條訊號：已傳送=%d 開始=%d 成功=%d 失敗=%d 中斷=%d 停止=%d",
 -- 672aa08d English: Rotation Master cast receipt diagnostics
 [3908] = "Rotation Master 施法回條診斷",
 -- 7c09baa2 English: Rotation attribution: unavailable; capture seconds are not encounter seconds.
 [3909] = "循環歸屬：無法使用；擷取的秒數不等於首領戰的秒數。",
 -- 19f6c4f8 English: Rows omitted: %d
+-- %d #1: %d #1: how many rows are left out of the report, e.g. 25
 [3910] = "已省略列數：%d",
 -- bed3540d English: Scoring: unavailable
 [3911] = "評分：無法使用",
@@ -219,12 +286,23 @@ addon.translation = {
 [3913] = "建議/呈現列只描述觀測到的傳遞邊界；一般施法證明：無法使用。",
 -- c7dc0ff3 English: Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d
 --     retired=%d (not opportunities).
+-- %d #1: %d #1: number of "advice" rows, e.g. 40
+-- %d #2: %d #2: number of "presentation" rows, e.g. 40
+-- %d #3: %d #3: number of "visible" rows, e.g. 30
+-- %d #4: %d #4: number of "hidden" rows, e.g. 10
+-- %d #5: %d #5: number of "unknown" rows, e.g. 0
+-- %d #6: %d #6: number of "retired" rows, e.g. 0
 [3914] = "涵蓋列數：建議=%d 呈現=%d 可見=%d 隱藏=%d 未知=%d 已退役=%d（並非機會次數）。",
 -- c419fb3c English: Visible means RM-owned preview frame state at a delivery boundary; it does not
 --     prove perception or native pixel rendering.
 [3915] = "「可見」指在傳遞邊界時 RM 自有預覽框架的狀態；它不能證明被看到或原生像素已繪製。",
 -- fe67ade9 English: START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s
 --     (not ordinary proof).
+-- %s #1: %s #1: number of START rows observed, e.g. 40 (or "?" when unknown)
+-- %s #2: %s #2: number of rows that matched, e.g. 38
+-- %s #3: %s #3: number of rows that mismatched, e.g. 1
+-- %s #4: %s #4: number of rows excluded, e.g. 1
+-- %s #5: %s #5: number of rows with unknown status, e.g. 0
 [3916] = "START 見證列：已觀測=%s 相符=%s 不相符=%s 已排除=%s 未知=%s（並非一般證明）。",
 -- 159c3cdb English: START witnesses compare current cast identity and non-autorepeat classification
 --     only; they do not classify ordinary casts or enable scoring.
@@ -236,10 +314,12 @@ addon.translation = {
 -- 6b48ba81 English: Usage: /rm debug timeline [seconds|show|stop]
 [3920] = "用法：/rm debug timeline [秒數|show|stop]",
 -- 50b2861c English: Timeline diagnostic saved. Watching for %d seconds.
+-- %d #1: %d #1: how many seconds the timeline diagnostic keeps watching, e.g. 10
 [3921] = "時間軸診斷已儲存。將觀察 %d 秒。",
 -- 8c8e2d53 English: Timeline diagnostic saved.
 [3922] = "時間軸診斷已儲存。",
 -- cfb45a68 English: Timeline diagnostic
+-- Context: Title of the report window with the timeline diagnostic results.
 [3923] = "時間軸診斷",
 -- 3b2ae94e English: No timeline diagnostic is saved yet. Run /rm debug timeline.
 [3924] = "尚未儲存時間軸診斷。請執行 /rm debug timeline。",

@@ -36,6 +36,8 @@ addon.translation = {
 --     report does not sample gameplay.
 [3045] = "Öffnet den kopierbaren Laufzeitbericht: gemessene Auswertungsaufrufe, native verstrichene Zeit sowie Brutto-Zähler für Allokation und Freigabe. Fehlende Messwerte bleiben nicht verfügbar. Gemessen werden nur Auswertungsaufrufe, nicht alle Addon-Ereignisse oder das Rendern. Das Lesen des Berichts erfasst keine Spieldaten.",
 -- 0eebb1cd English: Enable observation cache
+-- Context: Help topic title (General settings help) for the option in the performance section that
+--     turns the observation cache on or off.
 [3046] = "Beobachtungscache aktivieren",
 -- 5309abf9 English: Optional reuse of repeated getCached and getRetryCached lookups. Observation
 --     caching is off by default to reduce table allocations; enabling it can help conditions that
@@ -70,22 +72,40 @@ addon.translation = {
 --     Missing, disabled or invalid dependencies keep consumers unavailable.
 [3050] = "Wählen Sie einen Quellhelfer und seinen Namen in diesem Lua-Rumpf, etwa custom.ready oder utils.getCached. Dies sind Abhängigkeitseinträge, auch wenn Quell- und lokaler Name übereinstimmen; ein abweichender lokaler Name ist ein optionaler Alias. Die Einträge kennzeichnen Helfer für das Laden, den Export und Verfügbarkeitsprüfungen. Das Übernehmen einer Vervollständigung erfasst die Abhängigkeit automatisch. Das Eintippen eines Aufrufs leitet keine Abhängigkeit ab: Den qualifizierten Namen ausdrücklich hinzufügen oder eine Vervollständigung übernehmen. WoW-Globale und vorhandene Addon-APIs bleiben direkt verfügbar. Namensräume sind privat für diesen Callback und liefern kein self. Bei einem Punktaufruf über einen Namensraum den Methodenempfänger ausdrücklich übergeben; object:method(x) ist die Kurzform für object.method(object, x). Ein Klick auf den gebundenen Quellnamen öffnet dessen Funktion; der Pfeil daneben ändert die Zuordnung. Bei ausstehenden Bearbeitungen werden vor dem Wechsel Übernehmen, Verwerfen oder Abbrechen angeboten. Das Umbenennen einer Funktion, eines Namensraums oder einer Bindung schreibt keinen Code um. Fehlende, deaktivierte oder ungültige Abhängigkeiten halten ihre Verwender nicht verfügbar.",
 -- 476ed166 English: Validity Function
+-- Context: Yellow heading in the custom condition help: the function that checks the condition
+--     itself is valid (all required fields have valid values).
 [3051] = "Gültigkeitsfunktion",
 -- fb4e0028 English: Evaluation Function
+-- Context: Yellow heading in the custom condition help: the function that evaluates the condition
+--     at run time and returns true or false.
 [3052] = "Auswertungsfunktion",
 -- d7868586 English: Print Function
+-- Context: Yellow heading in the custom condition help: the function that produces the condition's
+--     one-line summary text.
 [3053] = "Ausgabefunktion",
 -- d548d39d English: Widget Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     editing widgets.
 [3054] = "Widget-Funktion",
 -- e136f1bc English: Help Function
+-- Context: Yellow heading in the custom condition help: the function that builds the condition's
+--     own help page.
 [3055] = "Hilfefunktion",
 -- 4efca0d1 English: About
+-- Context: Name of the About page of the settings window (version, author, credits and links); also
+--     the title of its help window.
 [3056] = "Über",
 -- 96c34a07 English: Invalid
+-- Context: Status label (with icon) in the rotation help: the rotation or step is not valid, so it
+--     cannot be used.
 [3057] = "Ungültig",
 -- 29ab8f0c English: Currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     true right now (shown green).
 [3058] = "Derzeit erfüllt",
 -- 28f0d12b English: Not currently satisfied
+-- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
+--     not true right now (shown red).
 [3059] = "Derzeit nicht erfüllt",
 -- 82e28aca English: True while your enabled boss mod (DBM or BigWigs, chosen on the Integrations
 --     page) reports a boss encounter in progress. Leave Encounter ID blank for any encounter, or
@@ -109,6 +129,8 @@ addon.translation = {
 --     timers, are not tracked. Unavailable when no boss mod is enabled or loaded.
 [3062] = "Vergleicht die verbleibende Zeit des Boss-Mod-Timers für eine Bossfähigkeit, die über ihre Zauber-ID bestimmt wird; während Timer laufen, listet der Editor sie mit ihren IDs auf. Timer sind Vorhersagen des Boss-Mods und können sich verschieben, pausieren oder abgebrochen werden. Läuft für diese Fähigkeit kein Timer, ist die Bedingung falsch, sodass „ist kleiner als 5 Sekunden“ nur wahr ist, solange tatsächlich ein Timer herunterzählt. Leisten ohne Zauber-ID, etwa Pull- oder Respawn-Timer, werden nicht verfolgt. Nicht verfügbar, wenn kein Boss-Mod aktiviert oder geladen ist.",
 -- 68c38a65 English: Sound Alert
+-- Context: Yellow heading in the rotation help, in the announcements part: the sound that can be
+--     played along with an announcement.
 [3063] = "Akustischer Alarm",
 -- 7a0ac7f9 English: Any (OR) checks children in order and stops at the first match. An empty group
 --     does not match. Encountered unavailable data remains unavailable; later children are skipped.
@@ -119,6 +141,8 @@ addon.translation = {
 --     change it.
 [3065] = "Jede Rotation hat einen Bezeichner (ID), der neben ihrer Priorität steht: Geben Sie /rm set <id> ein, um sie zu wählen (Groß- und Kleinschreibung egal), /rm set auto, um zum automatischen Wechsel zurückzukehren, und /rm list, um alle Bezeichner anzuzeigen. Der Bezeichner einer integrierten Rotation ist fest; Ihrer wird aus dem Namen gebildet, bis Sie ihn ändern.",
 -- 5530025a English: Choosing a rotation
+-- Context: Heading in the rotation help: how the addon decides which rotation is used. Noun phrase
+--     with gerund.
 [3066] = "Eine Rotation wählen",
 -- 359bbdff English: Automatic switching tries the enabled rotations in priority order, yours and
 --     Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first
@@ -210,10 +234,15 @@ addon.translation = {
 --     also affects RM child windows.
 [3085] = "Liste und Abklingzeiten verwenden flache Bildlaufleisten oder das Mausrad. Das Diagramm zoomt mit dem Mausrad und lässt sich durch Ziehen auf leerer Fläche verschieben. Die Fensterskalierung wird beim Loslassen des Schiebereglers angewendet und wirkt sich auch auf untergeordnete RM-Fenster aus.",
 -- e90e0aef English: Highlight preview
+-- Context: Help topic title in General settings help for the highlight preview (the example that
+--     shows the chosen highlight).
 [3086] = "Hervorhebungsvorschau",
 -- aafdf428 English: Add category
+-- Context: Help topic title in the Conditions help for the Add category button.
 [3087] = "Kategorie hinzufügen",
 -- 539a15c9 English: Choose and edit
+-- Context: Section title in the condition editor help: how to choose a condition type and edit its
+--     fields.
 [3088] = "Auswählen und bearbeiten",
 -- cfb4186c English: Click a condition type to search or browse categories. Dismissing the picker or
 --     choosing the same type keeps its fields. Click the condition summary to edit its fields. The
@@ -238,6 +267,8 @@ addon.translation = {
 --     only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable.
 [3093] = "Auf den Wächtertext klicken, um die Bedingung der Verzweigung zu bearbeiten. Auswerten verwendet diese Bedingung; Immer wahr / Immer falsch überspringt sie. Falsch ist links und rot; Wahr ist rechts und grün. Das Verzweigungssymbol blendet beide Zweige aus, ohne sie zu ändern. Auf Wahr oder Falsch klicken, um nur diesen Zweig einzuklappen; die Anzahl der ausgeblendeten Karten bleibt sichtbar. Graue Karten in einem erzwungenen Zweig sind unerreichbar.",
 -- 55129537 English: Conditions and state
+-- Context: Section title in the rotation editor help for the cards that combine conditions and the
+--     state they show.
 [3094] = "Bedingungen und Zustand",
 -- eacf49cb English: Configure recommendation timing, automatic switching, history, preview and
 --     profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show
@@ -256,14 +287,18 @@ addon.translation = {
 --     group append when clicked or insert where dropped.
 [3097] = "Eine Karte in eine hervorgehobene Lücke ziehen oder die Pfeile Hoch / Runter links verwenden. Wird beim Ziehen Strg gehalten, werden die Karte und alle folgenden Geschwister mitgenommen. Gruppen nehmen ihre Kinder immer mit. Nicht mögliche Verschiebungen sind grau. Strg-Klick oder Umschalt-Klick wählt mehrere Karten zum Gruppieren aus; das Ziehen einer bestehenden Auswahl verschiebt diese Auswahl. Duplizieren kopiert eine Karte; Gruppe auflösen entfernt ihre Hülle; der rote Mülleimer löscht sie. Bedingung hinzufügen und Gruppe hinzufügen hängen beim Klicken an oder fügen an der Ablagestelle ein.",
 -- adb0a440 English: Editing settings
+-- Context: Section title in the settings help: how text fields and the Apply/Discard draft work.
 [3098] = "Einstellungen bearbeiten",
 -- 1352b3ca English: Highlight effects
+-- Context: Section title in the rotation editor help for the highlight effect options of an action
+--     card.
 [3099] = "Hervorhebungseffekte",
 -- fc1e5a5a English: If / Unless toggles negation. Enabled / Disabled keeps the saved fields while
 --     skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch
 --     icon hides or shows its children. Gray descendants cannot be reached.
 [3100] = "Wenn / Außer wenn schaltet die Verneinung um. Aktiviert / Deaktiviert behält die gespeicherten Felder bei, überspringt aber die Auswertung. Alle / Beliebige wechselt zwischen UND / ODER. Auf einen Gruppennamen klicken, um ihn umzubenennen; das Verzweigungssymbol blendet die Kinder aus oder ein. Graue Nachfahren sind unerreichbar.",
 -- 0e86051f English: Names and details
+-- Context: Section title in the rotation editor help: how to rename steps and open their details.
 [3101] = "Namen und Details",
 -- e0d1f576 English: Search or filter the rotation roster, then select a rotation. Blue Built In
 --     rotations use the same editor but remain read-only; Duplicate makes an editable copy. The
@@ -276,17 +311,25 @@ addon.translation = {
 --     Red borders mark invalid or incomplete data.
 [3103] = "Das Fragezeichen öffnet die vollständige Hilfe zum jeweiligen Thema. Für kurze Tipps mit der Maus über die Bedienelemente fahren. Rückgängig / Wiederherstellen betreffen den Entwurf. Übernehmen speichert; Verwerfen oder Abbrechen verwirft die Änderungen am Entwurf. Rote Rahmen kennzeichnen ungültige oder unvollständige Daten.",
 -- d68ae9c9 English: Using this page
+-- Context: Section title at the top of the help for the Functions and Integrations pages: a short
+--     guide to the page.
 [3104] = "Diese Seite verwenden",
 -- 642f28cb English: Version, author, credits and project links are shown here. Click a link field
 --     to select its text for copying.
 [3105] = "Hier werden Version, Autor, Mitwirkende und Projektlinks angezeigt. Auf ein Linkfeld klicken, um seinen Text zum Kopieren zu markieren.",
 -- 9cea69fd English: Window controls
+-- Context: Section title in the help: the buttons and controls of the window frame.
 [3106] = "Fenstersteuerung",
 -- efe10c80 English: Primary
+-- Context: Help topic title for the settings made for the first (primary) talent specialization;
+--     used only when the game has no word for it.
 [3107] = "Primär",
 -- 62f2ccff English: Secondary
+-- Context: Help topic title for the settings made for the second (secondary) talent specialization;
+--     used only when the game has no word for it.
 [3108] = "Sekundär",
 -- a91d0087 English: Delete category
+-- Context: Help topic title in the Conditions help for the Delete category button.
 [3109] = "Kategorie löschen",
 -- 315dca68 English: Rename the selected category in Manage categories. Built-in categories cannot
 --     be renamed or deleted.
@@ -310,14 +353,18 @@ addon.translation = {
 --     Switch membership remain available.
 [3117] = "Diese Bedingung in der Auswahlkategorie Sonstige ausblenden. Ausdrückliche Zugehörigkeiten zu benannten Kategorien und zu Wechsel bleiben verfügbar.",
 -- 4a954399 English: Condition order
+-- Context: Help topic title in the Conditions help: how to reorder conditions and categories.
 [3118] = "Reihenfolge der Bedingungen",
 -- 54375409 English: Apply / Cancel
+-- Context: Help topic title for the pair of buttons that save or abandon changes in the announce
+--     and effect editors.
 [3119] = "Übernehmen / Abbrechen",
 -- af06c200 English: Choose a named category or Other, then use Apply beside the destination to
 --     stage the move. Page Apply saves all pending changes. Use Switch Condition separately for
 --     automatic-switch availability.
 [3120] = "Eine benannte Kategorie oder Sonstige wählen und dann Übernehmen neben dem Ziel verwenden, um die Verschiebung vorzumerken. Übernehmen auf der Seite speichert alle ausstehenden Änderungen. Für die Verfügbarkeit beim automatischen Wechsel separat Umschaltbedingung verwenden.",
 -- 304b61a5 English: Select several cards
+-- Context: Section title in the rotation editor help: how to select more than one rotation card.
 [3121] = "Mehrere Karten auswählen",
 -- 1e77459b English: Ctrl-click cards to add or remove them from the selection; Shift-click selects
 --     the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box
@@ -366,10 +413,15 @@ addon.translation = {
 --     read the spell being cast, the condition is unavailable, including under NOT.
 [3130] = "Ein im Editor gewählter Zauber wird über seine Zauber-ID abgeglichen, daher funktioniert die Bedingung in jeder Clientsprache. Jeder Rang dieses Zaubers passt, solange Diesen genauen Zauberrang verwenden nicht aktiviert ist. Mit einem Zaubernamen gespeicherte Bedingungen passen weiterhin über diesen Namen. Kann der Client den gewirkten Zauber nicht lesen, ist die Bedingung nicht verfügbar, auch unter NOT.",
 -- 51b10901 English: Navigating rotations
+-- Context: Section title in the rotation editor help: zooming, panning and switching views.
 [3131] = "In Rotationen navigieren",
 -- 35f68027 English: Enabled / Disabled
+-- Context: Help topic title in the Announces help for the checkbox that switches an announcement on
+--     or off.
 [3132] = "Aktiviert / Deaktiviert",
 -- 922d8056 English: Announcement substitutions
+-- Context: Help topic title in the Announces help: the {{target}}, {{spell}} and {{event}}
+--     placeholders that can be put into announcement text.
 [3133] = "Ersetzungen in Ankündigungen",
 -- 63ff2d53 English: New, Duplicate, Import/Export and Compare
 [3134] = "Neu, Duplizieren, Import/Export und Vergleichen",
@@ -544,6 +596,8 @@ addon.translation = {
 --     changes priority and stays in the draft until Apply.
 [3175] = "Die Pfeile links verwenden oder eine Gegenstandszeile in eine hervorgehobene Einfügelücke ziehen. Strg-Ziehen verschiebt diese Zeile zusammen mit allen folgenden Einträgen. Die schwebende Vorschau zeigt, was verschoben wird. Verschiebungen über den Anfang oder das Ende hinaus sind nicht möglich. Das Umsortieren ändert die Priorität und bleibt bis zum Übernehmen im Entwurf.",
 -- 2b906316 English: Bind / Unbind
+-- Context: Help topic title in the item set help for the buttons that connect an item set to a
+--     macro/action button or remove the link.
 [3176] = "Binden / Bindung lösen",
 -- 81abb5f4 English: Outside combat, apply pending item-set edits before binding. Drag the set (its
 --     row in the list, or the Bind pill) onto any action bar slot; an occupied slot swaps, leaving
@@ -563,6 +617,7 @@ addon.translation = {
 --     marker.
 [3179] = "Der rote Mülleimer oben rechts entfernt das ausgewählte gespeicherte Set nach Bestätigung endgültig. Ausstehende Bearbeitungen vor der letzten Warnung erledigen. Verweise in Rotationen oder Bedingungen benötigen danach ein anderes Set. Beim Löschen werden noch passende gebundene Leistenaktionen abgeglichen, und das Set bleibt erhalten, wenn das Lösen der Bindung fehlschlägt; die nächste Auswahl öffnet sich ohne ungespeicherte Löschmarkierung.",
 -- 49c1588e English: Undo / Redo
+-- Context: Help topic title in the item set help for the undo and redo buttons.
 [3180] = "Rückgängig / Wiederherstellen",
 -- cd68dbfd English: Undo and Redo travel through recent item-set draft edits, including
 --     replacements, additions, ordering and row removals. They are unavailable when that direction
@@ -580,6 +635,8 @@ addon.translation = {
 --     inspects differences without merging or modifying either set.
 [3183] = "Mit den Schaltflächen unter der Seitenleiste Sets erstellen, duplizieren, übertragen oder vergleichen. Duplizieren erstellt eine unabhängige Profilkopie. Importieren zeigt den Quellnamen und kann eine umbenannte Kopie erstellen oder die ausgewählte Liste ersetzen; Übernehmen speichert das vorgemerkte Ergebnis. Vergleichen zeigt Unterschiede, ohne eines der Sets zusammenzuführen oder zu ändern.",
 -- 147db4bf English: Legacy macro buttons
+-- Context: Help topic title in the item set help: older macro buttons made before the current
+--     system.
 [3184] = "Alte Makro-Schaltflächen",
 -- 77908784 English: Legacy clients may allow /click to invoke an RM item-set button separately from
 --     action-bar binding. The name is RM_ followed by the set name with non-alphanumeric characters
@@ -624,8 +681,11 @@ addon.translation = {
 --     destinations. Switch membership is independent.
 [3194] = "Unter der Bedingungsliste öffnet Import/Export die ausgewählte benutzerdefinierte Definition zur Übertragung und Codeprüfung; für integrierte Bedingungen ist es deaktiviert. Unter Kategorien verwalten lassen sich die geordneten Bedingungskennungen einer Kategorie übertragen. Benannte Kategorien und Sonstige schließen sich als Ziel gegenseitig aus. Die Zugehörigkeit zu Wechsel ist davon unabhängig.",
 -- 936a161c English: Editor
+-- Context: Help topic title in Integrations settings help for the Lua editor options.
 [3195] = "Editor",
 -- 0c601351 English: Optional addons
+-- Context: Help topic title in Integrations help: the list of other addons Rotation Master can work
+--     with.
 [3196] = "Optionale Addons",
 -- 0413ac9a English: Undo and Redo edit the Lua body. Reset restores the saved body or new-function
 --     template and can be undone. Check syntax executes no custom Lua. Apply saves the body and
@@ -639,6 +699,7 @@ addon.translation = {
 --     imported Lua. Only apply code you trust.
 [3198] = "Abhängigkeiten von benutzerdefinierten Funktionen einschließen exportiert deren Quellcode zusammen mit der ausgewählten Definition. Ohne diese Option vermerkt das Paket nur Identität und Version der benötigten Hilfsfunktionen. Quellcode prüfen zeigt jeden importierten Lua-Code. Für jeden ursprünglichen Namen und jedes Ziel Wiederverwenden, Ersetzen oder eine neue Kennung wählen. Import übernehmen speichert das vollständige geprüfte Paket und kann importiertes Lua registrieren. Nur vertrauenswürdigen Code übernehmen.",
 -- b696d1d1 English: Arguments and returns
+-- Context: Section title in the Functions help: how the Arguments and Returns lists work.
 [3199] = "Argumente und Rückgabewerte",
 -- 2be54423 English: Choose an existing namespace from the suggestions or type a new dotted
 --     namespace. Built In namespaces follow source files; custom namespaces are implied by saved
@@ -958,6 +1019,8 @@ addon.translation = {
 --     not install or enable other addons.
 [3276] = "Addon-Namen öffnen kopierbare offizielle Release- und Quelltext-Links der verfügbaren Anbieter. Die Filterung nach Edition folgt der erklärten Unterstützung für die passende Addon-Identität; unbekannte Kompatibilität bleibt sichtbar. Ein älteres Veröffentlichungsdatum allein beweist keine Inkompatibilität. Die angegebene Unterstützung von Spieleditionen beschreibt Veröffentlichungsnachweise des Herausgebers, keine Zertifizierung der Integration auf Ihrem Client. Für manche Integrationen gibt es nur historische oder ungeprüfte Releases. „Nicht geladen“ bedeutet für RM nicht verfügbar; „Unterstützt“ kennzeichnet eine verfügbare Integration ohne Aktivierungsschalter. Mitgelieferte Bibliotheken sind ausgenommen. Rotation Master installiert oder aktiviert keine anderen Addons.",
 -- 6c182d42 English: Apply / Discard
+-- Context: Help topic title for the buttons that save or abandon edits in an item list dialog and
+--     the window.
 [3277] = "Übernehmen / Verwerfen",
 -- d04a65ba English: Edits stay in a draft until Apply. Discard abandons pending changes. Leaving
 --     with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect
@@ -999,6 +1062,7 @@ addon.translation = {
 --     contents.
 [3284] = "Die Eingabetaste drücken oder ein Textfeld verlassen, um seinen Wert vorzumerken; „Übernehmen“ speichert den Entwurf. Ungültiger Text bleibt rot und muss vor „Übernehmen“ korrigiert werden; mit „Verwerfen“ lässt er sich verwerfen. Durchsuchbare Auswahllisten öffnen sich per Klick und filtern während der Eingabe. Abschnittsüberschriften klappen ihren Inhalt ein oder aus.",
 -- 53a70ff7 English: Editing this list
+-- Context: Help topic title at the top of the item list dialog help.
 [3285] = "Diese Liste wird bearbeitet",
 -- d71ea291 English: This window edits only the item list you opened. Search or drag items into the
 --     fields, then arrange preferred items first. A named item set is shared by its other users; a
@@ -1037,6 +1101,8 @@ addon.translation = {
 --     an existing destination, and leaves incomplete records unavailable until repaired.
 [3293] = "Ältere Rotationen ohne erfassten Besitzer bleiben in einem Archiv. „Nicht zugeordnete Rotationen wiederherstellen“ öffnet die Archive des aktuellen Profils und Charakters zum Ansehen oder Kopieren. „Klasse“ oder „Dieser Charakter“ wählen, um eine davon zuzuordnen. Die Zuordnung behält Kennung und Nachweise bei, verweigert ein bereits vorhandenes Ziel und lässt unvollständige Einträge bis zur Reparatur nicht verfügbar.",
 -- 4886d663 English: Enable Questie integration
+-- Context: Help topic title in Integrations help for the checkbox that turns on the Questie
+--     integration.
 [3294] = "Questie-Integration aktivieren",
 -- 3a9724aa English: Review supported addons, detected versions and status by integration type.
 --     Expand or collapse each integration group. Click an addon name to choose a copyable release
@@ -1068,8 +1134,11 @@ addon.translation = {
 --     has produced a report and while a capture is running.
 [3300] = "Öffnet den kopierbaren Bericht der Zauberbelege. Die Schaltfläche bleibt deaktiviert, bis eine Zaubererfassung einen Bericht erzeugt hat, und solange eine Erfassung läuft.",
 -- 472590ae English: Provider
+-- Context: Column heading in the addon download links dialog: the website that hosts the download
+--     (e.g. CurseForge).
 [3301] = "Anbieter",
 -- e7a241de English: URL
+-- Context: Column heading in the addon download links dialog: the web address of the download page.
 [3302] = "URL",
 -- 8ea4edb6 English: Select URL for copying (Ctrl+C)
 [3303] = "URL zum Kopieren markieren (Strg+C)",
@@ -1250,8 +1319,11 @@ addon.translation = {
 --     changed text, closed transfer or changed profile retires this Help.
 [3352] = "Diese Ansicht zeigt die Rotation, wie sie importiert würde: Name, Spezialisierungen, Umschaltbedingung, Schritte und Abklingzeiten. Sie ist schreibgeschützt, arbeitet mit einer Kopie und speichert oder ändert nichts. Schließen, um im Übertragungsdialog das Ziel zu wählen und zu importieren. Ein geänderter Text, eine geschlossene Übertragung oder ein geändertes Profil macht diese Hilfe hinfällig.",
 -- 5ac254c6 English: Macro invocation
+-- Context: Help topic title in the Announces help: an example of how a macro calls an announcement.
 [3353] = "Makroaufruf",
 -- 94a47c93 English: Supplied macro unit
+-- Context: Help topic title in the Announces help: the unit that a macro passes to the
+--     announcement.
 [3354] = "Übergebene Makroeinheit",
 -- c3039a0d English: Invoke this saved identifier directly from your macro. The supplied unit
 --     controls Announcement target conditions and Whisper; there is no implicit target.

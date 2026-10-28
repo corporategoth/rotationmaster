@@ -14,8 +14,13 @@ addon.translation = {
 -- d3742617 English: the number of {item} you are carrying {comparison} {quantity}
 [3393] = "o número de {item} que você carrega {comparison} {quantity}",
 -- ee0ed821 English: {stat} {comparison} {value}
+-- Context: Sentence template for the summary of an Extended Character Stats condition. The words in
+--     {braces} are filled in and must stay unchanged: {stat} the statistic name, {comparison} e.g.
+--     'is at least', {value} the number.
 [3394] = "{stat} {comparison} {value}",
 -- 9aabc8c2 English: {stat} {comparison} {value}%
+-- Context: Same template as the previous one but the value is a percentage; the '%' after {value}
+--     stays.
 [3395] = "{stat} {comparison} {value}%",
 -- 6be74ff6 English: The number of {members} members{pets} within {distance} yards of {unit} whose
 --     health deficit {qualifier} {threshold} {comparison} {value}
@@ -54,12 +59,21 @@ addon.translation = {
 --     yards of {unit} {comparison} {threshold}%
 [3407] = "{operation} da porcentagem de mana dos membros de {members}{pets} a até {distance} metros de {unit} {comparison} {threshold}%",
 -- e2f99617 English: Own Buff
+-- Context: Checkbox in the buff condition editor: only count buffs that you cast yourself. Also a
+--     help heading.
 [3408] = "Bônus próprio",
 -- 6a63971b English: Own Debuff
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you applied yourself.
+--     Also a help heading.
 [3409] = "Penalidade própria",
 -- c83645d3 English: Dispellable
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you can dispel. Also a
+--     help heading.
 [3410] = "Dissipável",
 -- fe483cd0 English: your own %s
+-- Context: Part of a buff or debuff summary: %s is the buff/debuff name, giving 'your own Renew'.
+--     Used when the 'only my own' option is on.
+-- %s #1: %s #1: the buff or debuff name, e.g. "Power Word: Fortitude" (the sentence reads "your own" followed by it)
 [3411] = "seu próprio %s",
 -- fd008b93 English: {unit} {{!have|do not have}} {aura}
 [3412] = "{unit} {{!tem|não tem}} {aura}",
@@ -72,237 +86,454 @@ addon.translation = {
 -- b6de011b English: the number of stacks of {aura} on {unit} {comparison} {quantity}
 [3416] = "o número de acúmulos de {aura} em {unit} {comparison} {quantity}",
 -- 0a2d00cc English: that is dispellable
+-- Context: Phrase appended to a debuff summary when the Dispellable option is on, e.g. '... of type
+--     Magic that is dispellable'.
 [3417] = "que é dissipável",
 -- 0021d5fe English: Enemy
+-- Context: Checkbox in the number-of-units-in-range condition: count enemies (unchecked counts
+--     non-enemies). Also a help heading.
 [3418] = "Inimigo",
 -- 974b3bbb English: <level>
+-- Context: Placeholder in a level-condition summary shown until a level is entered; keep the angle
+--     brackets.
 [3419] = "<nível>",
 -- 6a59c476 English: %s's level
+-- Context: Phrase in a level-condition summary, %s is a unit's name or description: 'the target's
+--     level'. The apostrophe-s makes it possessive.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [3420] = "nível de %s",
 -- d7e82e52 English: your level
+-- Context: Phrase in a level-condition summary for the player's own level; the alternative form
+--     uses a unit.
 [3421] = "seu nível",
 -- 8e99cd98 English: Relative
+-- Context: Checkbox in the unit level condition: the entered level is relative to the player's own
+--     level. Also a help heading.
 [3422] = "Relativo",
 -- c35070bc English: Resistance
+-- Context: Label of the comparison in the resistance condition (the amount of resistance), and its
+--     help heading.
 [3423] = "Resistência",
 -- e16703f1 English: Spell School
+-- Context: Label of the dropdown in the resistance condition: which school of magic (Fire, Frost
+--     ...). Also a help heading.
 [3424] = "Escola do feitiço",
 -- a4d50fb8 English: Partial
+-- Context: Checkbox in the resistance condition: count partial immunity too. Also a help heading.
 [3425] = "Parcial",
 -- a4130d7d English: Rank
+-- Context: Label of the comparison in the talent condition: the number of points in a talent.
 [3426] = "Grau",
 -- 55ca6cfd English: %s or %d others
+-- Context: Item list text: %s is the first item, %d how many other items there are, giving 'Item or
+--     3 others'.
+-- %s #1: %s #1: the first item, as a link or name, e.g. "[Healthstone]"
+-- %d #2: %d #2: how many other items are in the list, e.g. 2
 [3427] = "%s ou outros %d",
 -- 7d538635 English: a %s item set item
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [3428] = "um item do conjunto %s",
 -- 7db896a5 English: time until %s health reaches %s%%
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [3429] = "tempo até a vida %s chegar a %s%%",
 -- d7514051 English: time until %s health reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [3430] = "tempo até a vida %s chegar a %s",
 -- 9db8edbd English: time until %s health deficit reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health deficit (missing health) that is waited for, e.g. 20000
 [3431] = "tempo até o déficit de vida %s chegar a %s",
 -- 54bc9c29 English: including pets
+-- Context: Phrase added to a unit-count summary when pets are included, shown in parentheses:
+--     'including pets'.
 [3432] = "incluindo ajudantes",
 -- 17b8d67a English: <unit>
+-- Context: Placeholder in condition summaries shown until a unit is chosen; keep the angle
+--     brackets.
 [3433] = "<unidade>",
 -- f5c3527b English: <action>
+-- Context: Placeholder in condition summaries shown until an action is chosen (e.g. a kind of
+--     action performed); keep the angle brackets.
 [3434] = "<ação>",
 -- de16c890 English: <item>
+-- Context: Placeholder in condition summaries shown until an item is chosen; keep the angle
+--     brackets.
 [3435] = "<item>",
 -- 92c7c398 English: <role>
+-- Context: Placeholder in condition summaries shown until a role (tank/healer/damage) is chosen;
+--     keep the angle brackets.
 [3436] = "<função>",
 -- 5eacbf77 English: <class>
+-- Context: Placeholder in condition summaries shown until a class is chosen; keep the angle
+--     brackets.
 [3437] = "<classe>",
 -- 1107a6db English: <creature type>
+-- Context: Placeholder in condition summaries shown until a creature type is chosen; keep the angle
+--     brackets.
 [3438] = "<tipo de criatura>",
 -- 763c736c English: <classification>
+-- Context: Placeholder in condition summaries shown until a classification (normal, elite, boss
+--     ...) is chosen; keep the angle brackets.
 [3439] = "<classificação>",
 -- 32a8619d English: <talent>
+-- Context: Placeholder in condition summaries shown until a talent is chosen; keep the angle
+--     brackets.
 [3440] = "<talento>",
 -- 226723c3 English: <talent tree>
+-- Context: Placeholder in condition summaries shown until a talent tree is chosen; keep the angle
+--     brackets.
 [3441] = "<árvore de talentos>",
 -- 903fbb57 English: <glyph>
+-- Context: Placeholder in condition summaries shown until a glyph is chosen; keep the angle
+--     brackets.
 [3442] = "<glifo>",
 -- cb9c16d7 English: <rune type>
+-- Context: Placeholder in condition summaries shown until a rune type (Death Knight) is chosen;
+--     keep the angle brackets.
 [3443] = "<tipo de runa>",
 -- 9137bf37 English: <buff>
+-- Context: Placeholder in condition summaries shown until a buff is chosen; keep the angle
+--     brackets.
 [3444] = "<bônus>",
 -- 729e2db0 English: <debuff>
+-- Context: Placeholder in condition summaries shown until a debuff is chosen; keep the angle
+--     brackets.
 [3445] = "<penalidade>",
 -- 985669df English: <element>
+-- Context: Placeholder in totem condition summaries shown until a totem element is chosen; keep the
+--     angle brackets.
 [3446] = "<elemento>",
 -- ebb7e176 English: <totem>
+-- Context: Placeholder in totem condition summaries shown until a totem is chosen; keep the angle
+--     brackets.
 [3447] = "<totem>",
 -- 8b998a99 English: <threat>
+-- Context: Placeholder in threat condition summaries shown until a threat level is chosen; keep the
+--     angle brackets.
 [3448] = "<ameaça>",
 -- 0316e1e6 English: <form>
+-- Context: Placeholder in the shapeshift condition summary shown until a form is chosen; keep the
+--     angle brackets.
 [3449] = "<forma>",
 -- 22cc14cd English: <zone>
+-- Context: Placeholder in the zone condition summary shown until a zone name is entered; keep the
+--     angle brackets.
 [3450] = "<zona>",
 -- 7be59ec0 English: <name>
+-- Context: Placeholder in the pet-name condition summary shown until a name is entered; keep the
+--     angle brackets.
 [3451] = "<nome>",
 -- 131a415a English: <distance>
+-- Context: Placeholder in distance-based condition summaries shown until a distance is entered;
+--     keep the angle brackets.
 [3452] = "<distância>",
 -- b0b287ea English: <quantity>
+-- Context: Placeholder in item-count and item-set-count summaries shown until a number is entered;
+--     keep the angle brackets.
 [3453] = "<quantidade>",
 -- 5cf485b5 English: <school>
+-- Context: Placeholder in resistance condition summaries shown until a spell school is chosen; keep
+--     the angle brackets.
 [3454] = "<escola>",
 -- 6327939f English: <control type>
+-- Context: Placeholder in the loss-of-control summary shown until a control type (stun, fear ...)
+--     is chosen; keep the angle brackets.
 [3455] = "<tipo de controle>",
 -- e5cd35fd English: <operation>
+-- Context: Placeholder in group health summaries shown until a math operation (average, lowest ...)
+--     is chosen; keep the angle brackets.
 [3456] = "<operação>",
 -- be607902 English: <stat>
+-- Context: Placeholder in stat condition summaries shown until a statistic is chosen; keep the
+--     angle brackets.
 [3457] = "<atributo>",
 -- e31b37e6 English: %s with %s
+-- Context: Summary sentence for the health forecast condition: first %s is the comparison ('time
+--     until your health reaches 30% is at most 5 seconds'), second %s is the burn-rate mode (e.g.
+--     'both' or a trend setting).
+-- %s #1: %s #1: the comparison sentence about the time until the health target is reached, e.g. "time until your target's health reaches 30% is less than 10 seconds"
+-- %s #2: %s #2: the burn-rate mode, e.g. "both" or "recent" (translated)
 [3458] = "%s com %s",
 -- 0a09d74b English: the number of talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree, e.g. "Arcane"
 [3459] = "o número de pontos de talento em %s (%s)",
 -- 3155a253 English: %s resistance to %s
+-- Context: Phrase in the resistance summary: first %s is a unit (possessive, 'your'), second %s is
+--     the school, e.g. 'your resistance to Fire'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [3460] = "resistência %s a %s",
 -- 0f044feb English: Operation
+-- Context: Label of the dropdown in the group health condition and its help heading: the math
+--     operation (average, lowest ...).
 [3461] = "Operação",
 -- 37bac495 English: Count
+-- Context: Label of the comparison in the class count condition (how many party/raid members) and
+--     its help heading.
 [3462] = "Contagem",
 -- 822bab8d English: Quantity
+-- Context: Label of the comparison in the item-in-bags condition: how many of the item are carried.
+--     Also a help heading.
 [3463] = "Quantidade",
 -- 498024de English: Same Group
+-- Context: Checkbox in the units-in-range conditions: only count units in your own raid group. Also
+--     a help heading.
 [3464] = "Mesmo grupo",
 -- f56f56f0 English: Include Pets
+-- Context: Checkbox in the units-in-range conditions: also count pets. Also a help heading.
 [3465] = "Incluir ajudantes",
 -- 0417caa6 English: %s health
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'your health'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3466] = "vida %s",
 -- d3e6835a English: %s health deficit
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'target's health deficit'
+--     (how much health is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3467] = "déficit de vida %s",
 -- 0b7f509c English: %s mana
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3468] = "mana %s",
 -- c26c9d56 English: %s mana deficit
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana deficit' (how much
+--     mana is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3469] = "déficit de mana %s",
 -- 38e9ce41 English: %s power
+-- Context: Phrase in power condition summaries (rage, energy, etc.); %s is whose power, e.g. 'your
+--     power'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3470] = "poder %s",
 -- 8e8bafed English: %s power deficit
+-- Context: Phrase in power condition summaries; %s is whose power, e.g. 'your power deficit' (how
+--     much is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3471] = "déficit de poder %s",
 -- ee7787cd English: %s point total
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point total'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3472] = "total de pontos %s",
 -- 30f011ad English: %s point deficit
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point deficit' (how many are missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3473] = "déficit de pontos %s",
 -- 309b1607 English: Rune Type
+-- Context: Label of the dropdown in the Death Knight rune condition: which kind of rune. Also a
+--     help heading.
 [3474] = "Tipo de runa",
 -- 4a6d5ef7 English: the number of %s runes available
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [3475] = "o número de runas de %s disponíveis",
 -- 02c78980 English: cooldown on your next %s rune
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [3476] = "recarga da sua próxima runa de %s",
 -- 2bfe8a1c English: the %s
+-- Context: Wraps a cooldown or recharge comparison in the summary: %s is the comparison text,
+--     giving 'the cooldown on X is at most 5 seconds'.
+-- %s #1: %s #1: a comparison about a cooldown, charges or recharge time, e.g. "cooldown on [Fireball] is less than 5 seconds"
 [3477] = "o %s",
 -- f95180b3 English: cooldown on %s
+-- Context: Phrase in spell cooldown summaries; %s is the spell link, e.g. 'cooldown on Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3478] = "tempo de recarga de %s",
 -- cae44083 English: %s seconds
+-- Context: Number of seconds in a summary; %s is the number, e.g. '5 seconds'.
+-- %s #1: %s #1: the number of seconds, e.g. 10
 [3479] = "%s segundos",
 -- 381a8e96 English: Seconds
+-- Context: Label of the comparison in the spell cooldown condition: a number of seconds. Also a
+--     help heading.
 [3480] = "Segundos",
 -- de838855 English: Stage
+-- Context: Label of the comparison in the boss mod stage condition: the current encounter stage
+--     number.
 [3481] = "Fase",
 -- b1097936 English: Encounter ID (blank for any)
 [3482] = "ID do encontro (em branco para qualquer um)",
 -- 8002bd2a English: Boss ability spell ID
 [3483] = "ID do feitiço da habilidade do chefe",
 -- 938af2ed English: Running timers:
+-- Context: Prefix in the boss mod timer description, followed by a list of the running timers.
 [3484] = "Temporizadores em andamento:",
 -- db93de5e English: No boss-mod timers are running.
 [3485] = "Nenhum temporizador do mod de chefe em andamento.",
 -- d25fe6e9 English: No boss-mod encounter is in progress.
 [3486] = "Nenhum encontro do mod de chefe em andamento.",
 -- bb8c3466 English: Boss mod data unavailable: %s
+-- %s #1: %s #1: why the boss mod data is unavailable, a short code (shown as-is), e.g. "adapter-unavailable"
 [3487] = "Dados do mod de chefe indisponíveis: %s",
 -- 163f58b8 English: Current encounter: %s (ID %s), stage %s
+-- %s #1: %s #1: the encounter name, e.g. "Ragnaros"
+-- %s #2: %s #2: the encounter ID, or "none", e.g. "672"
+-- %s #3: %s #3: the encounter stage number, e.g. 2
 [3488] = "Encontro atual: %s (ID %s), fase %s",
 -- d0ee75f0 English: your boss mod reports encounter %s {{!is|is not}} in progress
+-- %s #1: %s #1: the boss encounter ID, e.g. "672"
 [3489] = "seu mod de chefe informa que o encontro %s {{!está|não está}} em andamento",
 -- 9f2947bc English: your boss mod {{!reports|does not report}} an encounter in progress
 [3490] = "seu mod de chefe {{!informa|não informa}} um encontro em andamento",
 -- 772d9f0d English: the boss-mod encounter stage
 [3491] = "a fase do encontro do mod de chefe",
 -- 03f1bf98 English: the boss-mod timer for %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Hellfire (spell ID 1949)"
 [3492] = "o temporizador do mod de chefe para %s",
 -- aac06d0a English: Seconds until the boss mod expects the ability. A paused timer keeps its
 --     remaining time.
 [3493] = "Segundos até o mod de chefe prever a habilidade. Um temporizador pausado mantém o tempo restante.",
 -- a3b0ec0a English: number of charges on %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3494] = "número de cargas de %s",
 -- d3f9533d English: Charges
+-- Context: Label of the comparison in the spell charges condition (number of charges). Also a help
+--     heading.
 [3495] = "Cargas",
 -- d9f8ffbe English: %s casts ago
+-- Context: Phrase in spell-cast history summaries; %s is a count, e.g. '3 casts ago'.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [3496] = "há %s lançamentos",
 -- ebffec66 English: %s seconds ago
+-- Context: Phrase in history summaries; %s is a number of seconds, e.g. '5 seconds ago'.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [3497] = "há %s segundos",
 -- 093ae2d4 English: %s actions ago
+-- Context: Phrase in action-history summaries; %s is a count, e.g. '2 actions ago'.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [3498] = "há %s ações",
 -- 61bb6794 English: %s {{!was|was not}} cast %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
+-- %s #2: %s #2: when it was cast, e.g. "fewer than 3 casts ago" or "more than 5 seconds ago"
 [3499] = "%s {{!foi lançado|não foi lançado}} %s",
 -- 7a55e41d English: %s {{!were|were not}} %s %s
+-- %s #1: %s #1: the unit; the "were" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3500] = "%s {{!foi|não foi}} %s %s",
 -- 089cd4ce English: %s {{!was|was not}} %s %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3501] = "%s {{!foi|não foi}} %s %s",
 -- d72cc5dd English: the remaining time
+-- Context: Phrase in buff/debuff duration summaries: the time left on the aura.
 [3502] = "o tempo restante",
 -- 5242ce0a English: Stacks
+-- Context: Label of the comparison in the buff stacks condition (application count). Also a help
+--     heading.
 [3503] = "Acúmulos",
 -- 6f54bbcb English: <debuff type>
+-- Context: Placeholder in debuff-type summaries shown until a type (Magic, Poison ...) is chosen;
+--     keep the angle brackets.
 [3504] = "<tipo de penalidade>",
 -- cf1e1b18 English: Debuff Type
+-- Context: Label of the dropdown in the debuff type condition: Magic, Curse, Disease, Poison. Also
+--     a help heading.
 [3505] = "Tipo de penalidade",
 -- 2464ac36 English: Check If Not Carrying
 [3506] = "Verificar mesmo sem carregar",
 -- cc1059c6 English: , even if you do not currently have one
 [3507] = ", mesmo que você não tenha nenhum no momento",
 -- 7e67190c English: Control Type
+-- Context: Label of the dropdown in the loss-of-control condition: the kind of control (stun, fear
+--     ...). Also a help heading.
 [3508] = "Tipo de controle",
 -- e4a034d6 English: time remaining on %s
+-- Context: Phrase in the loss-of-control summary; %s is the control type, e.g. 'time remaining on
+--     stun'.
+-- %s #1: %s #1: the type of loss-of-control effect, e.g. "Stun" or "Silence"
 [3509] = "tempo restante de %s",
 -- b7d036de English: School Blocked
+-- Context: Label of the dropdown in the school lockout condition: which school is locked. Also a
+--     help heading.
 [3510] = "Escola bloqueada",
 -- 48c8596c English: time remaining on block of your %s abilities
+-- %s #1: %s #1: the spell school that is blocked, e.g. "Fire"
 [3511] = "tempo restante do bloqueio das suas habilidades de %s",
 -- 2f024fe4 English: humanoid
+-- Context: Option in the shapeshift form dropdown: not shapeshifted. Also named in the form help
+--     text; lowercase.
 [3512] = "humanoide",
 -- e112b377 English: humanoid form
+-- Context: Phrase in the form summary when no shapeshift form is active: 'humanoid form'.
 [3513] = "forma humanoide",
 -- 2e0e960a English: Form
+-- Context: Label of the dropdown in the shapeshift condition (also stances and stealth). Also a
+--     help heading.
 [3514] = "Forma",
 -- 4d95bdd5 English: the number of %s members%s within %s yards of %s
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [3515] = "o número de membros de %s%s a até %s metros de %s",
 -- 4c543e99 English: the number of enemies on which you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [3516] = "o número de inimigos em que você está pelo menos %s",
 -- bd310339 English: closer than %s yards
+-- Context: Phrase in the distance summary: %s is a number, e.g. 'closer than 10 yards'.
+-- %s #1: %s #1: the distance in yards, e.g. 10
 [3517] = "uma unidade a menos de %s metros",
 -- 30d28f49 English: allies
+-- Context: Plural noun in the unit-count summary: friendly units.
 [3518] = "aliados",
 -- d0110013 English: enemies
+-- Context: Plural noun in the unit-count summary: hostile units.
 [3519] = "inimigos",
 -- 7002c54a English: Number of %s within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3520] = "Número de %s a até %s metros",
 -- f9d6358c English: Number of %ss in the %s
+-- %s #1: %s #1: the class name, e.g. "Mage" (the "s" after %s is a plural ending in English)
+-- %s #2: %s #2: the group, "Party" or "Raid", e.g. "Raid"
 [3521] = "Número de %s em %s",
 -- 796861d3 English: the time remaining on %s channel
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3522] = "o tempo restante da canalização %s",
 -- 029b1c92 English: the time remaining on %s cast
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3523] = "o tempo restante do lançamento %s",
 -- 4bca01ec English: no PVP
+-- Context: Option in the zone PVP dropdown and its summary: the zone has no PVP rules.
 [3524] = "sem JxJ",
 -- 5e23ec6a English: Mode
+-- Context: Label of the dropdown in the zone PVP condition: the zone's PVP status. Also a help
+--     heading.
 [3525] = "Modo",
 -- d50c7904 English: Other (scenario)
+-- Context: Option in the instance type dropdown and its summary: the instance is none of the usual
+--     types (a scenario).
 [3526] = "Outro (cenário)",
 -- f6fe5e59 English: SubZone
+-- Context: Checkbox in the zone condition: compare the sub zone instead of the zone name. Also a
+--     help heading.
 [3527] = "Subzona",
 -- 2c7564b7 English: %s (set %d)
+-- Context: Item set name with its number: first %s is the set name, %d its set number.
+-- %s #1: %s #1: the name of the set bonus (item set), e.g. "Plate of the Dread Lord"
+-- %d #2: %d #2: the item set ID, e.g. 1234
 [3528] = "%s (conjunto %d)",
 -- eb179560 English: %s, %d equipped
+-- Context: Item set entry in the dropdown of sets you wear: first %s is the set label, %d how many
+--     pieces are equipped.
+-- %s #1: %s #1: the item set, as its name and ID or "item set 1234", e.g. "Plate of the Dread Lord (set 1234)"
+-- %d #2: %d #2: how many pieces of the set are equipped, e.g. 4
 [3529] = "%s, %d equipadas",
 -- d5c50d7b English: <action bar>
+-- Context: Placeholder in the action context summary shown until an action bar is chosen; keep the
+--     angle brackets.
 [3530] = "<barra de ações>",
 -- fbf90b5a English: <enchant>
+-- Context: Placeholder in the weapon enchant summary shown until an enchant ID is entered; keep the
+--     angle brackets.
 [3531] = "<encantamento>",
 -- 23127ea1 English: <item set>
+-- Context: Placeholder in item set summaries shown until a set is chosen; keep the angle brackets.
 [3532] = "<conjunto de itens>",
 -- 7c027705 English: A rotation of your own is used only on your own bar unless its switch condition
 --     requires another action context with this condition; it is then used, and its buttons found,
@@ -311,18 +542,26 @@ addon.translation = {
 -- fcefef14 English: Currently: no temporary enchant
 [3534] = "Atualmente: sem encantamento temporário",
 -- f1ce6167 English: Currently: temporary enchant %d
+-- %d #1: %d #1: the ID of the temporary weapon enchant now active, e.g. 5400
 [3535] = "Atualmente: encantamento temporário %d",
 -- ef4a5266 English: Enchant ID
+-- Context: Label of the edit box in the weapon enchant condition: the numeric ID of the temporary
+--     enchant. Also a help heading.
 [3536] = "ID do encantamento",
 -- 77078c59 English: Equipped Sets
+-- Context: Label of the dropdown in the item set condition listing the sets you currently wear.
 [3537] = "Conjuntos equipados",
 -- 4eb9c836 English: Item Set ID
+-- Context: Label of the edit box in the item set condition: the numeric ID of an item set. Also a
+--     help heading.
 [3538] = "ID do conjunto de itens",
 -- 27e95eae English: Matches the bar you are acting through: your own, a vehicle, a possessed (mind
 --     controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from
 --     Wrath, pet battles only on Retail.
 [3539] = "Corresponde à barra pela qual você está agindo: a sua, um veículo, uma unidade possuída (controle mental), uma barra de substituição ou uma batalha de mascotes. Veículos e barras de substituição existem desde o Wrath; batalhas de mascotes, apenas no Retail.",
 -- dd05d0e2 English: Pieces
+-- Context: Label of the comparison in the item set condition: number of set pieces equipped. Also a
+--     help heading.
 [3540] = "Peças",
 -- 4f9a6625 English: The game's item set (for example a tier set). Sets you are wearing are offered
 --     in the list; the count is taken from your equipped items' metadata and stays unavailable
@@ -334,30 +573,50 @@ addon.translation = {
 --     imbue. The current enchant ID of the selected hand is shown below the field.
 [3543] = "O encantamento temporário da arma: um veneno, óleo, pedra de amolar ou imbuição de arma. O ID do encantamento atual da mão selecionada aparece abaixo do campo.",
 -- de2d2147 English: item set %d
+-- Context: Fallback name for an item set whose name is not known; %d is the set number.
+-- %d #1: %d #1: the item set ID, e.g. 1234
 [3544] = "conjunto de itens %d",
 -- a693df35 English: the number of {set} pieces you have equipped {comparison} {quantity}
 [3545] = "o número de peças de {set} que você tem equipadas {comparison} {quantity}",
 -- 84463f60 English: you {{!are|are not}} acting through %s
+-- %s #1: %s #1: the action bar or context, e.g. "Main action bar"
 [3546] = "você {{!está|não está}} agindo por meio de %s",
 -- c16cbdbc English: your %s weapon {{!has|does not have}} temporary enchant %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: the temporary enchant ID, e.g. "5400"
 [3547] = "sua arma da %s {{!tem|não tem}} o encantamento temporário %s",
 -- 9e163ca5 English: the time remaining on your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3548] = "o tempo restante do bônus da sua arma da %s",
 -- 6153a726 English: the number of stacks of your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3549] = "o número de acúmulos do bônus da sua arma da %s",
 -- 4320f428 English: Your %s weapon %s
+-- Context: Sentence in weapon speed summaries: first %s is the weapon (main hand, off hand,
+--     ranged), second %s is the comparison, e.g. 'Your main hand weapon attack speed is at least 2
+--     seconds'.
+-- %s #1: %s #1: which weapon, "ranged", "off hand" or "main hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the attack speed or swing time, e.g. "attack speed is less than 2 seconds"
 [3550] = "Sua arma (%s): %s",
 -- 1f8df0f5 English: off hand
+-- Context: Weapon slot in summaries: the off-hand weapon (lowercase).
 [3551] = "mão secundária",
 -- c8f1b901 English: main hand
+-- Context: Weapon slot in summaries: the main-hand weapon (lowercase).
 [3552] = "mão principal",
 -- c4756181 English: attack speed
+-- Context: Quantity compared in the weapon speed summary: how many seconds one swing takes
+--     (lowercase).
 [3553] = "velocidade de ataque",
 -- 736e26ef English: Attack Speed
+-- Context: Label of the comparison in the weapon attack speed condition and its help heading.
 [3554] = "Velocidade de ataque",
 -- d30240f8 English: swing time remaining
+-- Context: Quantity compared in the swing timer summary: the time left until the next swing
+--     (lowercase).
 [3555] = "tempo restante do golpe",
 -- 0f6a6d02 English: Swing Time Remaining
+-- Context: Label of the comparison in the swing timer condition and its help heading.
 [3556] = "Tempo restante do golpe",
 -- ec8bc0f2 English: Pet Spell History Memory (seconds)
 [3557] = "Memória do histórico de feitiços do ajudante (segundos)",
@@ -403,6 +662,9 @@ addon.translation = {
 --     boundary, missing data or restricted data stays unavailable, including under NOT.
 [3569] = "Usa a verificação nativa de alcance de Atacar quando disponível. Caso contrário, usa o intervalo público da LibRangeCheck para distinguir o alcance próximo de mais de cinco metros; essa estimativa não prova a geometria exata de corpo a corpo para todo alvo. Um intervalo que cruza o limite, ou dados ausentes ou restritos, continua indisponível, inclusive sob NÃO.",
 -- 2c7c2760 English: recharge time on %s
+-- Context: Phrase in spell recharge summaries; %s is the spell link, e.g. 'recharge time on
+--     Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3570] = "tempo de recarga de cargas de %s",
 -- a407140e English: Seconds until the next spell charge. Full charges and inactive recharge timers
 --     report zero. Missing, restricted, or non-charge spell data stays unavailable.
@@ -421,6 +683,7 @@ addon.translation = {
 --     replaces it; viewing does not convert it.
 [3575] = "Esta referência pertence a outro layout de talentos. Selecionar um talento a substitui explicitamente; apenas visualizá-la não a converte.",
 -- a08e2044 English: Historical talent slot %s (unavailable)
+-- %s #1: %s #1: the old talent slot number, e.g. 7
 [3576] = "Espaço de talento histórico %s (indisponível)",
 -- d511337a English: This client uses a different talent system. This reference is preserved but
 --     cannot be evaluated.
@@ -436,12 +699,20 @@ addon.translation = {
 --     the condition is unavailable, including under NOT.
 [3579] = "Uma forma é escolhida pelo seu feitiço, então a condição continua funcionando à medida que novas formas são aprendidas e em todos os idiomas do cliente. Qualquer grau da forma corresponde. A lista mostra as formas da sua barra de formas e depois as outras formas da sua classe neste cliente. Uma condição salva por espaço da barra de formas mantém esse espaço até você escolher uma forma. Se o cliente não consegue ler a forma ativa, a condição fica indisponível, inclusive sob NÃO.",
 -- 114a5b8b English: Stance bar slot %s (%s)
+-- %s #1: %s #1: the stance bar slot number, e.g. 2
+-- %s #2: %s #2: the name of the stance in that slot, e.g. "Defensive Stance"
 [3580] = "Espaço %s da barra de formas (%s)",
 -- 2eaf81a4 English: %s cast progress
+-- Context: Phrase in cast progress summaries; %s is a unit, e.g. 'target's cast progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3581] = "Progresso do lançamento de %s",
 -- 4df1232e English: %s channel progress
+-- Context: Phrase in channel progress summaries; %s is a unit, e.g. 'target's channel progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3582] = "Progresso do canalizamento de %s",
 -- 4664827f English: Progress
+-- Context: Label of the comparison in the cast/channel progress conditions: percent completed. Also
+--     a help heading.
 [3583] = "Progresso",
 -- 8b7f75d4 English: How much of the current cast of {unit} is done, from 0% when it starts to 100%
 --     when it completes. It follows haste and pushback, because it is measured against the cast's
@@ -456,13 +727,18 @@ addon.translation = {
 --     cannot be read, it is unavailable, including under NOT.
 [3585] = "Quanto do canalizamento atual de {unit} já foi feito, de 0% quando começa a 100% quando termina. Os pulsos são igualmente espaçados ao longo de um canalizamento, então o pulso N de um canalizamento de K pulsos cai em N/K seja qual for a sua aceleração: para interromper Flagelo Mental (3 pulsos) depois do segundo pulso, use pelo menos 66%. O atraso encurta um canalizamento e o progresso o acompanha. Se a unidade não está canalizando, esta condição não tem sucesso, seja qual for o operador; se os tempos do canalizamento não podem ser lidos, ela fica indisponível, inclusive sob NÃO.",
 -- 51b0dd92 English: Talent tree %s
+-- Context: Fallback name for a talent tree that has no known name; %s is its number.
+-- %s #1: %s #1: the talent tree number, e.g. 2
 [3586] = "Árvore de talentos %s",
 -- d695f0be English: This client does not expose a Classic talent-tree layout. The saved tree
 --     reference is preserved.
 [3587] = "Este cliente não expõe um layout de árvore de talentos do Classic. A referência à árvore salva é preservada.",
 -- 87d6a3d4 English: Talent tree
+-- Context: Label of the dropdown in the talent condition for choosing a Classic talent tree (e.g.
+--     Arms, Fury, Protection).
 [3588] = "Árvore de talentos",
 -- fd027208 English: the number of points spent in %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3589] = "o número de pontos gastos em %s",
 -- 7661e068 English: Talent tree selects the Classic tree whose spent points are compared. Public
 --     points are read again on the next evaluation; missing or restricted points are unavailable,
@@ -494,86 +770,139 @@ addon.translation = {
 --     not bypass the action's implicit ownership, usability and range checks.
 [3596] = "Item disponível verifica o nível exigido e o tempo de recarga ativo do item. Um tempo de recarga em andamento só conta quando termina junto com o tempo de recarga global legível. Esta condição não ignora as verificações implícitas de posse, usabilidade e alcance da ação.",
 -- e22e898a English: %s totem {{!is|is not}} active
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [3597] = "o totem de %s {{!está|não está}} ativo",
 -- b0cc0e08 English: %s {{!are|are not}} %s
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your target" or "closer than 10 yards"
 [3598] = "%s {{!é|não é}} %s",
 -- 93814226 English: %s {{!are|are not}} currently casting
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3599] = "%s {{!está|não está}} lançando um feitiço",
 -- 7e8e3a71 English: {unit} {{!are|are not}} currently casting {spell}
 [3600] = "{unit} {{!está|não está}} lançando {spell}",
 -- b5ad374e English: %s {{!are|are not}} currently channeling
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3601] = "%s {{!está|não está}} canalizando",
 -- e2a66ca1 English: {unit} {{!are|are not}} currently channeling {spell}
 [3602] = "{unit} {{!está|não está}} canalizando {spell}",
 -- e30aee86 English: %s {{!has|does not have}} a debuff of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3603] = "%s {{!tem|não tem}} uma penalidade do tipo %s",
 -- abd3a229 English: %s {{!has|does not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3604] = "%s {{!tem|não tem}} uma penalidade aplicada por você do tipo %s",
 -- c12a1e93 English: %s {{!has|does not have}} a stealable buff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3605] = "%s {{!tem|não tem}} um bônus roubável",
 -- 8cf6f25f English: %s {{!have|do not have}} a stealable buff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3606] = "%s {{!tem|não tem}} um bônus roubável",
 -- ec3d55c7 English: %s {{!have|do not have}} a debuff of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3607] = "%s {{!tem|não tem}} uma penalidade do tipo %s",
 -- 5a1ec624 English: %s {{!have|do not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3608] = "%s {{!tem|não tem}} uma penalidade aplicada por você do tipo %s",
 -- f06faf9e English: %s {{!is|is not}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your focus target" or "closer than 10 yards"
 [3609] = "%s {{!é|não é}} %s",
 -- 9f491513 English: %s class {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the class name, e.g. "Mage"
 [3610] = "a classe %s {{!é|não é}} %s",
 -- 19a6a0f4 English: %s creature type {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the creature type, e.g. "Undead"
 [3611] = "o tipo de criatura %s {{!é|não é}} %s",
 -- f7f4eee9 English: %s classification {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the unit classification, e.g. "Rare Elite"
 [3612] = "a classificação %s {{!é|não é}} %s",
 -- 7d66ae03 English: %s {{!is|is not}} active
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 [3613] = "%s {{!está|não está}} ativo",
 -- 8f9c8fcf English: %s {{!is|is not}} active or pending
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3614] = "%s {{!está|não está}} ativo ou pendente",
 -- ad8a0ce2 English: %s {{!is|is not}} active where %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3615] = "%s {{!está|não está}} ativo em que %s",
 -- fb5dc62c English: %s {{!is|is not}} available
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3616] = "%s {{!está|não está}} disponível",
 -- cb0383c3 English: %s {{!is|is not}} beyond melee range
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3617] = "%s {{!está|não está}} fora do alcance corpo a corpo",
 -- 309913f6 English: %s {{!are|are not}} beyond melee range
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3618] = "%s {{!está|não está}} fora do alcance corpo a corpo",
 -- 03733067 English: %s {{!is|is not}} currently casting
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3619] = "%s {{!está|não está}} lançando um feitiço",
 -- a1cfb513 English: %s {{!is|is not}} currently channeling
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3620] = "%s {{!está|não está}} canalizando",
 -- 31089dcd English: {unit} {{!is|is not}} currently casting {spell}
 [3621] = "{unit} {{!está|não está}} lançando {spell}",
 -- 99f8dade English: {unit} {{!is|is not}} currently channeling {spell}
 [3622] = "{unit} {{!está|não está}} canalizando {spell}",
 -- 31ab9f8e English: %s {{!is|is not}} immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3623] = "%s {{!é|não é}} imune a %s",
 -- 872345c0 English: %s {{!are|are not}} immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3624] = "%s {{!é|não é}} imune a %s",
 -- 5b36d6f3 English: %s role {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [3625] = "a função %s {{!é|não é}} %s",
 -- 72a91bd3 English: %s {{!is|is not}} in range
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3626] = "%s {{!está|não está}} ao alcance",
 -- a9486ed1 English: %s {{!is|is not}} sometimes immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3627] = "%s {{!é|não é}} às vezes imune a %s",
 -- f4b3cec6 English: %s {{!are|are not}} sometimes immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3628] = "%s {{!é|não é}} às vezes imune a %s",
 -- 893b04d1 English: %s {{!will|will not}} run
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [3629] = "%s {{!vai fugir|não vai fugir}}",
 -- 29755793 English: %s channeled spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3630] = "o feitiço canalizado %s {{!é|não é}} interrompível",
 -- 372c957d English: %s spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3631] = "o feitiço %s {{!é|não é}} interrompível",
 -- 970cadca English: You {{!know|do not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Fireball (spell ID 133)"
 [3632] = "Você {{!conhece|não conhece}} %s",
 -- 6306f609 English: Your %s weapon {{!is|is not}} enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3633] = "Sua arma da %s {{!está|não está}} encantada",
 -- 715d2919 English: Your pet {{!knows|does not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Bite (spell ID 17253)"
 [3634] = "Seu ajudante {{!conhece|não conhece}} %s",
 -- a0f98b32 English: you {{!are|are not}} at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [3635] = "você {{!está|não está}} pelo menos %s em %s",
 -- fa0b7d5f English: you {{!are|are not}} in %s
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [3636] = "você {{!está|não está}} em %s",
 -- aaf9e864 English: your instance type {{!is|is not}} %s
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3637] = "seu tipo de instância {{!é|não é}} %s",
 -- 30f15e23 English: you {{!are|are not}} in a group
 [3638] = "você {{!está|não está}} em um grupo",
@@ -588,24 +917,33 @@ addon.translation = {
 -- 9993a0fe English: you {{!are|are not}} stealthed
 [3643] = "você {{!está|não está}} em furtividade",
 -- 3216151b English: you {{!are|are not}} talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [3644] = "você {{!tem|não tem}} talentos em %s",
 -- 0d61ee4d English: you {{!have|do not have}} %s active
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [3645] = "você {{!tem|não tem}} %s ativo",
 -- 568fa9d4 English: you {{!have|do not have}} a %s totem active where %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3646] = "você {{!tem|não tem}} um totem de %s ativo em que %s",
 -- 06e77f0d English: you {{!have|do not have}} a pet
 [3647] = "você {{!tem|não tem}} um ajudante",
 -- 8be0937e English: you {{!have|do not have}} a pet named {name}
 [3648] = "você {{!tem|não tem}} um ajudante chamado {name}",
 -- 011430be English: your primary talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3649] = "sua árvore de talentos principal {{!é|não é}} %s",
 -- 1ebc1187 English: the zone's PVP status {{!is|is not}} %s
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [3650] = "o estado JxJ da zona {{!é|não é}} %s",
 -- 0bcca767 English: {{!in|not in}} {zone}
 [3651] = "{{!em|fora de}} {zone}",
 -- c14661e2 English: Time in combat
+-- Context: Name of the measure compared in the combat-time condition summary: how long the player
+--     has been in combat (followed by 'is at least 10 seconds').
 [3652] = "Tempo em combate",
 -- 33629208 English: %s {{!is|is not}} auto-repeating
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3653] = "%s {{!está em repetição automática|não está em repetição automática}}",
 -- 9544d41a English: Tests whether the selected spell is currently auto-repeating, such as Shoot or
 --     Auto Shot. This is different from a spell being current or queued: a queued cast alone does
@@ -651,6 +989,7 @@ addon.translation = {
 -- b9151b16 English: Assisted Combat {{!is|is not}} suggesting a spell
 [3667] = "o Assistente de Combate {{!está|não está}} sugerindo um feitiço",
 -- 43bf497e English: Assisted Combat {{!suggests|does not suggest}} %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3668] = "o Assistente de Combate {{!sugere|não sugere}} %s",
 -- 6c9594a9 English: Matches when Blizzard's Assisted Combat suggests this spell as the next cast.
 --     An override counts as its base spell, and the base spell as its override. With no spell
@@ -661,6 +1000,7 @@ addon.translation = {
 --     this condition is unavailable rather than false, including under NOT.
 [3670] = "O Assistente de Combate existe no Retail (e está declarado no Forever). Onde o jogo não o oferece, para este personagem ou especialização, ou quando a sugestão não pode ser lida, esta condição fica indisponível em vez de falsa, inclusive sob NÃO.",
 -- 32c737f7 English: %s {{!is|is not}} in Blizzard's Assisted Combat rotation
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3671] = "%s {{!está|não está}} na rotação do Assistente de Combate da Blizzard",
 -- ae726224 English: Matches when this spell is one Blizzard's Assisted Combat can suggest for your
 --     current specialization. Its current override and its base spell count too. Use it to
@@ -681,12 +1021,21 @@ addon.translation = {
 --     cannot be read, including under NOT.
 [3676] = "Indisponível apenas onde o cliente não tem a API do Assistente de Combate ou a resposta dele não pode ser lida, inclusive sob NÃO.",
 -- 6f6ccc8f English: rune spell %s
+-- Context: Fallback name for a rune with no known spell name; %s is the spell ID (Season of
+--     Discovery rune condition).
+-- %s #1: %s #1: the spell ID of the rune, e.g. 400000
 [3677] = "feitiço da runa %s",
 -- 7bf70ccc English: rune %s
+-- Context: Fallback name for a rune with no known name; %s is the rune ID (Season of Discovery rune
+--     condition).
+-- %s #1: %s #1: the rune number, e.g. 12
 [3678] = "runa %s",
 -- 54791384 English: you {{!have|do not have}} the rune %s engraved
+-- %s #1: %s #1: the name of the engraved rune, e.g. "Rune of the Fire"
 [3679] = "você {{!tem|não tem}} a runa %s gravada",
 -- e999d0a1 English: <rune>
+-- Context: Placeholder in the engraved-rune summary shown until a rune is chosen; keep the angle
+--     brackets.
 [3680] = "<runa>",
 -- 4e0d82c9 English: Your runes have not loaded yet. Reopen this condition shortly, or enter an ID
 --     below.
@@ -695,14 +1044,24 @@ addon.translation = {
 --     unavailable here.
 [3682] = "Este personagem não pode gravar runas. Uma runa digitada por ID abaixo é mantida e fica indisponível aqui.",
 -- 7294ffa8 English: Slot %d
+-- Context: Fallback name for an equipment slot group in the rune condition's slot dropdown; %d is
+--     the slot number.
+-- %d #1: %d #1: the equipment slot category number, e.g. 5
 [3683] = "Espaço %d",
 -- 1eccb682 English: Equipment Slot
+-- Context: Label of the dropdown in the rune condition: the equipment slot (chest, hands, legs ...)
+--     the rune is engraved on.
 [3684] = "Espaço de equipamento",
 -- f55862c6 English: Rune
+-- Context: Label of the dropdown in the rune condition: which rune. Also a help heading.
 [3685] = "Runa",
 -- 577a2fa4 English: Rune Spell ID
+-- Context: Label of the edit box in the rune condition: the ID of a spell the rune teaches. Also
+--     part of a help heading.
 [3686] = "ID do feitiço da runa",
 -- b84ca6e3 English: Rune ID
+-- Context: Label of the edit box in the rune condition: the rune's own numeric ID, for runes that
+--     teach no spell. Also part of a help heading.
 [3687] = "ID da runa",
 -- a698651e English: Matches when a Season of Discovery rune is engraved on one of your equipped
 --     items. Passive runes count too, which a known-spell test cannot see.
@@ -720,33 +1079,54 @@ addon.translation = {
 [3691] = "A gravação existe apenas nos reinos da Temporada de Descobertas. Em outros lugares, e até as suas runas serem carregadas depois do login, esta condição fica indisponível em vez de falsa, inclusive sob NÃO. As runas de ombreira da Fase 7 não são gravações e não são detectadas. Esta não é a condição Runa do Cavaleiro da Morte.",
 -- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
 --     and evaluated.
+-- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
 [3692] = "Seus talentos não podem ser listados agora (%s). Um ID de nó digitado abaixo é mantido e avaliado.",
 -- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
 --     and evaluated.
 [3693] = "Os talentos só podem ser listados para a sua própria classe. Um ID de nó digitado abaixo é mantido e avaliado.",
 -- 7417e36a English: Class talents
+-- Context: Group heading in the talent dropdown: talents shared by all specializations of the
+--     class.
 [3694] = "Talentos de classe",
 -- 9900921e English: Specialization talents
+-- Context: Group heading in the talent dropdown: talents of the chosen specialization only.
 [3695] = "Talentos de especialização",
 -- 6eaab468 English: Class and specialization talents
 [3696] = "Talentos de classe e de especialização",
 -- 7d26d446 English: Hero talents: %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3697] = "Talentos de herói: %s",
 -- cb9e8664 English: Tier
+-- Context: Label of the dropdown in the Classic grid talent condition: which row (tier) of talents.
 [3698] = "Nível",
 -- 1ba2a4e3 English: Tier %d (level %d)
+-- Context: Entry in the talent tier dropdown; first %d is the tier number, second %d the character
+--     level at which it unlocks.
+-- %d #1: %d #1: the talent tier, 1 to 6, e.g. 3
+-- %d #2: %d #2: the character level at which the tier unlocks, e.g. 30
 [3699] = "Nível %d (nível %d)",
 -- 8dfbb734 English: %s (choice)
+-- Context: Talent name in the talent dropdown when the talent is one of two or more choices at a
+--     node; %s is the talent name.
+-- %s #1: %s #1: the name of a talent that is one of several choices on its node, e.g. "Improved Blink"
 [3700] = "%s (escolha)",
 -- e8871b70 English: Talents
+-- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3701] = "Talentos",
 -- d6f5d4a1 English: Talent Node ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
 [3702] = "ID do nó de talento",
 -- 3e359295 English: Choice Entry ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
+--     choice node.
 [3703] = "ID da entrada de escolha",
 -- 986b4c09 English: talent node %s
+-- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
+--     12345'.
+-- %s #1: %s #1: the talent node ID, e.g. 82000
 [3704] = "nó de talento %s",
 -- 905d8751 English: the number of ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3705] = "o número de graus em %s",
 -- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
@@ -772,74 +1152,117 @@ addon.translation = {
 --     any talent change. Retail has no such trees.
 [3710] = "O Forever é a exceção: Árvore de talentos é uma das três árvores de talentos da sua configuração ativa (na ordem em que a janela de talentos as mostra); os pontos delas são lidos de novo após qualquer mudança de talentos. O Retail não tem essas árvores.",
 -- bd69e217 English: Brewmaster
+-- Context: Specialization name (Monk, tank). Used in the specialization condition.
 [3711] = "Mestre Cervejeiro",
 -- de575836 English: Windwalker
+-- Context: Specialization name (Monk, melee damage). Used in the specialization condition.
 [3712] = "Andarilho do Vento",
 -- 7b362214 English: Mistweaver
+-- Context: Specialization name (Monk, healer). Used in the specialization condition.
 [3713] = "Tecelão da Névoa",
 -- 24983899 English: Feral
+-- Context: Specialization name (Druid, cat form damage). Used in the specialization condition.
 [3714] = "Feral",
 -- 1d228f25 English: Guardian
+-- Context: Specialization name (Druid, bear form tank). Used in the specialization condition.
 [3715] = "Guardião",
 -- e1304437 English: Havoc
+-- Context: Specialization name (Demon Hunter, damage). Used in the specialization condition.
 [3716] = "Devastação",
 -- f67321da English: Vengeance
+-- Context: Specialization name (Demon Hunter, tank). Used in the specialization condition.
 [3717] = "Vingança",
 -- 7e6e6092 English: Devourer
+-- Context: Specialization name (Demon Hunter, third specialization). Used in the specialization
+--     condition.
 [3718] = "Devorador",
 -- e1a21b9f English: Devastation
+-- Context: Specialization name (Evoker, damage). Used in the specialization condition.
 [3719] = "Devastação",
 -- 9ca6fa0d English: Preservation
+-- Context: Specialization name (Evoker, healer). Used in the specialization condition.
 [3720] = "Preservação",
 -- 9647da85 English: Augmentation
+-- Context: Specialization name (Evoker, support damage). Used in the specialization condition.
 [3721] = "Aprimoramento",
 -- 679dfacd English: One-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in one hand.
 [3722] = "Machados de Uma Mão",
 -- 763d2d16 English: Two-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in two hands.
 [3723] = "Machados de Duas Mãos",
 -- f09abd25 English: Bows
+-- Context: Weapon type name (item subclass), plural: bows.
 [3724] = "Arcos",
 -- 1105a900 English: Guns
+-- Context: Weapon type name (item subclass), plural: guns.
 [3725] = "Armas de Fogo",
 -- 23a81b2e English: One-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in one hand.
 [3726] = "Maças de Uma Mão",
 -- 87982fd9 English: Two-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in two hands.
 [3727] = "Maças de Duas Mãos",
 -- d3efea7f English: Polearms
+-- Context: Weapon type name (item subclass), plural: polearms.
 [3728] = "Armas de Haste",
 -- db31cc85 English: One-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in one hand.
 [3729] = "Espadas de Uma Mão",
 -- 80c5ae37 English: Two-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in two hands.
 [3730] = "Espadas de Duas Mãos",
 -- 43176c16 English: Warglaives
+-- Context: Weapon type name (item subclass), plural: warglaives.
 [3731] = "Glaives de Guerra",
 -- 62105c37 English: Staves
+-- Context: Weapon type name (item subclass), plural: staves.
 [3732] = "Cajados",
 -- bd0d3b19 English: Fist Weapons
+-- Context: Weapon type name (item subclass), plural: fist weapons.
 [3733] = "Armas de Punho",
 -- 72d13cd4 English: Daggers
+-- Context: Weapon type name (item subclass), plural: daggers.
 [3734] = "Adagas",
 -- 5cc449eb English: Thrown
+-- Context: Weapon type name (item subclass): thrown weapons.
 [3735] = "Armas de Arremesso",
 -- 806891f5 English: Crossbows
+-- Context: Weapon type name (item subclass), plural: crossbows.
 [3736] = "Bestas",
 -- 7edc4dae English: Wands
+-- Context: Weapon type name (item subclass), plural: wands.
 [3737] = "Varinhas",
 -- b9d0aded English: Fishing Poles
+-- Context: Weapon type name (item subclass), plural: fishing poles.
 [3738] = "Varas de Pescar",
 -- d041f0fe English: <specialization>
+-- Context: Placeholder in the specialization summary shown until a specialization is chosen; keep
+--     the angle brackets.
 [3739] = "<especialização>",
 -- 077ba255 English: your specialization {{!is|is not}} %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
 [3740] = "a sua especialização {{!é|não é}} %s",
 -- 79689782 English: Slot
+-- Context: Label of the dropdown in the weapon type condition: which equipment slot is checked.
 [3741] = "Espaço",
 -- d72c5ffe English: <slot>
+-- Context: Placeholder in the weapon type summary shown until a slot is chosen; keep the angle
+--     brackets.
 [3742] = "<espaço>",
 -- ecdfbb4c English: <weapon type>
+-- Context: Placeholder in the weapon type summary shown until a weapon type is chosen; keep the
+--     angle brackets.
 [3743] = "<tipo de arma>",
 -- cd3e4c2f English: weapon type %d
+-- Context: Fallback name for a weapon type that has no known name; %d is the item subclass number.
+-- %d #1: %d #1: the weapon type number, used when the game gives no name, e.g. 7
 [3744] = "tipo de arma %d",
 -- 5e915dd9 English: your %s slot {{!holds|does not hold}} %s
+-- %s #1: %s #1: the equipment slot, e.g. "main hand"
+-- %s #2: %s #2: the kind of item or weapon type, e.g. "Two-Handed Sword" or "Shield"
 [3745] = "o seu espaço %s {{!contém|não contém}} %s",
 -- da3a44eb English: you {{!are|are not}} mounted
 [3746] = "você {{!está|não está}} montado",
@@ -856,10 +1279,16 @@ addon.translation = {
 -- f623619b English: a boss encounter {{!is|is not}} in progress
 [3752] = "um encontro de chefe {{!está|não está}} em andamento",
 -- 6a7230fc English: difficulty %d
+-- Context: Fallback name for a dungeon or raid difficulty without a known name; %d is the
+--     difficulty ID.
+-- %d #1: %d #1: the difficulty ID, used when the game gives no name, e.g. 14
 [3753] = "dificuldade %d",
 -- 0dc49fb5 English: Instance ID
+-- Context: Label of the edit box in the instance condition: the numeric ID of the instance.
 [3754] = "ID da instância",
 -- 2454a15f English: You are in %s (instance ID %d).
+-- %s #1: %s #1: the instance name, e.g. "Molten Core"
+-- %d #2: %d #2: the instance ID, e.g. 409
 [3755] = "Você está em %s (ID da instância %d).",
 -- f9099ef5 English: The instance you are in cannot be read right now.
 [3756] = "A instância em que você está não pode ser lida agora.",
@@ -871,38 +1300,55 @@ addon.translation = {
 -- be48718c English: the number of players in your group
 [3759] = "o número de jogadores no seu grupo",
 -- 567825fa English: the number of group members whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3760] = "o número de membros do grupo cuja função atribuída é %s",
 -- 63780dda English: the number of dead or ghost members of your group
 [3761] = "o número de membros do seu grupo mortos ou fantasmas",
 -- f81258cf English: hero talent tree %d
+-- Context: Fallback name for a hero talent tree that has no known name; %d is its numeric ID.
+-- %d #1: %d #1: the hero talent tree ID, e.g. 31
 [3762] = "árvore de talentos de herói %d",
 -- 9fb8f548 English: you {{!have|have not}} chosen a hero talent tree
 [3763] = "você {{!escolheu|não escolheu}} uma árvore de talentos de herói",
 -- 48f1d066 English: your hero talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3764] = "sua árvore de talentos de herói {{!é|não é}} %s",
 -- d18f5f74 English: <hero talent tree>
+-- Context: Placeholder in the hero talent tree summary shown until a tree is chosen; keep the angle
+--     brackets.
 [3765] = "<árvore de talentos de herói>",
 -- 613b90e8 English: Any hero talent tree
 [3766] = "Qualquer árvore de talentos de herói",
 -- f55aa333 English: Hero talent tree ID (blank for any)
 [3767] = "ID da árvore de talentos de herói (em branco para qualquer uma)",
 -- dacd0c2e English: %s {{!is|is not}} glowing with a proc
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3768] = "%s {{!está brilhando|não está brilhando}} por uma ativação",
 -- 1f8204e7 English: Trinket Slot
+-- Context: Label of the dropdown in the item cooldown condition: use a trinket slot instead of a
+--     named item. Also a help heading.
 [3769] = "Espaço de berloque",
 -- a088a328 English: the cooldown on your %s
+-- %s #1: %s #1: the trinket slot, e.g. "Trinket 1"
 [3770] = "o tempo de recarga de %s",
 -- a1b86dcf English: <trinket slot>
+-- Context: Placeholder in the item cooldown summary shown until a trinket slot is chosen; keep the
+--     angle brackets.
 [3771] = "<espaço de berloque>",
 -- e949e9a1 English: your pet {{!is|is not}} %s
+-- %s #1: %s #1: the pet mood, e.g. "Happy"
 [3772] = "seu ajudante {{!está|não está}} %s",
 -- ae72b05a English: <mood>
+-- Context: Placeholder in the Hunter pet happiness summary shown until a mood is chosen; keep the
+--     angle brackets.
 [3773] = "<humor>",
 -- d203280c English: the damage in your Stagger pool
 [3774] = "o dano no seu acúmulo de Stagger",
 -- 89eb5572 English: your Stagger as a percent of your maximum health
 [3775] = "seu Stagger como porcentagem da sua vida máxima",
 -- 88f6385c English: %s percent
+-- Context: A percentage in a summary; %s is the number, e.g. '50 percent'.
+-- %s #1: %s #1: the percentage number, e.g. 40
 [3776] = "%s por cento",
 -- 132e5dce English: As a percent of maximum health
 [3777] = "Como porcentagem da vida máxima",
@@ -910,41 +1356,62 @@ addon.translation = {
 --     maximum health when the box is ticked.
 [3778] = "O dano à espera no seu acúmulo de Stagger ou, com a caixa marcada, o mesmo valor como porcentagem da vida máxima.",
 -- 551d172c English: your Eclipse bar {{!is|is not}} heading toward %s
+-- %s #1: %s #1: the Eclipse direction, e.g. "Lunar" or "Solar"
 [3779] = "sua barra de eclipse {{!está indo|não está indo}} em direção a %s",
 -- cc6d2f75 English: <Eclipse>
+-- Context: Placeholder in the Eclipse summary shown until a direction is chosen; keep the angle
+--     brackets.
 [3780] = "<eclipse>",
 -- acd890d7 English: your Eclipse energy
+-- Context: Name of the measure in the Eclipse summary: the Eclipse bar value (lowercase; follows
+--     'is at least').
 [3781] = "sua energia de eclipse",
 -- 3080873d English: The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar
 --     Eclipse).
 [3782] = "A barra de eclipse, de -100 (eclipse lunar completo) a 100 (eclipse solar completo).",
 -- a3b50c47 English: State
+-- Context: Label of the dropdown in the player state condition: which state (mounted, swimming
+--     ...).
 [3783] = "Estado",
 -- ec9b10a4 English: Dead
+-- Context: Option in the player state dropdown: the player is dead.
 [3784] = "Morto",
 -- df1bc498 English: Ghost
+-- Context: Option in the player state dropdown: the player has released and is a ghost.
 [3785] = "Fantasma",
 -- 4d3a12b0 English: you {{!are|are not}} dead
 [3786] = "você {{!está|não está}} morto",
 -- 0cc73293 English: you {{!are|are not}} a ghost
 [3787] = "você {{!é|não é}} um fantasma",
 -- cf0dba5a English: you {{!are|are not}} %s
+-- %s #1: %s #1: the player state, e.g. "mounted" (this generic fallback shows a placeholder such as "<state>")
 [3788] = "você {{!está|não está}} %s",
 -- 1ff78f4d English: <state>
+-- Context: Placeholder in the player state summary shown until a state is chosen; keep the angle
+--     brackets.
 [3789] = "<estado>",
 -- fd369188 English: <measure>
+-- Context: Placeholder in the group count summary shown until a measure is chosen; keep the angle
+--     brackets.
 [3790] = "<medida>",
 -- ebf940f2 English: Measure
+-- Context: Label of the dropdown in the Eclipse condition: whether to compare the bar's energy or
+--     its direction.
 [3791] = "Medida",
 -- 9c8a9579 English: Direction
+-- Context: Option in the Eclipse measure dropdown: the direction the bar is moving; the other
+--     option is Energy.
 [3792] = "Direção",
 -- b675e8c2 English: Players in the group
 [3793] = "Jogadores no grupo",
 -- ca604d55 English: Tanks
+-- Context: Option in the group count dropdown: players with the tank role (plural).
 [3794] = "Tanques",
 -- 7ad6d8d0 English: Healers
+-- Context: Option in the group count dropdown: players with the healer role (plural).
 [3795] = "Curadores",
 -- 552833e2 English: Damage dealers
+-- Context: Option in the group count dropdown: players with the damage role (plural).
 [3796] = "Causadores de dano",
 -- 96362b07 English: Dead or ghost members
 [3797] = "Membros mortos ou fantasmas",
@@ -953,22 +1420,34 @@ addon.translation = {
 -- 98436f9a English: the percent of your group that is dead or a ghost
 [3799] = "a porcentagem do seu grupo morta ou fantasma",
 -- 50e66626 English: the percent of your group whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3800] = "a porcentagem do seu grupo cuja função atribuída é %s",
 -- 389a3660 English: the percent of your group counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3801] = "a porcentagem do seu grupo contada como %s",
 -- 622e5828 English: the number of group members counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3802] = "o número de membros do grupo contados como %s",
 -- 658bb8cf English: ranged
+-- Context: Weapon slot in summaries: the ranged weapon (lowercase).
 [3803] = "à distância",
 -- 80c798fc English: type %s
+-- Context: Part of the instance summary; %s is the instance type, e.g. 'type Dungeon'.
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3804] = "tipo %s",
 -- 78aee9bb English: difficulty %s
+-- Context: Part of the instance summary; %s is the difficulty name, e.g. 'difficulty Heroic'.
+-- %s #1: %s #1: the difficulty name, e.g. "Heroic"
 [3805] = "dificuldade %s",
 -- 5e900d17 English: ID %s
+-- Context: Part of the instance summary; %s is the instance ID number, e.g. 'ID 33'.
+-- %s #1: %s #1: the instance ID, e.g. 409
 [3806] = "ID da instância %s",
 -- 08c231ad English: you {{!are|are not}} in an instance (%s)
+-- %s #1: %s #1: the instance details separated by commas, e.g. "type Raid, difficulty Heroic, ID 409"
 [3807] = "você {{!está|não está}} em uma instância (%s)",
 -- 364397ab English: Any difficulty
+-- Context: Option at the top of the instance difficulty dropdown: do not restrict by difficulty.
 [3808] = "Qualquer dificuldade",
 -- bd945e03 English: None (use the item above)
 [3809] = "Nenhum (usar o item acima)",
@@ -1008,6 +1487,8 @@ addon.translation = {
 --     Burning Crusade and Mists of Pandaria but not on Retail or Forever.
 [3816] = "Mede o seu Tiro Automático ou o tiro de varinha em vez de uma arma corpo a corpo. Escolha Mão Secundária ou À distância, não ambas. O tempo restante precisa do registro de combate, então funciona no Classic Era, Burning Crusade e Mists of Pandaria, mas não no Retail nem no Forever.",
 -- a8b3d1b8 English: Number of %s in combat within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3817] = "Número de %s em combate a até %s metros",
 -- e7ccbb83 English: Count only units that are in combat. For enemies that is the ones fighting
 --     right now, not every enemy whose nameplate is visible. A unit whose combat state the game

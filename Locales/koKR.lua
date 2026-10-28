@@ -20,32 +20,60 @@ addon.translation = {
 --     observations.
 [3] = "/rm perf cpu||runtime||memory [seconds||stop||report] - 성능 관찰을 측정합니다.",
 -- 3e47dffa English: Capture memory (10m)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-minute memory-usage
+--     capture. Also the heading of its help entry.
 [4] = "메모리 측정 (10분)",
 -- b84bcf99 English: Memory report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     memory capture. Also the heading of its help entry.
 [5] = "메모리 보고서",
 -- 07027ca8 English: Stop memory capture
+-- Context: Button label in General settings, Diagnostics area: replaces the 'Capture memory' button
+--     while a capture runs and stops it.
 [6] = "메모리 측정 중지",
 -- 9eff4745 English: Capture runtime (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second capture of which
+--     addon functions use CPU time. Also a help entry heading.
 [7] = "실행 측정 (10초)",
 -- ceb34b2f English: Runtime report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     runtime capture. Also a help entry heading.
 [8] = "실행 보고서",
 -- b6ce788d English: Report
+-- Context: Subtitle (second heading line) of the condition-text window, used when it shows a text
+--     report of a rotation's conditions; the noun 'report'.
 [9] = "보고서",
 -- a518abfe English: Capture CPU (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second CPU profile of
+--     the addon. Also a help entry heading.
 [10] = "CPU 측정 (10초)",
 -- b7aa6f62 English: CPU report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished CPU
+--     capture. Also a help entry heading.
 [11] = "CPU 보고서",
 -- 17eb3c01 English: disabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     disabled' (the shipped default state of a built-in rotation).
 [12] = "비활성",
 -- fb9cf756 English: enabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     enabled' (the shipped default state of a built-in rotation).
 [13] = "활성",
 -- fa79d474 English: exact
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), shown after 'Callback
+--     arguments:' etc.: the callback received exactly the expected arguments.
 [14] = "정확",
 -- 5acbfff1 English: mismatch
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g. 'Callback
+--     arguments: mismatch': the observed value differs from what was expected.
 [15] = "불일치",
 -- 4d4c7eee English: present
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g.
+--     'C_AddOnProfiler: present': the game API exists.
 [16] = "있음",
 -- 7a0d9159 English: restricted
+-- Context: Status word in the Native profiler probe report (CPU diagnostics): the game restricts
+--     the checked capability.
 [17] = "제한됨",
 -- a9283b41 English: Bypass observation cache (reload required)
 [18] = "관찰 캐시 우회 (UI 재시작 필요)",
@@ -57,59 +85,111 @@ addon.translation = {
 --     allocations. Off by default; reload to change the running mode.
 [21] = "관찰 캐시는 반복 조회를 줄일 수 있지만 테이블 할당을 늘립니다. 기본값은 꺼짐이며, 현재 모드를 바꾸려면 UI를 다시 불러오세요.",
 -- a30d7f9f English: Observation cache: %s\nNext reload: %s
+-- %s #1: %s #1: the observation-cache mode the game session is running now, one of the words "cached" or "direct" (shown translated), e.g. "cached"
+-- %s #2: %s #2: the mode that will be used after the next UI reload, "cached" or "direct", e.g. "direct"
 [22] = "관찰 캐시: %s\n다음 재시작: %s",
 -- 3673014e English: cached
+-- Context: Status word in diagnostic reports: observation caching mode 'cached' (results of lookups
+--     are reused); the alternative is 'direct'.
 [23] = "캐시",
 -- d15690f0 English: direct
+-- Context: Status word in diagnostic reports: observation caching mode 'direct' (every lookup is
+--     read again); the alternative is 'cached'.
 [24] = "직접",
 -- b279b4aa English: Cache diagnostic saved for the next reload. Active mode: %s.
+-- %s #1: %s #1: the observation-cache mode that is active now, "cached" or "direct" (shown translated), e.g. "direct"
 [25] = "캐시 진단이 다음 UI 재시작을 위해 저장되었습니다. 현재 모드: %s.",
 -- 6ea030dd English: Cache diagnostic is unavailable.
 [26] = "캐시 진단을 사용할 수 없습니다.",
 -- c0f60371 English: Cancel capture
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button 'Cancel capture' of the old CPU diagnostics (now replaced by the Stop
+--     button).
 [27] = "측정 취소",
 -- c1aa81e6 English: Invalid rotation ownership data in profile %s (%s); record preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: a short technical reason code for why the data is invalid, e.g. "invalid-owner" (shown as-is; do not translate)
 [28] = "프로필 %s의 로테이션 소유 데이터가 잘못되었습니다(%s). 기록은 보존되었습니다.",
 -- 6ee818aa English: View source
+-- Context: Tooltip of a small icon button next to a function binding row in the custom-function
+--     editor: opens the source code of the bound helper function.
 [29] = "원본 보기",
 -- 576aa29b English: Change source helper
+-- Context: Tooltip of a dropdown-arrow icon button on a function binding row: lets you choose a
+--     different source helper function for that dependency.
 [30] = "원본 도우미 변경",
 -- 33ba28a9 English: Dependencies (%d)
+-- Context: Button in the custom-function editor that expands or collapses the list of functions
+--     this function depends on; %d is how many dependencies there are.
+-- %d #1: %d #1: the number of function bindings (dependencies) in the list, e.g. 3
 [31] = "의존성 (%d)",
 -- d28ff2b8 English: Function dependencies
+-- Context: Heading of a help section (and the Functions help topic) explaining the dependency list
+--     of a custom function; also the dependency list's name.
 [32] = "함수 의존성",
 -- d038ddbf English: Add dependency
+-- Context: Button in the custom-function editor's dependency list: adds a new dependency (a helper
+--     function this function calls).
 [33] = "의존성 추가",
 -- ffdb8428 English: Remove dependency
+-- Context: Button/tooltip in the custom-function editor's dependency list: removes this dependency
+--     row.
 [34] = "의존성 제거",
 -- 1f5ef520 English: Arcane Ring
+-- Context: Name of a decorative overlay (a glowing arcane ring graphic) in the overlay picker for
+--     rotation icons.
 [35] = "비전 고리",
 -- e3dfa9b3 English: Ember Corners
+-- Context: Name of a decorative overlay (glowing ember corners graphic) in the overlay picker for
+--     rotation icons.
 [36] = "불씨 모서리",
 -- ed0b6679 English: Frost Shards
+-- Context: Name of a decorative overlay (frost shard graphics) in the overlay picker for rotation
+--     icons.
 [37] = "냉기 파편",
 -- 4a5ff6e0 English: Nature Vines
+-- Context: Name of a decorative overlay (nature vines graphic) in the overlay picker for rotation
+--     icons.
 [38] = "자연 덩굴",
 -- 67f985cc English: Lightning Sweep
+-- Context: Name of a decorative overlay (a lightning sweep graphic) in the overlay picker for
+--     rotation icons.
 [39] = "번개 휩쓸기",
 -- 37476fc2 English: Holy Rays
+-- Context: Name of a decorative overlay (holy light rays graphic) in the overlay picker for
+--     rotation icons.
 [40] = "신성한 광선",
 -- 693a2003 English: Shadow Claws
+-- Context: Name of a decorative overlay (shadowy claw marks graphic) in the overlay picker for
+--     rotation icons.
 [41] = "암흑 발톱",
 -- 1e58829b English: Rune Diamond
+-- Context: Name of a decorative overlay (a rune-marked diamond graphic) in the overlay picker for
+--     rotation icons.
 [42] = "룬 마름모",
 -- 0dcf5b86 English: Neutral Arcane Ring
+-- Context: Name of a decorative overlay (an arcane ring in neutral, uncolored style) in the overlay
+--     picker for rotation icons.
 [43] = "중립 비전 고리",
 -- 84f6ccc1 English: Choose overlay
+-- Context: Tooltip of a dropdown-arrow button in the settings form that opens the picker of
+--     decorative overlay textures.
 [44] = "오버레이 선택",
 -- 084e6cf7 English: This character
+-- Context: Option in the 'Applies to' choice (checkbox in the rotation adoption page, and shown in
+--     pending-change lists): the setting applies to the current character only, as opposed to the
+--     whole class.
 [45] = "이 캐릭터",
 -- 6687458b English: Applies to
+-- Context: Label for a choice/field saying whom a rotation applies to: this character or the whole
+--     class (adoption page, pending-change list, help section heading).
 [46] = "적용 대상",
 -- d172148e English: Legacy character %s data conflicts with the active profile; character data
 --     preserved.
+-- %s #1: %s #1: which kind of legacy per-character data conflicts, the internal table name (shown as-is), e.g. "itemsets" or "announces"
 [47] = "기존 캐릭터 %s 데이터가 활성 프로필과 충돌합니다. 캐릭터 데이터는 보존되었습니다.",
 -- 0da554c3 English: Invalid rotation fallback configuration in profile %s; data preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
 [48] = "프로필 %s의 대체 로테이션 설정이 잘못되었습니다. 데이터는 보존되었습니다.",
 -- 86637dd3 English: Condition summary unavailable: invalid template or values.
 [49] = "조건 요약을 사용할 수 없음: 템플릿 또는 값이 잘못되었습니다.",
@@ -155,10 +235,15 @@ addon.translation = {
 -- 7a633806 English: The current source could not be compiled. Fix it before testing again.
 [62] = "현재 원본을 컴파일할 수 없습니다. 수정한 뒤 다시 테스트하세요.",
 -- 0e916101 English: Refresh
+-- Context: Button that reloads/refreshes the display: in the Lua debugger output window and in the
+--     rotation adoption page.
 [63] = "새로 고침",
 -- 5f623ee6 English: Debug output
+-- Context: Title of the Lua debugger output window (shows the debugger's full output and errors).
 [64] = "디버그 출력",
 -- b2439bcb English: Output
+-- Context: Noun: button in the Lua workbench that opens the debugger output window (also that
+--     window's subtitle); also a column/row label for one result in the collection compare view.
 [65] = "출력",
 -- fccce64b English: Set values in Test before debugging this condition.
 [66] = "이 조건을 디버그하기 전에 테스트에서 값을 설정하세요.",
@@ -168,26 +253,50 @@ addon.translation = {
 -- 2f3f04fc English: Localized Rotation Master text, indexed by its English key.
 [68] = "영어 키로 색인된 Rotation Master 현지화 문자열입니다.",
 -- a8283ade English: Undo
+-- Context: Button/tooltip in the condition and custom-function editors: undoes the last edit
+--     (verb).
 [69] = "실행 취소",
 -- 74273989 English: Redo
+-- Context: Button/tooltip in the condition and custom-function editors: redoes the edit that was
+--     just undone (verb).
 [70] = "다시 실행",
 -- 7dac8415 English: Invalid item reference for announce %s:%s; reference preserved; announcement
 --     disabled.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [71] = "알림 %s:%s의 아이템 참조가 잘못되었습니다. 참조는 보존되고 알림은 비활성화되었습니다.",
 -- 048f2dd8 English: Invalid item reference for announce %s:%s; explicit repair will preserve the
 --     reference and disable the announcement.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [72] = "알림 %s:%s의 아이템 참조가 잘못되었습니다. 명시적으로 복구하면 참조를 보존하고 알림을 비활성화합니다.",
 -- bde1631d English: Invalid custom condition %s:%s field %s (%s); source preserved; condition
 --     disabled.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [73] = "사용자 조건 %s:%s의 필드 %s이(가) 잘못되었습니다(%s). 원본은 보존되고 조건은 비활성화되었습니다.",
 -- c3f0309d English: Invalid custom condition %s:%s field %s (%s); explicit repair will preserve
 --     source and disable the condition.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [74] = "사용자 조건 %s:%s의 필드 %s이(가) 잘못되었습니다(%s). 명시적으로 복구하면 원본을 보존하고 조건을 비활성화합니다.",
 -- b496eb37 English: Non-finite minimap value in profile %s: %s.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: the name of the minimap setting holding the bad number (shown as-is), e.g. "minimapPos" or "radius"
 [75] = "프로필 %s의 미니맵 값이 유한한 수가 아닙니다: %s.",
 -- 504dd0b6 English: Invalid effect ID for rotation step %s:%s:%d.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
+-- %d #3: %d #3: the position of the step in the rotation, counting from 1, e.g. 4
 [76] = "로테이션 단계 %s:%s:%d의 효과 ID가 잘못되었습니다.",
 -- d485d6e1 English: Unknown effect type for %s:%s (%s); record preserved.
+-- %s #1: %s #1: where the effect is stored, "global" or "profile:" and the profile name, e.g. "global"
+-- %s #2: %s #2: the effect's ID, e.g. "a1b2c3d4"
+-- %s #3: %s #3: the unrecognised effect type value, e.g. "unknown_type" (shown as-is)
 [77] = "%s:%s의 효과 유형을 알 수 없습니다(%s). 기록은 보존되었습니다.",
 -- 9148825e English: /rm help                - This text.
 [78] = "/rm help                - 이 도움말.",
@@ -215,33 +324,57 @@ addon.translation = {
 -- 71773a7c English: No rotation is currently active.
 [88] = "활성화된 로테이션이 없습니다.",
 -- f5951390 English: The current rotation is |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the active rotation, e.g. "Frost Single Target"
 [89] = "현재 로테이션: |cFFFFFFFF%s|cFF7BC653",
 -- 1122c922 English: Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation the player chose, e.g. "Frost Single Target"
 [90] = "활성 로테이션을 |cFFFFFFFF%s|cFF7BC653(으)로 직접 전환했습니다",
 -- b406bd3a English: Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current
 --     specialization.
+-- %s #1: %s #1: the rotation name the player typed after the slash command, e.g. "Frost AoE"
 [91] = "현재 전문화에 해당하는 |cFFFFFFFF%s|cFFB212B7 로테이션을 찾을 수 없습니다.",
 -- f6b5a992 English: Invalid option |cFFFFFFFF%s|cFFB212B7
+-- Context: Chat warning when a slash command option is not recognized (/rm ...); %s is the option
+--     typed; the color codes must stay.
+-- %s #1: %s #1: the unrecognised option the player typed after the slash command, e.g. "foo"
 [92] = "잘못된 옵션 |cFFFFFFFF%s|cFFB212B7",
 -- 56693a8f English: Starting up version %s
+-- Context: Chat message printed at addon startup; %s is the addon version number.
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
 [93] = "버전 %s 시작 중",
 -- 45d8dada English: Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation that was selected automatically, e.g. "Frost Single Target"
 [94] = "활성 로테이션이 |cFFFFFFFF%s|cFF7BC653(으)로 자동 전환되었습니다",
 -- d4f91385 English: No rotation is active as there is none suitable to automatically switch to.
 [95] = "자동으로 전환할 적합한 로테이션이 없어 활성 로테이션이 없습니다.",
 -- fe0d07c7 English: Battle rotation enabled
+-- Context: Minimap menu checkbox / chat message: the automatic battle rotation (recommendations) is
+--     turned on; status text.
 [96] = "전투 로테이션 켜짐",
 -- d3cca26b English: Battle rotation disabled
+-- Context: Minimap button tooltip line (red) / chat message: the automatic battle rotation is
+--     turned off; status text.
 [97] = "전투 로테이션 꺼짐",
 -- 8b75ea84 English: Current Rotation
+-- Context: Title line in the minimap menu and tooltip above the name of the rotation currently in
+--     use.
 [98] = "현재 로테이션",
 -- 11d80e12 English: Automatic Switching
+-- Context: Entry in the minimap menu rotation list: let Rotation Master pick the rotation
+--     automatically (the alternative is picking one by hand).
 [99] = "자동 전환",
 -- ea046a56 English: Toggle %s |cFF00FFFF/rm toggle|r
+-- Context: Key-binding name shown in the game's Key Bindings screen; %s is the addon name; the
+--     colored '/rm toggle' slash command must stay.
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
 [100] = "%s 전환 |cFF00FFFF/rm toggle|r",
 -- 0ee9fb73 English: Validating database integrity
+-- Context: Chat message when running the /rm check or /rm repair command: the saved settings
+--     database is being validated.
 [101] = "데이터베이스 무결성 검사 중",
 -- a256b212 English: [Tier: %d, Column: %d]
+-- %d #1: %d #1: the talent tier (row), 1 to 7, e.g. 3
+-- %d #2: %d #2: the talent column, 1 to 3, e.g. 2
 [102] = "[단계: %d, 열: %d]",
 -- d634fd5e English: Autoswitch rotation list has been updated.
 [103] = "자동 전환 로테이션 목록이 갱신되었습니다.",
@@ -254,289 +387,504 @@ addon.translation = {
 -- cc9f8575 English: Active rotation is incomplete and may not work correctly!
 [107] = "활성 로테이션이 미완성이라 제대로 작동하지 않을 수 있습니다!",
 -- 9e4feae8 English: Cache hit rate at %.02f%%
+-- %.02f #1: %.02f #1: the cache hit rate as a percentage with two decimals, e.g. 87.35 (the %% after it is a literal percent sign)
 [108] = "캐시 적중률 %.02f%%",
 -- 6a0a0288 English: Spells
+-- Context: Name of the 'Spells' category of conditions; also a category in the icon picker (icons
+--     showing spells/magic).
 [109] = "주문",
 -- fb8e7a1a English: Items
+-- Context: Name of the 'Items' condition category; also the label for an items entry when comparing
+--     collections, and an icon-picker category.
 [110] = "아이템",
 -- 966dac79 English: Buffs
+-- Context: Name of the 'Buffs' condition category (auras on a unit); also a category/tag in the
+--     icon picker.
 [111] = "효과",
 -- 49fcf2c7 English: Combat
+-- Context: Name of the 'Combat' condition category; also a category/tag in the icon picker.
 [112] = "전투",
 -- 1405a63e English: Character
+-- Context: Name of the 'Character' condition category (conditions about your own character, class,
+--     level); also an icon-picker category.
 [113] = "캐릭터",
 -- f97e9da0 English: Other
+-- Context: Name of the catch-all condition category for conditions that fit no other category (a
+--     dropdown option / group heading); the adjective 'Other'.
 [114] = "기타",
 -- f94a59f5 English: Spatial
+-- Context: Name of the 'Spatial' condition category (zone, distance, proximity conditions); also an
+--     icon-picker category.
 [115] = "공간",
 -- 494ca78f English: Custom
+-- Context: Dropdown option meaning 'an ad-hoc custom item set': choose it instead of a saved
+--     reusable item set, then enter items by hand.
 [116] = "사용자",
 -- 56b9b63d English: Bind
+-- Context: Button in the item settings that binds the selected item to action-bar slots (verb);
+--     when slots are bound its label becomes 'Slots ... · Unbind'.
 [117] = "연결",
 -- dca68375 English: Unbind
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Unbind' for item sets bound to action bar slots (now shown as
+--     'Slots ... · Unbind').
 [118] = "연결 해제",
 -- 67236b42 English: {unit} {stacks} {comparison} {quantity}
 [119] = "{unit}: {stacks} {comparison} {quantity}",
 -- ebc99a61 English: is less than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is less than N'
+--     (numeric comparison).
 [120] = "<",
 -- 103999f5 English: is less than or equal to
 [121] = "≤",
 -- 4ccdd13e English: is greater than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is greater than N'
+--     (numeric comparison).
 [122] = ">",
 -- 31742930 English: is greater than or equal to
 [123] = "≥",
 -- cb9f4031 English: is equal to
+-- Context: Comparison operator in a condition's dropdown: 'is equal to' (also used for the negated
+--     'is not' operator set where it is reversed).
 [124] = "=",
 -- f3bab6c4 English: is not equal to
 [125] = "≠",
 -- 46fd28a6 English: is evenly divisible by
 [126] = "다음으로 나누어떨어짐:",
 -- bb0347a4 English: you
+-- Context: Unit name used inside condition sentences, e.g. 'Health of you'; here the player's own
+--     character as the subject.
 [127] = "플레이어",
 -- ae77a704 English: your pet
+-- Context: Unit name used inside condition sentences: the player's pet.
 [128] = "소환수",
 -- 5c6909af English: your target
+-- Context: Unit name used inside condition sentences: the player's current target.
 [129] = "대상",
 -- c03e55b9 English: your focus target
+-- Context: Unit name used inside condition sentences: the player's focus target (only for game
+--     versions that have a focus target).
 [130] = "주시 대상",
 -- b3cccabc English: your mouseover target
+-- Context: Unit name used inside condition sentences: the unit the mouse pointer is over.
 [131] = "마우스오버 대상",
 -- 475bae27 English: your pet's target
+-- Context: Unit name used inside condition sentences: the target of the player's pet.
 [132] = "소환수의 대상",
 -- 36be7c3f English: your target's target
+-- Context: Unit name used inside condition sentences: the target of the player's target.
 [133] = "대상의 대상",
 -- ad57c70e English: your focus target's target
 [134] = "주시 대상의 대상",
 -- f445919a English: your mouseover target's target
 [135] = "마우스오버 대상의 대상",
 -- 4d040d3f English: your
+-- Context: Possessive unit word used in condition sentences, e.g. 'your health': the player's own
+--     character.
 [136] = "플레이어의",
 -- 0f29cbcd English: your pet's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's (e.g. 'your pet's
+--     health').
 [137] = "소환수의",
 -- 86535199 English: your target's
+-- Context: Possessive unit phrase used in condition sentences: the player's target's (e.g. 'your
+--     target's health').
 [138] = "대상의",
 -- b263b9c4 English: your focus target's
+-- Context: Possessive unit phrase used in condition sentences: the player's focus target's (only
+--     for game versions with a focus target).
 [139] = "주시 대상의",
 -- 9c1fb6c2 English: your mouseover target's
+-- Context: Possessive unit phrase used in condition sentences: the mouseover unit's (e.g. 'your
+--     mouseover target's health').
 [140] = "마우스오버 대상의",
 -- 4df38978 English: your pet's target's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's target's (e.g.
+--     'your pet's target's health').
 [141] = "소환수 대상의",
 -- 6c2c38e9 English: your target's target's
+-- Context: Possessive unit phrase used in condition sentences: the target of your target's (e.g.
+--     'your target's target's health').
 [142] = "대상의 대상의",
 -- 5028affe English: your focus target's target's
 [143] = "주시 대상의 대상의",
 -- 32961613 English: your mouseover target's target's
 [144] = "마우스오버 대상의 대상의",
 -- 71f18ea0 English: healed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was
+--     healed ('your target healed ...').
 [145] = "치유",
 -- 4ddc4e8a English: dodged
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     dodged.
 [146] = "회피",
 -- 6973dddd English: blocked
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     blocked.
 [147] = "방어",
 -- 63d04dee English: hit
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was hit
+--     by an attack.
 [148] = "적중",
 -- 0e347254 English: critically hit
+-- Context: Past-tense verb phrase in the Last Combat Action condition's action dropdown: the unit
+--     was hit by a critical strike.
 [149] = "치명타",
 -- 4f0a566d English: hit with a crushing blow
 [150] = "강타",
 -- fb785161 English: hit with a glancing blow
 [151] = "빗맞힘",
 -- 1c33629a English: missed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack missed.
 [152] = "빗나감",
 -- 2fe44909 English: parried
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     parried.
 [153] = "막음",
 -- 57ac7325 English: resisted
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     resisted.
 [154] = "저항",
 -- d9460674 English: Center
+-- Context: Option in an anchor-position dropdown (where a highlight/frame attaches to the screen or
+--     an icon): the exact center.
 [155] = "가운데",
 -- 1cb2052a English: Top Left
+-- Context: Option in an anchor-position dropdown: the top-left corner.
 [156] = "왼쪽 위",
 -- dccff16f English: Top Right
+-- Context: Option in an anchor-position dropdown: the top-right corner.
 [157] = "오른쪽 위",
 -- 7499760f English: Bottom Left
+-- Context: Option in an anchor-position dropdown: the bottom-left corner.
 [158] = "왼쪽 아래",
 -- 09b28cd7 English: Bottom Right
+-- Context: Option in an anchor-position dropdown: the bottom-right corner.
 [159] = "오른쪽 아래",
 -- 271eac34 English: Top Center
+-- Context: Option in an anchor-position dropdown: the middle of the top edge.
 [160] = "위쪽 가운데",
 -- 6818850e English: Bottom Center
+-- Context: Option in an anchor-position dropdown: the middle of the bottom edge.
 [161] = "아래쪽 가운데",
 -- 24b15e35 English: Left Center
+-- Context: Option in an anchor-position dropdown: the middle of the left edge.
 [162] = "왼쪽 가운데",
 -- 8f0626ff English: Right Center
+-- Context: Option in an anchor-position dropdown: the middle of the right edge.
 [163] = "오른쪽 가운데",
 -- bdbea4f8 English: Select Icon
+-- Context: Title of the icon picker window, where you choose an icon for a condition or rotation;
+--     imperative 'Select an icon'.
 [164] = "아이콘 선택",
 -- 99a52df3 English: Key
+-- Context: Bold term in the Custom Condition help text: the field that holds the condition's unique
+--     key/identifier (a name used in code).
 [165] = "키",
 -- eef729cf English: Custom Condition
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Custom Condition' for the custom condition editor/help.
 [166] = "사용자 조건",
 -- e0b9479a English: Edit Condition
+-- Context: Window title of the condition editor when no number is shown (verb + noun: you edit a
+--     condition); also the title of the Edit Condition dialog in the rotation editor.
 [167] = "조건 편집",
 -- 526e0087 English: Description
+-- Context: Field label for the free-text description: in the custom condition help, and as a row
+--     label when comparing two collections.
 [168] = "설명",
 -- d689600f English: Post-Registration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On register' callback (code run after the
+--     condition is registered).
 [169] = "등록 후 함수",
 -- 2bd03442 English: Pre-Unregistration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On unregister' callback (code run before the
+--     condition is unregistered).
 [170] = "등록 해제 전 함수",
 -- eaf0fe0a English: Warrior
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warrior. The game's own localized class names are used in class
+--     pickers; use the standard WoW class name.
 [171] = "전사",
 -- a7d973a7 English: Paladin
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Paladin. Use the standard WoW class name for your language.
 [172] = "성기사",
 -- 680ce380 English: Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Hunter. Use the standard WoW class name for your language.
 [173] = "사냥꾼",
 -- 0b8cdd9e English: Rogue
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Rogue. Use the standard WoW class name for your language.
 [174] = "도적",
 -- 909a4523 English: Priest
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Priest. Use the standard WoW class name for your language.
 [175] = "사제",
 -- 483f6fa9 English: Death Knight
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Death Knight. Use the standard WoW class name for your language.
 [176] = "죽음의 기사",
 -- 0953e68a English: Shaman
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Shaman. Use the standard WoW class name for your language.
 [177] = "주술사",
 -- e181bc01 English: Mage
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Mage. Use the standard WoW class name for your language.
 [178] = "마법사",
 -- 6e7e607f English: Warlock
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warlock. Use the standard WoW class name for your language.
 [179] = "흑마법사",
 -- a670c8d2 English: Monk
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Monk. Use the standard WoW class name for your language.
 [180] = "수도사",
 -- 274814f1 English: Druid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Druid. Use the standard WoW class name for your language.
 [181] = "드루이드",
 -- 66b96f76 English: Demon Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Demon Hunter. Use the standard WoW class name for your language.
 [182] = "악마사냥꾼",
 -- 628bf77a English: Beast
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Beast').
 [183] = "야수",
 -- 4a70eb4d English: Dragonkin
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Dragonkin').
 [184] = "용족",
 -- 83bd7784 English: Demon
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Demon').
 [185] = "악마",
 -- 4309e83a English: Elemental
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Elemental').
 [186] = "정령",
 -- db5bea37 English: Giant
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Giant').
 [187] = "거인",
 -- a5bb6066 English: Undead
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Undead').
 [188] = "언데드",
 -- d2253641 English: Humanoid
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Humanoid').
 [189] = "인간형",
 -- 14e2f7b4 English: Critter
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Critter').
 [190] = "동물",
 -- 39bf205e English: Mechanical
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Mechanical').
 [191] = "기계",
 -- dc12bec5 English: Not specified
+-- Context: Creature type in the Creature condition's dropdown for units with no creature type (WoW
+--     'Not specified'); also shown where a value is missing in condition text.
 [192] = "지정되지 않음",
 -- 8f7ae0c0 English: Totem
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Totem'); also the label of the
+--     Totem condition's dropdown choosing the totem slot (Fire, Earth, Water, Air).
 [193] = "토템",
 -- 87f8c315 English: Non-combat Pet
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Non-combat Pet', i.e.
+--     companion/vanity pets).
 [194] = "애완동물",
 -- b2098aeb English: Gas Cloud
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Gas Cloud' units, such as in
+--     raid encounters).
 [195] = "가스 구름",
 -- a703e47b English: World Boss
+-- Context: Unit classification in the Classification condition's dropdown: a world boss.
 [196] = "필드 우두머리",
 -- 7c32325f English: Rare Elite
+-- Context: Unit classification in the Classification condition's dropdown: a rare elite mob.
 [197] = "희귀 정예",
 -- 1d6953e0 English: Elite
+-- Context: Unit classification in the Classification condition's dropdown: an elite mob.
 [198] = "정예",
 -- 291d2a97 English: Rare
+-- Context: Unit classification in the Classification condition's dropdown: a rare mob.
 [199] = "희귀",
 -- a7248eeb English: Normal
+-- Context: Unit classification in the Classification condition's dropdown: an ordinary (normal)
+--     mob.
 [200] = "일반",
 -- 73fba898 English: Trivial
+-- Context: Unit classification in the Classification condition's dropdown: a trivial (low-level,
+--     grey) mob.
 [201] = "하찮음",
 -- 9befa3c6 English: Minus
+-- Context: Unit classification in the Classification condition's dropdown: a 'minus' mob, a
+--     weaker-than-normal mob (e.g. swarm adds).
 [202] = "약함",
 -- c0b21fb1 English: Tank
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Tank').
 [203] = "방어 전담",
 -- caece7f5 English: DPS
+-- Context: Group role in the Role condition's dropdown and its help text: damage dealer
+--     (abbreviation for damage per second).
 [204] = "공격 전담",
 -- a491a33c English: Healer
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Healer').
 [205] = "치유 전담",
 -- ed1a5a81 English: Magic
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Magic').
 [206] = "마법",
 -- 7bce5b94 English: Disease
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Disease').
 [207] = "질병",
 -- d5a78b99 English: Poison
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Poison').
 [208] = "독",
 -- 88b3d8ee English: Curse
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Curse').
 [209] = "저주",
 -- c6e5d717 English: Enrage
+-- Context: Debuff type in the Debuff Type condition's dropdown: an enrage effect on a hostile unit
+--     (dispelled by e.g. Tranquilizing Shot).
 [210] = "격노",
 -- 77d7cd99 English: Arena
+-- Context: PvP zone status option in the PvP condition dropdown and help ('You are in an arena');
+--     also instance mode 'Arena' in the Instance Mode condition.
 [211] = "투기장",
 -- b2fb8b8a English: Controlled by your faction
 [212] = "아군 진영 점령 지역",
 -- 9f22dfe6 English: Contested
+-- Context: PvP zone status option in the PvP condition's dropdown and help: a contested zone,
+--     controlled by neither faction.
 [213] = "분쟁 지역",
 -- bdd63a7e English: Controlled by opposing faction
 [214] = "적 진영 점령 지역",
 -- 5f18bd94 English: Sanctuary (no PVP)
+-- Context: PvP zone status option in the PvP condition's dropdown: a sanctuary where PvP is
+--     impossible.
 [215] = "안전 지대 (PvP 없음)",
 -- 7d73fb0c English: Combat (auto-flagged)
+-- Context: PvP zone status option in the PvP condition's dropdown: a combat zone where players are
+--     flagged for PvP automatically.
 [216] = "전투 지역 (자동 PvP)",
 -- dacf1516 English: Outside
+-- Context: Instance mode option in the Instance condition's dropdown: you are not in any instance
+--     (the open world).
 [217] = "야외",
 -- 40964db2 English: Battleground
+-- Context: Instance mode option in the Instance condition's dropdown: a PvP battleground.
 [218] = "전장",
 -- 73054bd6 English: Dungeon
+-- Context: Instance mode option in the Instance condition's dropdown: a five-player dungeon; also
+--     used as the dungeon group of difficulty names.
 [219] = "던전",
 -- 7dabeb63 English: Raid
+-- Context: Group-type word: the Raid checkbox in group conditions ('check the whole raid, not only
+--     the party'); also an instance mode option.
 [220] = "공격대",
 -- c141faa8 English: Fire
+-- Context: Name of the Fire totem slot in the Totem condition's dropdown; also a spell school
+--     (Fire) and an icon-picker category.
 [221] = "불",
 -- b7c9b5cc English: Earth
+-- Context: Name of the Earth totem slot in the Totem condition's dropdown.
 [222] = "대지",
 -- 7ca7dea9 English: Water
+-- Context: Name of the Water totem slot in the Totem condition's dropdown.
 [223] = "물",
 -- aa42ff59 English: Air
+-- Context: Name of the Air totem slot in the Totem condition's dropdown.
 [224] = "바람",
 -- 735beee2 English: Minimum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the lowest value
+--     among units; also its help term.
 [225] = "최소",
 -- e17f73ea English: lowest
+-- Context: Adjective used inside a condition sentence, e.g. 'the lowest health of ...' (the Minimum
+--     operation).
 [226] = "최저",
 -- 66c9ab17 English: Maximum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the highest value
+--     among units; also its help term.
 [227] = "최대",
 -- 4d8fa801 English: highest
+-- Context: Adjective used inside a condition sentence, e.g. 'the highest health of ...' (the
+--     Maximum operation).
 [228] = "최고",
 -- b38ae2c5 English: Average
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the mean value
+--     among units; also its help term.
 [229] = "평균",
 -- 184df936 English: average
+-- Context: Adjective used inside a condition sentence, e.g. 'the average health of ...' (the
+--     Average operation).
 [230] = "평균",
 -- 8fd58c92 English: no threat risk
+-- Context: Threat-level option in the Threat condition's dropdown and its help: you are in no
+--     danger of taking threat from the tank.
 [231] = "위협 위험 없음",
 -- 748beef5 English: higher threat than tank
 [232] = "방어 전담보다 위협 수준 높음",
 -- bee526bf English: tanking, at risk
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit but not
+--     top of the threat table, so you may lose it.
 [233] = "방어 중, 위험",
 -- f40da142 English: tanking, secure
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit and are
+--     not at risk of losing it.
 [234] = "방어 중, 안정",
 -- 0f179dbf English: <value>
+-- Context: Placeholder shown in red in a condition's text when a value is not yet filled in;
+--     literally the angle-bracketed word 'value'.
 [235] = "<값>",
 -- 98bf8ca2 English: <operator>
+-- Context: Placeholder shown in a condition's text when the comparison operator is not yet chosen
+--     (e.g. '<operator> 3 actions ago'); keep the angle brackets.
 [236] = "<연산자>",
 -- 77300ce2 English: Enable Rotation Master
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label of the main enable checkbox (now just 'Enable' in General settings).
 [237] = "Rotation Master 사용",
 -- 1e28d34e English: Polling Interval (seconds)
+-- Context: Label of the polling interval slider in General settings (seconds between rotation
+--     recommendation refreshes); also a help heading.
 [238] = "폴링 간격 (초)",
 -- 96414600 English: Idle Re-check Interval (seconds)
 [239] = "대기 중 재확인 간격 (초)",
 -- 9e4deebb English: Auto-Switch Re-check Interval (seconds)
 [240] = "자동 전환 재확인 간격 (초)",
 -- 43deba51 English: Ignore Mana
+-- Context: Checkbox in General settings: recommend spells even when the unit lacks the mana for
+--     them; also a help heading.
 [241] = "마나 무시",
 -- 3427b677 English: Ignore Range
+-- Context: Checkbox in General settings: recommend spells even when the target is out of range;
+--     also a help heading.
 [242] = "사거리 무시",
 -- 4764e65b English: Skip rotation entries or disable cooldown highlights because you don't have
 --     enough to cast them.
 [243] = "시전에 필요한 자원이 부족하면 로테이션 항목을 건너뛰거나 재사용 대기시간 강조를 끕니다.",
 -- e6b6aad8 English: Effect Options
+-- Context: Section heading in General settings for options about the highlight effect (effect,
+--     magnification, color, anchor).
 [244] = "효과 옵션",
 -- cfa79416 English: Magnification
+-- Context: Label of the highlight size multiplier (zoom of the effect) in General settings,
+--     rotation steps and the effect editor; also a help heading.
 [245] = "확대",
 -- 48aae415 English: Highlight Color
+-- Context: Label of the highlight color picker in General settings and in the rotation step editor
+--     (the color of the bar highlight); also a help heading.
 [246] = "강조 색상",
 -- 6d031af1 English: Position
+-- Context: Label of the step position field in the rotation step editor (where in the rotation list
+--     the step sits); also a help term and a line in change summaries.
 [247] = "위치",
 -- f4a13303 English: Specialization Names
+-- Context: Section heading in General settings (Classic clients only): fields for naming your
+--     primary and secondary talent specializations.
 [248] = "전문화 이름",
 -- 1cfb0bd9 English: Tooltips
+-- Context: Section heading in General settings for options controlling the lines Rotation Master
+--     adds to spell and item tooltips.
 [249] = "툴팁",
 -- 4e430b3e English: Show Rotation Master in tooltips
 [250] = "툴팁에 Rotation Master 표시",
@@ -545,32 +893,54 @@ addon.translation = {
 -- e0ebe3cd English: List rotations in spell and item tooltips
 [252] = "주문 및 아이템 툴팁에 로테이션 나열",
 -- 9c73797e English: Include rotation conditions
+-- Context: Checkbox in General settings, Tooltips section: also list the rotation's conditions in
+--     spell/item tooltips; also a help heading.
 [253] = "로테이션 조건 포함",
 -- c6b7619f English: Names listed per tooltip line
 [254] = "툴팁 한 줄에 나열할 이름 수",
 -- 7fb301ab English: Rotation Master item sets
 [255] = "Rotation Master 아이템 세트",
 -- 6a361b20 English: Rotation Master rotations
+-- Context: Prefix label of a line in spell and item tooltips, followed by the names of the
+--     rotations that use that spell or item.
 [256] = "Rotation Master 로테이션",
 -- 9204c375 English: %s (disabled)
+-- Context: Rotation name in a tooltip line when that rotation is disabled; %s is the rotation name.
+-- %s #1: %s #1: the name of a rotation that is turned off, e.g. "Frost Single Target"
 [257] = "%s (비활성)",
 -- d5b57b61 English: (+%d more)
+-- Context: Suffix at the end of a tooltip line listing names, when more exist than are shown; %d is
+--     how many were left out.
+-- %d #1: %d #1: how many further rotations are not listed, e.g. 3
 [258] = "(+%d개 더)",
 -- d440fcce English: Debugging Options
+-- Context: Section heading in General settings for debugging options (log level, detailed
+--     profiling).
 [259] = "디버그 옵션",
 -- 12fe4737 English: Log Level
+-- Context: Label of the log verbosity dropdown in General settings, Debugging section; also a help
+--     heading and a comparison row label.
 [260] = "로그 수준",
 -- c0ebb7d6 English: Quiet
+-- Context: Option in the Log Level dropdown: only minimal addon chat output.
 [261] = "조용히",
 -- 1a03bd2f English: Debug
+-- Context: Option in the Log Level dropdown: extra debug messages are printed.
 [262] = "디버그",
 -- 2cd57109 English: Verbose
+-- Context: Option in the Log Level dropdown: the most detailed log messages.
 [263] = "자세히",
 -- f2438f82 English: Detailed Profiling
+-- Context: Checkbox in General settings, Debugging section: collect detailed performance timing of
+--     the addon; also a help heading.
 [264] = "상세 프로파일링",
 -- 0ca3f824 English: Disable Auto-Switching
+-- Context: Label of a setting that turns off automatic rotation switching; shown as a row name when
+--     comparing two profile collections.
 [265] = "자동 전환 끄기",
 -- 9ac1f2c5 English: Minimap Icon
+-- Context: Checkbox in General settings: show or hide the Rotation Master button on the minimap;
+--     also a help heading.
 [266] = "미니맵 아이콘",
 -- 7de50af6 English: Spell History Memory (seconds)
 [267] = "주문 기록 보존 시간 (초)",
@@ -581,8 +951,12 @@ addon.translation = {
 -- 67e53fcd English: Live Status Update Frequency (seconds)
 [270] = "실시간 상태 갱신 주기 (초)",
 -- 8e8f30f5 English: Disable Bar Highlighting
+-- Context: Checkbox in General settings: turn off the highlight Rotation Master draws on action bar
+--     buttons; also a help heading.
 [271] = "단축바 강조 끄기",
 -- 7079e1f5 English: Preview Spells
+-- Context: Label of a slider in General settings: how many upcoming spells the preview window
+--     shows; also a help heading.
 [272] = "주문 미리보기",
 -- e2f5f378 English: This is specifically how often the configuration pane will receive updates
 --     about live status.  Too frequently could make your configuration pane unusable.  0 =
@@ -596,14 +970,25 @@ addon.translation = {
 --     the effect list?
 [276] = "이전 릴리스 이후 기본 효과가 바뀌었습니다. 효과 목록을 초기화하시겠습니까?",
 -- 6db7e56b English: Import/Export Rotation
+-- Context: Title of the transfer dialog and its help for importing or exporting a rotation as text.
 [277] = "로테이션 가져오기/내보내기",
 -- a66223ca English: Import/Export Item Set
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an item set as text
+--     (like 'Import/Export Rotation').
 [278] = "아이템 세트 가져오기/내보내기",
 -- 87c5e6a6 English: Import/Export Effect
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an effect as text (like
+--     'Import/Export Rotation').
 [279] = "효과 가져오기/내보내기",
 -- 1318e3a7 English: Import/Export Condition
+-- Context: Title of the transfer dialog for importing or exporting a custom condition as text.
 [280] = "조건 가져오기/내보내기",
 -- a04def9c English: Import/Export Condition Group
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting a condition category as
+--     text.
 [281] = "조건 그룹 가져오기/내보내기",
 -- 6de338e2 English: Copy and paste this text share your rotation with others, or import someone
 --     else's.
@@ -618,20 +1003,38 @@ addon.translation = {
 --     someone else's.
 [285] = "이 텍스트를 복사해 붙여 넣어 사용자 조건을 다른 사람과 공유하거나, 다른 사람의 사용자 조건을 가져오세요.",
 -- 277089d9 English: bytes
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'bytes' (size of text).
 [286] = "바이트",
 -- 5ea44c39 English: lines
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'lines' (number of text lines).
 [287] = "줄",
 -- d4121e17 English: Parse Error
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Parse Error' for a failed import of text.
 [288] = "구문 분석 오류",
 -- f3bb01ec English: Copy of %s
+-- Context: Default name for a duplicated item (rotation, condition, profile): 'Copy of ...'; %s is
+--     the original name.
+-- %s #1: %s #1: the name of the item being copied (a rotation, effect, item set or condition), e.g. "Frost Single Target"
 [289] = "%s 사본",
 -- 64780145 English: Imported on %c
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Note on an imported entry: 'Imported on <date>'; %c is a date and time
+--     formatted by the game.
+-- %c #1: %c #1: not a value but a date format code; the game replaces it with the current local date and time when an effect is imported, e.g. "10/28/26 13:45:00". Keep %c exactly.
 [290] = "가져온 날짜: %c",
 -- 42191ef4 English: Import/Export
+-- Context: Button label (and help term) for the dialog that exports or imports a definition as
+--     text; slash separates the two actions.
 [291] = "가져오기/내보내기",
 -- 2cff9baa English: Import
+-- Context: Button in the import dialog: imports the pasted text (verb).
 [292] = "가져오기",
 -- 821e6678 English: Switch Condition
+-- Context: Checkbox label and help heading: allow this condition type to be used when automatically
+--     choosing a rotation (switch conditions).
 [293] = "전환 조건",
 -- acba80e5 English: No other rotations match.
 [294] = "일치하는 다른 로테이션이 없습니다.",
@@ -642,108 +1045,185 @@ addon.translation = {
 -- a60ad1de English: THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE
 [297] = "이 로테이션은 미완성이므로 사용되지 않습니다",
 -- a857b1ff English: Cooldowns
+-- Context: Name of the second tab in the rotation view (steps used for cooldowns, as opposed to the
+--     main rotation); also a comparison row label.
 [298] = "재사용 대기시간",
 -- 57b5e2fc English: Rotation
+-- Context: Name of the first tab in the rotation view (the main rotation steps); also a generic
+--     label for a rotation entry.
 [299] = "로테이션",
 -- 39921a74 English: Switch
+-- Context: Name of a condition category/filter (conditions that can be used for automatically
+--     switching rotations) in condition lists.
 [300] = "전환",
 -- e061b3f5 English: Condition Options
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Condition Options'.
 [301] = "조건 옵션",
 -- 07724428 English: Rotations
+-- Context: Name of the top-level 'Rotations' tab in the settings window; also a row label when
+--     comparing collections.
 [302] = "로테이션",
 -- 49c266ba English: Search
+-- Context: Heading of the help text for the search box above the condition list (verb/noun).
 [303] = "검색",
 -- baaddf70 English: Type
+-- Context: Label for the kind of something: the effect type dropdown in effect settings, and the
+--     step type in the rotation editor; also a column in comparisons.
 [304] = "유형",
 -- e28411a3 English: Texture
+-- Context: Effect type in the effect type dropdown (an icon/texture overlay effect); also the label
+--     of the texture picker.
 [305] = "텍스처",
 -- 2252d5cf English: Effect
+-- Context: Label of the highlight effect dropdown in General settings and rotation steps (the
+--     visual glow style); also a comparison row label.
 [306] = "효과",
 -- 5817280a English: Pixel
+-- Context: Effect type in the effect type dropdown: a glow of moving pixel lines around the button.
 [307] = "픽셀",
 -- 09968fe6 English: Auto Cast
+-- Context: Effect type in the effect type dropdown: a glow of orbiting sparkles like a pet autocast
+--     border.
 [308] = "자동 시전",
 -- f534ed97 English: Glow
+-- Context: Effect type in the effect type dropdown: the standard Blizzard button glow.
 [309] = "반짝임",
 -- 96afc081 English: Dazzle
+-- Context: Effect type in the effect type dropdown: a dazzling flashing glow.
 [310] = "번쩍임",
 -- fd4a5f3d English: Animate
+-- Context: Effect type in the effect type dropdown: an animated texture effect.
 [311] = "애니메이션",
 -- f7a403c6 English: Pulse
+-- Context: Effect type in the effect type dropdown: a texture that pulses (grows and shrinks).
 [312] = "맥동",
 -- c3613b17 English: Rotate
+-- Context: Effect type in the effect type dropdown: a texture that rotates.
 [313] = "회전",
 -- 0740f4ba English: Sequence
+-- Context: Heading of the list of sequence steps in the custom effect editor (an effect built from
+--     a series of frames).
 [314] = "순서",
 -- 4e1f49a9 English: Event
+-- Context: Label of the dropdown choosing which cast event (started, stopped, succeeded...)
+--     triggers an announcement; also a help heading.
 [315] = "이벤트",
 -- 358511c8 English: Effects
+-- Context: Name of the 'Effects' settings tab; refers to highlight effects.
 [316] = "효과",
 -- 4ea6bdd3 English: Item Sets
+-- Context: Name of the 'Item Sets' settings tab and help topic.
 [317] = "아이템 세트",
 -- 7c326a4b English: Announces
+-- Context: Name of the 'Announces' settings tab (announcements sent when spells are cast); also a
+--     comparison row label.
 [318] = "알림",
 -- 535e52e4 English: Profiles
+-- Context: Name of the 'Profiles' settings tab; also the title of the profile transfer dialog.
 [319] = "프로필",
 -- 3b26a542 English: Lines
+-- Context: Label of the number-of-lines setting of the Pixel effect.
 [320] = "선",
 -- 16b6668d English: Frequency
+-- Context: Label of a speed setting of an effect (how fast it animates, in cycles per second).
 [321] = "빈도",
 -- 1de3df70 English: Steps
+-- Context: Label of the number-of-steps setting of the Rotate effect.
 [322] = "단계",
 -- fae1c6f1 English: Reverse
+-- Context: Checkbox in the Rotate effect settings: rotate in the opposite direction.
 [323] = "반대로",
 -- 1968034b English: Angle
+-- Context: Label of the rotation angle (degrees, 0-359) of a sequence step in the effect editor.
 [324] = "각도",
 -- adc95605 English: Length
+-- Context: Label of the line length setting of the Pixel effect.
 [325] = "길이",
 -- 7b594414 English: Thickness
+-- Context: Label of the line thickness setting of the Pixel effect.
 [326] = "두께",
 -- e73735cf English: Particles
+-- Context: Label of the number-of-particles setting of the Auto Cast effect.
 [327] = "입자",
 -- f102986b English: Scale
+-- Context: Label of a size/zoom setting: effect scale, and the UI scale slider of the configuration
+--     window.
 [328] = "크기 비율",
 -- 1709305c English: Level
+-- Context: Name of the Level condition (character level of a unit); also its operator field label
+--     in the condition editor.
 [329] = "레벨",
 -- 75081b59 English: Disabled
+-- Context: Status text / button state: the item (condition, step, rotation) is turned off; also
+--     prefixes a condition's text when disabled.
 [330] = "비활성",
 -- 92c1cdfd English: Enabled
+-- Context: Status text / toggle button state: the item (condition, function, definition) is turned
+--     on.
 [331] = "활성",
 -- b79cac92 English: Help
+-- Context: Button/tooltip opening the help for the current editor or condition; also a comparison
+--     row label.
 [332] = "도움말",
 -- 8c89911a English: Time Until Health
+-- Context: Name of the Time Until Health condition (estimated seconds until a unit reaches a health
+--     value).
 [333] = "생명력 도달까지 남은 시간",
 -- dd1e6bab English: Time Until Health Percentage
 [334] = "생명력 비율 도달까지 남은 시간",
 -- 2184a4e3 English: Runner
+-- Context: Name of the Runner condition (the mob tends to flee at low health, per the MobInfo2
+--     addon).
 [335] = "실행기",
 -- 0a10734e English: %s will run
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text fragment '%s will run' for the Runner condition; %s is a unit.
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [336] = "%s 실행 예정",
 -- 93bea368 English: Resistant
+-- Context: Name of the Resistant condition (a unit resists a magic school above a value).
 [337] = "저항함",
 -- 384f6084 English: Immune
+-- Context: Name of the Immune condition (a unit is immune to a magic school).
 [338] = "면역",
 -- ecbc89cd English: Started
+-- Context: Cast event in the announcement Event dropdown: the cast has started; also a help
+--     heading.
 [339] = "시작됨",
 -- 1a4f630a English: Stopped
+-- Context: Cast event in the announcement Event dropdown: the cast was stopped/cancelled by you;
+--     also a help heading.
 [340] = "중지됨",
 -- 6d9a6f97 English: Succeeded
+-- Context: Cast event in the announcement Event dropdown: the cast completed successfully.
 [341] = "성공",
 -- 132d124d English: Interrupted
+-- Context: Cast event in the announcement Event dropdown: the cast was interrupted (e.g. by an
+--     enemy).
 [342] = "차단됨",
 -- 031a8f0f English: Failed
+-- Context: Cast event in the announcement Event dropdown: the cast failed; also a validation status
+--     ('Failed') in the condition source preview.
 [343] = "실패",
 -- a5c19c9f English: Delayed
+-- Context: Cast event in the announcement Event dropdown: the cast was delayed (pushback).
 [344] = "지연됨",
 -- 93006d61 English: Arcane
+-- Context: Magic school name (Arcane) in the school dropdown of the Resistant/Immune conditions.
 [345] = "비전",
 -- 17636dd6 English: Frost
+-- Context: Magic school name (Frost) in the school dropdown; also a Death Knight rune type (Frost
+--     rune) in the rune condition help.
 [346] = "냉기",
 -- 56eee6a5 English: Holy
+-- Context: Magic school name (Holy) in the school dropdown of the Resistant/Immune conditions.
 [347] = "신성",
 -- c71ce8cc English: Nature
+-- Context: Magic school name (Nature) in the school dropdown; also an icon-picker category.
 [348] = "자연",
 -- 4c764cb6 English: Shadow
+-- Context: Magic school name (Shadow) in the school dropdown of the Resistant/Immune conditions.
 [349] = "암흑",
 -- 113ed31a English: Spells that you wish to conditionally highlight independent of your rotation. 
 --     Any or all of these may be highlighted at the same time.
@@ -752,398 +1232,774 @@ addon.translation = {
 --     spell being based on the first satisfied condition.
 [351] = "주 주문 로테이션입니다. 한 번에 하나의 주문만 강조되며, 조건을 처음으로 만족한 주문이 선택됩니다.",
 -- 1359626e English: Move Up
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position up; also a help heading.
 [352] = "위로 이동",
 -- db60f7a9 English: Move to Top
+-- Context: Menu entry/button: moves the selected list entry to the top; also a help heading.
 [353] = "맨 위로 이동",
 -- 89abfab0 English: Move to Bottom
+-- Context: Menu entry/button: moves the selected list entry to the bottom; also a help heading.
 [354] = "맨 아래로 이동",
 -- b58330ac English: Move Down
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position down; also a help heading.
 [355] = "아래로 이동",
 -- 45986160 English: Move To
+-- Context: Label of the dropdown in the Conditions page for choosing the category to move a
+--     condition into (verb phrase 'Move to'); also a help heading.
 [356] = "이동 위치",
 -- 7e6fefff English: Hidden
+-- Context: Checkbox label: hide this condition from the Other category in the condition picker
+--     (adjective); also a comparison row label.
 [357] = "숨김",
 -- 02cdaabf English: Duplicate
+-- Context: Button in the rotation list and rotation steps: makes a copy of the selected entry
+--     (verb); also a help heading.
 [358] = "복제",
 -- 4a787020 English: Action Type
+-- Context: Label of the dropdown choosing which kind of action to look for (e.g. healed, dodged,
+--     missed) in the Last Combat Action conditions; also a help heading for the announcement action
+--     type.
 [359] = "동작 유형",
 -- 4e43f098 English: No Action
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Option label 'No Action' (a step that does nothing).
 [360] = "동작 없음",
 -- 63c5b771 English: Spell
+-- Context: Name of the Spell choice: the spell name/ID entry field label in conditions, the step
+--     type 'Spell' and a help term; noun.
 [361] = "주문",
 -- c8a18067 English: Pet Spell
+-- Context: Name of the Pet Spell choice: a step/announcement type that uses a spell of your pet;
+--     also used in pet spell condition help.
 [362] = "소환수 주문",
 -- a4d187b1 English: Any Spell
+-- Context: Step type dropdown entry in the rotation step editor: a step that fires for any spell,
+--     not a specific one.
 [363] = "모든 주문",
 -- 652bcc3a English: Item
+-- Context: Label of the item entry field (an item name or ID) in conditions; also the step type
+--     'Item' and a help term; noun.
 [364] = "아이템",
 -- 97d4be89 English: Conditions
+-- Context: Heading of the conditions section of a rotation step/announcement and a help heading;
+--     also a comparison row label.
 [365] = "조건",
 -- c6877c9a English: NOTE: Some spells can not be selected (even if auto-completed) due to WoW
 --     internals.  It may reequire you to switch specs or summon the requisite pet first before
 --     being able to populate this field.
 [366] = "참고: WoW 내부 구조 때문에 일부 주문은 (자동 완성되더라도) 선택할 수 없습니다. 이 필드를 채우려면 먼저 전문화를 바꾸거나 필요한 소환수를 불러내야 할 수 있습니다.",
 -- 464557d7 English: %s is now available!
+-- %s #1: %s #1: a clickable spell link for the spell that became available, e.g. "[Fireball]" (or "Unknown spell (133)" when the game has no data)
 [367] = "%s 이제 사용 가능!",
 -- 2ab52f92 English: Announce
+-- Context: Label of the Announce checkbox/section in a rotation step (announce when the step
+--     triggers) and a help heading (verb/noun); also a comparison row label.
 [368] = "알림",
 -- f961b619 English: Audible Announce
+-- Context: Label of the dropdown in a rotation step choosing a sound to play when announcing.
 [369] = "소리 알림",
 -- dc937b59 English: None
+-- Context: Dropdown option meaning 'no selection' or an empty value (e.g. no active rotation, no
+--     sound, no channel).
 [370] = "없음",
 -- 51247512 English: Raid or Party
+-- Context: Dropdown option (announce channel) meaning raid chat when in a raid, otherwise party
+--     chat; also used inside condition text as 'members of raid or party'.
 [371] = "공격대 또는 파티",
 -- 272e43a2 English: Party Only
+-- Context: Announce channel dropdown option: send the announcement to party chat only; also a help
+--     heading.
 [372] = "파티만",
 -- be5b8dfd English: Raid Warning
+-- Context: Announce channel dropdown option: send the announcement as a raid warning message; also
+--     a help heading.
 [373] = "공격대 경보",
 -- 64f3cd06 English: Say
+-- Context: Announce channel dropdown option: say (normal /say chat); also the chat-type of an
+--     announcement macro.
 [374] = "일반 대화",
 -- 938af47b English: Yell
+-- Context: Announce channel dropdown option: yell (/yell chat); also the chat-type of an
+--     announcement macro.
 [375] = "외치기",
 -- 5027e850 English: Emote
+-- Context: Announce channel dropdown option: perform a built-in emote; also the Emote field label
+--     in the announcement help.
 [376] = "감정 표현",
 -- ff3a450e English: Local Only
+-- Context: Announce channel dropdown option: show the message only to you, not to others.
 [377] = "나에게만",
 -- 71988c4d English: Text
+-- Context: Label of a free-text field (the announcement text) and the schema field type 'Text' (a
+--     string) in custom function and schema editors.
 [378] = "텍스트",
 -- b0ef44de English: Item Set
+-- Context: Label of the item set dropdown in item conditions and the item set choice in
+--     announcements; noun.
 [379] = "아이템 세트",
 -- 434702dc English: Click the icon above to bind to your action bar
 [380] = "위 아이콘을 클릭해 행동 단축바에 연결하세요",
 -- e71efd0e English: time until %s is at %s%% health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [381] = "%s의 생명력이 %s%%가 될 때까지 남은 시간",
 -- 4104ecce English: time until %s is at %s health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [382] = "%s의 생명력이 %s가 될 때까지 남은 시간",
 -- cd7e49ac English: time until %s is at %s health defecit
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health deficit amount (missing health) that is waited for, e.g. 20000
 [383] = "%s의 생명력 손실량이 %s가 될 때까지 남은 시간",
 -- 6344ed2a English: The %s health defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [384] = "%s 생명력 손실량: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- b4b2caae English: The %s health of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [385] = "%s 생명력: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- 1bbec37f English: The number %s members%s within %d yards of %s whose
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [386] = "구성원(%s%s) 수, %d미터 이내, 기준 %s, 조건:",
 -- 91765b2b English: The %s health percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [387] = "%s 생명력 비율: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- 13a2b471 English: The number %s members%s within %d yards of %s whose health percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [388] = "구성원(%s%s) 수, %d미터 이내, 기준 %s, 생명력 비율 조건:",
 -- 52cf9fe9 English: The %s mana defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [389] = "%s 마나 손실량: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- 0a50ee9b English: The %s mana of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [390] = "%s 마나: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- ed32b716 English: The %s mana percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [391] = "%s 마나 비율: 구성원(%s%s), %d미터 이내, 기준 %s",
 -- 66dd29aa English: The number %s members%s within %d yards of %s whose mana percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [392] = "구성원(%s%s) 수, %d미터 이내, 기준 %s, 마나 비율 조건:",
 -- bd972cc4 English: AND
+-- Context: Name of the logical AND group condition: all conditions inside it must be true (a
+--     condition type in the condition picker).
 [393] = "그리고",
 -- 829e5b28 English: OR
+-- Context: Name of the logical OR group condition: at least one condition inside it must be true.
 [394] = "또는",
 -- 8be3365c English: NOT
+-- Context: Name of the logical NOT group condition: negates the condition inside it; also used as a
+--     prefix in condition text.
 [395] = "아님",
 -- f733d042 English: <INVALID CONDITION>
+-- Context: Placeholder shown in a condition list where a condition has a missing or unknown type;
+--     keep the angle brackets.
 [396] = "<잘못된 조건>",
 -- b2295de9 English: Please Choose ...
 [397] = "선택하세요...",
 -- 9f24f04e English: Condition Type
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label 'Condition Type'.
 [398] = "조건 유형",
 -- df00fd14 English: Edit Condition #%d
+-- Context: Window title of the condition editor for the condition at a numbered position; %d is its
+--     position in the list.
+-- %d #1: %d #1: the position of the condition in the rotation step, counting from 1, e.g. 2
 [399] = "조건 #%d 편집",
 -- 55490a4b English: Up
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Up' (move up arrow).
 [400] = "위",
 -- b86d11af English: Down
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Down' (move down arrow).
 [401] = "아래",
 -- 3124aba4 English: <spell>
+-- Context: Placeholder shown in a condition's text where no spell has been chosen yet; keep the
+--     angle brackets.
 [402] = "<주문>",
 -- 99cd36a3 English: Your talent is a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [403] = "특성이 %s 역할입니다",
 -- 8436c454 English: %s is in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [404] = "%s: %s 역할",
 -- 71fafa0a English: %s is a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is a %s' (singular, e.g. 'your target is a Beast');
+--     unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [405] = "%s: %s",
 -- f9030f9e English: %s are a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are a %s' (plural subject); unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [406] = "%s: %s",
 -- 1c5be7b4 English: %s have %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s' (plural subject); unit, then a thing.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [407] = "%s: %s 있음",
 -- 82320b64 English: %s has %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s' (singular subject); unit, then a thing.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [408] = "%s: %s 있음",
 -- 3313549c English: %s is %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is %s' (singular subject); subject, then a state.
+-- %s #1: %s #1: the first unit, e.g. "your target"
+-- %s #2: %s #2: the unit it is compared with (or a distance such as "closer than 10 yards"), e.g. "your focus target"
 [409] = "%s: %s",
 -- 4902371e English: %s are %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are %s' (plural subject); subject, then a state.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the distance phrase, e.g. "closer than 10 yards"
 [410] = "%s: %s",
 -- 2564e907 English: %s were %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s were %s' (plural subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action ("were" is used for the player), e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [411] = "%s: %s",
 -- 96aacc3d English: %s was %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s was %s' (singular subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [412] = "%s: %s",
 -- 368387c7 English: %s have %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s where %s' (plural subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [413] = "%s: %s 있음, 조건: %s",
 -- f161aa55 English: %s has %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s where %s' (singular subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, e.g. "Rend"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [414] = "%s: %s 있음, 조건: %s",
 -- 38277209 English: you are talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [415] = "%s 특성을 배웠습니다",
 -- 32da26d1 English: talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree it is in, e.g. "Arcane"
 [416] = "%s 특성 점수 (%s)",
 -- 85d523f6 English: %s's resistance to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template "%s's resistance to %s"; unit, then a magic school.
+-- %s #1: %s #1: the unit whose resistance is checked, possessive form, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [417] = "%s의 %s 저항력",
 -- 0cad0ea7 English: %s is sometimes immune to %s
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [418] = "%s: 가끔 %s 면역",
 -- e23ffa5e English: %s is immune to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is immune to %s'; unit, then a magic school.
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [419] = "%s: %s 면역",
 -- 6d19eba6 English: you have %s glyph
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template 'you have %s glyph'; %s is a glyph name.
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [420] = "%s 문양 보유",
 -- 4e545960 English: Unit
+-- Context: Label of the unit dropdown in conditions (which unit is checked: you, your target, ...)
+--     and a help term; noun.
 [421] = "유닛",
 -- 14736a2e English: Role
+-- Context: Name of the Role condition (tank, DPS or healer) and the label of its role dropdown.
 [422] = "역할",
 -- 4f3a9bd0 English: Class
+-- Context: Name of the Class condition and the label of its class dropdown; also a scope option
+--     (class vs. this character).
 [423] = "직업",
 -- 0df08730 English: Class In Group
+-- Context: Name of the Class In Group condition: counts group members of a given class.
 [424] = "그룹 내 직업",
 -- e23f2e34 English: Is Same As
+-- Context: Name of the Is Same As condition: true when two units are the same unit.
 [425] = "같음",
 -- 03d5b2de English: Creature Type
+-- Context: Name of the Creature Type condition (beast, demon, ...) and label of its dropdown.
 [426] = "생물 유형",
 -- a1cf0927 English: Unit Classification
+-- Context: Name of the Unit Classification condition (normal, elite, boss...) and label of its
+--     dropdown.
 [427] = "유닛 등급",
 -- caa2e08f English: Talent
+-- Context: Label of the talent dropdown in the Talent condition (a specific talent).
 [428] = "특성",
 -- 1aff4871 English: Glyph
+-- Context: Name of the Glyph condition: true while you have a given glyph (an item) applied.
 [429] = "문양",
 -- b8790e72 English: Talent Tree
+-- Context: Label of the talent tree/group dropdown in the Talent condition and title of the talent
+--     picker popup.
 [430] = "특성 트리",
 -- 291101a0 English: Operator
+-- Context: Label of the dropdown holding the comparison operator (is less than, equal to ...) in
+--     conditions, and a help term.
 [431] = "연산자",
 -- b7bdf7a2 English: Distance
+-- Context: Name of the Distance condition (yards to a unit) and label of its distance field.
 [432] = "거리",
 -- 7a347089 English: Distance Count
+-- Context: Name of the Distance Count condition: how many units are within a given distance.
 [433] = "거리 내 개수",
 -- 47da413b English: yards
+-- Context: Unit word 'yards' (distance unit). No direct call site in the current code; it appeared
+--     in distance conditions' text.
 [434] = "미터",
 -- 55898449 English: Health
+-- Context: Label of the health value field in health-based conditions (e.g. 'Health Within Range')
+--     and the operator widget's value name; noun.
 [435] = "생명력",
 -- 3c01b3e3 English: %s health defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a health deficit comparison ('%s health deficit'; sic 'defecit' in the English
+--     key); %s is a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [436] = "%s 생명력 손실량",
 -- 59f92800 English: Health Percentage
+-- Context: Name of the Health Percentage condition (a unit's health as a percent of its maximum) in
+--     the condition picker.
 [437] = "생명력 비율",
 -- 066ffe4a English: Mana
+-- Context: Label of the mana value field in mana conditions (e.g. 'Mana Within Range'); noun.
 [438] = "마나",
 -- ba32a92b English: %s mana defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a mana deficit comparison ('%s mana deficit'; sic 'defecit' in the key); %s is a
+--     value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [439] = "%s 마나 손실량",
 -- 42dccab0 English: Mana Percentage
+-- Context: Name of the Mana Percentage condition (a unit's mana as a percent of its maximum).
 [440] = "마나 비율",
 -- 848e9656 English: Power
+-- Context: Name of the Power condition (a unit's raw resource such as rage or energy) and the label
+--     of its value field.
 [441] = "자원",
 -- 0e4dfe83 English: %s power defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a power deficit comparison ('%s power deficit'; sic 'defecit' in the key); %s is
+--     a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [442] = "%s 자원 부족량",
 -- 6a612b86 English: Power Percentage
+-- Context: Name of the Power Percentage condition (a unit's resource as a percent of its maximum).
 [443] = "자원 비율",
 -- 77deabe2 English: Points
+-- Context: Name of the Points condition (combo points) and the label of its value field.
 [444] = "점수",
 -- 8208acbf English: %s points
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s points' (combo points); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [445] = "%s 점수",
 -- 49e3a963 English: %s point defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s point deficit' (sic 'defecit' in the key; combo points missing
+--     from max); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [446] = "%s 점수 부족량",
 -- 5af0278b English: Runes
+-- Context: Name of the Runes condition (Death Knight runes available) and the label of its count
+--     field.
 [447] = "룬",
 -- d62be657 English: Rune Cooldown
+-- Context: Name of the Rune Cooldown condition (seconds until a rune type is ready).
 [448] = "룬 재사용 대기시간",
 -- 9ba5f80d English: %s runes available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s runes available'; %s is a number.
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [449] = "사용 가능한 %s 룬",
 -- 61084a6e English: cooldown on %s rune
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'cooldown on %s rune'; %s is a rune type.
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [450] = "%s 룬 재사용 대기시간",
 -- 8a7961ab English: Blood
+-- Context: Death Knight rune type (Blood) in the Runes and Rune Cooldown conditions' rune dropdown.
 [451] = "혈기",
 -- 4de5fe95 English: Unholy
+-- Context: Death Knight rune type (Unholy) in the Runes and Rune Cooldown conditions' rune
+--     dropdown.
 [452] = "부정",
 -- fcd6fea7 English: Death
+-- Context: Death Knight rune type (Death) in the Runes and Rune Cooldown conditions' rune dropdown.
 [453] = "죽음",
 -- 8a166eb0 English: Character Stat
+-- Context: Name of the Character Stat condition (a stat such as strength or armor) and the label of
+--     its stat dropdown.
 [454] = "캐릭터 능력치",
 -- 0a79e909 English: Extended Character Stat
+-- Context: Name of the Extended Character Stat condition (stats provided by the
+--     ExtendedCharacterStats addon).
 [455] = "확장 캐릭터 능력치",
 -- 9cd14132 English: Extended Character Stat Percentage
 [456] = "확장 캐릭터 능력치 비율",
 -- d2923546 English: Spell Available
+-- Context: Name of the Spell Available condition (a spell is castable/known and available).
 [457] = "주문 사용 가능",
 -- b1557241 English: Pet Spell Available
+-- Context: Name of the Pet Spell Available condition (a pet spell is available).
 [458] = "소환수 주문 사용 가능",
 -- d24390ed English: %s is available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is available'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [459] = "%s 사용 가능",
 -- b2561670 English: Spell In Range
+-- Context: Name of the Spell In Range condition (the spell can reach the target).
 [460] = "주문 사거리 내",
 -- 67ef960b English: Pet Spell In Range
 [461] = "소환수 주문 사거리 내",
 -- 12692f41 English: %s is in range
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in range'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [462] = "%s 사거리 내",
 -- 8baec846 English: Spell Cooldown
+-- Context: Name of the Spell Cooldown condition (seconds until a spell can be cast again); also the
+--     title of its help.
 [463] = "주문 재사용 대기시간",
 -- f7254914 English: Pet Spell Cooldown
+-- Context: Name of the Pet Spell Cooldown condition (seconds until a pet spell can be cast again).
 [464] = "소환수 주문 재사용 대기시간",
 -- 9e4f8469 English: Boss Mod Encounter
+-- Context: Name of the Boss Mod Encounter condition (an encounter reported by a boss mod addon such
+--     as DBM/BigWigs is active).
 [465] = "보스 모드 우두머리 전투",
 -- fd1f1e3c English: Boss Mod Encounter Stage
 [466] = "보스 모드 우두머리 전투 단계",
 -- c07ffee7 English: Boss Mod Timer
+-- Context: Name of the Boss Mod Timer condition (seconds until a boss ability, from a boss mod
+--     addon).
 [467] = "보스 모드 타이머",
 -- 140bedbf English: none
+-- Context: Lowercase word 'none' inserted in a status line 'Current encounter: ..., ID none, stage
+--     ...' when there is no encounter ID.
 [468] = "없음",
 -- f73bf30c English: Spell Active or Pending
 [469] = "주문 활성 또는 대기 중",
 -- c8ada1d7 English: Pet Spell Active or Pending
 [470] = "소환수 주문 활성 또는 대기 중",
 -- 85f5aca6 English: %s is active or pending
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [471] = "%s 활성 또는 대기 중",
 -- fdb533df English: Spell Time Remaining
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     name of the Spell Time Remaining condition (time left on a spell).
 [472] = "주문 남은 시간",
 -- 3422640c English: Pet Spell Time Remaining
 [473] = "소환수 주문 남은 시간",
 -- 369bb5dd English: remaining time on %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'remaining time on %s'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [474] = "%s 남은 시간",
 -- 0ce37091 English: Spell Charges
+-- Context: Name of the Spell Charges condition (how many charges of a spell are available).
 [475] = "주문 충전",
 -- b9dd94ce English: Pet Spell Charges
+-- Context: Name of the Pet Spell Charges condition (charges of a pet spell).
 [476] = "소환수 주문 충전",
 -- bd7612e8 English: Spell Cast History Time
 [477] = "주문 시전 기록 시간",
 -- e16b6508 English: Spell Cast History
+-- Context: Name of the Spell Cast History condition (a spell was cast N casts ago).
 [478] = "주문 시전 기록",
 -- 26483687 English: Pet Spell Cast History Time
 [479] = "소환수 주문 시전 기록 시간",
 -- 6f884dd0 English: Pet Spell Cast History
 [480] = "소환수 주문 시전 기록",
 -- 193bb945 English: %s was cast
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s was cast'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [481] = "%s 시전함",
 -- 0d112e0c English: Combat Action History Time
 [482] = "전투 행동 기록 시간",
 -- ec517441 English: Combat Action History
+-- Context: Name of the Combat Action History condition (a combat event such as dodged/healed N
+--     actions ago).
 [483] = "전투 행동 기록",
 -- 9c434f34 English: fewer than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [484] = "%s회 미만 시전 전",
 -- 5966470f English: at most %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [485] = "최대 %s회 시전 전",
 -- c1a41894 English: more than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [486] = "%s회 초과 시전 전",
 -- fd9a7c72 English: at least %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [487] = "최소 %s회 시전 전",
 -- c53b5aea English: exactly %s casts ago
+-- Context: Phrase in condition text for the equals operator in cast history: '... exactly N casts
+--     ago'; %s is the number.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [488] = "정확히 %s회 시전 전",
 -- 770b3b3e English: other than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [489] = "%s회 시전 전이 아닌 시점",
 -- 75504648 English: a multiple of %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [490] = "%s의 배수 회 시전 전",
 -- 3619f661 English: fewer than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [491] = "%s회 미만 행동 전",
 -- 90c5ca9f English: at most %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [492] = "최대 %s회 행동 전",
 -- 03dcab2c English: more than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [493] = "%s회 초과 행동 전",
 -- 7688d933 English: at least %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [494] = "최소 %s회 행동 전",
 -- 506a71d6 English: exactly %s actions ago
+-- Context: Phrase in condition text for the equals operator in combat action history: '... exactly
+--     N actions ago'; %s is the number.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [495] = "정확히 %s회 행동 전",
 -- 1a4b6a11 English: other than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [496] = "%s회 행동 전이 아닌 시점",
 -- a5094423 English: a multiple of %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [497] = "%s의 배수 회 행동 전",
 -- 27db12a6 English: less than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [498] = "%s초 미만 전",
 -- 4e0556a9 English: at most %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [499] = "최대 %s초 전",
 -- 9644de21 English: more than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [500] = "%s초 초과 전",
 -- 75c46f7d English: at least %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [501] = "최소 %s초 전",
 -- a431b13b English: exactly %s seconds ago
+-- Context: Phrase in condition text for the equals operator in time-based history: '... exactly N
+--     seconds ago'; %s is the number.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [502] = "정확히 %s초 전",
 -- 4ac319b9 English: other than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [503] = "%s초 전이 아닌 시점",
 -- 2b2e3c59 English: a multiple of %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [504] = "%s의 배수 초 전",
 -- ae4f356c English: Any Spell Available
+-- Context: Name of the Any Spell Available condition (any spell by name/ID, regardless of
+--     specialization).
 [505] = "아무 주문 사용 가능",
 -- 11a84a9d English: Any Spell In Range
 [506] = "아무 주문 사거리 내",
 -- 6a50cd59 English: Any Spell Cooldown
+-- Context: Name of the Any Spell Cooldown condition (seconds until any chosen spell is ready).
 [507] = "아무 주문 재사용 대기시간",
 -- 56ef0943 English: Any Spell Time Remaining
 [508] = "아무 주문 남은 시간",
 -- a8212106 English: Any Spell Charges
+-- Context: Name of the Any Spell Charges condition (charges of any chosen spell).
 [509] = "아무 주문 충전",
 -- ae1e1aed English: Buff Present
+-- Context: Name of the Buff Present condition (an aura is on the unit).
 [510] = "강화 효과 있음",
 -- 8fb4de97 English: Buff Time Remaining
+-- Context: Name of the Buff Time Remaining condition (seconds left on a buff).
 [511] = "강화 효과 남은 시간",
 -- 666e85fc English: Buff Stacks
+-- Context: Name of the Buff Stacks condition (the application count of a buff).
 [512] = "강화 효과 중첩",
 -- 16ace6d6 English: stacks of %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'stacks of %s'; %s is an aura.
+-- %s #1: %s #1: the buff or debuff, as a spell name or "your own" followed by it, e.g. "Sunder Armor"
 [513] = "%s 중첩",
 -- b4f4e6c4 English: stacks
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text word 'stacks' (aura application count).
 [514] = "중첩",
 -- 78fcf705 English: Has Stealable Buff
+-- Context: Name of the Has Stealable Buff condition (a unit has a buff you can steal or purge).
 [515] = "훔칠 수 있는 강화 효과 있음",
 -- 7588c154 English: %s has a stealable buff
+-- %s #1: %s #1: the unit, e.g. "your target"
 [516] = "%s: 훔칠 수 있는 강화 효과 있음",
 -- c057197d English: Debuff Present
+-- Context: Name of the Debuff Present condition (a debuff is on the unit).
 [517] = "약화 효과 있음",
 -- e12d628f English: Debuff Time Remaining
+-- Context: Name of the Debuff Time Remaining condition (seconds left on a debuff).
 [518] = "약화 효과 남은 시간",
 -- 68627f3e English: Debuff Stacks
+-- Context: Name of the Debuff Stacks condition (the application count of a debuff).
 [519] = "약화 효과 중첩",
 -- fe1e836d English: Debuff Type Present
+-- Context: Name of the Debuff Type Present condition (e.g. Magic, Curse, Poison, Disease on the
+--     unit).
 [520] = "약화 효과 유형 있음",
 -- 23f8a0cb English: %s have a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s have a %s debuff' (plural subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [521] = "%s: %s 약화 효과 있음",
 -- 7ab4967e English: %s has a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s has a %s debuff' (singular subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [522] = "%s: %s 약화 효과 있음",
 -- a7b891f5 English: Totem Present
+-- Context: Name of the Totem Present condition (a totem of a given element is active).
 [523] = "토템 있음",
 -- 0c3d3d7f English: %s totem is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s totem is active'; %s is a totem element.
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [524] = "%s 토템 활성",
 -- e885c330 English: %s is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active'; %s is a totem/spell.
+-- %s #1: %s #1: a clickable spell link for the totem or ability, e.g. "[Searing Totem]"
 [525] = "%s 활성",
 -- 66da3d47 English: Specific Totem Present
+-- Context: Name of the Specific Totem Present condition (a particular totem spell is active).
 [526] = "특정 토템 있음",
 -- 5bf50471 English: Totem Time Remaining
+-- Context: Name of the Totem Time Remaining condition (seconds left on an active totem).
 [527] = "토템 남은 시간",
 -- 7543785b English: Specific Totem Time Remaining
 [528] = "특정 토템 남은 시간",
 -- 68fb02a4 English: you have a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [529] = "%s 토템 활성, %s",
 -- a25252ca English: %s is active with %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active with %s'; first %s a totem, second a detail (such as
+--     time left).
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [530] = "%s 활성, %s",
 -- 2fa842db English: Have Item Equipped
+-- Context: Name of the Have Item Equipped condition (you wear a given item).
 [531] = "아이템 착용 중",
 -- 5554bebd English: you have %s equipped
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you have %s equipped'; %s is an item.
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [532] = "%s 착용 중",
 -- 8e3be399 English: Have Item In Bags
 [533] = "가방에 아이템 있음",
 -- ef20a8e9 English: the number of %s you are carrying
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Healing Potion]"
 [534] = "소지한 %s 개수",
 -- 86a036a1 English: Item Available
+-- Context: Name of the Item Available condition (you have the item and can use it).
 [535] = "아이템 사용 가능",
 -- e01cd9e7 English: Item In Range
+-- Context: Name of the Item In Range condition (the item can reach the target).
 [536] = "아이템 사거리 내",
 -- 64d7247f English: Item Cooldown
+-- Context: Name of the Item Cooldown condition (seconds until an item is usable again).
 [537] = "아이템 재사용 대기시간",
 -- 1b0ab573 English: In Combat
+-- Context: Name of the In Combat condition; also a checkbox label in the Distance Count condition
+--     meaning 'only count units in combat'.
 [538] = "전투 중",
 -- 630eade3 English: %s are in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are in combat' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [539] = "%s 전투 중",
 -- 89608711 English: %s is in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in combat' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [540] = "%s 전투 중",
 -- a9bae210 English: Have Pet
+-- Context: Name of the Have Pet condition (you currently have a pet).
 [541] = "소환수 있음",
 -- 924d4ef6 English: you have a pet
 [542] = "소환수 있음",
 -- 02734b33 English: Have Named Pet
+-- Context: Name of the Have Named Pet condition (your pet has a given name).
 [543] = "이름 있는 소환수 있음",
 -- 0c21cff5 English: you have a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [544] = "%s 소환수 있음",
 -- 526a40a4 English: Stealth
+-- Context: Name of the Stealth condition (the player is stealthed); noun.
 [545] = "은신",
 -- daac7bb8 English: you are stealthed
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are stealthed'.
 [546] = "은신 중",
 -- d9237cea English: In Control
+-- Context: Name of the In Control condition (you are not stunned, feared, or otherwise lost
+--     control).
 [547] = "제어 가능",
 -- 7eea2830 English: you are in control of your character
 [548] = "캐릭터를 제어할 수 있음",
@@ -1152,24 +2008,40 @@ addon.translation = {
 -- 7843bc0f English: Loss Of Control Blocked
 [550] = "제어 불가로 차단됨",
 -- 8dac743c English: Moving
+-- Context: Name of the Moving condition (the player is moving).
 [551] = "이동 중",
 -- 09284586 English: you are moving
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are moving'.
 [552] = "이동 중",
 -- 56aa198a English: Threat
+-- Context: Name of the Threat condition (your threat level against a unit) and the label of its
+--     threat-level dropdown.
 [553] = "위협 수준",
 -- ffa83e17 English: Threat Count
+-- Context: Name of the Threat Count condition (the number of units on which you have at least a
+--     threat level).
 [554] = "위협 수준 개수",
 -- c74406db English: you are at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [555] = "%s에 대한 위협 수준이 최소 %s",
 -- 99157067 English: Shapeshift Form
+-- Context: Name of the Shapeshift Form condition (the druid/shaman form you are in).
 [556] = "변신 형상",
 -- 89016283 English: Attackable
+-- Context: Name of the Attackable condition (the unit can be attacked by you).
 [557] = "공격 가능",
 -- b3478c03 English: Hostile
+-- Context: Name of the Hostile condition (the unit is an enemy).
 [558] = "적대적",
 -- 46e36b4f English: Allies Within Range
+-- Context: Name of the Allies Within Range condition (number of allies within a distance of a
+--     unit).
 [559] = "범위 내 아군",
 -- afdfa696 English: Health Within Range
+-- Context: Name of the Health Within Range condition (health statistic over units within a
+--     distance).
 [560] = "범위 내 생명력",
 -- a4d0252f English: Health Count Within Range
 [561] = "범위 내 생명력 개수",
@@ -1178,6 +2050,7 @@ addon.translation = {
 -- 324a4bd3 English: Health Percentage Count Within Range
 [563] = "범위 내 생명력 비율 개수",
 -- 8b7e70d8 English: Mana Within Range
+-- Context: Name of the Mana Within Range condition (mana statistic over units within a distance).
 [564] = "범위 내 마나",
 -- 94049799 English: Mana Count Within Range
 [565] = "범위 내 마나 개수",
@@ -1186,22 +2059,39 @@ addon.translation = {
 -- 953ff9c3 English: Mana Percentage Count Within Range
 [567] = "범위 내 마나 비율 개수",
 -- d709e95d English: %s is an enemy
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is an enemy'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [568] = "%s: 적",
 -- 7024062a English: %s is attackable
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is attackable'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [569] = "%s: 공격 가능",
 -- cd29bb25 English: number of %s members%s within %d yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 30
 [570] = "구성원(%s%s) 중 %d미터 이내의 수",
 -- bb1fa7ca English: number of %s members%s within %s yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
 [571] = "구성원(%s%s) 중 %s미터 이내의 수",
 -- ffc1e6b0 English: number of enemies you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [572] = "위협 수준이 최소 %s인 적의 수",
 -- 1fc58dea English: you {{!are|are not}} on %s threat table
+-- %s #1: %s #1: the unit, in the possessive form, e.g. "your target's"
 [573] = "%s 위협 목록에 {{!있음|없음}}",
 -- dbcea100 English: you {{!have|do not have}} at least as much threat on %s as its tank
+-- %s #1: %s #1: the unit, e.g. "your target"
 [574] = "%s: 방어 전담 이상의 위협 수준 {{!보유|미보유}}",
 -- 1a38484b English: you {{!are|are not}} tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [575] = "%s 방어 {{!중|중 아님}}",
 -- f893e9b8 English: you {{!are|are not}} securely tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [576] = "%s 안정적으로 방어 {{!중|중 아님}}",
 -- 050bc6fc English: the number of enemies whose threat table you are on
 [577] = "내가 위협 목록에 있는 적의 수",
@@ -1212,88 +2102,161 @@ addon.translation = {
 -- 39546907 English: the number of enemies you are securely tanking
 [580] = "내가 안정적으로 방어 중인 적의 수",
 -- d173b87e English: you are in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [581] = "%s 변신 중",
 -- 38ffcb03 English: Channeling
+-- Context: Name of the Channeling condition (a unit is channeling any spell).
 [582] = "정신 집중",
 -- a423f878 English: Specific Spell Channeling
+-- Context: Name of the Specific Spell Channeling condition (a unit is channeling a chosen spell).
 [583] = "특정 주문 정신 집중",
 -- c5db67ca English: %s are currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [584] = "%s 정신 집중 중",
 -- f58eece7 English: %s is currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [585] = "%s 정신 집중 중",
 -- 6960967b English: %s are currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [586] = "%s: %s 정신 집중 중",
 -- 53ed0bfb English: %s is currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [587] = "%s: %s 정신 집중 중",
 -- 4c2aeef1 English: Channel Time Remaining
+-- Context: Name of the Channel Time Remaining condition (seconds left on a unit's current channel).
 [588] = "정신 집중 남은 시간",
 -- e38783fe English: time remaining on spell channel
 [589] = "주문 정신 집중 남은 시간",
 -- 39c51722 English: Channel Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Channel Interruptible condition name (now spelled 'Interruptible').
 [590] = "정신 집중 차단 가능",
 -- 09453a79 English: Channel Interruptible
+-- Context: Name of the Channel Interruptible condition (the unit's current channel can be
+--     interrupted).
 [591] = "정신 집중 차단 가능",
 -- 2a35e090 English: %s's channeled spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [592] = "%s의 정신 집중 주문 차단 가능",
 -- 0c9e7b06 English: Casting
+-- Context: Name of the Casting condition (a unit is casting any spell); also an icon-picker
+--     category.
 [593] = "시전",
 -- bc401bef English: Specific Spell Casting
+-- Context: Name of the Specific Spell Casting condition (a unit is casting a chosen spell).
 [594] = "특정 주문 시전",
 -- 53cc77b2 English: %s are currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [595] = "%s 시전 중",
 -- f8e91c91 English: %s is currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [596] = "%s 시전 중",
 -- 9ec6cde4 English: %s are currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [597] = "%s: %s 시전 중",
 -- 79bdf263 English: %s is currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [598] = "%s: %s 시전 중",
 -- 8f9d9bf5 English: Cast Time Remaining
+-- Context: Name of the Cast Time Remaining condition (seconds until a unit's current cast
+--     completes).
 [599] = "시전 남은 시간",
 -- 24812186 English: time remaining on spell cast
 [600] = "주문 시전 남은 시간",
 -- e2513da8 English: Cast Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Cast Interruptible condition name (now spelled 'Interruptible').
 [601] = "시전 차단 가능",
 -- d5c12268 English: Cast Interruptible
+-- Context: Name of the Cast Interruptible condition (the unit's current cast can be interrupted).
 [602] = "시전 차단 가능",
 -- 8b182833 English: %s's spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [603] = "%s의 주문 차단 가능",
 -- 0d2970f9 English: PVP Flagged
+-- Context: Name of the PVP Flagged condition (a unit is flagged for player-versus-player combat).
 [604] = "PvP 활성화",
 -- d27e8fdc English: %s are PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are PVP flagged' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [605] = "%s PvP 활성화",
 -- c67f02e4 English: %s is PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is PVP flagged' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [606] = "%s PvP 활성화",
 -- 0489205b English: Zone PVP
+-- Context: Name of the Zone PVP condition (the PvP status of the area you are in).
 [607] = "지역 PvP",
 -- d09a2928 English: zone is a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [608] = "%s 지역",
 -- 425f2336 English: Instance
+-- Context: Name of the Instance condition (what kind of instance you are in: dungeon, raid,
+--     battleground...).
 [609] = "인스턴스",
 -- e96c4ff4 English: you are in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [610] = "%s 인스턴스에 있음",
 -- 6480caf6 English: in %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'in %s'; %s is a zone or instance.
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [611] = "%s에서",
 -- a8a06e4a English: Zone
+-- Context: Name of the Zone condition (the zone or subzone you are in) and the label of its text
+--     field.
 [612] = "지역",
 -- 782fc4e1 English: In Group
+-- Context: Name of the In Group condition (you are in a party or raid).
 [613] = "그룹 중",
 -- b097d347 English: you are in a group
 [614] = "그룹에 속해 있음",
 -- c299367b English: In Raid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition name 'In Raid' (replaced by the Raid checkbox in the In Group
+--     condition).
 [615] = "공격대 중",
 -- 8985f5e8 English: you are in a raid
 [616] = "공격대에 속해 있음",
 -- 8bf8ef16 English: Outdoors
+-- Context: Name of the Outdoors condition (you are in an outdoor area).
 [617] = "야외",
 -- 2fcb5d37 English: Scenario
+-- Context: Instance mode option in the Instance condition: a solo scenario; also a difficulty group
+--     name.
 [618] = "시나리오",
 -- 0229c086 English: you are in a outdoors
 [619] = "야외에 있음",
 -- 4340b353 English: Weapon Enchant Present
+-- Context: Name of the Weapon Enchant Present condition (a weapon has a temporary enchant/imbue).
 [620] = "무기 마법부여 있음",
 -- 61ab108b English: Different season or game rules
 [621] = "다른 시즌 또는 게임 규칙",
 -- 6abe675a English: Action Context
+-- Context: Name of the Action Context condition (which action bar is in use: yours, a vehicle,
+--     override...) and the label of its dropdown.
 [622] = "동작 상황",
 -- 615c9003 English: Advice is suspended: no rotation applies while you are using another action
 --     bar.
@@ -1301,12 +2264,19 @@ addon.translation = {
 -- e9860cd7 English: Item Set Pieces Equipped
 [624] = "착용한 세트 아이템 수",
 -- e0317f0c English: Weapon Enchant Type
+-- Context: Name of the Weapon Enchant Type condition (which temporary weapon enchant is applied).
 [625] = "무기 마법부여 유형",
 -- 32eedbe8 English: a pet battle
+-- Context: Value in the Action Context dropdown: you are in a pet battle (Retail only); lowercase
+--     phrase read in a sentence.
 [626] = "애완동물 대전",
 -- a688c1ab English: a possessed unit
+-- Context: Value in the Action Context dropdown: you control a possessed (mind controlled) unit;
+--     lowercase phrase read in a sentence.
 [627] = "지배한 유닛",
 -- 7e4e79e6 English: a vehicle
+-- Context: Value in the Action Context dropdown: you are in a vehicle; lowercase phrase read in a
+--     sentence.
 [628] = "탈것",
 -- 1f7bee61 English: an override action bar
 [629] = "대체 행동 단축바",
@@ -1315,52 +2285,92 @@ addon.translation = {
 -- 6d49f98c English: Weapon Enchant Time Remaining
 [631] = "무기 마법부여 남은 시간",
 -- 872198ac English: Weapon Enchant Stacks
+-- Context: Name of the Weapon Enchant Stacks condition (the stack count of a temporary weapon
+--     enchant).
 [632] = "무기 마법부여 중첩",
 -- 9a08c36b English: Your %s weapon buff has %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the remaining time or on the stack count, e.g. "the remaining time is greater than 10 seconds"
 [633] = "%s 무기 효과: %s",
 -- 5aebbe0c English: Your %s weapon is enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "off hand"
 [634] = "%s 무기에 마법부여됨",
 -- bfd173c2 English: Off Hand
+-- Context: Equipment slot / checkbox label for the off-hand weapon slot in weapon and enchant
+--     conditions; noun.
 [635] = "보조장비",
 -- f0fa1c9c English: Weapon Swing Time
+-- Context: Name of the Weapon Swing Time condition (time until your next auto-attack swing).
 [636] = "무기 공격 주기",
 -- 8439ecbd English: Weapon Swing Time Remaining
 [637] = "무기 공격까지 남은 시간",
 -- a258b30f English: Global
+-- Context: Checkbox label for an item set: it is a global set shared by all characters; also a help
+--     heading.
 [638] = "전역",
 -- 601196cf English: Damage and Heals
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count both damage
+--     and healing taken by the unit.
 [639] = "피해 및 치유",
 -- 9d0e8a5a English: Damage Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only damage
+--     taken by the unit.
 [640] = "피해만",
 -- 26316d67 English: Heals Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only healing
+--     received by the unit.
 [641] = "치유만",
 -- 64cff131 English: Action
+-- Context: Label for the combat action kind (hit, miss, parried...) field in the Combat Action
+--     History condition; noun, also a comparison row label.
 [642] = "동작",
 -- cd70c6b9 English: Time Since Combat Start
 [643] = "전투 시작 후 경과 시간",
 -- d49f3af6 English: Time in combat is %s %s seconds
+-- %s #1: %s #1: the comparison wording, e.g. "is greater than"
+-- %s #2: %s #2: the number of seconds, e.g. 10
 [644] = "전투 시간이 %s %s초",
 -- ffedb1c8 English: Copy report
+-- Context: Button that copies a text report to the clipboard (error window, condition text window);
+--     verb + noun.
 [645] = "보고서 복사",
 -- 7d9eb7ac English: Close
+-- Context: Button/tooltip of the window close icon (X) in dialogs; verb.
 [646] = "닫기",
 -- 67f981b6 English: /rm errors              - View and copy Rotation Master errors.
 [647] = "/rm errors              - Rotation Master 오류를 보고 복사합니다.",
 -- 496d05e2 English: Spell Known
+-- Context: Name of the Spell Known condition (you or your pet know/have learned a spell).
 [648] = "주문 습득",
 -- 034f8d39 English: You know %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'You know %s'; %s is a spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Fireball (spell ID 133)"
 [649] = "%s 습득함",
 -- 5a072a25 English: Your pet knows %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'Your pet knows %s'; %s is a pet spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Bite (spell ID 17253)"
 [650] = "소환수가 %s 습득함",
 -- 41c1fdac English: %s (spell ID %s)
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Template '%s
+--     (spell ID %s)'; spell name, then numeric spell ID.
+-- %s #1: %s #1: the spell name, e.g. "Fireball"
+-- %s #2: %s #2: the spell ID, e.g. 133
 [651] = "%s (주문 ID %s)",
 -- 02ac5ded English: Spell ID
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Spell
+--     ID' for a numeric spell identifier.
 [652] = "주문 ID",
 -- 1be30861 English: Pet spell
+-- Context: Checkbox label in the Spell Known condition: the spell is a pet spell; also the step
+--     type description 'Pet spell' in the rotation reference.
 [653] = "소환수 주문",
 -- 33579e22 English: Unavailable conditions or unsupported data
 [654] = "사용할 수 없는 조건 또는 지원되지 않는 데이터",
 -- 6289fcfd English: %s is not available on this client (%s).
+-- %s #1: %s #1: the name or description of the condition, e.g. "Pet happiness"
+-- %s #2: %s #2: the reason it cannot work here, as a short phrase (translated), e.g. "this edition has no pet happiness"
 [655] = "%s은(는) 이 클라이언트에서 사용할 수 없습니다 (%s).",
 -- d0e9a0bb English: the combat log is not available to addons on this client
 [656] = "이 클라이언트에서는 애드온이 전투 기록을 사용할 수 없습니다",
@@ -1369,33 +2379,50 @@ addon.translation = {
 -- 32d80509 English: this power is secret on this client
 [658] = "이 클라이언트에서는 이 자원이 비밀 값입니다",
 -- 38e49184 English: Active rotation: %s
+-- %s #1: %s #1: the name of the active rotation followed by "(manual)" or "(automatic)", or "None", e.g. "Frost Single Target (automatic)"
 [659] = "활성 로테이션: %s",
 -- 95ebda6b English: a fallback saved for this character takes precedence
 [660] = "이 캐릭터에 저장된 대체 로테이션이 우선합니다",
 -- 53e0ff34 English: automatic
+-- Context: Word in the 'Active rotation: NAME (automatic)' status line: the rotation was chosen by
+--     automatic switching, not manually.
 [661] = "자동",
 -- 81600971 English: Cooldown %d
+-- Context: Label for a cooldown entry by position in a path description, e.g. 'Cooldown 2'; %d is
+--     the position number.
+-- %d #1: %d #1: the number of the cooldown in the list, counting from 1, e.g. 2
 [662] = "재사용 대기시간 %d",
 -- 55899740 English: %d Built In rotations are disabled.
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 3
 [663] = "기본 제공 로테이션 %d개가 비활성화되어 있습니다.",
 -- 6fbad292 English: %d other Built In rotations are disabled (for another specialization, level or
 --     edition).
+-- %d #1: %d #1: how many other Built In rotations are disabled, e.g. 4
 [664] = "다른 기본 제공 로테이션 %d개가 비활성화되어 있습니다 (다른 전문화, 레벨 또는 버전용).",
 -- 856a3f22 English: %s: disabled by you (turn it back on in Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [665] = "%s: 직접 비활성화함 (로테이션의 기본 제공 보기에서 다시 켜세요).",
 -- ceaa0803 English: %s: ships disabled, an alternative to the recommended one (turn it on in
 --     Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [666] = "%s: 기본적으로 꺼진 상태로 제공되는 추천 로테이션의 대안입니다 (로테이션의 기본 제공 보기에서 켜세요).",
 -- 4fd646c3 English: then the fallback (%s)
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [667] = "그다음 대체 로테이션(%s)",
 -- 1e1885f9 English: Automatic switching tries: %s. Higher numbers are tried first; equal priorities
 --     go by name.
+-- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
 [668] = "자동 전환 시도 순서: %s. 숫자가 높을수록 먼저 시도하며, 우선순위가 같으면 이름순입니다.",
 -- 724799e1 English: Automatic switching would choose: %s
+-- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
 [669] = "자동 전환이 선택할 로테이션: %s",
 -- 07d344c2 English: %d Built In disabled: %s
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 2
+-- %s #2: %s #2: their names, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [670] = "기본 제공 %d개 비활성: %s",
 -- fd523668 English: Read-Only
+-- Context: Pill/badge at the top of the rotation editor for a rotation that cannot be edited (a
+--     Built In); adjective.
 [671] = "읽기 전용",
 -- 75920f9f English: Built In: it cannot be edited. Duplicate makes your own copy; Enabled and
 --     Priority are your settings for this profile.
@@ -1406,29 +2433,51 @@ addon.translation = {
 -- 7772b5b6 English: Import preview: the metadata is shown as imported and cannot be edited here.
 [674] = "가져오기 미리보기: 메타데이터는 가져온 그대로 표시되며 여기서 편집할 수 없습니다.",
 -- b5444cba English: level %d+
+-- Context: Part of a rotation's applicability description: the rotation needs at least this
+--     character level; %d is the level, e.g. 'level 60+'.
+-- %d #1: %d #1: the lowest character level, shown with a plus sign, e.g. 60
 [675] = "%d레벨 이상",
 -- 7ae623fd English: Season of Mastery
+-- Context: Name of the Classic 'Season of Mastery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [676] = "마스터리 시즌",
 -- 20bc4e56 English: Season of Discovery
+-- Context: Name of the Classic 'Season of Discovery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [677] = "디스커버리 시즌",
 -- e913447f English: Hardcore
+-- Context: Game ruleset name in rotation applicability text: Hardcore realms (one life).
 [678] = "하드코어",
 -- 61123c4d English: Anniversary
+-- Context: Name of the Classic 'Anniversary' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [679] = "기념판",
 -- 935f9eea English: Anniversary Hardcore
+-- Context: Name of the Classic 'Anniversary Hardcore' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [680] = "기념판 하드코어",
 -- 20170cbb English: Self-Found
+-- Context: Game ruleset name in rotation applicability text: Self-Found characters (no trading).
 [681] = "자수성가",
 -- db93324d English: Standard realms
+-- Context: Game ruleset name in rotation applicability text: normal (standard) realms, not seasonal
+--     or special rulesets.
 [682] = "일반 서버",
 -- b82c4d13 English: Season %s
+-- Context: Part of a rotation's applicability text: the game season; %s is the season number.
+-- %s #1: %s #1: the season number, e.g. 3
 [683] = "시즌 %s",
 -- 889ec415 English: Game mode %s
+-- Context: Part of a rotation's applicability text: a game mode; %s is its name.
+-- %s #1: %s #1: the game mode number, e.g. 2
 [684] = "게임 모드 %s",
 -- f06a6bb8 English: Automatic switching tries nothing else, then the fallback (%s): no enabled
 --     rotation here can be selected now.
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [685] = "자동 전환은 아무것도 더 시도하지 않고 대체 로테이션(%s)으로 넘어갑니다: 여기서 활성 상태인 로테이션 중 지금 선택할 수 있는 것이 없습니다.",
 -- e87b125e English: Revision %s
+-- Context: Revision label of a built-in rotation, e.g. 'Revision 3'; %s is the revision number.
+-- %s #1: %s #1: the revision number of the Built In rotation, e.g. 4
 [686] = "리비전 %s",
 -- da0fa84c English: you switched it off (turn it back on in Rotations)
 [687] = "직접 껐습니다 (로테이션에서 다시 켜세요)",
@@ -1436,6 +2485,8 @@ addon.translation = {
 --     Rotations)
 [688] = "기본적으로 꺼진 상태로 제공되는 추천 로테이션의 대안입니다 (로테이션에서 켜세요)",
 -- 27a5b813 English: Identifier: %s (/rm set %s)
+-- %s #1: %s #1: the rotation's identifier, e.g. "frost"
+-- %s #2: %s #2: the same identifier, used in the slash command, e.g. "frost"
 [689] = "식별자: %s (/rm set %s)",
 -- 70f29af6 English: The fallback is always /rm set default.
 [690] = "대체 로테이션은 항상 /rm set default입니다.",
@@ -1449,29 +2500,42 @@ addon.translation = {
 -- 763698c5 English: has an invalid identifier
 [694] = "식별자가 올바르지 않습니다",
 -- 24adb964 English: %s is reserved for /rm set.
+-- %s #1: %s #1: the identifier the player typed, e.g. "auto"
 [695] = "%s은(는) /rm set 전용 예약어입니다.",
 -- a33e5083 English: An identifier starts with a letter, then letters, digits, _ or -, up to 32
 --     characters.
 [696] = "식별자는 영문자로 시작하고, 이후 영문자, 숫자, _ 또는 -를 최대 32자까지 쓸 수 있습니다.",
 -- a15a0c4c English: %s already uses the identifier %s.
+-- %s #1: %s #1: the name of the rotation that already has this identifier, e.g. "Frost Single Target"
+-- %s #2: %s #2: the identifier, e.g. "frost"
 [697] = "%s이(가) 이미 식별자 %s을(를) 사용하고 있습니다.",
 -- 2f1b1b88 English: Rotations for %s (use /rm set <id>):
+-- %s #1: %s #1: the current specialization with its class, e.g. "Frost Mage"
 [698] = "%s의 로테이션 (/rm set <id> 사용):",
 -- 01e5a59a English: disabled by you
+-- Context: Status in a rotation list line: the player has turned this Built In rotation off.
 [699] = "직접 비활성화함",
 -- 3f88443b English: ships disabled
+-- Context: Status in a rotation list line: this Built In rotation is shipped turned off by default.
 [700] = "기본 꺼짐",
 -- 4ac2f70c English: not for this character now
 [701] = "현재 이 캐릭터에는 해당하지 않음",
 -- e8fe279c English: cannot be selected: %s
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "it has incomplete or unsupported data"
 [702] = "선택할 수 없음: %s",
 -- 96879611 English: active
+-- Context: Status word in a rotation list line: this rotation is the one currently in use.
 [703] = "활성",
 -- b24d6d33 English: ready
+-- Context: Status word in a rotation list line: this rotation could be selected but is not the
+--     current one.
 [704] = "준비됨",
 -- 5c7ee207 English: fallback
+-- Context: Kind word in parentheses in a rotation list line: the default fallback rotation.
 [705] = "대체",
 -- 5eb2da9c English: yours
+-- Context: Kind word in parentheses in a rotation list line: a rotation you created (as opposed to
+--     Built In).
 [706] = "내 것",
 -- 7079adcd English: The rotation list opened in a window you can copy from.
 [707] = "복사할 수 있는 창에 로테이션 목록을 열었습니다.",
@@ -1479,24 +2543,35 @@ addon.translation = {
 [708] = "로테이션과 식별자",
 -- 855192f1 English: More than one rotation uses the identifier %s. Give one of them another
 --     identifier in Rotations.
+-- %s #1: %s #1: the identifier the player typed, e.g. "frost"
 [709] = "둘 이상의 로테이션이 식별자 %s을(를) 사용하고 있습니다. 로테이션에서 그중 하나에 다른 식별자를 지정하세요.",
 -- 674aaa2c English: Identifiers you can use now: %s (or auto). /rm list shows every rotation.
+-- %s #1: %s #1: the identifiers that can be used now, separated by commas, e.g. "frost, fire"
 [710] = "지금 사용할 수 있는 식별자: %s (또는 auto). /rm list로 모든 로테이션을 볼 수 있습니다.",
 -- 3843971d English: ID
+-- Context: Label of the read-only identifier field of a rotation in the rotation editor;
+--     abbreviation of 'identifier'.
 [711] = "ID",
 -- d60dbba0 English: Priority
+-- Context: Label of the priority number of a rotation in the rotation editor (order in which
+--     automatic selection tries rotations).
 [712] = "우선순위",
 -- bc5b45ae English: Reset to default
+-- Context: Button in the rotation editor: reset the profile's override of the enable setting back
+--     to the Built In's shipped default.
 [713] = "기본값으로 초기화",
 -- 4273cc49 English: Use the Built In as it ships: its own Enabled setting and priority.
 [714] = "기본 제공 로테이션을 제공된 그대로 사용합니다: 고유의 활성 설정과 우선순위.",
 -- c6ea26d1 English: Your setting for this profile. The Built In ships %s.
+-- %s #1: %s #1: whether the Built In rotation ships turned on, the word "enabled" or "disabled" (translated), e.g. "enabled"
 [715] = "이 프로필에 대한 사용자 설정입니다. 기본 제공 로테이션의 기본 상태: %s.",
 -- 7f5ac649 English: As the Built In ships. Click to change it for this profile.
 [716] = "제공된 그대로입니다. 클릭하면 이 프로필에서 바꿀 수 있습니다.",
 -- c3b9f3c3 English: Your priority for this profile; the Built In ships with %d.
+-- %d #1: %d #1: the priority the Built In rotation ships with, e.g. 5
 [717] = "이 프로필에 대한 사용자 우선순위입니다. 기본 제공 로테이션의 기본값은 %d입니다.",
 -- 5a1f096a English: Turn on
+-- Context: Button in the rotation browser: turn the selected Built In rotation on (verb phrase).
 [718] = "켜기",
 -- 6d128898 English: Turn this Built In back on for this profile.
 [719] = "이 프로필에서 이 기본 제공 로테이션을 다시 켭니다.",
@@ -1513,41 +2588,60 @@ addon.translation = {
 [723] = "숫자가 높을수록 먼저 시도하며, 우선순위가 같으면 이름순입니다. 내 로테이션과 기본 제공 로테이션은 우선순위로만 경쟁합니다.",
 -- 73074f60 English: Same priority as %s: both can be selected at once, and the tie is decided by
 --     name.
+-- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [724] = "%s와(과) 우선순위가 같음: 둘 다 동시에 선택될 수 있으며, 동순위는 이름으로 정해집니다.",
 -- 6f39ad0a English: Can be selected together with %s: only priority decides which is chosen.
+-- %s #1: %s #1: the names of the rotations that can be selected together with this one, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [725] = "%s와(과) 함께 선택될 수 있음: 우선순위만으로 무엇이 선택될지 정해집니다.",
 -- 382c83c2 English: expansions %s–%s
+-- Context: Part of a rotation's applicability text: the WoW expansion range; both %s are expansion
+--     numbers, e.g. 'expansions 2–3'.
+-- %s #1: %s #1: the first expansion the rotation loads for, e.g. 0 (a "?" when not limited)
+-- %s #2: %s #2: the last expansion the rotation loads for, e.g. 4 (a "?" when not limited)
 [726] = "확장팩 %s–%s",
 -- 5042b611 English: Loads only for: %s. Its specializations and switch condition decide the rest.
+-- %s #1: %s #1: the list of limits separated by " · ", e.g. "Mage · level 60+ · expansions 0–4"
 [727] = "다음에서만 불러옴: %s. 나머지는 대상 전문화와 전환 조건이 정합니다.",
 -- eedcafc1 English: Built In rotations turned back on (they had been switched off without your
 --     choice): %s
+-- %s #1: %s #1: the names of the Built In rotations that were turned back on, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [728] = "다시 켜진 기본 제공 로테이션 (사용자의 선택 없이 꺼져 있었음): %s",
 -- ebed0a8c English: Disabled Built In rotations
 [729] = "비활성화된 기본 제공 로테이션",
 -- dd2bac9e English: Open Rotations, select the Built In and turn it back on to make it selectable.
 [730] = "로테이션을 열어 해당 기본 제공 로테이션을 선택하고 다시 켜면 선택할 수 있게 됩니다.",
 -- f79331ec English: Fallback (%s)
+-- Context: Label for the default fallback rotation in a list of rotation choices; %s is its name.
+-- %s #1: %s #1: the name of the fallback rotation, e.g. "Default"
 [731] = "대체 (%s)",
 -- 372d7008 English: has an action type this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [732] = "이 버전에서 이해하지 못하는 동작 유형이 있습니다 (%s)",
 -- d566274f English: has an invalid setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [733] = "올바르지 않은 설정이 있습니다 (%s)",
 -- 8cccea3a English: has an invalid switch priority
 [734] = "전환 우선순위가 올바르지 않습니다",
 -- d17ef091 English: has a problem (%s)
+-- %s #1: %s #1: a short internal problem code, e.g. "invalid-id" (shown as-is; do not translate)
 [735] = "문제가 있습니다 (%s)",
 -- 5fd06eb7 English: has a setting this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [736] = "이 버전에서 이해하지 못하는 설정이 있습니다 (%s)",
 -- d80aa866 English: has no items
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': its
+--     item list is empty.
 [737] = "아이템이 없습니다",
 -- 60b19b4c English: is missing a required setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [738] = "필수 설정이 없습니다 (%s)",
 -- 85bfd4b6 English: it has incomplete or unsupported data
 [739] = "불완전하거나 지원되지 않는 데이터가 있습니다",
 -- f8b96220 English: It has incomplete or unsupported data
 [740] = "불완전하거나 지원되지 않는 데이터가 있습니다",
 -- d7edee09 English: it is disabled
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': the
+--     rotation is turned off.
 [741] = "비활성 상태입니다",
 -- bc0bcb96 English: it is for another class
 [742] = "다른 직업용입니다",
@@ -1562,20 +2656,28 @@ addon.translation = {
 -- 7d8492c5 English: it is for another WoW edition
 [747] = "다른 WoW 버전용입니다",
 -- f66da926 English: it is unavailable (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-unavailable" (shown as-is; do not translate)
 [748] = "사용할 수 없습니다 (%s)",
 -- 3539504f English: it needs context Rotation Master cannot read yet
 [749] = "Rotation Master가 아직 읽을 수 없는 정보가 필요합니다",
 -- 6c8b3a05 English: it uses a condition, item set or function that is disabled
 [750] = "비활성화된 조건, 아이템 세트 또는 함수를 사용합니다",
 -- 36bde66f English: manual
+-- Context: Word in the 'Active rotation: NAME (manual)' status line: the rotation was chosen by
+--     hand.
 [751] = "수동",
 -- 561c4c93 English: No %d
+-- Context: Label for the 'false' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'No 2'.
+-- %d #1: %d #1: the number of the card inside the "No" (false) branch of a condition, counting from 1, e.g. 2
 [752] = "아니요 %d",
 -- 61097c5a English: no fallback rotation is saved for %s
+-- %s #1: %s #1: the specialization with its class, e.g. "Frost Mage"
 [753] = "%s의 대체 로테이션이 저장되어 있지 않습니다",
 -- 994142c1 English: No rotation can run until your specialization is available.
 [754] = "전문화를 사용할 수 있게 될 때까지 실행할 수 있는 로테이션이 없습니다.",
 -- 2e4e47d8 English: Reason: %s. Type /rm why to check every rotation.
+-- %s #1: %s #1: why the rotation cannot be selected, a sentence from the game (translated), e.g. "it is for Fire Mage"
 [755] = "이유: %s. /rm why를 입력하면 모든 로테이션을 확인할 수 있습니다.",
 -- 21b77ae0 English: /rm why                 - Explain why each rotation can or cannot be selected.
 [756] = "/rm why                 - 각 로테이션을 선택할 수 있거나 없는 이유를 설명합니다.",
@@ -1590,34 +2692,57 @@ addon.translation = {
 --     short or empty.
 [760] = "/rm debug talents [views] - 리테일과 영원의 특성 목록이 짧거나 비어 있는 이유를 보고합니다.",
 -- 79eeac12 English: rotations cannot be read (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-store-unavailable" (shown as-is; do not translate)
 [761] = "로테이션을 읽을 수 없습니다 (%s)",
 -- 6a8fd6ba English: Rotation %s cannot be selected.
+-- %s #1: %s #1: the rotation name, with its identifier in square brackets when one is set, e.g. "Frost Single Target [frost]"
 [762] = "로테이션 %s을(를) 선택할 수 없습니다.",
 -- 9e742006 English: Rotation settings
+-- Context: Label naming the top-level settings of a rotation when describing where in a rotation a
+--     problem is.
 [763] = "로테이션 설정",
 -- c8da2839 English: Rotation step %d
+-- Context: Label for a rotation step by position in a path description; %d is its position, e.g.
+--     'Rotation step 3'.
+-- %d #1: %d #1: the number of the step in the rotation list, counting from 1, e.g. 3
 [764] = "로테이션 단계 %d",
 -- 707d01e5 English: %s (Built In)
+-- Context: Name of a rotation with its source appended, e.g. 'Fire Mage (Built In)'; %s is the
+--     rotation name.
+-- %s #1: %s #1: the name of a Built In rotation, e.g. "Frost Mage Leveling"
 [765] = "%s (기본 제공)",
 -- 19f8d44d English: %s: cannot be selected, %s.
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
+-- %s #2: %s #2: why it cannot be selected, a short phrase, e.g. "it is for Fire Mage"
 [766] = "%s: 선택할 수 없음, %s.",
 -- d707c233 English: Specialization: %s (%s), level %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
+-- %s #2: %s #2: the specialization number or ID, e.g. "64"
+-- %s #3: %s #3: the character level, e.g. "70" (a "?" when unknown)
 [767] = "전문화: %s (%s), %s레벨",
 -- 861decdd English: Spell %d
+-- Context: Label for a spell step identified only by its spell ID; %d is the spell ID.
+-- %d #1: %d #1: the spell ID, shown when the spell name is not known, e.g. 133
 [768] = "주문 %d",
 -- 1ed10cef English: %s: ready
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [769] = "%s: 준비됨",
 -- 9cb0ddf3 English: the game build is unavailable
 [770] = "게임 빌드를 확인할 수 없습니다",
 -- 32258c52 English: (there is one for %s)
+-- %s #1: %s #1: the specializations that do have a fallback, separated by commas, e.g. "Fire Mage, Arcane Mage"
 [771] = "(%s용이 있습니다)",
 -- 1ac2e769 English: This rotation cannot be selected. %s.
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "Rotation step 3 has an invalid setting (duration)."
 [772] = "이 로테이션은 선택할 수 없습니다. %s.",
 -- bd35de7b English: uses a condition that is disabled in Settings (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [773] = "설정에서 비활성화된 조건을 사용합니다 (%s)",
 -- e766db43 English: uses a condition this client does not have (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [774] = "이 클라이언트에 없는 조건을 사용합니다 (%s)",
 -- 7ee51c30 English: uses a custom condition whose function is unavailable (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [775] = "함수를 사용할 수 없는 사용자 조건을 사용합니다 (%s)",
 -- 9c4983d1 English: uses a highlight effect that no longer exists
 [776] = "더 이상 존재하지 않는 강조 효과를 사용합니다",
@@ -1628,6 +2753,9 @@ addon.translation = {
 -- 0f312508 English: Why rotations are or are not selected
 [779] = "로테이션이 선택되거나 선택되지 않는 이유",
 -- 0887c156 English: Yes %d
+-- Context: Label for the 'true' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'Yes 1'.
+-- %d #1: %d #1: the number of the card inside the "Yes" (true) branch of a condition, counting from 1, e.g. 2
 [780] = "예 %d",
 -- 2d0f9721 English: you are using another action bar
 [781] = "다른 행동 단축바를 사용 중입니다",
@@ -1638,24 +2766,40 @@ addon.translation = {
 -- 795c5030 English: your specialization is not available yet
 [784] = "아직 전문화를 사용할 수 없습니다",
 -- 7139bb28 English: No specialization
+-- Context: Specialization name for characters that have not picked a specialization yet (Initial).
 [785] = "전문화 없음",
 -- 49271412 English: Primary talents
+-- Context: Name of the first talent group on Classic clients (primary talents / spec).
 [786] = "주 특성",
 -- 1793e848 English: Secondary talents
+-- Context: Name of the second talent group on Classic clients (secondary talents / dual spec).
 [787] = "보조 특성",
 -- 87a671ab English: Talent group %d
+-- Context: Name of a talent group by number on Classic clients; %d is the group number.
+-- %d #1: %d #1: the talent group number, e.g. 3
 [788] = "특성 그룹 %d",
 -- 7ff78404 English: %s (%s)
+-- %s #1: %s #1: either a difficulty name or a talent-group name, e.g. "Heroic" or "Primary talents"
+-- %s #2: %s #2: either the kind of content or the talent tree it belongs to, e.g. "Raid" or "Frost"
 [789] = "%s (%s)",
 -- 108db4c4 English: Unknown specialization
+-- Context: Text shown for a specialization ID the addon does not recognize.
 [790] = "알 수 없는 전문화",
 -- a9e9b05e English: Any specialization
+-- Context: Dropdown option in the rotation specialization selector: the rotation is not tied to a
+--     specialization.
 [791] = "아무 전문화",
 -- e4db2902 English: All specializations
+-- Context: Dropdown/filter option in the rotation browser: show rotations for all specializations.
 [792] = "모든 전문화",
 -- ca573462 English: no specialization yet
+-- Context: Fragment in 'You are playing %s; this rotation is for ...': the player has no
+--     specialization yet.
 [793] = "아직 전문화 없음",
 -- 254dcb81 English: it is for %s
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...'; %s
+--     lists the specializations it is for.
+-- %s #1: %s #1: the specializations the rotation is for, separated by commas, e.g. "Frost Mage, Fire Mage"
 [794] = "%s용입니다",
 -- 82612d65 English: has an invalid specialization list
 [795] = "전문화 목록이 올바르지 않습니다",
@@ -1667,15 +2811,23 @@ addon.translation = {
 --     while you play one of them; Any means every specialization.
 [798] = "이 로테이션이 대상으로 하는 전문화입니다. 해당 전문화 중 하나로 플레이하는 동안에만 목록에 표시되고 선택할 수 있으며, '아무 전문화'는 모든 전문화를 뜻합니다.",
 -- 3e93e3f4 English: You are playing %s; this fallback is for %s, so it is not used now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, e.g. "Frost Mage"
+-- %s #2: %s #2: the specialization this fallback rotation is for, e.g. "Fire Mage"
 [799] = "%s(으)로 플레이 중입니다. 이 대체 로테이션은 %s용이므로 지금은 사용되지 않습니다.",
 -- 70ef639a English: You are playing %s; this rotation is for %s, so it is not selectable now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, or "no specialization yet", e.g. "Frost Mage"
+-- %s #2: %s #2: the specializations this rotation is for, separated by commas, e.g. "Fire Mage"
 [800] = "%s(으)로 플레이 중입니다. 이 로테이션은 %s용이므로 지금은 선택할 수 없습니다.",
 -- 10eeff18 English: you have not chosen a specialization yet, so Rotation Master uses %s, which the
 --     Rotations editor does not offer
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
 [801] = "아직 전문화를 선택하지 않아 Rotation Master가 %s을(를) 사용하는데, 로테이션 편집기에서는 이를 제공하지 않습니다",
 -- d2039939 English: You have not chosen a specialization yet, so Rotation Master uses %s (%s). The
 --     Rotations editor only offers %s, so rotations saved there cannot run until you choose a
 --     specialization.
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
+-- %s #2: %s #2: its internal number or ID, e.g. "0"
+-- %s #3: %s #3: the specializations the editor offers, separated by commas, e.g. "Arcane, Fire, Frost"
 [802] = "아직 전문화를 선택하지 않아 Rotation Master가 %s (%s)을(를) 사용합니다. 로테이션 편집기는 %s만 제공하므로, 전문화를 선택하기 전에는 편집기에서 저장한 로테이션을 실행할 수 없습니다.",
 -- 97aa7322 English: this client has no ranged slot
 [803] = "이 클라이언트에는 원거리 슬롯이 없습니다",
@@ -1694,12 +2846,20 @@ addon.translation = {
 -- 2e996f7c English: this edition has no point resource
 [810] = "이 버전에는 포인트 자원이 없습니다",
 -- 364e833a English: Different WoW edition
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different WoW edition (e.g. Classic vs Retail).
 [811] = "다른 WoW 버전",
 -- fbb263cb English: Different class
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different class.
 [812] = "다른 직업",
 -- 178bde4c English: Different specialization
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different specialization.
 [813] = "다른 전문화",
 -- b7964470 English: Different action context
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation needs a
+--     different action context (e.g. vehicle bar).
 [814] = "다른 동작 상황",
 -- 46d39e12 English: Character level is unavailable
 [815] = "캐릭터 레벨을 알 수 없음",
@@ -1708,6 +2868,8 @@ addon.translation = {
 -- d34ab535 English: Game build is unavailable
 [817] = "게임 빌드를 알 수 없음",
 -- 139114dc English: Different game build
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different game client build.
 [818] = "다른 게임 빌드",
 -- a55c1483 English: Required context is not supported yet
 [819] = "필요한 상황이 아직 지원되지 않음",
@@ -1718,28 +2880,48 @@ addon.translation = {
 -- ca12b41f English: Built In · read-only
 [822] = "기본 제공 · 읽기 전용",
 -- d11d9681 English: Level range: %s–%s; revision %s
+-- %s #1: %s #1: the lowest character level the Built In rotation is for, e.g. 1
+-- %s #2: %s #2: the highest character level, or "?" when there is no limit, e.g. 60
+-- %s #3: %s #3: the revision number, e.g. 4
 [823] = "레벨 범위: %s–%s, 개정 %s",
 -- a0b53ded English: Available for this character
 [824] = "이 캐릭터에서 사용 가능",
 -- a77cc377 English: Not available for this character: %s
+-- %s #1: %s #1: why the Built In rotation is not available, a short phrase (translated), e.g. "Different class"
 [825] = "이 캐릭터에서 사용할 수 없음: %s",
 -- 91f1e71a English: Enable Built In
+-- Context: Checkbox/button in the Built In rotation panel: turn this Built In rotation on for your
+--     profile.
 [826] = "기본 제공 사용",
 -- 763de8e1 English: Could not update this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [827] = "이 기본 제공 로테이션을 갱신할 수 없음: %s",
 -- ba6d03f9 English: Clone to edit
+-- Context: Button in the Built In rotation panel: copy the read-only Built In into your own
+--     editable rotation (verb phrase).
 [828] = "복제해서 편집",
 -- e1ad50fb English: Could not duplicate this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [829] = "이 기본 제공 로테이션을 복제할 수 없음: %s",
 -- ac89ec89 English: %d. %s
+-- %d #1: %d #1: the position in a numbered list, counting from 1, e.g. 2
+-- %s #2: %s #2: the text of that list entry, e.g. "Cast Frostbolt"
 [830] = "%d. %s",
 -- 36021c12 English: Condition preview unavailable
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Message
+--     'Condition preview unavailable' for a condition that could not be previewed.
 [831] = "조건 미리보기를 사용할 수 없음",
 -- caf85b08 English: Sources
+-- Context: Heading of the list of sources/citations for a rotation (where the Built In was derived
+--     from).
 [832] = "출처",
 -- ca184496 English: Unavailable
+-- Context: Status/heading text: something is unavailable (help for a missing subject, debugger
+--     status, validation).
 [833] = "사용할 수 없음",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In rotation for TBC Shaman, Enhancement spec, based on an Icy Veins
+--     guide; a trailing site name in parentheses.
 [834] = "고양 (Icy Veins)",
 -- a97cd0b7 English: Melee Enhancement from level 1 to 70, and the default for any Shaman no other
 --     premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire
@@ -1771,6 +2953,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism.
 [839] = "정기 특성 트리를 위한 시전형 정기 로테이션입니다. 번개 화살이 기본 주문이고, 연쇄 번개는 정기의 깨달음과 함께, 마나가 40% 이상일 때 정신 집중 발동 시, 또는 마나 80% 이상이면 자유롭게 사용합니다. 화염 충격은 이동 중에만, 대지 충격은 차단용, 다수의 적에게는 불꽃 회오리, 연쇄 번개, 용암 토템을 사용합니다. 연쇄 번개 전에 근접 거리의 대상은 마나를 아끼기 위해 자동 공격에 맡깁니다. 알림: 물의 보호막 또는 번개 보호막, 무기 강화, 격노의 토템(긴 전투에서는 불타는 토템), 천벌의 토템, 마나샘 토템, 전투 후 토템의 부름, 정기의 깨달음, 피의 욕망/영웅심.",
 -- 6c2dcf2e English: Elemental (Wowhead)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on a Wowhead guide;
+--     the site name is in parentheses.
 [840] = "정기 (Wowhead)",
 -- c4c0aa4c English: Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental
 --     premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain
@@ -1780,6 +2964,8 @@ addon.translation = {
 --     variant.
 [841] = "Wowhead의 정기 로테이션으로, 추천 Icy Veins 정기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 70레벨에서는 재사용 대기시간마다 연쇄 번개를 쓰고 그 사이에 번개 화살을 사용합니다(레벨업 중에는 정기의 깨달음이나 정신 집중이 있을 때만). 화염 충격은 이동 중에만, 대지 충격은 시전이 끝나기 전에 죽을 대상을 마무리할 때 사용합니다. 토템, 보호막, 재사용 대기시간 알림은 Icy Veins 변형과 같습니다.",
 -- bb13bf18 English: Elemental (NextActionTBC)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on the NextActionTBC
+--     addon's logic; the source is in parentheses.
 [842] = "정기 (NextActionTBC)",
 -- 2ec2f692 English: NextActionTBC's Elemental, an alternative to the recommended Icy Veins
 --     Elemental premade, off by default: enable it and disable that one, or raise its priority.
@@ -1788,6 +2974,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism; totems stay manual.
 [843] = "NextActionTBC의 정기 로테이션으로, 추천 Icy Veins 정기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 대상에게 화염 충격을 유지하고, 연쇄 번개는 적이 둘 이상이고 마나가 30% 이상일 때만, 그 외에는 번개 화살을 사용합니다. 번개 보호막, 무기 강화, 정기의 깨달음, 피의 욕망/영웅심을 알려 주며, 토템은 직접 관리합니다.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In rotation for TBC Shaman, Restoration spec (the spec name
+--     Restoration).
 [844] = "복원",
 -- e6f434e0 English: Healing for the Restoration talent tree, on your friendly target (or yourself
 --     with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies,
@@ -1798,10 +2986,13 @@ addon.translation = {
 --     Choosing whom to heal and which rank stays with you.
 [845] = "복원 특성 트리를 위한 치유 로테이션으로, 우호적 대상(대상이 없으면 자신)에게 사용합니다: 위급할 때 자연의 신속함과 치유의 물결 또는 하급 치유의 물결, 해독과 질병 치료, 주시 대상에게 대지의 보호막, 근처 아군 셋이 피해를 입었으면 연쇄 치유, 그 외에는 치유의 물결. 적대적 대상이 있으면 혼자 사냥을 위해 화염 충격과 번개 화살로 전환합니다. 알림: 물의 보호막, 주시 대상에게 대지의 보호막(방어 전담을 주시 대상으로 지정하세요), 마나 해일 토템, 그룹에서 마나샘 토템과 대지력 토템, 피의 욕망/영웅심. 누구를 치유할지와 어떤 등급을 쓸지는 직접 판단합니다.",
 -- b177f0bb English: Could not duplicate this rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [846] = "이 로테이션을 복제할 수 없음: %s",
 -- efaafe62 English: Could not duplicate this step: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [847] = "이 단계를 복제할 수 없음: %s",
 -- 5ad38304 English: absent
+-- Context: Word in a rotation comparison: the compared field has no value in the current rotation.
 [848] = "없음",
 -- 4303eed3 English: This comparison could not be completed.
 [849] = "이 비교를 완료할 수 없습니다.",
@@ -1810,12 +3001,22 @@ addon.translation = {
 -- 70277515 English: No differences.
 [851] = "차이가 없습니다.",
 -- 783ee9d8 English: Added %s: %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the new value, e.g. "Frostbolt"
 [852] = "%s 추가: %s",
 -- cbd1cc0c English: Removed %s: %s
+-- %s #1: %s #1: where in the rotation the setting was, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the removed value, e.g. "Frostbolt"
 [853] = "%s 제거: %s",
 -- 9ffda67b English: Moved %s: priority %s → %s
+-- %s #1: %s #1: where in the rotation the step is, as a path, e.g. "rotation[3]"
+-- %s #2: %s #2: the old priority (position), e.g. 3
+-- %s #3: %s #3: the new priority (position), e.g. 1
 [854] = "%s 이동: 우선순위 %s → %s",
 -- 496c1fce English: Changed %s: %s → %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].spell"
+-- %s #2: %s #2: the old value, e.g. "Frostbolt"
+-- %s #3: %s #3: the new value, e.g. "Ice Lance"
 [855] = "%s 변경: %s → %s",
 -- 222fd90b English: Read-only comparison. Priority moves are listed; rotations are not merged.
 [856] = "읽기 전용 비교입니다. 우선순위 이동은 목록에 표시되며, 로테이션은 병합되지 않습니다.",
@@ -1826,6 +3027,8 @@ addon.translation = {
 -- e4e1807d English: Differences from the current Built In rotation
 [859] = "현재 기본 제공 로테이션과의 차이",
 -- f44ec53e English: Overlapping field edits
+-- Context: Heading in the rotation comparison: fields changed both by you and by the new Built In
+--     version.
 [860] = "겹치는 필드 편집",
 -- d1d87a47 English: No overlapping field edits detected. Priority order still needs review.
 [861] = "겹치는 필드 편집이 없습니다. 우선순위 순서는 여전히 검토해야 합니다.",
@@ -1834,46 +3037,71 @@ addon.translation = {
 -- c72b77cf English: Some display text was truncated. Rotation data has not been changed.
 [863] = "일부 표시 텍스트가 잘렸습니다. 로테이션 데이터는 바뀌지 않았습니다.",
 -- 184940bb English: Compare rotations
+-- Context: Title of the rotation comparison window; also the button in the rotation editor that
+--     opens it (verb phrase).
 [864] = "로테이션 비교",
 -- ad26c965 English: Your rotation: %s
+-- %s #1: %s #1: the name of the player's own rotation, e.g. "Frost Single Target"
 [865] = "내 로테이션: %s",
 -- d30f9619 English: Compare against
+-- Context: Label of the dropdown choosing what to compare the rotation against in the comparison
+--     window.
 [866] = "비교 대상",
 -- 5cbf27df English: Copy comparison
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     comparison' to copy the comparison result to the clipboard.
 [867] = "비교 복사",
 -- 7f25ffda English: Review the differences, then select Copy and press Ctrl+C.
 [868] = "차이를 확인한 뒤 복사를 선택하고 Ctrl+C를 누르세요.",
 -- 9078f91f English: Comparison unavailable: %s
+-- %s #1: %s #1: why the comparison cannot be shown, a short reason, e.g. "the rotation could not be read"
 [869] = "비교를 사용할 수 없음: %s",
 -- 73484f4d English: Unknown spell (%s)
+-- Context: Placeholder name for a spell whose name cannot be read; %s is the spell ID.
+-- %s #1: %s #1: the spell ID that the game does not know, e.g. 133
 [870] = "알 수 없는 주문 (%s)",
 -- e328ada9 English: Beyond Melee Range
+-- Context: Name of the Beyond Melee Range condition (the target is farther than melee distance).
 [871] = "근접 사거리 밖",
 -- 2652c653 English: %s is beyond melee range
+-- %s #1: %s #1: the unit that is out of reach, e.g. "your target"
 [872] = "%s 근접 사거리 밖",
 -- 4aaede20 English: Switch conditions
+-- Context: Heading for the conditions used to automatically switch rotations in a comparison or
+--     reference view; also a comparison row label.
 [873] = "전환 조건",
 -- 4e9a0f45 English: Optional highlight
+-- Context: Title of a cooldown step card in a rotation reference: a highlight that is independent
+--     of the sequence.
 [874] = "선택 강조",
 -- 6ba1c0c2 English: Priority %s
+-- Context: Title of a sequential step card in a rotation reference; %s is its position number.
+-- %s #1: %s #1: the step's position in the priority list, counting from 1, e.g. 3
 [875] = "우선순위 %s",
 -- 38728cc5 English: Stop the sequence here
 [876] = "여기서 순서 중지",
 -- b1fb02b4 English: Item or item set: %s
+-- %s #1: %s #1: the name of the item or item set, e.g. "Healthstone"
 [877] = "아이템 또는 아이템 세트: %s",
 -- 0bbc45af English: Use this exact spell rank
 [878] = "이 주문 등급만 사용",
 -- 59291ee2 English: No steps in this section.
 [879] = "이 섹션에 단계가 없습니다.",
 -- 6f32b2f4 English: Optional highlights
+-- Context: Heading in the rotation comparison and reference: the cooldown steps that highlight
+--     independently.
 [880] = "선택 강조",
 -- 6f79a2fd English: These reminders highlight independently whenever their conditions are met.
 [881] = "이 알림은 조건이 충족될 때마다 독립적으로 강조됩니다.",
 -- 681ceb51 English: Sequential priority
+-- Context: Heading in the rotation comparison and reference: the main steps where the first
+--     eligible one is recommended.
 [882] = "순차 우선순위",
 -- 89166303 English: The first eligible step is recommended. Later steps provide alternatives.
 [883] = "처음으로 조건을 만족한 단계가 추천됩니다. 이후 단계는 대안입니다.",
 -- 2624dd07 English: View full rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'View
+--     full rotation' to open the complete rotation in the viewer.
 [884] = "전체 로테이션 보기",
 -- d1843213 English: Built In rotation reference
 [885] = "기본 제공 로테이션 참고",
@@ -1882,30 +3110,45 @@ addon.translation = {
 -- a77963c6 English: Additional settings changed. Copy diagnostic details to inspect all fields.
 [887] = "추가 설정이 바뀌었습니다. 모든 필드를 확인하려면 진단 세부 정보를 복사하세요.",
 -- 8597bf22 English: At cloning
+-- Context: Column title in the comparison window: the rotation as it was when it was cloned from
+--     the Built In.
 [888] = "복제 시점",
 -- 9cc733fc English: Selected rotation
+-- Context: Column title in the comparison window: the rotation you picked in the list.
 [889] = "선택한 로테이션",
 -- c9e13168 English: Your rotation
+-- Context: Column title in the comparison window: the user's own rotation.
 [890] = "내 로테이션",
 -- dd2e2975 English: No corresponding step
+-- Context: Message in a comparison column: there is no step matching the one in the other column.
 [891] = "대응하는 단계 없음",
 -- 6b02e0d3 English: Added
+-- Context: Status tag in a rotation comparison row (shown in green): this step was added.
 [892] = "추가됨",
 -- 4118fb4f English: Removed
+-- Context: Status tag in a rotation comparison row (shown in red): this step was removed.
 [893] = "제거됨",
 -- 2a6141e4 English: Changed
+-- Context: Status tag in a rotation comparison row (shown in amber): this step was changed.
 [894] = "변경됨",
 -- b11c9047 English: Moved
+-- Context: Status tag in a rotation comparison row (shown in blue): this step moved to a different
+--     position.
 [895] = "이동됨",
 -- 88b6f742 English: Unchanged
+-- Context: Status tag in a rotation comparison row: nothing changed in this step.
 [896] = "변경 없음",
 -- f5f36595 English: Comparison diagnostic details
+-- Context: Title of the diagnostic details report in the comparison window.
 [897] = "비교 진단 세부 정보",
 -- 61d7fa13 English: Press Ctrl+C to copy the selected diagnostic details.
 [898] = "Ctrl+C를 눌러 선택한 진단 세부 정보를 복사하세요.",
 -- bb35fd44 English: Comparison view
+-- Context: Label of the dropdown choosing the comparison direction/view in the comparison window.
 [899] = "비교 보기",
 -- c489054c English: Copy diagnostic details
+-- Context: Button that copies diagnostic details about a rotation or comparison to the clipboard
+--     (verb).
 [900] = "진단 세부 정보 복사",
 -- 383100d5 English: Built In updates since cloning
 [901] = "복제 이후 기본 제공 업데이트",
@@ -1914,39 +3157,57 @@ addon.translation = {
 -- b3ec34b2 English: Current Built In rotation
 [903] = "현재 기본 제공 로테이션",
 -- e6b8f377 English: Unknown item
+-- Context: Placeholder text in a rotation reference for an item that cannot be identified.
 [904] = "알 수 없는 아이템",
 -- 36f3765b English: Item %s
+-- Context: Label for an item identified by ID or name; %s is the item ID or name.
+-- %s #1: %s #1: the item ID or name that the game cannot resolve, e.g. 5512
 [905] = "아이템 %s",
 -- 710f81fe English: Item set: %s
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [906] = "아이템 세트: %s",
 -- 3ec02e0c English: Unknown action type
+-- Context: Message in a rotation reference card: the step has a type the addon does not know.
 [907] = "알 수 없는 동작 유형",
 -- b3fee308 English: Player spell
+-- Context: Step type description in a rotation reference: a spell cast by the player.
 [908] = "플레이어 주문",
 -- aebfceb4 English: Player or pet spell
 [909] = "플레이어 또는 소환수 주문",
 -- c910d474 English: General
+-- Context: Name of the 'General' settings tab.
 [910] = "일반",
 -- 839ffbca English: Copy this export, or paste a rotation and preview it. Import creates a new
 --     editable copy.
 [911] = "이 내보내기를 복사하거나, 로테이션을 붙여 넣어 미리 보세요. 가져오기는 편집 가능한 새 사본을 만듭니다.",
 -- 2c7dec65 English: Rotation text
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Rotation text' for the exported text of a rotation.
 [912] = "로테이션 텍스트",
 -- 9d89d908 English: Name for imported copy
 [913] = "가져온 사본 이름",
 -- 05ca5c89 English: Imported rotation
+-- Context: Default name given to a rotation created by importing text.
 [914] = "가져온 로테이션",
 -- a0d7b2fa English: Copy export
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     export' to copy exported text to the clipboard.
 [915] = "내보내기 복사",
 -- ab5c8e55 English: Preview import
+-- Context: Button in the import dialog: preview what the import would change before applying it
+--     (verb phrase); also a help heading.
 [916] = "가져오기 미리보기",
 -- ebc64351 English: Compare import
+-- Context: Button in the import dialog (replace mode): compare the import with the existing entry
+--     before applying (verb phrase).
 [917] = "가져오기 비교",
 -- ed144b77 English: Import preview
+-- Context: Title of the window previewing an import, read-only.
 [918] = "가져오기 미리보기",
 -- 53fb6864 English: Import as new rotation
 [919] = "새 로테이션으로 가져오기",
 -- 89411b23 English: Export unavailable: %s
+-- %s #1: %s #1: why the export is not possible, a short reason, e.g. "nothing selected"
 [920] = "내보내기를 사용할 수 없음: %s",
 -- 4ea0b645 English: Preview a pasted rotation before importing it.
 [921] = "가져오기 전에 붙여 넣은 로테이션을 미리 보세요.",
@@ -1955,56 +3216,79 @@ addon.translation = {
 -- a3396230 English: Text changed. Compare again before importing.
 [923] = "텍스트가 바뀌었습니다. 가져오기 전에 다시 비교하세요.",
 -- 815a23ae English: This import cannot be shown in full (%s). Use Check import for details.
+-- %s #1: %s #1: what is wrong with the import, a short reason, e.g. "unknown field"
 [924] = "이 가져오기는 전체를 표시할 수 없습니다(%s). 자세한 내용은 가져오기 확인을 사용하세요.",
 -- c409c01f English: Import preview unavailable: %s
+-- %s #1: %s #1: why the import cannot be previewed, a short reason, e.g. "invalid-format"
 [925] = "가져오기 미리보기를 사용할 수 없음: %s",
 -- 7fa00152 English: Ready to import as a new copy.
 [926] = "새 사본으로 가져올 준비가 되었습니다.",
 -- 8bc94920 English: This import cannot be applied: %s
+-- %s #1: %s #1: why the import cannot be applied, a short reason, e.g. "the rotation is for another class"
 [927] = "이 가져오기를 적용할 수 없음: %s",
 -- d1e71918 English: Legacy export: WoW edition and class scope were not supplied.
 [928] = "이전 형식 내보내기: WoW 버전과 직업 범위가 지정되지 않았습니다.",
 -- 898a9c6d English: Could not import this rotation: %s
+-- %s #1: %s #1: why the import failed, a short reason, e.g. "invalid-data"
 [929] = "이 로테이션을 가져올 수 없음: %s",
 -- 29b67037 English: Incoming rotation
+-- Context: Column title in the comparison window: the rotation being imported.
 [930] = "가져올 로테이션",
 -- de9f057a English: Always
+-- Context: Condition text for an empty condition list: the step always applies; also status text.
 [931] = "항상",
 -- d51cec9c English: Condition reference (code is not run).
 [932] = "조건 참고 (코드를 실행하지 않음).",
 -- 40afa4aa English: Check import
+-- Context: Button in the import dialog: check the pasted import text for problems (verb phrase).
 [933] = "가져오기 확인",
 -- 817bfd7b English: This import window is out of date. Close it and open it again.
 [934] = "이 가져오기 창은 오래되었습니다. 닫고 다시 여세요.",
 -- e301820a English: Incoming
+-- Context: Heading of the column showing the entry being imported, in the import preview.
 [935] = "가져올 항목",
 -- a7b182f8 English: Problems
+-- Context: Heading of the list of problems found in an import report.
 [936] = "문제",
 -- 8a7525b1 English: Notes
+-- Context: Heading of the list of notes (informational messages) in an import report.
 [937] = "참고",
 -- 2191a0b7 English: No problems found.
 [938] = "문제가 없습니다.",
 -- 460c60bd English: This import can be applied.
 [939] = "이 가져오기를 적용할 수 있습니다.",
 -- 03f266f9 English: Fields shown: %d
+-- %d #1: %d #1: the number of settings shown, e.g. 12
 [940] = "표시된 필드: %d",
 -- 77810b90 English: Field order
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Field order' in custom function documentation (order of the fields).
 [941] = "필드 순서",
 -- bbd21338 English: Required fields
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Required fields' in custom condition documentation.
 [942] = "필수 필드",
 -- e68b36b1 English: Parameters
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Parameters' in custom function documentation (a function's input values).
 [943] = "매개변수",
 -- ea33a267 English: Code: %s
+-- %s #1: %s #1: the name of the code field being compared, e.g. "evaluate", "print" or "widget" (shown as-is)
 [944] = "코드: %s",
 -- bd795f03 English: %d more settings are not shown.
+-- %d #1: %d #1: how many settings are left out of the list, e.g. 5
 [945] = "설정 %d개가 더 있지만 표시되지 않습니다.",
 -- 1a5d255a English: ... %d more characters not shown.
+-- %d #1: %d #1: how many characters of the code are cut off, e.g. 1200
 [946] = "... 문자 %d개가 더 있지만 표시되지 않습니다.",
 -- 0ee9b450 English: This is a dependency bundle. Import opens the bundle review.
 [947] = "이것은 종속성 번들입니다. 가져오기를 누르면 번들 검토가 열립니다.",
 -- 2a6f7cb8 English: Export Built In
+-- Context: Button in the Built In rotation panel: export the Built In rotation as text (verb
+--     phrase).
 [948] = "기본 제공 내보내기",
 -- 57152733 English: Comparison
+-- Context: Fallback title of a comparison view tab/dropdown entry in the comparison window.
 [949] = "비교",
 -- c849416a English: A condition could not be validated. Use /rm errors for details.
 [950] = "조건을 검증할 수 없습니다. 자세한 내용은 /rm errors를 사용하세요.",
@@ -2016,38 +3300,57 @@ addon.translation = {
 --     evaluated.
 [952] = "AND는 처음 불일치하는 곳에서, OR는 처음 일치하는 곳에서 멈춥니다. NOT은 알려진 결과를 반대로 바꿉니다. 사용할 수 없는 데이터를 만나면 사용할 수 없음으로 남습니다. 건너뛴 하위 조건은 평가하지 않습니다.",
 -- 60a0d835 English: Add condition
+-- Context: Button in the condition editor: add a single condition to the list (verb phrase).
 [953] = "조건 추가",
 -- da431313 English: All (AND)
+-- Context: Name of the AND group type in the condition editor: all inner conditions must be true.
 [954] = "모두 (AND)",
 -- fca19d27 English: Any (OR)
+-- Context: Name of the OR group type in the condition editor: any inner condition may be true.
 [955] = "아무거나 (OR)",
 -- 31e392d1 English: Apply
+-- Context: Button in editors that saves the pending changes (verb).
 [956] = "적용",
 -- d9c7876b English: Apply or cancel the open condition before editing another.
 [957] = "다른 조건을 편집하기 전에 열린 조건을 적용하거나 취소하세요.",
 -- 19766ed6 English: Cancel
+-- Context: Button/tooltip in dialogs that closes the dialog without saving (verb).
 [958] = "취소",
 -- 838e8c5b English: Changes not applied.
 [959] = "변경 사항이 적용되지 않았습니다.",
 -- 270bc3e1 English: Choose a condition
+-- Context: Placeholder text in condition text where no condition is chosen yet; imperative.
 [960] = "조건 선택",
 -- 03557ba7 English: Complete the selected condition's fields before applying.
 [961] = "적용하기 전에 선택한 조건의 필드를 완성하세요.",
 -- 5399c49c English: Disable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Disable condition' on a condition card.
 [962] = "조건 끄기",
 -- ebae65ff English: Enable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Enable condition' on a condition card.
 [963] = "조건 켜기",
 -- 2015044c English: Find condition type
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Label/placeholder 'Find condition type' for the condition type search.
 [964] = "조건 유형 찾기",
 -- 65d9d4e3 English: Group with %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Condition
+--     card action 'Group with %s'; %s names another condition.
+-- %s #1: %s #1: how the condition is grouped, "All" or "Any", e.g. "Any"
 [965] = "%s(으)로 그룹화",
 -- e3de7bbd English: Invalid disabled flag
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Error text
+--     'Invalid disabled flag' for a condition with an invalid disabled value.
 [966] = "잘못된 비활성 플래그",
 -- a1ed1d35 English: Not (NOT)
+-- Context: Name of the NOT group type in the condition editor: negates the inner condition.
 [967] = "부정 (NOT)",
 -- cf440966 English: Only the first 200 conditions are shown. Other conditions are preserved.
 [968] = "처음 200개의 조건만 표시됩니다. 다른 조건은 보존됩니다.",
 -- 5ac0b06f English: Remove condition
+-- Context: Button/tooltip on a condition card: remove this condition (verb phrase).
 [969] = "조건 제거",
 -- f2f59bcc English: Select a child on the left to edit its fields. Use Add condition to extend this
 --     group.
@@ -2068,12 +3371,16 @@ addon.translation = {
 -- 79bdd6f5 English: This draft refers to missing data. Resolve those references before applying.
 [977] = "이 초안이 없는 데이터를 참조합니다. 적용하기 전에 해당 참조를 해결하세요.",
 -- b57ef478 English: Ungroup
+-- Context: Button/tooltip on a condition card: remove the group but keep its inner conditions
+--     (verb).
 [978] = "그룹 해제",
 -- e70375d8 English: Ungroup requires a group with at most one child.
 [979] = "그룹 해제는 하위 조건이 하나 이하인 그룹에만 가능합니다.",
 -- 608c89a1 English: Unknown condition: %s
+-- %s #1: %s #1: the internal name of the condition, e.g. "BUFF"
 [980] = "알 수 없는 조건: %s",
 -- e77e940c English: Always (no condition)
+-- Context: Title for a step with no condition in the condition editor: it always applies.
 [981] = "항상 (조건 없음)",
 -- 422835ec English: An empty AND group always matches. Add a condition to restrict it.
 [982] = "빈 AND 그룹은 항상 일치합니다. 제한하려면 조건을 추가하세요.",
@@ -2085,22 +3392,28 @@ addon.translation = {
 --     reopen the current one.
 [985] = "원래 로테이션이나 단계가 제거되었거나 교체되었습니다. 이 초안을 취소하고 현재 항목을 다시 여세요.",
 -- 7412ffde English: Show unchanged steps
+-- Context: Checkbox in the comparison window: also show steps that did not change.
 [986] = "변경 없는 단계 표시",
 -- 4b23882b English: %s unchanged steps hidden.
+-- %s #1: %s #1: how many steps are hidden because they did not change, e.g. 7
 [987] = "변경 없는 단계 %s개 숨김.",
 -- 128afc72 English: No other rotations to compare.
 [988] = "비교할 다른 로테이션이 없습니다.",
 -- 4e170ba0 English: Spell Recharge Time
+-- Context: Name of the Spell Recharge Time condition (seconds until the next charge of a spell).
 [989] = "주문 충전 시간",
 -- d0db4227 English: Pet Spell Recharge Time
 [990] = "소환수 주문 충전 시간",
 -- 6852f826 English: Any Spell Recharge Time
 [991] = "아무 주문 충전 시간",
 -- 62d868ef English: Rotation names
+-- Context: Heading in the rotation comparison: the name of the rotation changed.
 [992] = "로테이션 이름",
 -- a0e34049 English: Custom step name
+-- Context: Label in a rotation reference: this step has a name you typed.
 [993] = "사용자 단계 이름",
 -- f5945a5c English: Automatic step name
+-- Context: Label in a rotation reference: this step's name is generated from its action.
 [994] = "자동 단계 이름",
 -- 3b913c3a English: Spell search data is unavailable.
 [995] = "주문 검색 데이터를 사용할 수 없습니다.",
@@ -2113,20 +3426,36 @@ addon.translation = {
 -- 473d3033 English: Known and referenced spells. Enter a spell ID or link to find another spell.
 [999] = "알려진 주문과 참조된 주문입니다. 다른 주문을 찾으려면 주문 ID나 링크를 입력하세요.",
 -- e04de746 English: Search rotations
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Placeholder/label 'Search rotations' for the search box in the rotation browser.
 [1000] = "로테이션 검색",
 -- a52ace42 English: All
+-- Context: Option label meaning all of the items: the condition category 'All' filter and the 'All'
+--     side of an AND group toggle.
 [1001] = "모두",
 -- 019a32de English: Built In
+-- Context: Rotation kind in the rotation browser: a rotation shipped with the addon (Built In);
+--     also a filter option. Keep the term consistent with other 'Built In' strings.
 [1002] = "기본 제공",
 -- 5ca6606f English: No rotations match this search.
 [1003] = "검색과 일치하는 로테이션이 없습니다.",
 -- 68f12a84 English: New rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'New
+--     rotation' to create an empty rotation.
 [1004] = "새 로테이션",
 -- 325e8493 English: Fallback
+-- Context: Rotation kind in the rotation browser: the default fallback rotation used when none
+--     applies.
 [1005] = "대체",
 -- 71e6453b English: %d of %d rotations
+-- Context: Counter below the rotation browser list; the first %d is how many rotations are shown,
+--     the second how many exist in total.
+-- %d #1: %d #1: how many rotations are listed now, e.g. 3
+-- %d #2: %d #2: how many rotations exist in total, e.g. 12
 [1006] = "로테이션 %d / %d",
 -- cae7d57b English: Stop
+-- Context: Step type in the rotation step editor: the step stops the rotation (no further
+--     recommendation); also a help heading.
 [1007] = "중지",
 -- 05a85640 English: Actions automatically require a learned spell or carried item, usable
 --     resources, cooldown readiness and valid range. Conditions can additionally test other
@@ -2139,6 +3468,8 @@ addon.translation = {
 --     highlight and never presses a button.
 [1009] = "준비된 우선순위 동작이 없으면 전투 중인 살아 있는 적대적 대상에 대해 자동 공격(공격 또는 사격)이 암묵적인 최종 대안이 됩니다. 근접 거리에서는 공격, 그보다 멀면 대상이 사거리 안에 있고 해당 버튼이 행동 단축바에 있을 때 자동 사격 또는 마법봉 사격입니다. 그 자동 공격이 이미 진행 중이면 아무것도 추천하지 않습니다. 일반 로테이션 강조를 사용하며 버튼을 누르지는 않습니다.",
 -- 5c68c9c6 English: Implicit final fallback
+-- Context: Heading in a rotation reference for the automatic final step the addon appends (the
+--     basic attack) when nothing else applies.
 [1010] = "암묵적인 최종 대안",
 -- d56153b6 English: Also suppress auto-attack (Attack or Shoot)
 [1011] = "자동 공격(공격 또는 사격)도 억제",
@@ -2148,30 +3479,46 @@ addon.translation = {
 --     Stop.
 [1013] = "이 중지 이후에도 암묵적인 자동 공격(공격 또는 사격)이 추천될 수 있습니다.",
 -- 762ebb70 English: Group name
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Group
+--     name' for the name of a condition category group.
 [1014] = "그룹 이름",
 -- 9d5097a8 English: All categories
+-- Context: Dropdown option in the condition picker that shows conditions of every category.
 [1015] = "모든 분류",
 -- 848b0fa0 English: Choose or search condition type
 [1016] = "조건 유형 선택 또는 검색",
 -- 0f8a2a34 English: Incomplete: %s is required
+-- %s #1: %s #1: the name of the missing field, e.g. "spell" (or "?" when unknown)
 [1017] = "미완성: %s 필요",
 -- f9575aeb English: Invalid or unsupported condition fields
 [1018] = "잘못되었거나 지원되지 않는 조건 필드",
 -- 010b483d English: %d conditions
+-- Context: Summary line in a collection comparison: how many conditions an entry has; %d is the
+--     count.
+-- %d #1: %d #1: the number of conditions in the category, e.g. 8
 [1019] = "조건 %d개",
 -- c417805d English: Expand to edit fields
 [1020] = "펼쳐서 필드 편집",
 -- a063783d English: Negate each
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Negate each' (apply NOT to each selected condition).
 [1021] = "각각 부정",
 -- a9ee2142 English: Version: %s  ·  Author: %s
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
+-- %s #2: %s #2: the author, e.g. "PreZ"
 [1022] = "버전: %s  ·  제작자: %s",
 -- e2311633 English: Configure rotations, conditions and highlights in the Rotation Master window.
 [1023] = "Rotation Master 창에서 로테이션, 조건, 강조를 설정하세요.",
 -- 23010764 English: Open Options
+-- Context: Large button on the addon's settings page in the game's Options window: opens the
+--     Rotation Master configuration window.
 [1024] = "옵션 열기",
 -- b764cdc0 English: Unknown
+-- Context: Placeholder shown when a value cannot be determined (unknown encounter name, unknown
+--     client edition, unknown addon version or author).
 [1025] = "알 수 없음",
 -- a9080cb3 English: Scale: %d%%
+-- %d #1: %d #1: the window scale as a percentage, e.g. 100 (the %% after it is a literal percent sign)
 [1026] = "크기: %d%%",
 -- 17a87f02 English: Right-click the title bar to close.
 [1027] = "제목 표시줄을 오른쪽 클릭하면 닫힙니다.",
@@ -2184,68 +3531,117 @@ addon.translation = {
 -- f4326302 English: Click to add group name
 [1030] = "클릭해 그룹 이름 추가",
 -- f2b59370 English: Negate condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Negate condition' on a condition card.
 [1031] = "조건 부정",
 -- 56693400 English: Enable or disable condition
 [1032] = "조건 켜기 또는 끄기",
 -- 7a2fb682 English: Switch All / Any
 [1033] = "모두 / 아무거나 전환",
 -- ca7981b4 English: Off
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'Off'.
 [1034] = "끔",
 -- 13001175 English: On
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'On'.
 [1035] = "켬",
 -- a8566033 English: Negated
+-- Context: Not referenced directly by the current code (legacy or built dynamically). State word
+--     'Negated' for a condition that is inverted (NOT).
 [1036] = "부정됨",
 -- bc47dc21 English: New condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New condition' (create a condition).
 [1037] = "새 조건",
 -- f66edce3 English: New All group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New All group' (create an AND group).
 [1038] = "새 모두 그룹",
 -- fb19b6a9 English: New Any group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New Any group' (create an OR group).
 [1039] = "새 아무거나 그룹",
 -- 36a53913 English: Drag into the tree to insert
 [1040] = "트리로 끌어 삽입",
 -- 25f7b372 English: Collapse all
+-- Context: Button in the condition editor and rotation view: collapse every card in the list; verb
+--     phrase.
 [1041] = "모두 접기",
 -- a3e586be English: Expand all
+-- Context: Button in the condition editor and rotation view: expand every card in the list; verb
+--     phrase.
 [1042] = "모두 펼치기",
 -- d4d773af English: Group as All
+-- Context: Button in the condition editor: wrap the selected conditions in an AND group (all must
+--     be true); verb phrase.
 [1043] = "모두로 그룹화",
 -- e658538c English: Group as Any
+-- Context: Button in the condition editor: wrap the selected conditions in an OR group (any may be
+--     true); verb phrase.
 [1044] = "아무거나로 그룹화",
 -- 27e78c35 English: Move %d conditions
+-- Context: Drag-and-drop tooltip in the condition editor: moving several selected conditions; %d is
+--     how many.
+-- %d #1: %d #1: how many conditions are being dragged, e.g. 3
 [1045] = "조건 %d개 이동",
 -- 8fa50cbc English: Insert condition
+-- Context: Drag-and-drop tooltip in the condition editor: a new condition is being inserted at the
+--     drop position; verb phrase.
 [1046] = "조건 삽입",
 -- f54d0e38 English: Duplicate condition
+-- Context: Button/tooltip on a condition card: make a copy of this condition (verb phrase).
 [1047] = "조건 복제",
 -- e21f935f English: Copy
+-- Context: Button that copies the shown text to the clipboard (transfer dialog); also a column
+--     heading in the help window.
 [1048] = "복사",
 -- 2b505597 English: Any
+-- Context: Toggle label: match any one of several things; condition group operator button (OR) and
+--     the tag filter mode pill in the rotation browser.
 [1049] = "아무거나",
 -- 3fe9bd3a English: Resolve the wrapper's name or unsupported fields before removing its negation.
 [1050] = "부정을 제거하기 전에 감싼 그룹의 이름이나 지원되지 않는 필드를 해결하세요.",
 -- e49e9c8f English: Not evaluated: an enclosing group is disabled
 [1051] = "평가 안 함: 상위 그룹이 비활성화됨",
 -- 754e2703 English: %d selected
+-- Context: Counter label showing how many cards/conditions are selected; %d is the count.
+-- %d #1: %d #1: how many items are selected, e.g. 3
 [1052] = "%d개 선택됨",
 -- 4e3bbfa6 English: Conditional branch
+-- Context: Title of a conditional branch step (a step that chooses between two paths based on a
+--     condition) in a rotation reference; noun phrase.
 [1053] = "조건 분기",
 -- 9c46a836 English: Evaluate condition
+-- Context: Branch step mode: the branch decides by evaluating its condition.
 [1054] = "조건 평가",
 -- 049e212e English: Always true
+-- Context: Branch step mode: the branch always takes the true path.
 [1055] = "항상 참",
 -- 4d15e741 English: Always false
+-- Context: Branch step mode: the branch always takes the false path; also condition text for a
+--     negated empty condition.
 [1056] = "항상 거짓",
 -- 0f8c87a3 English: Unknown branch mode
+-- Context: Message in a rotation reference: the branch step has a mode the addon does not know.
 [1057] = "알 수 없는 분기 모드",
 -- 3cbc87c7 English: True
+-- Context: Boolean result word: true; the true arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1058] = "참",
 -- 60a33e6c English: False
+-- Context: Boolean result word: false; the false arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1059] = "거짓",
 -- 06f1af3a English: Rotation tree cannot be displayed.
 [1060] = "로테이션 트리를 표시할 수 없습니다.",
 -- 1e3abf61 English: If
+-- Context: Toggle on a condition card showing the condition applies normally (reads like 'If ...');
+--     the alternative is 'Unless'.
 [1061] = "만약",
 -- b89c64be English: Unless
+-- Context: Toggle on a condition card showing the condition is negated (reads like 'Unless ...');
+--     the alternative is 'If'.
 [1062] = "아니라면",
 -- ea2dca67 English: If matches this condition; Unless negates it.
 [1063] = "만약은 이 조건과 일치할 때, 아니라면은 이를 부정합니다.",
@@ -2254,6 +3650,8 @@ addon.translation = {
 -- 8898675a English: Condition description truncated; the draft is unchanged.
 [1065] = "조건 설명이 잘렸습니다. 초안은 바뀌지 않았습니다.",
 -- df796c65 English: New group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New group'.
 [1066] = "새 그룹",
 -- 17c23d28 English: Drag card headers to move; drag New into a gap.
 [1067] = "카드 머리글을 끌어 이동하고, 새 항목을 빈칸으로 끌어 놓으세요.",
@@ -2280,18 +3678,31 @@ addon.translation = {
 -- 777f6a10 English: Rotation Master information and credits.
 [1078] = "Rotation Master 정보와 제작진.",
 -- 72a43eab English: TBC
+-- Context: Name of the Burning Crusade Classic game edition (abbreviation), shown in the window
+--     footer and in rotation applicability text.
 [1079] = "TBC",
 -- d63015c7 English: Classic Era
+-- Context: Name of the Classic Era game edition (vanilla Classic), shown in the window footer and
+--     in rotation applicability text.
 [1080] = "Classic Era",
 -- 7d4352ca English: Classic Progression
+-- Context: Name of the Classic Progression game edition (Classic servers that advance through
+--     expansions), shown in the window footer.
 [1081] = "Classic Progression",
 -- cdb38c8d English: Retail
+-- Context: Name of the Retail game edition (current live WoW), shown in the window footer and
+--     rotation applicability text.
 [1082] = "Retail",
 -- 55f980cf English: Forever
+-- Context: Name of the Classic 'Forever' game edition (a client that stays on one expansion), shown
+--     in the window footer.
 [1083] = "Forever",
 -- 21b6a798 English: Development
+-- Context: Version label used when the addon runs from source (an unpackaged development build)
+--     instead of a release version.
 [1084] = "개발",
 -- 57a9e910 English: Right-click to close
+-- Context: Hint in the window footer: right-clicking the Rotation Master window closes it.
 [1085] = "오른쪽 클릭하여 닫기",
 -- 5e2f1cfb English: Drag to resize the list. Double-click to reset.
 [1086] = "끌어서 목록 크기를 조절합니다. 두 번 클릭하면 초기화됩니다.",
@@ -2299,8 +3710,11 @@ addon.translation = {
 --     then click an empty slot.
 [1087] = "아무 행동 단축바 칸으로 끌어 놓거나(있던 것과 교체됨), 연결을 클릭한 뒤 빈 칸을 클릭하세요.",
 -- ba118bf7 English: English
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Language name
+--     'English' in a language list.
 [1088] = "영어",
 -- b5a229ac English: Website
+-- Context: Label of the website link in the About area of the configuration window; noun.
 [1089] = "웹사이트",
 -- 8149bb52 English: English is the installed translation; other languages use English until
 --     translated.
@@ -2311,8 +3725,12 @@ addon.translation = {
 -- 8c4b42bc English: Optional addon settings.
 [1092] = "선택적인 애드온 설정입니다.",
 -- fe166e78 English: Read-only condition
+-- Context: Status text in the condition editor footer: this condition cannot be edited (a Built
+--     In).
 [1093] = "읽기 전용 조건",
 -- e2d0a549 English: Delete
+-- Context: Button/tooltip that deletes the selected entry (rotation, item set, effect,
+--     announcement...); verb, also a help heading.
 [1094] = "삭제",
 -- 9d85c78b English: Only the first 200 rotation cards are shown. Other cards are preserved.
 [1095] = "처음 200개의 로테이션 카드만 표시됩니다. 다른 카드는 보존됩니다.",
@@ -2320,34 +3738,53 @@ addon.translation = {
 --     condition evaluation.
 [1096] = "분기는 한쪽 갈래를 선택한 뒤 다음 우선순위로 다시 합류합니다. 강제 모드는 조건 평가를 건너뜁니다.",
 -- 79b92f59 English: New action
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New action' (add a spell/item step).
 [1097] = "새 동작",
 -- 7f445154 English: New branch
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New branch' (add a conditional branch step).
 [1098] = "새 분기",
 -- 6f0d96c6 English: New optional
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New optional' (add an optional highlight step).
 [1099] = "새 선택 항목",
 -- 1abcf34a English: Drag into a gap, or click to append.
 [1100] = "빈칸으로 끌어 놓거나 클릭해 끝에 추가하세요.",
 -- eb1a70e3 English: Discard
+-- Context: Button in editors that throws away the pending changes and restores the saved state
+--     (verb).
 [1101] = "변경 취소",
 -- cd272c87 English: Changes applied.
 [1102] = "변경 사항이 적용되었습니다.",
 -- c7f93783 English: Choose
+-- Context: Default button text for a picker button that has no value chosen yet (verb: choose).
 [1103] = "선택",
 -- d8dba008 English: Items: separate item IDs or names with commas
 [1104] = "아이템: 아이템 ID나 이름을 쉼표로 구분",
 -- dfd0e008 English: Use profile effect
+-- Context: Dropdown entry in a rotation step's effect chooser: do not override, use the effect from
+--     the profile settings.
 [1105] = "프로필 효과 사용",
 -- eea6c6fc English: Color: red, green, blue, alpha (0–1); blank inherits
 [1106] = "색상: 빨강, 초록, 파랑, 알파 (0–1). 비우면 상속",
 -- 31b888e2 English: Use profile position
+-- Context: Tooltip of a small reset button next to a step's highlight position fields: use the
+--     profile's position setting instead.
 [1107] = "프로필 위치 사용",
 -- a581aec9 English: Horizontal offset
+-- Context: Tooltip/label of the horizontal (X) offset field of a highlight position.
 [1108] = "가로 오프셋",
 -- 923e59df English: Vertical offset
+-- Context: Tooltip/label of the vertical (Y) offset field of a highlight position.
 [1109] = "세로 오프셋",
 -- fda1b8a0 English: Created by %s
+-- Context: Footer text in the Rotation Master window; %s is the author's name.
+-- %s #1: %s #1: the author name, e.g. "PreZ"
 [1110] = "제작자: %s",
 -- 64464db9 English: Unsaved rotation changes
+-- Context: Title of the dialog warning that the rotation editor has unsaved changes when you
+--     navigate away.
 [1111] = "저장되지 않은 로테이션 변경 사항",
 -- 4c8f5e18 English: Apply this draft, discard its changes, or keep editing.
 [1112] = "이 초안을 적용하거나, 변경 사항을 취소하거나, 계속 편집하세요.",
@@ -2355,71 +3792,107 @@ addon.translation = {
 --     editing.
 [1113] = "초안을 적용할 수 없습니다. 표시된 필드를 완성하거나 취소를 눌러 계속 편집하세요.",
 -- dd7a42d2 English: Drag to place
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     place' for dragging an item to a position.
 [1114] = "끌어서 배치",
 -- a7b99a64 English: Copy full condition
+-- Context: Button in the condition text window: copy the complete condition text to the clipboard
+--     (verb phrase).
 [1115] = "전체 조건 복사",
 -- 81a5118e English: Full condition text
+-- Context: Title of the window showing a condition's full text in readable form.
 [1116] = "전체 조건 텍스트",
 -- 21b111cb English: Default
+-- Context: Button that resets a value (highlight color or position) to the default; also the name
+--     of the built-in default rotation.
 [1117] = "기본값",
 -- c9a3dbb0 English: Click to add branch name
 [1118] = "클릭해 분기 이름 추가",
 -- ab0a9cf9 English: Switch condition
+-- Context: Name of the section of a rotation that holds the condition used for automatic switching,
+--     in change summaries and path descriptions.
 [1119] = "전환 조건",
 -- 18f3acc3 English: No switch condition: this rotation can be selected automatically whenever its
 --     specialization and level apply.
 [1120] = "전환 조건 없음: 이 로테이션은 전문화와 레벨이 맞을 때마다 자동으로 선택될 수 있습니다.",
 -- 464c4ffd English: Edit
+-- Context: Button in the Conditions page (custom condition row): edit this custom condition; verb.
 [1121] = "편집",
 -- 7515ddaa English: Delete rotation
+-- Context: Tooltip of the delete button in the rotation editor: deletes the rotation (verb phrase).
 [1122] = "로테이션 삭제",
 -- bc48b710 English: Discard this new rotation
 [1123] = "이 새 로테이션 취소",
 -- 6390ba9c English: Add action
+-- Context: Button in the rotation view: adds a new spell/item action step to the main rotation
+--     (verb phrase).
 [1124] = "동작 추가",
 -- 1947a735 English: Add branch
+-- Context: Button in the rotation view: adds a new conditional branch step to the rotation (verb
+--     phrase).
 [1125] = "분기 추가",
 -- 48dfa1a9 English: Add cooldown
+-- Context: Button in the rotation view: adds a new cooldown (optional highlight) step (verb
+--     phrase).
 [1126] = "재사용 대기시간 추가",
 -- cfb5635b English: Delete this custom rotation and its unsaved draft? This cannot be undone.
 [1127] = "이 사용자 로테이션과 저장되지 않은 초안을 삭제하시겠습니까? 되돌릴 수 없습니다.",
 -- d1afca1a English: Rotation details
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Rotation details'.
 [1128] = "로테이션 세부 정보",
 -- 2f839a00 English: Complete the highlighted input fields before applying.
 [1129] = "적용하기 전에 강조 표시된 입력 필드를 완성하세요.",
 -- 6d81521d English: Drop in a highlighted gap.
 [1130] = "강조 표시된 빈칸에 놓으세요.",
 -- dcd1d522 English: Name
+-- Context: Label of the name field (rotation, effect, item set, announcement, category); noun, also
+--     a help heading and comparison row label.
 [1131] = "이름",
 -- bb82fca1 English: Incomplete input: %s
+-- %s #1: %s #1: what input is incomplete, a short phrase, e.g. "Spell is required"
 [1132] = "미완성 입력: %s",
 -- 0a392308 English: Click condition text on any card to view or edit its conditions.
 [1133] = "아무 카드의 조건 텍스트를 클릭해 조건을 보거나 편집하세요.",
 -- 286353b7 English: View condition
+-- Context: Button in a rotation step: open the condition read-only (for a Built In); verb phrase.
 [1134] = "조건 보기",
 -- 61514750 English: Edit condition
+-- Context: Button in a rotation step: open the condition editor to change the step's condition;
+--     verb phrase.
 [1135] = "조건 편집",
 -- 19a05c66 English: Cycle between summary, fields and name only. Drag the name to move the card.
 [1136] = "요약, 필드, 이름만 보기를 순환합니다. 이름을 끌어 카드를 옮기세요.",
 -- 9eddf573 English: Metadata
+-- Context: Button in the rotation editor (and the title of its dialog) for the rotation's
+--     description, tags and author; noun.
 [1137] = "메타데이터",
 -- 8fe26115 English: This rotation cannot run until its incomplete or unavailable data is resolved.
 [1138] = "미완성이거나 사용할 수 없는 데이터가 해결될 때까지 이 로테이션은 실행할 수 없습니다.",
 -- 40a9941b English: Rotation validation
+-- Context: Title of the window listing validation problems found in the rotation.
 [1139] = "로테이션 검증",
 -- 5677f1c7 English: Preview effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Preview effect' to show how a highlight effect looks.
 [1140] = "효과 미리보기",
 -- 44e4c2fb English: Show or hide branch paths
 [1141] = "분기 경로 표시 또는 숨기기",
 -- 5735b9a9 English: Expand or collapse the card. Click action or condition text for details.
 [1142] = "카드를 펼치거나 접습니다. 동작이나 조건 텍스트를 클릭하면 세부 정보가 표시됩니다.",
 -- 2478da41 English: Click to expand
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Click
+--     to expand' on a collapsed section.
 [1143] = "클릭해 펼치기",
 -- 94901258 English: Add group
+-- Context: Button in the condition editor: add an empty AND group (a bracket of conditions); verb
+--     phrase.
 [1144] = "그룹 추가",
 -- ad19b82b English: Click to append; drag into a gap to insert.
 [1145] = "클릭하면 끝에 추가하고, 빈칸으로 끌면 삽입합니다.",
 -- 36e5aa8a English: Preview highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Preview highlight' for the highlight preview.
 [1146] = "강조 미리보기",
 -- 5e4de8d1 English: This previews the glow used on action buttons. Click the preview icon again to
 --     close.
@@ -2427,104 +3900,168 @@ addon.translation = {
 -- 1094644b English: Choose a highlight effect in the action details or General settings.
 [1148] = "동작 세부 정보나 일반 설정에서 강조 효과를 선택하세요.",
 -- e3cb6179 English: Rotation metadata
+-- Context: Title of the help window for the rotation metadata dialog.
 [1149] = "로테이션 메타데이터",
 -- d95082a2 English: Author
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Author' (who wrote the rotation).
 [1150] = "제작자",
 -- 2919fe85 English: Realm
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Realm' (author's realm).
 [1151] = "서버",
 -- 969ccbd3 English: Email
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Email' (author's email address).
 [1152] = "이메일",
 -- dd167905 English: Version
+-- Context: Column heading in the integrations list: the addon version; also a metadata field.
 [1153] = "버전",
 -- b8bece73 English: Use changes
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Use
+--     changes' to apply the edited values.
 [1154] = "변경 사항 사용",
 -- b02bc1bc English: Use changes updates the draft. Apply the rotation to save it.
 [1155] = "변경 사항 사용은 초안을 갱신합니다. 저장하려면 로테이션을 적용하세요.",
 -- 38274b15 English: Built In rotation: duplicate it to edit its metadata.
 [1156] = "기본 제공 로테이션: 메타데이터를 편집하려면 복제하세요.",
 -- 0e570ca6 English: Source
+-- Context: Fallback heading for a rotation source/citation without its own title; noun.
 [1157] = "출처",
 -- 9d7de300 English: Saved metadata is invalid (%s). Editing these fields replaces it.
+-- %s #1: %s #1: the invalid saved metadata value as text, e.g. "true" (shown as-is)
 [1158] = "저장된 메타데이터가 잘못되었습니다(%s). 이 필드를 편집하면 대체됩니다.",
 -- 6b73191a English: Color
+-- Context: Label of the color field in the rotation step effect settings and the title of the color
+--     picker; also a help heading.
 [1159] = "색상",
 -- 2e51d20c English: Choose an effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Placeholder
+--     'Choose an effect' for the effect dropdown.
 [1160] = "효과 선택",
 -- d1a44f24 English: Use profile color
+-- Context: Tooltip of a reset button next to a step's color: use the color from the profile
+--     settings.
 [1161] = "프로필 색상 사용",
 -- b840b1dd English: Center the highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Checkbox
+--     label 'Center the highlight'.
 [1162] = "강조를 가운데로",
 -- 6dc46510 English: Move highlight; hold Shift for ten pixels
 [1163] = "강조 이동, Shift를 누르면 10픽셀씩",
 -- 294bb35f English: Preview sound
+-- Context: Tooltip of a play button next to the sound dropdown: plays the chosen sound; imperative.
 [1164] = "소리 미리 듣기",
 -- fa39a479 English: Sound preview is unavailable.
 [1165] = "소리 미리 듣기를 사용할 수 없습니다.",
 -- ac2276b9 English: Choose an available sound to preview.
 [1166] = "미리 들을 수 있는 소리를 선택하세요.",
 -- d6807b3f English: Use color
+-- Context: Tooltip of the check mark button in the color picker: accepts the chosen color.
 [1167] = "색상 사용",
 -- 8807635f English: Offsets
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Offsets' for the highlight position offsets.
 [1168] = "오프셋",
 -- de5a6f78 English: V
+-- Context: Abbreviation (letter V) on the vertical-offset field of a highlight position; tooltip is
+--     'Vertical offset'.
 [1169] = "세로",
 -- 44bd7ae6 English: H
+-- Context: Abbreviation (letter H) on the horizontal-offset field of a highlight position; tooltip
+--     is 'Horizontal offset'.
 [1170] = "가로",
 -- 36c4ddbf English: RGBA channels accept decimal values from 0 to 1.
 [1171] = "RGBA 채널은 0에서 1 사이의 소수 값을 받습니다.",
 -- a5163f27 English: %s: %s
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
+-- %s #2: %s #2: the name of the window or section, e.g. "Edit Condition #2"
 [1172] = "%s: %s",
 -- 76b2629a English: Rotation Master
+-- Context: Name of the addon in a window title/subtitle (brand name; keep untranslated if the addon
+--     name is not localized).
 [1173] = "Rotation Master",
 -- 39b36d38 English: Condition
+-- Context: Generic word for a single condition: window heading/context in the condition editor.
 [1174] = "조건",
 -- 0924a671 English: Cooldown
+-- Context: Section name for cooldown steps (optional highlights) in change summaries and the step
+--     editor; noun.
 [1175] = "재사용 대기시간",
 -- d85693fc English: All of
+-- Context: Header text for an AND group of conditions on a condition card: all of the following
+--     must be true.
 [1176] = "모두 만족",
 -- f44e288e English: Any of
+-- Context: Header text for an OR group of conditions on a condition card: any of the following may
+--     be true.
 [1177] = "하나라도 만족",
 -- 0ec5ba4e English: Action bar binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Action
+--     bar binding'.
 [1178] = "행동 단축바 연결",
 -- 380684a5 English: Add announcement
+-- Context: Button in the Announces settings page: create a new announcement; verb phrase.
 [1179] = "알림 추가",
 -- 1005d35c English: Add custom condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Add
+--     custom condition' to create a custom condition.
 [1180] = "사용자 조건 추가",
 -- 8fce42d6 English: Add effect
+-- Context: Button in the Effects settings page: create a new highlight effect; verb phrase.
 [1181] = "효과 추가",
 -- d1a0b329 English: Add item
+-- Context: Button in item set editors: add an item to the set; verb phrase, also a help heading.
 [1182] = "아이템 추가",
 -- da10655e English: Add item set
+-- Context: Button and heading in the Item Sets settings page: create a new item set; verb phrase.
 [1183] = "아이템 세트 추가",
 -- 839bd5e0 English: Add step
+-- Context: Button in the effect sequence editor: add a step (frame) to the sequence; verb phrase.
 [1184] = "단계 추가",
 -- 96f2ac95 English: An item from this set must be available before binding.
 [1185] = "연결하기 전에 이 세트의 아이템을 사용할 수 있어야 합니다.",
 -- 2a5562d3 English: Bind item set
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Bind
+--     item set' to bind an item set to action bar slots.
 [1186] = "아이템 세트 연결",
 -- 292c06f0 English: Category
+-- Context: Label of the category dropdown for a condition and a heading in the icon picker; noun.
 [1187] = "분류",
 -- 8adaa206 English: Choose an action first.
 [1188] = "먼저 동작을 선택하세요.",
 -- eb58aed0 English: Choose an item first.
 [1189] = "먼저 아이템을 선택하세요.",
 -- b269dc4e English: Commands
+-- Context: Heading on the Profiles page above a short list of slash commands.
 [1190] = "명령어",
 -- eebdd24a English: Confirm
+-- Context: Button in confirmation prompts: confirm the action; verb.
 [1191] = "확인",
 -- 29bbf82e English: Copy and reset
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     and reset' in the profile tools.
 [1192] = "복사 후 초기화",
 -- 2da43a1c English: Copy from profile
+-- Context: Label of the dropdown in the Profiles page: copy settings from another profile into the
+--     current one; also a help heading.
 [1193] = "프로필에서 복사",
 -- 47cc49a7 English: Copy this text to export. Import replaces the selected settings.
 [1194] = "내보내려면 이 텍스트를 복사하세요. 가져오기는 선택한 설정을 대체합니다.",
 -- 61d30d99 English: Create profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Create profile'.
 [1195] = "프로필 생성",
 -- 70aede1c English: Current profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Current profile'.
 [1196] = "현재 프로필",
 -- 47311af4 English: Delete profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Delete profile'.
 [1197] = "프로필 삭제",
 -- 526f44a0 English: Delete profile %s? This cannot be undone.
+-- %s #1: %s #1: the name of the profile to delete, e.g. "Default"
 [1198] = "프로필 %s을(를) 삭제하시겠습니까? 되돌릴 수 없습니다.",
 -- 0a1b391c English: Delete this custom condition? Existing rotations using it will become
 --     unavailable.
@@ -2535,14 +4072,20 @@ addon.translation = {
 --     another item set.
 [1201] = "이 아이템 세트와 연결을 삭제하시겠습니까? 이를 참조하는 로테이션은 다른 아이템 세트가 필요합니다.",
 -- 5342e09f English: Enable
+-- Context: Checkbox in General settings, Recommendations section: turns Rotation Master
+--     recommendations on or off; verb; also a help heading.
 [1202] = "사용",
 -- eccca39d English: Enter a name first.
 [1203] = "먼저 이름을 입력하세요.",
 -- 27bf030d English: Enter a profile name first.
 [1204] = "먼저 프로필 이름을 입력하세요.",
 -- dab97264 English: History and preview
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'History and preview'.
 [1205] = "기록 및 미리보기",
 -- 9b10587f English: Identifier
+-- Context: Label of the identifier field (a unique key for an announcement or custom condition);
+--     noun.
 [1206] = "식별자",
 -- c6af6542 English: Invalid effect.
 [1207] = "잘못된 효과입니다.",
@@ -2551,40 +4094,61 @@ addon.translation = {
 -- 6987106d English: Invalid item list.
 [1209] = "잘못된 아이템 목록입니다.",
 -- c8edea5f English: Item %d
+-- Context: Label of an item row in a list by position; %d is the position number.
+-- %d #1: %d #1: the position of the item in the item set, counting from 1, e.g. 2
 [1210] = "아이템 %d",
 -- 08bc6729 English: Items in priority order
 [1211] = "우선순위 순 아이템",
 -- 9024c197 English: Links
+-- Context: Heading of a section listing web links (Profiles page; help window).
 [1212] = "링크",
 -- dba20004 English: New profile name
+-- Context: Label of the text field for the name of a new profile.
 [1213] = "새 프로필 이름",
 -- a6a2aa10 English: Not bound
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Status text
+--     'Not bound' for an item set with no action bar binding.
 [1214] = "연결 안 됨",
 -- 14908ce9 English: Profile changes apply immediately. Rotations and settings belong to the active
 --     profile.
 [1215] = "프로필 변경 사항은 즉시 적용됩니다. 로테이션과 설정은 활성 프로필에 속합니다.",
 -- 0738ee00 English: Recommendations
+-- Context: Section heading in General settings for the options controlling recommendations.
 [1216] = "추천",
 -- e8781b01 English: Remove binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Remove binding'.
 [1217] = "연결 제거",
 -- e89af9bb English: Replace the current profile with %s?
+-- %s #1: %s #1: the name of the profile to copy from, e.g. "Raiding"
 [1218] = "현재 프로필을 %s(으)로 대체하시겠습니까?",
 -- daee7606 English: Reset
+-- Context: Button that resets the current editor or item set to the saved or default state (verb);
+--     also a help heading.
 [1219] = "초기화",
 -- 15d5cb3f English: Reset current profile
+-- Context: Button in the Profiles page: reset the current profile to defaults (verb phrase); also a
+--     help heading.
 [1220] = "현재 프로필 초기화",
 -- 4ddce508 English: Reset preview position
+-- Context: Tooltip/help heading for the button that puts the preview window back to its default
+--     position.
 [1221] = "미리보기 위치 초기화",
 -- 7986b163 English: Reset this profile to its defaults? Custom rotations and settings in it will be
 --     replaced.
 [1222] = "이 프로필을 기본값으로 초기화하시겠습니까? 프로필의 사용자 로테이션과 설정이 대체됩니다.",
 -- 2a78025d English: Select
+-- Context: Placeholder text on a dropdown button that has nothing selected; also the 'Select'
+--     option in an integrations choice (verb).
 [1223] = "선택",
 -- 10151a40 English: Step %d
+-- Context: Label for a step row by position in a comparison; %d is the position.
+-- %d #1: %d #1: the number of the step, counting from 1, e.g. 3
 [1224] = "단계 %d",
 -- b1912f1a English: This name is already in use.
 [1225] = "이미 사용 중인 이름입니다.",
 -- 52656e81 English: Branch
+-- Context: Step type name for a conditional branch step (as in 'Branch'); noun.
 [1226] = "분기",
 -- b8e156bb English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2601,8 +4165,10 @@ addon.translation = {
 --     replaces its item list.
 [1229] = "아이템 세트를 선택하고 우선순위 목록을 편집하세요. 전역은 세트를 모든 프로필에서 공유합니다. 이동 화살표로 아이템 우선순위를 바꿉니다. 아이템 세트 연결은 사용 가능한 아이템을 집어 행동 단축바에 놓을 수 있게 하고, 연결 제거는 연결을 해제합니다. 초기화는 기본 제공 세트를 복원합니다. 가져오기는 아이템 목록을 대체합니다.",
 -- 584f475e English: Condition editor
+-- Context: Title of the help window for the condition editor.
 [1230] = "조건 편집기",
 -- dae8a15b English: Description and attribution
+-- Context: Heading in the help for the rotation metadata dialog: the description and author fields.
 [1231] = "설명 및 제작자 정보",
 -- 0bff7d0e English: Drag the title bar to move. Set Scale with the top-left slider; child windows
 --     follow it. The question mark toggles Help. Close with X, Escape, or right-click in the
@@ -2618,8 +4184,12 @@ addon.translation = {
 --     new entry after an action is selected.
 [1234] = "알림을 펼쳐 동작, 이벤트, 채널, 텍스트를 선택하세요. 주문 필드는 목록에서 검색하며, 클라이언트에 주문 등급이 있으면 ‘이 주문 등급만 사용’이 고른 등급만 일치하도록 제한합니다. 사용으로 알림을 켜고 끕니다. 알림 추가는 동작을 선택한 뒤 새 항목을 만듭니다.",
 -- 2c02392e English: Groups and toggles
+-- Context: Heading in help text explaining AND/OR/NOT groups and the If/Unless and Enabled/Disabled
+--     toggles in the condition editor.
 [1235] = "그룹 및 전환",
 -- 3d69858e English: Help and saving
+-- Context: Heading in help text describing the Help (question mark) button and how saving works
+--     (Undo/Redo/Apply) in the editor.
 [1236] = "도움말 및 저장",
 -- 99855946 English: Move, copy and remove
 [1237] = "이동, 복사 및 제거",
@@ -2633,18 +4203,25 @@ addon.translation = {
 --     on click and filter as you type. Section headings collapse or expand their contents.
 [1239] = "이 설정은 즉시 적용됩니다. Enter를 누르거나 텍스트 필드를 벗어나면 확정됩니다. 잘못된 텍스트는 빨간색으로 남으며 수정할 때까지 이동을 막습니다. 검색 가능한 선택 목록은 클릭하면 열리고 입력하는 대로 필터링됩니다. 섹션 제목을 클릭하면 내용을 접거나 펼칩니다.",
 -- 00a767bc English: Unknown spell
+-- Context: Placeholder name for a spell that cannot be found by ID (announcement list, reference
+--     catalog).
 [1240] = "알 수 없는 주문",
 -- 52ffc6a8 English: Item data loading
+-- Context: Placeholder shown for an item whose name has not loaded from the server yet.
 [1241] = "아이템 데이터 불러오는 중",
 -- d6572bd2 English: No matches.
 [1242] = "일치 항목 없음.",
 -- 18fdd549 English: New
+-- Context: Button that creates a new entry (rotation, item set, effect, condition category...);
+--     verb.
 [1243] = "새로 만들기",
 -- 7f406b7e English: No matching items.
 [1244] = "일치하는 아이템이 없습니다.",
 -- f9ad9fda English: Click a result or enter an item name, ID or link.
 [1245] = "결과를 클릭하거나 아이템 이름, ID 또는 링크를 입력하세요.",
 -- a4ae750b English: Anchor
+-- Context: Label of the anchor point dropdown for a highlight (which part of the button the
+--     highlight attaches to); also a help heading.
 [1246] = "기준점",
 -- 1edc56cd English: Return the preview window to the center of the screen.
 [1247] = "미리보기 창을 화면 가운데로 되돌립니다.",
@@ -2657,10 +4234,16 @@ addon.translation = {
 --     pixels. Center resets both offsets.
 [1250] = "픽셀 단위 가로 오프셋입니다. 왼쪽과 오른쪽으로 바꾸며, Shift를 누르면 10픽셀씩 바뀝니다. 가운데로는 두 오프셋을 모두 초기화합니다.",
 -- 49cf9ec6 English: Manage categories
+-- Context: Heading and button on the Conditions page: switch to managing condition categories (add,
+--     rename, reorder).
 [1251] = "분류 관리",
 -- eda2efcd English: Back to conditions
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Back
+--     to conditions' to return from category management to the condition list.
 [1252] = "조건으로 돌아가기",
 -- 8137101b English: Built-in category
+-- Context: Status text on the Conditions page: the selected category is built in and cannot be
+--     edited.
 [1253] = "기본 제공 분류",
 -- d7c828bc English: Delete this category? Its conditions will remain available under Other.
 [1254] = "이 분류를 삭제하시겠습니까? 분류의 조건은 기타에서 계속 사용할 수 있습니다.",
@@ -2682,58 +4265,94 @@ addon.translation = {
 --     separately for automatic-switch availability.
 [1259] = "선택한 조건을 이름 있는 분류나 기타로 옮깁니다. 자동 전환 사용 여부는 전환 조건에서 따로 설정하세요.",
 -- 85a39ab3 English: Yes
+-- Context: Boolean value word 'Yes' (true) in condition text and comparison views.
 [1260] = "예",
 -- 1ea442a1 English: No
+-- Context: Boolean value word 'No' (false) in condition text and comparison views.
 [1261] = "아니요",
 -- f8bfdb1e English: Show unchanged
+-- Context: Checkbox in the comparison window: also list entries that are identical on both sides.
 [1262] = "변경 없는 항목 표시",
 -- 8307fb6b English: Changed fields: %d
+-- %d #1: %d #1: the number of fields that differ, e.g. 4
 [1263] = "변경된 필드: %d",
 -- e888155d English: Compare
+-- Context: Button and window title prefix for comparing two entries (rotations, profiles,
+--     collections); verb.
 [1264] = "비교",
 -- 72bb9089 English: Read-only
+-- Context: Subtitle/badge on windows that only display data and cannot be edited; adjective.
 [1265] = "읽기 전용",
 -- e21330cf English: Imported item set
+-- Context: Default name given to an item set created by importing text.
 [1266] = "가져온 아이템 세트",
 -- ef86a0ed English: Drag to reorder
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     reorder' for reorderable list entries.
 [1267] = "끌어서 순서 변경",
 -- 9b6766d2 English: Item ID: %s
+-- %s #1: %s #1: the numeric item ID, e.g. 5512
 [1268] = "아이템 ID: %s",
 -- fe76866f English: Item reference: %s
+-- %s #1: %s #1: the item reference as stored (a name or link text), e.g. "Healthstone"
 [1269] = "아이템 참조: %s",
 -- 1f439481 English: Built-in
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Adjective
+--     'Built-in' (shipped with the addon).
 [1270] = "기본 제공",
 -- 36619693 English: Built-in condition
+-- Context: Status text for a condition that ships with the addon (as opposed to a custom one), on
+--     the Conditions page.
 [1271] = "기본 제공 조건",
 -- 1a63dcb7 English: Custom condition
+-- Context: Name for a condition you wrote yourself in the Lua editor, in settings and editor
+--     titles; noun phrase.
 [1272] = "사용자 조건",
 -- c3b0c07b English: Game icon
+-- Context: Fallback name for a game icon with no known name in the icon picker.
 [1273] = "게임 아이콘",
 -- b33708ba English: Game icons
+-- Context: Group heading in the icon picker: the icons that come from the game's macro icon list.
 [1274] = "게임 아이콘",
 -- a35abcd6 English: Icon
+-- Context: Label of the icon field of a condition category/custom condition and a comparison row
+--     label; noun.
 [1275] = "아이콘",
 -- 41ca9dad English: Item icons
+-- Context: Group heading in the icon picker: the item icons from the game.
 [1276] = "아이템 아이콘",
 -- 059e5b06 English: Known spells
+-- Context: Group heading in the icon picker: icons of spells your character knows.
 [1277] = "알고 있는 주문",
 -- bb50071a English: Manage conditions
+-- Context: Button on the category management page: go back to editing individual conditions.
 [1278] = "조건 관리",
 -- 1ff57a29 English: Next
+-- Context: Tooltip of the next-page button in the icon picker; imperative.
 [1279] = "다음",
 -- e71ca826 English: Page %d of %d
+-- Context: Page indicator in the icon picker; the first %d is the current page, the second the
+--     total pages.
+-- %d #1: %d #1: the current page, e.g. 2
+-- %d #2: %d #2: the total number of pages, e.g. 14
 [1280] = "%d / %d 페이지",
 -- a57b08a4 English: Previous
+-- Context: Tooltip of the previous-page button in the icon picker; imperative.
 [1281] = "이전",
 -- fe3f2a5d English: Activate profile
+-- Context: Button in the Profiles page: make the selected profile the active one (verb phrase);
+--     also a help heading.
 [1282] = "프로필 활성화",
 -- 5608b89a English: Active profile
+-- Context: Status/button text in the Profiles page: the selected profile is already the active one.
 [1283] = "활성 프로필",
 -- 1946c44c English: Apply pending changes before leaving? Use Cancel on the page to discard them.
 [1284] = "떠나기 전에 대기 중인 변경 사항을 적용하시겠습니까? 버리려면 페이지의 취소를 사용하세요.",
 -- 92b4440b English: Audible
+-- Context: Announce channel dropdown option: play a sound instead of showing text.
 [1285] = "소리",
 -- b8b1d894 English: Categories
+-- Context: Comparison row label: the condition categories (groups) in a profile.
 [1286] = "분류",
 -- ddd736ba English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2750,14 +4369,21 @@ addon.translation = {
 --     operations.
 [1288] = "아이템 세트를 선택하고 우선순위 목록을 편집하세요. 전역은 세트를 모든 프로필에서 공유합니다. 이동 화살표로 아이템 우선순위를 바꿉니다. 아이템 세트 연결은 사용 가능한 아이템을 집어 행동 단축바에 놓을 수 있게 하며, 연결 표시를 눌러 해제하면 전투 중이 아닐 때 해당 단축바 동작이 제거됩니다. 초기화는 기본 제공 세트를 복원합니다. 아이템을 검색하거나 참조 필드로 끌어 놓으세요. 적용은 설정을 저장하고 취소는 버립니다. 연결 변경은 명시적인 행동 단축바 작업입니다.",
 -- bd245266 English: Clone sources
+-- Context: Comparison row label: the list of Built In rotations that your rotations were cloned
+--     from.
 [1289] = "복제 원본",
 -- 72e094ed English: Comparison history
+-- Context: Comparison row label: records of past rotation comparisons.
 [1290] = "비교 기록",
 -- 61062ba2 English: Complete the effect settings before applying.
 [1291] = "적용하기 전에 효과 설정을 완성하세요.",
 -- 2a6b24ad English: Credits
+-- Context: Label on the settings page: the credits line (people who contributed); noun, followed by
+--     a colon and names.
 [1292] = "제작진",
 -- b91bfdbb English: Built In preferences
+-- Context: Comparison row label: your saved preferences about Built In rotations (enabled or
+--     disabled).
 [1293] = "기본 제공 환경설정",
 -- a1ceb156 English: Edits stay in a draft until Apply. Cancel restores saved settings. Changing
 --     tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect
@@ -2771,10 +4397,13 @@ addon.translation = {
 --     Apply saves changes.
 [1295] = "알림을 펼쳐 동작, 이벤트, 채널, 텍스트를 선택하세요. 주문 필드는 목록에서 검색하며, 클라이언트에 주문 등급이 있으면 ‘이 주문 등급만 사용’이 고른 등급만 일치하도록 제한합니다. 사용으로 알림을 켜고 끕니다. 새로 만들기는 적용과 취소가 있는 초안을 엽니다. 소리는 텍스트 대신 소리 선택과 재생을 제공합니다. 복제, 가져오기/내보내기, 비교는 목록 아래에 있으며, 가져오기는 검증되고 코드를 실행하지 않습니다. 적용하면 변경 사항이 저장됩니다.",
 -- 6d5af309 English: Ignore mana
+-- Context: Comparison row label for the 'Ignore Mana' setting in a profile.
 [1296] = "마나 무시",
 -- 96bb8a4a English: Ignore range
+-- Context: Comparison row label for the 'Ignore Range' setting in a profile.
 [1297] = "사거리 무시",
 -- 7df60b64 English: Imports
+-- Context: Comparison row label: the records of imported entries.
 [1298] = "가져오기",
 -- fa4ba363 English: Invalid announcement.
 [1299] = "잘못된 알림입니다.",
@@ -2785,42 +4414,65 @@ addon.translation = {
 -- 0fabe810 English: Leave combat before changing action bar bindings.
 [1302] = "행동 단축바 연결을 바꾸려면 전투에서 벗어나세요.",
 -- c011d609 English: License
+-- Context: Label on the settings page: the license line, followed by a colon and the license name.
 [1303] = "라이선스",
 -- e7fdbd0c English: Localizations
+-- Context: Label on the settings page: the list of translations, followed by a colon.
 [1304] = "번역",
 -- aac6c842 English: No rotations in this profile.
 [1305] = "이 프로필에 로테이션이 없습니다.",
 -- 15ba8148 English: Preview position
+-- Context: Comparison row label for the position of the preview window setting.
 [1306] = "미리보기 위치",
 -- 08f04b51 English: Rotation library
+-- Context: Comparison row label: the collection of all rotations in a profile.
 [1307] = "로테이션 목록",
 -- 7bde8757 English: Search or drag a spell here
 [1308] = "주문을 검색하거나 여기로 끌어 놓으세요",
 -- 21c38898 English: Move %d selected cards
+-- Context: Drag-and-drop tooltip in the rotation editor: moving several selected step cards; %d is
+--     how many.
+-- %d #1: %d #1: how many selected cards are being dragged, e.g. 3
 [1309] = "선택한 카드 %d개 이동",
 -- 6c0b9d10 English: Duplicate selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: duplicate every selected card
+--     (verb phrase).
 [1310] = "선택한 카드 복제",
 -- 30a9f853 English: Enable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: enable every selected card
+--     (verb phrase).
 [1311] = "선택한 카드 켜기",
 -- d3b30c10 English: Disable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: disable every selected card
+--     (verb phrase).
 [1312] = "선택한 카드 끄기",
 -- 48d65c02 English: Delete selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: delete every selected card
+--     (verb phrase).
 [1313] = "선택한 카드 삭제",
 -- cea4d2e0 English: Clear selection
+-- Context: Tooltip of a bulk button in the rotation editor: deselect all cards (verb phrase).
 [1314] = "선택 해제",
 -- c58ed264 English: Target casting: %s
+-- %s #1: %s #1: the spell being cast by the target, e.g. "Fireball"
 [1315] = "대상 시전: %s",
 -- ffaf018a English: Focus casting: %s
+-- %s #1: %s #1: the spell being cast by the focus target, e.g. "Fireball"
 [1316] = "주시 대상 시전: %s",
 -- 0b303a00 English: Target channeling: %s
+-- %s #1: %s #1: the spell being channelled by the target, e.g. "Arcane Missiles"
 [1317] = "대상 정신 집중: %s",
 -- 2a66fe87 English: Focus channeling: %s
+-- %s #1: %s #1: the spell being channelled by the focus target, e.g. "Arcane Missiles"
 [1318] = "주시 대상 정신 집중: %s",
 -- f6b58a2a English: Recently cast: %s
+-- %s #1: %s #1: a spell the player cast recently, e.g. "Frostbolt"
 [1319] = "최근 시전: %s",
 -- db04a504 English: Trinket 1: %s
+-- %s #1: %s #1: the item equipped in the first trinket slot, e.g. "Trinket of the Sun"
 [1320] = "장신구 1: %s",
 -- 93b4d929 English: Trinket 2: %s
+-- %s #1: %s #1: the item equipped in the second trinket slot, e.g. "Trinket of the Moon"
 [1321] = "장신구 2: %s",
 -- b31f1cc4 English: No equipped trinket to insert.
 [1322] = "삽입할 착용 장신구가 없습니다.",
@@ -2843,17 +4495,27 @@ addon.translation = {
 -- b0413d32 English: Settings changed elsewhere. Cancel to reload them before applying.
 [1329] = "다른 곳에서 설정이 바뀌었습니다. 적용하기 전에 취소해서 다시 불러오세요.",
 -- 1973cc09 English: Slots %s · Unbind
+-- Context: Item set binding button when slots are bound; first part is the bound action bar slot
+--     numbers (%s), pressing it unbinds.
+-- %s #1: %s #1: the slot numbers the item set is bound to, separated by commas, e.g. "13, 14"
 [1330] = "칸 %s · 연결 해제",
 -- 46124e02 English: Sound
+-- Context: Label of the sound dropdown in an announcement and a help heading; also a comparison row
+--     label.
 [1331] = "소리",
 -- 410cc927 English: Structured settings
+-- Context: Placeholder shown in a comparison where a setting is a nested table rather than a simple
+--     value.
 [1332] = "구조화된 설정",
 -- 1ed6b5ea English: Unnamed rotation
+-- Context: Fallback name for a rotation that has no name.
 [1333] = "이름 없는 로테이션",
 -- 62704b0c English: Use arrows or drag rows in the condition sidebar to reorder within the selected
 --     category. In Manage categories, the same controls order the categories themselves.
 [1334] = "조건 사이드바의 화살표나 행 끌기로 선택한 분류 안의 순서를 바꾸세요. 분류 관리에서는 같은 컨트롤로 분류 자체의 순서를 정합니다.",
 -- 8e37953d English: Value
+-- Context: Label of the numeric value field in the Stagger and group state conditions (the value
+--     the operator compares to); noun.
 [1335] = "값",
 -- 2d11fd64 English: Choose an action and complete the announcement before applying.
 [1336] = "적용하기 전에 동작을 선택하고 알림을 완성하세요.",
@@ -2867,30 +4529,44 @@ addon.translation = {
 --     destination before importing.
 [1340] = "이름 있는 새 사본을 만들거나 선택한 편집 가능 항목을 대체할지 고르세요. 가져오기 전에 대상을 확인하세요.",
 -- 83b12c22 English: Clear
+-- Context: Button in the transfer dialog: clears the text box (verb).
 [1341] = "지우기",
 -- e25a9c83 English: Confirm the Lua import, then review it before saving.
 [1342] = "Lua 가져오기를 확인한 뒤 저장하기 전에 검토하세요.",
 -- 8aaf46c6 English: IMPORTED_CONDITION
+-- Context: Default placeholder name for an imported custom condition when its name cannot be read;
+--     written in capital letters with an underscore.
 [1343] = "IMPORTED_CONDITION",
 -- 8237a9a5 English: Import comparison
+-- Context: Title of the window comparing imported text with the existing entry; also a help
+--     heading.
 [1344] = "가져오기 비교",
 -- 9d886886 English: Imported announcement
+-- Context: Default name given to an announcement created by importing text.
 [1345] = "가져온 알림",
 -- 456358c4 English: Imported category
+-- Context: Default name given to a condition category created by importing text.
 [1346] = "가져온 분류",
 -- a77b0984 English: Imported effect
+-- Context: Default name given to an effect created by importing text.
 [1347] = "가져온 효과",
 -- 2f91d1e1 English: Imported profile
+-- Context: Default name given to a profile created by importing text.
 [1348] = "가져온 프로필",
 -- ec38d3c0 English: Invalid custom condition.
 [1349] = "잘못된 사용자 조건입니다.",
 -- a265e30c English: Name not supplied
+-- Context: Placeholder in the import dialog: the imported text did not contain a name.
 [1350] = "이름이 지정되지 않음",
 -- fb66a1af English: Original name
+-- Context: Label in the import dialog preceding the name found in the imported text, followed by a
+--     colon.
 [1351] = "원래 이름",
 -- 327093d7 English: Ready to import. Choose replacement or a named copy.
 [1352] = "가져올 준비가 되었습니다. 대체 또는 이름 있는 사본을 선택하세요.",
 -- 0d9a1fb4 English: Replace selected entry
+-- Context: Checkbox in the import dialog: overwrite the entry currently selected instead of
+--     creating a new one.
 [1353] = "선택한 항목 대체",
 -- a84aab9e English: That condition identifier already exists.
 [1354] = "이미 있는 조건 식별자입니다.",
@@ -2902,10 +4578,16 @@ addon.translation = {
 -- ae820bc2 English: Use letters, numbers and underscores for the condition identifier.
 [1357] = "조건 식별자에는 영문자, 숫자, 밑줄을 사용하세요.",
 -- 24c87ffc English: Check %s: %s
+-- %s #1: %s #1: the part of the custom condition that failed the check, e.g. "evaluate" or "Definition"
+-- %s #2: %s #2: the detail of the failure, e.g. "unexpected symbol near end"
 [1358] = "%s 확인: %s",
 -- 8e09cadd English: Check syntax
+-- Context: Button in the Lua editors: check the code for syntax errors without running it (verb
+--     phrase).
 [1359] = "문법 검사",
 -- 1ae4fec7 English: Choose icon
+-- Context: Tooltip of the icon button in the custom condition editor: opens the icon picker;
+--     imperative.
 [1360] = "아이콘 선택",
 -- 18156f45 English: Custom Lua has the same access as the addon. Only import code you trust. Syntax
 --     validation cannot establish that a callback is safe or correct. Existing custom widget
@@ -2916,34 +4598,54 @@ addon.translation = {
 --     data and never evaluated as Lua.
 [1362] = "이름 있는 필드, 기본 형식, 중첩 레코드, 공용체를 선언합니다. 예: { spell = { string, number }, unit = string, tests = condition[] }. 스키마 텍스트는 데이터로 분석되며 Lua로 실행되지 않습니다.",
 -- 9813fafb English: Definition
+-- Context: Label naming the whole definition of a custom condition (its callbacks and fields) in
+--     errors and comparison rows; noun.
 [1363] = "정의",
 -- 9b8e27c6 English: Editing code
+-- Context: Heading in help text for the code editor (Undo, Redo, Reset, Check syntax, Apply).
 [1364] = "코드 편집",
 -- 966591fe English: Evaluate
+-- Context: Name of the evaluate callback tab of a custom condition: the code that decides if the
+--     condition is true; noun.
 [1365] = "평가",
 -- 7b08f80e English: Field schema
+-- Context: Heading and label for the schema of a custom condition's fields (their names and types).
 [1366] = "필드 스키마",
 -- 1aab5f2f English: Fields UI
+-- Context: Name of the callback tab of a custom condition: the code that builds the condition's
+--     editing widgets; noun.
 [1367] = "필드 UI",
 -- 43dab9e3 English: Function tabs edit separate callbacks. Changes stay in a draft. Check syntax
 --     compiles every callback without running it. Apply registers the callbacks and can run
 --     registration code. Cancel discards the draft. Undo and Redo work across function tabs.
 [1368] = "함수 탭마다 별도의 콜백을 편집합니다. 변경 사항은 초안으로 남습니다. 문법 검사는 모든 콜백을 실행하지 않고 컴파일합니다. 적용은 콜백을 등록하며 등록 코드를 실행할 수 있습니다. 취소는 초안을 버립니다. 실행 취소와 다시 실행은 모든 함수 탭에서 작동합니다.",
 -- 6a696870 English: On register
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     registered.
 [1369] = "등록 시",
 -- 06f9af14 English: On unregister
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     unregistered.
 [1370] = "등록 해제 시",
 -- 8e76a94a English: Summary
+-- Context: Name of the callback tab of a custom condition: code that builds the condition's text
+--     summary; noun.
 [1371] = "요약",
 -- d9f668a3 English: Syntax checked. No custom code was executed.
 [1372] = "문법을 검사했습니다. 사용자 코드는 실행하지 않았습니다.",
 -- 39286cd6 English: The custom condition changed elsewhere. Reopen it before saving.
 [1373] = "사용자 조건이 다른 곳에서 바뀌었습니다. 저장하기 전에 다시 여세요.",
 -- 6e33a7dd English: Trusted code
+-- Context: Heading in help text warning that custom Lua code has full addon access and only trusted
+--     code should be imported.
 [1374] = "신뢰하는 코드",
 -- 40611abb English: Validate
+-- Context: Name of the callback tab of a custom condition: code that validates the condition's
+--     fields; verb used as a tab name.
 [1375] = "검증",
 -- 7c39c16d English: All tags
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Filter option
+--     'All tags' in the rotation browser tag filter.
 [1376] = "모든 태그",
 -- 08c83906 English: Edit the description, tags, author, realm, email, website and version. Source
 --     citations remain separate from your attribution. Use changes updates the rotation draft;
@@ -2955,12 +4657,19 @@ addon.translation = {
 --     label is allowed.
 [1379] = "태그는 쉼표로 구분하세요. 쉼표가 들어간 태그는 따옴표로 감싸세요. 어떤 개인 이름표든 허용됩니다.",
 -- 1331275b English: Tags
+-- Context: Label of the rotation tags field and of the tag filter in the rotation browser; plural
+--     noun.
 [1380] = "태그",
 -- 1dd4ab9e English: Switch priority
+-- Context: Label of the rotation's priority for automatic switching in change summaries and
+--     comparisons; noun phrase.
 [1381] = "전환 우선순위",
 -- 1e51f6c3 English: Priority %d
+-- Context: Priority line in a rotation browser entry; %d is the priority number.
+-- %d #1: %d #1: the rotation's switch priority, e.g. 5
 [1382] = "우선순위 %d",
 -- defa7982 English: Invalid priority
+-- Context: Text shown in place of a priority number when the stored priority is not valid.
 [1383] = "잘못된 우선순위",
 -- 1501b340 English: Switch priority must be a whole number between -100000 and 100000.
 [1384] = "전환 우선순위는 -100000에서 100000 사이의 정수여야 합니다.",
@@ -2974,77 +4683,167 @@ addon.translation = {
 --     use name, then identity. Blank means zero.
 [1386] = "숫자가 높은 쪽을 먼저 시도하며, 직접 만든 로테이션과 기본 제공 로테이션은 우선순위만으로 경쟁합니다. 대체 로테이션은 다른 로테이션이 하나도 일치하지 않을 때만 사용됩니다. 우선순위가 같으면 이름, 그다음 식별자 순입니다. 비워 두면 0입니다.",
 -- 2040fdbd English: Invalid switch priority for %s:%s; explicit repair resets it to zero.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1387] = "%s:%s의 전환 우선순위가 잘못되었습니다. 명시적으로 복구하면 0으로 초기화됩니다.",
 -- babdd022 English: %s (any rank)
+-- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
+--     (Classic ranked spells).
+-- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
 [1388] = "%s (모든 등급)",
 -- a80c618c English: Unticked, any rank of the spell matches. Ticked, only the rank you chose
 --     matches.
 [1389] = "선택하지 않으면 주문의 모든 등급이 일치합니다. 선택하면 고른 등급만 일치합니다.",
 -- 264ad9c0 English: Cast Progress
+-- Context: Name of the Cast Progress condition (how far the current cast has progressed, in
+--     percent).
 [1390] = "시전 진행도",
 -- 02ad1e66 English: Channel Progress
+-- Context: Name of the Channel Progress condition (how far the current channel has progressed, in
+--     percent).
 [1391] = "채널 진행도",
 -- b19c05d2 English: Talent Tree Points
+-- Context: Name of the Talent Tree Points condition (points spent in a talent tree; Classic).
 [1392] = "특성 트리 점수",
 -- ef4ebbe8 English: points spent in %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text fragment 'points spent in %s'; %s is a talent tree.
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1393] = "%s에 투자한 점수",
 -- 4fd19fe4 English: Primary Talent Tree
+-- Context: Name of the Primary Talent Tree condition (the tree in which you have the most points;
+--     Classic).
 [1394] = "주 특성 트리",
 -- cffd0628 English: your primary talent tree is %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1395] = "주 특성 트리: %s",
 -- f831a06b English: Arms
+-- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1396] = "무기",
 -- 8d6b26d9 English: Fury
+-- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1397] = "분노",
 -- 0e97ad02 English: Protection
+-- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
+--     Tree dropdown of talent conditions.
 [1398] = "방어",
 -- 56eee6a5 English: Holy
+-- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
+--     talent conditions; not the magic school.
 [1399] = "신성",
 -- 1d79fa22 English: Retribution
+-- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
+--     of talent conditions.
 [1400] = "징벌",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
+--     dropdown of talent conditions.
 [1401] = "야수",
 -- 03f000fc English: Marksmanship
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1402] = "사격",
 -- 8302496d English: Survival
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1403] = "생존",
 -- 727eeac8 English: Assassination
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1404] = "암살",
 -- 49fcf2c7 English: Combat
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1405] = "전투",
 -- fca36d62 English: Subtlety
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1406] = "잠행",
 -- a1b14db9 English: Discipline
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1407] = "수양",
 -- 4c764cb6 English: Shadow
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1408] = "암흑",
 -- 8a7961ab English: Blood
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1409] = "혈기",
 -- 17636dd6 English: Frost
+-- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
+--     and rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1410] = "냉기",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1411] = "부정",
 -- 4309e83a English: Elemental
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1412] = "정기",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1413] = "고양",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1414] = "복원",
 -- 93006d61 English: Arcane
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1415] = "비전",
 -- c141faa8 English: Fire
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1416] = "화염",
 -- ed64274f English: Affliction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1417] = "고통",
 -- c0e4afa6 English: Demonology
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1418] = "악마",
 -- e848f2c5 English: Destruction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1419] = "파괴",
 -- d05e07b7 English: Balance
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1420] = "조화",
 -- 454d4a9c English: Feral Combat
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1421] = "야성",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Frost).
 [1422] = "냉기",
 -- 35223466 English: Frost from level 1 to 70, and the Mage default before talents. Frostbolt
 --     (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or
@@ -3054,6 +4853,10 @@ addon.translation = {
 --     Block, kiting and target choice stay with you.
 [1423] = "1레벨부터 70레벨까지의 냉기 로테이션이며, 특성을 찍기 전 마법사의 기본값입니다. 얼음 화살(4레벨 전에는 화염구), 무언가가 때리면 얼음 회오리, 교전 중인 적이 셋 이상이면 냉기 돌풍과 눈보라 또는 신비한 폭발, 얼어붙은 대상과 이동 중에는 얼음창, 마나가 떨어지면 마법봉을 사용합니다. 알림: 갑옷, 신비한 지능, 마나 보석, 환기, 마법 차단, 마법 훔치기, 얼음 보호막, 얼음 핏줄, 매서운 한파, 물의 정령. 점멸, 얼음 방패, 카이팅, 대상 선택은 직접 판단합니다.",
 -- 7c2241f3 English: Fire (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1424] = "화염 (Icy Veins)",
 -- 1e584220 English: Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast
 --     opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball
@@ -3062,6 +4865,10 @@ addon.translation = {
 --     gem, Evocation and the shared Mage utilities.
 [1425] = "Icy Veins 기준 화염 로테이션으로, 화염이 주 특성 트리일 때 선택됩니다. 불덩이 작렬을 배우면 이것으로 전투를 시작하고, 불태우기 연마로 화염 저항력 약화 5중첩을 유지하며, 화염구가 기본 주문이고, 화염 작렬은 이동 중에 사용합니다. 적이 셋 이상이면 화염 폭풍, 용의 숨결, 불기둥을 사용합니다. 알림: 타오르는 갑옷, 마법사 갑옷 또는 얼음 갑옷, 대상 생명력 20% 미만에서 발화, 마나 보석, 환기, 그리고 마법사 공용 유틸리티.",
 -- c3a8c4ee English: Fire (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1426] = "화염 (Wowhead)",
 -- a335455e English: Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves
 --     Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with
@@ -3069,6 +4876,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1427] = "Wowhead와 wowsims 기준 화염 로테이션입니다. Icy Veins 화염 기본 제공 로테이션과 같지만, 가만히 서 있을 때 화염 작렬이 준비되면 언제든 끼워 넣고(피해 증가, 마나 소모 증가) 불덩이 작렬 대신 화염구로 시작합니다. 추천 Icy Veins 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Arcane).
 [1428] = "비전",
 -- d64a2c81 English: Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane
 --     Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane
@@ -3077,14 +4886,24 @@ addon.translation = {
 --     Reminders include Arcane Power, Presence of Mind, mana gem and Evocation.
 [1429] = "비전이 주 특성 트리일 때 선택되는 비전 로테이션입니다. 64레벨 전: 신비한 화살, 마나가 부족하면 얼음 화살. 64레벨부터: 마나를 쏟아붓는 동안(신비의 마법 강화, 피의 욕망 또는 마나 35% 이상) 비전 작렬, 그 외에는 비전 작렬 3중첩을 쌓고 중첩이 사라지기 직전까지 얼음 화살을 사용합니다. 적이 셋 이상이면 신비한 폭발과 냉기 돌풍. 알림에는 신비의 마법 강화, 냉정, 마나 보석, 환기가 포함됩니다.",
 -- 31e9be18 English: Diagram view
+-- Context: Rotation editor: label of the view-mode toggle button while the list layout is active
+--     (clicking switches to the diagram), and the "Diagram" option in the General settings "Default
+--     rotation view" dropdown. Names a way of viewing a rotation, not an action.
 [1430] = "다이어그램 보기",
 -- 5d8c3e1b English: List view
+-- Context: "List" option of the rotation view: the compact tree list. Shown on the rotation
+--     editor's view-mode toggle button and as an entry in the General settings "Default rotation
+--     view" dropdown.
 [1431] = "목록 보기",
 -- 0dca2dc5 English: Switch between the diagram and compact tree list. This changes only the view.
 [1432] = "다이어그램과 간단한 트리 목록을 전환합니다. 보기만 바뀝니다.",
 -- bc7b631a English: Zoom out
+-- Context: Tooltip of the minus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram smaller (verb).
 [1433] = "축소",
 -- 0e47f09a English: Zoom in
+-- Context: Tooltip of the plus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram larger (verb).
 [1434] = "확대",
 -- ed28d6c9 English: Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is
 --     unchanged.
@@ -3098,6 +4917,9 @@ addon.translation = {
 --     preserved.
 [1436] = "다이어그램 / 목록은 로테이션 보기만 바꾸며, 기본값은 일반 설정에서 정합니다. 다이어그램 오른쪽 아래에 빼기, 비율, 더하기 컨트롤이 떠 있습니다. 스크롤로 25%에서 200%까지 확대/축소하고, 비율을 클릭하거나 가운데 버튼을 클릭하면 100%로 초기화됩니다. 다이어그램의 빈 공간을 끌어 이동하세요. 목록은 일반 스크롤바를 사용하며 카드가 붙어 있고 분기 갈래는 상자로 묶이며 거짓이 참보다 앞에 옵니다. 재사용 대기시간은 별도의 스크롤 격자를 사용합니다. 어느 보기에서든 카드를 끌면 순서가 바뀝니다. 현재 작업 영역마다 최대 200개의 카드만 표시되며, 나머지 저장된 카드는 보존됩니다.",
 -- b1fd3756 English: Custom emote
+-- Context: Announcement output channel: sends the message as a custom emote. Entry in the channel
+--     dropdown of an announcement output (shown only for emote outputs) and a topic title in the
+--     Announces help.
 [1437] = "사용자 감정 표현",
 -- 6dd86cd7 English: Use spell recipient ({{target}})
 [1438] = "주문 받는 대상 사용 ({{target}})",
@@ -3109,6 +4931,8 @@ addon.translation = {
 --     click and filter as you type. Section headings collapse or expand their contents.
 [1440] = "Enter를 누르거나 텍스트 필드를 벗어나면 값이 준비되며, 적용하면 초안이 저장됩니다. 잘못된 텍스트는 빨간색으로 남으며 수정할 때까지 이동을 막습니다. 검색 가능한 선택 목록은 클릭하면 열리고 입력하는 대로 필터링됩니다. 섹션 제목을 클릭하면 내용을 접거나 펼칩니다.",
 -- c546b857 English: Default rotation view
+-- Context: General settings: label of the dropdown that chooses whether rotations open as a diagram
+--     or a list by default; also a help topic title and a row label in the profile comparison.
 [1441] = "기본 로테이션 보기",
 -- d11b9246 English: Choose Diagram or List as the starting rotation view. This profile preference
 --     applies when opening a rotation; changing the view inside the editor does not change this
@@ -3122,53 +4946,94 @@ addon.translation = {
 -- ffcd3171 English: Drag one entry; Ctrl-drag moves it and all following siblings.
 [1445] = "항목 하나를 끌어 옮깁니다. Ctrl-끌기는 그 항목과 뒤따르는 모든 같은 수준 항목을 옮깁니다.",
 -- 773001f9 English: %d cards
+-- Context: Small count label on the stacked hover card of the rotation view, e.g. "3 cards"; %d is
+--     the number of cards stacked together.
+-- %d #1: %d #1: the number of cards being dragged, e.g. 3
 [1446] = "카드 %d개",
 -- 454b5fb4 English:  (%d hidden)
+-- Context: Suffix on a True/False branch button in the rotation diagram when part of that branch is
+--     folded away; %d is the number of hidden steps. Keeps its leading space, appended right after
+--     "True" or "False".
+-- %d #1: %d #1: the number of cards hidden inside the folded branch, e.g. 4 (the text starts with a space and follows "True" or "False")
 [1447] = " (%d개 숨김)",
 -- 9db3d1ae English: Click to fold or unfold this branch arm. Other cards and conditions are
 --     unchanged.
 [1448] = "클릭하면 이 분기 갈래를 접거나 펼칩니다. 다른 카드와 조건은 바뀌지 않습니다.",
 -- a7c224a3 English: %s {{!are|are not}} PVP flagged
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1449] = "%s PvP {{!활성화|비활성화}}",
 -- a2e6fde9 English: %s {{!are|are not}} a %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1450] = "%s: %s {{!맞음|아님}}",
 -- a9c26592 English: %s {{!are|are not}} currently casting %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1451] = "%s: %s {{!시전 중|시전 중 아님}}",
 -- c0e4c355 English: %s {{!are|are not}} currently channeling %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [1452] = "%s: %s {{!정신 집중 중|정신 집중 중 아님}}",
 -- df4ccc9d English: %s {{!are|are not}} in combat
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1453] = "%s {{!전투 중|전투 중 아님}}",
 -- afbc6f6d English: %s {{!has|does not have}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1454] = "%s: %s {{!있음|없음}}",
 -- 450074be English: %s {{!has|does not have}} a %s debuff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1455] = "%s: %s 약화 효과 {{!있음|없음}}",
 -- e7bdefdc English: %s {{!have|do not have}} %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1456] = "%s: %s {{!있음|없음}}",
 -- 4d5d691c English: %s {{!have|do not have}} %s where %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1457] = "%s: %s {{!있음|없음}}, 조건: %s",
 -- abf6cfd4 English: %s {{!have|do not have}} a %s debuff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1458] = "%s: %s 약화 효과 {{!있음|없음}}",
 -- 79e495d3 English: %s {{!is|is not}} PVP flagged
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1459] = "%s PvP {{!활성화|비활성화}}",
 -- 491c7ee4 English: %s {{!is|is not}} a %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1460] = "%s: %s {{!맞음|아님}}",
 -- 09b32050 English: %s {{!is|is not}} active with %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1461] = "%s {{!활성|비활성}}, %s",
 -- c58e76ae English: %s {{!is|is not}} an enemy
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1462] = "%s {{!적임|적 아님}}",
 -- 2c1ba7dc English: %s {{!is|is not}} attackable
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1463] = "%s {{!공격 가능|공격 불가}}",
 -- 742f7cb6 English: %s {{!is|is not}} currently casting %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1464] = "%s: %s {{!시전 중|시전 중 아님}}",
 -- ae551afe English: %s {{!is|is not}} in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [1465] = "%s: %s 역할 {{!맞음|아님}}",
 -- f6ca7ce9 English: %s {{!is|is not}} in combat
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1466] = "%s {{!전투 중|전투 중 아님}}",
 -- 0af84407 English: %s's channeled spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1467] = "%s의 정신 집중 주문 차단 {{!가능|불가}}",
 -- 7240fa38 English: %s's spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1468] = "%s의 주문 차단 {{!가능|불가}}",
 -- 8c1704ad English: Your talent {{!is|is not}} a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [1469] = "특성 역할: %s {{!맞음|아님}}",
 -- c66f7ad7 English: is not evenly divisible by
 [1470] = "다음으로 나누어떨어지지 않음:",
@@ -3181,24 +5046,36 @@ addon.translation = {
 -- 92bbf51d English: is not less than or equal to
 [1474] = ">",
 -- 970de09b English: not (%s)
+-- Context: Wrapper used when describing a negated condition group in text: the %s is the
+--     description of the conditions, so it reads like "not (<conditions>)".
+-- %s #1: %s #1: the full text of the condition that is being negated, e.g. "you are in combat"
 [1475] = "아님 (%s)",
 -- d4c2a5ad English: you {{!are|are not}} in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [1476] = "%s 변신 {{!중|아님}}",
 -- 330c2126 English: you {{!are|are not}} in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [1477] = "%s 인스턴스에 {{!있음|없음}}",
 -- 0f79bc56 English: you {{!are|are not}} in a outdoors
 [1478] = "야외에 {{!있음|없음}}",
 -- 25ce1dd9 English: you {{!have|do not have}} %s equipped
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [1479] = "%s {{!착용 중|착용하지 않음}}",
 -- f5b5e754 English: you {{!have|do not have}} %s glyph
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [1480] = "%s 문양 {{!보유|미보유}}",
 -- 7c1be9a0 English: you {{!have|do not have}} a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1481] = "%s 토템 {{!활성|비활성}}, %s",
 -- 6691324c English: you {{!have|do not have}} a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [1482] = "%s 소환수 {{!있음|없음}}",
 -- 8fbf9338 English: zone {{!is|is not}} a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [1483] = "%s 지역 {{!맞음|아님}}",
 -- 07e00292 English: {{!in|not in}} %s
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [1484] = "%s{{!에 있음|에 없음}}",
 -- f9337f4a English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; right-click to choose its color.
@@ -3207,16 +5084,27 @@ addon.translation = {
 --     remove it; right-click to choose its color.
 [1486] = "기존 태그를 검색해 원하는 만큼 선택하세요. 선택한 태그를 클릭하면 제거되고, 오른쪽 클릭하면 색상을 선택합니다.",
 -- 90f64b52 English: Decrease priority
+-- Context: Tooltip of the minus icon button beside the Priority box in the rotation editor header:
+--     lowers the rotation's priority number (verb phrase).
 [1487] = "우선순위 낮추기",
 -- c31a4a7d English: Increase priority
+-- Context: Tooltip of the plus icon button beside the Priority box in the rotation editor header:
+--     raises the rotation's priority number (verb phrase).
 [1488] = "우선순위 높이기",
 -- 0abba441 English: Horizontal
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (laid out in a row); the other choice is "Vertical". Also a help topic title.
 [1489] = "가로",
 -- 727cd3a6 English: Vertical
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (stacked in a column); the other choice is "Horizontal". Also a row label in the profile
+--     comparison.
 [1490] = "세로",
 -- 6e9ad9af English: Lock preview position and size
 [1491] = "미리보기 위치 및 크기 잠금",
 -- fc3dbf19 English: Preview window opacity
+-- Context: General settings: label of the slider that sets the transparency of the preview window;
+--     also a help topic title and a profile comparison row.
 [1492] = "미리보기 창 불투명도",
 -- a625f9d4 English: Choose a whole number of upcoming recommendations, from zero (hidden) to five.
 --     The preview shows the current priority results, not a full simulation of future cooldowns or
@@ -3232,30 +5120,51 @@ addon.translation = {
 -- 10d580ca English: Lock position and size
 [1496] = "위치 및 크기 잠금",
 -- 0e556ee1 English: Open General settings
+-- Context: Entry in the preview window's right-click menu: opens the General settings page.
 [1497] = "일반 설정 열기",
 -- f65ed2ec English: View Changes
+-- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
+--     differs between the saved and unsaved version.
 [1498] = "변경 사항 보기",
 -- b5c120b3 English: Saved
+-- Context: Left column heading of the View Changes dialog: the version currently stored, before the
+--     pending edits.
 [1499] = "저장됨",
 -- 6250d572 English: Unsaved
+-- Context: Right column heading of the View Changes dialog: the draft with pending edits that have
+--     not been applied yet.
 [1500] = "저장 안 됨",
 -- bc6e0973 English: Pending input
+-- Context: Row label prefix in the View Changes dialog, shown as "Pending input: <field>": text
+--     typed into a field that has not been committed yet.
 [1501] = "입력 대기 중",
 -- 4b96e273 English: Not inspected
+-- Context: Value shown in the "Saved" column of View Changes for a custom widget whose content
+--     cannot be compared; indicates the saved side was not examined.
 [1502] = "검사 안 함",
 -- 12be1b12 English: Custom widget has pending input.
 [1503] = "사용자 위젯에 확정되지 않은 입력이 있습니다.",
 -- 70e5c0fd English: Selected entry
+-- Context: Default left column heading in the comparison dialog when the first item has no name:
+--     the entry currently selected in the list. Also used when comparing an import.
 [1504] = "선택한 항목",
 -- f6cf1462 English: Compared entry
+-- Context: Default right column heading in the comparison dialog when the second item has no name:
+--     the entry it is compared with.
 [1505] = "비교한 항목",
 -- 002a5d77 English: Use step name
+-- Context: Name of a rotation-step option (checkbox) that makes the step use its own custom name;
+--     shown as a row label when two profiles are compared.
 [1506] = "단계 이름 사용",
 -- 6dd777d2 English: Preview icon size
+-- Context: General settings: label of the slider for the size of the icons in the preview window;
+--     also a row label in the profile comparison.
 [1507] = "미리보기 아이콘 크기",
 -- 9710bd5e English: Add or search tags
 [1508] = "태그 추가 또는 검색",
 -- 93bc41f4 English: Search tags
+-- Context: Placeholder text in the search box of the tag picker (when new tags cannot be created):
+--     invites the user to type to filter existing tags.
 [1509] = "태그 검색",
 -- bdb18f62 English: Click to remove this tag. Right-click to choose its color.
 [1510] = "클릭하면 이 태그를 제거합니다. 오른쪽 클릭하면 색상을 선택합니다.",
@@ -3266,50 +5175,77 @@ addon.translation = {
 --     rotation to save it. Cancel or Escape restores this dialog’s opening values.
 [1512] = "설명, 태그, 제작자, 서버, 이메일, 웹사이트, 버전을 편집합니다. 출처 표기는 내 제작자 표기와 별도로 유지됩니다. 적용은 로테이션 초안을 갱신하며, 저장하려면 로테이션을 적용하세요. 취소 또는 Escape는 이 대화 상자를 열었을 때의 값으로 되돌립니다.",
 -- 616f48c1 English: Fields
+-- Context: Fallback row label in View Changes for unsaved edits whose individual field name is not
+--     known; stands for "form fields".
 [1513] = "필드",
 -- 7f553822 English: Search...
 [1514] = "검색...",
 -- 9fd728c6 English: Add
+-- Context: Button in the Conditions settings roster header that adds a new custom condition (verb).
 [1515] = "추가",
 -- b5a66eb6 English: Comparison limit
+-- Context: Row label in View Changes shown when the comparison was cut short, followed by the note
+--     that only the first 512 conditions per side are shown; a noun.
 [1516] = "비교 한도",
 -- 2dc363a7 English: Showing the first 512 conditions per side.
 [1517] = "양쪽에서 각각 처음 512개의 조건만 표시합니다.",
 -- 1710782c English: Weapon
+-- Context: Weapon-related icons: an icon name in the icon picker's group list, and a category
+--     filter chip in the picker.
 [1518] = "무기",
 -- 15b61974 English: Location
+-- Context: Icon name in the icon picker: a map/location marker (noun).
 [1519] = "위치",
 -- 909cb811 English: Book
+-- Context: Icon name in the icon picker: a book (noun, the object).
 [1520] = "책",
 -- 289aff12 English: Question
+-- Context: Icon name in the icon picker: a question mark (noun).
 [1521] = "물음표",
 -- 5919dcd4 English: Swords
+-- Context: Icon name in the icon picker: crossed swords (plural noun).
 [1522] = "검",
 -- 480d4be7 English: Shield
+-- Context: Icon name in the icon picker: a shield (noun, the item). Also used as an equipment
+--     category in the equipped-item condition.
 [1523] = "방패",
 -- 44bc3799 English: Healing
+-- Context: Icon name in the icon picker: healing (a heart/cross style icon).
 [1524] = "치유",
 -- 41e68f2c English: Lightning
+-- Context: Icon name in the icon picker: a lightning bolt (noun).
 [1525] = "번개",
 -- b5e0cd8a English: Potions
+-- Context: Icon name in the icon picker: potions (plural noun).
 [1526] = "물약",
 -- e4eb1806 English: Food
+-- Context: Icon name in the icon picker: food (noun).
 [1527] = "음식",
 -- a592855d English: Armor
+-- Context: Icon name in the icon picker: armor (noun, the item type).
 [1528] = "방어구",
 -- 39bbb719 English: Groups
+-- Context: Icon name in the icon picker: several people (plural; a group icon).
 [1529] = "그룹",
 -- 34ca0e76 English: Group
+-- Context: Icon name in the icon picker: a group of people (singular noun; a group icon).
 [1530] = "그룹",
 -- d461a493 English: Automatic
+-- Context: Option in the Lua editor syntax-highlighting dropdown: the editor picks highlighting by
+--     itself.
 [1531] = "자동",
 -- b8715031 English: Built In syntax highlighting
 [1532] = "기본 제공 문법 강조",
 -- cf416625 English: Plain text
+-- Context: Option in the Lua editor syntax-highlighting dropdown: no highlighting, just plain text.
 [1533] = "일반 텍스트",
 -- 090512d9 English: Integrations
+-- Context: Top-level tab of the settings window (next to General, Conditions, Functions ...):
+--     integrations with other addons.
 [1534] = "연동",
 -- 90c92d4c English: Lua editor
+-- Context: Title of the Lua editor help window, and the name of a Lua editor settings row in the
+--     profile comparison.
 [1535] = "Lua 편집기",
 -- d8cfde4d English: Choose optional addon integrations.
 [1536] = "선택적인 애드온 연동을 고르세요.",
@@ -3331,30 +5267,44 @@ addon.translation = {
 --     integration availability.
 [1541] = "사용자 Lua 조건용 편집기를 선택하세요. 기본 제공 문법 강조와 일반 텍스트는 다른 애드온 없이 작동합니다. 자동은 등록된 선택 제공자가 있으면 사용하고 안전하게 대체합니다. 적용하면 선택이 저장되며, 열린 편집기는 다시 열 때까지 현재 제공자를 유지합니다. LuaWorkbench와 WowLua의 불러오기 상태는 연동 사용 가능 여부와 별도로 표시됩니다.",
 -- dfab6835 English: Invalid condition: %s
+-- %s #1: %s #1: why the custom condition is invalid, a short reason, e.g. "unexpected symbol near end"
 [1542] = "잘못된 조건: %s",
 -- a3d021a9 English: Unavailable condition: %s
+-- %s #1: %s #1: the description of the condition, e.g. "In Combat"
 [1543] = "사용할 수 없는 조건: %s",
 -- ffb313cc English: This condition definition is disabled. Rotations using it are unavailable.
 [1544] = "이 조건 정의는 비활성화되었습니다. 이를 사용하는 로테이션은 사용할 수 없습니다.",
 -- 12f67f85 English: Availability
 [1545] = "사용 가능 여부",
 -- ef8f927d English: Edit fields
+-- Context: Row text and tooltip in the custom condition source preview when a condition has no
+--     named field yet: invites editing the condition's input fields (verb phrase).
 [1546] = "필드 편집",
 -- 9f088dbe English: Advanced
+-- Context: Checkbox at the top right of the schema editor of a custom condition: switches to the
+--     raw schema editor (equivalent text form) instead of the graphical field editor.
 [1547] = "고급",
 -- bd82cf16 English: Number
+-- Context: Value type in the condition field type dropdown: a numeric value.
 [1548] = "숫자",
 -- a066ff92 English: Boolean
+-- Context: Value type in the condition field type dropdown: true/false.
 [1549] = "불리언",
 -- 5f3107cf English: Condition list
+-- Context: Value type in the condition field type dropdown: a list of conditions.
 [1550] = "조건 목록",
 -- c5025e68 English: Record / map
+-- Context: Value type in the condition field type dropdown: a record, i.e. a table of named values
+--     (key/value map).
 [1551] = "레코드 / 맵",
 -- 58e1de5e English: Allowed types / list alternatives
 [1552] = "허용 형식 / 목록 대안",
 -- a9b310ef English: Invalid field schema: %s
+-- %s #1: %s #1: what is wrong with the field schema, a short code or the field key, e.g. "invalid-required-fields" (shown as-is)
 [1553] = "잘못된 필드 스키마: %s",
 -- 76900f1b English: Back
+-- Context: Label of the back-navigation control in the embedded Lua editor's API knowledge window
+--     (go to the previous page).
 [1554] = "뒤로",
 -- 02dbfe6e English: Named fields. Choose a type, then edit its children for nested data.
 [1555] = "이름 있는 필드입니다. 형식을 선택한 뒤 중첩 데이터는 하위 항목을 편집하세요.",
@@ -3363,8 +5313,11 @@ addon.translation = {
 -- 130a1408 English: Showing the first 200 fields. Use Advanced schema for larger definitions.
 [1557] = "처음 200개의 필드만 표시합니다. 더 큰 정의는 고급 스키마를 사용하세요.",
 -- 5f42d901 English: Add field
+-- Context: Button in the field schema editor: adds a new input field to the custom condition (verb
+--     phrase).
 [1558] = "필드 추가",
 -- cb4190b5 English: Tag color
+-- Context: Tooltip of the colored swatch in a tag entry in a selector list: the tag's color.
 [1559] = "태그 색상",
 -- 08b91fc6 English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; use the search results to change tag colors.
@@ -3383,14 +5336,21 @@ addon.translation = {
 -- 047aff36 English: No native Lua editor has been opened this session.
 [1564] = "이번 세션에 기본 Lua 편집기를 연 적이 없습니다.",
 -- 5472dd28 English: Lua input diagnostics
+-- Context: Title of the report window that shows Lua editor input diagnostics, for testers to copy.
 [1565] = "Lua 입력 진단",
 -- 5c126363 English: Native input test
+-- Context: Title of a test dialog (Lua editor input probe): checks the game's native text input.
 [1566] = "기본 입력 테스트",
 -- 6043d2ec English: Input test
+-- Context: Subtitle in the header of the native input test dialog (short noun phrase).
 [1567] = "입력 테스트",
 -- 5a832570 English: Stock font
+-- Context: Button in the native input test dialog, and the status text that follows it: use the
+--     game's default font in the sample box.
 [1568] = "기본 글꼴",
 -- d92ba9ef English: RM font
+-- Context: Button in the native input test dialog, and the status text that follows it: use
+--     Rotation Master's own font in the sample box. "RM" is short for Rotation Master.
 [1569] = "RM 글꼴",
 -- c7b373e3 English: Click the sample, then try Up/Down and look for the caret. Compare Stock font
 --     and RM font. This temporary text is not saved.
@@ -3406,6 +5366,8 @@ addon.translation = {
 -- 9ee41d20 English: Show input diagnostics for this open Lua editor.
 [1575] = "이 열린 Lua 편집기의 입력 진단을 표시합니다.",
 -- 6ecc3df6 English: Move
+-- Context: Small label in the custom condition source pane, in front of the category dropdown that
+--     moves the condition into another category (verb, imperative).
 [1576] = "이동",
 -- 9e3bd238 English: Edit fields opens a graphical schema draft. Add, name, reorder or remove
 --     fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and
@@ -3453,8 +5415,12 @@ addon.translation = {
 -- 95a1b634 English: Release resources when the condition is removed or replaced.
 [1597] = "조건이 제거되거나 교체될 때 자원을 해제합니다.",
 -- 7f816072 English: Arguments
+-- Context: Heading for a function's argument list: in the generated function documentation and in
+--     the function source pane.
 [1598] = "인수",
 -- 16dcaa92 English: Returns
+-- Context: Heading for a function's return values: in the generated function documentation and in
+--     the function source pane.
 [1599] = "반환값",
 -- b92993e1 English: Field names are Lua identifiers. Choose a field type from its dropdown. Records
 --     contain named fields; allowed types contain alternatives, including nested records.
@@ -3468,34 +5434,46 @@ addon.translation = {
 --     condition unchanged. Red borders mark invalid names or incomplete types.
 [1602] = "화살표로 중첩 필드를 숨기거나 표시합니다. 필드 추가는 해당 컨테이너 끝에 추가합니다. 실행 취소 / 다시 실행은 초안에 적용됩니다. 적용은 스키마를 검증하고 준비하며, 취소는 조건을 바꾸지 않습니다. 빨간 테두리는 잘못된 이름이나 미완성 형식을 표시합니다.",
 -- 521fc51f English: Packaged helper from %s.
+-- %s #1: %s #1: the file path of the packaged helper, e.g. "Functions/text.lua"
 [1603] = "%s에서 제공하는 도우미입니다.",
 -- 75e942e5 English: Functions
+-- Context: Top-level settings tab listing the user-written Lua functions; also the fallback title
+--     in the function bundle import/export dialog.
 [1604] = "함수",
 -- 786697a7 English: Browse packaged helpers and edit reusable custom Lua functions.
 [1605] = "기본 제공 도우미를 둘러보고 재사용 가능한 사용자 Lua 함수를 편집합니다.",
 -- fc6e1f0d English: Function unavailable: %s
+-- %s #1: %s #1: why the function cannot be used, a short code, e.g. "disabled-function" (shown as-is)
 [1606] = "함수를 사용할 수 없음: %s",
 -- 2abb9d73 English: Argument name
+-- Context: Tooltip of the name box of an argument row in the function source pane (noun phrase).
 [1607] = "인수 이름",
 -- 6956b2bc English: Add argument
 [1608] = "인수 추가",
 -- b38d87b4 English: Add return
 [1609] = "반환값 추가",
 -- 355cc18a English: Built-in function
+-- Context: Heading of the function source pane for a function that ships with Rotation Master
+--     (read-only).
 [1610] = "기본 제공 함수",
 -- 0d1f23b5 English: Custom function
+-- Context: Heading of the function source pane for a function written by the user (editable).
 [1611] = "사용자 함수",
 -- 4dcab896 English: Delete this function? Existing dependents will become unavailable.
 [1612] = "이 함수를 삭제하시겠습니까? 이를 사용하는 기존 항목은 사용할 수 없게 됩니다.",
 -- 3ac00ae7 English: Deletion staged. Apply to remove this function.
 [1613] = "삭제가 준비되었습니다. 적용하면 이 함수가 제거됩니다.",
 -- f2dc99c6 English: Function bindings
+-- Context: Row label in the comparison of two custom functions: the function's list of bindings
+--     (aliases to other helper functions).
 [1614] = "함수 연결",
 -- b19e02e9 English: Alias
 [1615] = "별칭",
 -- e64bbf11 English: This alias is already in use.
 [1616] = "이미 사용 중인 별칭입니다.",
 -- c8037103 English: Function
+-- Context: Word before the name in the function bundle review list: marks the entry as a function
+--     (the alternative is Condition); followed by ": name".
 [1617] = "함수",
 -- a94fd0ee English: Add binding
 [1618] = "연결 추가",
@@ -3520,33 +5498,53 @@ addon.translation = {
 -- e3b56b53 English: Review the dependency bundle before applying it.
 [1626] = "적용하기 전에 의존성 묶음을 검토하세요.",
 -- e0ad4daf English: Function bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1627] = "함수 연결 (%d)",
 -- 1f10215d English: Aliases are local names in your Lua body. Changing an alias does not rewrite
 --     the body.
 [1628] = "별칭은 Lua 본문의 로컬 이름입니다. 별칭을 바꿔도 본문은 다시 작성되지 않습니다.",
 -- f81e71de English: Reuse existing
+-- Context: Conflict action in the function bundle import: keep the function already present and
+--     discard the imported one (dropdown entry).
 [1629] = "기존 항목 재사용",
 -- c72a3c56 English: Replace existing
+-- Context: Conflict action in the function bundle import: overwrite the function already present
+--     with the imported one (dropdown entry).
 [1630] = "기존 항목 대체",
 -- 548fcd9a English: Import with new identifier
 [1631] = "새 식별자로 가져오기",
 -- 4759498a English: Create
+-- Context: Conflict action in the function bundle import: add the imported entry as a new item
+--     (dropdown entry).
 [1632] = "만들기",
 -- 41d342bd English: Review source
+-- Context: Subtitle and heading of the dialog that shows the source code of a bundle entry so it
+--     can be inspected before the import is applied.
 [1633] = "원본 검토",
 -- 195aae02 English: Original identifier
+-- Context: Label in the function bundle review: the identifier the entry has in the bundle, shown
+--     as "<label>: <id>".
 [1634] = "원래 식별자",
 -- 8bec02bf English: Destination identifier
+-- Context: Label and edit-box title in the function bundle review: the identifier the entry will
+--     get after import.
 [1635] = "대상 식별자",
 -- 32e8d276 English: Callback
+-- Context: Label of the dropdown in the function-source review dialog that selects which callback
+--     (a part of the code) to view.
 [1636] = "콜백",
 -- 222b67d3 English: Include custom function dependencies
 [1637] = "사용자 함수 의존성 포함",
 -- df750ab9 English: Review import
+-- Context: Button in the function bundle import dialog: checks the pasted bundle and lists what
+--     would change, without applying it.
 [1638] = "가져오기 검토",
 -- 454d876b English: Apply import
+-- Context: Button in the function bundle review dialog: carries out the import (verb).
 [1639] = "가져오기 적용",
 -- b7143073 English: Function dependency bundle
+-- Context: Title of the dialog for exporting/importing a bundle of functions together with the
+--     functions they depend on.
 [1640] = "함수 의존성 묶음",
 -- 44fc47f3 English: Review the complete bundle before applying an import. Imported Lua can execute
 --     when registered; only apply code you trust.
@@ -3555,14 +5553,21 @@ addon.translation = {
 --     the complete reviewed bundle.
 [1642] = "아래에서 각 원래 이름, 대상, 의존성을 검토하세요. 가져오기 적용은 검토한 묶음 전체를 저장합니다.",
 -- 0f2dd42f English: Conflict action
+-- Context: Label of the dropdown in the function bundle review that chooses what to do when an
+--     identifier already exists (Reuse, Replace, ...).
 [1643] = "충돌 시 동작",
 -- 4e81098c English: Imported name
+-- Context: Label of the edit box in the function bundle review holding the display name the
+--     imported entry will have.
 [1644] = "가져온 이름",
 -- 8e818b1f English: Existing dependents
+-- Context: Label in the function bundle review, followed by a list: the existing functions or
+--     conditions that already use the one being replaced.
 [1645] = "기존 사용 항목",
 -- 75c417a1 English: This imported definition is disabled. Its dependents remain unavailable.
 [1646] = "가져온 이 정의는 비활성화되었습니다. 이를 사용하는 항목은 계속 사용할 수 없습니다.",
 -- 2643e762 English: Required functions
+-- Context: Heading in the function bundle review for the functions the import depends on.
 [1647] = "필요한 함수",
 -- 103c8bbb English: Paste a bundle above, then review its original names, destinations and required
 --     functions.
@@ -3579,8 +5584,12 @@ addon.translation = {
 -- 9d60841e English: Check
 [1651] = "확인",
 -- b64ac05f English: Live
+-- Context: Checkbox in the condition test dialog: keeps re-running the test repeatedly while the
+--     dialog stays open (live updating).
 [1652] = "실시간",
 -- 324b134f English: Preview
+-- Context: Title of a help topic: the preview of an effect in the effect editor, and the preview
+--     window's sample in General settings help. A noun.
 [1653] = "미리보기",
 -- a31ec5d7 English: The preview failed. Use /rm errors for details.
 [1654] = "미리보기에 실패했습니다. 자세한 내용은 /rm errors를 사용하세요.",
@@ -3589,8 +5598,12 @@ addon.translation = {
 -- c1ab4306 English: Condition check
 [1656] = "조건 확인",
 -- 0fa00491 English: Fields UI preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's fields user interface.
 [1657] = "필드 UI 미리보기",
 -- 367bba74 English: Help preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's help page.
 [1658] = "도움말 미리보기",
 -- 59e490f3 English: Edit detached test values below. Check validates them before evaluating. Live
 --     is opt-in; test values are saved separately from the condition source.
@@ -3606,10 +5619,13 @@ addon.translation = {
 -- 6a255986 English: Skipped: invalid test values
 [1663] = "건너뜀: 잘못된 테스트 값",
 -- 4607aa3d English: Validation: %s
+-- %s #1: %s #1: the validation result, one of "Passed", "Failed" or "Unavailable" (translated), e.g. "Passed"
 [1664] = "검증: %s",
 -- 436fe71b English: Passed
+-- Context: Result word in the condition test dialog: the test passed.
 [1665] = "통과",
 -- 4c852a7e English: Evaluation: %s
+-- %s #1: %s #1: the result of the test evaluation, a short phrase such as "True", "False" or "Skipped: invalid test values" (translated), e.g. "True"
 [1666] = "평가: %s",
 -- 55a7b6a1 English: Fields UI and Help offer an explicit Preview of the current callback. Preview
 --     uses detached sample values and the normal field or help renderer. It does not save,
@@ -3624,6 +5640,8 @@ addon.translation = {
 --     Live.
 [1668] = "평가와 검증은 같은 필드 UI와 별도의 예시 값으로 확인을 제공합니다. 확인은 먼저 검증한 뒤 유효한 값만 평가합니다. 결과는 참, 거짓 또는 사용할 수 없는 이유로 표시됩니다. 실시간은 직접 켜야 하며, 이 패널이 표시된 동안 초당 최대 두 번 확인하고 닫으면 멈춥니다. 테스트 값은 별도로 저장되며 조건 내보내기나 로테이션 편집에 포함되지 않습니다. 다시 확인하거나 실시간을 켜지 않는 한 원본을 바꿔도 콜백은 실행되지 않습니다.",
 -- 5d331ffe English: Functions reference
+-- Context: Title of a section in the custom condition editor's help: the page that documents public
+--     helper functions (noun phrase).
 [1669] = "함수 참고",
 -- 64334745 English: The Functions page documents public helpers and their typed arguments, return
 --     values and source. Context completion and hover use that reference; Ctrl-click a known helper
@@ -3636,10 +5654,16 @@ addon.translation = {
 -- 4087dcf1 English: Complete the highlighted test inputs before checking.
 [1673] = "확인하기 전에 강조 표시된 테스트 입력을 완성하세요.",
 -- 532eaabd English: Test
+-- Context: Button in the custom condition editor, and the dialog subtitle: runs the condition once
+--     with sample input (verb).
 [1674] = "테스트",
 -- e031e0df English: Run test
+-- Context: Button and tooltip in the Lua workbench query panel: runs the entered code once with the
+--     test arguments (verb phrase).
 [1675] = "테스트 실행",
 -- 312acdf1 English: Test condition
+-- Context: Title of the dialog that tries a custom condition with sample values (verb phrase used
+--     as a title).
 [1676] = "조건 테스트",
 -- 34fb96f5 English: Debugger output
 [1677] = "디버거 출력",
@@ -3657,14 +5681,20 @@ addon.translation = {
 --     separate from source, exports and rotation edits. Check syntax never runs a callback.
 [1681] = "테스트는 어느 콜백 탭에서든 조건 단위의 창 하나를 엽니다. 필드 UI와 도움말을 별도의 값과 함께 표시합니다. 필드를 선택하고 테스트 실행을 누르면 검증한 뒤 유효한 값만 평가합니다. 창을 열어도 기본값은 평가하지 않습니다. 실시간은 직접 켜야 하며 창을 닫으면 멈춥니다. 확정된 테스트 값은 디버거에서 사용할 수 있으며 원본, 내보내기, 로테이션 편집과는 분리됩니다. 문법 검사는 콜백을 실행하지 않습니다.",
 -- deba1c35 English: Nullable
+-- Context: Checkbox in the argument/return type editor of the function source pane: the value may
+--     also be nil (empty).
 [1682] = "nil 허용",
 -- fbf338e4 English: Add return value
 [1683] = "반환값 추가",
 -- c75ed23e English: Lua returns multiple values in order. Each row documents one result.
 [1684] = "Lua는 여러 값을 순서대로 반환합니다. 각 행이 결과 하나를 문서화합니다.",
 -- f968686c English: Expand code editor
+-- Context: Tooltip of the button on the code editor corner in the function source pane: enlarges
+--     the editor to fill the pane (verb phrase).
 [1685] = "코드 편집기 확장",
 -- cc81db61 English: Restore code editor
+-- Context: Tooltip of the same button after the editor is enlarged: shrinks it back to its normal
+--     size (verb phrase).
 [1686] = "코드 편집기 복원",
 -- cb050073 English: Choose a source helper and the local name used to call it in this Lua body.
 --     Renaming the local name does not rewrite code. Source modules distinguish helpers with the
@@ -3673,6 +5703,8 @@ addon.translation = {
 -- cfaec007 English: Local name in code
 [1688] = "코드 내 로컬 이름",
 -- d076565e English: Source helper
+-- Context: Column caption in the function bindings table: the existing function the alias points
+--     to.
 [1689] = "원본 도우미",
 -- b49f05b5 English: Function names use letters, numbers and underscores, beginning with a letter or
 --     underscore. Names suggest the local binding used to call them; registry identifiers stay
@@ -3683,6 +5715,7 @@ addon.translation = {
 -- f07f87d9 English: Delete this announcement?
 [1692] = "이 알림을 삭제하시겠습니까?",
 -- da985348 English: Type: %s
+-- %s #1: %s #1: the Lua type name of the symbol, e.g. "number" or "string"
 [1693] = "유형: %s",
 -- 78a0b485 English: Supported unit-token to localized unit-name lookup. Use value.unit as a key;
 --     for example addon.units[value.unit]. Available tokens vary by client.
@@ -3705,6 +5738,9 @@ addon.translation = {
 -- 902c5c44 English: Rotation Master built-in function
 [1700] = "Rotation Master 기본 제공 함수",
 -- 0443c4a6 English: Rotation Master value
+-- Context: Heading in the Lua editor's hover text for a symbol that is a plain value provided by
+--     Rotation Master (not a function); the alternatives are 'Rotation Master custom function' and
+--     'Rotation Master built-in function'.
 [1701] = "Rotation Master 값",
 -- 1a845fe0 English: Global function (documentation unavailable on this client)
 [1702] = "전역 함수 (이 클라이언트에서는 문서를 사용할 수 없음)",
@@ -3718,6 +5754,8 @@ addon.translation = {
 --     binding under Function bindings. Built In examples show dot or colon explicitly.
 [1705] = "함수는 적용 후 모든 프로필에서 공유됩니다. 사용자 유틸리티는 functions.name(...)으로 호출하세요. 자동 완성을 수락하면 의존성 연결이 추가됩니다. 직접 입력한 호출에는 함수 연결에서 연결이 필요합니다. 기본 제공 예시는 점이나 콜론을 명시적으로 보여 줍니다.",
 -- d03262ba English: Show line numbers
+-- Context: Checkbox in Integrations settings (Lua editor section): shows line numbers in the Lua
+--     code editors; also a help topic title.
 [1706] = "줄 번호 표시",
 -- f12fff00 English: Line-number visibility applies to every condition and function code editor.
 [1707] = "줄 번호 표시는 모든 조건 및 함수 코드 편집기에 적용됩니다.",
@@ -3734,6 +5772,8 @@ addon.translation = {
 --     LuaWorkbench and WowLua loading status is shown separately from integration availability.
 [1709] = "사용자 Lua 조건과 함수용 편집기를 선택하세요. 줄 번호 표시는 모든 코드 편집기에 적용됩니다. 기본 제공 문법 강조와 일반 텍스트는 다른 애드온 없이 작동합니다. 자동은 연결된 제공자를 선택하거나 안전하게 대체합니다. 적용하면 설정이 저장되며, 편집기 변경은 다시 열 때 적용되고 줄 번호 표시는 열린 편집기에도 바로 반영됩니다. LuaWorkbench와 WowLua의 불러오기 상태는 연동 사용 가능 여부와 별도로 표시됩니다.",
 -- 50c3cb6e English: All namespaces
+-- Context: First entry of the namespace filter dropdown on the Functions page: show functions from
+--     every namespace.
 [1710] = "모든 네임스페이스",
 -- 5605815a English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3750,8 +5790,12 @@ addon.translation = {
 -- 5226404c English: Existing API
 [1713] = "기존 API",
 -- e572edc2 English: Name in code
+-- Context: Column caption in the function bindings table and tooltip of the alias field: the name a
+--     binding is called inside the Lua code.
 [1714] = "코드 내 이름",
 -- c4e4e7ab English: Namespace
+-- Context: Label of the namespace box in the function source pane and a help section title: the
+--     dotted group name under which a function is listed.
 [1715] = "네임스페이스",
 -- c6d86222 English: Namespaces group functions; they do not supply a receiver. Accept a completion
 --     to bind the shown dotted call. For a typed call, add the same qualified name under Function
@@ -3762,8 +5806,11 @@ addon.translation = {
 --     callback.
 [1717] = "비공개 유틸리티 함수 네임스페이스입니다. 이 콜백의 명시적 연결만 들어 있습니다.",
 -- 481da3a7 English: Argument
+-- Context: Row title and add-button text in the function source pane: one function argument (noun).
+--     The same place has "Return".
 [1718] = "인수",
 -- e0836fce English: Bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1719] = "연결 (%d)",
 -- 6ecb5a70 English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3785,6 +5832,8 @@ addon.translation = {
 --     need changes; RM does not rewrite call sites.
 [1722] = "인수나 반환값 제목을 클릭하면 접거나 펼칩니다. + 인수와 + 반환값은 클릭하면 끝에 추가하고, 끌면 강조 표시된 빈칸에 삽입합니다. 행을 끌거나 위 / 아래로 순서를 바꾸며, Ctrl-끌기는 뒤따르는 행도 함께 옮깁니다. 휴지통은 행을 제거합니다. 형식과 nil 허용은 허용되는 값을 문서화하고, 설명은 각 입력이나 결과를 설명합니다. Lua는 순서 있는 결과를 여러 개 반환할 수 있습니다. 저장된 함수의 순서를 바꾸면 위치 기반 호출을 수정해야 할 수 있어 경고가 표시되며, RM은 호출 위치를 다시 작성하지 않습니다.",
 -- 6b0143d0 English: Return
+-- Context: Row title and add-button text in the function source pane: one function return value
+--     (noun). The same place has "Argument".
 [1723] = "반환값",
 -- 2584fdfb English: Changing argument order can break existing callers. Rotation Master will not
 --     rewrite their Lua code. Continue?
@@ -3793,6 +5842,8 @@ addon.translation = {
 --     existing callers. Review the Lua body and callers for the new order. Continue?
 [1725] = "반환값 문서의 순서를 바꿔도 return 문이나 기존 호출은 다시 작성되지 않습니다. 새 순서에 맞게 Lua 본문과 호출을 검토하세요. 계속하시겠습니까?",
 -- 2266dd0b English: Card controls
+-- Context: Heading of a section in the argument editor help: explains the controls on an argument's
+--     card.
 [1726] = "카드 컨트롤",
 -- 1f03f52f English: Describe this value for function documentation, completion and hover help.
 --     Changes remain in the draft until Apply.
@@ -3819,18 +5870,27 @@ addon.translation = {
 --     They document the contract; they do not rewrite or validate values in the Lua body.
 [1733] = "형식과 nil 허용은 이 함수가 받거나 반환하는 값을 설명합니다. 규약을 문서화할 뿐, Lua 본문의 값을 다시 작성하거나 검증하지 않습니다.",
 -- 42e8bcf1 English: Debuffs
+-- Context: Condition category in the icon picker's category list: debuff-related icons (plural
+--     noun).
 [1734] = "약화 효과",
 -- e89b30aa English: Resources
+-- Context: Condition category in the icon picker's category list: resources such as mana and rage.
 [1735] = "자원",
 -- 8f0d1b30 English: Pet
+-- Context: Condition category in the icon picker's category list: pet-related icons.
 [1736] = "소환수",
 -- 7c400199 English: Logic
+-- Context: Condition category in the icon picker's category list: logical operators (and/or/not).
 [1737] = "논리",
 -- 9e471951 English: Environment
+-- Context: Condition category in the icon picker's category list: environment (weather, zone ...).
 [1738] = "환경",
 -- 33b93476 English: Time
+-- Context: Condition category in the icon picker's category list: time-related icons.
 [1739] = "시간",
 -- 66f9cfa2 English: Spell Auto-Repeat Active
+-- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
+--     Also an icon name in the icon picker.
 [1740] = "주문 자동 반복 활성",
 -- 35f743e1 English: Retribution (Wowhead & wowsims)
 [1741] = "징벌 (Wowhead & wowsims)",
@@ -3844,6 +5904,10 @@ addon.translation = {
 --     separate premade.
 [1742] = "1레벨부터 70레벨까지의 근접 징벌 로테이션이며, 다른 기본 제공 로테이션이 맞지 않는 모든 성기사의 기본값입니다. 각 대상을 지혜의 심판(마나 부족 시) 또는 성전사의 심판으로 시작하고, 가장 좋은 문장(피의 문장 또는 순교자의 문장, 지휘의 문장, 그다음 정의의 문장)을 유지하며, 성전사의 일격을 사용하고, 정의의 문장, 피의 문장 또는 순교자의 문장만 심판합니다(기절한 대상에게는 지휘의 문장도). 언데드와 악마에게는 퇴마술, 마나가 넉넉하고 적이 셋 이상이면 신성화를 사용합니다. 천벌의 망치는 직접 판단합니다(Wowhead는 도망치는 대상에게만 사용). 알림: 고결의 오라, 응보의 오라 또는 기원의 오라, 자신에게 축복, 전투 후 치유, 응징의 격노. 문장 교체(트위스팅)는 별도의 기본 제공 로테이션입니다.",
 -- 89f00a09 English: Retribution (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = "징벌 (Icy Veins)",
 -- c68e9ea0 English: Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3853,6 +5917,8 @@ addon.translation = {
 --     levelers. Same reminders as the Wowhead variant.
 [1744] = "Icy Veins의 징벌 로테이션으로, 추천 Wowhead 징벌 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 대상마다 한 번 성전사의 심판, 정의의 문장(지휘의 문장은 느린 무기일 때만, 배운 뒤에는 피의 문장 또는 순교자의 문장), 성전사의 일격, 재사용 대기시간마다 천벌의 망치와 심판, 적이 둘 이상이면 신성화, 언데드와 악마에게 퇴마술, 신성 특성으로 레벨업하는 경우 신성 충격. 알림은 Wowhead 변형과 같습니다.",
 -- 85d846bd English: Retribution seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / Twist).
 [1745] = "징벌 문장 교체(트위스팅)",
 -- 34a6a34f English: Off by default; enable it if you twist seals (level 64+, Seal of Command and
 --     Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of
@@ -3872,6 +5938,10 @@ addon.translation = {
 --     Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you.
 [1748] = "보호 특성 트리 또는 정의의 격노를 켠 모든 성기사를 위한 방어 로테이션입니다. 신성한 방패, 응징의 방패, 심판으로 끌어옵니다. 강타를 가하는 대상(월드 우두머리 또는 자신보다 3레벨 이상 높은 대상)에게는 신성한 방패를 먼저 사용합니다. 그다음 신성화, 언데드와 악마에게 퇴마술, 심판, 신성한 방패, 언데드 무리에게 신의 격노, 강타를 가하는 대상을 제외하고 응징의 방패를 사용합니다. 다수의 적을 상대할 때 마나가 부족하면 지혜의 문장, 그 외에는 정의의 문장을 사용합니다. 알림: 정의의 격노, 기원의 오라, 성역의 축복(또는 왕의 축복이나 지혜의 축복), 응징의 격노, 신의 축복. 도발과 대상 전환은 직접 판단합니다.",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1749] = "보호 (Icy Veins)",
 -- 3ae9045e English: Icy Veins' tanking, an alternative to the recommended Wowhead Protection
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3896,6 +5966,10 @@ addon.translation = {
 --     the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.
 [1754] = "Wowhead의 공격대 방어 전담 치유로, 추천 신성 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 대상의 생명력이 10분의 1 이상 줄어들 때마다 성스러운 빛, 적게 줄었을 때만 빛의 섬광을 사용하며, 위급 상황, 정화, 심판, 알림은 통합 신성 기본 제공 로테이션과 같습니다.",
 -- 4396ff42 English: Ranged DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1755] = "원거리 공격 전담 (wowsims)",
 -- 2b43c4a1 English: Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot,
 --     keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot
@@ -3908,6 +5982,10 @@ addon.translation = {
 --     with you.
 [1756] = "1–70레벨, 모든 전문화용입니다. 사냥꾼의 징표, 조준 사격, 자동 사격으로 끌어오고, 자동 사격을 계속 유지하며, 대상이 다가오면 근접 공격을 사용합니다. 고정 사격을 배우기 전에는 독사 쐐기를 유지하고, 마나가 넉넉할 때만 조준 사격, 일제 사격, 신비한 사격에 마나를 씁니다. 62레벨부터: 준비되면 일제 사격, 자동 사격 직후마다 고정 사격, 빈틈은 신비한 사격으로 채우고, 혼자일 때는 독사 쐐기를 사용합니다. 셋 이상의 적과 싸우면 일제 사격이 준비될 때마다 사용합니다. 상(마나가 부족하면 독사의 상, 마나가 절반이 되면 다시 매의 상), 소환수 관리, 살상 명령, 정예와 우두머리 상대 주요 재사용 대기시간, 침묵의 사격을 알려 줍니다. 소환수 명령, 눈속임, 덫, 연발 사격, 근접 공격 섞기, 죽은척하기는 직접 판단합니다.",
 -- 825c84d1 English: Ranged DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1757] = "원거리 공격 전담 (Wowhead)",
 -- fb9ad1ee English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
 --     leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady
@@ -3918,6 +5996,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1758] = "1–70레벨, 모든 전문화용이며 Wowhead의 공격대 조언을 따릅니다. 끌어오기, 근접 공격, 레벨업 사격, 다수 대상 일제 사격, 알림은 wowsims 버전과 같지만, 고정 사격을 배운 뒤에는 자동 사격 후마다 일제 사격과 고정 사격만 제안합니다: 신비한 사격으로 빈틈 채우기 없음(이동 중 제외), 독사 쐐기 없음, 독사의 상 알림 없음. 소환수 명령, 눈속임, 덫, 연발 사격, 근접 공격 섞기, 죽은척하기는 직접 판단합니다. 추천 wowsims 원거리 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1759] = "근접 공격 전담 (wowsims)",
 -- a600e4ad English: Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or
 --     Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte,
@@ -3929,6 +6011,10 @@ addon.translation = {
 --     Feint, Vanish and positioning stay with you.
 [1760] = "1–70레벨, 모든 전문화용입니다. 은신 상태에서: 사전계획, 그다음 혼자일 때는 비열한 습격, 그룹에서는 목조르기, 그 외에는 매복(주무기로 단검을 든 경우). 전투 중: 반격, 연계 점수 2점부터 난도질(마지막 2초 안에 갱신), 곧 죽을 대상에게 절개, 5점에서는 오래 유지될 대상에게 파열(폭풍의 칼날로 광역 공격 중에는 제외), 그 외에는 절개. 대상이 나를 공격하지 않으면 절단 또는 기습(단검)으로, 그 외에는 과다출혈 또는 사악한 일격으로 연계 점수를 쌓습니다. 빠진 독, 발차기, 폭풍의 칼날과 아드레날린 촉진, 냉혈, 회피를 알려 줍니다. 약점 노출, 급소 가격, 교란, 소멸, 위치 선정은 직접 판단합니다.",
 -- 5f9b3940 English: Melee DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1761] = "근접 공격 전담 (Wowhead)",
 -- 19e52877 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
 --     reminders as the wowsims version, but Slice and Dice starts from one combo point and every
@@ -3937,6 +6023,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1762] = "1–70레벨, 모든 전문화용이며 Wowhead를 따릅니다. 은신 시작 기술, 연계 점수 생성 기술, 알림은 wowsims 버전과 같지만, 난도질은 연계 점수 1점부터 시작하고 5점 마무리 기술은 모두 절개입니다: 파열은 없습니다. 약점 노출, 급소 가격, 교란, 소멸, 위치 선정은 직접 판단합니다. 추천 wowsims 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Balance).
 [1763] = "조화",
 -- 8177cc43 English: Caster Balance from level 1 to 70, and the default for any Druid no other
 --     premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving,
@@ -3958,6 +6046,10 @@ addon.translation = {
 --     optional step that starts off (it needs a powershift macro).
 [1766] = "야성 특성 트리를 위한 표범과 곰 로테이션으로, 현재 변신 형태를 따릅니다. 표범: 은신 시작 기술(암습, 찢어발기기 또는 칼날 발톱), 요정의 불꽃 (야성), 오래 살아남을 대상에게 연계 점수 4점에서 도려내기, 정신 집중 없이 도려내기 사이에 흉포한 이빨, 짓이기기 유지, 뒤에서는 칼날 발톱, 대상이 나를 공격하면 짓이기기/할퀴기. 곰: 요정의 불꽃, 가르기가 사라지기 전에 갱신, 전사의 외침이 없으면 위협의 포효, 다수의 적에게 휘둘러치기, 짓이기기, 가르기 5중첩, 휘둘러치기. 시전 형태에서는 표범(또는 곰) 변신을 제안합니다. 알림: 야생의 징표, 가시, 청명의 전조, 분노가 남으면 후려치기, 전투 시작 전 맹공격, 광포한 재생력. 파워시프팅은 꺼진 상태로 시작하는 선택 단계입니다(파워시프팅 매크로가 필요합니다).",
 -- 4c55a525 English: Feral (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1767] = "야성 (Wowhead)",
 -- 9092413a English: Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off
 --     by default: enable it and disable that one, or raise its priority. Rip whenever it is down at
@@ -3966,6 +6058,8 @@ addon.translation = {
 --     Otherwise the same as the Icy Veins variant.
 [1768] = "Wowhead의 야성 로테이션으로, 추천 Icy Veins 야성 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 도려내기가 없으면 연계 점수 4점에서 언제든 도려내기를 사용하고, 흉포한 이빨은 곧 죽을 대상에게만 사용합니다(흉포한 이빨 끼워 넣기 없음). 곰은 남는 전역 재사용 대기시간을 휘둘러치기보다 가르기에 씁니다. 표범의 마나가 부족하면 정신 자극을 사용합니다. 그 외에는 Icy Veins 변형과 같습니다.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Restoration).
 [1769] = "복원",
 -- da5557c1 English: Healing for the Restoration tree on your friendly target (or yourself): Healing
 --     Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or
@@ -3975,6 +6069,10 @@ addon.translation = {
 --     Innervate and Rebirth. Choosing whom to heal and downranking stay with you.
 [1770] = "회복 특성 트리를 위한 치유 로테이션으로, 우호적 대상(또는 자신)에게 사용합니다: 자연의 신속함 후 치유의 손길, 내 회복이나 재생이 걸린 죽어 가는 대상에게 신속한 치유, 전투 중 피어나는 생명 3중첩 유지, 회복과 재생이 없으면 사용, 그다음 생명의 나무 상태에서는 재생, 그 밖에서는 치유의 손길. 적대적 대상에게는 혼자 사냥을 위해 달빛 섬광과 천벌을 사용합니다. 알림: 야생의 징표, 청명의 전조, 생명의 나무, 자연의 신속함, 평온, 정신 자극, 환생. 누구를 치유할지와 하위 등급 사용은 직접 판단합니다.",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1771] = "근접 공격 전담 (wowsims)",
 -- e30bf8c3 English: Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept,
 --     Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is
@@ -3994,6 +6092,10 @@ addon.translation = {
 --     disable that one, or raise its priority.
 [1774] = "1–70레벨, 무기 또는 분노용이며 Icy Veins를 따릅니다. 끌어오기, 알림, 레벨업 단계는 wowsims 버전과 같지만, 죽음의 일격이 있으면 마무리 일격을 먼저, 피의 갈증이 있으면 그 바로 다음에 마무리 일격을 사용하고, 소용돌이는 분노를 아끼지 않고 이어서 쓰며, 무력화는 분노가 거의 가득 찼을 때만 사용합니다. 격돌 타이밍, 태세 전환, 광전사의 격노는 직접 판단합니다. 추천 wowsims 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 871d5911 English: Tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1775] = "방어 전담 (Wowhead)",
 -- 91dfa1ce English: Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge,
 --     Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder
@@ -4003,6 +6105,10 @@ addon.translation = {
 --     utility stay with you.
 [1776] = "10–70레벨, 방어 태세일 때 선택됩니다. 방패 밀쳐내기, 복수, 정예와 우두머리에게 천둥벼락과 사기의 외침 유지, 그다음 압도 또는 방어구 가르기. 다수의 적에게는 천둥벼락과 사기의 외침을 먼저 사용합니다. 우두머리와 레벨이 높은 적 상대 방패 막기(방패를 장착한 경우), 영웅의 일격 또는 회전베기, 전투의 외침, 피의 분노, 방패 가격, 위급할 때 최후의 저항과 방패의 벽을 알려 줍니다. 도발과 기타 유틸리티는 직접 판단합니다.",
 -- ea76d926 English: Tank (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1777] = "방어 전담 (Icy Veins)",
 -- aa141592 English: Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins.
 --     Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until
@@ -4012,6 +6118,10 @@ addon.translation = {
 --     default: enable it and disable that one, or raise its priority.
 [1778] = "10–70레벨, 방어 태세일 때 선택되며 Icy Veins를 따릅니다. 방패 밀쳐내기, 복수, 그다음 압도 또는 방어구 가르기를 사용하며, 방패 밀쳐내기를 배우기 전에는 전투 시작 시 분쇄를 사용합니다. 다수의 적에게는 천둥벼락, 정예에게는 사기의 외침을 사용합니다. 대상이 나를 공격하고 방패를 장착하고 있으면 방패 막기를 알려 줍니다. 도발과 기타 유틸리티는 직접 판단합니다. 추천 Wowhead 방어 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 3adec7ba English: Damage (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1779] = "공격 전담 (Icy Veins)",
 -- 9b0711bb English: Damage from level 1 to 70, used whenever the healer premade does not apply.
 --     Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric
@@ -4022,6 +6132,10 @@ addon.translation = {
 --     healing stay with you.
 [1780] = "1레벨부터 70레벨까지의 공격 로테이션으로, 치유 기본 제공 로테이션이 적용되지 않을 때마다 사용됩니다. 초반에는 성스러운 일격과 마법봉, 이후 배우는 대로 정신 분열, 어둠의 권능: 고통, 정신의 채찍, 어둠의 형상, 흡혈의 손길, 어둠의 권능: 죽음을 사용합니다. 지속 피해 주문은 정신 분열보다 먼저 걸고, 혼자일 때 죽어 가는 대상은 마법봉으로 마무리합니다. 신성과 수양으로 퀘스트를 하는 경우 신성한 불꽃과 성스러운 일격을 사용합니다. 알림: 내면의 열정, 신의 권능: 인내, 종족 강화 효과, 내면의 집중력, 어둠의 마귀. 첫 번째 틱이 지난 정신의 채찍은 준비된 정신 분열이나, 생명력이 절반 이상일 때의 어둠의 권능: 죽음을 위해 중단됩니다. 보호막과 치유는 직접 판단합니다.",
 -- ce79d246 English: Damage (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1781] = "공격 전담 (Wowhead)",
 -- fe006eaa English: Damage after Wowhead's guides, an alternative to the recommended Icy Veins
 --     damage premade, off by default: enable it and disable that one, or raise its priority. Mind
@@ -4030,6 +6144,10 @@ addon.translation = {
 --     premade.
 [1782] = "Wowhead 공략을 따른 공격 로테이션으로, 추천 Icy Veins 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 정신 분열로 시작하고 지속 피해 갱신보다 먼저 사용하며, 흡혈의 선물은 생명력이 떨어졌을 때만 사용하고, 죽어 가는 대상에게는 마법봉 대신 주문을 사용합니다. 그 외에는 추천 기본 제공 로테이션과 같습니다.",
 -- d0f0e9e6 English: Healer (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1783] = "치유 전담 (Wowhead)",
 -- d31781e0 English: Healing in a group when Holy or Discipline is your main talent tree. It advises
 --     on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and
@@ -4038,6 +6156,10 @@ addon.translation = {
 --     as a cheap top-up. With an enemy targeted it offers light damage.
 [1784] = "신성이나 수양이 주 특성 트리일 때 그룹에서 사용하는 치유 로테이션입니다. 대상으로 지정한 우호적 유닛에 대해 조언하며, 누구를 치유할지는 직접 선택합니다. 전투 시작 전과 준비될 때마다 회복의 기원, 소생, 위급할 때 신의 권능: 보호막, 해제, 그룹 피해에는 치유의 마법진 또는 치유의 기원, 결속의 치유, 순간 치유, 상급 치유, 그리고 저렴하게 채우는 1등급 상급 치유를 사용합니다. 적을 대상으로 지정하면 가벼운 공격을 제안합니다.",
 -- 45321807 English: Healer (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1785] = "치유 전담 (Icy Veins)",
 -- e31d4277 English: Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash
 --     Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to
@@ -4054,6 +6176,10 @@ addon.translation = {
 --     Soulshatter. Fears and other curses stay with you.
 [1788] = "1레벨부터 70레벨까지 모든 특성 트리용입니다. 저주, 그다음 배우는 대로 불안정한 고통, 제물, 부패, 생명력 착취, 어둠의 화살 또는 소각을 사용합니다. 일몰과 반발력 발동이 우선이며, 적이 셋 이상이면 부패의 씨앗, 지옥의 불길, 어둠의 격노를 사용합니다. 혼자일 때는 피해를 입으면 흡수하고, 생명력 전환, 마법봉을 사용하며, 죽어 가는 대상에게는 영혼 흡수나 마무리 주문을 사용합니다. 알림: 마의 갑옷, 악마의 갑옷 또는 악마의 피부, 악마 소환수, 악의 제물, 영혼의 고리, 저주 증폭, 영혼 붕괴. 공포와 다른 저주는 직접 판단합니다.",
 -- e3790b25 English: Drain-tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1789] = "흡수 탱킹 (Wowhead)",
 -- 522ed69f English: Warlock after Wowhead's guides, an alternative to the recommended Icy Veins
 --     Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo
@@ -4069,10 +6195,13 @@ addon.translation = {
 -- 550c388b English: The item list changed elsewhere. Close and reopen it before applying.
 [1793] = "다른 곳에서 아이템 목록이 바뀌었습니다. 적용하기 전에 닫았다가 다시 여세요.",
 -- 67559dc7 English: Native settings page unavailable: %s
+-- %s #1: %s #1: the internal key of the settings page, e.g. "profiles" (shown as-is)
 [1794] = "기본 설정 페이지를 사용할 수 없음: %s",
 -- 0f6314b0 English: The native rotation editor is unavailable.
 [1795] = "기본 로테이션 편집기를 사용할 수 없습니다.",
 -- 4850b174 English: Required
+-- Context: Checkbox on a field card in the schema editor (and its help title): the field must be
+--     filled in before the condition can run.
 [1796] = "필수",
 -- 9bcec068 English: Required field references need review. Apply keeps the displayed root
 --     requirements.
@@ -4082,18 +6211,27 @@ addon.translation = {
 --     into a nested structure makes it optional. Undo restores both. Callback code is unchanged.
 [1798] = "최상위 필수 필드에 값이 있어야 이 조건을 실행할 수 있습니다. 이름 변경, 순서 변경, 복제는 이 표시를 유지하며, 필드를 제거하면 요구 사항도 사라집니다. 중첩 구조 안으로 옮기면 선택 항목이 됩니다. 실행 취소는 둘 다 복원합니다. 콜백 코드는 바뀌지 않습니다.",
 -- 8b8cd45b English: Copy condition description
+-- Context: Button in the condition editor: copies the plain-language description of the condition
+--     to the clipboard (verb phrase).
 [1799] = "조건 설명 복사",
 -- b5739be0 English: This condition exceeds the supported editor limits.
 [1800] = "이 조건은 편집기가 지원하는 한도를 넘습니다.",
 -- df58aeb6 English: Proc Glow
+-- Context: Effect type in the effect editor dropdown and Effects help: a glow in the style of the
+--     game's spell-proc highlight.
 [1801] = "발동 반짝임",
 -- dce1c179 English: Loop duration
+-- Context: Help topic title and setting for the proc glow effect: how long one loop of the glow
+--     animation lasts.
 [1802] = "반복 주기",
 -- a4f0db33 English: Start burst
+-- Context: Checkbox in the effect editor for the proc glow effect (and its help title): plays the
+--     start burst animation when the glow begins.
 [1803] = "시작 폭발 효과",
 -- b89fd7fd English: Proc Glow is unavailable on this client; Pixel glow will be used.
 [1804] = "이 클라이언트에서는 발동 반짝임을 사용할 수 없어 픽셀 반짝임을 사용합니다.",
 -- 34ae0a26 English: Rotation data requires recovery: %s
+-- %s #1: %s #1: why the data cannot be used, a short code or reason, e.g. "unsupported-version" (shown as-is)
 [1805] = "로테이션 데이터 복구 필요: %s",
 -- 8b4e37b9 English: Copies belong to your Class unless This character is selected. Replacement
 --     keeps its original owner.
@@ -4101,32 +6239,50 @@ addon.translation = {
 -- 0faa3bd8 English: Archive report truncated; saved data is unchanged.
 [1807] = "보관 보고서가 잘렸습니다. 저장된 데이터는 바뀌지 않았습니다.",
 -- 414c7fd3 English: Recover unassigned rotations
+-- Context: Button in the banner that appears when older rotations lack an owner, and title of a
+--     help section/window: opens the unassigned rotation archive so they can be adopted.
 [1808] = "소유자 없는 로테이션 복구",
 -- 291f821c English: Ownership required
+-- Context: Subtitle of the unassigned rotation recovery window: tells the user these rotations need
+--     an owner (class or character) before they can be used.
 [1809] = "소유자 필요",
 -- cd16196a English: These records have no assigned owner. Choose Class or This character
 --     explicitly. No ownership is inferred from names, spells or profile history.
 [1810] = "이 기록에는 지정된 소유자가 없습니다. 직업 또는 이 캐릭터를 명시적으로 선택하세요. 이름, 주문, 프로필 기록에서 소유자를 추론하지 않습니다.",
 -- ce112847 English: Recovery unavailable: %s
+-- %s #1: %s #1: why the recovery list cannot be shown, a short code, e.g. "rotation-store-unavailable" (shown as-is)
 [1811] = "복구를 사용할 수 없음: %s",
 -- af7356f1 English: Unassigned rotation archive
+-- Context: Title of the report window with the contents of the unassigned rotation archive.
 [1812] = "소유자 없는 로테이션 보관함",
 -- d17af82d English: Character archive
+-- Context: Label in the recover window: the archive that belongs to a single character (see
+--     "Profile archive").
 [1813] = "캐릭터 보관함",
 -- 8ce8b3ed English: Profile archive
+-- Context: Label in the recover window: the archive that belongs to the whole profile (see
+--     "Character archive").
 [1814] = "프로필 보관함",
 -- 4064b908 English: No unassigned rotations.
 [1815] = "소유자 없는 로테이션이 없습니다.",
 -- 46bb2f53 English: Archive: %s; specialization: %s; identifier: %s
+-- %s #1: %s #1: the kind of archive, "Character archive" or "Profile archive" (translated), e.g. "Profile archive"
+-- %s #2: %s #2: the specialization number the record belongs to, e.g. 64
+-- %s #3: %s #3: the record's identifier, e.g. "a1b2c3d4"
 [1816] = "보관함: %s, 전문화: %s, 식별자: %s",
 -- a7232fd4 English: Export archive
+-- Context: Button in the recover window: exports the archive's contents as text (verb phrase).
 [1817] = "보관함 내보내기",
 -- b650b12a English: Adopt rotation
+-- Context: Button in the recover window: assigns the selected unowned rotation to a class or
+--     character (verb phrase).
 [1818] = "로테이션 채택",
 -- 2b1bc965 English: Could not adopt this record: %s
+-- %s #1: %s #1: why the record cannot be adopted, a short code, e.g. "missing-archival-body" (shown as-is)
 [1819] = "이 기록을 채택할 수 없음: %s",
 -- 041c7071 English: More than one rotation is named %s. Select its Class or This character entry in
 --     the rotation browser.
+-- %s #1: %s #1: the rotation name the player typed, e.g. "Frost AoE"
 [1820] = "%s(이)라는 로테이션이 둘 이상입니다. 로테이션 목록에서 직업 또는 이 캐릭터 항목을 선택하세요.",
 -- 71ddae9f English: The fallback rotation is unavailable. Open Rotations to complete or recover it.
 [1821] = "대체 로테이션을 사용할 수 없습니다. 로테이션을 열어 완성하거나 복구하세요.",
@@ -4143,6 +6299,7 @@ addon.translation = {
 -- d5cade7e English: Stock
 [1826] = "기본",
 -- 9286002a English: Questie
+-- Context: Name of the addon "Questie" shown in the Integrations settings list; stays unchanged.
 [1827] = "Questie",
 -- 6dff3b3c English: Waiting for Questie.
 [1828] = "Questie 대기 중.",
@@ -4157,10 +6314,16 @@ addon.translation = {
 -- a414f778 English: Questie adapter unavailable.
 [1833] = "Questie 어댑터를 사용할 수 없습니다.",
 -- a0b302b0 English: Questie version: %s (%s)
+-- %s #1: %s #1: the Questie version, e.g. "9.7.1"
+-- %s #2: %s #2: how well it is tested, "source-tested" or "unverified" (translated), e.g. "unverified"
 [1834] = "Questie 버전: %s (%s)",
 -- 97b7e2db English: unverified
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: the
+--     version has not been checked against Rotation Master's tests (lowercase).
 [1835] = "검증 안 됨",
 -- 0d6aeafd English: Client family: %s (%s)
+-- %s #1: %s #1: the game client family, e.g. "Classic Era"
+-- %s #2: %s #2: the compatibility status, "declared; unverified" or "unsupported" (translated), e.g. "unsupported"
 [1836] = "클라이언트 계열: %s (%s)",
 -- ff3a37e2 English: declared; unverified
 [1837] = "명시됨, 검증 안 됨",
@@ -4173,61 +6336,110 @@ addon.translation = {
 --     preference. No background polling is used.
 [1840] = "Questie는 선택 사항이며 기본값은 꺼짐입니다. 적용하면 이 프로필 설정이 저장됩니다. 백그라운드 폴링은 사용하지 않습니다.",
 -- f0486ac1 English: Refresh Questie status
+-- Context: Button in the Questie integration part of Integrations settings: checks again whether
+--     Questie is loaded and connected (verb phrase).
 [1841] = "Questie 상태 새로 고침",
 -- ee7e05e5 English: Supported addons
+-- Context: Heading above the list of supported addons in Integrations settings.
 [1842] = "지원 애드온",
 -- 2fc99337 English: Loaded; integration not connected.
 [1843] = "불러옴, 연동은 연결되지 않음.",
 -- 5b205b7f English: %s (version %s)
+-- Context: Addon name followed by its version in the Integrations list; first %s is the addon name,
+--     second %s its version.
+-- %s #1: %s #1: the name of the add-on integration, e.g. "Questie"
+-- %s #2: %s #2: its version, e.g. "9.7.1"
 [1844] = "%s (버전 %s)",
 -- bad4af6a English: Supported addons are listed even when missing. Loaded addons are only marked
 --     connected when their integration is available.
 [1845] = "지원 애드온은 없어도 목록에 표시됩니다. 불러온 애드온은 연동을 사용할 수 있을 때만 연결됨으로 표시됩니다.",
 -- 11b28c68 English: ExtendedCharacterStats
+-- Context: Name of the addon "ExtendedCharacterStats" shown in the Integrations settings list;
+--     stays unchanged.
 [1846] = "ExtendedCharacterStats",
 -- cbc21d63 English: LuaWorkbench
+-- Context: Name of the addon "LuaWorkbench" (an external Lua editor) shown in the Integrations
+--     settings list; stays unchanged.
 [1847] = "LuaWorkbench",
 -- 696b160a English: ElvUI
+-- Context: Name of the action bar addon "ElvUI" shown in the Integrations settings list; stays
+--     unchanged.
 [1848] = "ElvUI",
 -- fc95169b English: Bartender4
+-- Context: Name of the action bar addon "Bartender4" shown in the Integrations settings list; stays
+--     unchanged.
 [1849] = "Bartender4",
 -- 73198132 English: ButtonForge
+-- Context: Name of the action bar addon "ButtonForge" shown in the Integrations settings list;
+--     stays unchanged.
 [1850] = "ButtonForge",
 -- 42fa5fc0 English: LUI
+-- Context: Name of the addon "LUI" (interface suite with action bars) shown in the Integrations
+--     settings list; stays unchanged.
 [1851] = "LUI",
 -- efc3965e English: Dominos
+-- Context: Name of the action bar addon "Dominos" shown in the Integrations settings list; stays
+--     unchanged.
 [1852] = "Dominos",
 -- 14548eff English: AzeriteUI
+-- Context: Name of the addon "AzeriteUI" (interface suite with action bars) shown in the
+--     Integrations settings list; stays unchanged.
 [1853] = "AzeriteUI",
 -- 7c811de6 English: FarmingBar
+-- Context: Name of the addon "FarmingBar" shown in the Integrations settings list; stays unchanged.
 [1854] = "FarmingBar",
 -- e866b4e8 English: TotemTimers
+-- Context: Name of the addon "TotemTimers" shown in the Integrations settings list; stays
+--     unchanged.
 [1855] = "TotemTimers",
 -- 06c879f3 English: AzeriteUI6
+-- Context: Name of the addon "AzeriteUI6" shown in the Integrations settings list; stays unchanged.
 [1856] = "AzeriteUI6",
 -- 5bd55adb English: BigWigs
+-- Context: Name of the boss-mod addon "BigWigs" shown in the Integrations settings list; stays
+--     unchanged.
 [1857] = "BigWigs",
 -- 1c91d8be English: Boss mods
+-- Context: Group heading in Integrations settings for boss-mod addons (BigWigs, DBM) that supply
+--     encounter timers; also a help topic title.
 [1858] = "보스 모드",
 -- c5eddceb English: Top panels
+-- Context: Group heading in Integrations settings for addons that show panels at the top of the
+--     screen (Titan Panel); also a help topic title.
 [1859] = "상단 패널",
 -- 22965568 English: Connected
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded and connected
+--     to Rotation Master.
 [1860] = "연결됨",
 -- 8777e3a9 English: Incompatible
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded but its
+--     version cannot be used with Rotation Master.
 [1861] = "호환 안 됨",
 -- 56178c4b English: Loaded; connection not confirmed.
 [1862] = "불러옴, 연결 확인 안 됨.",
 -- 3c586673 English: Capture casts (30s)
+-- Context: Button text in General settings that starts a 30-second spell cast recording; also a
+--     help topic title.
 [1863] = "시전 측정 (30초)",
 -- b90c2cce English: Cast report
+-- Context: Label of the button/report in General settings that shows the finished cast recording;
+--     also a help topic title.
 [1864] = "시전 보고서",
 -- 548d9c5c English: Stop CPU capture
+-- Context: Button text in General settings, shown while the CPU recording is running: stops it
+--     (verb phrase).
 [1865] = "CPU 측정 중지",
 -- 5ba35474 English: Stop runtime capture
+-- Context: Button text in General settings, shown while the runtime recording is running: stops it
+--     (verb phrase).
 [1866] = "실행 측정 중지",
 -- 0f122dcf English: Stop cast capture
+-- Context: Button text in General settings, shown while the cast recording is running: stops it
+--     (verb phrase).
 [1867] = "시전 측정 중지",
 -- ba691ba0 English: unavailable
+-- Context: Status word in the performance and analytics reports where a value could not be read
+--     (lowercase, fits in running text).
 [1868] = "사용할 수 없음",
 -- a43f31c1 English: Apply changes the editor used the next time a source editor opens. Enable an
 --     editor before selecting it.
@@ -4240,22 +6452,29 @@ addon.translation = {
 -- 78a6a8fe English: Built in
 [1872] = "기본 제공",
 -- f85577f0 English: Description / status
+-- Context: Column heading in the Integrations table: what the integration does and its state.
 [1873] = "설명 / 상태",
 -- d9494bd4 English: Editor options
 [1874] = "편집기 옵션",
 -- b9c3bfb3 English: Enable / Select
+-- Context: Column heading in the Integrations table over the checkbox or button that turns an
+--     integration on or lets the user choose it.
 [1875] = "켜기 / 선택",
 -- 1ce31af1 English: Lua editors
 [1876] = "Lua 편집기",
 -- 4207e3fc English: None (plain editor)
+-- Context: Option in the Lua editor mode choice: no special editor, just the plain text box.
 [1877] = "없음 (일반 편집기)",
 -- c935b9fd English: Shared editor settings.
 [1878] = "공유 편집기 설정입니다.",
 -- bea3f386 English: Editor settings
+-- Context: Heading above the Lua editor options in Integrations settings.
 [1879] = "편집기 설정",
 -- 332b0b0a English: Enable built-in syntax highlighting
 [1880] = "기본 제공 문법 강조 사용",
 -- a1aa075c English: Syntax highlighting
+-- Context: Checkbox in Integrations settings (Lua editor section): turn on color highlighting of
+--     Lua syntax; also a help topic title.
 [1881] = "문법 강조",
 -- dc3bae06 English: Addon release pages
 [1882] = "애드온 릴리스 페이지",
@@ -4263,18 +6482,24 @@ addon.translation = {
 --     client may be unverified.
 [1883] = "배포자 정보는 릴리스 제공 여부를 설명하며, 이 클라이언트에서의 연동 동작은 검증되지 않았을 수 있습니다.",
 -- 839b59a4 English: Copy %s
+-- %s #1: %s #1: what is copied, e.g. "Rotation"
 [1884] = "%s 복사",
 -- 6377056a English: Release links checked: 2026-10-20.
 [1885] = "릴리스 링크 확인일: 2026-10-20.",
 -- 06a1145d English: CurseForge — LUI Classic
 [1886] = "CurseForge — LUI Classic",
 -- 26330782 English: Copy link %d
+-- %d #1: %d #1: the number of the link, counting from 1, e.g. 2
 [1887] = "링크 %d 복사",
 -- 382bc741 English: Preview appearance
+-- Context: Group heading in Integrations settings for the options that affect how the preview
+--     window looks (Masque skins).
 [1888] = "미리보기 모양",
 -- 71e7edd7 English: Skin preview buttons with Masque
 [1889] = "Masque로 미리보기 버튼 스킨 적용",
 -- 0e769600 English: History
+-- Context: Heading in General settings above the three sliders that set how many seconds of spell,
+--     combat and damage history are remembered.
 [1890] = "기록",
 -- 46811e29 English: Bypass observation cache
 [1891] = "관찰 캐시 우회",
@@ -4283,64 +6508,101 @@ addon.translation = {
 -- 6b6e2380 English: Bypass observation cache (pending)
 [1893] = "관찰 캐시 우회 (대기 중)",
 -- 1fc91201 English: Skin
+-- Context: Label of the Masque skin dropdown in General settings for the preview buttons; also a
+--     help topic title.
 [1894] = "스킨",
 -- f24d3294 English: Blizzard Classic
+-- Context: Name of the built-in default button skin choice in the Masque skin dropdown (no Masque
+--     skin applied).
 [1895] = "Blizzard Classic",
 -- a41fff13 English: Preview skin is unavailable.
 [1896] = "미리보기 스킨을 사용할 수 없습니다.",
 -- 8f31d7c7 English: Sample icon
+-- Context: Tooltip of the example icon shown in the preview window.
 [1897] = "예시 아이콘",
 -- a87bca24 English: Saved manual choice is unavailable in the current context.
 [1898] = "저장된 수동 선택을 현재 상황에서 사용할 수 없습니다.",
 -- f51aa35f English: Edit announcement conditions
+-- Context: Tooltip of the button in an announcement output that opens the editor for the conditions
+--     deciding when it is announced (verb phrase).
 [1899] = "알림 조건 편집",
 -- 90b95311 English: Announcement conditions
+-- Context: Title of the announcement conditions editor window and a help topic title; noun phrase.
 [1900] = "알림 조건",
 -- b291861f English: Spell recipient
+-- Context: Unit choice in the condition editor when editing announcements: the person the spell is
+--     cast on.
 [1901] = "주문 받는 대상",
 -- 6edf74a9 English: {unit} {{!is|is not}} in a raid
 [1902] = "{unit} 공격대에 {{!속해 있음|속해 있지 않음}}",
 -- 60f5f5ce English: Announcement target
+-- Context: Unit choice in the condition editor when editing announcement conditions: the target
+--     named in the announcement; also a label in condition summaries.
 [1903] = "알림 대상",
 -- fe664929 English: Is Dead or Ghost
 [1904] = "죽었거나 유령 상태",
 -- b2bdc8d6 English: Is Friendly
+-- Context: Condition type title: the unit is friendly. Also an icon name in the icon picker.
 [1905] = "우호적",
 -- 12062b75 English: {unit} {{!is dead or a ghost|is alive}}
 [1906] = "{unit} {{!죽었거나 유령 상태|살아 있음}}",
 -- c1454135 English: Workbench Help
+-- Context: Fallback title of the help window opened without a topic.
 [1907] = "작업 창 도움말",
 -- 3db65f8c English: Navigation
+-- Context: Help section title in the workbench window help: how to move around the window.
 [1908] = "탐색",
 -- 293d404a English: Destination
+-- Context: Help section title in the profile import/export dialog: where the imported profile will
+--     be placed.
 [1909] = "대상",
 -- e5f16b07 English: Via Macro
+-- Context: Event text substituted for {{event}} in macro-driven announcements: the announcement was
+--     triggered by a macro.
 [1910] = "매크로 경유",
 -- 79c3596b English: Via Script/Macro
+-- Context: Announcement type dropdown entry: the announcement is triggered from a macro or script
+--     call, not by casting; also a help topic title.
 [1911] = "스크립트/매크로 경유",
 -- 73210659 English: Use a unique Via Script/Macro identifier.
 [1912] = "고유한 스크립트/매크로 경유 식별자를 사용하세요.",
 -- 41714d2c English: Whisper
+-- Context: Announcement channel dropdown entry: sends the message as a whisper to a player.
 [1913] = "귓속말",
 -- 02e363ed English: Use supplied macro target ({{target}})
 [1914] = "전달된 매크로 대상 사용 ({{target}})",
 -- 6ce2aa2e English: Macro call: %s
+-- %s #1: %s #1: the macro command that calls the announcement, e.g. "/run RM_Annouce("FOO","mouseover",nil)"
 [1915] = "매크로 호출: %s",
 -- 5a435552 English: Announcement Condition
+-- Context: Checkbox in the custom condition source pane (and its help title): offers this condition
+--     type when editing announcement conditions.
 [1916] = "알림 조건",
 -- 028cd1c8 English: Announcement
+-- Context: Entry in the Conditions settings category filter that lists conditions available for
+--     announcements.
 [1917] = "알림",
 -- d763075f English: Show this condition in the announcement condition editor.
 [1918] = "알림 조건 편집기에 이 조건을 표시합니다.",
 -- e7ce9976 English: Outputs
+-- Context: Heading for the list of outputs of an announcement (each output sends one message); also
+--     a help topic title and a comparison row.
 [1919] = "출력",
 -- 1a3f4334 English: Output %d
+-- Context: Name of one announcement output in the list, numbered; %d is the position (1, 2, ...).
+-- %d #1: %d #1: the number of the announcement output, counting from 1, e.g. 2
 [1920] = "출력 %d",
 -- cafb5358 English: Output state
+-- Context: Tooltip of the enable checkbox of an announcement output: tells whether the output is on
+--     or off.
 [1921] = "출력 상태",
 -- 1674ce8b English: Add output
+-- Context: Button in the announcement editor: adds another output message to the announcement (verb
+--     phrase).
 [1922] = "출력 추가",
 -- ce4683e7 English: Channel
+-- Context: Announcement output type dropdown entry: send to a numbered chat channel; also a help
+--     topic title and a comparison row.
 [1923] = "채널",
 -- 32c16791 English: Complete this output or choose a destination available for this action type.
 [1924] = "이 출력을 완성하거나 이 동작 유형에서 사용할 수 있는 대상을 선택하세요.",
@@ -4351,8 +6613,10 @@ addon.translation = {
 -- 19489a96 English: {unit} {{!are dead or a ghost|are alive}}
 [1927] = "{unit} {{!죽었거나 유령 상태|살아 있음}}",
 -- bb52ff6b English: %s {{!are|are not}} an enemy
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1928] = "%s {{!적임|적 아님}}",
 -- 5a04bf0d English: %s {{!are|are not}} attackable
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1929] = "%s {{!공격 가능|공격 불가}}",
 -- a551fec4 English: {unit} {{!are|are not}} in a raid
 [1930] = "{unit} 공격대에 {{!속해 있음|속해 있지 않음}}",
@@ -4365,10 +6629,16 @@ addon.translation = {
 -- 64f6064c English: Group membership option is invalid.
 [1934] = "그룹 소속 옵션이 잘못되었습니다.",
 -- e18851d3 English: For %s
+-- Context: Part of a condition description: appended after a dash and followed by the subject, e.g.
+--     "For Fireball"; %s is the subject name.
+-- %s #1: %s #1: the unit the condition applies to, e.g. "your target"
 [1935] = "대상: %s",
 -- 610c1d8d English: Saved settings
+-- Context: Label in a condition description, followed by a list of saved field values.
 [1936] = "저장된 설정",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, WoW
+--     Forever (variant key: DPS).
 [1937] = "근접 공격 전담",
 -- f8f8f256 English: Melee damage for every Rogue specialization from level 1 to 60, built from Icy
 --     Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister
@@ -4405,6 +6675,8 @@ addon.translation = {
 --     one, or raise its priority.
 [1942] = "Wowhead의 잠행 로테이션입니다: 모든 시작 기술에 사전계획과 목조르기를 사용하고, 마지막 목조르기가 끝나면 다시 목조르기로 시작하기 위해 로테이션 안에서 소멸(그다음 마음가짐)을 사용합니다. 난도질 유지, 그룹에서 약점 노출, 5점 마무리 기술로 파열, 연계 점수 생성 기술은 과다출혈만 사용합니다. 탈출 수단인 소멸을 공격에 쓰므로 신중하게 선택하세요. 잠행이 주 특성 트리이고 Dirty Deeds 특성을 찍었으며 사전계획을 배운 경우에 적용됩니다. 독과 재사용 대기시간 알림은 추천 기본 제공 로테이션과 같습니다. 추천 도적 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Restoration).
 [1943] = "복원",
 -- d54e5a0a English: Healing once Restoration is your main talent tree with 16 points (Mana Tide
 --     Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use
@@ -4417,6 +6689,8 @@ addon.translation = {
 --     group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf.
 [1944] = "복원이 주 특성 트리이고 16포인트(마나 해일 토템 계층)를 투자한 뒤의 치유 로테이션으로, Icy Veins를 따릅니다. 우호적 대상이 있으면: 자연의 신속함을 사용한 뒤 즉시 시전 치유의 물결, 해독과 질병 치료, 성난 해일이 없는 대상에게 성난 해일, 그룹에서는 연쇄 치유, 치유의 물결. 치유할 대상은 직접 대상으로 지정해 고릅니다. Forever에서는 생명력과 마나가 애드온에 숨겨져 있으므로 자연의 신속함과 하급 치유의 물결을 언제 쓸지는 직접 판단합니다. 적대적 대상이 있고 치유할 대상이 없으면: 다수의 적에게 불꽃 회오리와 연쇄 번개, 폭풍의 일격을 알면 폭풍의 일격과 대지 충격, 정예와 우두머리에게 화염 충격, 번개 화살, 그다음 근접 공격. 알림: 물의 보호막, 대지 충격 차단, 마나 해일 토템, 그룹 강화 토템. 직접 판단할 것: 하위 등급 사용, 다른 토템, 정화, 늑대 정령.",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Elemental).
 [1945] = "정기",
 -- 2fcd0801 English: Ranged Elemental once Elemental is your main talent tree with 21 points (Lava
 --     Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid
@@ -4429,6 +6703,10 @@ addon.translation = {
 --     Left to you: Earthbind kiting, Frost Shock, Purge and other totems.
 [1946] = "정기가 주 특성 트리이고 21포인트(용암 폭발 계층)를 투자한 뒤의 원거리 정기 로테이션으로, Icy Veins를 따릅니다(그 전에는 모든 공략이 권장하는 근접 하이브리드를 고양 기본 제공 로테이션이 맡습니다). 번개 화살(다수의 적에게는 연쇄 번개)로 끌어오고, 이동 중에는 즉시 시전 주문만 사용하며, 적이 셋 이상이면 불꽃 회오리와 연쇄 번개, 화염 충격 유지, 재사용 대기시간마다 용암 폭발, 폭풍의 일격을 알면 폭풍의 일격과 대지 충격, 그룹에서 번뜩임 발동 시 불꽃 회오리, 그다음 번개 화살을 사용합니다. 알림: 보호막, 무기 강화, 불타는 토템 또는 용암 토템, 그룹 토템, 정기의 깨달음, 차단. Forever에서는 생명력과 마나가 애드온에 숨겨져 있으므로 스스로 치유하는 것과 마나 회복을 위해 멈추는 것은 직접 판단합니다. 직접 판단할 것: 속박의 토템 카이팅, 냉기 충격, 정화, 다른 토템.",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1947] = "고양 (Icy Veins)",
 -- 339ec7e4 English: Melee Enhancement from level 1 to 60, and the default for any Shaman before
 --     Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on
@@ -4443,6 +6721,10 @@ addon.translation = {
 --     totems.
 [1948] = "1레벨부터 60레벨까지의 근접 고양 로테이션이며, 용암 폭발이나 마나 해일 토템을 배우기 전 모든 주술사의 기본값입니다. 원거리에서 번개 화살로 끌어온 뒤, 재사용 대기시간마다 폭풍의 일격, 소용돌이치는 무기 5중첩에서 즉시 시전 번개 화살, 적이 셋 이상이면 불꽃 회오리(불 토템이 세워져 있을 때)와 화염 충격, 폭풍의 일격 약화 효과에 맞춰 대지 충격, 그룹에서 화염 충격, 재사용 대기시간마다 대지 충격을 사용하며, 대상이 사거리 밖에 있는 동안에는 번개 화살로 빈틈을 채웁니다. Forever에서는 생명력과 마나가 애드온에 숨겨져 있으므로 스스로 치유하는 것과 마나 회복을 위해 멈추는 것은 직접 판단합니다(Wowhead 기본 제공 로테이션은 대신 마나를 아낍니다). 알림: 무기 강화(질풍의 무기, 없으면 불꽃의 무기, 없으면 대지의 무기), 물의 보호막 또는 번개 보호막, 대지 충격 차단, 불타는 토템 또는 용암 토템, 그룹 토템, 선견자의 분노, 돌발톱 토템. 직접 판단할 것: 토템 프리셋, 냉기 충격, 정화, 다른 토템.",
 -- eb2363b2 English: Enhancement, mana-efficient (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1949] = "고양, 마나 효율 (Wowhead)",
 -- abc72f43 English: Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work,
 --     Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in
@@ -4452,6 +6734,8 @@ addon.translation = {
 --     premade, off by default: enable it and disable that one, or raise its priority.
 [1950] = "Wowhead와 Mobalytics의 마나 절약형 고양 로테이션입니다: 자동 공격이 주력이고, 폭풍의 일격은 폭풍의 일격 연마의 마나 회복 효과가 없을 때만 사용하며, 로테이션에 대지 충격이 없고(충격은 끌어오기와 차단용), 그룹이나 다수의 적을 상대할 때는 불타는 토템과 함께 재사용 대기시간마다 불꽃 회오리를 사용합니다. 무기 강화, 보호막, 차단 알림은 Icy Veins 기본 제공 로테이션과 같습니다. 마나가 바닥난다면 그 기본 제공 로테이션 대신 이것을 선택하세요. 추천 고양 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 7e8fd1de English: All trees
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS).
 [1951] = "모든 특성 트리",
 -- 157e4fa1 English: Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead
 --     and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate
@@ -4480,6 +6764,10 @@ addon.translation = {
 --     raise its priority.
 [1954] = "Icy Veins의 흑마법사 레벨업입니다: 혼자일 때 마법봉이 기본 공격이고, 공허방랑자가 기본 악마이며, 고통과 파괴 특성은 악마를 제물로 바치고 악마 없이 플레이합니다(각각 41레벨과 55레벨부터). 악마 특성은 악마의 낙인을 유지하고 제물은 빈틈 채우기로만 사용하며, 파괴는 다수의 적 중 오래 버티는 적에게 대혼란의 파멸을 걸고 소각을 배운 뒤에는 재사용 대기시간마다 점화를 사용합니다. Icy Veins를 따른다면 추천 흑마법사 기본 제공 로테이션 대신 이것을 선택하세요. Forever에서는 생명력, 마나, 사망까지 남은 시간이 애드온에 숨겨져 있으므로 다쳤을 때의 생명력 흡수, 생명력 전환, 지속 피해 주문이 먹힐 만큼 오래 살아남을 대상의 판단은 직접 합니다. 추천 흑마법사 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- b9f016be English: All trees (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1955] = "모든 특성 트리 (Wowhead)",
 -- 02cc5c3e English: Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the
 --     Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight;
@@ -4492,6 +6780,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1956] = "Wowhead의 30레벨 흑마법사입니다: 고통과 악마 특성은 서큐버스와 함께 흡수 탱킹을 하고(부패와 고통의 파멸, 제물 없음, 그다음 남은 전투 동안 생명력 흡수; Forever에서는 생명력과 마나가 숨겨져 있으므로 생명력 전환은 직접 판단합니다), 악마 특성은 악마의 낙인을 유지하고 고통의 파멸은 큰 대상에게만 걸며, 파괴는 모든 몹에게 고통의 파멸, 부패, 제물을 걸고, 제물이 끝나기 직전에 점화를 사용하며, 어둠의 연소는 결정타용으로 아끼고 공허방랑자와 함께 마법봉을 사용합니다. 저주 증폭은 재사용 대기시간마다, 원소의 저주와 운명의 파멸은 정예와 우두머리에게만 사용하며, 다수의 적 구간은 없습니다. Wowhead 공략은 30레벨까지만 다룹니다. 추천 흑마법사 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1957] = "보호 (Icy Veins)",
 -- 95bdeac5 English: Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to
 --     pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies
@@ -4539,6 +6831,8 @@ addon.translation = {
 --     enable it and disable that one, or raise its priority.
 [1964] = "그룹과 공격대를 위한 Warcraft Tavern의 항상 분노를 쓰는 목록입니다: 방어구 가르기 5중첩을 먼저, 20% 미만의 모든 대상에게 마무리 일격이 최우선, 제압, 피의 갈증 전까지 분쇄, 죽음의 일격, 피의 갈증, 소용돌이, 재사용 대기시간마다 찌르기 일격, 격돌 연마를 찍었으면 격돌; 분노가 충분할 때마다 영웅의 일격 또는 회전베기(Forever에서는 분노가 숨겨져 있으므로 분노 60 기준이나 남는 분노로 쓰는 무력화는 없습니다), 재사용 대기시간마다 무모한 희생과 함께 죽음의 소원을 사용합니다. 그룹에서 플레이하며 전투 사이에 분노를 아낄 필요가 없다면 Icy Veins 기본 제공 로테이션 대신 이것을 선택하세요. 추천 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Balance).
 [1965] = "조화",
 -- fdac9d3d English: Balance from level 1 to 60, and the default for any Forever Druid no other
 --     premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while
@@ -4575,6 +6869,8 @@ addon.translation = {
 --     are your call. Taunts, interrupts and positioning stay with you.
 [1970] = "표범과 곰을 하나로 합친 기본 제공 로테이션으로, 변신 형태에 따라 선택됩니다. 야성이 주 특성 트리이거나(또는 11포인트를 투자했거나) 표범 또는 곰으로 변신하면 적용됩니다. 표범: 숨기 상태에서 찢어발기기 또는 칼날 발톱, 요정의 불꽃, 연계 점수 4점에서 도려내기, 도려내기가 걸려 있으면 흉포한 이빨, 갈퀴 발톱, 그다음 대상이 나를 바라보지 않으면 칼날 발톱(그 외에는 할퀴기). 곰: 원거리에서 요정의 불꽃과 야성의 돌진, 그룹에서나 적이 둘이면 위협의 포효, 원시 이빨, 셋 이상이면 휘둘러치기, 가르기, 휘둘러치기. 시전 형태에서는 표범 변신(표범이 없으면 곰 변신)을 제안합니다. 알림: 곰 변신 상태에서 분노가 충분할 때마다 후려치기, 분노, 큰 무리나 정예에게 광폭화, 혼자일 때 정신 자극, 야생의 징표, 가시. Forever에서는 생명력, 기력, 분노, 마나가 애드온에 숨겨져 있으므로 힘의 전환, 광포한 재생력, 스스로 치유하는 것은 직접 판단합니다. 도발, 차단, 위치 선정은 직접 판단합니다.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Restoration).
 [1971] = "복원",
 -- 2bcf6375 English: Group healing after Warcraft Tavern, once Restoration is your main talent tree
 --     with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild
@@ -4595,6 +6891,10 @@ addon.translation = {
 --     and hostile-target list as the Restoration premade.
 [1974] = "Icy Veins의 지속 치유 우선 치유로, 추천 회복 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 우호적 대상에게: 회복, 없으면 재생, 두 지속 치유 효과가 모두 걸려 있을 때만 치유의 손길, 지속 치유 효과가 걸린 대상에게 신속한 치유, 그다음 급속 성장(Forever에서는 생명력이 숨겨져 있으므로 직접 지정한 대상이 누가 치유받을지 정합니다). 정신 자극은 재사용 대기시간마다 사용합니다. 그 외의 알림과 적대적 대상 목록은 회복 기본 제공 로테이션과 같습니다.",
 -- 8335d07b English: Ranged (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1975] = "원거리 (Wowhead)",
 -- 5c5cdd9b English: Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and
 --     Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper
@@ -4610,6 +6910,10 @@ addon.translation = {
 --     so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours.
 [1976] = "1레벨부터 60레벨까지 모든 원거리 사냥꾼(야수, 사격, 그리고 타조 발차기 전까지의 생존)용이며, Forever 사냥꾼의 기본값입니다. 끌어오기: 사냥꾼의 징표, 신속한 사냥이 지속되는 동안 저격, 자동 사격. 그다음 내 독사 쐐기, 공유 재사용 대기시간에 맞춰 매 소환 두 번과 신비한 사격 한 번(매 소환 전에는 재사용 대기시간마다 신비한 사격), 신속한 사냥 중이거나 정예에게 저격, 조준 사격. 둘 이상의 적과 싸우면: 조준 사격 대신 일제 사격, 근처에 셋이면 폭발의 덫, 다섯이면 연발 사격. 이동 중: 즉시 시전 사격만. 근접 거리의 몹에게는 랩터의 일격과 살쾡이의 이빨. 알림: 매의 상(그 전에는 원숭이의 상), 정조준 오라, 야수 부르기, 야수 되살리기, 속사, 정예 상대나 던전에서 야수의 격노와 피의 격노, 몹이 나를 공격하면 위협. 소환수 명령, 먹이 주기, 카이팅, 죽은척하기는 직접 판단합니다. 고독한 늑대로 플레이한다면 소환수 알림을 끄세요. 이 로테이션은 Forever가 애드온에 숨기는 마나나 누구의 생명력도 읽지 않으므로, 사냥꾼의 징표와 독사 쐐기는 모든 대상에게 걸고 동물 치료는 직접 판단합니다.",
 -- a82fce4f English: Ranged, mana-saving (Mobalytics)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1977] = "원거리, 마나 절약 (Mobalytics)",
 -- 530b5b4d English: Mobalytics' mana-saving leveling style, an alternative to the recommended
 --     Wowhead ranged premade, off by default: enable it and disable that one, or raise its
@@ -4619,6 +6923,10 @@ addon.translation = {
 --     as the Wowhead premade.
 [1978] = "Mobalytics의 마나 절약 레벨업 방식으로, 추천 Wowhead 원거리 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 내 독사 쐐기를 유지하고, 매 소환 하나를 유지하며, 조준 사격(적이 둘 이상이면 일제 사격), 매 소환을 배운 뒤에는 신비한 사격을 쓰지 않습니다. Forever에서는 대상의 생명력이 숨겨져 있으므로 생명력이 충분한 대상에게 쓰는 두 번째 매는 빠져 있습니다. 끌어오기, 근접, 이동, 알림은 Wowhead 기본 제공 로테이션과 같습니다.",
 -- 5f8e7ecc English: Survival melee (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1979] = "생존 근접 (Wowhead)",
 -- 8da10e55 English: Dual-wield melee Survival once Survival is your main talent tree with 21
 --     points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise).
@@ -4639,6 +6947,8 @@ addon.translation = {
 --     moving; RM follows your range.
 [1982] = "양손 무기 생존 사냥꾼을 위한 Wowhead의 들어갔다 나오는 위빙으로, 추천 생존 근접 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 근접 거리에서: 살쾡이의 이빨과 랩터의 일격. 랩터의 일격까지 2.5초보다 많이 남았으면 타조 발차기 후 빠져나옵니다. 근접 거리 밖에서: 랩터의 일격이 거의 준비될 때까지 독사 쐐기, 신비한 사격, 조준 사격, 자동 사격을 사용한 뒤 다시 들어갑니다. 이동은 직접 하며, RM은 거리를 따라갑니다.",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Frost).
 [1983] = "냉기",
 -- 115d3d5e English: Frost from level 1 to 60, and the Forever Mage default before talent spells
 --     (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of
@@ -4654,6 +6964,8 @@ addon.translation = {
 --     stay with you too.
 [1984] = "1레벨부터 60레벨까지의 냉기 로테이션이며, 특성 주문을 배우기 전 Forever 마법사의 기본값입니다(4레벨에 얼음 화살을 배우기 전까지는 화염구). 얼음 화살로 끌어온 뒤, 서리의 손가락 발동이나 얼어붙은 대상에게 얼음창(얼음 화살을 시전 중일 때도, 취소하거나 함께 보내기 위해), 혹한의 추위 5중첩에서 냉기 돌풍, 화살 탄막 발동 시 신비한 화살, 얼음 화살, 혼자이고 얼음 화살을 쓸 마나가 없으면 마법봉을 사용합니다. 이동 중: 얼음창, 없으면 화염 작렬. 셋 이상의 적과 싸우면: 냉기 돌풍, 다섯 이상이면: 눈보라, 몹이 나를 공격하면 신비한 폭발. Warcraft Tavern의 불기둥과 신비한 폭발 광역 공격도 포함되어 있지만 꺼져 있습니다. 알림: 신비한 지능, 갑옷(혼자일 때 얼음 갑옷 또는 냉기 갑옷, 그룹에서 마법사 갑옷, 직접 고른 갑옷은 바꾸지 않음), 얼음 보호막, 마법 차단, 하급 저주 해제, 몹이 다가오면 얼음 회오리, 한파. Forever에서는 생명력과 마나가 애드온에 숨겨져 있으므로 화염 작렬로 생명력이 낮은 대상 마무리, 환기, 얼음 방패는 직접 판단합니다. 점멸, 카이팅, 변이, 마나 보석도 직접 판단합니다.",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Fire).
 [1985] = "화염",
 -- 0f5f59f3 English: Fire once Fire is your main talent tree with 11 points (Pyroblast's tier).
 --     Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three
@@ -4675,6 +6987,8 @@ addon.translation = {
 --     premade, without Combustion and Presence of Mind.
 [1988] = "불태우기 연마 없이 하는 Icy Veins의 화염 레벨업 빌드로, 추천 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 불덩이 작렬로 끌어오고, 불꽃의 잔흔을 소모할 때 화염 작렬, 몹이 다가올 때 불태우기(Forever에서는 대상의 생명력이 숨겨져 있으므로 생명력이 낮은 대상 마무리는 직접 판단합니다), 그다음 냉기화염 화살(40레벨부터) 또는 화염구를 사용합니다. 광역, 이동, 마법봉, 알림은 화염 기본 제공 로테이션과 같지만 발화와 냉정은 없습니다.",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Arcane).
 [1989] = "비전",
 -- c17e7c93 English: Arcane once Arcane is your main talent tree with 11 points and you know Arcane
 --     Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile
@@ -4687,6 +7001,8 @@ addon.translation = {
 --     longer waits for half your mana), plus the Mage upkeep reminders.
 [1990] = "비전이 주 특성 트리이고 11포인트를 투자했으며 비전 작렬을 배웠을 때의 비전 로테이션입니다. 혼자일 때는 얼음 화살로, 그룹에서는 비전 작렬로 끌어온 뒤, 화살 탄막 발동 시 신비한 화살, 번뜩임 발동 시 비전 작렬, 비전 작렬 3중첩에서 비전 격노, 쓸 수 있는 동안(Forever에서는 마나가 숨겨져 있음) 정예에게는 4중첩까지, 다른 대상에게는 2중첩까지 비전 작렬을 쌓고, 그다음 화살 탄막을 노리며 냉기화염 화살, 얼음 화살 또는 화염구를 사용하고, 혼자이고 주문을 쓸 마나가 없으면 마법봉을 사용합니다. 비전 격노가 없으면(이전 베타 설계) 화염 작렬로 중첩을 소모합니다. 이동 중: 화염 작렬. 셋 이상의 적과 싸우면: 신비한 폭발. 알림: 정예 상대 냉정과 신비의 마법 강화(신비의 마법 강화는 더 이상 마나가 절반이 되기를 기다리지 않음), 그리고 마법사 유지 관리 알림.",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Retribution).
 [1991] = "징벌",
 -- 4d5c0907 English: Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin
 --     default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged
@@ -4701,6 +7017,10 @@ addon.translation = {
 --     from level-30 beta guides.
 [1992] = "1레벨부터 60레벨까지 징벌 및 모든 근접 성기사용이며, Forever 성기사의 기본값입니다. 공격용 문장을 유지하되, 거의 끝났을 때만 갱신합니다: 정예 대상에게 성전사의 문장을 한 번 심판한 뒤, 느린(3.0초) 무기라면 지휘의 문장, 그 외에는 정의의 문장. 그다음 재사용 대기시간마다 신성한 일격, 신성 충격 성기사(쇼크딘)라면 신성 충격과 빛의 경계, 언데드와 악마에게 퇴마술, 적이 셋 이상이면 신성화, 사용할 수 있을 때 천벌의 망치, 그리고 근접 공격을 사용합니다. 심판은 전역 재사용 대기시간과 무관하므로, 문장이 걸려 있을 때마다 알림으로 표시됩니다. 기타 알림: 오라와 축복(배우면 응보의 오라와 왕의 축복, 직접 건 것은 유지). 기본적으로 꺼져 있는 선택 단계: 지휘의 문장 심판 전 심판의 망치. Forever에서는 마나, 생명력, 공격 타이머가 애드온에 숨겨져 있으므로 마나 절약, 스스로 치유하는 것, 신의 축복, 뒤틀린 빛 문장 교체는 직접 판단합니다. 30레벨 베타 공략을 바탕으로 만들었습니다.",
 -- 2ba64aad English: Protection (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1993] = "보호 (Wowhead)",
 -- 65aad40e English: Tanking, once Protection is your main talent tree or you turn on Righteous
 --     Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt),
@@ -4720,6 +7040,8 @@ addon.translation = {
 --     Undead and Demons. Same tank reminders otherwise.
 [1996] = "Icy Veins의 방어 방식으로, 추천 Wowhead 보호 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 쓸 수 있으면 적이 하나여도 언제나 신성화를 먼저 사용합니다. 심판은 도발용으로 아끼고(재사용 대기시간마다 알림 없음), 신속한 심판으로 초기화합니다. 그다음 신성한 일격과 언데드와 악마에게 퇴마술을 사용합니다. 그 외의 방어 알림은 같습니다.",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Holy).
 [1997] = "신성",
 -- 23d8ec27 English: Group healing once Holy is your main talent tree with 21 points (Holy Shock's
 --     tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current
@@ -4777,6 +7099,9 @@ addon.translation = {
 --     Discipline healer before Penance (20–29) selects it by hand.
 [2006] = "수양 또는 신성이 주 특성 트리이고 어둠의 형상을 배우지 않았을 때의 그룹 치유 로테이션입니다. 현재 우호적 대상을 치유합니다: 전투 시작 전 신의 권능: 보호막, 회복의 기원, 소생. 마법 무효화와 질병 해제 또는 질병 치료. 회복의 기원. 신성한 이상이 있으면 신성한 폭발. 회개. 소생(없을 때). 치유(그 전에는 하급 치유). 적에게는: 어둠의 권능: 고통, 신성한 불꽃, 회개, 성스러운 일격, 마법봉. 알림: 내면의 열정, 신의 권능: 인내, 천상의 정신, 다른 플레이어에게 마력 주입, 전투 중 내면의 집중력, 종족 주문. Forever에서는 생명력과 마나가 애드온에 숨겨져 있으므로 직접 지정한 대상이 누가 치유가 필요한지 알려 주는 유일한 단서이며, 위급할 때의 치유, 치유의 기원, 결속의 치유, 상급 치유와 순간 치유, 구원의 기도, 어둠의 희생은 직접 판단합니다. 누구를 치유할지와 등급은 직접 고르며, 회개를 배우기 전(20–29레벨)의 수양 치유 사제는 이것을 직접 선택해야 합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Blood). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2007] = "Blizzard 전투 보조",
 -- d2ca4d91 English: Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4801,6 +7126,10 @@ addon.translation = {
 --     Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders.
 [2010] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 혈기 우선순위입니다. 한밤 전투에서는 강화 효과와 대상의 약화 효과가 애드온에 숨겨지므로 이를 읽는 단계는 그곳에서 기다리게 됩니다. 읽어 보거나, 복제해서 실험해 보세요. Retail에서는 생명력과 룬 마력이 숨겨지므로 죽음의 일격은 쓸 수 있을 때마다 사용합니다. 죽음의 마수로 끌어옵니다. 죽음의 일격; 뼈의 보호막이 없거나, 5중첩 미만이거나, 곧 사라지거나, 몰살이 활성화되어 있으면 골수분쇄(근접 거리 밖에서는 죽음의 마수); 산레인의 선물 중에는 죽음의 일격, 피의 소용돌이 한 번, 진홍빛 스컬지 발동 시 죽음과 부패, 심장 강타; 진홍빛 스컬지 발동 시 또는 적이 넷 이상이면 죽음과 부패; 흡혈의 일격; 섭취; 끓는점 발동 시, 피의 역병이 없을 때 또는 충전이 가득 찼을 때 피의 소용돌이; 심장 강타. 알림: 시체 되살리기, 흡혈, 사신의 징표, 사신의 징표 후 춤추는 룬 무기, 그리고 전투 보조 기본 제공 로테이션의 유틸리티 알림.",
 -- 2b5ecbd1 English: Deathbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2011] = "죽음의 인도자 참고용 (SimulationCraft)",
 -- 8ed0754d English: Reference only, off by default: SimulationCraft's Deathbringer list, which
 --     spends runic power on Death Strike for damage. Hidden combat data keeps it from running in
@@ -4811,6 +7140,9 @@ addon.translation = {
 --     and the utility reminders.
 [2012] = "참고용이며 기본적으로 꺼져 있습니다. 죽음의 일격에 룬 마력을 써서 피해를 주는 SimulationCraft의 죽음의 인도자 목록입니다. 숨겨진 전투 데이터 때문에 한밤 전투에서는 실행되지 않으며, Retail에서는 룬 마력이 숨겨지므로 최대치 방지는 없습니다. 죽음과 부패가 없을 때마다 죽음과 부패, 사신의 징표, 몰살 발동 시 골수분쇄, 룬이 부족한 동안 뼈의 보호막을 위해 죽음의 마수(그 외에는 골수분쇄), 죽음의 일격, 피의 소용돌이, 춤추는 룬 무기 밖에서 섭취, 심장 강타. 알림: 시체 되살리기, 춤추는 룬 무기, 흡혈, 그리고 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2013] = "Blizzard 전투 보조",
 -- 9750dd93 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4832,6 +7164,11 @@ addon.translation = {
 --     Dead, Empower Rune Weapon at two charges, plus the utility reminders.
 [2016] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 냉기 우선순위입니다. 한밤 전투에서는 도살기, 단단한 얼음, 칼날얼음이 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 룬 마력이 숨겨지므로 최대치 확인은 없습니다. 도살기 2중첩, 또는 룬 셋과 함께 도살기 1중첩일 때 절멸, 분쇄 칼날이 있으면 칼날얼음 5중첩 대상에게 냉기의 일격, 단단한 얼음 발동 시 울부짖는 한파, 도살기 발동 시 절멸, 냉기의 일격, 절멸; 적이 셋 이상이면 서리낫과 빙하 진군으로 교체; 근접 거리 밖에서는 울부짖는 한파. 알림: 냉혹한 겨울, 얼음 기둥, 얼음 기둥 중 신드라고사의 숨결과 서리고룡의 격노, 사신의 징표, 시체 되살리기, 충전 2회에서 룬 무기 강화, 그리고 유틸리티 알림.",
 -- 0d4e8b80 English: Reference (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2017] = "참고용 (Wowhead)",
 -- 6899840b English: Reference only, off by default: Wowhead's Frost order, which puts its cooldowns
 --     in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is
@@ -4842,6 +7179,9 @@ addon.translation = {
 --     enemies swap in Frostscythe and Glacial Advance.
 [2018] = "참고용이며 기본적으로 꺼져 있습니다. 재사용 대기시간 기술을 로테이션 안에 넣은 Wowhead의 냉기 순서입니다. 숨겨진 전투 데이터 때문에 한밤 전투에서는 실행되지 않으며, Retail에서는 룬 마력이 숨겨지므로 최대치 확인은 없습니다. 충전 2회에서 룬 무기 강화, 사신의 징표, 얼음 기둥, 신드라고사의 숨결, 서리고룡의 격노; 그다음 도살기 2중첩 또는 몰살과 함께 1중첩일 때 절멸, 단단한 얼음 발동 시 울부짖는 한파, 도살기 발동 시 절멸, 새 도살기를 위해 룬 무기 강화, 냉기의 일격, 절멸, 울부짖는 한파. 적이 셋 이상이면 서리낫과 빙하 진군으로 교체합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Unholy). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2019] = "Blizzard 전투 보조",
 -- c11d2249 English: Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -4863,6 +7203,11 @@ addon.translation = {
 --     your plagues are missing, plus the utility reminders.
 [2022] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 부정 우선순위입니다. 한밤 전투에서는 발동 효과와 역병이 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 룬 마력과 대상의 생명력이 숨겨지므로 마무리 구간과 산레인의 룬 마력 소모는 빠져 있습니다. 구울이 없으면 시체 되살리기; 역병 가속 효과를 유지하기 위해 부패의 낫; 수확 발동 시 영혼 수확자; 어둠의 변신 중 부패; 불시의 파멸 또는 금단의 지식 발동 시 죽음의 고리(적이 넷 이상이면 전염병); 하급 구울 충전이 없으면 고름 일격, 있으면 스컬지의 일격; 죽음의 고리. 알림: 사자의 군대, 어둠의 변신, 역병이 없을 때 돌발 열병, 그리고 유틸리티 알림.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2023] = "참고용 (SimulationCraft)",
 -- 100d5361 English: Reference only, off by default: SimulationCraft's Unholy list, which spends
 --     Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic
@@ -4875,6 +7220,9 @@ addon.translation = {
 --     Transformation.
 [2024] = "참고용이며 기본적으로 꺼져 있습니다. 죽음의 고리를 훨씬 더 자주 쓰는 SimulationCraft의 부정 목록입니다. 숨겨진 전투 데이터 때문에 한밤 전투에서는 실행되지 않으며, Retail에서는 룬 마력과 대상의 생명력이 숨겨지므로 최대치 확인과 마무리 확인은 빠져 있습니다. 부패의 낫 유지, 어둠의 변신 중 영혼 수확자, 불시의 파멸 발동 시 죽음의 고리, 어둠의 변신 중 부패, 어둠의 변신이나 금단의 지식 중이거나 사자의 군대까지 5초 넘게 남았을 때마다 죽음의 고리, 하급 구울 충전이 있으면 스컬지의 일격, 고름 일격. 적이 셋 이상: 죽음의 고리 대신 전염병, 충전이 셋 미만이면 고름 일격. 알림: 돌발 열병, 몹 무리에 죽음과 부패, 사자의 군대, 어둠의 변신.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2025] = "Blizzard 전투 보조",
 -- 16bdde1a English: Recommended before you choose a specialization (while the game reports the
 --     Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4884,6 +7232,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2026] = "전문화를 선택하기 전(게임이 죽음의 기사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 죽음의 기사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Havoc). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2027] = "Blizzard 전투 보조",
 -- c4a310af English: Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4907,6 +7258,9 @@ addon.translation = {
 --     Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur.
 [2030] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 파멸 우선순위입니다. 한밤 전투에서는 발동 효과, 탈태, 정수 파쇄가 애드온에 숨겨지므로 이 목록은 그곳에서는 실행할 수 없습니다. 읽어 보거나, 복제해서 실험해 보세요. Retail에서는 분노가 숨겨지므로 지옥칼은 여유 공간을 기다리지 않습니다. 알드라치 파괴자: 분쇄 일격과 몰아치는 전투검이 모두 없으면 파괴자의 글레이브, 분쇄 일격 발동 시 혼돈의 일격. 지옥상흔: 탈태 중 정수 파쇄, 칼춤, 혼돈의 일격. 그다음 정수 파쇄 중 칼춤과 혼돈의 일격, 충전 2회에서 제물의 오라, 안광, 타성을 위해 지옥칼, 안광까지 4초 넘게 남았으면 정수 파쇄, 칼춤, 적이 둘이면 제물의 오라, 혼돈의 일격, 지옥칼, 제물의 오라, 글레이브 투척, 지옥 돌진. 알림: 안광과 칼춤을 쓴 뒤 탈태, 사냥, 복수의 퇴각, 그리고 분열과 흐릿해지기.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Vengeance). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2031] = "Blizzard 전투 보조",
 -- ad54981d English: Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4930,6 +7284,11 @@ addon.translation = {
 --     Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur.
 [2034] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins의 영웅 특성 목표를 더한 Wowhead의 복수 순서입니다. 한밤 전투에서는 강화 효과가 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 분노가 숨겨지므로 소모 기술은 비용만 기다리고 생성 기술은 최대치를 피하지 않습니다. 알드라치 파괴자: 파괴자의 글레이브, 분쇄 일격 발동 시 균열, 몰아치는 전투검 발동 시 영혼 베어내기. 그다음 충전이 가득 차면 균열, 적이 셋 이상이면 영혼 폭탄, 제물의 오라, 불꽃의 인장, 대상이 하나일 때 영혼 베어내기, 지옥 황폐, 영혼 베어내기, 균열, 지옥칼, 글레이브 투척. Rotation Master는 영혼 파편을 셀 수 없으므로 영혼 폭탄은 적 수를 따릅니다. 알림: 악마 쐐기가 없을 때 악마 쐐기, 탈태, 불타는 낙인, 원한의 인장, 영혼 저미기(충전 2회에서 불지옥 일격은 꺼져 있음), 그리고 분열과 흐릿해지기.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2035] = "참고용 (SimulationCraft)",
 -- d4f52cf1 English: Reference only, off by default: SimulationCraft's Vengeance lists. Hidden
 --     combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its
@@ -4942,6 +7301,9 @@ addon.translation = {
 --     Demon Spikes, Disrupt, Blur.
 [2036] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft의 복수 목록입니다. 숨겨진 전투 데이터 때문에 한밤 전투에서는 실행되지 않으며, Retail에서는 분노가 숨겨지므로 분노 기준은 빠져 있습니다. 알드라치 파괴자: 불꽃의 인장과 제물의 오라 먼저, 탈태, 지옥칼을 섞은 파괴자의 글레이브 순환, 불타는 낙인, 원한의 인장, 몹 무리에 영혼 폭탄, 뜨거운 최후 중 영혼 저미기, 그다음 균열, 영혼 베어내기, 지옥칼, 지옥 황폐. 궤멸자: 준비된 공허내림을 영혼 폭탄이나 영혼 베어내기로 소모, 공허내림 2중첩에서 균열, 탈태, 영혼 폭탄, 원한의 인장, 충전이 가득 차면 균열, 제물의 오라, 불꽃의 인장, 균열, 영혼 베어내기, 지옥칼, 글레이브 투척. 알림: 악마 쐐기, 분열, 흐릿해지기.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Devourer). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2037] = "Blizzard 전투 보조",
 -- ca03d1af English: Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4952,6 +7314,11 @@ addon.translation = {
 --     Retail, so when to use Blur is your call.
 [2038] = "포식 전문화에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전 중이거나 공허 광선을 정신 집중하는 동안에는 기다립니다. 이와 함께 보조 기능이 플레이어에게 맡기는 것을 알려 줍니다: 전투 중 준비될 때마다 공허 탈태, 사냥, 공허칼날, 차단 가능한 시전에 분열, 전투 중 준비될 때마다 흐릿해지기. 적의 시전은 전투 중 숨겨지므로 분열은 게임이 시전을 보여 주는 곳에서만 강조되며, Retail에서는 생명력이 숨겨지므로 흐릿해지기를 언제 쓸지는 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2039] = "참고용 (Icy Veins)",
 -- 5da6da74 English: Reference only, off by default: Icy Veins' Annihilator priority. Most of your
 --     buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so
@@ -4963,6 +7330,11 @@ addon.translation = {
 --     cooldown. Reminders: Disrupt and Blur.
 [2040] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins의 궤멸자 우선순위입니다. 한밤 전투에서는 대부분의 강화 효과가 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 분노가 숨겨지므로 공허 광선은 비용만 기다립니다. 공허 탈태 밖: 영혼분출 발동 시 흡수, 수확, 영혼 제물이 타오르고 있지 않으면 영혼 제물, 공허 탈태가 준비되면 공허칼날과 사냥, 공허 탈태, 굶주린 베기, 공허 광선, 흡수. 공허 탈태 중: 영혼분출 발동 시 집어삼키기, 공허 광선, 공허상흔 일격(있다면), 붕괴하는 별, 도태, 집어삼키기, 영혼 제물. Rotation Master는 영혼 파편을 셀 수 없으므로 수확과 도태는 재사용 대기시간마다 사용합니다. 알림: 분열과 흐릿해지기.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2041] = "참고용 (SimulationCraft)",
 -- 0228846e English: Reference only, off by default: SimulationCraft's Annihilator list, which
 --     enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in
@@ -4973,6 +7345,9 @@ addon.translation = {
 --     Devour. Reminders: Disrupt and Blur.
 [2042] = "참고용이며 기본적으로 꺼져 있습니다. 공허 탈태가 준비되는 즉시 들어가는 SimulationCraft의 궤멸자 목록입니다. 숨겨진 전투 데이터 때문에 한밤 전투에서는 실행되지 않습니다. 공허 탈태 밖: 적이 셋 이하이고 공허 탈태가 가득 찼을 때 포식자의 이빨과 함께 공허칼날, 공허 탈태, 영혼분출 발동 시 흡수, 수확, 공허 광선, 몹 무리에 영혼 제물, 흡수. 공허 탈태 중: 대상이 하나일 때 영혼분출 발동 시 집어삼키기, 포식자의 이빨과 함께 사냥과 공허칼날, 몹 무리에 공허 광선, 붕괴하는 별, 도태, 공허 광선, 영혼 제물, 집어삼키기. 알림: 분열과 흐릿해지기.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2043] = "Blizzard 전투 보조",
 -- a6d0d810 English: Recommended before you choose a specialization (while the game reports the
 --     Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4982,6 +7357,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2044] = "전문화를 선택하기 전(게임이 악마사냥꾼의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 악마사냥꾼 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Balance). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2045] = "Blizzard 전투 보조",
 -- 3941b2ad English: Recommended for Balance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5006,6 +7384,9 @@ addon.translation = {
 --     Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders.
 [2048] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 조화 우선순위입니다. 한밤 전투에서는 지속 피해 효과, 일월식, 발동 효과가 애드온에 숨겨지므로 그곳에서는 실행할 수 없습니다. 읽어 보거나, 복제해서 실험해 보세요. Retail에서는 천공의 힘이 숨겨지므로 별빛쇄도는 최대치에 도달하기 전이 아니라 비용만큼 쌓였을 때 사용합니다. 달빛야수 변신과 천벌로 끌어옵니다. 태양섬광과 달빛섬광이 없거나 곧 사라지면 다시 걸기; 어느 일월식도 활성화되어 있지 않으면 일월식(적이 셋 이상이면 월식, 그 외에는 일식); 별재봉사의 날실이나 우주의 손길 발동 시 또는 몹 무리에 별똥별; 별재봉사의 씨실이나 우주의 손길 발동 시 별빛쇄도; 초승달, 반달, 보름달; 일월식 중 야생 버섯; 쓸 수 있을 때마다 별빛쇄도; 월식 중이거나 몹 무리에 별빛섬광, 그 외에는 천벌. 알림: 천체의 정렬 또는 화신, 일월식 전에 엘룬의 분노와 자연의 군대, 천체의 정렬 중 영혼 소집, 태양 광선, 그리고 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Feral). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2049] = "Blizzard 전투 보조",
 -- e3e320b6 English: Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5029,6 +7410,9 @@ addon.translation = {
 --     Instincts, plus the utility reminders. Snapshotting is left to you.
 [2052] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 야성 우선순위입니다. 한밤 전투에서는 출혈과 발동 효과가 숨겨지므로(연계 점수는 숨겨지지 않음) 그곳에서는 실행할 수 없으며, 기력은 Retail에서 숨겨집니다. 표범 변신, 숨기, 갈퀴 발톱으로 시작합니다. 물어뜯기; 최상위 포식자의 갈망 발동 시 흉포한 이빨; 연계 점수 5점에서는 적이 둘 이상이면 원시 분노, 도려내기가 없거나 마지막 몇 초 남았으면 도려내기, 그 외에는 흉포한 이빨을 쓰며, 5점을 넘겨 쌓지 않고 기력을 기다립니다; 5점 미만에서는 갈퀴 발톱이 없거나 곧 사라지면 갈퀴 발톱, 달 바라기 달빛섬광, 적이 셋 이상이면 휘둘러치기, 칼날 발톱. 알림: 전투 중 준비될 때마다 호랑이의 분노, 호랑이의 분노 중 광폭화 또는 화신과 야성의 광기 또는 날뛰는 광란(연계 점수 2점 이하), 도려내기가 걸려 있을 때 호랑이의 분노와 광폭화 중 영혼 소집, 두개골 강타, 생존 본능, 그리고 유틸리티 알림. 스냅샷은 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Guardian). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2053] = "Blizzard 전투 보조",
 -- 2a16fe9b English: Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5051,6 +7435,10 @@ addon.translation = {
 --     Bash, plus the utility reminders.
 [2056] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 수호 우선순위입니다. 한밤 전투에서는 약화 효과와 발동 효과가 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 분노와 생명력이 숨겨지므로 분노 80에서의 말살과 후려갈기기 소모는 직접 판단합니다. 재사용 대기시간마다 난타와 짓이기기, 대상이 하나면 붉은 달, 달빛섬광이 없거나 은하의 수호자 발동 시 달빛섬광, 휘둘러치기. 전투 중 준비될 때마다 알림: 무쇠가죽, 광포한 재생력, 생존 본능; 전투 사이에 곰 변신; 광폭화 또는 화신, 달 광선, 영혼 소집, 야생의 정수, 두개골 강타, 그리고 유틸리티 알림.",
 -- beb78fe5 English: Defensive reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2057] = "방어 중심 참고용 (SimulationCraft)",
 -- f0f6bfc8 English: Reference only, off by default: SimulationCraft's Guardian list, which spends
 --     rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage
@@ -5073,6 +7461,9 @@ addon.translation = {
 --     racial cooldown whenever they are ready in combat, Mark of the Wild between pulls.
 [2060] = "회복 전문화에 권장됩니다. 적을 대상으로 지정하면 Blizzard의 전투 보조 제안, 즉 표범 또는 시전 형태에서의 Blizzard 회복 피해 목록을 강조합니다. 그 외에는 우호적 대상(또는 자신)에게 Icy Veins의 유지 시전을 제안합니다: 피어나는 생명, 전투 중 꽃피우기, 회복이 걸린 대상에게 신속한 치유, 전투 중 그룹에서 급속 성장, 번뜩임 발동 시 또는 풍요 5중첩에서 재생, 회복이 없을 때 회복. Retail에서는 생명력과 마나가 숨겨지므로 이 제안은 누가 얼마나 다쳤는지가 아니라 직접 지정한 대상을 따릅니다. 한밤 전투에서는 내 지속 치유 효과가 숨겨지므로 이를 읽는 단계는 그곳에서 기다립니다. 누구를 치유할지와 모든 치유 재사용 대기시간 기술은 직접 판단합니다. 알림: 전투 중 준비될 때마다 정신 자극, 나무 껍질, 종족 재사용 대기시간 기술, 전투 사이에 야생의 징표.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2061] = "Blizzard 전투 보조",
 -- 65160bfe English: Recommended before you choose a specialization (while the game reports the
 --     Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5082,6 +7473,9 @@ addon.translation = {
 --     premades take over.
 [2062] = "전문화를 선택하기 전(게임이 드루이드의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 드루이드 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Devastation). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2063] = "Blizzard 전투 보조",
 -- 4950c9f2 English: Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5107,6 +7501,9 @@ addon.translation = {
 --     Breath ready, Deep Breath for Scalecommander, plus the utility reminders.
 [2066] = "참고용이며 기본적으로 꺼져 있습니다. 최적의 황폐 우선순위입니다. 한밤 전투에서는 발동 효과, 재사용 대기시간, 대상의 화상 효과가 숨겨지므로 그곳에서는 실행할 수 없습니다. 읽어 보거나, 복제해서 실험해 보세요. 살아있는 불꽃으로 끌어옵니다. 비늘사령관(대규모 파열을 배운 경우): 영원의 쇄도, 불의 숨결, 적이 둘 이상이면 깊은 숨결, 대규모 파열 충전이 있으면 파열, 다섯 이상이면 기염, 파열, 화염 도약이 있을 때 불태움 발동 시 살아있는 불꽃, 정수 폭발이 2중첩 미만이면 해방된 불길, 하늘빛 휩쓸기. 불꽃형성자: 영원의 쇄도, 화상 효과가 없거나 끝나 가면 불의 숨결, 다섯 이상이면 기염, 파열, 넷 이상이면 깊은 숨결, 해방된 불길, 화염 도약이 있을 때 불태움 발동 시 살아있는 불꽃, 하늘빛 휩쓸기. 그다음 이동 중 하늘빛 일격, 살아있는 불꽃, 하늘빛 일격. 대상이 하나면 강화 주문은 1단계로 사용합니다(Icy Veins). 알림: 용의 분노, 용의 분노 중이거나 불의 숨결이 준비되었을 때 전세역전, 비늘사령관이면 깊은 숨결, 그리고 유틸리티 알림.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Augmentation). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2067] = "Icy Veins",
 -- 02c50a1b English: Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one
 --     of the few buffs the game still shows addons in Midnight combat, so its upkeep works there.
@@ -5120,6 +7517,9 @@ addon.translation = {
 --     is up to you.
 [2068] = "증강 전문화에 권장됩니다: Icy Veins의 칠흑의 힘 우선순위입니다. 칠흑의 힘은 한밤 전투에서도 게임이 애드온에 보여 주는 몇 안 되는 강화 효과이므로 그곳에서도 유지가 작동합니다. 전투 밖: 끓어오르는 비늘이 없는 우호적 그룹 대상에게 끓어오르는 비늘, 적에게 살아있는 불꽃. 그다음 칠흑의 힘이 없거나 4초 미만이면 칠흑의 힘, 영겁의 숨결이 준비되지 않았다면 재사용 대기시간마다 칠흑의 힘; 예지; 불의 숨결; 지각 변동; 칠흑의 힘 중이거나 정수 폭발 2중첩에서 분출; 하늘빛 일격; 살아있는 불꽃. 숨겨진 강화 효과는 전투 중 자기 단계만 건너뜁니다. 알림: 영겁의 숨결과 깊은 숨결(조준은 직접), 불의 숨결이 준비되었을 때 전세역전, 불의 숨결과 지각 변동이 모두 재사용 대기 중이면 시간 건너뛰기, 그리고 유틸리티 알림. 예지와 끓어오르는 비늘은 현재 대상에게 시전됩니다: 아군 선택과 강화 단계는 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: AugmentationAssisted). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2069] = "Blizzard 전투 보조",
 -- 9442cdce English: Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the
 --     recommended Icy Veins Augmentation premade, off by default: enable it and disable that one,
@@ -5129,6 +7529,11 @@ addon.translation = {
 --     Magic as in the other Evoker premades.
 [2070] = "증강 전문화에 대한 Blizzard의 전투 보조 제안으로, 추천 Icy Veins 증강 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 칠흑의 힘은 사라진 뒤에만 다시 시전하며, 시전 중이거나 강화 주문을 충전하는 동안에는 기다립니다. 전투 중 영겁의 숨결, 깊은 숨결, 전세역전, 시간 건너뛰기 알림, 그리고 다른 기원사 기본 제공 로테이션처럼 진압, 흑요석 비늘, 청동용군단의 축복, 마법의 원천 알림.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2071] = "참고용 (Icy Veins)",
 -- 21ab41c4 English: Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and
 --     every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom
@@ -5139,6 +7544,9 @@ addon.translation = {
 --     premades. Healing stays with you.
 [2072] = "참고용이며 기본적으로 꺼져 있습니다. 한밤 전투에서는 아군의 생명력, 메아리, 되감기, 정수 폭발, 모든 재사용 대기시간이 애드온에 숨겨지고, Rotation Master는 누구를 치유할지 고를 수 없으며, Blizzard는 치유 전담용 전투 보조 로테이션을 제공하지 않으므로 이 기본 제공 로테이션은 치유하지 않습니다. 전투 밖에서는 청동용군단의 축복과 마법의 원천을 알려 주고, 대상이 적이면 피해 기술을 제안합니다: 불의 숨결, 파열, 살아있는 불꽃, 이동 중 하늘빛 일격. 진압과 흑요석 비늘 알림은 다른 기원사 기본 제공 로테이션과 같습니다. 치유는 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2073] = "Blizzard 전투 보조",
 -- 63133e23 English: Recommended before you choose a specialization (while the game reports the
 --     Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5148,6 +7556,9 @@ addon.translation = {
 --     premades take over.
 [2074] = "전문화를 선택하기 전(게임이 기원사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 기원사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: BeastMastery). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2075] = "Blizzard 전투 보조",
 -- c71902c5 English: Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5172,6 +7583,9 @@ addon.translation = {
 --     reminders.
 [2078] = "참고용이며 기본적으로 꺼져 있습니다. 최적화된 야수 우선순위입니다. 한밤 전투에서는 충전, 재사용 대기시간, 발동 효과가 애드온에 숨겨지므로 그곳에서는 실행할 수 없습니다. 읽어 보거나, 복제해서 실험해 보세요. Retail에서는 집중이 숨겨집니다. 전투 전에 소환수를 부르고 대상에게 사냥꾼의 징표를 겁니다. 야수의 격노 직전이나 충전이 가득 차기 전에 날카로운 사격; 야수의 격노; 무리의 지도자의 포효나 자연의 동맹 발동 시, 또는 야수의 격노까지 오래 남았으면 자유롭게 살상 명령; 코브라 송곳니 발동 시 코브라 사격; 코브라 사격; 코브라 사격에 쓸 집중이 부족하면 날카로운 사격. 어둠 순찰자: 부패의 사격 중 검은 화살, 끝날 때 울부짖는 화살. 적이 셋 이상(야수의 회전베기가 있으면 둘 이상): 야수의 회전베기를 시작하기 위해 마구잡이 난타, 그다음 지속되는 동안 살상 명령, 날카로운 사격, 코브라 사격. 알림: 유혈, 그리고 전투 보조 기본 제공 로테이션의 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Marksmanship). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2079] = "Blizzard 전투 보조",
 -- 494a0bb6 English: Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5196,6 +7610,9 @@ addon.translation = {
 --     Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you.
 [2082] = "참고용이며 기본적으로 꺼져 있습니다. 다음 조준 사격 전에 정밀 사격을 소모하는 최적화된 사격 우선순위입니다. 한밤 전투에서는 발동 효과와 충전이 숨겨지므로 그곳에서는 실행할 수 없습니다. Retail에서는 집중이 숨겨지므로 무리를 상대로 집중 70에서 쓰는 일제 사격은 빠집니다. 대상에게 사냥꾼의 징표를 걸고 조준 사격으로 시작합니다. 파수꾼: 폭발 사격, 연발 공격, 정조준, 효과 시간이 끝나기 전에 달빛 회전 표창, 정밀 사격 없이 정조준 중 조준 사격, 속사, 마무리 사격, 정밀 사격 발동 시 일제 사격(히드라의 상이 있으면 적 둘) 또는 신비한 사격, 조준 사격, 달빛 회전 표창, 고정 사격. 어둠 순찰자: 정밀 사격 발동 시 검은 화살을 먼저, 실탄 장전 중에는 폭발 사격 없음, 충전이 가득 차기 전에 조준 사격, 울부짖는 화살. 교묘한 사격이 있고 적이 셋 이상: 폭발 사격, 연발 공격, 교묘한 사격을 걸기 위해 일제 사격, 정조준, 그다음 지속되는 동안 속사와 조준 사격. 명중 30중첩이나 표식 없는 대상에 맞춘 정조준 사용은 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Survival). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2083] = "Blizzard 전투 보조",
 -- fc59d6b9 English: Recommended for Survival. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5207,6 +7624,11 @@ addon.translation = {
 --     included) is your call.
 [2084] = "생존 전문화에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며(소환수도 직접 부릅니다), 시전이나 정신 집중 중에는 기다립니다. 이와 함께 전투 보조가 플레이어에게 맡기는 것을 알려 줍니다: 전투 중 제압과 종족 재사용 대기시간 기술, 차단 가능한 시전에 재갈, 전투 중 준비될 때마다 적자생존. 적의 시전은 전투 중 숨겨지므로 차단은 게임이 시전을 보여 주는 곳에서만 강조되며, Retail에서는 생명력이 숨겨지므로 방어 기술(활기와 거북의 상 포함)을 언제 쓸지는 직접 판단합니다.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2085] = "참고용 (SimulationCraft)",
 -- 1b766914 English: Reference only, off by default: SimulationCraft's Survival priority, where Kill
 --     Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike
@@ -5220,6 +7642,9 @@ addon.translation = {
 --     the utility reminders.
 [2086] = "참고용이며 기본적으로 꺼져 있습니다. 살상 명령으로 창끝을 쌓고 제압, 붐스틱, 야생불 폭탄, 랩터의 일격으로 소모하는 SimulationCraft의 생존 우선순위입니다. 한밤 전투에서는 창끝과 충전이 숨겨지므로 그곳에서는 실행할 수 없습니다. 소환수를 부르고 대상에게 사냥꾼의 징표를 건 뒤 야생불 폭탄으로 시작합니다. 파수꾼: 창끝이 없으면 살상 명령, 붐스틱, 파수꾼의 표식 발동 시 야생불 폭탄, 제압이 준비되었으면 그 전에 살상 명령, 제압, 달빛 회전 표창, 랩터의 일격, 그다음 살상 명령, 야생불 폭탄, 제압. 무리의 지도자: 무리의 지도자의 포효 발동 시 살상 명령, 그다음 창끝이 있을 때 제압, 야생불 폭탄, 붐스틱, 랩터의 일격. 적이 셋 이상: 제압 전에 붐스틱과 야생불 폭탄, 랩터의 휩쓸기. 알림: 근접 거리 밖에서 독수리의 상, 그리고 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2087] = "Blizzard 전투 보조",
 -- ea9140e9 English: Recommended before you choose a specialization (while the game reports the
 --     Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5229,6 +7654,9 @@ addon.translation = {
 --     premades take over.
 [2088] = "전문화를 선택하기 전(게임이 사냥꾼의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 사냥꾼 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Arcane). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2089] = "Blizzard 전투 보조",
 -- 074da909 English: Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5256,6 +7684,9 @@ addon.translation = {
 --     the Assisted premade's reminders.
 [2092] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 비전 우선순위입니다. 한밤 전투에서는 비전 연사와 번뜩임이 애드온에 숨겨지므로(비전 충전물만 보임) 그곳에서는 실행할 수 없으며, Retail에서는 마나가 숨겨지므로 마나가 낮을 때의 환기는 직접 판단합니다. 읽어 보거나, 복제해서 실험해 보세요. 비전 작렬로 끌어옵니다. 성난태양: 연사 12 미만일 때 번뜩임 발동 시 신비한 화살, 비전의 영혼 밖에서 오색 화살, 충전물 4개에 연사 12와 번뜩임이 있거나 연사 25이거나, 비전의 영혼 중이면 충전물 수와 관계없이 비전 탄막, 오색 화살, 충전물 3개 미만에서 비전 보주, 적이 셋이거나 충전물이 없으면 비전 파동, 비전 작렬. 주문술사(쇄편의 마술을 배운 경우): 오색 화살, 몹 무리에 보주, 연사 20에서 탄막(적이 둘 이상이면 충전물 4개일 때만), 연사 15 미만일 때 번뜩임 발동 시 신비한 화살, 충전물 3개 미만에서 보주와 파동(비전 쇄도 중에는 파동 없음), 비전 작렬. 비전 작렬을 시전할 수 없으면 비전 탄막. 알림: 비전 쇄도, 쇄도 중이거나 쇄도보다 훨씬 전에 탄막이나 오색 화살 뒤 비전의 여파, 탄막 뒤 충전물이 없을 때 냉정, 그리고 전투 보조 기본 제공 로테이션의 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Fire). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2093] = "Blizzard 전투 보조",
 -- 42f4c6c3 English: Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5277,6 +7708,9 @@ addon.translation = {
 --     Waiting for Firestarter and timing Meteor into Combustion stay with you.
 [2096] = "참고용이며 기본적으로 꺼져 있습니다. 공략의 화염 우선순위입니다. 한밤 전투에서는 몰아치는 열기, 열기, 화염 파열, 화염 작렬 충전이 숨겨지므로 그곳에서는 실행할 수 없습니다. 시전이 끝나 가는 동안 화염 작렬로 열기를 몰아치는 열기로 바꾸고, 불덩이 작렬로 끌어옵니다. 이상 고열 발동 시 불덩이 작렬(적이 넷 이상이면 불기둥), 유성, 몰아치는 열기 발동 시 불덩이 작렬, 발화 중 열기 발동 시 화염 작렬, 화염 파열 발동 시 불덩이 작렬, 일렁이는 열기 발동 시 또는 이동 중 불태우기, 열기 발동 시 화염 작렬, 그다음 얼음불꽃 화살 또는 화염구. 알림: 일반 시전이 끝날 때 발화, 이글거리는 방벽, 그리고 유틸리티 알림. 방화광을 기다리는 것과 유성을 발화에 맞추는 것은 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2097] = "Blizzard 전투 보조",
 -- 4d8c78c6 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5303,6 +7737,9 @@ addon.translation = {
 --     utility reminders.
 [2100] = "참고용이며 기본적으로 꺼져 있습니다. 영웅 특성 트리별 공략의 냉기 우선순위입니다. 한밤 전투에서는 발동 효과, 빙결 중첩, 재사용 대기시간이 숨겨지므로 그곳에서는 실행할 수 없습니다. 얼음불꽃 화살 또는 얼음 화살로 끌어옵니다. 서리불꽃(얼음불꽃 화살을 배운 경우): 준비되면 혹한의 쐐기, 적이 하나나 둘이면 혜성 폭풍, 열기 동공 없이 두뇌 빙결 발동 시 진눈깨비, 서리의 손가락 2중첩에서 얼음창, 서리 광선, 얼어붙은 구슬, 적이 셋일 때 빗발치는 냉기 발동 시 눈보라, 열기 동공이 있을 때 서리의 손가락 발동 시 또는 빙결 12중첩에서 얼음창, 진눈깨비, 적이 다섯이면 서리 회오리 또는 냉기 돌풍, 그다음 혹한의 쐐기 또는 얼음불꽃 화살. 주문술사: 혜성 폭풍, 두뇌 빙결 발동 시 진눈깨비, 서리의 손가락 2중첩에서 얼음창, 얼어붙은 구슬, 준비되면 혹한의 쐐기, 빗발치는 냉기 발동 시 눈보라, 서리의 손가락 발동 시 또는 빙결 6중첩에서 얼음창, 서리 광선, 진눈깨비, 적이 넷이면 서리 회오리 또는 냉기 돌풍, 일곱이면 눈보라, 그다음 혹한의 쐐기 또는 얼음 화살. 이동 중에는 얼음창. 알림: 물의 정령 소환, 얼음 보호막, 그리고 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2101] = "Blizzard 전투 보조",
 -- f9d1d4a4 English: Recommended before you choose a specialization (while the game reports the
 --     Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5325,6 +7762,11 @@ addon.translation = {
 --     Brew is your call.
 [2104] = "양조 전문화에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 전투 보조는 양조주를 쓰지 않으므로, Icy Veins의 조언대로 양조주는 그 옆에 알림으로 표시됩니다: 흑우주, 흑우 니우짜오의 원령, 정화주, 천신주 또는 천신의 주입, 절명의 손길은 전투 중 준비될 때마다 강조됩니다(Rotation Master는 아직 시간차를 읽을 수 없으므로 시간차가 얼마나 큰지는 직접 판단합니다). 또한 차단 가능한 시전에 손날 찌르기, 전투 중 준비될 때마다 강화주와 종족 재사용 대기시간 기술도 알려 줍니다. 적의 시전은 전투 중 숨겨지므로 차단은 게임이 시전을 보여 주는 곳에서만 강조되며, Retail에서는 생명력이 숨겨지므로 강화주를 언제 쓸지는 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2105] = "참고용 (Icy Veins)",
 -- a07ba74a English: Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft
 --     agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so
@@ -5336,6 +7778,9 @@ addon.translation = {
 --     Brew or Infusion, Touch of Death, plus the utility reminders.
 [2106] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins의 양조 우선순위입니다(SimulationCraft도 큰 틀에서 같음). 한밤 전투에서는 의식 상실 연계, 술통을 비워라, 충전이 숨겨지므로 그곳에서는 실행할 수 없습니다. 맥주통 휘두르기로 끌어옵니다. 후려차기; 기의 파동(조화의 종사); 의식 상실 연계 발동 시 범의 장풍; 충전이 가득 찼거나 술통을 비워라가 있으면 맥주통 휘두르기; 불의 숨결; 폭발하는 맥주통 전에 비취 돌풍; 기의 파동(음영파); 맥주통 휘두르기; 적이 셋 이상이면 비취 돌풍과 회전 학다리차기; 범의 장풍; 해악 축출. 알림: 정화주와 천신주를 다 쓴 뒤 흑우주, 흑우 니우짜오의 원령, 정화주, 천신주 또는 천신의 주입, 절명의 손길, 그리고 유틸리티 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Windwalker). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2107] = "Blizzard 전투 보조",
 -- ac8fdaae English: Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5361,6 +7806,11 @@ addon.translation = {
 --     fillers. Reminder: Touch of Karma, plus the utility reminders.
 [2110] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins의 천신의 대변자 우선순위입니다. 모든 단계는 연계 일격을 지키며(직전에 시전한 주문은 반복하지 않음), 기와 자신의 시전은 계속 읽을 수 있지만 옥룡의 마음, 등선, 후려차기!, 츠지의 춤은 한밤 전투에서 숨겨지므로 그곳에서는 실행할 수 없으며, Retail에서는 기력이 숨겨지므로 기력이 최대치에 도달하기 전의 범의 장풍은 빠져 있습니다. 쉬엔까지 10초 넘게 남았으면 소용돌이 용의 주먹; 기가 부족하거나 등선이 끝날 때 정점의 발구르기; 옥룡의 마음이 없으면 천신합일; 옥룡의 마음이 끝날 때 분노의 주먹; 천신합일, 백호 쉬엔의 원령, 분노의 주먹, 소용돌이 용의 주먹, 바람의 군주의 일격; 분노의 주먹에 쓸 기가 부족하면 후려차기; 질풍차기, 해오름차기; 후려차기! 충전 2회이거나 등선 중이면 후려차기; 등선 중이거나 츠지의 춤 발동 시 회전 학다리차기; 절명의 손길; 빈틈 채우기로 범의 장풍, 후려차기, 날카로운 바람. 알림: 업보의 손아귀, 그리고 유틸리티 알림.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2111] = "참고용 (Icy Veins)",
 -- 671bd99c English: Reference only, off by default. Blizzard offers no Assisted Combat list for
 --     healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks
@@ -5370,6 +7820,9 @@ addon.translation = {
 --     Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat.
 [2112] = "참고용이며 기본적으로 꺼져 있습니다. Blizzard는 치유 전담용 전투 보조 목록을 제공하지 않고, 한밤 전투에서는 아군의 생명력, 소생의 안개 충전, 마나 차 중첩, 발동 효과가 애드온에 숨겨지므로 치유 조언은 불가능합니다. 치유 주문은 직접 고르세요. 적대적 대상에게는 주먹 치유(피스트위빙)의 빈틈 채우기인 해오름차기, 후려차기, 범의 장풍을 제안하고, 우호적 대상이거나 대상이 없으면 아무것도 제안하지 않습니다. 알림: 손날 찌르기, 전투 중 준비될 때마다 강화주와 종족 재사용 대기시간 기술.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2113] = "Blizzard 전투 보조",
 -- 7799708b English: Recommended before you choose a specialization (while the game reports the
 --     Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5379,6 +7832,9 @@ addon.translation = {
 --     premades take over.
 [2114] = "전문화를 선택하기 전(게임이 수도사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 수도사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2115] = "Blizzard 전투 보조",
 -- d3e8f0e2 English: Recommended for Retribution in Midnight. In combat the game now hides buffs,
 --     debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5389,6 +7845,11 @@ addon.translation = {
 --     Trinkets and racials stay with you.
 [2116] = "한밤에서 징벌 전문화에 권장됩니다. 이제 게임이 전투 중 강화 효과, 약화 효과, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(원버튼 로테이션)을 행동 단축바에 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 그 제안이 다루지 않는 것도 알려 줍니다: 전투 사이에 오라, 차단 가능한 시전에 비난, 전투 중 준비될 때마다 신의 가호. Retail에서는 생명력이 숨겨지므로 신의 가호와 신의 축복을 언제 쓸지는 직접 판단합니다. 장신구와 종족 특성은 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2117] = "참고용 (Icy Veins)",
 -- 66c84fb8 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably
@@ -5401,6 +7862,9 @@ addon.translation = {
 --     defensives.
 [2118] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 한밤이 전투 중 숨기는 강화 효과, 충전, 적 수를 읽으므로 그곳에서는 안정적으로 실행할 수 없습니다. 빛의 망치; 신성한 목적의 무료 소모 기술; 파멸의 재가 재사용 대기 중일 때 신성한 힘 5이면 소모 기술; 파멸의 재; 천상의 종; 전쟁의 기술 발동 시 심판의 칼날; 충전이 가득 차기 전에 천벌의 망치; 신성한 힘 3 이상이면 적이 둘 이상이거나 창공의 힘이 있을 때 천상의 폭풍, 그 외에는 최후의 선고; 천벌의 망치; 심판의 칼날; 심판; 기사단의 공세 또는 성전사의 일격. 신성한 힘은 전투 중에도 보이므로 소모 시점은 그곳에서도 작동합니다. 알림: 응징의 격노, 파멸의 재가 준비되었을 때 사형 선고, 오라, 비난, 방어 기술.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2119] = "Blizzard 전투 보조",
 -- 3e1487eb English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and
@@ -5410,6 +7874,11 @@ addon.translation = {
 --     Lay on Hands, is your call. Taunting and positioning stay with you.
 [2120] = "한밤에서 보호 전문화에 권장됩니다. 정의의 방패, 응징의 격노, 파수꾼이 이미 포함된 Blizzard의 전투 보조 제안을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 사이에 오라, 차단 가능한 시전에 비난, 전투 중 준비될 때마다 헌신적인 수호자와 고대 왕의 수호자. Retail에서는 생명력이 숨겨지므로 이들과 신의 축복을 언제 쓸지는 직접 판단합니다. 도발과 위치 선정은 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2121] = "참고용 (Icy Veins)",
 -- f169797b English: Reference only, off by default: the Icy Veins and SimulationCraft order needs
 --     the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat.
@@ -5427,6 +7896,9 @@ addon.translation = {
 --     Word of Glory below half health is left to you. Same reminders as the Icy Veins reference.
 [2124] = "참고용이며 기본적으로 꺼져 있습니다. Wowhead의 방어 전담 순서입니다. 재사용 대기시간마다 심판, 정의의 방패, 응징의 방패, 신성한 힘 0에서 천상의 종, 축복받은 망치 또는 정의의 망치를 사용하고, 신성화는 빈틈 채우기로만 사용합니다. Retail에서는 생명력이 숨겨지므로 생명력 절반 미만에서의 영광의 서약은 직접 판단합니다. 알림은 Icy Veins 참고용 로테이션과 같습니다.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2125] = "Icy Veins",
 -- ce9bbe93 English: Holy in Midnight, for reference: Rotation Master picks a spell, not a target,
 --     and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns
@@ -5441,6 +7913,9 @@ addon.translation = {
 --     to you. Avenging Wrath and Aura Mastery are left to you.
 [2126] = "한밤에서의 신성, 참고용: Rotation Master는 대상이 아니라 주문을 고르고 게임은 전투 중 모든 사람의 생명력을 숨기므로, 이 로테이션은 대상으로 지정한 누구에게든 신성한 힘과 재사용 대기시간 기술이 계속 돌아가게 하며, 누가 치유가 필요한지는 직접 판단합니다. 신성한 힘은 전투 중에도 보이므로, 먼저 5에서 소모하고 다른 치유 뒤에는 3 이상에서 소모합니다. 우호적 대상에게: 신성한 힘 5에서 영원의 불꽃 또는 영광의 서약, 빛 주입 발동 시 빛의 섬광, 신성 충격, 3 이상에서 영원의 불꽃 또는 영광의 서약, 성스러운 빛, 빛의 섬광. 여명의 빛은 직접 판단합니다. 적에게: 신성한 힘 5에서 정의의 방패, 신성 충격, 3 이상에서 정의의 방패, 심판, 성전사의 일격, 신성화. 전투 중 알림: 천상의 종, 신성한 반사, 신성한 보루 또는 신성한 무기, 우호적 대상에게 고결의 봉화, 신의 가호; 전투 사이에 오라; 비난. 신의 축복은 직접 판단합니다. 응징의 격노와 오라 숙련도 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2127] = "Blizzard 전투 보조",
 -- 4c581641 English: Recommended before you choose a specialization (while the game reports the
 --     Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5450,6 +7925,9 @@ addon.translation = {
 --     premades take over.
 [2128] = "전문화를 선택하기 전(게임이 성기사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 성기사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2129] = "Blizzard 전투 보조",
 -- e88d5282 English: Recommended for Shadow in Midnight. In combat the game now hides your DoTs,
 --     buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5461,6 +7939,11 @@ addon.translation = {
 --     call.
 [2130] = "한밤에서 암흑 전문화에 권장됩니다. 이제 게임이 전투 중 지속 피해 효과, 강화 효과, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(지속 피해 효과, 어둠의 형상, 공허의 형상을 유지하고 정신의 채찍을 끝까지 시전하게 하는 원버튼 로테이션)을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 공허의 형상 시전 후 20초 동안 마력 주입, 전투 사이에 어둠의 형상과 신의 권능: 인내, 차단 가능한 시전에 침묵(게임이 시전을 읽도록 허용하는 곳에서만 강조됩니다). Retail에서는 생명력이 숨겨지므로 구원의 기도는 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2131] = "참고용 (Icy Veins)",
 -- 1cbf9308 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are
@@ -5473,6 +7956,10 @@ addon.translation = {
 --     Voidform with both DoTs up, Power Infusion in Voidform.
 [2132] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 지속 피해 타이머, 광기 효과, 공허의 형상을 읽는데, 한밤은 이를 전투 중 숨깁니다. Retail에서는 광기(자원)와 생명력이 숨겨지므로 광기가 최대치일 때의 어둠의 권능: 광기, 어둠의 권능: 죽음으로 마무리하기, 구원의 기도는 직접 판단합니다. 전투 전에 흡혈의 손길; 흡혈의 손길을 걸기 위해 촉수 격돌; 남은 시간이 30% 이하일 때 흡혈의 손길과 어둠의 권능: 고통 갱신; 광기 효과가 끝나 가거나 공허의 형상 중이면 어둠의 권능: 광기; 광기 효과 중 공허의 폭발; 충전 2회에서 촉수 격돌; 공허의 격류; 정신 분열; 촉수 격돌; 광기 효과 중 정신의 채찍: 광기; 공허 연사; 이동 중 어둠의 권능: 죽음과 어둠의 권능: 고통; 정신의 채찍(정신 분열이 준비되면 끊음). 알림: 후광, 두 지속 피해 효과가 걸려 있을 때 공허의 형상, 공허의 형상 중 마력 주입.",
 -- 6a76d2e3 English: Atonement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2133] = "속죄 (Icy Veins)",
 -- c8fa3896 English: Discipline in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5491,6 +7978,9 @@ addon.translation = {
 --     target. Same reminders as the Icy Veins premade.
 [2136] = "참고용이며 기본적으로 꺼져 있습니다. Wowhead의 시즌 1 예언자 순서로, 한밤이 전투 중 숨기는 약화 효과를 읽어 어둠의 권능: 고통을 유지합니다. 어둠의 권능: 고통, 재사용 대기시간마다 어둠의 권능: 죽음, 회개, 정신 분열, 성스러운 일격; 우호적 대상에게는 회개를 먼저. 알림은 Icy Veins 기본 제공 로테이션과 같습니다.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2137] = "Icy Veins",
 -- d7f52f6f English: Holy in Midnight, for reference: the game hides everyone's health in combat and
 --     Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending
@@ -5503,6 +7993,9 @@ addon.translation = {
 --     it is about to die is your call), Fortitude. Desperate Prayer is yours.
 [2138] = "한밤에서의 신성, 참고용: 게임은 전투 중 모든 사람의 생명력을 숨기고 Rotation Master는 대상이 아니라 주문을 고르므로, 이 로테이션은 대상으로 지정한 누구에게든 빛의 권능 주문, 회복의 기원, 발동 효과가 계속 돌아가게 하며, 치유 우선순위 판단은 직접 합니다. 우호적 대상에게: 빛의 권능: 신성화, 빛의 권능: 평온, 회복의 기원, 빛의 쇄도가 있을 때 치유의 기원, 축도, 빛술사가 있을 때 치유의 기원, 빛의 쇄도가 있을 때 순간 치유, 그룹에서 치유의 기원, 이동 중 신성한 폭발, 순간 치유. 적에게: 빛의 권능: 응징, 신성한 불꽃, 이동 중 신성한 폭발, 성스러운 일격. 알림: 전투 중 절정, 천상의 찬가, 후광, 우호적 대상에게 수호 영혼(Retail에서는 생명력이 숨겨지므로 죽어 가는지 여부는 직접 판단합니다), 신의 권능: 인내. 구원의 기도는 직접 판단합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2139] = "Blizzard 전투 보조",
 -- 4b29903d English: Recommended before you choose a specialization (while the game reports the
 --     Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5512,6 +8005,9 @@ addon.translation = {
 --     premades take over.
 [2140] = "전문화를 선택하기 전(게임이 사제의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 사제 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2141] = "Blizzard 전투 보조",
 -- ea331596 English: Recommended for Assassination in Midnight. In combat the game now hides your
 --     bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own
@@ -5523,6 +8019,11 @@ addon.translation = {
 --     Crimson Vial is your call.
 [2142] = "한밤에서 암살 전문화에 권장됩니다. 이제 게임이 전투 중 출혈, 강화 효과, 기력, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(은신 시작 기술, 목조르기, 파열, 독살, 죽음표식, 왕의 파멸을 처리하는 원버튼 로테이션)을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 사이에 치명적인 독과 비치명적인 독 하나씩, 그리고 은신, 전투 중 은신 상태가 아닐 때 소멸, 차단 가능한 시전에 발차기(게임이 시전을 읽도록 허용하는 곳에서만 강조됩니다). Retail에서는 생명력이 숨겨지므로 진홍색 약병은 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2143] = "참고용 (Icy Veins)",
 -- 04026a9b English: Reference only, off by default: the Icy Veins and SimulationCraft order keeps
 --     bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its
@@ -5534,6 +8035,9 @@ addon.translation = {
 --     whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders.
 [2144] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 타이머에 따라 출혈을 유지하는데, 한밤은 이를 전투 중 숨기며, Retail에서는 기력이 숨겨지므로 기력 모으기는 빠져 있습니다. 은신 상태에서는 목조르기, 그다음 매복. 연계 점수가 가득 차지 않았을 때 남은 시간이 30% 이하이면 목조르기, 5점 이상이고 남은 시간이 30% 이하이면 파열; 연계 점수 5점 이상에서는 최후의 일격 또는 독살; 그 미만에서는 적이 셋 이상이면 혈폭풍, 가까이에 둘 이상이면 칼날 부채, 매복, 절단. 알림: 두 출혈이 모두 걸려 있을 때 죽음표식, 그와 함께 왕의 파멸, 죽음표식이 준비되었을 때 소멸, 죽음추적자의 징표가 있는 대상에게 독칼, 전투 중 준비될 때마다 엉겅퀴 차, 그리고 공용 독, 은신, 발차기 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2145] = "Blizzard 전투 보조",
 -- bb9cc61b English: Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the
@@ -5543,6 +8047,11 @@ addon.translation = {
 --     with you: the game hides how many Roll the Bones buffs you have.
 [2146] = "한밤에서 무법 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(은신 시작 기술, 뼈주사위, 폭풍의 칼날, 아드레날린 촉진, 미간 적중, 마무리 기술을 처리합니다), 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 사이에 독과 은신, 전투 중 은신 상태가 아닐 때 소멸, 발차기. Retail에서는 생명력이 숨겨지므로 진홍색 약병은 직접 판단합니다. 도박의 연속은 직접 판단합니다: 게임이 뼈주사위 강화 효과의 개수를 숨기기 때문입니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2147] = "참고용 (Icy Veins)",
 -- 3a3eecef English: Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead
 --     order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in
@@ -5554,6 +8063,9 @@ addon.translation = {
 --     Blade Rush are all cooling. Keep It Rolling stays manual.
 [2148] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins, SimulationCraft와 Wowhead의 순서는 뼈주사위 강화 효과, 기회 중첩, 기력을 읽는데, 한밤은 이를 전투 중 숨깁니다. 은신 상태에서는 매복. 연계 점수가 최대치보다 1 적거나 그 이상이면: 미간 적중, 광기의 학살자, 최후의 일격, 속결. 그 외에는 배포가 있을 때 매복, 기회 6중첩에서 권총 사격(연계 점수가 적으면 3중첩), 매복, 사악한 일격. 알림: 뼈주사위 효과가 하나도 없으면 뼈주사위, 연계 점수 2점 이하에서 아드레날린 촉진, 적이 둘 이상이면 폭풍의 칼날 유지, 질풍 칼날, 아드레날린 촉진, 미간 적중, 질풍 칼날이 모두 재사용 대기 중이면 마음가짐. 도박의 연속은 수동으로 사용합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2149] = "Blizzard 전투 보조",
 -- 96f6f8ea English: Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance,
@@ -5562,6 +8074,11 @@ addon.translation = {
 --     cast. Health is hidden on Retail, so Crimson Vial is your call.
 [2150] = "한밤에서 잠행 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(은신 시작 기술, 어둠의 칼날, 피아귀의 이빨, 어둠의 춤, 은밀한 기술, 마무리 기술을 처리합니다), 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 사이에 독과 은신, 차단 가능한 시전에 발차기. Retail에서는 생명력이 숨겨지므로 진홍색 약병은 직접 판단합니다.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2151] = "참고용 (Icy Veins)",
 -- 5fff6443 English: Reference only, off by default: the Icy Veins and SimulationCraft order holds
 --     Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which
@@ -5574,6 +8091,9 @@ addon.translation = {
 --     points.
 [2152] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 은밀한 기술을 위해 어둠의 춤을 아껴 두고 어둠의 춤, 어둡고 어두운 밤, 기력을 읽는데, 한밤은 이를 전투 중 숨깁니다. 전투 전 은신 상태: 그림자 일격. 연계 점수가 최대치보다 1 적거나 그 이상이면: 어둡고 어두운 밤이 있을 때 절개, 어둠의 춤 중 은밀한 기술, 최후의 일격, 적이 셋 이상이면 검은 화약, 절개. 그 외에는 그림자 일격, 둘 이상이면 표창 폭풍, 어둠칼날 또는 기습. 알림: 어둠의 춤 중 피아귀의 이빨, 어둠의 춤이 준비되었을 때 어둠의 칼날, 은밀한 기술이 준비되었거나 어둠의 칼날이 활성화되어 있을 때 연계 점수 2점 이하(또는 6점 이상)에서 어둠의 춤, 은신 상태가 아닐 때 연계 점수 2점 이하에서 소멸.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2153] = "Blizzard 전투 보조",
 -- 797e018d English: Recommended before you choose a specialization (while the game reports the
 --     Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5583,6 +8103,9 @@ addon.translation = {
 --     premades take over.
 [2154] = "전문화를 선택하기 전(게임이 도적의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 도적 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2155] = "Blizzard 전투 보조",
 -- 14b1a04b English: Recommended for Elemental in Midnight. In combat the game now hides Flame
 --     Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's
@@ -5594,6 +8117,11 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2156] = "한밤에서 정기 전문화에 권장됩니다. 이제 게임이 전투 중 화염 충격, 강화 효과, 소용돌이, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(원버튼 로테이션)을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 중 승천, 불의 정령 또는 폭풍의 정령, 자연의 신속함, 이동 중 영혼나그네의 은총, 전투 사이에 번개 보호막과 하늘의 격노(Blizzard의 제안은 무기 강화와 보호막 강화를 유지합니다), 차단 가능한 시전에 날카로운 바람(게임이 시전을 읽도록 허용하는 곳에서만 강조됩니다), 전투 중 준비될 때마다 영혼 이동(Retail에서는 생명력이 숨겨지므로 언제 쓸지는 직접 판단합니다).",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2157] = "참고용 (Icy Veins)",
 -- 8fc57d38 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat;
@@ -5609,6 +8137,9 @@ addon.translation = {
 --     shared ones.
 [2158] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 화염 충격, 원소의 대가, 폭풍수호자를 읽는데, 한밤은 이를 전투 중 숨기며, Retail에서는 소용돌이가 숨겨지므로 소모 기술은 소용돌이가 거의 가득 찰 때가 아니라 비용만큼 쌓였을 때 사용합니다. 전투 전에 폭풍수호자와 용암 폭발. 교전 중인 적이 셋 이상일 때: 폭풍수호자, 선조의 신속함, 화염 충격, 폭풍수호자가 있을 때 연쇄 번개, 정기 작렬, 지진, 용암 쇄도 발동 시 용암 폭발, 폭풍, 연쇄 번개. 그 외에는 폭풍수호자, 선조의 신속함, 원소의 대가 밖에서 남은 시간이 30% 이하일 때 화염 충격과 전격의 불길, 원소의 대가를 시작하기 위해 용암 폭발, 원소의 대가 중 폭풍과 폭풍수호자 번개 화살, 원소의 대가 중 정기 작렬 또는 대지 충격, 전격의 불길, 폭풍, 이동 중 화염 충격 또는 냉기 충격, 쓸 수 있을 때마다 정기 작렬 또는 대지 충격, 번개 화살. 알림: 폭풍수호자를 쓴 뒤 승천, 정령, 영혼나그네의 은총, 그리고 공용 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2159] = "Blizzard 전투 보조",
 -- 2b518620 English: Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and
@@ -5617,6 +8148,10 @@ addon.translation = {
 --     pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift.
 [2160] = "한밤에서 고양 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(소용돌이치는 무기를 소모하고, 화염 충격을 유지하며, 쇄도하는 토템과 세계의 분리를 처리합니다), 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 중 승천, 파멸의 바람, 야수 정령, 전투 사이에 번개 보호막과 하늘의 격노(Blizzard의 제안은 질풍의 무기를 유지합니다), 날카로운 바람, 영혼 이동.",
 -- 5c90fed4 English: Stormbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = "폭풍인도자 참고용 (SimulationCraft)",
 -- 4890c5e6 English: Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins
 --     and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers,
@@ -5630,6 +8165,10 @@ addon.translation = {
 --     and the shared ones.
 [2162] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft의 폭풍인도자 목록(Icy Veins와 Wowhead도 동의)은 화염 충격, 낙뢰, 채찍 화염, 재사용 대기시간 타이머를 읽는데, 한밤은 이를 전투 중 숨깁니다. 교전 중인 적이 셋 이상일 때: 강화 효과를 위해 낙뢰, 소용돌이치는 무기 10중첩에서 폭풍, 9중첩에서 연쇄 번개, 낙뢰, 용암 채찍, 세계의 분리. 그다음 9중첩에서 태고의 폭풍, 화염 충격이 없으면 전격의 불길 또는 화염 충격, 세계의 분리, 강화 효과를 위해 낙뢰, 채찍 화염을 위해 용암 채찍, 바람의 일격, 10중첩에서 폭풍 또는 번개 화살(전격의 불길이나 낙뢰가 곧 준비되면 8중첩), 충전 2회에서 폭풍의 일격, 용암 채찍, 폭풍의 일격, 전격의 불길, 낙뢰, 5중첩에서 번개 화살, 화염 충격. 알림: 파멸의 바람, 파멸의 바람 밖에서 승천, 야수 정령, 그리고 공용 알림.",
 -- 33731fb7 English: Totemic reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2163] = "토템술사 참고용 (SimulationCraft)",
 -- 4485ad39 English: Reference only, off by default: SimulationCraft's Totemic list reads Flame
 --     Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in
@@ -5641,6 +8180,9 @@ addon.translation = {
 --     Stormbringer reference.
 [2164] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft의 토템술사 목록은 화염 충격, 뜨거운 손, 소용돌이치는 불, 낙뢰, 파멸의 바람을 읽는데, 한밤은 이를 전투 중 숨깁니다. 교전 중인 적이 셋 이상일 때: 낙뢰, 소용돌이치는 무기 5중첩에서 연쇄 번개. 그다음 화염 충격이 없으면 전격의 불길 또는 화염 충격, 쇄도하는 토템, 세계의 분리, 뜨거운 손이나 소용돌이치는 불이 있을 때 용암 채찍, 강화 효과를 위해 낙뢰, 10중첩에서 태고의 폭풍, 바람의 일격, 파멸의 바람 중 낙뢰와 폭풍의 일격, 5중첩에서 번개 화살, 낙뢰, 용암 채찍, 폭풍의 일격, 전격의 불길, 화염 충격. 알림은 폭풍인도자 참고용 로테이션과 같습니다.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Restoration). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2165] = "Icy Veins",
 -- 6bac9c2a English: Restoration in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5652,6 +8194,9 @@ addon.translation = {
 --     Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift.
 [2166] = "한밤에서의 복원, 참고용: Blizzard의 전투 보조는 치유 전담을 다루지 않고, 게임은 전투 중 모든 사람의 생명력을 숨기며, Rotation Master는 대상이 아니라 주문을 고르므로, 이 로테이션은 대상으로 지정한 누구에게든 준비된 순서대로 치유 기술을 정렬하고 누구를 치유할지는 직접 판단합니다. 우호적 대상에게: 치유의 토템, 생명 폭발, 그룹에서 치유의 비, 쇄도하는 토템, 성난 해일, 그룹에서 연쇄 치유, 치유의 물결. 적에게: 화염 충격이 없으면 화염 충격, 용암 폭발, 번개 화살. 알림: 전투 사이에 물의 보호막, 우호적 대상에게 대지의 보호막, 하늘의 격노; 전투 중 자연의 신속함; 그룹 전투 중 치유의 해일 토템과 정신의 고리 토템; 날카로운 바람; 영혼 이동.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2167] = "Blizzard 전투 보조",
 -- 75442137 English: Recommended before you choose a specialization (while the game reports the
 --     Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5661,6 +8206,9 @@ addon.translation = {
 --     premades take over.
 [2168] = "전문화를 선택하기 전(게임이 주술사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 주술사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2169] = "Blizzard 전투 보조",
 -- be7ca540 English: Recommended for Affliction in Midnight. In combat the game now hides your DoTs,
 --     procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5673,6 +8221,11 @@ addon.translation = {
 --     call).
 [2170] = "한밤에서 고통 전문화에 권장됩니다. 이제 게임이 전투 중 지속 피해 효과, 발동 효과, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(고통과 부패를 유지하고, 영혼의 조각을 불안정한 고통에 쓰며, 흑마법서: 희생을 처리하는 원버튼 로테이션)을 보여 주며, 시전 중이거나 정신 집중 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 중 암흑시선 소환, 악마를 희생하지 않았다면 전투 사이에 지옥사냥개 소환, 차단 가능한 시전에 악마 조종(게임이 시전을 읽도록 허용하는 곳에서만 강조됩니다), 전투 중 준비될 때마다 어둠의 서약과 영원한 결의(Retail에서는 생명력이 숨겨지므로 언제 쓸지는 직접 판단합니다).",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2171] = "참고용 (Icy Veins)",
 -- d01f383a English: Reference only, off by default: the Icy Veins and SimulationCraft (Soul
 --     Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in
@@ -5684,6 +8237,9 @@ addon.translation = {
 --     the shared ones.
 [2172] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft(영혼 수확자)의 순서는 지속 피해 타이머, 일몰, 조각의 불안정성을 읽는데, 한밤은 이를 전투 중 숨깁니다. 전투 전에 유령 출몰; 교전 중인 적이 셋 이상이고 내 부패가 없으면 부패의 씨앗; 유령 출몰; 3초 미만이면 고통과 부패 또는 쇠퇴; 영혼의 조각 2개 이하에서 암흑의 수확; 영혼의 조각 5개에서 불안정한 고통; 일몰 2중첩에서 재앙의 손아귀(없으면 어둠의 화살); 조각의 불안정성 발동 시 또는 영혼의 조각 4개에서 불안정한 고통; 영혼 흡수; 어둠의 화살. 알림: 암흑의 수확이 재사용 대기 중일 때 암흑시선 소환, 적개심, 지옥사냥개 소환, 그리고 공용 알림.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2173] = "Blizzard 전투 보조",
 -- c6249f11 English: Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and
@@ -5693,6 +8249,11 @@ addon.translation = {
 --     pulls, Command Demon, Dark Pact, Unending Resolve.
 [2174] = "한밤에서 악마 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(공포사냥개 부르기, 굴단의 손, 악마 화살, 마력 착취, 악마 폭군), 시전 중이거나 정신 집중 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 최근 12초 안에 부른 공포사냥개가 나와 있는 동안 악마 폭군 소환, 전투 중 흑마법서: 임프 군주, 흑마법서: 지옥 유린자, 파멸수호병 소환, 전투 사이에 지옥수호병 소환, 악마 조종, 어둠의 서약, 영원한 결의.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2175] = "참고용 (Icy Veins)",
 -- 631224a9 English: Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist)
 --     order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat.
@@ -5703,6 +8264,9 @@ addon.translation = {
 --     Core below 4, Shadow Bolt.
 [2176] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft(악마학자)의 순서는 악마의 핵, 임프 수, 재사용 대기시간 타이머를 읽는데, 한밤은 이를 전투 중 숨깁니다. 전투 전에 마력 착취, 악마 화살, 어둠의 화살; 그다음 악마의 핵이 하나 이하일 때 마력 착취, 흑마법서: 임프 군주, 흑마법서: 지옥 유린자, 파멸수호병 소환, 공포사냥개 부르기, 영혼의 조각 5개에서 악마 폭군 소환, 교전 중인 적이 셋 이상이면 파열, 황폐, 영혼의 조각 3개 이상에서 굴단의 손, 3개 미만에서 지옥불 화살, 4개 미만일 때 악마의 핵 발동 시 악마 화살, 어둠의 화살.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2177] = "Blizzard 전투 보조",
 -- e652e84a English: Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire,
@@ -5711,6 +8275,11 @@ addon.translation = {
 --     demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you.
 [2178] = "한밤에서 파괴 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(제물 또는 쇠퇴, 점화, 혼돈의 화살, 불의 비, 영혼의 불꽃, 적개심), 시전 중이거나 정신 집중 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 중 지옥불정령 소환, 악마를 희생하지 않았다면 전투 사이에 임프 소환, 악마 조종, 어둠의 서약, 영원한 결의. 두 번째 대상에 대한 대혼란은 직접 판단합니다.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2179] = "참고용 (SimulationCraft)",
 -- ad764c7b English: Reference only, off by default: SimulationCraft's order reads Immolate,
 --     Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and
@@ -5728,6 +8297,9 @@ addon.translation = {
 --     Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate.
 [2182] = "참고용이며 기본적으로 꺼져 있습니다. 영혼의 조각이 최대치에 도달하기 전에 혼돈의 화살에 쓰고, 어둠의 연소와 악마불 집중을 재사용 대기시간마다 사용하는 Icy Veins의 지옥소환사 순서입니다. 교전 중인 적이 셋 이상이면 불의 비; 쇠퇴 또는 제물 유지; 지옥불정령 소환; 적개심; 어둠의 연소; 영혼의 조각 4개 미만에서 영혼의 불꽃; 4개 이상에서 혼돈의 화살; 대재앙; 4개 미만에서 지옥불 화살; 악마불 집중; 점화; 소각.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2183] = "Blizzard 전투 보조",
 -- 9f1e219f English: Recommended before you choose a specialization (while the game reports the
 --     Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5737,6 +8309,9 @@ addon.translation = {
 --     premades take over.
 [2184] = "전문화를 선택하기 전(게임이 흑마법사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 흑마법사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2185] = "Blizzard 전투 보조",
 -- 182c0efa English: Recommended for Arms in Midnight. In combat the game now hides rage, Rend,
 --     Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own
@@ -5747,6 +8322,10 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2186] = "한밤에서 무기 전문화에 권장됩니다. 이제 게임이 전투 중 분노, 분쇄, 거인의 강타, 발동 효과, 재사용 대기시간, 생명력을 애드온에 숨기므로, 이 로테이션은 Blizzard의 자체 전투 보조 제안(원버튼 로테이션)을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 영웅의 일격(제안이 절대 쓰지 않는 핵심 기술), 전투 중 투신과 용사의 창, 전투 사이에 전투의 외침, 차단 가능한 시전에 들이치기(게임이 시전을 읽도록 허용하는 곳에서만 강조됩니다), 전투 중 준비될 때마다 투사의 혼(Retail에서는 생명력이 숨겨지므로 언제 쓸지는 직접 판단합니다).",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2187] = "학살자 참고용 (SimulationCraft)",
 -- 4c91f0b4 English: Reference only, off by default: the Slayer order from SimulationCraft, Icy
 --     Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which
@@ -5758,6 +8337,10 @@ addon.translation = {
 --     Pummel.
 [2188] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft, Icy Veins와 Wowhead의 학살자 순서는 분노, 분쇄, 거인의 강타, 급살, 기회주의자를 읽는데, 한밤은 이를 전투 중 숨깁니다. 돌진으로 시작; 교전 중인 적이 둘 이상이면 휩쓸기 일격; 분쇄가 끝나 가면 거인의 강타 전에 분쇄; 거인의 강타 직전에 쇠날발톱; 급살 2중첩에서 마무리 일격; 거인의 강타; 거인의 강타 또는 투신 중 칼날폭풍; 영웅의 일격; 기회주의자 2중첩에서 제압; 필사의 일격; 마무리 일격; 제압; 5초 미만이면 분쇄; 격돌. 알림: 거인의 강타가 준비되었을 때 투신, 투사의 혼, 전투의 외침, 들이치기.",
 -- 8a86f34e English: Colossus reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2189] = "거신 참고용 (SimulationCraft)",
 -- 5b252489 English: Reference only, off by default: the Colossus order from SimulationCraft and Icy
 --     Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat.
@@ -5768,6 +8351,9 @@ addon.translation = {
 --     the Sword, Battle Shout, Pummel.
 [2190] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft와 Icy Veins의 거신 순서는 필사의 일격으로 거인의 힘을 쌓고, 한밤이 전투 중 숨기는 강화 효과를 읽습니다. 돌진으로 시작; 둘 이상이면 휩쓸기 일격; 거인의 힘 5중첩 미만에서 필사의 일격; 거인의 강타 전에 분쇄; 쇠날발톱; 급살 2중첩에서 마무리 일격; 거인의 강타; 용사의 창; 거인의 힘이 있을 때 거인의 강타 중 쇄파; 영웅의 일격; 필사의 일격; 마무리 일격; 제압; 5초 미만이면 분쇄; 둘 이상이면 칼날폭풍; 격돌. 알림: 투신, 투사의 혼, 전투의 외침, 들이치기.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2191] = "Blizzard 전투 보조",
 -- b7ca5a34 English: Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you
@@ -5776,6 +8362,10 @@ addon.translation = {
 --     it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2192] = "한밤에서 분노 전문화에 권장됩니다. Blizzard의 전투 보조 제안을 보여 주며(광란, 피의 갈증, 분노의 강타, 마무리 일격, 오딘의 격노, 칼날폭풍), 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 제안에서 빠진 것에 대한 알림: 전투 중 무모한 희생, 투신, 용사의 창, 전투 사이에 전투의 외침, 들이치기, 전투 중 준비될 때마다 격노의 재생력(Retail에서는 생명력이 숨겨지므로 언제 쓸지는 직접 판단합니다).",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2193] = "학살자 참고용 (SimulationCraft)",
 -- 082fcea6 English: Reference only, off by default: SimulationCraft's Slayer order reads Enrage,
 --     Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so
@@ -5796,6 +8386,9 @@ addon.translation = {
 --     Whirlwind. Same reminders as the Slayer reference.
 [2196] = "참고용이며 기본적으로 꺼져 있습니다. SimulationCraft와 Icy Veins의 산왕 순서는 우레 작렬을 섞어 쓰고, 한밤이 전투 중 숨기는 강화 효과를 읽습니다. 돌진으로 시작; 둘 이상이면 강화 효과를 위해 소용돌이; 격노가 없거나 끝나 가면 광란(Retail에서는 분노가 숨겨지므로 분노 100에서의 광란은 없습니다); 무모한 희생 중 피범벅; 2중첩에서 우레 작렬; 분쇄의 타격; 피범벅; 무모한 희생 중 광란; 투신 중 우레 작렬; 분노의 강타; 우레 작렬; 광란; 피의 갈증; 마무리 일격; 오딘의 격노; 천둥벼락; 소용돌이. 알림은 학살자 참고용 로테이션과 같습니다.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2197] = "Blizzard 전투 보조",
 -- c6991b2c English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion for your damage and threat, and stops while you cast or have no enemy targeted.
@@ -5807,6 +8400,11 @@ addon.translation = {
 --     else, Battle Shout between pulls, Pummel.
 [2198] = "한밤에서 방어 전문화에 권장됩니다. 피해와 위협 수준을 위한 Blizzard의 전투 보조 제안을 보여 주며, 시전 중이거나 적을 대상으로 지정하지 않았을 때는 멈춥니다. 이 제안은 방패 올리기와 고통 감내를 절대 시전하지 않으므로, 둘 다 사용 가능하고 대상이 나를 공격하고 있을 때마다 알림으로 표시됩니다. 게임이 분노를 숨기므로 고통 감내는 필요한 것보다 더 자주 강조됩니다. 그 밖의 알림: 전투 중 투신, 사기의 외침, 용사의 창, 전투 중 준비될 때마다 방패의 벽과 최후의 저항(Retail에서는 생명력이 숨겨지므로 언제 쓸지는 직접 판단합니다), 그룹에서 대상이 다른 사람을 공격하면 도발, 전투 사이에 전투의 외침, 들이치기.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2199] = "참고용 (Icy Veins)",
 -- b8b51708 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and
@@ -5817,6 +8415,9 @@ addon.translation = {
 --     are ready in combat, Battle Shout, Pummel.
 [2200] = "참고용이며 기본적으로 꺼져 있습니다. Icy Veins와 SimulationCraft의 순서는 방패 올리기, 우레 작렬, 거인의 힘을 읽는데, 한밤은 이를 전투 중 숨기며, 분노와 생명력은 Retail에서 숨겨집니다. 돌진으로 시작; 쇠날발톱; 2중첩에서 우레 작렬; 거인의 힘 5중첩에서 쇄파; 방패 돌격; 우레 작렬; 방패 밀쳐내기; 천둥벼락; 마무리 일격; 복수; 압도. 알림: 강화 효과가 없고 방어 중일 때 방패 올리기, 고통 감내, 투신, 사기의 외침, 용사의 창, 전투 중 준비될 때마다 방패의 벽과 최후의 저항, 전투의 외침, 들이치기.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2201] = "Blizzard 전투 보조",
 -- 2e97cda9 English: Recommended before you choose a specialization (while the game reports the
 --     Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5826,6 +8427,8 @@ addon.translation = {
 --     premades take over.
 [2202] = "전문화를 선택하기 전(게임이 전사의 초기 전문화를 보고하는 동안)에 권장됩니다. Blizzard의 전투 보조가 다음으로 제안하는 주문을 강조합니다. 한밤 전투에서 게임이 애드온에 아직 읽기를 허용하는 유일한 로테이션 조언이며, 시전이나 정신 집중 중에는 기다립니다. 이와 함께 모든 전사 기본 제공 로테이션이 공유하는 알림을, 해당 주문을 배운 뒤에 각각 제공합니다. 10레벨에 전문화를 선택하면 해당 전문화의 기본 제공 로테이션이 대신합니다.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance).
 [2203] = "조화",
 -- df418098 English: Balance from level 1 to 60, and the Druid default before talents or when no
 --     other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on
@@ -5837,6 +8440,10 @@ addon.translation = {
 --     stay with you.
 [2204] = "1레벨부터 60레벨까지의 조화 로테이션이며, 특성을 찍기 전이거나 다른 기본 제공 로테이션이 맞지 않을 때 드루이드의 기본값입니다. 배운 뒤에는 별빛 화살이 기본 주문이고(그 전에는 천벌, 자연의 은혜 발동 시 별빛 화살 먼저), 마나가 30%를 넘는 동안 오래 살아남을 대상에게 달빛 섬광과 곤충 떼를 유지하며, 적이 셋 이상 나를 공격하면 허리케인, 그룹에서는 요정의 불꽃, 이동 중에는 즉시 시전 주문, 마나가 떨어지면 근접 공격을 사용합니다. 표범이나 곰 변신 상태에서는 대신 야성 조언을 제공합니다. 알림: 야생의 징표, 혼자일 때 가시, 청명의 전조, 아무 변신 상태도 아닐 때 달빛야수 변신, 정신 자극, 자연의 손아귀. 별빛 화살 하위 등급 사용, 뿌리 묶기, 대상 선택은 직접 판단합니다.",
 -- 3c5a26cc English: Balance (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2205] = "조화 (Icy Veins)",
 -- 72e2ae3e English: Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the
 --     recommended Balance premade, off by default: enable it and disable that one, or raise its
@@ -5845,6 +8452,8 @@ addon.translation = {
 --     recommended premade.
 [2206] = "약화 효과 16개 제한이 있는 서버를 위한 Icy Veins의 공격대 목록으로, 추천 조화 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 별빛 화살만 사용하고 달빛 섬광과 곤충 떼는 쓰지 않으며, 적이 셋 이상 나를 공격하면 허리케인, 천벌은 별빛 화살을 배우기 전에만 사용합니다. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 24983899 English: Feral
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Feral).
 [2207] = "야성",
 -- 46898c22 English: Feral cat and bear from level 10 when Feral is your main talent tree; your form
 --     decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred,
@@ -5880,6 +8489,8 @@ addon.translation = {
 --     Feral premade, off by default: enable it and disable that one, or raise its priority.
 [2214] = "추천 야성 기본 제공 로테이션의 표범 로테이션에 Wowhead의 장비를 갖춘 공격대 곰을 더한 것입니다: 매 자동 공격마다 후려치기(무리에는 탭으로 대상을 바꿔 가며 직접 후려치기), 휘둘러치기는 분노가 60 남을 때만, 그 외에는 요정의 불꽃 (야성)을 사용하며, 전투 중 위협의 포효와 분노는 쓰지 않습니다. 추천 야성 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration).
 [2215] = "복원",
 -- 877af0fd English: Restoration from level 10 when Restoration is your main talent tree. Heals your
 --     current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your
@@ -5890,6 +8501,10 @@ addon.translation = {
 --     Rebirth, poison and curse removal. Choosing whom to heal stays with you.
 [2216] = "회복이 주 특성 트리일 때 10레벨부터 사용하는 회복 로테이션입니다. 현재 우호적 대상을 치유합니다: 자연의 신속함 후 치유의 손길, 내 지속 치유 효과가 있는 대상이 40% 미만이면 신속한 치유, 회복과 재생 계속 유지, 재생 연마가 있으면 재생을 주 치유 주문으로, 45% 미만이거나 자연의 은혜 발동 시 최고 등급 치유의 손길, 그 외에는 4등급 치유의 손길. 적에게는: 달빛 섬광, 곤충 떼, 천벌. 표범이나 곰 변신 상태에서는 제안하지 않습니다. 알림: 야생의 징표, 청명의 전조, 자연의 신속함, 평온, 정신 자극, 환생, 독과 저주 해제. 누구를 치유할지는 직접 판단합니다.",
 -- b765b6c7 English: Restoration (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2217] = "회복 (Warcraft Tavern)",
 -- 8cdc97b9 English: Warcraft Tavern's damage tiers, an alternative to the recommended Restoration
 --     premade, off by default: enable it and disable that one, or raise its priority. On your
@@ -5898,6 +8513,10 @@ addon.translation = {
 --     proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade.
 [2218] = "우호적 대상에게 사용하는 Warcraft Tavern의 피해량 단계별 치유로, 추천 회복 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 피해가 적은 동안에는 지속 치유 효과를 유지하지 않습니다: 40% 미만이면 신속한 치유, 50% 미만이면 5등급 재생, 75% 미만이면 회복과 3등급 재생, 자연의 은혜 발동 시 최고 등급 치유의 손길, 90% 미만이면 3등급 치유의 손길. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- d6247adc English: Balance (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2219] = "조화 (SoD)",
 -- 5bcfabec English: Season of Discovery Balance from level 1 to 60, and the default for any Druid
 --     no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and
@@ -5917,6 +8536,10 @@ addon.translation = {
 --     filler. Reminders as the recommended premade.
 [2222] = "Icy Veins의 디스커버리 시즌 목록으로, 추천 디스커버리 시즌 조화 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 재사용 대기시간마다 별빛쇄도, 적이 넷 이상이면 허리케인(강풍용), 별빛쇄도로 강화되었을 때 별빛 화살, 달빛 섬광, 태양섬광, 곤충 떼 모두 유지, 천벌이 기본 주문입니다. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- c4d16f19 English: Balance (SoD, Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2223] = "조화 (SoD, Wowhead)",
 -- 75dabca6 English: Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery
 --     Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath
@@ -5926,6 +8549,10 @@ addon.translation = {
 --     recommended premade.
 [2224] = "Wowhead의 8단계 목록으로, 추천 디스커버리 시즌 조화 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 천벌로 시작, 재사용 대기시간마다 별빛쇄도, 적이 여섯 이상이면 허리케인, 곤충 떼는 이동 중에만, 태양섬광과 달빛 섬광 유지, 엘룬의 불꽃을 새겼다면 연장하도록 내 태양섬광이 5초 미만 남았을 때 천벌, 일월식: 달에 별빛 화살, 그 외에는 천벌. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 3e1ff241 English: Feral cat (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2225] = "야성 표범 (SoD)",
 -- e7b0a6ca English: Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your
 --     main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe
@@ -5936,6 +8563,10 @@ addon.translation = {
 --     Innervate. Positioning stays with you.
 [2226] = "디스커버리 시즌 표범 로테이션으로, 야생의 포효를 새겼을 때(또는 다른 다리 룬 없이 야성이 주 특성 트리일 때) 선택됩니다. 요정의 불꽃 (야성)이 없으면 사용, 야생의 포효, 적이 넷 이상이면 휘둘러치기 (표범), 짓이기기 약화 효과, 정신 집중은 칼날 발톱에, 야생의 포효가 8초 남아 있는 동안 연계 점수 5점에서 도려내기, 갈퀴 발톱, 뒤에서는 칼날 발톱, 정면에서는 짓이기기, 광란 5/5로 파워시프팅, 마지막으로 요정의 불꽃 갱신. 곰 변신 상태에서는 방어 전담 조언을 제공합니다. 알림: 기력 60 이하에서 맹공격, 맹공격과 함께 광폭화, 후려치기, 정신 자극. 위치 선정은 직접 판단합니다.",
 -- 3c52079f English: Bear tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2227] = "곰 방어 전담 (SoD)",
 -- 6ae09c71 English: Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire
 --     (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown,
@@ -5952,6 +8583,10 @@ addon.translation = {
 --     as the recommended tank premade.
 [2230] = "기본적으로 꺼져 있습니다. 장비로 야생의 포효도 얻는 숙련자용입니다. wowsims 7단계 표범 섞기: 내 갈퀴 발톱이 없으면 곰에서 표범으로 바꿔 야생의 포효와 갈퀴 발톱을 유지하고(맹공격, 연계 점수 생성은 짓이기기), 그다음 광포한 곰으로 돌아가 방어 전담 목록을 사용합니다. 알림은 권장 방어 전담 기본 제공 로테이션과 같습니다.",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2231] = "회복 (SoD)",
 -- ba307284 English: Season of Discovery Restoration, chosen when Lifebloom is engraved (or
 --     Restoration is your main tree without another legs rune). Heals your current friendly target:
@@ -5963,6 +8598,8 @@ addon.translation = {
 --     dispels. Choosing whom to heal stays with you.
 [2232] = "디스커버리 시즌 회복 로테이션으로, 피어나는 생명을 새겼을 때(또는 다른 다리 룬 없이 회복이 주 특성 트리일 때) 선택됩니다. 현재 우호적 대상을 치유합니다: 자연의 신속함이나 스톰레이지의 격노 후 즉시 시전 치유의 손길, 근처에서 둘 이상이 다쳤으면 급속 성장, 꽃피우기를 위해 또는 40% 미만이면 내 지속 치유 효과에 신속한 치유, 피어나는 생명 3중첩을 1초 남았을 때 갱신, 회복, 60% 미만이면 재생, 육성, 4등급 치유의 손길. 적에게는: 태양섬광, 달빛 섬광, 천벌. 알림: 위급한 순간에 생명의 나무와 생존 본능, 자연의 신속함, 평온, 정신 자극, 환생, 되살리기, 해제. 누구를 치유할지는 직접 판단합니다.",
 -- 3f0b51a2 English: Ranged
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Classic Era (variant key: Ranged).
 [2233] = "원거리",
 -- 9b31e6a0 English: Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark,
 --     Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot,
@@ -5989,6 +8626,10 @@ addon.translation = {
 --     used.
 [2238] = "기본적으로 꺼져 있습니다. 공격대에 내 쐐기를 걸 약화 효과 자리가 있다면 켜세요. 사냥꾼: 원거리와 같지만, 그룹에서는 공격대를 포함해 어디서나 독사 쐐기를 유지하며, 조준 사격과 일제 사격이 모두 재사용 대기 중일 때 5초 미만이면 갱신하고, 신비한 사격은 쓰지 않습니다.",
 -- 1fa5802f English: Ranged (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2239] = "원거리 (SoD)",
 -- 09b14a5d English: Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are
 --     used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot
@@ -6004,6 +8645,10 @@ addon.translation = {
 --     weaving and positioning stay with you.
 [2240] = "디스커버리 시즌 서버의 1레벨부터 60레벨까지 모든 원거리 사냥꾼용이며, 룬은 새기면 사용합니다. 독사 쐐기는 항상 유지하고 키메라 사격으로 갱신합니다. 마무리 사격 다리 룬이 있으면: 교묘한 사격 4중첩에서 일제 사격, 속사 중과 마무리 구간의 대상에게 마무리 사격, 키메라 사격, 그다음 일제 사격이 재사용 대기 중일 때 폭발의 덫과 신비한 사격. 없으면: 키메라 사격, 저격 훈련 2중첩에서 조준 사격(그 룹이 없으면 자동 사격 직후), 키메라 사격이 준비되기 직전에 덫(냉기의 덫은 실탄 장전을 발동시킬 때만), 폭발 사격, 고정 사격, 일제 사격, 신비한 사격. 적이 너무 가까우면 근접 기술, 이동 중에는 즉시 시전 기술, 적이 셋 이상이면 덫, 일제 사격, 연발 사격을 사용합니다. 알림: 매의 상, 마나 10% 미만에서 독사의 상, 사자의 심장, 정조준 오라, 소환수 관리(고독한 늑대를 새겼다면 없음), 광기 5중첩에서 화력 집중, 속사, 정예와 인스턴스에서 종족 특성과 야수의 격노. 실탄 장전을 새겼다면 전투 시작 전 냉기의 덫. 근접 공격 섞기와 위치 선정은 직접 판단합니다.",
 -- fb035172 English: Melee (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2241] = "근접 (SoD)",
 -- 4c275cc2 English: Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern
 --     Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff
@@ -6016,6 +8661,8 @@ addon.translation = {
 --     stay with you.
 [2242] = "디스커버리 시즌 서버에서 측방 강타, 비룡의 일격 또는 저미기를 새기고 키메라 사격과 폭발 사격은 새기지 않았을 때 선택됩니다. 측방 강타 강화 효과를 유지하고, 랩터의 격노 4중첩에서 살쾡이의 이빨, 절단 강타에 비룡의 일격, 초기화될 때마다 랩터의 일격, 그다음 살쾡이의 이빨, 비룡의 일격, 측방 강타, 저미기를 사용하며, 제물의 덫과 날개 절단은 빈 순간에만 사용합니다. 적이 셋 이상이면 저미기와 폭발의 덫, 대상에게 닿을 수 없는 동안에는 독사 쐐기와 사격 기술을 사용합니다. 알림: 송골매의 상(60레벨 전에는 매의 상), 마나 5% 미만에서 독사의 상, 소환수 관리(고독한 늑대를 새겼다면 없음), 측방 강타가 중첩되면 속사와 종족 특성, 야수의 격노. 위치 선정과 소환수 명령은 직접 판단합니다.",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Frost).
 [2243] = "냉기",
 -- c7006e3e English: Frost from level 1 to 60, also for Arcane builds and the Mage default before
 --     talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on
@@ -6037,6 +8684,8 @@ addon.translation = {
 --     and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you.
 [2246] = "Icy Veins의 광역 사냥 공략을 따른 눈보라 레벨업으로, 눈보라 연마를 찍고 혼자 플레이할 때 자동으로 선택됩니다. 교전 중인 적이 둘 이상이면: 무리에 얼음 회오리, 얼음 회오리가 재사용 대기 중일 때 냉기 돌풍, 옆에 아무도 없으면 눈보라, 옆에 있으면 신비한 폭발; 단일 대상에게는 얼음 화살, 마무리는 화염 작렬과 마법봉. 매 전투 전에 마나 보호막과 얼음 보호막을 겁니다. 무리 모으기, 점멸, 카이팅은 직접 판단합니다.",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire).
 [2247] = "화염",
 -- 2a7f1272 English: Fire from level 10 to 60, chosen when you have Fire points and none in Frost,
 --     or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind;
@@ -6048,6 +8697,10 @@ addon.translation = {
 --     default: weaving Fire Blast whenever it is ready.
 [2248] = "10레벨부터 60레벨까지의 화염 로테이션으로, 화염에 특성 점수가 있고 냉기에는 없거나 화염이 주 특성 트리일 때 선택됩니다. 불덩이 작열(없으면 화염구)로 시작; 냉정 후 불덩이 작열; 불태우기 연마가 있으면 오래 살아남을 대상에게 불태우기로 화염 저항력 약화 5중첩 유지; 마무리는 화염 작렬과 불태우기; 빈틈은 화염구. 교전 중인 적이 셋 이상이면: 화염 폭풍, 불기둥, 신비한 폭발, 냉기 돌풍, 눈보라. 알림: 정예와 긴 전투에서 불태우기 5중첩일 때 발화, 갑옷, 신비한 지능, 마나석, 얼음 보호막, 마나 보호막, 환기, 마법 차단, 하급 저주 해제, 얼음 방패, 냉정. 기본적으로 꺼져 있음: 준비될 때마다 화염 작렬 끼워 넣기.",
 -- 76354bcf English: Fire (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2249] = "화염 (Warcraft Tavern)",
 -- 83ffa7ee English: Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off
 --     by default: enable it and disable that one, or raise its priority. Combustion is spent at the
@@ -6057,6 +8710,10 @@ addon.translation = {
 --     range. Same reminders as the Fire premade.
 [2250] = "Warcraft Tavern을 따른 화염 로테이션으로, 추천 화염 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 발화는 불태우기 중첩을 기다리지 않고 정예와 우두머리 전투 시작 시 사용; 불덩이 작열로 시작; 불태우기 연마가 있으면 불태우기로 5중첩 유지; 빈틈은 화염구; 화염 작렬은 이동 중에만. 무리: 먼저 불기둥, 그다음 가까이에서는 신비한 폭발, 냉기 돌풍, 화염 폭풍, 원거리에서는 눈보라. 알림은 화염 기본 제공 로테이션과 같습니다.",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2251] = "화염 (SoD)",
 -- 67a08e15 English: Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses
 --     the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets
@@ -6070,6 +8727,10 @@ addon.translation = {
 --     Bomb across targets stays with you.
 [2252] = "1레벨부터 60레벨까지의 디스커버리 시즌 화염 로테이션이며, 그곳에서 마법사의 기본값입니다. 새긴 룬을 사용합니다: 몰아치는 열기에 즉시 불덩이 작열; 오래 살아남을 대상에게 살아있는 폭탄 유지; 화염 저항력 약화가 2중첩 미만이거나 곧 사라지면 불태우기 연마와 함께 불태우기; 재사용 대기시간마다 살아있는 불꽃; 화염 저항력 약화 5중첩에서 재앙불꽃 화살, 단 재앙불꽃 4중첩 이상에서는 절대 사용하지 않음(5번째 중첩은 나를 죽입니다); 얼음불꽃 화살, 없으면 화염구. 이동 중에는 살아있는 폭탄, 살아있는 불꽃, 화염 작렬; 무리에는 살아있는 불꽃, 살아있는 폭탄, 화염 폭풍, 냉기 돌풍, 불기둥, 눈보라. 알림: 과열과 함께 화염 작렬, 발화, 얼음 핏줄과 한파, 타오르는 갑옷 또는 다른 갑옷, 신비한 지능, 마나석, 얼음 보호막, 마나 보호막, 환기, 마법 차단, 저주 해제, 얼음 방패. 여러 대상에 살아있는 폭탄을 퍼뜨리는 것은 직접 판단합니다.",
 -- 0f6cec9f English: Frost (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2253] = "냉기 (SoD)",
 -- b6fc82b9 English: Season of Discovery Frost from level 10, chosen when Frost is your main tree.
 --     Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into
@@ -6091,6 +8752,10 @@ addon.translation = {
 --     Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders.
 [2256] = "화염 룬을 쓰는 Warcraft Tavern의 4단계 냉기 빌드로, 추천 디스커버리 시즌 냉기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 불덩이 작열로 시작; 몰아치는 열기에 불덩이 작열; 살아있는 폭탄 유지; 불태우기 연마가 있으면 불태우기로 5중첩; 재앙불꽃 화살은 두뇌 빙결 발동 시에만, 재앙불꽃 4중첩 이상에서는 절대 사용하지 않음; 빈틈은 얼음불꽃 화살. 이동 중에는 살아있는 폭탄과 화염 작렬; 무리에는 살아있는 폭탄, 냉기 돌풍, 눈보라. 알림: 과열과 함께 화염 작렬, 얼음 핏줄 중 얼어붙은 구슬, 얼음 핏줄, 한파와 그 밖의 마법사 알림.",
 -- 3a7614c3 English: Arcane (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2257] = "비전 (SoD)",
 -- a0acdff9 English: Season of Discovery Arcane damage, chosen when Arcane is your main tree and
 --     Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane
@@ -6100,6 +8765,10 @@ addon.translation = {
 --     Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders.
 [2258] = "디스커버리 시즌 비전 공격 로테이션으로, 비전이 주 특성 트리이고 비전 작렬을 새겼을 때 선택됩니다. 화살 탄막에 신비한 화살; 비전 작렬 4중첩에서 비전 탄막; 안전할 때 재앙불꽃 화살, 단 재앙불꽃 4중첩 이상에서는 절대 사용하지 않음; 재사용 대기시간마다 살아있는 불꽃; 빈틈은 비전 작렬. 이동 중에는 비전 탄막과 화염 작렬; 무리에는 살아있는 불꽃과 신비한 폭발. 알림: 정예와 긴 전투에서 신비의 마법 강화, 신비의 마법 강화와 함께 또는 이동 중에 냉정, 얼음 핏줄, 한파와 그 밖의 마법사 알림.",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2259] = "치유 전담 (SoD)",
 -- 83b2fb47 English: Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration
 --     is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half
@@ -6113,6 +8782,8 @@ addon.translation = {
 --     direct healing is small). Choosing whom to heal stays with you.
 [2260] = "디스커버리 시즌 마법사 치유 로테이션으로, 재생력이나 대규모 재생력을 새겼을 때 선택됩니다. 우호적 대상이 있으면: 생명력 절반 미만에서 시간 되돌리기와 시간의 보존, 내 시간의 봉화가 없으면 재생력, 대규모 재생력, 시간 변칙. 적 대상이 있으면 내 봉화를 치유하는 피해 기술: 냉기 치유 전담은 비전냉기 화살, 그 외에는 화살 탄막에 신비한 화살, 비전 작렬 2중첩에서 비전 탄막, 안전할 때 재앙불꽃 화살(재앙불꽃 4중첩 이상에서는 절대 사용하지 않음), 비전 작렬. 알림: 신비의 마법 강화, 냉정, 얼어붙은 구슬과 그 밖의 마법사 알림. 기본적으로 꺼져 있음: 무리에 신비한 폭발, 냉기 치유 전담의 얼음창과 동결. 대규모 재생력을 정신 집중하는 동안에는 다음 주문이 이미 표시되므로 바로 취소할 수 있습니다(직접 치유량은 적습니다). 누구를 치유할지는 직접 판단합니다.",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution).
 [2261] = "징벌",
 -- 623b26cb English: Melee Retribution from level 1 to 60, and the default for any Paladin no other
 --     premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and
@@ -6124,6 +8795,8 @@ addon.translation = {
 --     Seal twisting is a separate premade; target choice and positioning stay with you.
 [2262] = "1레벨부터 60레벨까지의 근접 징벌 로테이션이며, 다른 기본 제공 로테이션이 맞지 않는 모든 성기사의 기본값입니다. 공격대 밖의 정예와 긴 전투에서는 성전사의 문장을 걸고 한 번 심판합니다. 그 외에는 문장을 유지하고(무기 속도가 3.5초 이상으로 느리면 지휘의 문장, 그 외에는 정의의 문장), 언데드와 악마에게 퇴마술과 신의 격노, 천벌의 망치, 재사용 대기시간마다 심판, 복수가 걸려 있거나 가까운 적이 둘 이상이면 신성화를 사용합니다. 알림: 고결의 오라, 응보의 오라 또는 기원의 오라, 혼자일 때 지혜의 축복, 그룹에서는 힘의 축복, 전투 사이에 치유, 죽기 직전에 천상의 보호막, 신의 가호 또는 신의 축복. 문장 교체(트위스팅)는 별도의 기본 제공 로테이션이며, 대상 선택과 위치 선정은 직접 판단합니다.",
 -- a2754c34 English: Retribution, seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution / Twist).
 [2263] = "징벌, 문장 교체(트위스팅)",
 -- 34017594 English: Off by default; enable it if you twist seals. For a Retribution Paladin with
 --     Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last
@@ -6132,6 +8805,8 @@ addon.translation = {
 --     and good timing. Same reminders as the Retribution premade.
 [2264] = "기본적으로 꺼져 있습니다. 문장 교체(트위스팅)를 한다면 켜세요. 지휘의 문장이 있는 징벌 성기사용입니다: 정의의 문장을 유지하다가 자동 공격 전 마지막 0.4초에 1등급 지휘의 문장으로 바꾸고 다시 되돌리며, 준비될 때마다 심판, 언데드와 악마에게 퇴마술과 신의 격노, 천벌의 망치, 복수가 있을 때 신성화를 사용합니다. 마나가 많이 들고 정확한 타이밍이 필요합니다. 알림은 징벌 기본 제공 로테이션과 같습니다.",
 -- 0e97ad02 English: Protection
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Protection).
 [2265] = "보호",
 -- 8b566adc English: Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree.
 --     Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement
@@ -6151,6 +8826,8 @@ addon.translation = {
 --     raid. Same reminders as the recommended premade.
 [2268] = "Icy Veins의 공격대 방어에 Wowhead의 지혜 로테이션을 더한 것으로, 추천 보호 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 지혜의 문장을 유지하고 대상에게 지혜의 심판이 없을 때마다 심판하며, 그 외에는 끌어올 때만 심판합니다. 신성한 방패, 재사용 대기시간마다 신성화, 언데드와 악마 무리에게 신의 격노, 퇴마술, 공격대에서는 위협 수준용 빈틈 채우기로 상급 왕의 축복을 사용합니다. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Holy).
 [2269] = "신성",
 -- 9d4ec18a English: Healing in a group with the Holy tree, from level 10. Acts on your friendly
 --     target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move,
@@ -6161,6 +8838,10 @@ addon.translation = {
 --     you; soloing Holy Paladins get the Retribution premade.
 [2270] = "10레벨부터 신성 특성 트리로 그룹에서 치유하는 로테이션입니다. 우호적 대상에게 작동하며 잃은 생명력에 따라 치유 주문을 고릅니다: 정화 또는 순화, 이동 중에는 신성 충격, 40% 미만이면 최고 등급 성스러운 빛, 65% 미만이면 6등급 성스러운 빛, 85% 미만이면 최고 등급 빛의 섬광, 95% 미만이면 4등급 빛의 섬광. 근접 거리에 적이 있으면: 지혜의 문장과, 공격대 밖에서는 심판. 알림: 집중의 오라 또는 기원의 오라, 지혜의 축복, 생명력이 매우 낮은 대상에게 신의 은총과 신의 축복. 누구를 치유할지는 직접 판단하며, 혼자 사냥하는 신성 성기사는 징벌 기본 제공 로테이션을 사용합니다.",
 -- 8094efdd English: Retribution (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2271] = "징벌 (SoD)",
 -- 0cc623b4 English: Season of Discovery melee from level 1 to 60, and the default for any Paladin
 --     there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism,
@@ -6199,6 +8880,10 @@ addon.translation = {
 --     Judgement while both seals are up.
 [2278] = "기본적으로 꺼져 있습니다. 문장이 남아 있게 하는 봉인을 짊어진 자의 영혼 룬이나 6세트 효과가 있다면 켜세요(Rotation Master는 둘 다 볼 수 없습니다). 지휘의 문장과 헌신의 문장을 모두 유지하고, 신성한 힘 3에서 천상의 폭풍, 성전사의 일격, 퇴마술, 언데드와 악마에게 신의 격노(정화의 힘을 새겼다면 모든 적에게), 신성화, 두 문장이 모두 걸려 있는 동안 심판을 사용합니다.",
 -- 68461fe5 English: Shockadin (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2279] = "신성 충격 공격형 (SoD, wowsims)",
 -- 9a1756b6 English: Off by default; enable it if you deal damage with the Holy tree. It applies
 --     with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else
@@ -6206,6 +8891,10 @@ addon.translation = {
 --     Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade.
 [2280] = "기본적으로 꺼져 있습니다. 신성 특성 트리로 피해를 준다면 켜세요. 신성이 주 특성 트리이고 충격과 경외를 새긴 경우에 적용됩니다. 헌신의 문장(없으면 정의의 문장)을 끝날 때 심판하고, 햇살을 유지하거나 신성한 힘 3에서 신성 충격, 퇴마술, 성전사의 일격을 사용합니다. 알림은 디스커버리 시즌 징벌 기본 제공 로테이션과 같습니다.",
 -- 924f353b English: Protection (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2281] = "보호 (SoD)",
 -- 58619700 English: Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of
 --     the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull
@@ -6217,6 +8906,10 @@ addon.translation = {
 --     40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.
 [2282] = "디스커버리 시즌 방어 로테이션으로, 정의의 격노, 새긴 정의의 망치나 정의의 방패, 또는 보호 특성 트리로 선택됩니다. 헌신의 문장, 신성한 방패, 응징의 방패, 퇴마술로 끌어오고, 신성한 방패를 유지합니다. 단일 대상에게는 정의의 망치, 정의의 방패, 퇴마술, 응징의 방패, 심판, 천상의 폭풍, 신성화; 적이 셋 이상 나를 공격하면 정의의 망치, 응징의 방패, 신성화, 정의의 방패, 퇴마술. 알림: 정의의 격노, 전투 전 신성한 방패, 기원의 오라, 성역의 축복 또는 왕의 축복, 응징의 격노, 40% 미만에서 신의 가호, 신의 축복, 그룹에서 내 대상이 다른 사람을 공격하면 심판의 손길.",
 -- 29a17682 English: Protection (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2283] = "보호 (SoD, wowsims)",
 -- f2677084 English: The wowsims tank list, an alternative to the recommended Season of Discovery
 --     Protection premade, off by default: enable it and disable that one, or raise its priority.
@@ -6225,6 +8918,10 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2284] = "wowsims의 방어 전담 목록으로, 추천 디스커버리 시즌 보호 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 문장이 걸려 있으면 언제든 심판, 끝나기 직전에 문장 갱신, 신성한 방패, 응징의 방패, 정의의 망치, 퇴마술, 마지막으로 정의의 방패. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- e757b87a English: Holy (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2285] = "신성 (SoD)",
 -- 45b566d4 English: Season of Discovery healing in a group, chosen by an engraved Beacon of Light,
 --     Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your
@@ -6244,6 +8941,8 @@ addon.translation = {
 --     premade.
 [2288] = "치명타 위주 장비를 위한 Wowhead의 4단계 치유 순서로, 추천 디스커버리 시즌 신성 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 75% 미만이면 천상의 빛 또는 성스러운 빛, 그다음 정화, 조금 부족하거나 이동 중이면 신성 충격, 95% 미만이면 빛의 섬광. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 0c874f58 English: Damage
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Dps).
 [2289] = "공격 전담",
 -- 3af8cf40 English: Damage from level 1 to 60, and the Priest default whenever the healer premade
 --     does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a
@@ -6273,6 +8972,8 @@ addon.translation = {
 --     one, or raise its priority.
 [2294] = "추천 공격 우선순위에 언데드 사제를 위한 wowsims의 공격대 선택을 더한 것입니다: 내면의 집중력을 정신 분열 대신 파멸의 역병에 사용하고 공격대에서도 파멸의 역병을 시전하므로, 공격대에 약화 효과 자리가 남는 곳에서만 사용하세요. 흡혈의 선물은 없습니다. 추천 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요.",
 -- a491a33c English: Healer
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Healer).
 [2295] = "치유 전담",
 -- dae36c27 English: Chosen in a group when Holy or Discipline is your main talent tree. Heals the
 --     friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer
@@ -6284,6 +8985,10 @@ addon.translation = {
 --     stay with you.
 [2296] = "그룹에서 신성이나 수양이 주 특성 트리일 때 선택됩니다. 대상으로 지정한 우호적 유닛을 치유합니다: 30% 미만이면 신의 권능: 보호막, 40% 미만이면 순간 치유, 해제, 파티원 셋이 다쳤으면 치유의 기원, 생명력 절반 미만이면 상급 치유(배우기 전에는 치유 또는 하급 치유), 이동 중이거나 피해가 적으면 소생, 그다음 효율적인 보충용으로 3등급 치유. 전투 밖에서는 대상에게 신의 권능: 인내를 제안합니다. 적을 대상으로 지정하면 어둠의 권능: 고통과 성스러운 일격을 사용합니다. 알림: 내면의 열정, 신의 권능: 인내, 천상의 정신, 내면의 집중력, 구원의 기도. 마력 주입은 기본적으로 꺼져 있습니다. 누구를 치유할지와 하위 등급 사용은 직접 판단합니다.",
 -- 999e9eba English: Damage (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2297] = "공격 전담 (SoD)",
 -- 63f3ee22 English: Damage on Season of Discovery realms, from level 1 to 60, using the runes you
 --     have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite
@@ -6304,6 +9009,10 @@ addon.translation = {
 --     Mind Spike as the filler. Everything else matches the recommended premade.
 [2300] = "디스커버리 시즌을 위한 Wowhead와 Warcraft Tavern 방식으로, 추천 디스커버리 시즌 공격 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 정신 분열은 대상에 내 정신의 쐐기가 3중첩될 때까지 기다리고(정신의 쐐기를 새기기 전에는 평소대로 시전), 정신의 채찍은 정신의 고조에만, 정신의 쐐기가 기본 주문입니다. 나머지는 모두 추천 기본 제공 로테이션과 같습니다.",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2301] = "치유 전담 (SoD)",
 -- 37b39f3b English: Chosen on Season of Discovery realms in a group when Holy or Discipline is your
 --     main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending
@@ -6325,6 +9034,8 @@ addon.translation = {
 --     stacks (with Serendipity engraved; else below 30%).
 [2304] = "Warcraft Tavern의 우연한 행운 순환으로, 우연한 행운과 영혼의 수호를 위해 만들어졌으며, 추천 디스커버리 시즌 치유 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 재사용 대기시간마다 회복의 기원, 대상에게 걸 수 있을 때마다 보호막(영혼의 수호를 새겼을 때, 아니면 생명력 절반 미만에서), 큰 피해에 회개, 셋이 다쳤으면 치유의 마법진, 우연한 행운 3중첩에서 상급 치유 또는 치유의 기원, 적은 피해에 소생, 중첩을 쌓기 위해 가벼운 부상에 순간 치유(우연한 행운을 새겼을 때, 아니면 30% 미만에서).",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Classic Era (variant key: DPS).
 [2305] = "근접 공격 전담",
 -- b5cd3c00 English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
 --     wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
@@ -6360,6 +9071,10 @@ addon.translation = {
 --     recommended premade.
 [2310] = "도검류 전문화를 위한 wowsims의 \"빡빡한\" 전투 순서로, 추천 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 추가 도검 공격이 자동 공격을 늦추지 않도록, 기력이 거의 가득 찼거나 대상이 곧 죽는 경우가 아니면 사악한 일격은 주 무기 자동 공격 직후에만 사용합니다(다음 공격까지 2.0초 이상, 공격 속도 2.6–2.8 도검 기준이며 복제본에서 바꾸세요). 5점 절개도 난도질, 가득 찬 기력 또는 죽어 가는 대상을 기다립니다. 그 외에는 추천 기본 제공 로테이션과 같습니다.",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2311] = "근접 공격 전담 (SoD)",
 -- d3dc0f9a English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
 --     wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
@@ -6392,6 +9107,10 @@ addon.translation = {
 --     the glove-rune builder. The Vanish and Cold Blood burst stays with you.
 [2316] = "Zockify의 간결한 디스커버리 시즌 목록으로, 추천 디스커버리 시즌 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 출혈과 약점 노출은 없습니다. 독 4중첩에서 독 칼, 없으면 난도질(2점부터, 사브르 베기가 있으면 4점부터), 5점에서 독살, 그다음 장갑 룬 연계 점수 생성 기술. 소멸과 냉혈 폭딜은 직접 판단합니다.",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2317] = "방어 전담 (SoD)",
 -- d50349d8 English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
 --     from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
@@ -6404,6 +9123,8 @@ addon.translation = {
 --     Shadowstep and Sebacious Poison duty stay with you.
 [2318] = "디스커버리 시즌 방어 전담 로테이션으로, 얕은 상처일 뿐을 새겼을 때 선택됩니다. wowsims 6단계, Icy Veins, Zockify, Warcraft Tavern을 바탕으로 만들었습니다. 반격, 재사용 대기시간마다 맹고쉬, 연계 점수 1점부터 칼춤(3점부터 갱신), 3점부터 난도질(4점부터 갱신), 적이 셋 이상이면 칼날 부채, 혈폭풍, 나팔총, 칼춤이 걸려 있는 동안 나팔총, 두 강화 효과가 모두 있으면 5점에서 절개, 기력이 낮으면 독 칼, 그다음 사브르 베기, 절단 또는 사악한 일격. 알림: 그룹에서 내 대상이 다른 사람을 공격하면 놀리기, 발차기, 생명력 절반 미만에서 회피, 폭풍의 칼날, 아드레날린 촉진, 엉겅퀴 차, 무기 독(보조 무기 독은 보조 무기가 있을 때만). 그림자 밟기와 피부 독 담당은 직접 판단합니다.",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Enhancement).
 [2319] = "고양",
 -- 5faeab70 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
 --     talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range;
@@ -6425,6 +9146,8 @@ addon.translation = {
 --     Lightning on packs. Same totems and reminders as the recommended premade.
 [2322] = "Warcraft Tavern의 고양 로테이션으로, 추천 고양 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 배우는 즉시 질풍의 무기, 폭풍의 일격, 직접 피해 충격보다 먼저 화염 충격, 그다음 위협 수준이 낮은 동안 대지 충격, 그룹에서 위협 수준이 높아지면 냉기 충격; 무리에는 용암 토템과 연쇄 번개. 토템과 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Elemental).
 [2323] = "정기",
 -- 5ee9955c English: Elemental from level 10 (most points in Elemental); built from Icy Veins and
 --     Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame
@@ -6444,6 +9167,8 @@ addon.translation = {
 --     same interrupt, totems and reminders.
 [2326] = "wowsims의 정기 목록으로, 추천 정기 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 단일 대상에게도 재사용 대기시간마다 연쇄 번개, 정기의 깨달음이 걸려 있는 동안 대지 충격, 그 외에는 번개 화살. 추천 기본 제공 로테이션보다 빠르지만 마나를 훨씬 많이 쓰며, 차단, 토템, 알림은 같습니다.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Restoration).
 [2327] = "복원",
 -- 5119f4dc English: Restoration from level 10 (most points in Restoration); built from Icy Veins
 --     and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's
@@ -6463,6 +9188,10 @@ addon.translation = {
 --     enemies and totem reminders as the recommended premade.
 [2330] = "Warcraft Tavern의 복원 로테이션으로, 추천 복원 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 90% 미만인 누구에게나 연쇄 치유를 주 치유로 쓰고, 곧 죽을 사람에게는 하급 치유의 물결을 사용합니다. 치유의 물결은 치유의 길을 쓰며 방어 전담 치유를 배정받은 치유사용입니다(꺼진 상태로 나열). 치료, 적에게 주는 피해, 토템 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- 37e5b161 English: Enhancement (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2331] = "고양 (SoD)",
 -- 929796a6 English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
 --     two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins
@@ -6476,6 +9205,10 @@ addon.translation = {
 --     Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
 [2332] = "디스커버리 시즌 1–60레벨용이며 룬은 새긴 대로 사용하고, 쌍수든 양손 무기든 상관없으며, 다른 기본 제공 로테이션이 맞지 않는 모든 디스커버리 시즌 주술사용입니다. wowsims 6단계, Icy Veins, Wowhead를 바탕으로 만들었습니다. 화염 충격으로 끌어오고, 대지 충격으로 차단합니다. 적이 셋 이상이면: 용암 토템, 화염 토템에서 불꽃 회오리, 소용돌이치는 무기 4중첩에서 연쇄 번개, 화염 충격. 그다음 소용돌이치는 무기 5중첩에서 용암 폭발, 폭풍의 일격, 용암 채찍, 5중첩에서 번개 화살, 지속될 때 화염 충격, 대지 충격, 용암 작열, 원거리에서 번개 화살. 알림: 질풍의 무기(그 전에는 대지의 무기), 용암 채찍이 있으면 보조 무기에 불꽃의 무기(없으면 질풍의 무기; 방패에는 절대 걸지 않음; 양손 모두 질풍의 무기를 쓰는 Icy Veins 줄은 꺼진 상태로 나열), 물의 보호막 또는 번개 보호막, 우두머리의 영혼, 야수 정령, 마나 65% 미만에서 주술의 분노, 토템, 고대의 인도. 토템 재배치, 해제, 정화는 직접 판단합니다.",
 -- 0fb65642 English: Elemental (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2333] = "정기 (SoD)",
 -- f9d25821 English: Season of Discovery Elemental from level 10 (most points in Elemental); built
 --     from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
@@ -6488,6 +9221,10 @@ addon.translation = {
 --     Trinkets, Totemic Projection, dispels and purges stay with you.
 [2334] = "10레벨부터의 디스커버리 시즌 정기 로테이션(정기에 특성 점수가 가장 많을 때)으로, wowsims 6단계, Wowhead, Icy Veins를 바탕으로 만들었습니다. 대지 충격으로 차단합니다. 이동 중에는: 화염 충격, 번개 보호막 충전 8회에서 대지 충격, 마력의 쇄도 발동 시 용암 폭발 또는 연쇄 번개. 적이 셋 이상이면: 화염 충격, 연쇄 번개, 불꽃 회오리, 용암 폭발, 충전 8회에서 대지 충격, 용암 토템. 그다음 마력의 쇄도에 용암 폭발, 화염 충격 유지, 내 화염 충격이 지속되는 동안 용암 폭발, 충전 8회에서 대지 충격, 적이 둘이면 연쇄 번개, 번개 화살. 알림: 태우기를 위한 불꽃의 무기, 번개 보호막, 자신에게 대지의 보호막, 우두머리의 영혼, 야수 정령, 주술의 분노, 정기의 깨달음, 토템. 장신구, 토템 재배치, 해제, 정화는 직접 판단합니다.",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2335] = "회복 (SoD)",
 -- ff16512c English: Season of Discovery Restoration from level 10 (most points in Restoration);
 --     built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave
@@ -6510,6 +9247,8 @@ addon.translation = {
 --     Shamanistic Rage, Searing or Magma, and group totems.
 [2338] = "디스커버리 시즌 방어 전담 로테이션으로, 대지의 길을 새겼을 때 선택됩니다. Icy Veins, Wowhead, wowsims, Warcraft Tavern을 바탕으로 만들었습니다. 화염 충격으로 끌어옵니다. 대지 충격으로 나를 공격하지 않는 근접 거리의 대상을 도발하고, 차단합니다. 적이 둘 이상이면: 용암 작열, 화염 충격, 소용돌이치는 무기 5중첩이나 마력의 쇄도에 연쇄 번개, 5중첩에서 불꽃 회오리. 그다음 화염 충격 유지, 마력의 쇄도에 또는 화염 충격이 지속되는 동안 용암 폭발, 폭풍의 일격, 대지 충격, 5중첩에서 번개 화살, 용암 작열, 냉기 충격. 알림: 대지의 무기, 번개 보호막, 자신에게 우두머리의 영혼, 야수 정령, 주술의 분노, 불타는 토템 또는 용암 토템, 그룹 토템.",
 -- 2628a00c English: Every tree
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Classic Era (variant key: DPS).
 [2339] = "모든 특성 트리",
 -- 67b0af4c English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
 --     from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and
@@ -6545,6 +9284,10 @@ addon.translation = {
 --     Siphon Life. Leveling and dungeons play as the recommended premade.
 [2344] = "약화 효과 16개 제한이 있는 서버를 위한 Icy Veins의 목록으로, 추천 흑마법사 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 공격대에서는 내 저주와 부패만, 그다음 어둠의 화살을 사용하며 제물과 생명력 착취는 쓰지 않습니다. 레벨업과 던전은 추천 기본 제공 로테이션처럼 플레이합니다.",
 -- 4f0bc39e English: Tank (SoD, Metamorphosis)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2345] = "방어 전담 (SoD, 탈태)",
 -- 1e24cbef English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
 --     wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is
@@ -6558,6 +9301,10 @@ addon.translation = {
 --     Infernal Armor stays with you.
 [2346] = "디스커버리 시즌 방어 전담 로테이션으로, 탈태를 새기면 선택됩니다. wowsims, Icy Veins, Wowhead, Warcraft Tavern을 바탕으로 만들었습니다. 수호병의 결의가 없거나 끝나 가면 언제든 어둠의 회전베기, 영혼의 불꽃! 발동, 화염 강화 효과를 유지하기 위한 소각; 적이 셋 이상이면 어둠의 회전베기, 불꽃의 호수, 암흑불길, 지옥의 불길. 그다음 저주(고통의 저주, 아무도 걸지 않았으면 무모함의 저주), 암흑불길(새기기 전에는 제물), 역술의 대가 생명력 흡수, 부패, 생명력 착취, 역류를 위한 점화, 35% 미만에서 죽음의 예언 중 영혼의 불꽃, 위협 수준용 빈틈 채우기로 불타는 고통. 알림: 탈태, 마의 갑옷, 소환수, 제물의 오라, 악마의 은총, 생명력이 낮으면 복수, 대상이 다른 사람을 공격하면 위협, 무리에 악마의 포효, 저주 증폭, 마나가 부족한 소환수를 위한 생명력 전환. 지옥불 갑옷은 직접 판단합니다.",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2347] = "화염 (SoD)",
 -- b3afd0ce English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
 --     engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
@@ -6601,6 +9348,8 @@ addon.translation = {
 --     proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.
 [2354] = "영혼 착취 빌드를 위한 wowsims 6단계 고통 목록으로, 추천 디스커버리 시즌 암흑 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 생명력과 관계없이 영혼 흡수가 빈틈 채우기이며, 다음 단계가 필요해지는 즉시 표시되므로 정신 집중을 끊고 사용할 수 있습니다. 그 외의 정신 집중은 끝까지 진행됩니다. 불안정한 고통과 암흑불길은 7.5초 남았을 때, 고통의 저주와 부패는 6초 남았을 때 갱신, 역술의 대가 생명력 흡수, 유령 출몰, 어둠의 화살은 어둠의 무아지경 발동 시에만, 생명력 착취, 마나 10% 미만에서 생명력 전환. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: DPS).
 [2355] = "근접 공격 전담",
 -- c080d284 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
 --     Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull,
@@ -6615,6 +9364,8 @@ addon.translation = {
 --     Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.
 [2356] = "1–60레벨, 무기와 분노, 방어 태세가 아닌 모든 전사용이며 하드코어와 자수성가 서버에서도 쓰입니다. wowsims, Icy Veins, Wowhead를 바탕으로 만들었습니다. 돌진으로 끌어오고, 멀리 있는 대상에게 봉쇄, 적이 셋 이상 나와 싸우면 소용돌이(배우기 전에는 천둥벼락), 그다음 20% 미만에서 마무리 일격 먼저, 약점 노출이 없는 우두머리에게 방어구 가르기 5중첩, 피의 갈증, 죽음의 일격, 격돌 연마가 있으면 자동 공격 직후 격돌(양손 무기 기준이며 복제본에서 바꾸세요), 주력 공격용 분노를 남기면서 소용돌이, 제압, 주력 공격을 배우기 전까지 분쇄, 생명력이 많은 대상에게 방어구 가르기, 분노가 최대치에 가까우면 무력화. 알림: 전투의 외침, 분노 40부터 영웅의 일격(레벨업 중에는 20), 무리에 회전베기, 피의 분노, 휩쓸기 일격, 죽음의 소원(우두머리는 마지막 30초), 죽음의 소원과 함께 무모한 희생, 자루 공격 또는 방패 가격. 위협의 외침과 보복은 하드코어 위급 상황용으로 꺼진 상태로 나열되며, 태세 전환은 직접 판단합니다.",
 -- c0b21fb1 English: Tank
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: Protection).
 [2357] = "방어 전담",
 -- 6949294b English: Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a
 --     two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing
@@ -6635,6 +9386,10 @@ addon.translation = {
 --     tank; go back to Sunder when focusing one target in a crowd.
 [2360] = "넷 이상의 플레이어가 내 외침을 듣는 그룹을 위한 Icy Veins의 \"방어구 가르기 없는\" 방어로(5단계 전투의 외침부터), 추천 방어 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 사기의 외침 유지, 복수, 방패 밀쳐내기 또는 피의 갈증, 그다음 방어구 가르기 대신 위협 수준용 빈틈 채우기로 전투의 외침; 방패 밀쳐내기와 방패 막기는 방패를 장착했을 때만 사용합니다. 알림은 추천 방어 전담 로테이션과 같으며, 무리 중 한 대상에 집중할 때는 방어구 가르기로 돌아가세요.",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2361] = "근접 공격 전담 (SoD)",
 -- dbdfa29c English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
 --     dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built
@@ -6667,6 +9422,10 @@ addon.translation = {
 --     the recommended premade.
 [2366] = "Icy Veins의 디스커버리 시즌 분노 및 무기 페이지로, 추천 디스커버리 시즌 근접 공격 전담 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 20% 미만이거나 급살 시 우선순위 상단에서 마무리 일격, 피 분출에 격돌, 피의 갈증 또는 죽음의 일격, 소용돌이, 제압, 분노의 강타, 그다음 분노 60 초과에서만 속전속결과 무력화; 분쇄 없음; 영웅의 일격은 분노 80 초과에서만. 알림은 추천 기본 제공 로테이션과 같습니다.",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2367] = "방어 전담 (SoD)",
 -- 93f460da English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
 --     8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge,
@@ -6679,6 +9438,9 @@ addon.translation = {
 --     are listed off; the Gladiator swap for Execute stays with you.
 [2368] = "디스커버리 시즌 방어 전담 로테이션으로, 방어 태세에서 선택됩니다. Wowhead 8단계와 wowsims를 바탕으로 만들었습니다. 돌진; 적이 둘 이상이면 천둥벼락, 충격파, 방패 밀쳐내기, 복수, 소용돌이, 압도; 그다음 수호병의 결의가 없거나 끝나 가면 언제든 방패 밀쳐내기, 복수, 방패 밀쳐내기, 충격파, 마무리 일격, 검투사의 교활함 5중첩에서 소용돌이, 압도(그 전에는 방어구 가르기), 정예에게 사기의 외침과 천둥벼락, 방패 밀쳐내기 전에 분쇄; 방패 밀쳐내기와 방패 막기는 방패를 장착했을 때만 사용합니다. 알림: 전투의 외침과 지휘의 외침, 방패 막기, 분노 50부터 영웅의 일격, 55부터 회전베기, 피의 분노, 광란, 최후의 저항, 차단. 도발, 방패의 벽, 죽음의 소원, 무모한 희생, 보복은 꺼진 상태로 나열되며, 마무리 일격을 위한 검투사 태세 전환은 직접 판단합니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
+--     the specialization.
 [2369] = "추천",
 -- 235cf9c7 English: Recommended for Blood tanks, chosen in the Blood specialization. Pulls from
 --     range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood
@@ -6695,6 +9457,10 @@ addon.translation = {
 --     Anti-Magic Shell (off) and big defensives are yours.
 [2370] = "혈기 방어 전담에게 권장하며, 혈기 전문화에서 선택됩니다. 원거리에서 돌발 열병, 얼음 손길 또는 죽음의 손아귀로 끌어옵니다. 생명력 절반 미만일 때, 피의 보호막이 없을 때마다(80레벨부터), 냉기 룬과 부정 룬 네 개가 모두 가득 차기 전에 죽음의 일격; 룬 마력 90 근처에서 룬의 일격(배우기 전에는 80에서 죽음의 고리); 질병은 돌발 열병, 없으면 얼음 손길과 역병의 일격으로 걸고, 68레벨부터 피의 소용돌이로 갱신; 35% 미만에서 영혼 쐐기; 혈기 룬 두 개로 심장 강타(60레벨 전에는 피의 일격); 질병이 지속되는 동안 진홍빛 스컬지 발동 시 죽음과 부패, 그 외에는 피의 소용돌이; 충전 11회에서 혈기 전환; 그다음 죽음의 일격, 심장 강타, 룬의 일격, 겨울의 뿔피리. 적 셋이 나를 공격하면: 죽음과 부패, 질병 퍼뜨리기(끓는 피가 있으면 피의 소용돌이, 그 외에는 전염병), 피의 소용돌이. 알림: 형상이 없으면 혈기의 형상, 뼈의 보호막, 겨울의 뿔피리, 정신 얼리기, 생명력에 따라 룬 전환, 흡혈, 얼음같은 인내력, 룬 무기 강화, 죽음의 서약, 정예에게 춤추는 룬 무기, 그룹 우두머리 전에 사자의 군대. 받는 피해를 볼 수 없으므로 대마법 보호막(꺼짐)과 큰 방어 기술은 직접 판단합니다.",
 -- a7eb3532 English: Health-reactive (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2371] = "생명력 반응형 (wowsims)",
 -- a92e9e2e English: An alternative to the recommended Blood premade for raid tanks with healers,
 --     off by default: enable it and disable that one, or raise its priority. Death Strike only
@@ -6704,6 +9470,8 @@ addon.translation = {
 --     same reminders as the recommended one.
 [2372] = "치유사가 있는 공격대 방어 전담을 위한 권장 혈기 기본 제공 로테이션의 대안으로, 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 죽음의 일격은 룬마다 쓰는 대신 생명력 70% 미만일 때, 피의 보호막이 없거나 곧 사라질 때, 또는 냉기 룬과 부정 룬이 가득 차기 전에만 사용합니다. 냉기 룬과 부정 룬이 1초 넘게 남았으면 혈기 룬 하나는 심장 강타에 씁니다. 광역 공격 구간이 없으며, 알림은 권장 로테이션과 같습니다.",
 -- 747fb182 English: Two weapons
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: FrostDualWield).
 [2373] = "쌍수",
 -- 0c806576 English: Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the
 --     Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast
@@ -6718,6 +9486,8 @@ addon.translation = {
 --     Death Pact when low, Army of the Dead before a group boss.
 [2374] = "한손 무기 두 개를 쓰는 냉기(마스터프로스트)에게 권장하며, 냉기 전문화에서 보조 무기에 무기를 들고 있을 때 선택됩니다. 돌발 열병이나 작렬하는 분노로 끌어옵니다(혼자일 때 죽음의 손아귀). 어둠의 원조 시나 생명력 35% 미만에서 죽음의 일격, 충전 11회에서 혈기 전환, 질병(부정의 파멸충, 돌발 열병, 작렬하는 분노, 역병의 일격), 35% 미만에서 영혼 쐐기, 도살기 시나 룬 마력 89 초과에서 냉기의 일격, 단단한 얼음 시나 냉기 룬 두 개 또는 죽음 룬 두 개가 준비되면 작렬하는 분노, 룬 마력 77 미만에서 부정 룬 두 개로 절멸, 76 초과에서 냉기의 일격, 절멸, 작렬하는 분노, 돌발 열병이 준비되었을 때 질병이 사라지기 전에 역병 착취, 40에서 냉기의 일격, 겨울의 뿔피리. 적 셋이 나를 공격하면: 질병 퍼뜨리기, 죽음과 부패, 작렬하는 분노. 알림: 냉기의 형상, 얼음 기둥, 시체 되살리기, 모든 룬이 소진되면 룬 무기 강화, 겨울의 뿔피리, 정신 얼리기, 생명력이 낮으면 얼음같은 인내력과 죽음의 서약, 그룹 우두머리 전에 사자의 군대.",
 -- 9562e8af English: Two-hander
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Frost).
 [2375] = "양손 무기",
 -- d33a6f74 English: Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost
 --     specialization whenever the two-weapon premade does not apply. Same opening, diseases,
@@ -6728,6 +9498,8 @@ addon.translation = {
 --     premade.
 [2376] = "양손 무기를 쓰는 냉기로, 일반적인 레벨업 구성입니다. 냉기 전문화에서 쌍수 기본 제공 로테이션이 적용되지 않을 때마다 선택됩니다. 시작, 질병, 생존, 광역은 쌍수 기본 제공 로테이션과 같고, 그다음 도살기 시 절멸, 룬 마력 76 초과에서 냉기의 일격, 단단한 얼음 시 작렬하는 분노, 룬 한 쌍이 가득 찰 때마다 절멸, 절멸, 작렬하는 분노, 역병 착취, 40에서 냉기의 일격, 겨울의 뿔피리. 절멸(58레벨) 전에는 죽음의 일격으로 부정 룬을 소모합니다. 알림은 쌍수 기본 제공 로테이션과 같습니다.",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Unholy).
 [2377] = "부정",
 -- 5c6efba1 English: Recommended for Unholy, and the premade for any Death Knight Blood and Frost do
 --     not claim, including one without a specialization. Pulls from range with Outbreak or Icy
@@ -6752,6 +9524,9 @@ addon.translation = {
 --     AoE and reminders as the recommended one.
 [2380] = "시뮬레이터, wowtbc.gg, Method, MaxDps가 플레이하는 방식으로, 권장 부정 기본 제공 로테이션의 대안이며 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 어둠의 변신이 꺼져 있는 동안 죽음의 고리는 암흑 주입을 다시 쌓는 데 쓰고, 부정 룬 두 개나 죽음 룬 두 개가 준비되면 스컬지의 일격을, 혈기 룬 두 개와 냉기 룬 두 개가 준비되면 고름 일격을 먼저 사용합니다. 그 외의 시작, 질병, 광역, 알림은 권장 로테이션과 같습니다.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2381] = "전문화 선택 전",
 -- 3efc9d82 English: For levels 1 to 9, or any druid who has not chosen a specialization yet; the
 --     specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends
@@ -6762,6 +9537,9 @@ addon.translation = {
 --     targeted.
 [2382] = "1–9레벨이나 아직 전문화를 고르지 않은 드루이드용이며, 전문화를 고르면 전문화 기본 제공 로테이션이 넘겨받습니다. 표범 변신 상태에서는 갈퀴 발톱을 유지하고, 연계 점수 5점(죽어 가는 대상에게는 2점)을 흉포한 이빨에 쓰며, 짓이기기로 쌓습니다. 곰 변신 상태에서는 짓이기기와 후려갈기기를 사용합니다. 그 외에는 천벌로 끌어오고, 오래 버틸 대상에게 달빛 섬광을 유지하며, 천벌(이동 중에는 달빛 섬광)을 시전하고, 혼자이면서 생명력이 절반 미만이면 자신에게 회복을 제안합니다. 시전 중이거나, 이동 변신 중이거나, 적을 대상으로 지정하지 않으면 멈춥니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
+--     specialization.
 [2383] = "추천",
 -- 625c32c1 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
 --     wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts
@@ -6776,6 +9554,9 @@ addon.translation = {
 --     or Bear Form, or have no enemy targeted.
 [2384] = "10레벨부터 조화에게 권장하며, Wowhead의 5단계 목록과 wowsims를 따릅니다. 달빛 섬광과 태양불꽃을 유지하고 맞는 일월식 안에서 갱신하며, 월식 중 별똥별, 유성 시와 재사용 대기시간마다 별폭풍, 적이 다섯이면 일식 중 싹쓸바람 또는 월식 중 천공의 폭풍, 월식 중과 그 이후에는 별빛 섬광, 일식 중과 그 이후에는 천벌을 시전합니다. Rotation Master는 일월식 에너지를 읽을 수 없으므로, 일월식 사이에는 최근 세 번의 시전 중 별빛 섬광이 있었으면 계속 별빛 섬광, 그 외에는 천벌을 시전합니다. 알림: 야생의 징표, 달빛야수 변신, 일월식이 시작될 때 화신, 끝날 때 천공의 정렬(정예나 긴 전투에서), 자연의 경계, 자연의 군대, 세나리우스의 꿈을 위한 자연의 신속함, 정신 자극, 태양 광선, 생명력이 낮으면 나무 껍질과 소생. 야생 버섯 배치는 직접 하며, 폭발 알림은 기본적으로 꺼져 있습니다. 시전 중이거나, 이동 변신 중이거나, 표범이나 곰 변신 상태이거나, 적을 대상으로 지정하지 않으면 멈춥니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
+--     specialization.
 [2385] = "추천",
 -- 008c4d0b English: Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list.
 --     Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up,
@@ -6799,6 +9580,9 @@ addon.translation = {
 --     Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away.
 [2388] = "Icy Veins의 야성 순서(Wowhead의 흉포한 이빨 규칙도 같음)로, 권장 야성 기본 제공 로테이션의 대안입니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 시작, 야생의 포효, 치유의 손길, 광역은 같지만, 대상 생명력이 25%를 넘는 동안 연계 점수는 도려내기와 야생의 포효에만 씁니다: 흉포한 이빨은 마무리 구간에서 도려내기를 갱신할 때만 사용합니다(또는 도려내기를 배우기 전에 5점을 소모할 때). 갈퀴 발톱은 2초 남았을 때 갱신, 난타는 번뜩임 시에만, 광폭화는 기력 90이고 호랑이의 분노가 15초 이상 남았을 때까지 기다립니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
+--     specialization.
 [2389] = "추천",
 -- b19b167d English: Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase
 --     5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened
@@ -6812,6 +9596,9 @@ addon.translation = {
 --     Might of Ursoc stay manual (both reminders are off by default).
 [2390] = "10레벨부터 수호 방어 전담에게 권장하며, wowsims와 Wowhead의 5단계 목록을 따릅니다. 곰 변신을 하고, 원거리에서 요정의 불꽃이나 짓이기기로 끌어오며, 난타로 약화된 공격을, 정예에게는 요정의 불꽃으로 약화된 방어를 유지하고, 다쳤으면 세나리우스의 꿈 치유의 손길, 재사용 대기시간마다 짓이기기, 적이 셋이면 난타와 휘둘러치기, 그다음 가르기, 난타, 요정의 불꽃을 사용합니다. 표범 변신 상태(야생의 정수)에서는 짧은 공격 목록을 제공합니다. 알림: 꺼져 있으면 언제든 야생의 방어, 분노를 위한 격노, 생명력이 낮거나 분노가 가득 차면 광포한 재생력, 분노 90 초과나 맹위 시 후려갈기기, 대상이 나를 공격하는 동안 나무 껍질, 생명력이 낮으면 생존 본능, 적 둘이나 우두머리에게 광폭화와 화신, 자연의 군대, 자연의 경계, 세나리온의 보호, 두개골 강타, 야생의 징표. 도발과 우르속의 힘은 직접 판단합니다(두 알림 모두 기본적으로 꺼져 있음).",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2391] = "추천",
 -- de6705ed English: Recommended for Restoration from level 10, after Wowhead's Phase 5 group
 --     healing. Heals your current friendly target, or you with no target; choosing whom to heal is
@@ -6825,6 +9612,10 @@ addon.translation = {
 --     Mushroom placement, Tranquility and Genesis reminders are off by default.
 [2392] = "10레벨부터 회복에게 권장하며, Wowhead의 5단계 그룹 치유를 따릅니다. 현재 우호적 대상을, 대상이 없으면 자신을 치유하며, 누구를 치유할지는 직접 판단합니다. 내 지속 치유 효과가 있는 대상이 낮을 때, 화합이 사라졌을 때, 또는 숲의 영혼과 함께 급속 성장 전에 신속한 치유; 근처 세 명이 다쳤으면 급속 성장; 자연의 신속함 시 즉시 시전 치유의 손길; 번뜩임 시나 죽어 가는 대상에게 재생; 회복; 그다음 가만히 서 있을 때 치유의 손길과 육성. 공격 가능한 대상에게는 달빛 섬광과 천벌. 알림: 주시 대상에게 피어나는 생명 중첩과 무쇠껍질(방어 전담을 주시 대상으로 지정하세요), 그룹 피해에 야생 버섯: 피우기, 자연의 군대, 화신, 자연의 경계, 자연의 신속함, 정신 자극, 자연의 치유력, 세나리온의 보호, 나무 껍질, 야생의 징표. 야생 버섯 배치, 평온, 발생력 알림은 기본적으로 꺼져 있습니다.",
 -- f3d02e30 English: Tank healing (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2393] = "방어 전담 치유 (Wowhead)",
 -- 28164e24 English: Wowhead's single-target tank-healing order, an alternative to the recommended
 --     Restoration premade for when you are assigned to the tank: enable it and disable that one, or
@@ -6834,6 +9625,9 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2394] = "Wowhead의 단일 대상 방어 전담 치유 순서로, 방어 전담 치유를 배정받았을 때를 위한 권장 회복 기본 제공 로테이션의 대안입니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 방어 전담을 대상으로 유지하세요: 피어나는 생명 3중첩과 회복을 유지하고, 큰 피해에는 재생, 적은 피해에는 육성, 피어나는 생명과 회복이 걸려 있고 방어 전담이 절반 미만이면 치유의 손길, 생명력을 가득 유지하기 위해 신속한 치유를 사용합니다. 알림은 권장 기본 제공 로테이션과 같습니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: BeastMastery). The standard recommended rotation for
+--     the specialization.
 [2395] = "추천",
 -- 74d539a0 English: Chosen automatically in the Beast Mastery specialization. Opens with Hunter's
 --     Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is
@@ -6849,6 +9643,9 @@ addon.translation = {
 --     Exhilaration and Deterrence reminders are off by default.
 [2396] = "야수 전문화에서 자동으로 선택됩니다. 사냥꾼의 징표와 살상 명령으로 시작한 뒤: 마무리 사격, 살상 명령(야수의 격노가 곧 준비되면 잠시 보류), 저승까마귀, 스라소니 돌진, 특성을 찍었다면 광포한 야수와 6단계 특성 사격, 광기 5중첩(또는 곧 사라질 4중첩)에서 집중 사격(야수의 격노 중에는 제외), 오래 살아남을 대상에게 독사 쐐기, 이를 갱신하는 코브라 사격, 집중 80이거나 야수의 격노 중에 신비한 사격, 그다음 코브라 사격(81레벨 전에는 고정 사격). 적이 둘 이상 나와 싸우면 일제 사격으로 야수의 회전베기를 유지하고, 큰 무리에서는 남는 집중이 있을 때 살상 명령을 쓰며, 셋부터 폭발의 덫을 제안합니다. 알림: 소환수 부르기, 되살리기, 치료, 매의 상 또는 강철매의 상, 반격의 사격, 열정, 그리고 가치 있는 전투(정예, 던전이나 공격대, 또는 오래 살아남을 대상)에서 야수의 격노, 속사, 쇄도, 종족 특성. 덫 배치, 눈속임, 죽은척하기, 방어 기술은 직접 판단하며, 활기와 공격 저지 알림은 기본적으로 꺼져 있습니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Marksmanship). The standard recommended rotation for
+--     the specialization.
 [2397] = "추천",
 -- a1f9c291 English: Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot,
 --     then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on
@@ -6868,6 +9665,9 @@ addon.translation = {
 --     disable the Marksmanship premade, or raise its priority.
 [2400] = "Icy Veins, Method, wowtbc.gg, Hekili가 플레이하는 방식으로, 사격 기본 제공 로테이션의 대안입니다: 일반 시전 조준 사격은 대상 생명력 80% 초과나 속사 또는 피의 욕망 중에만 사용하고, 남는 집중은 대신 60에서 신비한 사격에 씁니다. 초점 고정은 4초 미만일 때 갱신하며, 적이 넷 이상이면 일제 사격이 먼저입니다. 기본적으로 꺼져 있습니다: 이것을 켜고 사격 기본 제공 로테이션을 끄거나, 이것의 우선순위를 높이세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Survival). The standard recommended rotation for the
+--     specialization.
 [2401] = "추천",
 -- 1d1f9ae1 English: Chosen automatically in the Survival specialization. Opens with Hunter's Mark,
 --     Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load,
@@ -6879,6 +9679,9 @@ addon.translation = {
 --     traps for Lock and Load procs stay with you.
 [2402] = "생존 전문화에서 자동으로 선택됩니다. 사냥꾼의 징표, 검은 화살, 폭발 사격으로 시작한 뒤: 재사용 대기시간마다와 실탄 장전마다 폭발 사격, 마무리 사격, 오래 살아남을 대상에게 검은 화살, 특성 기술, 코브라 사격으로 독사 쐐기 유지, 집중 75이거나 사냥의 전율이 있거나 검은 화살이 곧 준비되지 않으면 55에서 신비한 사격, 그다음 코브라 사격(81레벨 전에는 고정 사격). 적이 둘 이상이면: 집중이 가득하고 실탄 장전이 있으면 일제 사격 먼저, 대상 다섯까지 폭발 사격, 마무리 사격, 검은 화살, 셋부터 폭발의 덫, 소모용 일제 사격. 알림은 다른 사냥꾼 기본 제공 로테이션과 같으며, 실탄 장전 발동을 위한 덫은 직접 판단합니다.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2403] = "전문화 선택 전",
 -- d00315ae English: For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast
 --     Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization.
@@ -6887,6 +9690,9 @@ addon.translation = {
 --     call, revive and mend your pet and to keep Aspect of the Hawk up.
 [2404] = "1–9레벨과 아직 전문화를 고르지 않은 사냥꾼용이며, 전문화를 고르는 즉시 야수, 사격, 생존 기본 제공 로테이션이 넘겨받습니다. 사냥꾼의 징표와 신비한 사격으로 끌어온 뒤, 오래 살아남을 대상에게 독사 쐐기, 적이 셋 이상이면 일제 사격, 신비한 사격, 고정 사격, 자동 사격을 사용합니다. 소환수를 부르고, 되살리고, 치료하며, 매의 상을 유지하도록 알려 줍니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Arcane). The standard recommended rotation for the
+--     specialization.
 [2405] = "추천",
 -- 4f5292d5 English: Recommended for Arcane, from level 10 to 90 (selected in the Arcane
 --     specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc
@@ -6910,6 +9716,9 @@ addon.translation = {
 --     disable the recommended Arcane premade, or raise its priority.
 [2408] = "공략(Icy Veins, Wowhead, Method, wowtbc.gg)의 비전 규칙으로, 권장 비전 기본 제공 로테이션의 대안입니다: 비전 충전물 4개에서 발동이 있으면 신비한 화살, 그 외에는 마나와 관계없이 비전 탄막을 사용하며, 신비한 화살은 충전물 4개에서만 사용합니다. 그 밖의 모든 것(시간 돌리기, 폭탄 주문, 광역, 이동, 알림)은 권장 로테이션과 같지만, 신비의 마법 강화는 발동을 기다리지 않고 충전물 4개에서 제안합니다. 기본적으로 꺼져 있습니다: 이것을 켜고 권장 비전 기본 제공 로테이션을 끄거나, 이것의 우선순위를 높이세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Fire). The standard recommended rotation for the
+--     specialization.
 [2409] = "추천",
 -- 82cfe9d2 English: Recommended for Fire, from level 10 to 90 (selected in the Fire
 --     specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns
@@ -6932,6 +9741,9 @@ addon.translation = {
 --     premade, or raise its priority.
 [2412] = "Icy Veins, Method, wowtbc.gg의 화염 플레이로, 권장 화염 기본 제공 로테이션의 대안입니다: 불덩이 작렬! 발동은 열기가 함께할 때까지 보류했다가 화염구와 함께 시전하며, 곧 만료될 때만 단독으로 소모합니다. 그 밖의 모든 것은 권장 로테이션과 같습니다. 기본적으로 꺼져 있습니다: 이것을 켜고 권장 화염 기본 제공 로테이션을 끄거나, 이것의 우선순위를 높이세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Frost). The standard recommended rotation for the
+--     specialization.
 [2413] = "추천",
 -- a656a280 English: Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at
 --     two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice
@@ -6945,6 +9757,9 @@ addon.translation = {
 --     Warp and Spellsteal are off.
 [2414] = "10레벨부터 90레벨까지의 냉기 로테이션입니다(냉기 전문화에서 선택). 서리의 손가락 2회에서 얼음창, 두뇌 빙결 시 얼음불꽃 화살, 특성으로 배운 폭탄 주문, 얼어붙은 구슬, 서리의 손가락 1회에서 얼음창, 얼음 화살; 87레벨부터는 시간 돌리기가 10초 미만 남았으면 발동을 보류합니다. 적이 둘 이상이면: 얼어붙은 구슬, 가까이 있으면 냉기 돌풍과 신비한 폭발, 넷이 가만히 서 있으면 눈보라. 빙하 없이 이동 중에는 얼음창과 화염 작렬. 알림: 물의 정령, 우두머리가 아닌 대상에게 얼리기(직접 배치), 시간 돌리기에 맞춘 얼음 핏줄, 얼음 핏줄 중 서리의 손가락 2회에서 시간 돌리기, 냉기 갑옷(54레벨 전에는 타오르는 갑옷), 마나석, 신비한 총명함, 마법 차단, 환영 복제, 얼음 보호막, 빙하, 마법의 기원 또는 마력의 룬. 매서운 한파, 냉정, 시간 왜곡, 마법 훔치기는 꺼져 있습니다.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2415] = "전문화 선택 전",
 -- aa9bffd1 English: For levels 1 to 9, and any Mage who has not chosen a specialization yet.
 --     Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once
@@ -6953,6 +9768,9 @@ addon.translation = {
 --     reach them. Choosing a specialization at 10 switches to that specialization's premade.
 [2416] = "1–9레벨과 아직 전문화를 고르지 않은 마법사용입니다. 얼음불꽃 화살, 대상 마무리나 이동 중에는 화염 작렬, 배운 뒤에는 이동 중 얼음창, 근접 거리에 적이 셋 이상이면 신비한 폭발. 알림: 몹이 다가오면 얼음 회오리, 마법 차단, 해당 레벨에 도달하면 타오르는 갑옷과 신비한 총명함. 10레벨에 전문화를 고르면 그 전문화의 기본 제공 로테이션으로 바뀝니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster). The standard recommended rotation for
+--     the specialization.
 [2417] = "추천",
 -- 94fb9e53 English: Picked automatically in the Brewmaster specialization. Keeps Shuffle up with
 --     Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once
@@ -6966,6 +9784,10 @@ addon.translation = {
 --     Harm, Zen Meditation and Provoke stay with you.
 [2418] = "양조 전문화에서 자동으로 선택됩니다. 후려차기로 건들건들을 유지하고, 기가 맞을 때마다 맥주통 휘두르기, 다쳤을 때 해악 축출(35% 미만이면 즉시), 기력 소모용으로 타, 범의 힘과 무료 빈틈 채우기로 범의 장풍(34레벨 전에는 타로 기를 생성), 사용할 수 있을 때 절명의 손길을 사용합니다. 전투 밖 원거리에서는: 기의 물결, 술안개, 충돌 또는 맥주통 휘두르기. 적이 셋 이상이면: 비취 돌풍, 불의 숨결, 그리고 건들건들이 남아 있는 동안에만 회전 학다리차기. 알림: 건우지세, 황제의 유산, 큰 시간차에 정화주(건들건들이 넉넉하면 중간 시간차에도), 6중첩부터 묘주, 막강한 방어와 함께 방어 자세, 원기주, 쉬엔, 생명력이 낮으면 강화주, 해악 감퇴 또는 마법 해소, 손날 찌르기. 흑우 조각상 알림은 꺼져 있으며, 해악 방지, 명상, 조롱은 직접 판단합니다.",
 -- fbb1d180 English: Damage first (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2419] = "공격 우선 (wowsims)",
 -- e83b14c9 English: An alternative to the Brewmaster premade, off by default: enable it and disable
 --     that one, or raise its priority. Follows the simulator's damage-first list for a tank who
@@ -6974,6 +9796,9 @@ addon.translation = {
 --     Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders.
 [2420] = "양조 기본 제공 로테이션의 대안으로, 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 콘텐츠보다 장비가 좋은 방어 전담을 위한 시뮬레이터의 공격 우선 목록을 따릅니다: 맥주통 휘두르기 전에 비취 돌풍, 기는 피해를 위해 후려차기에 쓰며, 일상적인 정화주나 방어 자세는 없습니다(정화주는 15단계 세트의 정화력 발동 시에만 표시). 묘주, 원기주, 쉬엔, 강화주는 여전히 알림으로 나옵니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Windwalker). The standard recommended rotation for
+--     the specialization.
 [2421] = "추천",
 -- d0726f89 English: Picked automatically in the Windwalker specialization. Touch of Death when
 --     usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker
@@ -6997,6 +9822,9 @@ addon.translation = {
 --     Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60.
 [2424] = "풍운 기본 제공 로테이션의 대안으로, 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. Hekili와 MaxDps 애드온에 들어 있는 원래 SimulationCraft 목록입니다: 범의 힘은 3초 남았을 때 갱신, 약화 효과가 없는 동안 해오름차기 먼저, 분노의 주먹은 호안주(활성 또는 15중첩)를 위해 보류, 호안주는 20중첩이거나 기와 두 강화 효과가 있을 때 15중첩에서 사용합니다. 적이 셋 이상이면 회전 학다리차기에 소모하고, 해오름차기는 기가 가득할 때만 사용하며, 기력 60 미만에서는 기력을 모읍니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Mistweaver). The standard recommended rotation for
+--     the specialization.
 [2425] = "추천",
 -- 2d084655 English: Picked automatically in the Mistweaver specialization. With a friendly target
 --     it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are
@@ -7011,12 +9839,18 @@ addon.translation = {
 --     Revival (reminder off) and Healing Sphere stay with you.
 [2426] = "운무 전문화에서 자동으로 선택됩니다. 우호적 대상이 있으면 그 대상을 치유합니다: 재사용 대기시간마다 소생의 안개, 근처 아군 셋 이상이 다쳤으면 고양감, 기를 위해 해악 축출과 기 특성, 다친 그룹에 비취 돌풍 또는 회전 학다리차기, 생명의 안개 5중첩에서 쇄도의 안개, 대상이 80% 미만이면 위안의 안개, 그다음 그 정신 집중 안에서 포용의 안개와 쇄도의 안개. 적 대상이 있으면 주먹 치유를 합니다: 범의 힘과 용의 열의를 유지하기 위해 몸의 기억에 범의 장풍과 후려차기, 기가 가득하면 후려차기, 생명의 안개 5중첩에서 쇄도의 안개, 기를 위해 소생의 안개와 해악 축출, 타. 알림: 현룡지세, 황제의 유산, 그룹에서 옥룡 조각상, 한가한 순간에 마나 차, 집중의 천둥 차, 원기주, 35% 미만인 아군에게 기의 고치, 쉬엔, 해독, 방어 기술, 손날 찌르기. 누구를 치유할지는 직접 고르며, 재활(알림 꺼짐)과 치유의 구슬은 직접 판단합니다.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2427] = "전문화 선택 전",
 -- e00ba6b1 English: For levels 1 to 9, or any monk who has not chosen a specialization; a
 --     specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power
 --     up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise.
 [2428] = "1–9레벨이나 아직 전문화를 고르지 않은 수도사용이며, 전문화를 고르는 즉시 전문화 기본 제공 로테이션이 넘겨받습니다. 맹호지세와 범의 힘을 유지하고, 기 두 개를 후려차기에 쓰며, 다쳤을 때는 해악 축출, 그 외에는 타를 사용합니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Retribution). The standard recommended rotation for
+--     the specialization.
 [2429] = "추천",
 -- a115bc01 English: Recommended for Retribution, from level 10 in the Retribution specialization.
 --     Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends
@@ -7043,6 +9877,9 @@ addon.translation = {
 --     is left to you.
 [2432] = "권장 징벌 기본 제공 로테이션의 대안으로, 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 재사용 대기시간마다와 전쟁의 기술 초기화마다 퇴마술이 먼저입니다. 심문은 없으면 신성한 힘과 관계없이 시전하고 마지막 20초에 3에서 갱신하며, 그다음 성전사의 일격, 심판, 기사단의 선고, 천벌의 망치(축성의 분노가 있으면 응징의 격노(날개) 중 먼저). 적이 둘 이상이면 성전사의 일격, 빛의 망치, 심판, 천상의 폭풍, 천벌의 망치를 사용합니다. 응징의 격노와 고대 왕의 수호자는 정예에게만 제안합니다. 공략의 광역 공격 시 정의의 문장은 직접 판단합니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2433] = "추천",
 -- 0c1b3a03 English: Recommended for Protection, from level 10 in the Protection specialization.
 --     Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's
@@ -7069,6 +9906,9 @@ addon.translation = {
 --     with the same three-enemy AoE order. Boss-timed defensives are yours.
 [2436] = "권장 보호 기본 제공 로테이션의 대안으로, 기본적으로 꺼져 있습니다: 이것을 켜고 그것을 끄거나, 이것의 우선순위를 높이세요. 시뮬레이터의 방어 전담 목록을 따릅니다: 정의의 방패는 생명력이 40% 미만으로 떨어지거나 신성한 목적으로 무료가 되지 않으면 신성한 힘이 가득 찰 때까지 기다리고, 영광의 수호자가 2중첩을 넘으면 사라지기 직전에 영원의 불꽃, 성스러운 보호막 유지, 재사용 대기시간마다 신성한 복수자와 응징의 격노. 생성 기술은 성전사의 일격, 심판, 그다음 응징의 방패, 신의 격노, 90레벨 특성, 천벌의 망치 순이며, 적 셋일 때의 광역 순서는 같습니다. 우두머리 타이밍에 맞춘 방어 기술은 직접 판단합니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2437] = "추천",
 -- ba77c874 English: For Holy, from level 10 in the Holy specialization. With a friend targeted it
 --     heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt,
@@ -7084,6 +9924,9 @@ addon.translation = {
 --     healing stay with you.
 [2438] = "신성용이며, 10레벨부터 신성 전문화에서 적용됩니다. 아군을 대상으로 지정하면 치유합니다: 신성한 힘 3(또는 신성한 목적)에서 근처 세 명이 다쳤으면 여명의 빛, 그 외에는 영원의 불꽃이 없는 대상에게 영원의 불꽃, 그 외에는 영광의 서약; 재사용 대기시간마다 신성 충격; 빛 주입은 신성한 광휘나 천상의 빛에, 관대한 치유사 3중첩은 신성한 광휘나 빛의 섬광에; 35% 미만이면 빛의 섬광; 다친 그룹에 신성한 광휘; 천상의 빛, 그다음 보충용 성스러운 빛. 적을 대상으로 지정하면 피해를 줍니다: 신성 충격, 심판, 성전사의 일격, 성스러운 빛기둥, 사형 선고, 천벌의 망치, 선고. 알림: 문장이 없거나 다른 문장(정의의 문장 제외)이 활성화되어 있으면 통찰의 문장, 축복, 비난, 주시 대상에게 빛의 봉화와 성스러운 보호막(방어 전담을 주시 대상으로 지정하세요), 마나 60% 미만에서 신성한 기도, 세 명이 70% 미만이면 빛의 망치와 치유 재사용 대기시간 기술, 죽어 가는 대상에게 신의 축복. 누구를 치유할지, 해제, 마우스오버 치유는 직접 판단합니다.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2439] = "전문화 선택 전",
 -- fce883af English: For levels 1 to 9, and any paladin who has not chosen a specialization yet; a
 --     specialization's premade takes over as soon as you pick one. Pulls from range with Judgment,
@@ -7093,6 +9936,9 @@ addon.translation = {
 --     hurt.
 [2440] = "1–9레벨과 아직 전문화를 고르지 않은 성기사용이며, 전문화를 고르는 즉시 그 전문화의 기본 제공 로테이션이 넘겨받습니다. 원거리에서 심판으로 끌어온 뒤 성전사의 일격과 심판을 사용하고, 혼자이면서 생명력이 절반 미만이면 심판의 망치, 40% 미만이면 영광의 서약을 사용합니다. 알림: 지휘의 문장(24레벨부터 진실의 문장)이 없을 때 그 문장, 왕의 축복, 비난, 전투 밖에서 다쳤으면 빛의 섬광.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Discipline). The standard recommended rotation for
+--     the specialization.
 [2441] = "추천",
 -- 360a55ef English: Discipline healing from level 10 to 90, chosen in the Discipline
 --     specialization. Target a friend to heal them: Power Word: Shield when they are low, before
@@ -7108,6 +9954,9 @@ addon.translation = {
 --     on the tank.
 [2442] = "10레벨부터 90레벨까지의 수양 치유 로테이션으로, 수양 전문화에서 선택됩니다. 아군을 대상으로 지정하면 치유합니다: 생명력이 낮을 때, 전투 전, 그리고 환희를 위해 약 12초마다 신의 권능: 보호막; 빛의 쇄도에 순간 치유; 회개; 생명력이 매우 낮으면 순간 치유; 둘 다 다쳤으면 결속의 치유; 회복의 기원; 아군 셋이 다쳤으면 치유의 기원과 6단계 특성; 상급 치유; 이동 중에는 소생; 보충용 치유. 혼의 너울 중에는 치유의 기원이나 상급 치유를 제안합니다. 적을 대상으로 지정하면 속죄로 치유합니다: 회개, 신의 권능: 위안 또는 신성한 불꽃, 무리에 6단계 특성, 혼자일 때 어둠의 권능: 고통, 성스러운 일격. 알림: 내면의 열정, 신의 권능: 인내, 사도 5중첩에서 대천사, 내면의 집중력, 죽어 가는 대상에게 고통 억제, 마나를 위한 어둠의 마귀 또는 환각의 마귀, 마력 주입, 구원의 기도. 직접 판단할 것: 누구를 치유할지, 혼의 너울 타이밍(켤 수 있는 알림), 신의 권능: 방벽, 공허의 전환, 방어 전담의 은총 중첩.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2443] = "추천",
 -- 1d7fb6cd English: Holy healing from level 10 to 90, chosen in the Holy specialization. Target a
 --     friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when
@@ -7133,6 +9982,9 @@ addon.translation = {
 --     one to use it.
 [2446] = "기본적으로 꺼져 있습니다. 차크라에 따라 고르는 Icy Veins의 신성 순서입니다. 차크라: 성역 중에는: 아군 셋이 다쳤으면 빛의 권능: 성역, 소생, 치유의 마법진, 회복의 기원, 치유의 기원, 그다음 위급할 때만 결속의 치유와 순간 치유. 그 외에는: 소생, 빛의 권능: 평온, 회복의 기원, 상급 치유, 치유, 결속의 치유, 순간 치유, 마지막으로 신의 권능: 보호막, 치유를 배우기 전에는 순간 치유가 빈틈 채우기입니다. 전환, 알림, 피해 목록은 권장 신성 기본 제공 로테이션과 같습니다. 사용하려면 이것을 켜고 그것을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Shadow). The standard recommended rotation for the
+--     specialization.
 [2447] = "추천",
 -- 6c0c75e0 English: Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens
 --     with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind
@@ -7157,6 +10009,9 @@ addon.translation = {
 --     recommended one to use it.
 [2450] = "기본적으로 꺼져 있습니다. Warcraft Tavern의 암흑 순서입니다: 어둠의 구슬 3개에서 파멸의 역병, 20% 미만에서 어둠의 권능: 죽음, 정신 분열, 흡혈의 손길, 어둠의 권능: 고통, 어둠의 쇄도에 정신의 쐐기, 6단계 특성, 정신의 채찍. 권장 암흑 기본 제공 로테이션과 달리 파멸의 역병 중에 정신의 채찍을 앞당기지 않으며, 정신 분열을 위해 파멸의 역병을 보류하지 않습니다. 시작, 이동, 무리, 알림 단계는 같습니다. 사용하려면 이것을 켜고 권장 로테이션을 끄세요.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2451] = "전문화 없음",
 -- 31c78194 English: For levels 1 to 9, or any priest who has not chosen a specialization yet. On an
 --     enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal
@@ -7165,6 +10020,9 @@ addon.translation = {
 --     premade.
 [2452] = "1–9레벨이나 아직 전문화를 고르지 않은 사제용입니다. 적에게는: 충분히 오래 살아남을 때 어둠의 권능: 고통, 그다음 성스러운 일격. 아군에게는: 생명력이 낮으면 순간 치유, 그 외에는 신의 권능: 보호막. 알림: 내면의 열정, 혼자이고 다쳤을 때 자신에게 보호막. 10레벨에 전문화를 고르면 그 전문화의 기본 제공 로테이션으로 바뀝니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
+--     the specialization.
 [2453] = "추천",
 -- be1774f6 English: Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for
 --     Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo,
@@ -7189,6 +10047,9 @@ addon.translation = {
 --     this one, enable it and disable the recommended one.
 [2456] = "기본적으로 꺼져 있습니다. Icy Veins와 Method의 순서입니다: 은신 상태 절단을 위해 재사용 대기시간마다 소멸, 전투가 충분히 길면 재사용 대기시간마다 원한, 독살은 5점에서만, 파열 유지, 35% 미만이거나 사각 지대 시 속결, 절단. 적이 넷에서 여덟이면: 3점 이상으로 파열과 함께 칼날 부채; 아홉 이상이면 칼날 부채와 독살만. 권장 암살 기본 제공 로테이션은 대신 더 새로운 5단계 조언을 따릅니다. 이것을 사용하려면 이것을 켜고 권장 로테이션을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
+--     specialization.
 [2457] = "추천",
 -- 43003559 English: Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5).
 --     Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is
@@ -7213,6 +10074,10 @@ addon.translation = {
 --     one.
 [2460] = "기본적으로 꺼져 있으며, 5단계에서는 대체되었습니다. 오그리마 공성전 패치 이전의 Icy Veins, Warcraft Tavern, Method, wowtbc.gg 순서입니다: 난도질, 약점 공격 유지, 긴 단일 대상 전투에서 5점 파열과 절개, 연계 점수 생성 기술은 사악한 일격. 알림과 무리 대응은 권장 전투 기본 제공 로테이션과 같습니다. 이 공략을 따를 때만 선택하세요. 이것을 켜고 권장 로테이션을 끄세요.",
 -- 972be132 English: Anticipation (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2461] = "선견지명 (Hekili)",
 -- a677df00 English: Off by default. The Hekili MoP order for Combat with Anticipation: Revealing
 --     Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four
@@ -7222,6 +10087,9 @@ addon.translation = {
 --     with Anticipation talented. Enable it and disable the recommended Combat premade to use it.
 [2462] = "기본적으로 꺼져 있습니다. 선견지명을 쓰는 전투를 위한 Hekili MoP 순서입니다: 피의 욕망 중에도 약점 공격만 연계 점수 생성 기술로 사용합니다. 마무리 기술은 깊은 통찰, 선견지명 충전 4회, 또는 어둠의 칼날이 돌아올 때를 기다린 뒤 난도질, 오래 사는 대상 하나나 둘에게 파열, 적 일곱에게 혈폭풍, 절개를 사용합니다. 난도질은 도적의 간계 11중첩에서 일찍 갱신하며, 적이 넷부터 칼날 부채. 선견지명을 찍었을 때만 적용됩니다. 사용하려면 이것을 켜고 권장 전투 기본 제공 로테이션을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
+--     specialization.
 [2463] = "추천",
 -- 53ec1c4b English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and
 --     Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the
@@ -7236,6 +10104,10 @@ addon.translation = {
 --     Expose Armor (listed but off).
 [2464] = "10레벨부터 90레벨까지 어둠의 집중을 쓰는 잠행에게 권장합니다(5단계용 wowsims와 Wowhead). 은신이나 어둠의 춤 중에는: 사전계획, 전투 전 난도질, 5점에서 마무리 기술, 매복, 목조르기. 그 밖에서는: 난도질; 5점에서 난도질과 파열이 곧 끝나면 갱신하고, 둘 다 지속되는 동안 절개; 죽음의 표적; 출혈을 유지하기 위한 과다출혈; 대상이 나를 공격하지 않으면 기습(단검을 든 경우), 그 외에는 과다출혈. 적이 셋 이상이면: 난도질, 혈폭풍, 절개, 칼날 부채. 혼자일 때는 만회와 급소 가격을 추가합니다. 알림: 독, 발차기, 난도질과 파열이 걸려 있을 때 기력 75에서 어둠의 춤, 약점 포착이 끝나 갈 때 소멸, 마음가짐, 어둠의 춤과 은신 밖에서 어둠의 칼날, 그림자 밟기, 혼자일 때 회피. 직접 판단할 것: 대상 뒤에 서기(RM은 방향을 볼 수 없음), 속임수 거래와 약점 노출(나열되지만 꺼짐).",
 -- a7cbb172 English: Subterfuge (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = "기만 (Warcraft Tavern)",
 -- 01394d1f English: Chosen automatically instead of the Shadow Focus premade when your tier-1
 --     talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the
@@ -7247,6 +10119,9 @@ addon.translation = {
 --     them to trinket procs, as Tavern suggests, is up to you.
 [2466] = "1단계 특성이 기만일 때(Warcraft Tavern의 빌드) 어둠의 집중 기본 제공 로테이션 대신 자동으로 선택됩니다. 전투 전 사전계획과 난도질; 은신, 어둠의 춤 또는 기만 지속 중에는 5점에서 마무리 기술, 그다음 가능한 한 자주 매복. 적이 둘이나 셋이면: 파열을 유지하고 5점을 절개 대신 혈폭풍에 사용하며, 넷 이상이면 칼날 부채를 추가합니다. 단일 대상: 난도질, 파열, 절개, 출혈을 위한 과다출혈, 뒤에서 단검으로 기습, 그 외에는 과다출혈. 어둠의 춤과 소멸은 난도질이 걸려 있을 때 기력 60에서 알림으로 표시되며, Tavern이 권하는 대로 장신구 발동에 맞추는 것은 직접 판단합니다.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2467] = "전문화 없음",
 -- 60f6bea5 English: For levels 1 to 9, or a rogue who has not chosen a specialization yet; each
 --     specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot
@@ -7256,6 +10131,9 @@ addon.translation = {
 --     solo.
 [2468] = "1–9레벨이나 아직 전문화를 고르지 않은 도적용이며, 전문화를 고르면 각 전문화의 기본 제공 로테이션이 넘겨받습니다. 은신 상태에서 혼자일 때 비열한 습격, 매복 또는 사악한 일격으로 시작하고, 전투 밖에서는 은신을 제안합니다. 2점부터 난도질, 혼자이고 다쳤으면 만회와 급소 가격, 4점(대상이 곧 죽으면 2점)에서 절개, 사악한 일격. 알림: 배운 뒤에는 독, 발차기, 혼자일 때 회피.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Elemental). The standard recommended rotation for the
+--     specialization.
 [2469] = "추천",
 -- 013214a9 English: Recommended for Elemental from level 10, chosen in the Elemental
 --     specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury),
@@ -7271,6 +10149,9 @@ addon.translation = {
 --     Spiritwalker's Grace, Flame Shock on extra targets and where to stand.
 [2470] = "10레벨부터 정기에게 권장하며, 정기 전문화에서 언제나 선택됩니다. Wowhead의 순서입니다: 시작은 번개 화살(격노 폭발이 있으면 용암 폭발), 격노 폭발이 있으면 정기 폭발, 오래 살아남을 대상에게 화염 충격이 없거나 곧 끝나면 화염 충격, 화염 충격에 맞춰 용암 폭발(그리고 용암 쇄도마다), 정기 작렬, 화염 충격이 6초 남아 있는 동안 번개 보호막 충전 6회에서 대지 충격, 적이 둘이면 연쇄 번개, 번개 화살. 적이 넷 이상 나를 공격하면: 근접 거리에서 용암 토템, 무료 용암 폭발, 지배력 중 용암 광선, 연쇄 번개. 이동 중에는 즉시 시전 주문만 표시합니다. 알림: 번개 보호막, 불꽃의 무기, 불타는 토템, 정예와 우두머리에게 불의 정령 토템, 정기의 깨달음, 용암 폭발 뒤 지배력, 고대의 신속함, 그룹에서 폭풍채찍 토템과 피의 욕망, 날카로운 바람, 마나를 위한 천둥폭풍, 생명력이 낮으면 주술의 분노와 영혼 이동. 지진과 대지의 정령 토템은 나열되지만 꺼져 있습니다. 직접 판단할 것: 영혼나그네의 은총, 추가 대상의 화염 충격, 서 있을 위치.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Enhancement). The standard recommended rotation for
+--     the specialization.
 [2471] = "추천",
 -- 30126acf English: Recommended for Enhancement from level 10, chosen in the Enhancement
 --     specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements
@@ -7304,6 +10185,9 @@ addon.translation = {
 --     recommended premade.
 [2476] = "기본적으로 꺼져 있습니다. 권장 고양 기본 제공 로테이션과 같은 전환 조건을 쓰므로, 사용하려면 이것을 켜고 그것을 끄세요. Icy Veins의 순서입니다: 폭풍의 일격, 그다음 소용돌이치는 무기를 쓰기 전에 용암 채찍, 5중첩에서 또는 다음 자동 공격 전에 적중하면 3중첩부터 번개 화살, 정기 폭발 후 화염 충격, 대지 충격. 적이 넷 이상이면 용암 채찍으로 화염 충격을 퍼뜨리고 불꽃 회오리를 사용하며, 무리에는 번개 화살 대신 연쇄 번개를 사용합니다. 주술의 분노는 전투 중 재사용 대기시간마다 제안하며, 그 외의 알림은 권장 기본 제공 로테이션과 같습니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2477] = "추천",
 -- 786ac591 English: Recommended for Restoration from level 10, chosen in the Restoration
 --     specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater
@@ -7318,6 +10202,10 @@ addon.translation = {
 --     them when your raid assigns them.
 [2478] = "10레벨부터 복원에게 권장하며, 복원 전문화에서 언제나 선택됩니다. 우호적 대상을 치유합니다(Rotation Master는 누구를 치유할지 고를 수 없음): 고대의 신속함 중 상급 치유의 물결, 35% 미만이면 치유의 파도, 마법이나 저주에 영혼 정화, 근처 아군 셋이 다쳤으면 정기 폭발 후 치유의 비, 성난 해일, 그룹 피해에 연쇄 치유, 60% 미만이면 상급 치유의 물결, 90% 미만이면 치유의 물결. 공격 가능한 대상이 있으면 대신 피해를 줍니다(화염 충격, 용암 폭발, 정기 작렬, 번개 화살). 알림: 물의 보호막, 대지생명의 무기, 주시 대상에게 대지의 보호막, 누군가 다쳤으면 치유의 토템, 마나 해일 토템, 큰 그룹 피해에 치유의 해일 토템, 정기의 깨달음 또는 고대의 인도, 생명력이 낮은 대상에게 고대의 신속함, 이동 중 영혼나그네의 은총, 피의 욕망, 날카로운 바람. 지배력과 정신의 고리 토템은 나열되지만 꺼져 있습니다: 공격대에서 배정받으면 사용하세요.",
 -- 98ae06d3 English: Health ladder (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2479] = "생명력 단계별 (Hekili)",
 -- db083550 English: Off by default; same switch as the recommended Restoration premade, so enable
 --     it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your
@@ -7328,6 +10216,9 @@ addon.translation = {
 --     Earth Shock.
 [2480] = "기본적으로 꺼져 있습니다. 권장 복원 기본 제공 로테이션과 같은 전환 조건을 쓰므로, 사용하려면 이것을 켜고 그것을 끄세요. Hekili의 목록은 대상에게 대지의 보호막과 성난 해일을 유지하고, 치유의 토템과 치유의 비가 꺼져 있으면 언제든 다시 쓴 뒤, 40미터 이내 그룹의 평균 생명력에 따라 치유합니다: 80% 미만이면 연쇄 치유, 70% 미만인 대상에게 치유의 물결, 60% 미만이면 상급 치유의 물결, 40% 미만이면 치유의 파도이며, 치유의 해일 토템, 고대의 인도, 마나 해일 토템도 같은 단계에 있습니다. 공격 가능한 대상에게는 피해 기술과 대지 충격을 사용합니다.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2481] = "전문화 없음",
 -- 8c70a307 English: For levels 1 to 9, and any Shaman who has not chosen a specialization yet;
 --     every specialization premade takes over once you pick one. Lightning Bolt to pull from range,
@@ -7335,6 +10226,9 @@ addon.translation = {
 --     while out of melee range. Keeps Lightning Shield up.
 [2482] = "1–9레벨과 아직 전문화를 고르지 않은 주술사용이며, 전문화를 고르면 각 전문화 기본 제공 로테이션이 넘겨받습니다. 원거리에서 번개 화살로 끌어오고, 혼자이면서 생명력이 낮으면 치유의 파도, 원시의 일격, 대지 충격, 근접 거리 밖에서는 번개 화살을 사용합니다. 번개 보호막을 유지합니다.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Affliction). The standard recommended rotation for
+--     the specialization.
 [2483] = "추천",
 -- e15e8094 English: Recommended for Affliction from level 10 to 90 (chosen in the Affliction
 --     specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn
@@ -7355,6 +10249,9 @@ addon.translation = {
 --     shard. Enable it and disable the recommended Affliction premade to use it.
 [2486] = "기본적으로 꺼져 있습니다. Warcraft Tavern과 Method의 조각 운용 방식입니다: 지속 피해 유지는 권장 고통 기본 제공 로테이션과 같지만, 유령 출몰은 조각 4개나 악마의 영혼: 불행을 위해 아껴 두고, 20% 미만에서는 조각이 있을 때마다 영혼 불사르기와 영혼 바꾸기로 모든 지속 피해를 갱신합니다. 사용하려면 이것을 켜고 권장 고통 기본 제공 로테이션을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Demonology). The standard recommended rotation for
+--     the specialization.
 [2487] = "추천",
 -- daf1315b English: Recommended for Demonology from level 10 to 90 (chosen in the Demonology
 --     specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of
@@ -7376,6 +10273,9 @@ addon.translation = {
 --     premade to use it.
 [2490] = "기본적으로 꺼져 있습니다. 공략들의 공통 의견(Method, wowtbc.gg, Warcraft Tavern, Wowhead)입니다: 권장 악마 기본 제공 로테이션과 같지만, 시전 형태에서 탈태는 악마의 분노 900이나 악마의 영혼을 기다리고, 영혼의 불꽃은 화산핵 8중첩이나 25% 미만에서만 시전하므로 중첩은 악마 형태에서 소모됩니다. 사용하려면 이것을 켜고 권장 악마 기본 제공 로테이션을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Destruction). The standard recommended rotation for
+--     the specialization.
 [2491] = "추천",
 -- b2f67ea8 English: For Destruction from level 10 to 90 (chosen in the Destruction specialization).
 --     Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers
@@ -7388,12 +10288,18 @@ addon.translation = {
 --     yourself), Doomguard or Infernal, Ember Tap and defensives.
 [2492] = "10레벨부터 90레벨까지의 파괴용입니다(파괴 전문화에서 선택). 소각을 미리 시전하고, 제물을 유지하며, 점화 충전 2회를 쌓아 두지 않고, 불씨 3.5개나 악마의 영혼: 불안정 중에 불씨를 혼돈의 화살(20% 미만에서는 어둠의 연소)에 쓰며, 역류는 소각에 사용하고, 빈틈은 소각으로 채웁니다. 죽어 가는 대상에게는 어둠의 연소. 적이 셋 이상이면: 불의 비와 넷일 때 유황 불길, 그다음 제물, 점화, 소각, 그리고 불씨가 떨어지면 유황 불길을 끄라는 신호. 이동 중: 어둠의 연소, 점화, 지옥 불길. 알림: 소환수 또는 흑마법서: 희생, 소로스의 불길, 검은 의도, 악마의 영혼, 적이 둘 이상이면 대혼란(두 번째 대상에게 직접 시전), 파멸의 수호병 또는 지옥불정령, 불씨 전환과 방어 기술.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2493] = "전문화 없음",
 -- a4d9e0da English: For a Warlock without a specialization (levels 1 to 9, or later before you
 --     choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt.
 --     Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls.
 [2494] = "전문화가 없는 흑마법사용입니다(1–9레벨, 또는 그 이후 전문화를 고르기 전). 부패로 끌어와서 유지하고, 생명력 절반 미만에서 생명력 흡수, 어둠의 화살을 사용합니다. 알림: 혼자일 때 공허방랑자(그룹에서는 임프), 전투 사이에 생명석.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Arms). The standard recommended rotation for the
+--     specialization.
 [2495] = "추천",
 -- 6b5ddd88 English: Recommended for Arms from level 10 to 90, picked in the Arms specialization.
 --     Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing
@@ -7419,6 +10325,9 @@ addon.translation = {
 --     that one to use it.
 [2498] = "기본적으로 꺼져 있습니다. Icy Veins와 Wowhead의 무기 순서입니다: 거인의 강타 구간 밖에서는 제압을 쓰고 격돌은 분노 80 초과에서만 사용하며, 격돌을 빈틈 채우기로 쓰는 대신 구간을 위해 분노를 모아 둡니다. 구간 안에서는: 필사의 일격, 격돌, 제압, 영웅의 투척. 생명력 20% 미만에서는: 거인의 강타, 필사의 일격, 마무리 일격, 제압, 용의 포효. 적이 둘이면 휩쓸기 일격, 셋 이상이면 천둥벼락 무리 목록. 영웅의 일격이나 회전베기는 분노가 최대치에 가까울 때만. 알림은 권장 무기 기본 제공 로테이션과 같습니다. 사용하려면 이것을 켜고 그것을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Fury). The standard recommended rotation for the
+--     specialization.
 [2499] = "추천",
 -- 32c50d3a English: Recommended for Fury from level 10 to 90, picked in the Fury specialization.
 --     Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one
@@ -7443,6 +10352,9 @@ addon.translation = {
 --     reminders as the recommended Fury premade. Enable it and disable that one to use it.
 [2502] = "기본적으로 꺼져 있습니다. Icy Veins의 분노 순서는 거인의 강타 구간 안에서 칼날폭풍이나 용의 포효를 먼저 쓰고, 생명력 20% 미만에서는 마무리 일격을 피의 갈증보다 앞에 둡니다. 구간 밖에서는: 거인의 강타, 피의 갈증, 충전 2회일 때만 분노의 강타, 피의 쇄도에 난폭한 일격, 외침, 난폭한 일격. 적이 넷 이상이면: 격노를 위한 피의 갈증, 고기칼 3중첩까지 소용돌이, 분노의 강타. 영웅의 일격이나 회전베기는 분노가 최대치에 가까울 때만. 알림은 권장 분노 기본 제공 로테이션과 같습니다. 사용하려면 이것을 켜고 그것을 끄세요.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2503] = "추천",
 -- f3fe2f00 English: Tanking from level 10 to 90, picked in the Protection specialization. Charge or
 --     Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon
@@ -7457,45 +10369,70 @@ addon.translation = {
 --     Left to you: whom to taunt, and Block versus Barrier against magic.
 [2504] = "10레벨부터 90레벨까지의 방어 로테이션으로, 방어 전문화에서 선택됩니다. 돌진이나 영웅의 투척으로 끌어옵니다. 정예와 우두머리에게 약화된 방어 3중첩을 유지하는 압도, 용의 포효, 칼날폭풍, 적이 셋이면 충격파, 셋 이상이면 재사용 대기시간마다 천둥벼락. 그다음 방패 막기의 마지막 분노로 복수, 방패 밀쳐내기, 전선 사수에 복수, 치명상을 위한 압도, 생명력 60% 미만에서 연전연승, 복수, 약화된 공격을 위한 천둥벼락, 마무리 일격, 폭풍망치, 분노를 위한 외침, 압도(26레벨 전에는 방어구 가르기). 알림: 방어 태세, 외침이 없으면 외침, 꺼져 있으면 언제든 방패 막기, 다쳤고 분노가 남으면 수호 방패, 최후통첩이나 촉발 시, 또는 분노가 최대치에 가까우면 영웅의 일격 또는 회전베기, 사기의 외침, 광전사의 격노, 격노의 재생력, 생명력이 낮으면 최후의 저항과 방패의 벽, 공격용 재사용 대기시간 기술, 자루 공격. 도발과 영웅의 도약은 나열되지만 꺼져 있습니다. 직접 판단할 것: 누구를 도발할지, 마법 피해에 방패 막기와 수호 방패 중 무엇을 쓸지.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2505] = "전문화 없음",
 -- 9e4fdb28 English: For levels 1 to 9, or until you choose a specialization. Charge to pull,
 --     Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle
 --     Stance if you are in no stance.
 [2506] = "1–9레벨이나 전문화를 고를 때까지 사용합니다. 돌진으로 끌어오고, 연전연승, 마무리 일격, 분노가 30 있으면 영웅의 일격을 사용하며, 태세가 없으면 전투 태세를 취하라고 알려 줍니다.",
 -- ddbcf067 English: Silent
+-- Context: Entry in the General settings log level dropdown: no messages at all.
 [2507] = "조용히",
 -- 35eb2a7f English: Set Pieces
+-- Context: Condition type title: equipped set pieces count. Also an icon name in the icon picker.
 [2508] = "세트 아이템",
 -- 64cd5df4 English: Weapon Imbue
+-- Context: Condition type title: temporary weapon enchants (poison, imbue). Also an icon name in
+--     the icon picker.
 [2509] = "무기 강화",
 -- 754e76f8 English: Assisted Combat Suggestion
+-- Context: Condition type title: the spell currently recommended by Blizzard's Assisted Combat.
+--     Also an icon name in the icon picker.
 [2510] = "전투 보조 제안",
 -- 3fa562a1 English: Blizzard's suggestion
+-- Context: Step description of a rotation step that follows the game's built-in rotation helper
+--     suggestion; also shown in the rotation help.
 [2511] = "Blizzard의 제안",
 -- 90dc6c00 English: Recommends the spell Blizzard's Assisted Combat suggests
 [2512] = "Blizzard의 전투 보조가 제안하는 주문을 추천합니다",
 -- 423a9284 English: Assisted Combat Rotation Spell
 [2513] = "전투 보조 로테이션 주문",
 -- 70a4e33d English: Assisted Combat Available
+-- Context: Condition type title: whether Blizzard's Assisted Combat is available. Also an icon name
+--     in the icon picker.
 [2514] = "전투 보조 사용 가능",
 -- 4de7b468 English: Blizzard's suggestion highlight
+-- Context: General settings: label of the dropdown for how the suggested spell of Blizzard's
+--     Assisted Combat is highlighted; also a help topic title.
 [2515] = "Blizzard 제안 강조",
 -- 019a5647 English: Rotation Master's glow
+-- Context: Choice in that dropdown: only Rotation Master's own glow is shown.
 [2516] = "Rotation Master의 강조 효과",
 -- e24abd9f English: Blizzard's Assisted Highlight
+-- Context: Choice in that dropdown: only the game's native highlight is shown.
 [2517] = "Blizzard의 전투 보조 강조",
 -- b6c1d862 English: Both
+-- Context: Choice in that dropdown: both highlights are shown.
 [2518] = "둘 다",
 -- cd3a1b13 English: Assisted Combat is not available for your current specialization, so Blizzard's
 --     highlight stays off.
 [2519] = "현재 전문화에서는 전투 보조를 사용할 수 없으므로 Blizzard의 강조는 꺼진 상태로 유지됩니다.",
 -- 9aab05d6 English: Engraved Rune
+-- Context: Condition type title: whether a given Season of Discovery rune is engraved. Also an icon
+--     name in the icon picker.
 [2520] = "새긴 룬",
 -- ea43639d English: ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [2521] = "%s의 등급",
 -- 1dd73b64 English: Show talent tree
+-- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
+--     from.
 [2522] = "특성 트리 표시",
 -- 3e590ed8 English: Hero Talents
+-- Context: Heading label in the talent window and a source name in the talent condition editor for
+--     the hero talent trees.
 [2523] = "영웅 특성",
 -- 8107299a English: The talent tree cannot be shown during combat.
 [2524] = "전투 중에는 특성 트리를 표시할 수 없습니다.",
@@ -7506,8 +10443,10 @@ addon.translation = {
 -- 80ea0eae English: Click a talent to choose it for this condition.
 [2527] = "이 조건에 사용할 특성을 클릭하세요.",
 -- 6f1df5fc English: Selected: %s
+-- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
 [2528] = "선택됨: %s",
 -- 7a5e089f English: Ranks: %d
+-- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [2529] = "등급: %d",
 -- 26722619 English: Choose one of the talents on this node.
 [2530] = "이 노드의 특성 중 하나를 선택하세요.",
@@ -7518,58 +10457,92 @@ addon.translation = {
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [2533] = "먼저 직접 사용하는 특성 창에 표시된 빌드를 닫으세요.",
 -- f831a06b English: Arms
+-- Context: Specialization name (Warrior, first tree). Used in the specialization condition and
+--     rotation scope; follows the game's naming.
 [2534] = "무기",
 -- 8d6b26d9 English: Fury
+-- Context: Specialization name (Warrior, second tree).
 [2535] = "분노",
 -- 0e97ad02 English: Protection
+-- Context: Specialization name (Warrior or Paladin tank tree).
 [2536] = "방어/보호",
 -- 1d79fa22 English: Retribution
+-- Context: Specialization name (Paladin damage tree).
 [2537] = "징벌",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Specialization name (Hunter, first tree).
 [2538] = "야수",
 -- 03f000fc English: Marksmanship
+-- Context: Specialization name (Hunter, second tree).
 [2539] = "사격",
 -- 8302496d English: Survival
+-- Context: Specialization name (Hunter, third tree).
 [2540] = "생존",
 -- 727eeac8 English: Assassination
+-- Context: Specialization name (Rogue, first tree).
 [2541] = "암살",
 -- fca36d62 English: Subtlety
+-- Context: Specialization name (Rogue, third tree).
 [2542] = "잠행",
 -- a1b14db9 English: Discipline
+-- Context: Specialization name (Priest, first tree).
 [2543] = "수양",
 -- b12b36cf English: Enhancement
+-- Context: Specialization name (Shaman, second tree).
 [2544] = "고양",
 -- 6a3c6c77 English: Restoration
+-- Context: Specialization name (Shaman or Druid healer tree).
 [2545] = "회복/복원",
 -- ed64274f English: Affliction
+-- Context: Specialization name (Warlock, first tree).
 [2546] = "고통",
 -- c0e4afa6 English: Demonology
+-- Context: Specialization name (Warlock, second tree).
 [2547] = "악마",
 -- e848f2c5 English: Destruction
+-- Context: Specialization name (Warlock, third tree).
 [2548] = "파괴",
 -- d05e07b7 English: Balance
+-- Context: Specialization name (Druid, first tree).
 [2549] = "조화",
 -- 1f397413 English: Initial
+-- Context: Specialization name for a character of level 1 to 9 that has not chosen a specialization
+--     yet.
 [2550] = "초기",
 -- 7214aeb1 English: Specialization
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     specialization.
 [2551] = "전문화",
 -- 20356d41 English: specialization %d
+-- Context: Fallback text for a specialization that has no known name; %d is the numeric
+--     specialization ID.
+-- %d #1: %d #1: the specialization number, used when the game gives no name, e.g. 64
 [2552] = "전문화 %d",
 -- d22bb30c English: Weapon Type
+-- Context: Condition type title and dropdown label in the condition editor: the kind of weapon
+--     equipped.
 [2553] = "무기 유형",
 -- ed3897f1 English: Main Hand
+-- Context: Equipment slot option in the equipped-item condition: the main-hand weapon slot.
 [2554] = "주장비",
 -- 3f0b51a2 English: Ranged
+-- Context: Equipment slot option in the equipped-item condition and a checkbox label in the weapon
+--     condition: the ranged weapon slot.
 [2555] = "원거리",
 -- 9e9c1c72 English: Nothing equipped
+-- Context: Category option in the equipped-item condition: the slot is empty.
 [2556] = "장착한 장비 없음",
 -- d1c5d83c English: Any weapon
+-- Context: Category option in the equipped-item condition: any weapon.
 [2557] = "아무 무기",
 -- 723e86de English: One-handed weapon
+-- Context: Category option in the equipped-item condition: a one-handed weapon.
 [2558] = "한손 무기",
 -- 432f6b17 English: Two-handed weapon
+-- Context: Category option in the equipped-item condition: a two-handed weapon.
 [2559] = "양손 무기",
 -- e55ba453 English: Ranged weapon
+-- Context: Category option in the equipped-item condition: a ranged weapon.
 [2560] = "원거리 무기",
 -- ef734bb6 English: Held in off hand
 [2561] = "보조장비에 들고 있음",
@@ -7580,10 +10553,16 @@ addon.translation = {
 [2563] = "Blizzard가 제안할 수 있는 주문 중 1개가 행동 단축바에 없어서 카드가 건너뜁니다.",
 -- cc735c50 English: %d of the spells Blizzard can suggest aren't on your action bars, so the card
 --     skips them.
+-- %d #1: %d #1: how many suggested spells are missing from the action bars, e.g. 3
 [2564] = "Blizzard가 제안할 수 있는 주문 중 %d개가 행동 단축바에 없어서 카드가 건너뜁니다.",
 -- 29258402 English: %s, and %d more
+-- Context: End of a spell list in a tooltip: %s is the first few spell names (comma-separated) not
+--     on the action bars, %d is how many more are not shown, giving 'A, B, C, and 4 more'.
+-- %s #1: %s #1: the names of the first missing spells, separated by commas, e.g. "Fireball, Frostbolt, Ice Lance"
+-- %d #2: %d #2: how many more are not listed, e.g. 4
 [2565] = "%s 외 %d개",
 -- f657f763 English: Not on your action bars: %s.
+-- %s #1: %s #1: the names of the spells that are not on the action bars, separated by commas, e.g. "Fireball, Frostbolt"
 [2566] = "행동 단축바에 없음: %s.",
 -- d60bbc94 English: Rotation Master highlights a step by lighting the action button that holds it.
 --     No action bar button holds this action right now, so this step is skipped and the next step
@@ -7601,22 +10580,33 @@ addon.translation = {
 --     action bar to use them.
 [2569] = "Rotation Master는 행동이 들어 있는 버튼을 밝혀서 강조하므로 이 주문들은 강조할 수 없습니다. 카드는 단축바에 있는 제안에는 계속 작동합니다. 제안된 주문일 때만 건너뛰고 대신 다음 단계를 사용합니다. 사용하려면 행동 단축바에 놓으세요.",
 -- c6fa3ead English: Skipped, not on your action bars (they cannot be highlighted): %s.
+-- %s #1: %s #1: the skipped steps, separated by semicolons, each with its name and place, e.g. "Fireball (step 3); Frostbolt (cooldown)"
 [2570] = "건너뜀, 행동 단축바에 없음(강조할 수 없음): %s.",
 -- 435eac3e English: step %s
+-- Context: Location in a report line about an unbound rotation step (a step whose spell is not on
+--     the action bars): %s is the step's position number, e.g. 'step 3'.
+-- %s #1: %s #1: the number of the step in the rotation, counting from 1 (a "?" when unknown), e.g. 3
 [2571] = "단계 %s",
 -- 09182dd8 English: cooldown
+-- Context: Location in a report line about an unbound rotation step: the step sits in the cooldowns
+--     section rather than the numbered list (lowercase).
 [2572] = "재사용 대기시간",
 -- c9e1a473 English: Currently Matches
+-- Context: Headline on a rotation card when the condition is true right now.
 [2573] = "현재 일치함",
 -- 6fafaf30 English: Does Not Currently Match
 [2574] = "현재 일치하지 않음",
 -- f70be4d8 English: Unavailable: %s
+-- %s #1: %s #1: why the live status cannot be read, a short reason (translated), e.g. "unreadable right now"
 [2575] = "사용할 수 없음: %s",
 -- a463bcd3 English: unreadable right now
+-- Context: Reason shown in a card headline or tooltip when a condition's value cannot be read in
+--     the current situation (lowercase).
 [2576] = "지금은 읽을 수 없음",
 -- 8a0dcf23 English: the condition could not be evaluated
 [2577] = "조건을 평가할 수 없었습니다",
 -- 01e62ea3 English: Checked %d seconds ago.
+-- %d #1: %d #1: how many seconds ago the condition was last checked, e.g. 2
 [2578] = "%d초 전에 확인함.",
 -- 37822fb8 English: Rotation Master is advising this step now.
 [2579] = "Rotation Master가 지금 이 단계를 안내하고 있습니다.",
@@ -7625,46 +10615,79 @@ addon.translation = {
 -- 42ee3bdd English: This rotation is advising now.
 [2581] = "이 로테이션이 지금 안내하고 있습니다.",
 -- 81f39eb5 English: Mounted
+-- Context: Option in the player state condition: the player is on a mount.
 [2582] = "탈것 탑승 중",
 -- 54230802 English: Swimming
+-- Context: Option in the player state condition: the player is swimming.
 [2583] = "수영 중",
 -- 6192f184 English: Falling
+-- Context: Option in the player state condition: the player is falling.
 [2584] = "낙하 중",
 -- 75a4c2fe English: Flying
+-- Context: Option in the player state condition: the player is flying.
 [2585] = "비행 중",
 -- 4ae9e2a1 English: In a Rested Area
 [2586] = "휴식 지역",
 -- 5cc337a5 English: Boss Encounter
+-- Context: Condition type title: a boss fight is in progress. Also an icon name in the icon picker.
 [2587] = "우두머리 전투",
 -- 87a6b205 English: Instance Difficulty
+-- Context: Label of the dropdown in the instance condition: the difficulty of the dungeon or raid.
 [2588] = "인스턴스 난이도",
 -- fce1b615 English: Mythic+ Keystone Level
+-- Context: Condition type title: the level of the Mythic+ keystone of the current dungeon. Also the
+--     title of its help page.
 [2589] = "신화+ 쐐기돌 레벨",
 -- 26566745 English: Hero Talent Tree
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     hero talent tree. Also an icon name in the icon picker.
 [2590] = "영웅 특성 계열",
 -- 6115798c English: Spell Proc Glow
+-- Context: Condition type title: the spell currently has the proc glow on its action button. Also
+--     an icon name in the icon picker.
 [2591] = "주문 발동 반짝임",
 -- c563bae9 English: Trinket 1
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the first
+--     trinket slot instead of a named item.
 [2592] = "장신구 1",
 -- 4595f2ac English: Trinket 2
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the second
+--     trinket slot instead of a named item.
 [2593] = "장신구 2",
 -- a91c3e5e English: Pet Happiness
+-- Context: Condition type title and dropdown label in the condition editor: a Hunter pet's mood.
+--     Also an icon name in the icon picker.
 [2594] = "소환수 행복도",
 -- 37108f8a English: Unhappy
+-- Context: Option in the Pet Happiness dropdown: the lowest of the three moods (the pet is
+--     unhappy).
 [2595] = "불행",
 -- 47bd2907 English: Content
+-- Context: Option in the Pet Happiness dropdown: the middle mood (the pet is content, neither happy
+--     nor unhappy).
 [2596] = "만족",
 -- 725accb5 English: Happy
+-- Context: Option in the Pet Happiness dropdown: the highest mood (the pet is happy).
 [2597] = "행복",
 -- b575a12f English: Stagger
+-- Context: Condition type title: the Brewmaster's Stagger pool. Also the label of its comparison
+--     and its help page title.
 [2598] = "Stagger",
 -- fbfcff79 English: Eclipse Direction
+-- Context: Label of the dropdown in the Eclipse condition: which Eclipse direction the bar is
+--     heading toward.
 [2599] = "일식/월식 방향",
 -- cc23ba6c English: a Solar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Solar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Solar Eclipse'.
 [2600] = "일식",
 -- 1dc3e526 English: a Lunar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Lunar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Lunar Eclipse'.
 [2601] = "월식",
 -- f2fcd3f7 English: Energy
+-- Context: Label of the comparison in the Eclipse condition: the Eclipse bar's energy value; the
+--     other measure is Direction.
 [2602] = "에너지",
 -- d8877585 English: only Retail has this
 [2603] = "리테일에만 있음",
@@ -7682,26 +10705,46 @@ addon.translation = {
 -- aca68a8a English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned
 --     rotations.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2609] = "버전 2 이전의 로테이션 %d개가 보관함에서 대기 중이며, 채택하기 전에는 실행되지 않습니다. Rotation Master를 열고 로테이션을 선택한 다음 소유자 없는 로테이션 복구를 선택하세요.",
 -- a64b8edb English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2610] = "버전 2 이전의 로테이션 %d개가 보관함에서 대기 중이며, 채택하기 전에는 실행되지 않습니다.",
 -- 48845bff English: Dismiss
+-- Context: Button in the banner about unassigned rotations: closes the banner without opening the
+--     archive (verb).
 [2611] = "닫기",
 -- e11a6591 English: Adopt all %d for %s
+-- Context: Button in the recovery window that adopts every listed rotation at once: %d is how many
+--     rotations, %s is the destination (a class name or 'This character').
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2612] = "%d개 모두 %s용으로 채택",
 -- c727dc7d English: Adopt all %d from specialization %d for %s
+-- %d #1: %d #1: how many rotations of this specialization will be adopted, e.g. 3
+-- %d #2: %d #2: the specialization number, e.g. 64
+-- %s #3: %s #3: who will own them, e.g. "your Mage class"
 [2613] = "%d개 모두(전문화 %d) %s용으로 채택",
 -- dcf0a82d English: Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation
 --     that cannot be adopted stays in the archive.
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2614] = "소유자 없는 로테이션 %d개를 %s용으로 채택하시겠습니까? 각 로테이션은 식별자를 유지합니다. 채택할 수 없는 로테이션은 보관함에 남습니다.",
 -- bf328c9e English: Adopted %d of %d. These stay in the archive: %s
+-- %d #1: %d #1: how many rotations were adopted, e.g. 4
+-- %d #2: %d #2: how many were attempted, e.g. 5
+-- %s #3: %s #3: the names of those that were not adopted, separated by commas, e.g. "Old Fire"
 [2615] = "%d개 중 %d개를 채택했습니다. 다음은 보관함에 남습니다: %s",
 -- 23bfc44f English: Player State
+-- Context: Condition type title: groups simple player states (mounted, swimming, flying ...). Also
+--     an icon name in the icon picker.
 [2616] = "플레이어 상태",
 -- 68a2f69b English: Group Count
+-- Context: Condition type title: the number of players in the group. Also its help page title.
 [2617] = "그룹 인원 수",
 -- de24e677 English: Eclipse
+-- Context: Condition type title: the Druid Eclipse bar. Also its help page title.
 [2618] = "일식/월식",
 -- 5baf9a05 English: your group's main tank
 [2619] = "그룹의 메인 탱커",
@@ -7720,8 +10763,12 @@ addon.translation = {
 -- 1f321239 English: your group's assigned healer's
 [2626] = "그룹의 지정 치유 전담의",
 -- 343dc906 English: your group's leader
+-- Context: Phrase for the unit choice 'group leader' in condition summaries, e.g. '<this> {{!is|is
+--     not}} your group's leader'; the next string is its possessive form.
 [2627] = "그룹의 리더",
 -- 1d3180fa English: your group's leader's
+-- Context: Possessive form of 'your group's leader' used in condition summaries before a noun, e.g.
+--     'your group's leader's health'.
 [2628] = "그룹의 리더의",
 -- fad43537 English: Absolute health target (negative means deficit) or percentage fraction.
 [2629] = "절대 생명력 목표(음수는 손실량) 또는 비율 값.",
@@ -8178,6 +11225,7 @@ addon.translation = {
 -- d27c5ef2 English: Lookup key.
 [2780] = "조회 키.",
 -- d746509f English: Lua pattern character-class separator, default %s for whitespace.
+-- %s #1: %s #1: not a placeholder; it is the literal Lua pattern class for whitespace, shown to the user as text, e.g. "default %s for whitespace". Keep %s exactly as written.
 [2781] = "Lua 패턴 문자 클래스 구분자. 기본값은 공백을 뜻하는 %s입니다.",
 -- 3aeb0664 English: Mark the positive wording as the primary named alternative.
 [2782] = "긍정 문구를 주된 이름 있는 대안으로 표시합니다.",
@@ -8986,6 +12034,8 @@ addon.translation = {
 --     select both.
 [3041] = "noheals는 피해만, nodmg는 치유만 선택하며, 그 외 읽을 수 있는 값은 둘 다 선택합니다.",
 -- 02586670 English: Translation (%s): %s
+-- %s #1: %s #1: the name of the game language, e.g. "German"
+-- %s #2: %s #2: the translators' names, separated by commas, e.g. "Anna, Boris"
 [4043] = "번역 (%s): %s",
 -- 7e412986 English: the %s-marked unit
 -- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries

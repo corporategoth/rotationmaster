@@ -24,30 +24,42 @@ addon.translation = {
 --     perf probe
 [3822] = "Utilisation : /rm perf cpu||runtime||memory [secondes||start||stop||report], ou /rm perf probe",
 -- e4d45a37 English: Capture stopped. Use /rm perf %s report to view and copy it.
+-- %s #1: %s #1: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3823] = "Capture arrêtée. Utilisez /rm perf %s report pour l'afficher et la copier.",
 -- 6f8012ee English: Capture started for %g seconds. Close configuration, then use /rm perf %s
 --     report.
+-- %g #1: %g #1: the capture length in seconds, e.g. 10
+-- %s #2: %s #2: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
 [3824] = "Capture lancée pour %g secondes. Fermez la configuration, puis utilisez /rm perf %s report.",
 -- e8370df2 English: Choose a duration from 1 to %d seconds.
+-- %d #1: %d #1: the longest allowed capture length in seconds, e.g. 60
 [3825] = "Choisissez une durée de 1 à %d secondes.",
 -- 01fdff8c English: Usage: /rm perf engine [lean||standard]
 [3826] = "Utilisation : /rm perf engine [lean||standard]",
 -- e670bdea English: Evaluation engine: %s
+-- %s #1: %s #1: the active evaluation engine, "lean" or "standard" (shown as-is), e.g. "lean"
 [3827] = "Moteur d'évaluation : %s",
 -- 61606866 English: %s is running. Stop it or wait for completion.
+-- %s #1: %s #1: the name of the capture that is running, e.g. "CPU profile"
 [3828] = "%s est en cours. Arrêtez-le ou attendez la fin.",
 -- d2b17a1b English: No %s report is available. Start a capture first.
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3829] = "Aucun rapport %s n'est disponible. Lancez d'abord une capture.",
 -- ac026dc1 English: No %s is running.
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 [3830] = "Aucun %s en cours.",
 -- 4eaf7cbc English: %s is unavailable: %s
+-- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
+-- %s #2: %s #2: why it is unavailable, a short code (shown as-is) or "Unknown", e.g. "missing-profiler-api"
 [3831] = "%s est indisponible : %s",
 -- 6c8f579f English: Memory capture
+-- Context: Title of the report window with the memory capture results.
 [3832] = "Capture mémoire",
 -- f7cf9a31 English: Memory capture started for 10 minutes. Normal polling is unchanged; attribution
 --     refreshes at capture start and completion, with their cost reported.
 [3833] = "Capture mémoire lancée pour 10 minutes. L'interrogation normale est inchangée ; l'attribution est actualisée au début et à la fin de la capture, et son coût est indiqué.",
 -- a8a89538 English: Memory capture is unavailable: %s
+-- %s #1: %s #1: why the memory capture is unavailable, a short code (shown as-is), e.g. "missing-memory-api"
 [3834] = "La capture mémoire est indisponible : %s",
 -- 8a6ec49e English: Memory capture stopped. Open Memory report to copy the observations.
 [3835] = "Capture mémoire arrêtée. Ouvrez le rapport mémoire pour copier les observations.",
@@ -55,24 +67,35 @@ addon.translation = {
 --     details.
 [3836] = "La capture mémoire s'est terminée avec des observations indisponibles. Ouvrez le rapport mémoire pour plus de détails.",
 -- 7a63fb47 English: Runtime profile
+-- Context: Title of the report window with the runtime profile results.
 [3837] = "Profilage d'exécution",
 -- 80ef0822 English: Runtime capture started for 10 seconds. Close configuration, then open Runtime
 --     report.
 [3838] = "Capture d'exécution lancée pour 10 secondes. Fermez la configuration, puis ouvrez le rapport d'exécution.",
 -- 0ec2f69a English: Runtime capture is unavailable: %s
+-- %s #1: %s #1: why the runtime capture is unavailable, a short code (shown as-is), e.g. "missing-native-profiler"
 [3839] = "La capture d'exécution est indisponible : %s",
 -- 58dc403d English: Runtime capture ended without complete measurements. Open Runtime report for
 --     details.
 [3840] = "La capture d'exécution s'est terminée sans mesures complètes. Ouvrez le rapport d'exécution pour plus de détails.",
 -- 00457437 English: CPU profile
+-- Context: Title of the report window with the CPU profile results.
 [3841] = "Profilage CPU",
 -- abd8722f English: Native profiler probe
+-- Context: Title of the report window and first line of its text, for the test of the game's
+--     built-in profiler (no real measurement).
 [3842] = "Sonde du profileur natif",
 -- a704d2a5 English: Callback arguments
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test call received as arguments.
 [3843] = "Arguments de rappel",
 -- a19d7778 English: Callback calls
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: how
+--     many times the test callback was called.
 [3844] = "Appels de rappel",
 -- fb275c4f English: Callback returns
+-- Context: Line label in the native profiler probe report, followed by a colon and a result: what
+--     the test callback returned.
 [3845] = "Retours de rappel",
 -- ec06c9e1 English: Capability probe only; no evaluator or gameplay was measured.
 [3846] = "Sonde des capacités uniquement ; aucun évaluateur ni aucune action de jeu n'a été mesuré.",
@@ -83,16 +106,27 @@ addon.translation = {
 -- 5f85500c English: Native profiler probe is unavailable.
 [3849] = "La sonde du profileur natif est indisponible.",
 -- 0674f152 English: call completed
+-- Context: Result value in the native profiler probe report (lowercase): the call finished
+--     normally.
 [3850] = "appel terminé",
 -- fa259a8b English: call failed
+-- Context: Result value in the native profiler probe report (lowercase): the call raised an error.
 [3851] = "échec de l'appel",
 -- 60ec9bb7 English: malformed
+-- Context: Result value in the native profiler probe report (lowercase): the result had an
+--     unexpected shape.
 [3852] = "mal formé",
 -- 611f3162 English: more than one
+-- Context: Result value in the native profiler probe report (lowercase): the callback was called
+--     twice or more.
 [3853] = "plus d'un",
 -- b4a98437 English: not run
+-- Context: Result value in the native profiler probe report (lowercase): this step was not carried
+--     out.
 [3854] = "non exécuté",
 -- d2aaba53 English: unavailable (context changed)
+-- Context: Result value in the native profiler probe report (lowercase): the measurement is
+--     unavailable because the game state changed.
 [3855] = "indisponible (contexte modifié)",
 -- 0e625cbe English: CPU capture requires WoW scriptProfile to be enabled before a reload. RM does
 --     not change this setting.
@@ -104,6 +138,7 @@ addon.translation = {
 -- 201fb573 English: No CPU capture is running.
 [3859] = "Aucune capture CPU en cours.",
 -- 8d375d61 English: CPU capture is unavailable: %s
+-- %s #1: %s #1: why the CPU capture is unavailable, a short code (shown as-is), e.g. "script-profile-disabled"
 [3860] = "La capture CPU est indisponible : %s",
 -- c0afc6b0 English: CPU capture started for 10 seconds. Close configuration to measure normal
 --     gameplay, then open CPU report.
@@ -113,17 +148,24 @@ addon.translation = {
 -- 71629344 English: CPU capture could not produce valid measurements. Open CPU report for details.
 [3863] = "La capture CPU n'a pas pu produire de mesures valides. Ouvrez le rapport CPU pour plus de détails.",
 -- 6996067a English: Rotation Master errors
+-- Context: Title of the window that lists Rotation Master's recorded Lua errors.
 [3864] = "Erreurs de Rotation Master",
 -- 9a85b2b4 English: Review the report, then select Copy and press Ctrl+C. Reload after fixing a
 --     paused callback.
 [3865] = "Consultez le rapport, puis sélectionnez Copier et appuyez sur Ctrl+C. Rechargez après avoir corrigé un rappel suspendu.",
 -- 2c882357 English: Previous error
+-- Context: Button in the errors window: shows the earlier error in the list.
 [3866] = "Erreur précédente",
 -- 2da271a8 English: Next error
+-- Context: Button in the errors window: shows the next error in the list.
 [3867] = "Erreur suivante",
 -- 6396d0fc English: Clear RM errors
+-- Context: Button in the errors window: empties the list of Rotation Master's recorded errors. 'RM'
+--     is short for Rotation Master.
 [3868] = "Effacer les erreurs de RM",
 -- 2956e06a English: Resize
+-- Context: Label of the drag handle in the corner of the errors window: drag to change the window
+--     size.
 [3869] = "Redimensionner",
 -- 4d7325d3 English: No Rotation Master errors have been captured this session.
 [3870] = "Aucune erreur de Rotation Master n'a été capturée pendant cette session.",
@@ -132,18 +174,22 @@ addon.translation = {
 -- 2a1ab28d English: Include original text (may contain names or code)
 [3872] = "Inclure le texte original (peut contenir des noms ou du code)",
 -- c29de79e English: Glow diagnostic
+-- Context: Title of the report window with the glow diagnostic results.
 [3873] = "Diagnostic de la lueur",
 -- 41e36336 English: Glow diagnostic saved.
 [3874] = "Diagnostic de la lueur enregistré.",
 -- 5691cd23 English: Glow diagnostic saved. Watching for %d seconds.
+-- %d #1: %d #1: how many seconds the glow diagnostic keeps watching, e.g. 10
 [3875] = "Diagnostic de la lueur enregistré. Observation pendant %d secondes.",
 -- 820421f2 English: Glow watch finished. Run /rm debug glow show to view it.
 [3876] = "L'observation de la lueur est terminée. Exécutez /rm debug glow show pour l'afficher.",
 -- 6eb70331 English: Glow stops at: %s
+-- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
 [3877] = "La lueur s'arrête à : %s",
 -- d918e458 English: No glow diagnostic is saved yet. Run /rm debug glow.
 [3878] = "Aucun diagnostic de la lueur n'est encore enregistré. Exécutez /rm debug glow.",
 -- 5e41a846 English: Talent diagnostic
+-- Context: Title of the report window with the talent diagnostic results.
 [3879] = "Diagnostic des talents",
 -- c728736f English: Talent diagnostic saved.
 [3880] = "Diagnostic des talents enregistré.",
@@ -156,12 +202,16 @@ addon.translation = {
 --     available.
 [3883] = "Conseil : non disponible ; présentation : non disponible ; preuve de lancer ordinaire : non disponible.",
 -- 66a2de57 English: Attempts: %d; results: %d
+-- %d #1: %d #1: the number of cast attempts recorded, e.g. 42
+-- %d #2: %d #2: the number of cast results recorded, e.g. 40
 [3884] = "Tentatives : %d ; résultats : %d",
 -- 78937d68 English: Capture: unavailable
 [3885] = "Capture : indisponible",
 -- a9079be6 English: Capture: complete; reason=%s
+-- %s #1: %s #1: why the capture ended, a short code (shown as-is), e.g. "stopped"
 [3886] = "Capture : terminée ; reason=%s",
 -- f9bf7230 English: Capture: unavailable; reason=%s
+-- %s #1: %s #1: why the capture is unavailable, a short code (shown as-is), e.g. "disabled"
 [3887] = "Capture : indisponible ; reason=%s",
 -- 47972aa9 English: Cast capture cleared.
 [3888] = "Capture des lancers effacée.",
@@ -179,14 +229,21 @@ addon.translation = {
 -- 1dbab8ec English: Cast capture stopped. Open Cast report to inspect receipts.
 [3894] = "Capture des lancers arrêtée. Ouvrez le Rapport de lancers pour examiner les reçus.",
 -- 5963707b English: Cast receipt report
+-- Context: Title of the report window with the spell cast receipt capture results.
 [3895] = "Rapport des reçus de lancer",
 -- ef1fabff English: Client: family=%s version=%s build=%s interface=%s locale=%s
+-- %s #1: %s #1: the game client family, e.g. "retail"
+-- %s #2: %s #2: the game version, e.g. "11.0.2"
+-- %s #3: %s #3: the game build number, e.g. "56313"
+-- %s #4: %s #4: the interface (TOC) number, e.g. "110002"
+-- %s #5: %s #5: the game locale code, e.g. "enUS"
 [3896] = "Client : family=%s version=%s build=%s interface=%s locale=%s",
 -- 9cf1f5cb English: Counts describe receipt rows, not gameplay opportunities.
 [3897] = "Les nombres décrivent des lignes de reçus, pas des occasions de jeu.",
 -- cdda6d4b English: Damage: unavailable (no damage observations or encounter denominator).
 [3898] = "Dégâts : indisponible (aucune observation de dégâts ni dénominateur de rencontre).",
 -- 7a8de1c2 English: Duration: %s seconds
+-- %s #1: %s #1: the length of the capture in seconds, e.g. 10.5
 [3899] = "Durée : %s secondes",
 -- eaab562c English: Healer: unavailable (no effective healing, absorbs or mana observations).
 [3900] = "Soigneur : indisponible (aucune observation de soins effectifs, d'absorptions ou de mana).",
@@ -199,16 +256,26 @@ addon.translation = {
 -- 1821370f English: Producer: UNIT_SPELLCAST adapter
 [3904] = "Producteur : adaptateur UNIT_SPELLCAST",
 -- 6e486b5a English: Records: %d
+-- %d #1: %d #1: the number of records captured, e.g. 120
 [3905] = "Enregistrements : %d",
 -- a46835a4 English: Receipt kinds: channel=%d unmodeled=%d
+-- %d #1: %d #1: the number of channelled-spell receipts, e.g. 3
+-- %d #2: %d #2: the number of receipts of unmodelled kinds, e.g. 0
 [3906] = "Types de reçus : channel=%d unmodeled=%d",
 -- 7ffcd926 English: Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d
+-- %d #1: %d #1: receipts of the kind "sent", e.g. 40
+-- %d #2: %d #2: receipts of the kind "start", e.g. 40
+-- %d #3: %d #3: receipts of the kind "success", e.g. 38
+-- %d #4: %d #4: receipts of the kind "failed", e.g. 1
+-- %d #5: %d #5: receipts of the kind "interrupted", e.g. 1
+-- %d #6: %d #6: receipts of the kind "stop", e.g. 0
 [3907] = "Signaux des reçus : sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d",
 -- 672aa08d English: Rotation Master cast receipt diagnostics
 [3908] = "Diagnostic des reçus de lancer de Rotation Master",
 -- 7c09baa2 English: Rotation attribution: unavailable; capture seconds are not encounter seconds.
 [3909] = "Attribution de rotation : indisponible ; les secondes de capture ne sont pas des secondes de rencontre.",
 -- 19f6c4f8 English: Rows omitted: %d
+-- %d #1: %d #1: how many rows are left out of the report, e.g. 25
 [3910] = "Lignes omises : %d",
 -- bed3540d English: Scoring: unavailable
 [3911] = "Notation : indisponible",
@@ -219,12 +286,23 @@ addon.translation = {
 [3913] = "Les lignes conseil/présentation décrivent uniquement les limites de livraison observées ; preuve de lancer ordinaire : non disponible.",
 -- c7dc0ff3 English: Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d
 --     retired=%d (not opportunities).
+-- %d #1: %d #1: number of "advice" rows, e.g. 40
+-- %d #2: %d #2: number of "presentation" rows, e.g. 40
+-- %d #3: %d #3: number of "visible" rows, e.g. 30
+-- %d #4: %d #4: number of "hidden" rows, e.g. 10
+-- %d #5: %d #5: number of "unknown" rows, e.g. 0
+-- %d #6: %d #6: number of "retired" rows, e.g. 0
 [3914] = "Lignes de couverture : advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (pas des occasions).",
 -- c419fb3c English: Visible means RM-owned preview frame state at a delivery boundary; it does not
 --     prove perception or native pixel rendering.
 [3915] = "Visible désigne l'état du cadre d'aperçu propre à RM à une limite de livraison ; cela ne prouve ni la perception ni le rendu natif des pixels.",
 -- fe67ade9 English: START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s
 --     (not ordinary proof).
+-- %s #1: %s #1: number of START rows observed, e.g. 40 (or "?" when unknown)
+-- %s #2: %s #2: number of rows that matched, e.g. 38
+-- %s #3: %s #3: number of rows that mismatched, e.g. 1
+-- %s #4: %s #4: number of rows excluded, e.g. 1
+-- %s #5: %s #5: number of rows with unknown status, e.g. 0
 [3916] = "Lignes de témoins START : observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (pas une preuve ordinaire).",
 -- 159c3cdb English: START witnesses compare current cast identity and non-autorepeat classification
 --     only; they do not classify ordinary casts or enable scoring.
@@ -236,10 +314,12 @@ addon.translation = {
 -- 6b48ba81 English: Usage: /rm debug timeline [seconds|show|stop]
 [3920] = "Utilisation : /rm debug timeline [secondes|show|stop]",
 -- 50b2861c English: Timeline diagnostic saved. Watching for %d seconds.
+-- %d #1: %d #1: how many seconds the timeline diagnostic keeps watching, e.g. 10
 [3921] = "Diagnostic de la chronologie enregistré. Surveillance pendant %d secondes.",
 -- 8c8e2d53 English: Timeline diagnostic saved.
 [3922] = "Diagnostic de la chronologie enregistré.",
 -- cfb45a68 English: Timeline diagnostic
+-- Context: Title of the report window with the timeline diagnostic results.
 [3923] = "Diagnostic de la chronologie",
 -- 3b2ae94e English: No timeline diagnostic is saved yet. Run /rm debug timeline.
 [3924] = "Aucun diagnostic de la chronologie n'est encore enregistré. Exécutez /rm debug timeline.",

@@ -20,32 +20,60 @@ addon.translation = {
 --     observations.
 [3] = "/rm perf cpu||runtime||memory [seconds||stop||report] - Captura observaciones de rendimiento.",
 -- 3e47dffa English: Capture memory (10m)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-minute memory-usage
+--     capture. Also the heading of its help entry.
 [4] = "Capturar memoria (10 min)",
 -- b84bcf99 English: Memory report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     memory capture. Also the heading of its help entry.
 [5] = "Informe de memoria",
 -- 07027ca8 English: Stop memory capture
+-- Context: Button label in General settings, Diagnostics area: replaces the 'Capture memory' button
+--     while a capture runs and stops it.
 [6] = "Detener captura de memoria",
 -- 9eff4745 English: Capture runtime (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second capture of which
+--     addon functions use CPU time. Also a help entry heading.
 [7] = "Capturar ejecución (10 s)",
 -- ceb34b2f English: Runtime report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     runtime capture. Also a help entry heading.
 [8] = "Informe de ejecución",
 -- b6ce788d English: Report
+-- Context: Subtitle (second heading line) of the condition-text window, used when it shows a text
+--     report of a rotation's conditions; the noun 'report'.
 [9] = "Informe",
 -- a518abfe English: Capture CPU (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second CPU profile of
+--     the addon. Also a help entry heading.
 [10] = "Capturar CPU (10 s)",
 -- b7aa6f62 English: CPU report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished CPU
+--     capture. Also a help entry heading.
 [11] = "Informe de CPU",
 -- 17eb3c01 English: disabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     disabled' (the shipped default state of a built-in rotation).
 [12] = "desactivado",
 -- fb9cf756 English: enabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     enabled' (the shipped default state of a built-in rotation).
 [13] = "activado",
 -- fa79d474 English: exact
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), shown after 'Callback
+--     arguments:' etc.: the callback received exactly the expected arguments.
 [14] = "exacto",
 -- 5acbfff1 English: mismatch
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g. 'Callback
+--     arguments: mismatch': the observed value differs from what was expected.
 [15] = "discrepancia",
 -- 4d4c7eee English: present
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g.
+--     'C_AddOnProfiler: present': the game API exists.
 [16] = "presente",
 -- 7a0d9159 English: restricted
+-- Context: Status word in the Native profiler probe report (CPU diagnostics): the game restricts
+--     the checked capability.
 [17] = "restringido",
 -- a9283b41 English: Bypass observation cache (reload required)
 [18] = "Omitir la caché de observaciones (requiere recargar)",
@@ -57,59 +85,111 @@ addon.translation = {
 --     allocations. Off by default; reload to change the running mode.
 [21] = "La caché de observaciones puede reducir las consultas repetidas, pero aumenta las asignaciones de tablas. Desactivada por defecto; recarga para cambiar el modo en ejecución.",
 -- a30d7f9f English: Observation cache: %s\nNext reload: %s
+-- %s #1: %s #1: the observation-cache mode the game session is running now, one of the words "cached" or "direct" (shown translated), e.g. "cached"
+-- %s #2: %s #2: the mode that will be used after the next UI reload, "cached" or "direct", e.g. "direct"
 [22] = "Caché de observaciones: %s\nPróxima recarga: %s",
 -- 3673014e English: cached
+-- Context: Status word in diagnostic reports: observation caching mode 'cached' (results of lookups
+--     are reused); the alternative is 'direct'.
 [23] = "en caché",
 -- d15690f0 English: direct
+-- Context: Status word in diagnostic reports: observation caching mode 'direct' (every lookup is
+--     read again); the alternative is 'cached'.
 [24] = "directo",
 -- b279b4aa English: Cache diagnostic saved for the next reload. Active mode: %s.
+-- %s #1: %s #1: the observation-cache mode that is active now, "cached" or "direct" (shown translated), e.g. "direct"
 [25] = "Diagnóstico de caché guardado para la próxima recarga. Modo activo: %s.",
 -- 6ea030dd English: Cache diagnostic is unavailable.
 [26] = "El diagnóstico de caché no está disponible.",
 -- c0f60371 English: Cancel capture
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button 'Cancel capture' of the old CPU diagnostics (now replaced by the Stop
+--     button).
 [27] = "Cancelar captura",
 -- c1aa81e6 English: Invalid rotation ownership data in profile %s (%s); record preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: a short technical reason code for why the data is invalid, e.g. "invalid-owner" (shown as-is; do not translate)
 [28] = "Datos de propiedad de rotación no válidos en el perfil %s (%s); registro conservado.",
 -- 6ee818aa English: View source
+-- Context: Tooltip of a small icon button next to a function binding row in the custom-function
+--     editor: opens the source code of the bound helper function.
 [29] = "Ver código",
 -- 576aa29b English: Change source helper
+-- Context: Tooltip of a dropdown-arrow icon button on a function binding row: lets you choose a
+--     different source helper function for that dependency.
 [30] = "Cambiar función auxiliar de origen",
 -- 33ba28a9 English: Dependencies (%d)
+-- Context: Button in the custom-function editor that expands or collapses the list of functions
+--     this function depends on; %d is how many dependencies there are.
+-- %d #1: %d #1: the number of function bindings (dependencies) in the list, e.g. 3
 [31] = "Dependencias (%d)",
 -- d28ff2b8 English: Function dependencies
+-- Context: Heading of a help section (and the Functions help topic) explaining the dependency list
+--     of a custom function; also the dependency list's name.
 [32] = "Dependencias de la función",
 -- d038ddbf English: Add dependency
+-- Context: Button in the custom-function editor's dependency list: adds a new dependency (a helper
+--     function this function calls).
 [33] = "Añadir dependencia",
 -- ffdb8428 English: Remove dependency
+-- Context: Button/tooltip in the custom-function editor's dependency list: removes this dependency
+--     row.
 [34] = "Quitar dependencia",
 -- 1f5ef520 English: Arcane Ring
+-- Context: Name of a decorative overlay (a glowing arcane ring graphic) in the overlay picker for
+--     rotation icons.
 [35] = "Anillo arcano",
 -- e3dfa9b3 English: Ember Corners
+-- Context: Name of a decorative overlay (glowing ember corners graphic) in the overlay picker for
+--     rotation icons.
 [36] = "Esquinas de ascuas",
 -- ed0b6679 English: Frost Shards
+-- Context: Name of a decorative overlay (frost shard graphics) in the overlay picker for rotation
+--     icons.
 [37] = "Fragmentos de escarcha",
 -- 4a5ff6e0 English: Nature Vines
+-- Context: Name of a decorative overlay (nature vines graphic) in the overlay picker for rotation
+--     icons.
 [38] = "Enredaderas de naturaleza",
 -- 67f985cc English: Lightning Sweep
+-- Context: Name of a decorative overlay (a lightning sweep graphic) in the overlay picker for
+--     rotation icons.
 [39] = "Barrido de relámpagos",
 -- 37476fc2 English: Holy Rays
+-- Context: Name of a decorative overlay (holy light rays graphic) in the overlay picker for
+--     rotation icons.
 [40] = "Rayos sagrados",
 -- 693a2003 English: Shadow Claws
+-- Context: Name of a decorative overlay (shadowy claw marks graphic) in the overlay picker for
+--     rotation icons.
 [41] = "Garras de sombra",
 -- 1e58829b English: Rune Diamond
+-- Context: Name of a decorative overlay (a rune-marked diamond graphic) in the overlay picker for
+--     rotation icons.
 [42] = "Diamante rúnico",
 -- 0dcf5b86 English: Neutral Arcane Ring
+-- Context: Name of a decorative overlay (an arcane ring in neutral, uncolored style) in the overlay
+--     picker for rotation icons.
 [43] = "Anillo arcano neutro",
 -- 84f6ccc1 English: Choose overlay
+-- Context: Tooltip of a dropdown-arrow button in the settings form that opens the picker of
+--     decorative overlay textures.
 [44] = "Elegir superposición",
 -- 084e6cf7 English: This character
+-- Context: Option in the 'Applies to' choice (checkbox in the rotation adoption page, and shown in
+--     pending-change lists): the setting applies to the current character only, as opposed to the
+--     whole class.
 [45] = "Este personaje",
 -- 6687458b English: Applies to
+-- Context: Label for a choice/field saying whom a rotation applies to: this character or the whole
+--     class (adoption page, pending-change list, help section heading).
 [46] = "Se aplica a",
 -- d172148e English: Legacy character %s data conflicts with the active profile; character data
 --     preserved.
+-- %s #1: %s #1: which kind of legacy per-character data conflicts, the internal table name (shown as-is), e.g. "itemsets" or "announces"
 [47] = "Los datos antiguos del personaje %s entran en conflicto con el perfil activo; datos del personaje conservados.",
 -- 0da554c3 English: Invalid rotation fallback configuration in profile %s; data preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
 [48] = "Configuración de rotación de reserva no válida en el perfil %s; datos conservados.",
 -- 86637dd3 English: Condition summary unavailable: invalid template or values.
 [49] = "Resumen de la condición no disponible: plantilla o valores no válidos.",
@@ -155,10 +235,15 @@ addon.translation = {
 -- 7a633806 English: The current source could not be compiled. Fix it before testing again.
 [62] = "No se ha podido compilar el código actual. Corrígelo antes de volver a probar.",
 -- 0e916101 English: Refresh
+-- Context: Button that reloads/refreshes the display: in the Lua debugger output window and in the
+--     rotation adoption page.
 [63] = "Actualizar",
 -- 5f623ee6 English: Debug output
+-- Context: Title of the Lua debugger output window (shows the debugger's full output and errors).
 [64] = "Salida de depuración",
 -- b2439bcb English: Output
+-- Context: Noun: button in the Lua workbench that opens the debugger output window (also that
+--     window's subtitle); also a column/row label for one result in the collection compare view.
 [65] = "Salida",
 -- fccce64b English: Set values in Test before debugging this condition.
 [66] = "Establece valores en Prueba antes de depurar esta condición.",
@@ -168,26 +253,50 @@ addon.translation = {
 -- 2f3f04fc English: Localized Rotation Master text, indexed by its English key.
 [68] = "Texto localizado de Rotation Master, indexado por su clave en inglés.",
 -- a8283ade English: Undo
+-- Context: Button/tooltip in the condition and custom-function editors: undoes the last edit
+--     (verb).
 [69] = "Deshacer",
 -- 74273989 English: Redo
+-- Context: Button/tooltip in the condition and custom-function editors: redoes the edit that was
+--     just undone (verb).
 [70] = "Rehacer",
 -- 7dac8415 English: Invalid item reference for announce %s:%s; reference preserved; announcement
 --     disabled.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [71] = "Referencia de objeto no válida en el anuncio %s:%s; referencia conservada; anuncio desactivado.",
 -- 048f2dd8 English: Invalid item reference for announce %s:%s; explicit repair will preserve the
 --     reference and disable the announcement.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [72] = "Referencia de objeto no válida en el anuncio %s:%s; una reparación explícita conservará la referencia y desactivará el anuncio.",
 -- bde1631d English: Invalid custom condition %s:%s field %s (%s); source preserved; condition
 --     disabled.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [73] = "Condición personalizada %s:%s no válida, campo %s (%s); código conservado; condición desactivada.",
 -- c3f0309d English: Invalid custom condition %s:%s field %s (%s); explicit repair will preserve
 --     source and disable the condition.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [74] = "Condición personalizada %s:%s no válida, campo %s (%s); una reparación explícita conservará el código y desactivará la condición.",
 -- b496eb37 English: Non-finite minimap value in profile %s: %s.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: the name of the minimap setting holding the bad number (shown as-is), e.g. "minimapPos" or "radius"
 [75] = "Valor no finito del minimapa en el perfil %s: %s.",
 -- 504dd0b6 English: Invalid effect ID for rotation step %s:%s:%d.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
+-- %d #3: %d #3: the position of the step in the rotation, counting from 1, e.g. 4
 [76] = "ID de efecto no válido en el paso de rotación %s:%s:%d.",
 -- d485d6e1 English: Unknown effect type for %s:%s (%s); record preserved.
+-- %s #1: %s #1: where the effect is stored, "global" or "profile:" and the profile name, e.g. "global"
+-- %s #2: %s #2: the effect's ID, e.g. "a1b2c3d4"
+-- %s #3: %s #3: the unrecognised effect type value, e.g. "unknown_type" (shown as-is)
 [77] = "Tipo de efecto desconocido en %s:%s (%s); registro conservado.",
 -- 9148825e English: /rm help                - This text.
 [78] = "/rm help                - Este texto.",
@@ -215,33 +324,57 @@ addon.translation = {
 -- 71773a7c English: No rotation is currently active.
 [88] = "No hay ninguna rotación activa.",
 -- f5951390 English: The current rotation is |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the active rotation, e.g. "Frost Single Target"
 [89] = "La rotación actual es |cFFFFFFFF%s|cFF7BC653",
 -- 1122c922 English: Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation the player chose, e.g. "Frost Single Target"
 [90] = "Rotación activa cambiada manualmente a |cFFFFFFFF%s|cFF7BC653",
 -- b406bd3a English: Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current
 --     specialization.
+-- %s #1: %s #1: the rotation name the player typed after the slash command, e.g. "Frost AoE"
 [91] = "No se ha encontrado ninguna rotación llamada |cFFFFFFFF%s|cFFB212B7 para tu especialización actual.",
 -- f6b5a992 English: Invalid option |cFFFFFFFF%s|cFFB212B7
+-- Context: Chat warning when a slash command option is not recognized (/rm ...); %s is the option
+--     typed; the color codes must stay.
+-- %s #1: %s #1: the unrecognised option the player typed after the slash command, e.g. "foo"
 [92] = "Opción no válida |cFFFFFFFF%s|cFFB212B7",
 -- 56693a8f English: Starting up version %s
+-- Context: Chat message printed at addon startup; %s is the addon version number.
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
 [93] = "Iniciando la versión %s",
 -- 45d8dada English: Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation that was selected automatically, e.g. "Frost Single Target"
 [94] = "Rotación activa cambiada automáticamente a |cFFFFFFFF%s|cFF7BC653",
 -- d4f91385 English: No rotation is active as there is none suitable to automatically switch to.
 [95] = "No hay ninguna rotación activa porque no hay ninguna adecuada a la que cambiar automáticamente.",
 -- fe0d07c7 English: Battle rotation enabled
+-- Context: Minimap menu checkbox / chat message: the automatic battle rotation (recommendations) is
+--     turned on; status text.
 [96] = "Rotación de combate activada",
 -- d3cca26b English: Battle rotation disabled
+-- Context: Minimap button tooltip line (red) / chat message: the automatic battle rotation is
+--     turned off; status text.
 [97] = "Rotación de combate desactivada",
 -- 8b75ea84 English: Current Rotation
+-- Context: Title line in the minimap menu and tooltip above the name of the rotation currently in
+--     use.
 [98] = "Rotación actual",
 -- 11d80e12 English: Automatic Switching
+-- Context: Entry in the minimap menu rotation list: let Rotation Master pick the rotation
+--     automatically (the alternative is picking one by hand).
 [99] = "Cambio automático",
 -- ea046a56 English: Toggle %s |cFF00FFFF/rm toggle|r
+-- Context: Key-binding name shown in the game's Key Bindings screen; %s is the addon name; the
+--     colored '/rm toggle' slash command must stay.
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
 [100] = "Alternar %s |cFF00FFFF/rm toggle|r",
 -- 0ee9fb73 English: Validating database integrity
+-- Context: Chat message when running the /rm check or /rm repair command: the saved settings
+--     database is being validated.
 [101] = "Validando la integridad de la base de datos",
 -- a256b212 English: [Tier: %d, Column: %d]
+-- %d #1: %d #1: the talent tier (row), 1 to 7, e.g. 3
+-- %d #2: %d #2: the talent column, 1 to 3, e.g. 2
 [102] = "[Nivel: %d, Columna: %d]",
 -- d634fd5e English: Autoswitch rotation list has been updated.
 [103] = "Se ha actualizado la lista de rotaciones de cambio automático.",
@@ -254,289 +387,504 @@ addon.translation = {
 -- cc9f8575 English: Active rotation is incomplete and may not work correctly!
 [107] = "¡La rotación activa está incompleta y puede no funcionar correctamente!",
 -- 9e4feae8 English: Cache hit rate at %.02f%%
+-- %.02f #1: %.02f #1: the cache hit rate as a percentage with two decimals, e.g. 87.35 (the %% after it is a literal percent sign)
 [108] = "Tasa de aciertos de caché: %.02f%%",
 -- 6a0a0288 English: Spells
+-- Context: Name of the 'Spells' category of conditions; also a category in the icon picker (icons
+--     showing spells/magic).
 [109] = "Hechizos",
 -- fb8e7a1a English: Items
+-- Context: Name of the 'Items' condition category; also the label for an items entry when comparing
+--     collections, and an icon-picker category.
 [110] = "Objetos",
 -- 966dac79 English: Buffs
+-- Context: Name of the 'Buffs' condition category (auras on a unit); also a category/tag in the
+--     icon picker.
 [111] = "Beneficios",
 -- 49fcf2c7 English: Combat
+-- Context: Name of the 'Combat' condition category; also a category/tag in the icon picker.
 [112] = "Combate",
 -- 1405a63e English: Character
+-- Context: Name of the 'Character' condition category (conditions about your own character, class,
+--     level); also an icon-picker category.
 [113] = "Personaje",
 -- f97e9da0 English: Other
+-- Context: Name of the catch-all condition category for conditions that fit no other category (a
+--     dropdown option / group heading); the adjective 'Other'.
 [114] = "Otros",
 -- f94a59f5 English: Spatial
+-- Context: Name of the 'Spatial' condition category (zone, distance, proximity conditions); also an
+--     icon-picker category.
 [115] = "Espacial",
 -- 494ca78f English: Custom
+-- Context: Dropdown option meaning 'an ad-hoc custom item set': choose it instead of a saved
+--     reusable item set, then enter items by hand.
 [116] = "Personalizado",
 -- 56b9b63d English: Bind
+-- Context: Button in the item settings that binds the selected item to action-bar slots (verb);
+--     when slots are bound its label becomes 'Slots ... · Unbind'.
 [117] = "Asignar",
 -- dca68375 English: Unbind
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Unbind' for item sets bound to action bar slots (now shown as
+--     'Slots ... · Unbind').
 [118] = "Desasignar",
 -- 67236b42 English: {unit} {stacks} {comparison} {quantity}
 [119] = "el número de {stacks} {unit} {comparison} {quantity}",
 -- ebc99a61 English: is less than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is less than N'
+--     (numeric comparison).
 [120] = "es menor que",
 -- 103999f5 English: is less than or equal to
 [121] = "es menor o igual que",
 -- 4ccdd13e English: is greater than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is greater than N'
+--     (numeric comparison).
 [122] = "es mayor que",
 -- 31742930 English: is greater than or equal to
 [123] = "es mayor o igual que",
 -- cb9f4031 English: is equal to
+-- Context: Comparison operator in a condition's dropdown: 'is equal to' (also used for the negated
+--     'is not' operator set where it is reversed).
 [124] = "es igual a",
 -- f3bab6c4 English: is not equal to
 [125] = "no es igual a",
 -- 46fd28a6 English: is evenly divisible by
 [126] = "es divisible entre",
 -- bb0347a4 English: you
+-- Context: Unit name used inside condition sentences, e.g. 'Health of you'; here the player's own
+--     character as the subject.
 [127] = "tú",
 -- ae77a704 English: your pet
+-- Context: Unit name used inside condition sentences: the player's pet.
 [128] = "tu mascota",
 -- 5c6909af English: your target
+-- Context: Unit name used inside condition sentences: the player's current target.
 [129] = "tu objetivo",
 -- c03e55b9 English: your focus target
+-- Context: Unit name used inside condition sentences: the player's focus target (only for game
+--     versions that have a focus target).
 [130] = "tu foco",
 -- b3cccabc English: your mouseover target
+-- Context: Unit name used inside condition sentences: the unit the mouse pointer is over.
 [131] = "el objetivo bajo el cursor",
 -- 475bae27 English: your pet's target
+-- Context: Unit name used inside condition sentences: the target of the player's pet.
 [132] = "el objetivo de tu mascota",
 -- 36be7c3f English: your target's target
+-- Context: Unit name used inside condition sentences: the target of the player's target.
 [133] = "el objetivo de tu objetivo",
 -- ad57c70e English: your focus target's target
 [134] = "el objetivo de tu foco",
 -- f445919a English: your mouseover target's target
 [135] = "el objetivo del objetivo bajo el cursor",
 -- 4d040d3f English: your
+-- Context: Possessive unit word used in condition sentences, e.g. 'your health': the player's own
+--     character.
 [136] = "de tu personaje",
 -- 0f29cbcd English: your pet's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's (e.g. 'your pet's
+--     health').
 [137] = "de tu mascota",
 -- 86535199 English: your target's
+-- Context: Possessive unit phrase used in condition sentences: the player's target's (e.g. 'your
+--     target's health').
 [138] = "de tu objetivo",
 -- b263b9c4 English: your focus target's
+-- Context: Possessive unit phrase used in condition sentences: the player's focus target's (only
+--     for game versions with a focus target).
 [139] = "de tu foco",
 -- 9c1fb6c2 English: your mouseover target's
+-- Context: Possessive unit phrase used in condition sentences: the mouseover unit's (e.g. 'your
+--     mouseover target's health').
 [140] = "del objetivo bajo el cursor",
 -- 4df38978 English: your pet's target's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's target's (e.g.
+--     'your pet's target's health').
 [141] = "del objetivo de tu mascota",
 -- 6c2c38e9 English: your target's target's
+-- Context: Possessive unit phrase used in condition sentences: the target of your target's (e.g.
+--     'your target's target's health').
 [142] = "del objetivo de tu objetivo",
 -- 5028affe English: your focus target's target's
 [143] = "del objetivo de tu foco",
 -- 32961613 English: your mouseover target's target's
 [144] = "del objetivo del objetivo bajo el cursor",
 -- 71f18ea0 English: healed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was
+--     healed ('your target healed ...').
 [145] = "sanado",
 -- 4ddc4e8a English: dodged
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     dodged.
 [146] = "esquivado",
 -- 6973dddd English: blocked
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     blocked.
 [147] = "bloqueado",
 -- 63d04dee English: hit
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was hit
+--     by an attack.
 [148] = "golpeado",
 -- 0e347254 English: critically hit
+-- Context: Past-tense verb phrase in the Last Combat Action condition's action dropdown: the unit
+--     was hit by a critical strike.
 [149] = "golpeado críticamente",
 -- 4f0a566d English: hit with a crushing blow
 [150] = "golpeado con un golpe aplastante",
 -- fb785161 English: hit with a glancing blow
 [151] = "golpeado con un golpe de refilón",
 -- 1c33629a English: missed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack missed.
 [152] = "fallado",
 -- 2fe44909 English: parried
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     parried.
 [153] = "parado",
 -- 57ac7325 English: resisted
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     resisted.
 [154] = "resistido",
 -- d9460674 English: Center
+-- Context: Option in an anchor-position dropdown (where a highlight/frame attaches to the screen or
+--     an icon): the exact center.
 [155] = "Centro",
 -- 1cb2052a English: Top Left
+-- Context: Option in an anchor-position dropdown: the top-left corner.
 [156] = "Arriba a la izquierda",
 -- dccff16f English: Top Right
+-- Context: Option in an anchor-position dropdown: the top-right corner.
 [157] = "Arriba a la derecha",
 -- 7499760f English: Bottom Left
+-- Context: Option in an anchor-position dropdown: the bottom-left corner.
 [158] = "Abajo a la izquierda",
 -- 09b28cd7 English: Bottom Right
+-- Context: Option in an anchor-position dropdown: the bottom-right corner.
 [159] = "Abajo a la derecha",
 -- 271eac34 English: Top Center
+-- Context: Option in an anchor-position dropdown: the middle of the top edge.
 [160] = "Arriba en el centro",
 -- 6818850e English: Bottom Center
+-- Context: Option in an anchor-position dropdown: the middle of the bottom edge.
 [161] = "Abajo en el centro",
 -- 24b15e35 English: Left Center
+-- Context: Option in an anchor-position dropdown: the middle of the left edge.
 [162] = "Centro a la izquierda",
 -- 8f0626ff English: Right Center
+-- Context: Option in an anchor-position dropdown: the middle of the right edge.
 [163] = "Centro a la derecha",
 -- bdbea4f8 English: Select Icon
+-- Context: Title of the icon picker window, where you choose an icon for a condition or rotation;
+--     imperative 'Select an icon'.
 [164] = "Seleccionar icono",
 -- 99a52df3 English: Key
+-- Context: Bold term in the Custom Condition help text: the field that holds the condition's unique
+--     key/identifier (a name used in code).
 [165] = "Clave",
 -- eef729cf English: Custom Condition
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Custom Condition' for the custom condition editor/help.
 [166] = "Condición personalizada",
 -- e0b9479a English: Edit Condition
+-- Context: Window title of the condition editor when no number is shown (verb + noun: you edit a
+--     condition); also the title of the Edit Condition dialog in the rotation editor.
 [167] = "Editar condición",
 -- 526e0087 English: Description
+-- Context: Field label for the free-text description: in the custom condition help, and as a row
+--     label when comparing two collections.
 [168] = "Descripción",
 -- d689600f English: Post-Registration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On register' callback (code run after the
+--     condition is registered).
 [169] = "Función posterior al registro",
 -- 2bd03442 English: Pre-Unregistration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On unregister' callback (code run before the
+--     condition is unregistered).
 [170] = "Función previa a la baja del registro",
 -- eaf0fe0a English: Warrior
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warrior. The game's own localized class names are used in class
+--     pickers; use the standard WoW class name.
 [171] = "Guerrero",
 -- a7d973a7 English: Paladin
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Paladin. Use the standard WoW class name for your language.
 [172] = "Paladín",
 -- 680ce380 English: Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Hunter. Use the standard WoW class name for your language.
 [173] = "Cazador",
 -- 0b8cdd9e English: Rogue
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Rogue. Use the standard WoW class name for your language.
 [174] = "Pícaro",
 -- 909a4523 English: Priest
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Priest. Use the standard WoW class name for your language.
 [175] = "Sacerdote",
 -- 483f6fa9 English: Death Knight
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Death Knight. Use the standard WoW class name for your language.
 [176] = "Caballero de la Muerte",
 -- 0953e68a English: Shaman
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Shaman. Use the standard WoW class name for your language.
 [177] = "Chamán",
 -- e181bc01 English: Mage
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Mage. Use the standard WoW class name for your language.
 [178] = "Mago",
 -- 6e7e607f English: Warlock
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warlock. Use the standard WoW class name for your language.
 [179] = "Brujo",
 -- a670c8d2 English: Monk
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Monk. Use the standard WoW class name for your language.
 [180] = "Monje",
 -- 274814f1 English: Druid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Druid. Use the standard WoW class name for your language.
 [181] = "Druida",
 -- 66b96f76 English: Demon Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Demon Hunter. Use the standard WoW class name for your language.
 [182] = "Cazador de demonios",
 -- 628bf77a English: Beast
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Beast').
 [183] = "Bestia",
 -- 4a70eb4d English: Dragonkin
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Dragonkin').
 [184] = "Dragonante",
 -- 83bd7784 English: Demon
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Demon').
 [185] = "Demonio",
 -- 4309e83a English: Elemental
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Elemental').
 [186] = "Elemental",
 -- db5bea37 English: Giant
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Giant').
 [187] = "Gigante",
 -- a5bb6066 English: Undead
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Undead').
 [188] = "No-muerto",
 -- d2253641 English: Humanoid
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Humanoid').
 [189] = "Humanoide",
 -- 14e2f7b4 English: Critter
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Critter').
 [190] = "Alma",
 -- 39bf205e English: Mechanical
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Mechanical').
 [191] = "Mecánico",
 -- dc12bec5 English: Not specified
+-- Context: Creature type in the Creature condition's dropdown for units with no creature type (WoW
+--     'Not specified'); also shown where a value is missing in condition text.
 [192] = "Sin especificar",
 -- 8f7ae0c0 English: Totem
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Totem'); also the label of the
+--     Totem condition's dropdown choosing the totem slot (Fire, Earth, Water, Air).
 [193] = "Tótem",
 -- 87f8c315 English: Non-combat Pet
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Non-combat Pet', i.e.
+--     companion/vanity pets).
 [194] = "Mascota no combatiente",
 -- b2098aeb English: Gas Cloud
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Gas Cloud' units, such as in
+--     raid encounters).
 [195] = "Nube de gas",
 -- a703e47b English: World Boss
+-- Context: Unit classification in the Classification condition's dropdown: a world boss.
 [196] = "Jefe del mundo",
 -- 7c32325f English: Rare Elite
+-- Context: Unit classification in the Classification condition's dropdown: a rare elite mob.
 [197] = "Élite raro",
 -- 1d6953e0 English: Elite
+-- Context: Unit classification in the Classification condition's dropdown: an elite mob.
 [198] = "Élite",
 -- 291d2a97 English: Rare
+-- Context: Unit classification in the Classification condition's dropdown: a rare mob.
 [199] = "Raro",
 -- a7248eeb English: Normal
+-- Context: Unit classification in the Classification condition's dropdown: an ordinary (normal)
+--     mob.
 [200] = "Normal",
 -- 73fba898 English: Trivial
+-- Context: Unit classification in the Classification condition's dropdown: a trivial (low-level,
+--     grey) mob.
 [201] = "Trivial",
 -- 9befa3c6 English: Minus
+-- Context: Unit classification in the Classification condition's dropdown: a 'minus' mob, a
+--     weaker-than-normal mob (e.g. swarm adds).
 [202] = "Menor",
 -- c0b21fb1 English: Tank
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Tank').
 [203] = "Tanque",
 -- caece7f5 English: DPS
+-- Context: Group role in the Role condition's dropdown and its help text: damage dealer
+--     (abbreviation for damage per second).
 [204] = "Daño",
 -- a491a33c English: Healer
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Healer').
 [205] = "Sanador",
 -- ed1a5a81 English: Magic
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Magic').
 [206] = "Magia",
 -- 7bce5b94 English: Disease
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Disease').
 [207] = "Enfermedad",
 -- d5a78b99 English: Poison
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Poison').
 [208] = "Veneno",
 -- 88b3d8ee English: Curse
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Curse').
 [209] = "Maldición",
 -- c6e5d717 English: Enrage
+-- Context: Debuff type in the Debuff Type condition's dropdown: an enrage effect on a hostile unit
+--     (dispelled by e.g. Tranquilizing Shot).
 [210] = "Enfurecer",
 -- 77d7cd99 English: Arena
+-- Context: PvP zone status option in the PvP condition dropdown and help ('You are in an arena');
+--     also instance mode 'Arena' in the Instance Mode condition.
 [211] = "Arena",
 -- b2fb8b8a English: Controlled by your faction
 [212] = "Controlada por tu facción",
 -- 9f22dfe6 English: Contested
+-- Context: PvP zone status option in the PvP condition's dropdown and help: a contested zone,
+--     controlled by neither faction.
 [213] = "En disputa",
 -- bdd63a7e English: Controlled by opposing faction
 [214] = "Controlada por la facción enemiga",
 -- 5f18bd94 English: Sanctuary (no PVP)
+-- Context: PvP zone status option in the PvP condition's dropdown: a sanctuary where PvP is
+--     impossible.
 [215] = "Santuario (sin JcJ)",
 -- 7d73fb0c English: Combat (auto-flagged)
+-- Context: PvP zone status option in the PvP condition's dropdown: a combat zone where players are
+--     flagged for PvP automatically.
 [216] = "Combate (marcado automáticamente)",
 -- dacf1516 English: Outside
+-- Context: Instance mode option in the Instance condition's dropdown: you are not in any instance
+--     (the open world).
 [217] = "Exterior",
 -- 40964db2 English: Battleground
+-- Context: Instance mode option in the Instance condition's dropdown: a PvP battleground.
 [218] = "Campo de batalla",
 -- 73054bd6 English: Dungeon
+-- Context: Instance mode option in the Instance condition's dropdown: a five-player dungeon; also
+--     used as the dungeon group of difficulty names.
 [219] = "Mazmorra",
 -- 7dabeb63 English: Raid
+-- Context: Group-type word: the Raid checkbox in group conditions ('check the whole raid, not only
+--     the party'); also an instance mode option.
 [220] = "Banda",
 -- c141faa8 English: Fire
+-- Context: Name of the Fire totem slot in the Totem condition's dropdown; also a spell school
+--     (Fire) and an icon-picker category.
 [221] = "Fuego",
 -- b7c9b5cc English: Earth
+-- Context: Name of the Earth totem slot in the Totem condition's dropdown.
 [222] = "Tierra",
 -- 7ca7dea9 English: Water
+-- Context: Name of the Water totem slot in the Totem condition's dropdown.
 [223] = "Agua",
 -- aa42ff59 English: Air
+-- Context: Name of the Air totem slot in the Totem condition's dropdown.
 [224] = "Aire",
 -- 735beee2 English: Minimum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the lowest value
+--     among units; also its help term.
 [225] = "Mínimo",
 -- e17f73ea English: lowest
+-- Context: Adjective used inside a condition sentence, e.g. 'the lowest health of ...' (the Minimum
+--     operation).
 [226] = "El mínimo",
 -- 66c9ab17 English: Maximum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the highest value
+--     among units; also its help term.
 [227] = "Máximo",
 -- 4d8fa801 English: highest
+-- Context: Adjective used inside a condition sentence, e.g. 'the highest health of ...' (the
+--     Maximum operation).
 [228] = "El máximo",
 -- b38ae2c5 English: Average
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the mean value
+--     among units; also its help term.
 [229] = "Media",
 -- 184df936 English: average
+-- Context: Adjective used inside a condition sentence, e.g. 'the average health of ...' (the
+--     Average operation).
 [230] = "La media",
 -- 8fd58c92 English: no threat risk
+-- Context: Threat-level option in the Threat condition's dropdown and its help: you are in no
+--     danger of taking threat from the tank.
 [231] = "sin riesgo de amenaza",
 -- 748beef5 English: higher threat than tank
 [232] = "más amenaza que el tanque",
 -- bee526bf English: tanking, at risk
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit but not
+--     top of the threat table, so you may lose it.
 [233] = "tanqueando, en riesgo",
 -- f40da142 English: tanking, secure
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit and are
+--     not at risk of losing it.
 [234] = "tanqueando, seguro",
 -- 0f179dbf English: <value>
+-- Context: Placeholder shown in red in a condition's text when a value is not yet filled in;
+--     literally the angle-bracketed word 'value'.
 [235] = "<valor>",
 -- 98bf8ca2 English: <operator>
+-- Context: Placeholder shown in a condition's text when the comparison operator is not yet chosen
+--     (e.g. '<operator> 3 actions ago'); keep the angle brackets.
 [236] = "<operador>",
 -- 77300ce2 English: Enable Rotation Master
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label of the main enable checkbox (now just 'Enable' in General settings).
 [237] = "Activar Rotation Master",
 -- 1e28d34e English: Polling Interval (seconds)
+-- Context: Label of the polling interval slider in General settings (seconds between rotation
+--     recommendation refreshes); also a help heading.
 [238] = "Intervalo de sondeo (segundos)",
 -- 96414600 English: Idle Re-check Interval (seconds)
 [239] = "Intervalo de recomprobación en reposo (segundos)",
 -- 9e4deebb English: Auto-Switch Re-check Interval (seconds)
 [240] = "Intervalo de recomprobación del cambio automático (segundos)",
 -- 43deba51 English: Ignore Mana
+-- Context: Checkbox in General settings: recommend spells even when the unit lacks the mana for
+--     them; also a help heading.
 [241] = "Ignorar maná",
 -- 3427b677 English: Ignore Range
+-- Context: Checkbox in General settings: recommend spells even when the target is out of range;
+--     also a help heading.
 [242] = "Ignorar alcance",
 -- 4764e65b English: Skip rotation entries or disable cooldown highlights because you don't have
 --     enough to cast them.
 [243] = "Omite entradas de la rotación o desactiva el resaltado de tiempos de reutilización porque no tienes suficiente para lanzarlos.",
 -- e6b6aad8 English: Effect Options
+-- Context: Section heading in General settings for options about the highlight effect (effect,
+--     magnification, color, anchor).
 [244] = "Opciones de efecto",
 -- cfa79416 English: Magnification
+-- Context: Label of the highlight size multiplier (zoom of the effect) in General settings,
+--     rotation steps and the effect editor; also a help heading.
 [245] = "Ampliación",
 -- 48aae415 English: Highlight Color
+-- Context: Label of the highlight color picker in General settings and in the rotation step editor
+--     (the color of the bar highlight); also a help heading.
 [246] = "Color de resaltado",
 -- 6d031af1 English: Position
+-- Context: Label of the step position field in the rotation step editor (where in the rotation list
+--     the step sits); also a help term and a line in change summaries.
 [247] = "Posición",
 -- f4a13303 English: Specialization Names
+-- Context: Section heading in General settings (Classic clients only): fields for naming your
+--     primary and secondary talent specializations.
 [248] = "Nombres de especialización",
 -- 1cfb0bd9 English: Tooltips
+-- Context: Section heading in General settings for options controlling the lines Rotation Master
+--     adds to spell and item tooltips.
 [249] = "Descripciones emergentes",
 -- 4e430b3e English: Show Rotation Master in tooltips
 [250] = "Mostrar Rotation Master en las descripciones emergentes",
@@ -545,32 +893,54 @@ addon.translation = {
 -- e0ebe3cd English: List rotations in spell and item tooltips
 [252] = "Listar rotaciones en las descripciones de hechizos y objetos",
 -- 9c73797e English: Include rotation conditions
+-- Context: Checkbox in General settings, Tooltips section: also list the rotation's conditions in
+--     spell/item tooltips; also a help heading.
 [253] = "Incluir condiciones de las rotaciones",
 -- c6b7619f English: Names listed per tooltip line
 [254] = "Nombres mostrados por línea de descripción",
 -- 7fb301ab English: Rotation Master item sets
 [255] = "Conjuntos de objetos de Rotation Master",
 -- 6a361b20 English: Rotation Master rotations
+-- Context: Prefix label of a line in spell and item tooltips, followed by the names of the
+--     rotations that use that spell or item.
 [256] = "Rotaciones de Rotation Master",
 -- 9204c375 English: %s (disabled)
+-- Context: Rotation name in a tooltip line when that rotation is disabled; %s is the rotation name.
+-- %s #1: %s #1: the name of a rotation that is turned off, e.g. "Frost Single Target"
 [257] = "%s (desactivada)",
 -- d5b57b61 English: (+%d more)
+-- Context: Suffix at the end of a tooltip line listing names, when more exist than are shown; %d is
+--     how many were left out.
+-- %d #1: %d #1: how many further rotations are not listed, e.g. 3
 [258] = "(+%d más)",
 -- d440fcce English: Debugging Options
+-- Context: Section heading in General settings for debugging options (log level, detailed
+--     profiling).
 [259] = "Opciones de depuración",
 -- 12fe4737 English: Log Level
+-- Context: Label of the log verbosity dropdown in General settings, Debugging section; also a help
+--     heading and a comparison row label.
 [260] = "Nivel de registro",
 -- c0ebb7d6 English: Quiet
+-- Context: Option in the Log Level dropdown: only minimal addon chat output.
 [261] = "Silencioso",
 -- 1a03bd2f English: Debug
+-- Context: Option in the Log Level dropdown: extra debug messages are printed.
 [262] = "Depuración",
 -- 2cd57109 English: Verbose
+-- Context: Option in the Log Level dropdown: the most detailed log messages.
 [263] = "Detallado",
 -- f2438f82 English: Detailed Profiling
+-- Context: Checkbox in General settings, Debugging section: collect detailed performance timing of
+--     the addon; also a help heading.
 [264] = "Perfilado detallado",
 -- 0ca3f824 English: Disable Auto-Switching
+-- Context: Label of a setting that turns off automatic rotation switching; shown as a row name when
+--     comparing two profile collections.
 [265] = "Desactivar cambio automático",
 -- 9ac1f2c5 English: Minimap Icon
+-- Context: Checkbox in General settings: show or hide the Rotation Master button on the minimap;
+--     also a help heading.
 [266] = "Icono del minimapa",
 -- 7de50af6 English: Spell History Memory (seconds)
 [267] = "Memoria del historial de hechizos (segundos)",
@@ -581,8 +951,12 @@ addon.translation = {
 -- 67e53fcd English: Live Status Update Frequency (seconds)
 [270] = "Frecuencia de actualización del estado en vivo (segundos)",
 -- 8e8f30f5 English: Disable Bar Highlighting
+-- Context: Checkbox in General settings: turn off the highlight Rotation Master draws on action bar
+--     buttons; also a help heading.
 [271] = "Desactivar el resaltado en barras",
 -- 7079e1f5 English: Preview Spells
+-- Context: Label of a slider in General settings: how many upcoming spells the preview window
+--     shows; also a help heading.
 [272] = "Previsualizar hechizos",
 -- e2f5f378 English: This is specifically how often the configuration pane will receive updates
 --     about live status.  Too frequently could make your configuration pane unusable.  0 =
@@ -596,14 +970,25 @@ addon.translation = {
 --     the effect list?
 [276] = "Los efectos predeterminados han cambiado desde la versión anterior. ¿Quieres restablecer la lista de efectos?",
 -- 6db7e56b English: Import/Export Rotation
+-- Context: Title of the transfer dialog and its help for importing or exporting a rotation as text.
 [277] = "Importar/exportar rotación",
 -- a66223ca English: Import/Export Item Set
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an item set as text
+--     (like 'Import/Export Rotation').
 [278] = "Importar/exportar conjunto de objetos",
 -- 87c5e6a6 English: Import/Export Effect
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an effect as text (like
+--     'Import/Export Rotation').
 [279] = "Importar/exportar efecto",
 -- 1318e3a7 English: Import/Export Condition
+-- Context: Title of the transfer dialog for importing or exporting a custom condition as text.
 [280] = "Importar/exportar condición",
 -- a04def9c English: Import/Export Condition Group
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting a condition category as
+--     text.
 [281] = "Importar/exportar grupo de condiciones",
 -- 6de338e2 English: Copy and paste this text share your rotation with others, or import someone
 --     else's.
@@ -618,20 +1003,38 @@ addon.translation = {
 --     someone else's.
 [285] = "Copia y pega este texto para compartir tu condición personalizada con otros o importar la de otra persona.",
 -- 277089d9 English: bytes
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'bytes' (size of text).
 [286] = "bytes",
 -- 5ea44c39 English: lines
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'lines' (number of text lines).
 [287] = "líneas",
 -- d4121e17 English: Parse Error
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Parse Error' for a failed import of text.
 [288] = "Error de análisis",
 -- f3bb01ec English: Copy of %s
+-- Context: Default name for a duplicated item (rotation, condition, profile): 'Copy of ...'; %s is
+--     the original name.
+-- %s #1: %s #1: the name of the item being copied (a rotation, effect, item set or condition), e.g. "Frost Single Target"
 [289] = "Copia de %s",
 -- 64780145 English: Imported on %c
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Note on an imported entry: 'Imported on <date>'; %c is a date and time
+--     formatted by the game.
+-- %c #1: %c #1: not a value but a date format code; the game replaces it with the current local date and time when an effect is imported, e.g. "10/28/26 13:45:00". Keep %c exactly.
 [290] = "Importado el %c",
 -- 42191ef4 English: Import/Export
+-- Context: Button label (and help term) for the dialog that exports or imports a definition as
+--     text; slash separates the two actions.
 [291] = "Importar/exportar",
 -- 2cff9baa English: Import
+-- Context: Button in the import dialog: imports the pasted text (verb).
 [292] = "Importar",
 -- 821e6678 English: Switch Condition
+-- Context: Checkbox label and help heading: allow this condition type to be used when automatically
+--     choosing a rotation (switch conditions).
 [293] = "Condición de cambio",
 -- acba80e5 English: No other rotations match.
 [294] = "No coincide ninguna otra rotación.",
@@ -642,108 +1045,185 @@ addon.translation = {
 -- a60ad1de English: THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE
 [297] = "ESTA ROTACIÓN NO SE USARÁ PORQUE ESTÁ INCOMPLETA",
 -- a857b1ff English: Cooldowns
+-- Context: Name of the second tab in the rotation view (steps used for cooldowns, as opposed to the
+--     main rotation); also a comparison row label.
 [298] = "Tiempos de reutilización",
 -- 57b5e2fc English: Rotation
+-- Context: Name of the first tab in the rotation view (the main rotation steps); also a generic
+--     label for a rotation entry.
 [299] = "Rotación",
 -- 39921a74 English: Switch
+-- Context: Name of a condition category/filter (conditions that can be used for automatically
+--     switching rotations) in condition lists.
 [300] = "Cambio",
 -- e061b3f5 English: Condition Options
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Condition Options'.
 [301] = "Opciones de condición",
 -- 07724428 English: Rotations
+-- Context: Name of the top-level 'Rotations' tab in the settings window; also a row label when
+--     comparing collections.
 [302] = "Rotaciones",
 -- 49c266ba English: Search
+-- Context: Heading of the help text for the search box above the condition list (verb/noun).
 [303] = "Buscar",
 -- baaddf70 English: Type
+-- Context: Label for the kind of something: the effect type dropdown in effect settings, and the
+--     step type in the rotation editor; also a column in comparisons.
 [304] = "Tipo",
 -- e28411a3 English: Texture
+-- Context: Effect type in the effect type dropdown (an icon/texture overlay effect); also the label
+--     of the texture picker.
 [305] = "Textura",
 -- 2252d5cf English: Effect
+-- Context: Label of the highlight effect dropdown in General settings and rotation steps (the
+--     visual glow style); also a comparison row label.
 [306] = "Efecto",
 -- 5817280a English: Pixel
+-- Context: Effect type in the effect type dropdown: a glow of moving pixel lines around the button.
 [307] = "Píxel",
 -- 09968fe6 English: Auto Cast
+-- Context: Effect type in the effect type dropdown: a glow of orbiting sparkles like a pet autocast
+--     border.
 [308] = "Autolanzamiento",
 -- f534ed97 English: Glow
+-- Context: Effect type in the effect type dropdown: the standard Blizzard button glow.
 [309] = "Resplandor",
 -- 96afc081 English: Dazzle
+-- Context: Effect type in the effect type dropdown: a dazzling flashing glow.
 [310] = "Destello",
 -- fd4a5f3d English: Animate
+-- Context: Effect type in the effect type dropdown: an animated texture effect.
 [311] = "Animar",
 -- f7a403c6 English: Pulse
+-- Context: Effect type in the effect type dropdown: a texture that pulses (grows and shrinks).
 [312] = "Pulso",
 -- c3613b17 English: Rotate
+-- Context: Effect type in the effect type dropdown: a texture that rotates.
 [313] = "Rotar",
 -- 0740f4ba English: Sequence
+-- Context: Heading of the list of sequence steps in the custom effect editor (an effect built from
+--     a series of frames).
 [314] = "Secuencia",
 -- 4e1f49a9 English: Event
+-- Context: Label of the dropdown choosing which cast event (started, stopped, succeeded...)
+--     triggers an announcement; also a help heading.
 [315] = "Evento",
 -- 358511c8 English: Effects
+-- Context: Name of the 'Effects' settings tab; refers to highlight effects.
 [316] = "Efectos",
 -- 4ea6bdd3 English: Item Sets
+-- Context: Name of the 'Item Sets' settings tab and help topic.
 [317] = "Conjuntos de objetos",
 -- 7c326a4b English: Announces
+-- Context: Name of the 'Announces' settings tab (announcements sent when spells are cast); also a
+--     comparison row label.
 [318] = "Anuncios",
 -- 535e52e4 English: Profiles
+-- Context: Name of the 'Profiles' settings tab; also the title of the profile transfer dialog.
 [319] = "Perfiles",
 -- 3b26a542 English: Lines
+-- Context: Label of the number-of-lines setting of the Pixel effect.
 [320] = "Líneas",
 -- 16b6668d English: Frequency
+-- Context: Label of a speed setting of an effect (how fast it animates, in cycles per second).
 [321] = "Frecuencia",
 -- 1de3df70 English: Steps
+-- Context: Label of the number-of-steps setting of the Rotate effect.
 [322] = "Pasos",
 -- fae1c6f1 English: Reverse
+-- Context: Checkbox in the Rotate effect settings: rotate in the opposite direction.
 [323] = "Invertir",
 -- 1968034b English: Angle
+-- Context: Label of the rotation angle (degrees, 0-359) of a sequence step in the effect editor.
 [324] = "Ángulo",
 -- adc95605 English: Length
+-- Context: Label of the line length setting of the Pixel effect.
 [325] = "Longitud",
 -- 7b594414 English: Thickness
+-- Context: Label of the line thickness setting of the Pixel effect.
 [326] = "Grosor",
 -- e73735cf English: Particles
+-- Context: Label of the number-of-particles setting of the Auto Cast effect.
 [327] = "Partículas",
 -- f102986b English: Scale
+-- Context: Label of a size/zoom setting: effect scale, and the UI scale slider of the configuration
+--     window.
 [328] = "Escala",
 -- 1709305c English: Level
+-- Context: Name of the Level condition (character level of a unit); also its operator field label
+--     in the condition editor.
 [329] = "Nivel",
 -- 75081b59 English: Disabled
+-- Context: Status text / button state: the item (condition, step, rotation) is turned off; also
+--     prefixes a condition's text when disabled.
 [330] = "Desactivado",
 -- 92c1cdfd English: Enabled
+-- Context: Status text / toggle button state: the item (condition, function, definition) is turned
+--     on.
 [331] = "Activado",
 -- b79cac92 English: Help
+-- Context: Button/tooltip opening the help for the current editor or condition; also a comparison
+--     row label.
 [332] = "Ayuda",
 -- 8c89911a English: Time Until Health
+-- Context: Name of the Time Until Health condition (estimated seconds until a unit reaches a health
+--     value).
 [333] = "Tiempo hasta salud",
 -- dd1e6bab English: Time Until Health Percentage
 [334] = "Tiempo hasta porcentaje de salud",
 -- 2184a4e3 English: Runner
+-- Context: Name of the Runner condition (the mob tends to flee at low health, per the MobInfo2
+--     addon).
 [335] = "Huidizo",
 -- 0a10734e English: %s will run
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text fragment '%s will run' for the Runner condition; %s is a unit.
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [336] = "%s huirá",
 -- 93bea368 English: Resistant
+-- Context: Name of the Resistant condition (a unit resists a magic school above a value).
 [337] = "Resistente",
 -- 384f6084 English: Immune
+-- Context: Name of the Immune condition (a unit is immune to a magic school).
 [338] = "Inmune",
 -- ecbc89cd English: Started
+-- Context: Cast event in the announcement Event dropdown: the cast has started; also a help
+--     heading.
 [339] = "Iniciado",
 -- 1a4f630a English: Stopped
+-- Context: Cast event in the announcement Event dropdown: the cast was stopped/cancelled by you;
+--     also a help heading.
 [340] = "Detenido",
 -- 6d9a6f97 English: Succeeded
+-- Context: Cast event in the announcement Event dropdown: the cast completed successfully.
 [341] = "Con éxito",
 -- 132d124d English: Interrupted
+-- Context: Cast event in the announcement Event dropdown: the cast was interrupted (e.g. by an
+--     enemy).
 [342] = "Interrumpido",
 -- 031a8f0f English: Failed
+-- Context: Cast event in the announcement Event dropdown: the cast failed; also a validation status
+--     ('Failed') in the condition source preview.
 [343] = "Fallido",
 -- a5c19c9f English: Delayed
+-- Context: Cast event in the announcement Event dropdown: the cast was delayed (pushback).
 [344] = "Retrasado",
 -- 93006d61 English: Arcane
+-- Context: Magic school name (Arcane) in the school dropdown of the Resistant/Immune conditions.
 [345] = "Arcano",
 -- 17636dd6 English: Frost
+-- Context: Magic school name (Frost) in the school dropdown; also a Death Knight rune type (Frost
+--     rune) in the rune condition help.
 [346] = "Escarcha",
 -- 56eee6a5 English: Holy
+-- Context: Magic school name (Holy) in the school dropdown of the Resistant/Immune conditions.
 [347] = "Sagrado",
 -- c71ce8cc English: Nature
+-- Context: Magic school name (Nature) in the school dropdown; also an icon-picker category.
 [348] = "Naturaleza",
 -- 4c764cb6 English: Shadow
+-- Context: Magic school name (Shadow) in the school dropdown of the Resistant/Immune conditions.
 [349] = "Sombras",
 -- 113ed31a English: Spells that you wish to conditionally highlight independent of your rotation. 
 --     Any or all of these may be highlighted at the same time.
@@ -752,398 +1232,774 @@ addon.translation = {
 --     spell being based on the first satisfied condition.
 [351] = "Tu rotación de hechizos principal. Solo se resalta un hechizo a la vez: el de la primera condición que se cumpla.",
 -- 1359626e English: Move Up
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position up; also a help heading.
 [352] = "Subir",
 -- db60f7a9 English: Move to Top
+-- Context: Menu entry/button: moves the selected list entry to the top; also a help heading.
 [353] = "Mover al principio",
 -- 89abfab0 English: Move to Bottom
+-- Context: Menu entry/button: moves the selected list entry to the bottom; also a help heading.
 [354] = "Mover al final",
 -- b58330ac English: Move Down
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position down; also a help heading.
 [355] = "Bajar",
 -- 45986160 English: Move To
+-- Context: Label of the dropdown in the Conditions page for choosing the category to move a
+--     condition into (verb phrase 'Move to'); also a help heading.
 [356] = "Mover a",
 -- 7e6fefff English: Hidden
+-- Context: Checkbox label: hide this condition from the Other category in the condition picker
+--     (adjective); also a comparison row label.
 [357] = "Oculto",
 -- 02cdaabf English: Duplicate
+-- Context: Button in the rotation list and rotation steps: makes a copy of the selected entry
+--     (verb); also a help heading.
 [358] = "Duplicar",
 -- 4a787020 English: Action Type
+-- Context: Label of the dropdown choosing which kind of action to look for (e.g. healed, dodged,
+--     missed) in the Last Combat Action conditions; also a help heading for the announcement action
+--     type.
 [359] = "Tipo de acción",
 -- 4e43f098 English: No Action
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Option label 'No Action' (a step that does nothing).
 [360] = "Sin acción",
 -- 63c5b771 English: Spell
+-- Context: Name of the Spell choice: the spell name/ID entry field label in conditions, the step
+--     type 'Spell' and a help term; noun.
 [361] = "Hechizo",
 -- c8a18067 English: Pet Spell
+-- Context: Name of the Pet Spell choice: a step/announcement type that uses a spell of your pet;
+--     also used in pet spell condition help.
 [362] = "Hechizo de mascota",
 -- a4d187b1 English: Any Spell
+-- Context: Step type dropdown entry in the rotation step editor: a step that fires for any spell,
+--     not a specific one.
 [363] = "Cualquier hechizo",
 -- 652bcc3a English: Item
+-- Context: Label of the item entry field (an item name or ID) in conditions; also the step type
+--     'Item' and a help term; noun.
 [364] = "Objeto",
 -- 97d4be89 English: Conditions
+-- Context: Heading of the conditions section of a rotation step/announcement and a help heading;
+--     also a comparison row label.
 [365] = "Condiciones",
 -- c6877c9a English: NOTE: Some spells can not be selected (even if auto-completed) due to WoW
 --     internals.  It may reequire you to switch specs or summon the requisite pet first before
 --     being able to populate this field.
 [366] = "NOTA: Algunos hechizos no se pueden seleccionar (aunque se autocompleten) por el funcionamiento interno de WoW. Puede que tengas que cambiar de especialización o invocar antes la mascota necesaria para poder rellenar este campo.",
 -- 464557d7 English: %s is now available!
+-- %s #1: %s #1: a clickable spell link for the spell that became available, e.g. "[Fireball]" (or "Unknown spell (133)" when the game has no data)
 [367] = "¡%s ya está disponible!",
 -- 2ab52f92 English: Announce
+-- Context: Label of the Announce checkbox/section in a rotation step (announce when the step
+--     triggers) and a help heading (verb/noun); also a comparison row label.
 [368] = "Anunciar",
 -- f961b619 English: Audible Announce
+-- Context: Label of the dropdown in a rotation step choosing a sound to play when announcing.
 [369] = "Anuncio sonoro",
 -- dc937b59 English: None
+-- Context: Dropdown option meaning 'no selection' or an empty value (e.g. no active rotation, no
+--     sound, no channel).
 [370] = "Ninguno",
 -- 51247512 English: Raid or Party
+-- Context: Dropdown option (announce channel) meaning raid chat when in a raid, otherwise party
+--     chat; also used inside condition text as 'members of raid or party'.
 [371] = "Banda o grupo",
 -- 272e43a2 English: Party Only
+-- Context: Announce channel dropdown option: send the announcement to party chat only; also a help
+--     heading.
 [372] = "Solo grupo",
 -- be5b8dfd English: Raid Warning
+-- Context: Announce channel dropdown option: send the announcement as a raid warning message; also
+--     a help heading.
 [373] = "Alerta de banda",
 -- 64f3cd06 English: Say
+-- Context: Announce channel dropdown option: say (normal /say chat); also the chat-type of an
+--     announcement macro.
 [374] = "Decir",
 -- 938af47b English: Yell
+-- Context: Announce channel dropdown option: yell (/yell chat); also the chat-type of an
+--     announcement macro.
 [375] = "Gritar",
 -- 5027e850 English: Emote
+-- Context: Announce channel dropdown option: perform a built-in emote; also the Emote field label
+--     in the announcement help.
 [376] = "Emoción",
 -- ff3a450e English: Local Only
+-- Context: Announce channel dropdown option: show the message only to you, not to others.
 [377] = "Solo local",
 -- 71988c4d English: Text
+-- Context: Label of a free-text field (the announcement text) and the schema field type 'Text' (a
+--     string) in custom function and schema editors.
 [378] = "Texto",
 -- b0ef44de English: Item Set
+-- Context: Label of the item set dropdown in item conditions and the item set choice in
+--     announcements; noun.
 [379] = "Conjunto de objetos",
 -- 434702dc English: Click the icon above to bind to your action bar
 [380] = "Haz clic en el icono de arriba para asignarlo a tu barra de acción",
 -- e71efd0e English: time until %s is at %s%% health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [381] = "tiempo hasta que la salud de %s esté al %s%%",
 -- 4104ecce English: time until %s is at %s health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [382] = "tiempo hasta que %s tenga %s de salud",
 -- cd7e49ac English: time until %s is at %s health defecit
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health deficit amount (missing health) that is waited for, e.g. 20000
 [383] = "tiempo hasta que %s tenga un déficit de salud de %s",
 -- 6344ed2a English: The %s health defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [384] = "El déficit de salud %s de los miembros de %s%s a %d metros de %s",
 -- b4b2caae English: The %s health of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [385] = "La salud %s de los miembros de %s%s a %d metros de %s",
 -- 1bbec37f English: The number %s members%s within %d yards of %s whose
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [386] = "El número de miembros de %s%s a %d metros de %s cuya",
 -- 91765b2b English: The %s health percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [387] = "El porcentaje de salud %s de los miembros de %s%s a %d metros de %s",
 -- 13a2b471 English: The number %s members%s within %d yards of %s whose health percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [388] = "El número de miembros de %s%s a %d metros de %s cuyo porcentaje de salud",
 -- 52cf9fe9 English: The %s mana defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [389] = "El déficit de maná %s de los miembros de %s%s a %d metros de %s",
 -- 0a50ee9b English: The %s mana of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [390] = "El maná %s de los miembros de %s%s a %d metros de %s",
 -- ed32b716 English: The %s mana percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [391] = "El porcentaje de maná %s de los miembros de %s%s a %d metros de %s",
 -- 66dd29aa English: The number %s members%s within %d yards of %s whose mana percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [392] = "El número de miembros de %s%s a %d metros de %s cuyo porcentaje de maná",
 -- bd972cc4 English: AND
+-- Context: Name of the logical AND group condition: all conditions inside it must be true (a
+--     condition type in the condition picker).
 [393] = "Y",
 -- 829e5b28 English: OR
+-- Context: Name of the logical OR group condition: at least one condition inside it must be true.
 [394] = "O",
 -- 8be3365c English: NOT
+-- Context: Name of the logical NOT group condition: negates the condition inside it; also used as a
+--     prefix in condition text.
 [395] = "NO",
 -- f733d042 English: <INVALID CONDITION>
+-- Context: Placeholder shown in a condition list where a condition has a missing or unknown type;
+--     keep the angle brackets.
 [396] = "<CONDICIÓN NO VÁLIDA>",
 -- b2295de9 English: Please Choose ...
 [397] = "Elige...",
 -- 9f24f04e English: Condition Type
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label 'Condition Type'.
 [398] = "Tipo de condición",
 -- df00fd14 English: Edit Condition #%d
+-- Context: Window title of the condition editor for the condition at a numbered position; %d is its
+--     position in the list.
+-- %d #1: %d #1: the position of the condition in the rotation step, counting from 1, e.g. 2
 [399] = "Editar condición n.º %d",
 -- 55490a4b English: Up
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Up' (move up arrow).
 [400] = "Arriba",
 -- b86d11af English: Down
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Down' (move down arrow).
 [401] = "Abajo",
 -- 3124aba4 English: <spell>
+-- Context: Placeholder shown in a condition's text where no spell has been chosen yet; keep the
+--     angle brackets.
 [402] = "<hechizo>",
 -- 99cd36a3 English: Your talent is a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [403] = "Tu talento corresponde al rol de %s",
 -- 8436c454 English: %s is in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [404] = "%s tiene el rol de %s",
 -- 71fafa0a English: %s is a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is a %s' (singular, e.g. 'your target is a Beast');
+--     unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [405] = "%s es %s",
 -- f9030f9e English: %s are a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are a %s' (plural subject); unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [406] = "%s eres %s",
 -- 1c5be7b4 English: %s have %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s' (plural subject); unit, then a thing.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [407] = "%s tienes %s",
 -- 82320b64 English: %s has %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s' (singular subject); unit, then a thing.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [408] = "%s tiene %s",
 -- 3313549c English: %s is %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is %s' (singular subject); subject, then a state.
+-- %s #1: %s #1: the first unit, e.g. "your target"
+-- %s #2: %s #2: the unit it is compared with (or a distance such as "closer than 10 yards"), e.g. "your focus target"
 [409] = "%s es %s",
 -- 4902371e English: %s are %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are %s' (plural subject); subject, then a state.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the distance phrase, e.g. "closer than 10 yards"
 [410] = "%s eres %s",
 -- 2564e907 English: %s were %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s were %s' (plural subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action ("were" is used for the player), e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [411] = "%s fuiste %s",
 -- 96aacc3d English: %s was %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s was %s' (singular subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [412] = "%s fue %s",
 -- 368387c7 English: %s have %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s where %s' (plural subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [413] = "%s tienes %s donde %s",
 -- f161aa55 English: %s has %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s where %s' (singular subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, e.g. "Rend"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [414] = "%s tiene %s donde %s",
 -- 38277209 English: you are talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [415] = "tienes talentos en %s",
 -- 32da26d1 English: talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree it is in, e.g. "Arcane"
 [416] = "puntos de talento en %s (%s)",
 -- 85d523f6 English: %s's resistance to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template "%s's resistance to %s"; unit, then a magic school.
+-- %s #1: %s #1: the unit whose resistance is checked, possessive form, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [417] = "resistencia de %s a %s",
 -- 0cad0ea7 English: %s is sometimes immune to %s
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [418] = "%s a veces es inmune a %s",
 -- e23ffa5e English: %s is immune to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is immune to %s'; unit, then a magic school.
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [419] = "%s es inmune a %s",
 -- 6d19eba6 English: you have %s glyph
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template 'you have %s glyph'; %s is a glyph name.
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [420] = "tienes el glifo %s",
 -- 4e545960 English: Unit
+-- Context: Label of the unit dropdown in conditions (which unit is checked: you, your target, ...)
+--     and a help term; noun.
 [421] = "Unidad",
 -- 14736a2e English: Role
+-- Context: Name of the Role condition (tank, DPS or healer) and the label of its role dropdown.
 [422] = "Rol",
 -- 4f3a9bd0 English: Class
+-- Context: Name of the Class condition and the label of its class dropdown; also a scope option
+--     (class vs. this character).
 [423] = "Clase",
 -- 0df08730 English: Class In Group
+-- Context: Name of the Class In Group condition: counts group members of a given class.
 [424] = "Clase en el grupo",
 -- e23f2e34 English: Is Same As
+-- Context: Name of the Is Same As condition: true when two units are the same unit.
 [425] = "Es la misma que",
 -- 03d5b2de English: Creature Type
+-- Context: Name of the Creature Type condition (beast, demon, ...) and label of its dropdown.
 [426] = "Tipo de criatura",
 -- a1cf0927 English: Unit Classification
+-- Context: Name of the Unit Classification condition (normal, elite, boss...) and label of its
+--     dropdown.
 [427] = "Clasificación de la unidad",
 -- caa2e08f English: Talent
+-- Context: Label of the talent dropdown in the Talent condition (a specific talent).
 [428] = "Talento",
 -- 1aff4871 English: Glyph
+-- Context: Name of the Glyph condition: true while you have a given glyph (an item) applied.
 [429] = "Glifo",
 -- b8790e72 English: Talent Tree
+-- Context: Label of the talent tree/group dropdown in the Talent condition and title of the talent
+--     picker popup.
 [430] = "Árbol de talentos",
 -- 291101a0 English: Operator
+-- Context: Label of the dropdown holding the comparison operator (is less than, equal to ...) in
+--     conditions, and a help term.
 [431] = "Operador",
 -- b7bdf7a2 English: Distance
+-- Context: Name of the Distance condition (yards to a unit) and label of its distance field.
 [432] = "Distancia",
 -- 7a347089 English: Distance Count
+-- Context: Name of the Distance Count condition: how many units are within a given distance.
 [433] = "Recuento por distancia",
 -- 47da413b English: yards
+-- Context: Unit word 'yards' (distance unit). No direct call site in the current code; it appeared
+--     in distance conditions' text.
 [434] = "metros",
 -- 55898449 English: Health
+-- Context: Label of the health value field in health-based conditions (e.g. 'Health Within Range')
+--     and the operator widget's value name; noun.
 [435] = "Salud",
 -- 3c01b3e3 English: %s health defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a health deficit comparison ('%s health deficit'; sic 'defecit' in the English
+--     key); %s is a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [436] = "déficit de salud %s",
 -- 59f92800 English: Health Percentage
+-- Context: Name of the Health Percentage condition (a unit's health as a percent of its maximum) in
+--     the condition picker.
 [437] = "Porcentaje de salud",
 -- 066ffe4a English: Mana
+-- Context: Label of the mana value field in mana conditions (e.g. 'Mana Within Range'); noun.
 [438] = "Maná",
 -- ba32a92b English: %s mana defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a mana deficit comparison ('%s mana deficit'; sic 'defecit' in the key); %s is a
+--     value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [439] = "déficit de maná %s",
 -- 42dccab0 English: Mana Percentage
+-- Context: Name of the Mana Percentage condition (a unit's mana as a percent of its maximum).
 [440] = "Porcentaje de maná",
 -- 848e9656 English: Power
+-- Context: Name of the Power condition (a unit's raw resource such as rage or energy) and the label
+--     of its value field.
 [441] = "Poder",
 -- 0e4dfe83 English: %s power defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a power deficit comparison ('%s power deficit'; sic 'defecit' in the key); %s is
+--     a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [442] = "déficit de poder %s",
 -- 6a612b86 English: Power Percentage
+-- Context: Name of the Power Percentage condition (a unit's resource as a percent of its maximum).
 [443] = "Porcentaje de poder",
 -- 77deabe2 English: Points
+-- Context: Name of the Points condition (combo points) and the label of its value field.
 [444] = "Puntos",
 -- 8208acbf English: %s points
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s points' (combo points); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [445] = "puntos %s",
 -- 49e3a963 English: %s point defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s point deficit' (sic 'defecit' in the key; combo points missing
+--     from max); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [446] = "déficit de puntos %s",
 -- 5af0278b English: Runes
+-- Context: Name of the Runes condition (Death Knight runes available) and the label of its count
+--     field.
 [447] = "Runas",
 -- d62be657 English: Rune Cooldown
+-- Context: Name of the Rune Cooldown condition (seconds until a rune type is ready).
 [448] = "Reutilización de runas",
 -- 9ba5f80d English: %s runes available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s runes available'; %s is a number.
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [449] = "runas de %s disponibles",
 -- 61084a6e English: cooldown on %s rune
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'cooldown on %s rune'; %s is a rune type.
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [450] = "reutilización de la runa de %s",
 -- 8a7961ab English: Blood
+-- Context: Death Knight rune type (Blood) in the Runes and Rune Cooldown conditions' rune dropdown.
 [451] = "Sangre",
 -- 4de5fe95 English: Unholy
+-- Context: Death Knight rune type (Unholy) in the Runes and Rune Cooldown conditions' rune
+--     dropdown.
 [452] = "Profana",
 -- fcd6fea7 English: Death
+-- Context: Death Knight rune type (Death) in the Runes and Rune Cooldown conditions' rune dropdown.
 [453] = "Muerte",
 -- 8a166eb0 English: Character Stat
+-- Context: Name of the Character Stat condition (a stat such as strength or armor) and the label of
+--     its stat dropdown.
 [454] = "Estadística del personaje",
 -- 0a79e909 English: Extended Character Stat
+-- Context: Name of the Extended Character Stat condition (stats provided by the
+--     ExtendedCharacterStats addon).
 [455] = "Estadística ampliada del personaje",
 -- 9cd14132 English: Extended Character Stat Percentage
 [456] = "Porcentaje de estadística ampliada del personaje",
 -- d2923546 English: Spell Available
+-- Context: Name of the Spell Available condition (a spell is castable/known and available).
 [457] = "Hechizo disponible",
 -- b1557241 English: Pet Spell Available
+-- Context: Name of the Pet Spell Available condition (a pet spell is available).
 [458] = "Hechizo de mascota disponible",
 -- d24390ed English: %s is available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is available'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [459] = "%s está disponible",
 -- b2561670 English: Spell In Range
+-- Context: Name of the Spell In Range condition (the spell can reach the target).
 [460] = "Hechizo al alcance",
 -- 67ef960b English: Pet Spell In Range
 [461] = "Hechizo de mascota al alcance",
 -- 12692f41 English: %s is in range
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in range'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [462] = "%s está al alcance",
 -- 8baec846 English: Spell Cooldown
+-- Context: Name of the Spell Cooldown condition (seconds until a spell can be cast again); also the
+--     title of its help.
 [463] = "Tiempo de reutilización del hechizo",
 -- f7254914 English: Pet Spell Cooldown
+-- Context: Name of the Pet Spell Cooldown condition (seconds until a pet spell can be cast again).
 [464] = "Tiempo de reutilización del hechizo de mascota",
 -- 9e4f8469 English: Boss Mod Encounter
+-- Context: Name of the Boss Mod Encounter condition (an encounter reported by a boss mod addon such
+--     as DBM/BigWigs is active).
 [465] = "Encuentro del mod de jefes",
 -- fd1f1e3c English: Boss Mod Encounter Stage
 [466] = "Fase del encuentro del mod de jefes",
 -- c07ffee7 English: Boss Mod Timer
+-- Context: Name of the Boss Mod Timer condition (seconds until a boss ability, from a boss mod
+--     addon).
 [467] = "Temporizador del mod de jefes",
 -- 140bedbf English: none
+-- Context: Lowercase word 'none' inserted in a status line 'Current encounter: ..., ID none, stage
+--     ...' when there is no encounter ID.
 [468] = "ninguno",
 -- f73bf30c English: Spell Active or Pending
 [469] = "Hechizo activo o pendiente",
 -- c8ada1d7 English: Pet Spell Active or Pending
 [470] = "Hechizo de mascota activo o pendiente",
 -- 85f5aca6 English: %s is active or pending
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [471] = "%s está activo o pendiente",
 -- fdb533df English: Spell Time Remaining
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     name of the Spell Time Remaining condition (time left on a spell).
 [472] = "Tiempo restante del hechizo",
 -- 3422640c English: Pet Spell Time Remaining
 [473] = "Tiempo restante del hechizo de mascota",
 -- 369bb5dd English: remaining time on %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'remaining time on %s'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [474] = "tiempo restante de %s",
 -- 0ce37091 English: Spell Charges
+-- Context: Name of the Spell Charges condition (how many charges of a spell are available).
 [475] = "Cargas del hechizo",
 -- b9dd94ce English: Pet Spell Charges
+-- Context: Name of the Pet Spell Charges condition (charges of a pet spell).
 [476] = "Cargas del hechizo de mascota",
 -- bd7612e8 English: Spell Cast History Time
 [477] = "Tiempo del historial de lanzamientos",
 -- e16b6508 English: Spell Cast History
+-- Context: Name of the Spell Cast History condition (a spell was cast N casts ago).
 [478] = "Historial de lanzamientos",
 -- 26483687 English: Pet Spell Cast History Time
 [479] = "Tiempo del historial de lanzamientos de mascota",
 -- 6f884dd0 English: Pet Spell Cast History
 [480] = "Historial de lanzamientos de mascota",
 -- 193bb945 English: %s was cast
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s was cast'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [481] = "%s se lanzó",
 -- 0d112e0c English: Combat Action History Time
 [482] = "Tiempo del historial de acciones de combate",
 -- ec517441 English: Combat Action History
+-- Context: Name of the Combat Action History condition (a combat event such as dodged/healed N
+--     actions ago).
 [483] = "Historial de acciones de combate",
 -- 9c434f34 English: fewer than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [484] = "hace menos de %s lanzamientos",
 -- 5966470f English: at most %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [485] = "hace como máximo %s lanzamientos",
 -- c1a41894 English: more than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [486] = "hace más de %s lanzamientos",
 -- fd9a7c72 English: at least %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [487] = "hace al menos %s lanzamientos",
 -- c53b5aea English: exactly %s casts ago
+-- Context: Phrase in condition text for the equals operator in cast history: '... exactly N casts
+--     ago'; %s is the number.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [488] = "hace exactamente %s lanzamientos",
 -- 770b3b3e English: other than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [489] = "en un momento distinto de hace %s lanzamientos",
 -- 75504648 English: a multiple of %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [490] = "hace un múltiplo de %s lanzamientos",
 -- 3619f661 English: fewer than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [491] = "hace menos de %s acciones",
 -- 90c5ca9f English: at most %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [492] = "hace como máximo %s acciones",
 -- 03dcab2c English: more than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [493] = "hace más de %s acciones",
 -- 7688d933 English: at least %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [494] = "hace al menos %s acciones",
 -- 506a71d6 English: exactly %s actions ago
+-- Context: Phrase in condition text for the equals operator in combat action history: '... exactly
+--     N actions ago'; %s is the number.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [495] = "hace exactamente %s acciones",
 -- 1a4b6a11 English: other than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [496] = "en un momento distinto de hace %s acciones",
 -- a5094423 English: a multiple of %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [497] = "hace un múltiplo de %s acciones",
 -- 27db12a6 English: less than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [498] = "hace menos de %s segundos",
 -- 4e0556a9 English: at most %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [499] = "hace como máximo %s segundos",
 -- 9644de21 English: more than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [500] = "hace más de %s segundos",
 -- 75c46f7d English: at least %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [501] = "hace al menos %s segundos",
 -- a431b13b English: exactly %s seconds ago
+-- Context: Phrase in condition text for the equals operator in time-based history: '... exactly N
+--     seconds ago'; %s is the number.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [502] = "hace exactamente %s segundos",
 -- 4ac319b9 English: other than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [503] = "en un momento distinto de hace %s segundos",
 -- 2b2e3c59 English: a multiple of %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [504] = "hace un múltiplo de %s segundos",
 -- ae4f356c English: Any Spell Available
+-- Context: Name of the Any Spell Available condition (any spell by name/ID, regardless of
+--     specialization).
 [505] = "Cualquier hechizo disponible",
 -- 11a84a9d English: Any Spell In Range
 [506] = "Cualquier hechizo al alcance",
 -- 6a50cd59 English: Any Spell Cooldown
+-- Context: Name of the Any Spell Cooldown condition (seconds until any chosen spell is ready).
 [507] = "Tiempo de reutilización de cualquier hechizo",
 -- 56ef0943 English: Any Spell Time Remaining
 [508] = "Tiempo restante de cualquier hechizo",
 -- a8212106 English: Any Spell Charges
+-- Context: Name of the Any Spell Charges condition (charges of any chosen spell).
 [509] = "Cargas de cualquier hechizo",
 -- ae1e1aed English: Buff Present
+-- Context: Name of the Buff Present condition (an aura is on the unit).
 [510] = "Beneficio presente",
 -- 8fb4de97 English: Buff Time Remaining
+-- Context: Name of the Buff Time Remaining condition (seconds left on a buff).
 [511] = "Tiempo restante del beneficio",
 -- 666e85fc English: Buff Stacks
+-- Context: Name of the Buff Stacks condition (the application count of a buff).
 [512] = "Acumulaciones del beneficio",
 -- 16ace6d6 English: stacks of %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'stacks of %s'; %s is an aura.
+-- %s #1: %s #1: the buff or debuff, as a spell name or "your own" followed by it, e.g. "Sunder Armor"
 [513] = "acumulaciones de %s",
 -- b4f4e6c4 English: stacks
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text word 'stacks' (aura application count).
 [514] = "acumulaciones",
 -- 78fcf705 English: Has Stealable Buff
+-- Context: Name of the Has Stealable Buff condition (a unit has a buff you can steal or purge).
 [515] = "Tiene beneficio robable",
 -- 7588c154 English: %s has a stealable buff
+-- %s #1: %s #1: the unit, e.g. "your target"
 [516] = "%s tiene un beneficio robable",
 -- c057197d English: Debuff Present
+-- Context: Name of the Debuff Present condition (a debuff is on the unit).
 [517] = "Perjuicio presente",
 -- e12d628f English: Debuff Time Remaining
+-- Context: Name of the Debuff Time Remaining condition (seconds left on a debuff).
 [518] = "Tiempo restante del perjuicio",
 -- 68627f3e English: Debuff Stacks
+-- Context: Name of the Debuff Stacks condition (the application count of a debuff).
 [519] = "Acumulaciones del perjuicio",
 -- fe1e836d English: Debuff Type Present
+-- Context: Name of the Debuff Type Present condition (e.g. Magic, Curse, Poison, Disease on the
+--     unit).
 [520] = "Tipo de perjuicio presente",
 -- 23f8a0cb English: %s have a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s have a %s debuff' (plural subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [521] = "%s tienes un perjuicio de %s",
 -- 7ab4967e English: %s has a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s has a %s debuff' (singular subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [522] = "%s tiene un perjuicio de %s",
 -- a7b891f5 English: Totem Present
+-- Context: Name of the Totem Present condition (a totem of a given element is active).
 [523] = "Tótem presente",
 -- 0c3d3d7f English: %s totem is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s totem is active'; %s is a totem element.
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [524] = "el tótem de %s está activo",
 -- e885c330 English: %s is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active'; %s is a totem/spell.
+-- %s #1: %s #1: a clickable spell link for the totem or ability, e.g. "[Searing Totem]"
 [525] = "%s está activo",
 -- 66da3d47 English: Specific Totem Present
+-- Context: Name of the Specific Totem Present condition (a particular totem spell is active).
 [526] = "Tótem concreto presente",
 -- 5bf50471 English: Totem Time Remaining
+-- Context: Name of the Totem Time Remaining condition (seconds left on an active totem).
 [527] = "Tiempo restante del tótem",
 -- 7543785b English: Specific Totem Time Remaining
 [528] = "Tiempo restante de un tótem concreto",
 -- 68fb02a4 English: you have a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [529] = "tienes un tótem de %s activo con %s",
 -- a25252ca English: %s is active with %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active with %s'; first %s a totem, second a detail (such as
+--     time left).
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [530] = "%s está activo con %s",
 -- 2fa842db English: Have Item Equipped
+-- Context: Name of the Have Item Equipped condition (you wear a given item).
 [531] = "Tener objeto equipado",
 -- 5554bebd English: you have %s equipped
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you have %s equipped'; %s is an item.
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [532] = "tienes %s equipado",
 -- 8e3be399 English: Have Item In Bags
 [533] = "Tener objeto en las bolsas",
 -- ef20a8e9 English: the number of %s you are carrying
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Healing Potion]"
 [534] = "el número de %s que llevas",
 -- 86a036a1 English: Item Available
+-- Context: Name of the Item Available condition (you have the item and can use it).
 [535] = "Objeto disponible",
 -- e01cd9e7 English: Item In Range
+-- Context: Name of the Item In Range condition (the item can reach the target).
 [536] = "Objeto al alcance",
 -- 64d7247f English: Item Cooldown
+-- Context: Name of the Item Cooldown condition (seconds until an item is usable again).
 [537] = "Tiempo de reutilización del objeto",
 -- 1b0ab573 English: In Combat
+-- Context: Name of the In Combat condition; also a checkbox label in the Distance Count condition
+--     meaning 'only count units in combat'.
 [538] = "En combate",
 -- 630eade3 English: %s are in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are in combat' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [539] = "%s estás en combate",
 -- 89608711 English: %s is in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in combat' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [540] = "%s está en combate",
 -- a9bae210 English: Have Pet
+-- Context: Name of the Have Pet condition (you currently have a pet).
 [541] = "Tener mascota",
 -- 924d4ef6 English: you have a pet
 [542] = "tienes una mascota",
 -- 02734b33 English: Have Named Pet
+-- Context: Name of the Have Named Pet condition (your pet has a given name).
 [543] = "Tener mascota con nombre",
 -- 0c21cff5 English: you have a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [544] = "tienes una mascota llamada %s",
 -- 526a40a4 English: Stealth
+-- Context: Name of the Stealth condition (the player is stealthed); noun.
 [545] = "Sigilo",
 -- daac7bb8 English: you are stealthed
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are stealthed'.
 [546] = "estás en sigilo",
 -- d9237cea English: In Control
+-- Context: Name of the In Control condition (you are not stunned, feared, or otherwise lost
+--     control).
 [547] = "Con control",
 -- 7eea2830 English: you are in control of your character
 [548] = "tienes el control de tu personaje",
@@ -1152,24 +2008,40 @@ addon.translation = {
 -- 7843bc0f English: Loss Of Control Blocked
 [550] = "Bloqueado por pérdida de control",
 -- 8dac743c English: Moving
+-- Context: Name of the Moving condition (the player is moving).
 [551] = "En movimiento",
 -- 09284586 English: you are moving
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are moving'.
 [552] = "te estás moviendo",
 -- 56aa198a English: Threat
+-- Context: Name of the Threat condition (your threat level against a unit) and the label of its
+--     threat-level dropdown.
 [553] = "Amenaza",
 -- ffa83e17 English: Threat Count
+-- Context: Name of the Threat Count condition (the number of units on which you have at least a
+--     threat level).
 [554] = "Recuento de amenaza",
 -- c74406db English: you are at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [555] = "estás al menos en %s con %s",
 -- 99157067 English: Shapeshift Form
+-- Context: Name of the Shapeshift Form condition (the druid/shaman form you are in).
 [556] = "Forma alterada",
 -- 89016283 English: Attackable
+-- Context: Name of the Attackable condition (the unit can be attacked by you).
 [557] = "Atacable",
 -- b3478c03 English: Hostile
+-- Context: Name of the Hostile condition (the unit is an enemy).
 [558] = "Hostil",
 -- 46e36b4f English: Allies Within Range
+-- Context: Name of the Allies Within Range condition (number of allies within a distance of a
+--     unit).
 [559] = "Aliados dentro del alcance",
 -- afdfa696 English: Health Within Range
+-- Context: Name of the Health Within Range condition (health statistic over units within a
+--     distance).
 [560] = "Salud dentro del alcance",
 -- a4d0252f English: Health Count Within Range
 [561] = "Recuento de salud dentro del alcance",
@@ -1178,6 +2050,7 @@ addon.translation = {
 -- 324a4bd3 English: Health Percentage Count Within Range
 [563] = "Recuento de porcentaje de salud dentro del alcance",
 -- 8b7e70d8 English: Mana Within Range
+-- Context: Name of the Mana Within Range condition (mana statistic over units within a distance).
 [564] = "Maná dentro del alcance",
 -- 94049799 English: Mana Count Within Range
 [565] = "Recuento de maná dentro del alcance",
@@ -1186,22 +2059,39 @@ addon.translation = {
 -- 953ff9c3 English: Mana Percentage Count Within Range
 [567] = "Recuento de porcentaje de maná dentro del alcance",
 -- d709e95d English: %s is an enemy
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is an enemy'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [568] = "%s es un enemigo",
 -- 7024062a English: %s is attackable
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is attackable'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [569] = "%s es atacable",
 -- cd29bb25 English: number of %s members%s within %d yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 30
 [570] = "número de miembros de %s%s a %d metros",
 -- bb1fa7ca English: number of %s members%s within %s yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
 [571] = "número de miembros de %s%s a %s metros",
 -- ffc1e6b0 English: number of enemies you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [572] = "número de enemigos con los que estás al menos %s",
 -- 1fc58dea English: you {{!are|are not}} on %s threat table
+-- %s #1: %s #1: the unit, in the possessive form, e.g. "your target's"
 [573] = "{{!estás|no estás}} en la lista de amenaza %s",
 -- dbcea100 English: you {{!have|do not have}} at least as much threat on %s as its tank
+-- %s #1: %s #1: the unit, e.g. "your target"
 [574] = "{{!tienes|no tienes}} sobre %s al menos tanta amenaza como su tanque",
 -- 1a38484b English: you {{!are|are not}} tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [575] = "{{!estás|no estás}} tanqueando a %s",
 -- f893e9b8 English: you {{!are|are not}} securely tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [576] = "{{!estás|no estás}} tanqueando a %s de forma segura",
 -- 050bc6fc English: the number of enemies whose threat table you are on
 [577] = "el número de enemigos en cuya lista de amenaza estás",
@@ -1212,88 +2102,161 @@ addon.translation = {
 -- 39546907 English: the number of enemies you are securely tanking
 [580] = "el número de enemigos que estás tanqueando de forma segura",
 -- d173b87e English: you are in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [581] = "estás en forma de %s",
 -- 38ffcb03 English: Channeling
+-- Context: Name of the Channeling condition (a unit is channeling any spell).
 [582] = "Canalizando",
 -- a423f878 English: Specific Spell Channeling
+-- Context: Name of the Specific Spell Channeling condition (a unit is channeling a chosen spell).
 [583] = "Canalizando un hechizo concreto",
 -- c5db67ca English: %s are currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [584] = "%s estás canalizando",
 -- f58eece7 English: %s is currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [585] = "%s está canalizando",
 -- 6960967b English: %s are currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [586] = "%s estás canalizando %s",
 -- 53ed0bfb English: %s is currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [587] = "%s está canalizando %s",
 -- 4c2aeef1 English: Channel Time Remaining
+-- Context: Name of the Channel Time Remaining condition (seconds left on a unit's current channel).
 [588] = "Tiempo restante de canalización",
 -- e38783fe English: time remaining on spell channel
 [589] = "tiempo restante de la canalización",
 -- 39c51722 English: Channel Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Channel Interruptible condition name (now spelled 'Interruptible').
 [590] = "Canalización interrumpible",
 -- 09453a79 English: Channel Interruptible
+-- Context: Name of the Channel Interruptible condition (the unit's current channel can be
+--     interrupted).
 [591] = "Canalización interrumpible",
 -- 2a35e090 English: %s's channeled spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [592] = "el hechizo canalizado de %s es interrumpible",
 -- 0c9e7b06 English: Casting
+-- Context: Name of the Casting condition (a unit is casting any spell); also an icon-picker
+--     category.
 [593] = "Lanzando",
 -- bc401bef English: Specific Spell Casting
+-- Context: Name of the Specific Spell Casting condition (a unit is casting a chosen spell).
 [594] = "Lanzando un hechizo concreto",
 -- 53cc77b2 English: %s are currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [595] = "%s estás lanzando un hechizo",
 -- f8e91c91 English: %s is currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [596] = "%s está lanzando un hechizo",
 -- 9ec6cde4 English: %s are currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [597] = "%s estás lanzando %s",
 -- 79bdf263 English: %s is currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [598] = "%s está lanzando %s",
 -- 8f9d9bf5 English: Cast Time Remaining
+-- Context: Name of the Cast Time Remaining condition (seconds until a unit's current cast
+--     completes).
 [599] = "Tiempo restante de lanzamiento",
 -- 24812186 English: time remaining on spell cast
 [600] = "tiempo restante del lanzamiento",
 -- e2513da8 English: Cast Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Cast Interruptible condition name (now spelled 'Interruptible').
 [601] = "Lanzamiento interrumpible",
 -- d5c12268 English: Cast Interruptible
+-- Context: Name of the Cast Interruptible condition (the unit's current cast can be interrupted).
 [602] = "Lanzamiento interrumpible",
 -- 8b182833 English: %s's spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [603] = "el hechizo de %s es interrumpible",
 -- 0d2970f9 English: PVP Flagged
+-- Context: Name of the PVP Flagged condition (a unit is flagged for player-versus-player combat).
 [604] = "Marcado para JcJ",
 -- d27e8fdc English: %s are PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are PVP flagged' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [605] = "%s estás marcado para JcJ",
 -- c67f02e4 English: %s is PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is PVP flagged' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [606] = "%s está marcado para JcJ",
 -- 0489205b English: Zone PVP
+-- Context: Name of the Zone PVP condition (the PvP status of the area you are in).
 [607] = "JcJ de la zona",
 -- d09a2928 English: zone is a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [608] = "la zona es de tipo %s",
 -- 425f2336 English: Instance
+-- Context: Name of the Instance condition (what kind of instance you are in: dungeon, raid,
+--     battleground...).
 [609] = "Estancia",
 -- e96c4ff4 English: you are in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [610] = "estás en una estancia de tipo %s",
 -- 6480caf6 English: in %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'in %s'; %s is a zone or instance.
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [611] = "en %s",
 -- a8a06e4a English: Zone
+-- Context: Name of the Zone condition (the zone or subzone you are in) and the label of its text
+--     field.
 [612] = "Zona",
 -- 782fc4e1 English: In Group
+-- Context: Name of the In Group condition (you are in a party or raid).
 [613] = "En grupo",
 -- b097d347 English: you are in a group
 [614] = "estás en un grupo",
 -- c299367b English: In Raid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition name 'In Raid' (replaced by the Raid checkbox in the In Group
+--     condition).
 [615] = "En banda",
 -- 8985f5e8 English: you are in a raid
 [616] = "estás en una banda",
 -- 8bf8ef16 English: Outdoors
+-- Context: Name of the Outdoors condition (you are in an outdoor area).
 [617] = "Al aire libre",
 -- 2fcb5d37 English: Scenario
+-- Context: Instance mode option in the Instance condition: a solo scenario; also a difficulty group
+--     name.
 [618] = "Gesta",
 -- 0229c086 English: you are in a outdoors
 [619] = "estás al aire libre",
 -- 4340b353 English: Weapon Enchant Present
+-- Context: Name of the Weapon Enchant Present condition (a weapon has a temporary enchant/imbue).
 [620] = "Encantamiento de arma presente",
 -- 61ab108b English: Different season or game rules
 [621] = "Temporada o reglas de juego distintas",
 -- 6abe675a English: Action Context
+-- Context: Name of the Action Context condition (which action bar is in use: yours, a vehicle,
+--     override...) and the label of its dropdown.
 [622] = "Contexto de acción",
 -- 615c9003 English: Advice is suspended: no rotation applies while you are using another action
 --     bar.
@@ -1301,12 +2264,19 @@ addon.translation = {
 -- e9860cd7 English: Item Set Pieces Equipped
 [624] = "Piezas del conjunto equipadas",
 -- e0317f0c English: Weapon Enchant Type
+-- Context: Name of the Weapon Enchant Type condition (which temporary weapon enchant is applied).
 [625] = "Tipo de encantamiento de arma",
 -- 32eedbe8 English: a pet battle
+-- Context: Value in the Action Context dropdown: you are in a pet battle (Retail only); lowercase
+--     phrase read in a sentence.
 [626] = "una batalla de mascotas",
 -- a688c1ab English: a possessed unit
+-- Context: Value in the Action Context dropdown: you control a possessed (mind controlled) unit;
+--     lowercase phrase read in a sentence.
 [627] = "una unidad poseída",
 -- 7e4e79e6 English: a vehicle
+-- Context: Value in the Action Context dropdown: you are in a vehicle; lowercase phrase read in a
+--     sentence.
 [628] = "un vehículo",
 -- 1f7bee61 English: an override action bar
 [629] = "una barra de acción de sustitución",
@@ -1315,52 +2285,92 @@ addon.translation = {
 -- 6d49f98c English: Weapon Enchant Time Remaining
 [631] = "Tiempo restante del encantamiento de arma",
 -- 872198ac English: Weapon Enchant Stacks
+-- Context: Name of the Weapon Enchant Stacks condition (the stack count of a temporary weapon
+--     enchant).
 [632] = "Cargas del encantamiento de arma",
 -- 9a08c36b English: Your %s weapon buff has %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the remaining time or on the stack count, e.g. "the remaining time is greater than 10 seconds"
 [633] = "El beneficio de tu arma de %s tiene %s",
 -- 5aebbe0c English: Your %s weapon is enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "off hand"
 [634] = "Tu arma de %s está encantada",
 -- bfd173c2 English: Off Hand
+-- Context: Equipment slot / checkbox label for the off-hand weapon slot in weapon and enchant
+--     conditions; noun.
 [635] = "Mano secundaria",
 -- f0fa1c9c English: Weapon Swing Time
+-- Context: Name of the Weapon Swing Time condition (time until your next auto-attack swing).
 [636] = "Tiempo de golpe del arma",
 -- 8439ecbd English: Weapon Swing Time Remaining
 [637] = "Tiempo restante de golpe del arma",
 -- a258b30f English: Global
+-- Context: Checkbox label for an item set: it is a global set shared by all characters; also a help
+--     heading.
 [638] = "Global",
 -- 601196cf English: Damage and Heals
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count both damage
+--     and healing taken by the unit.
 [639] = "Daño y sanación",
 -- 9d0e8a5a English: Damage Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only damage
+--     taken by the unit.
 [640] = "Solo daño",
 -- 26316d67 English: Heals Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only healing
+--     received by the unit.
 [641] = "Solo sanación",
 -- 64cff131 English: Action
+-- Context: Label for the combat action kind (hit, miss, parried...) field in the Combat Action
+--     History condition; noun, also a comparison row label.
 [642] = "Acción",
 -- cd70c6b9 English: Time Since Combat Start
 [643] = "Tiempo desde el inicio del combate",
 -- d49f3af6 English: Time in combat is %s %s seconds
+-- %s #1: %s #1: the comparison wording, e.g. "is greater than"
+-- %s #2: %s #2: the number of seconds, e.g. 10
 [644] = "El tiempo en combate %s %s segundos",
 -- ffedb1c8 English: Copy report
+-- Context: Button that copies a text report to the clipboard (error window, condition text window);
+--     verb + noun.
 [645] = "Copiar informe",
 -- 7d9eb7ac English: Close
+-- Context: Button/tooltip of the window close icon (X) in dialogs; verb.
 [646] = "Cerrar",
 -- 67f981b6 English: /rm errors              - View and copy Rotation Master errors.
 [647] = "/rm errors              - Ver y copiar los errores de Rotation Master.",
 -- 496d05e2 English: Spell Known
+-- Context: Name of the Spell Known condition (you or your pet know/have learned a spell).
 [648] = "Hechizo conocido",
 -- 034f8d39 English: You know %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'You know %s'; %s is a spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Fireball (spell ID 133)"
 [649] = "Conoces %s",
 -- 5a072a25 English: Your pet knows %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'Your pet knows %s'; %s is a pet spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Bite (spell ID 17253)"
 [650] = "Tu mascota conoce %s",
 -- 41c1fdac English: %s (spell ID %s)
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Template '%s
+--     (spell ID %s)'; spell name, then numeric spell ID.
+-- %s #1: %s #1: the spell name, e.g. "Fireball"
+-- %s #2: %s #2: the spell ID, e.g. 133
 [651] = "%s (ID de hechizo %s)",
 -- 02ac5ded English: Spell ID
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Spell
+--     ID' for a numeric spell identifier.
 [652] = "ID de hechizo",
 -- 1be30861 English: Pet spell
+-- Context: Checkbox label in the Spell Known condition: the spell is a pet spell; also the step
+--     type description 'Pet spell' in the rotation reference.
 [653] = "Hechizo de mascota",
 -- 33579e22 English: Unavailable conditions or unsupported data
 [654] = "Condiciones no disponibles o datos no compatibles",
 -- 6289fcfd English: %s is not available on this client (%s).
+-- %s #1: %s #1: the name or description of the condition, e.g. "Pet happiness"
+-- %s #2: %s #2: the reason it cannot work here, as a short phrase (translated), e.g. "this edition has no pet happiness"
 [655] = "%s no está disponible en este cliente (%s).",
 -- d0e9a0bb English: the combat log is not available to addons on this client
 [656] = "el registro de combate no está disponible para los addons en este cliente",
@@ -1369,33 +2379,50 @@ addon.translation = {
 -- 32d80509 English: this power is secret on this client
 [658] = "este recurso es secreto en este cliente",
 -- 38e49184 English: Active rotation: %s
+-- %s #1: %s #1: the name of the active rotation followed by "(manual)" or "(automatic)", or "None", e.g. "Frost Single Target (automatic)"
 [659] = "Rotación activa: %s",
 -- 95ebda6b English: a fallback saved for this character takes precedence
 [660] = "tiene prioridad una rotación de reserva guardada para este personaje",
 -- 53e0ff34 English: automatic
+-- Context: Word in the 'Active rotation: NAME (automatic)' status line: the rotation was chosen by
+--     automatic switching, not manually.
 [661] = "automática",
 -- 81600971 English: Cooldown %d
+-- Context: Label for a cooldown entry by position in a path description, e.g. 'Cooldown 2'; %d is
+--     the position number.
+-- %d #1: %d #1: the number of the cooldown in the list, counting from 1, e.g. 2
 [662] = "Tiempo de reutilización %d",
 -- 55899740 English: %d Built In rotations are disabled.
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 3
 [663] = "%d rotaciones integradas están desactivadas.",
 -- 6fbad292 English: %d other Built In rotations are disabled (for another specialization, level or
 --     edition).
+-- %d #1: %d #1: how many other Built In rotations are disabled, e.g. 4
 [664] = "Otras %d rotaciones integradas están desactivadas (por ser de otra especialización, nivel o edición).",
 -- 856a3f22 English: %s: disabled by you (turn it back on in Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [665] = "%s: desactivada por ti (vuelve a activarla en Rotaciones, en su vista de integradas).",
 -- ceaa0803 English: %s: ships disabled, an alternative to the recommended one (turn it on in
 --     Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [666] = "%s: viene desactivada, es una alternativa a la recomendada (actívala en Rotaciones, en su vista de integradas).",
 -- 4fd646c3 English: then the fallback (%s)
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [667] = "luego la de reserva (%s)",
 -- 1e1885f9 English: Automatic switching tries: %s. Higher numbers are tried first; equal priorities
 --     go by name.
+-- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
 [668] = "El cambio automático prueba: %s. Los números más altos se prueban primero; a igual prioridad, se ordenan por nombre.",
 -- 724799e1 English: Automatic switching would choose: %s
+-- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
 [669] = "El cambio automático elegiría: %s",
 -- 07d344c2 English: %d Built In disabled: %s
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 2
+-- %s #2: %s #2: their names, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [670] = "%d integradas desactivadas: %s",
 -- fd523668 English: Read-Only
+-- Context: Pill/badge at the top of the rotation editor for a rotation that cannot be edited (a
+--     Built In); adjective.
 [671] = "Solo lectura",
 -- 75920f9f English: Built In: it cannot be edited. Duplicate makes your own copy; Enabled and
 --     Priority are your settings for this profile.
@@ -1406,29 +2433,51 @@ addon.translation = {
 -- 7772b5b6 English: Import preview: the metadata is shown as imported and cannot be edited here.
 [674] = "Vista previa de la importación: los metadatos se muestran tal como se importan y no se pueden editar aquí.",
 -- b5444cba English: level %d+
+-- Context: Part of a rotation's applicability description: the rotation needs at least this
+--     character level; %d is the level, e.g. 'level 60+'.
+-- %d #1: %d #1: the lowest character level, shown with a plus sign, e.g. 60
 [675] = "nivel %d+",
 -- 7ae623fd English: Season of Mastery
+-- Context: Name of the Classic 'Season of Mastery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [676] = "Temporada de Maestría",
 -- 20bc4e56 English: Season of Discovery
+-- Context: Name of the Classic 'Season of Discovery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [677] = "Temporada de Descubrimiento",
 -- e913447f English: Hardcore
+-- Context: Game ruleset name in rotation applicability text: Hardcore realms (one life).
 [678] = "Hardcore",
 -- 61123c4d English: Anniversary
+-- Context: Name of the Classic 'Anniversary' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [679] = "Aniversario",
 -- 935f9eea English: Anniversary Hardcore
+-- Context: Name of the Classic 'Anniversary Hardcore' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [680] = "Aniversario Hardcore",
 -- 20170cbb English: Self-Found
+-- Context: Game ruleset name in rotation applicability text: Self-Found characters (no trading).
 [681] = "Opción personal",
 -- db93324d English: Standard realms
+-- Context: Game ruleset name in rotation applicability text: normal (standard) realms, not seasonal
+--     or special rulesets.
 [682] = "Reinos estándar",
 -- b82c4d13 English: Season %s
+-- Context: Part of a rotation's applicability text: the game season; %s is the season number.
+-- %s #1: %s #1: the season number, e.g. 3
 [683] = "Temporada %s",
 -- 889ec415 English: Game mode %s
+-- Context: Part of a rotation's applicability text: a game mode; %s is its name.
+-- %s #1: %s #1: the game mode number, e.g. 2
 [684] = "Modo de juego %s",
 -- f06a6bb8 English: Automatic switching tries nothing else, then the fallback (%s): no enabled
 --     rotation here can be selected now.
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [685] = "El cambio automático no prueba nada más y pasa a la rotación de reserva (%s): ninguna rotación activada aquí se puede seleccionar ahora.",
 -- e87b125e English: Revision %s
+-- Context: Revision label of a built-in rotation, e.g. 'Revision 3'; %s is the revision number.
+-- %s #1: %s #1: the revision number of the Built In rotation, e.g. 4
 [686] = "Revisión %s",
 -- da0fa84c English: you switched it off (turn it back on in Rotations)
 [687] = "la desactivaste (vuelve a activarla en Rotaciones)",
@@ -1436,6 +2485,8 @@ addon.translation = {
 --     Rotations)
 [688] = "viene desactivada, es una alternativa a la recomendada (actívala en Rotaciones)",
 -- 27a5b813 English: Identifier: %s (/rm set %s)
+-- %s #1: %s #1: the rotation's identifier, e.g. "frost"
+-- %s #2: %s #2: the same identifier, used in the slash command, e.g. "frost"
 [689] = "Identificador: %s (/rm set %s)",
 -- 70f29af6 English: The fallback is always /rm set default.
 [690] = "La de reserva siempre es /rm set default.",
@@ -1449,29 +2500,42 @@ addon.translation = {
 -- 763698c5 English: has an invalid identifier
 [694] = "tiene un identificador no válido",
 -- 24adb964 English: %s is reserved for /rm set.
+-- %s #1: %s #1: the identifier the player typed, e.g. "auto"
 [695] = "%s está reservado para /rm set.",
 -- a33e5083 English: An identifier starts with a letter, then letters, digits, _ or -, up to 32
 --     characters.
 [696] = "Un identificador empieza por una letra, seguida de letras, dígitos, _ o -, hasta 32 caracteres.",
 -- a15a0c4c English: %s already uses the identifier %s.
+-- %s #1: %s #1: the name of the rotation that already has this identifier, e.g. "Frost Single Target"
+-- %s #2: %s #2: the identifier, e.g. "frost"
 [697] = "%s ya usa el identificador %s.",
 -- 2f1b1b88 English: Rotations for %s (use /rm set <id>):
+-- %s #1: %s #1: the current specialization with its class, e.g. "Frost Mage"
 [698] = "Rotaciones para %s (usa /rm set <id>):",
 -- 01e5a59a English: disabled by you
+-- Context: Status in a rotation list line: the player has turned this Built In rotation off.
 [699] = "desactivada por ti",
 -- 3f88443b English: ships disabled
+-- Context: Status in a rotation list line: this Built In rotation is shipped turned off by default.
 [700] = "viene desactivada",
 -- 4ac2f70c English: not for this character now
 [701] = "no es para este personaje ahora",
 -- e8fe279c English: cannot be selected: %s
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "it has incomplete or unsupported data"
 [702] = "no se puede seleccionar: %s",
 -- 96879611 English: active
+-- Context: Status word in a rotation list line: this rotation is the one currently in use.
 [703] = "activa",
 -- b24d6d33 English: ready
+-- Context: Status word in a rotation list line: this rotation could be selected but is not the
+--     current one.
 [704] = "lista",
 -- 5c7ee207 English: fallback
+-- Context: Kind word in parentheses in a rotation list line: the default fallback rotation.
 [705] = "reserva",
 -- 5eb2da9c English: yours
+-- Context: Kind word in parentheses in a rotation list line: a rotation you created (as opposed to
+--     Built In).
 [706] = "tuya",
 -- 7079adcd English: The rotation list opened in a window you can copy from.
 [707] = "La lista de rotaciones se ha abierto en una ventana desde la que puedes copiar.",
@@ -1479,24 +2543,35 @@ addon.translation = {
 [708] = "Rotaciones y sus identificadores",
 -- 855192f1 English: More than one rotation uses the identifier %s. Give one of them another
 --     identifier in Rotations.
+-- %s #1: %s #1: the identifier the player typed, e.g. "frost"
 [709] = "Más de una rotación usa el identificador %s. Dale otro identificador a una de ellas en Rotaciones.",
 -- 674aaa2c English: Identifiers you can use now: %s (or auto). /rm list shows every rotation.
+-- %s #1: %s #1: the identifiers that can be used now, separated by commas, e.g. "frost, fire"
 [710] = "Identificadores que puedes usar ahora: %s (o auto). /rm list muestra todas las rotaciones.",
 -- 3843971d English: ID
+-- Context: Label of the read-only identifier field of a rotation in the rotation editor;
+--     abbreviation of 'identifier'.
 [711] = "ID",
 -- d60dbba0 English: Priority
+-- Context: Label of the priority number of a rotation in the rotation editor (order in which
+--     automatic selection tries rotations).
 [712] = "Prioridad",
 -- bc5b45ae English: Reset to default
+-- Context: Button in the rotation editor: reset the profile's override of the enable setting back
+--     to the Built In's shipped default.
 [713] = "Restablecer valor predeterminado",
 -- 4273cc49 English: Use the Built In as it ships: its own Enabled setting and priority.
 [714] = "Usar la integrada tal como viene: su propio ajuste de Activado y su prioridad.",
 -- c6ea26d1 English: Your setting for this profile. The Built In ships %s.
+-- %s #1: %s #1: whether the Built In rotation ships turned on, the word "enabled" or "disabled" (translated), e.g. "enabled"
 [715] = "Tu ajuste para este perfil. Estado de la integrada tal como viene: %s.",
 -- 7f5ac649 English: As the Built In ships. Click to change it for this profile.
 [716] = "Como viene la integrada. Haz clic para cambiarlo en este perfil.",
 -- c3b9f3c3 English: Your priority for this profile; the Built In ships with %d.
+-- %d #1: %d #1: the priority the Built In rotation ships with, e.g. 5
 [717] = "Tu prioridad para este perfil; la integrada viene con %d.",
 -- 5a1f096a English: Turn on
+-- Context: Button in the rotation browser: turn the selected Built In rotation on (verb phrase).
 [718] = "Activar",
 -- 6d128898 English: Turn this Built In back on for this profile.
 [719] = "Vuelve a activar esta integrada en este perfil.",
@@ -1513,41 +2588,60 @@ addon.translation = {
 [723] = "Los números más altos se prueban primero; a igual prioridad, se ordenan por nombre. Tus rotaciones y las integradas compiten solo por prioridad.",
 -- 73074f60 English: Same priority as %s: both can be selected at once, and the tie is decided by
 --     name.
+-- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [724] = "Misma prioridad que %s: ambas se pueden seleccionar a la vez y el empate lo decide el nombre.",
 -- 6f39ad0a English: Can be selected together with %s: only priority decides which is chosen.
+-- %s #1: %s #1: the names of the rotations that can be selected together with this one, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [725] = "Se puede seleccionar junto con %s: solo la prioridad decide cuál se elige.",
 -- 382c83c2 English: expansions %s–%s
+-- Context: Part of a rotation's applicability text: the WoW expansion range; both %s are expansion
+--     numbers, e.g. 'expansions 2–3'.
+-- %s #1: %s #1: the first expansion the rotation loads for, e.g. 0 (a "?" when not limited)
+-- %s #2: %s #2: the last expansion the rotation loads for, e.g. 4 (a "?" when not limited)
 [726] = "expansiones %s–%s",
 -- 5042b611 English: Loads only for: %s. Its specializations and switch condition decide the rest.
+-- %s #1: %s #1: the list of limits separated by " · ", e.g. "Mage · level 60+ · expansions 0–4"
 [727] = "Solo se carga para: %s. Sus especializaciones y su condición de cambio deciden el resto.",
 -- eedcafc1 English: Built In rotations turned back on (they had been switched off without your
 --     choice): %s
+-- %s #1: %s #1: the names of the Built In rotations that were turned back on, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [728] = "Rotaciones integradas reactivadas (se habían desactivado sin que lo eligieras): %s",
 -- ebed0a8c English: Disabled Built In rotations
 [729] = "Rotaciones integradas desactivadas",
 -- dd2bac9e English: Open Rotations, select the Built In and turn it back on to make it selectable.
 [730] = "Abre Rotaciones, selecciona la integrada y vuelve a activarla para poder seleccionarla.",
 -- f79331ec English: Fallback (%s)
+-- Context: Label for the default fallback rotation in a list of rotation choices; %s is its name.
+-- %s #1: %s #1: the name of the fallback rotation, e.g. "Default"
 [731] = "Reserva (%s)",
 -- 372d7008 English: has an action type this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [732] = "tiene un tipo de acción que esta versión no entiende (%s)",
 -- d566274f English: has an invalid setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [733] = "tiene un ajuste no válido (%s)",
 -- 8cccea3a English: has an invalid switch priority
 [734] = "tiene una prioridad de cambio no válida",
 -- d17ef091 English: has a problem (%s)
+-- %s #1: %s #1: a short internal problem code, e.g. "invalid-id" (shown as-is; do not translate)
 [735] = "tiene un problema (%s)",
 -- 5fd06eb7 English: has a setting this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [736] = "tiene un ajuste que esta versión no entiende (%s)",
 -- d80aa866 English: has no items
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': its
+--     item list is empty.
 [737] = "no tiene objetos",
 -- 60b19b4c English: is missing a required setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [738] = "le falta un ajuste obligatorio (%s)",
 -- 85bfd4b6 English: it has incomplete or unsupported data
 [739] = "tiene datos incompletos o no compatibles",
 -- f8b96220 English: It has incomplete or unsupported data
 [740] = "Tiene datos incompletos o no compatibles",
 -- d7edee09 English: it is disabled
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': the
+--     rotation is turned off.
 [741] = "está desactivada",
 -- bc0bcb96 English: it is for another class
 [742] = "es de otra clase",
@@ -1562,20 +2656,28 @@ addon.translation = {
 -- 7d8492c5 English: it is for another WoW edition
 [747] = "es de otra edición de WoW",
 -- f66da926 English: it is unavailable (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-unavailable" (shown as-is; do not translate)
 [748] = "no está disponible (%s)",
 -- 3539504f English: it needs context Rotation Master cannot read yet
 [749] = "necesita un contexto que Rotation Master aún no puede leer",
 -- 6c8b3a05 English: it uses a condition, item set or function that is disabled
 [750] = "usa una condición, un conjunto de objetos o una función que está desactivada",
 -- 36bde66f English: manual
+-- Context: Word in the 'Active rotation: NAME (manual)' status line: the rotation was chosen by
+--     hand.
 [751] = "manual",
 -- 561c4c93 English: No %d
+-- Context: Label for the 'false' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'No 2'.
+-- %d #1: %d #1: the number of the card inside the "No" (false) branch of a condition, counting from 1, e.g. 2
 [752] = "No %d",
 -- 61097c5a English: no fallback rotation is saved for %s
+-- %s #1: %s #1: the specialization with its class, e.g. "Frost Mage"
 [753] = "no hay ninguna rotación de reserva guardada para %s",
 -- 994142c1 English: No rotation can run until your specialization is available.
 [754] = "Ninguna rotación puede ejecutarse hasta que tu especialización esté disponible.",
 -- 2e4e47d8 English: Reason: %s. Type /rm why to check every rotation.
+-- %s #1: %s #1: why the rotation cannot be selected, a sentence from the game (translated), e.g. "it is for Fire Mage"
 [755] = "Motivo: %s. Escribe /rm why para revisar todas las rotaciones.",
 -- 21b77ae0 English: /rm why                 - Explain why each rotation can or cannot be selected.
 [756] = "/rm why                 - Explica por qué cada rotación se puede o no se puede seleccionar.",
@@ -1590,34 +2692,57 @@ addon.translation = {
 --     short or empty.
 [760] = "/rm debug talents [views] - Informa de por qué las listas de talentos de Retail y Forever están incompletas o vacías.",
 -- 79eeac12 English: rotations cannot be read (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-store-unavailable" (shown as-is; do not translate)
 [761] = "no se pueden leer las rotaciones (%s)",
 -- 6a8fd6ba English: Rotation %s cannot be selected.
+-- %s #1: %s #1: the rotation name, with its identifier in square brackets when one is set, e.g. "Frost Single Target [frost]"
 [762] = "La rotación %s no se puede seleccionar.",
 -- 9e742006 English: Rotation settings
+-- Context: Label naming the top-level settings of a rotation when describing where in a rotation a
+--     problem is.
 [763] = "Ajustes de la rotación",
 -- c8da2839 English: Rotation step %d
+-- Context: Label for a rotation step by position in a path description; %d is its position, e.g.
+--     'Rotation step 3'.
+-- %d #1: %d #1: the number of the step in the rotation list, counting from 1, e.g. 3
 [764] = "Paso de rotación %d",
 -- 707d01e5 English: %s (Built In)
+-- Context: Name of a rotation with its source appended, e.g. 'Fire Mage (Built In)'; %s is the
+--     rotation name.
+-- %s #1: %s #1: the name of a Built In rotation, e.g. "Frost Mage Leveling"
 [765] = "%s (integrada)",
 -- 19f8d44d English: %s: cannot be selected, %s.
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
+-- %s #2: %s #2: why it cannot be selected, a short phrase, e.g. "it is for Fire Mage"
 [766] = "%s: no se puede seleccionar, %s.",
 -- d707c233 English: Specialization: %s (%s), level %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
+-- %s #2: %s #2: the specialization number or ID, e.g. "64"
+-- %s #3: %s #3: the character level, e.g. "70" (a "?" when unknown)
 [767] = "Especialización: %s (%s), nivel %s",
 -- 861decdd English: Spell %d
+-- Context: Label for a spell step identified only by its spell ID; %d is the spell ID.
+-- %d #1: %d #1: the spell ID, shown when the spell name is not known, e.g. 133
 [768] = "Hechizo %d",
 -- 1ed10cef English: %s: ready
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [769] = "%s: lista",
 -- 9cb0ddf3 English: the game build is unavailable
 [770] = "la compilación del juego no está disponible",
 -- 32258c52 English: (there is one for %s)
+-- %s #1: %s #1: the specializations that do have a fallback, separated by commas, e.g. "Fire Mage, Arcane Mage"
 [771] = "(hay una para %s)",
 -- 1ac2e769 English: This rotation cannot be selected. %s.
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "Rotation step 3 has an invalid setting (duration)."
 [772] = "Esta rotación no se puede seleccionar. %s.",
 -- bd35de7b English: uses a condition that is disabled in Settings (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [773] = "usa una condición desactivada en Ajustes (%s)",
 -- e766db43 English: uses a condition this client does not have (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [774] = "usa una condición que este cliente no tiene (%s)",
 -- 7ee51c30 English: uses a custom condition whose function is unavailable (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [775] = "usa una condición personalizada cuya función no está disponible (%s)",
 -- 9c4983d1 English: uses a highlight effect that no longer exists
 [776] = "usa un efecto de resaltado que ya no existe",
@@ -1628,6 +2753,9 @@ addon.translation = {
 -- 0f312508 English: Why rotations are or are not selected
 [779] = "Por qué se seleccionan o no las rotaciones",
 -- 0887c156 English: Yes %d
+-- Context: Label for the 'true' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'Yes 1'.
+-- %d #1: %d #1: the number of the card inside the "Yes" (true) branch of a condition, counting from 1, e.g. 2
 [780] = "Sí %d",
 -- 2d0f9721 English: you are using another action bar
 [781] = "estás usando otra barra de acción",
@@ -1638,24 +2766,40 @@ addon.translation = {
 -- 795c5030 English: your specialization is not available yet
 [784] = "tu especialización aún no está disponible",
 -- 7139bb28 English: No specialization
+-- Context: Specialization name for characters that have not picked a specialization yet (Initial).
 [785] = "Sin especialización",
 -- 49271412 English: Primary talents
+-- Context: Name of the first talent group on Classic clients (primary talents / spec).
 [786] = "Talentos principales",
 -- 1793e848 English: Secondary talents
+-- Context: Name of the second talent group on Classic clients (secondary talents / dual spec).
 [787] = "Talentos secundarios",
 -- 87a671ab English: Talent group %d
+-- Context: Name of a talent group by number on Classic clients; %d is the group number.
+-- %d #1: %d #1: the talent group number, e.g. 3
 [788] = "Grupo de talentos %d",
 -- 7ff78404 English: %s (%s)
+-- %s #1: %s #1: either a difficulty name or a talent-group name, e.g. "Heroic" or "Primary talents"
+-- %s #2: %s #2: either the kind of content or the talent tree it belongs to, e.g. "Raid" or "Frost"
 [789] = "%s (%s)",
 -- 108db4c4 English: Unknown specialization
+-- Context: Text shown for a specialization ID the addon does not recognize.
 [790] = "Especialización desconocida",
 -- a9e9b05e English: Any specialization
+-- Context: Dropdown option in the rotation specialization selector: the rotation is not tied to a
+--     specialization.
 [791] = "Cualquier especialización",
 -- e4db2902 English: All specializations
+-- Context: Dropdown/filter option in the rotation browser: show rotations for all specializations.
 [792] = "Todas las especializaciones",
 -- ca573462 English: no specialization yet
+-- Context: Fragment in 'You are playing %s; this rotation is for ...': the player has no
+--     specialization yet.
 [793] = "aún sin especialización",
 -- 254dcb81 English: it is for %s
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...'; %s
+--     lists the specializations it is for.
+-- %s #1: %s #1: the specializations the rotation is for, separated by commas, e.g. "Frost Mage, Fire Mage"
 [794] = "es para %s",
 -- 82612d65 English: has an invalid specialization list
 [795] = "tiene una lista de especializaciones no válida",
@@ -1667,15 +2811,23 @@ addon.translation = {
 --     while you play one of them; Any means every specialization.
 [798] = "Las especializaciones para las que es esta rotación. Solo aparece en la lista, y solo se puede elegir, mientras juegas con una de ellas; Cualquiera significa todas las especializaciones.",
 -- 3e93e3f4 English: You are playing %s; this fallback is for %s, so it is not used now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, e.g. "Frost Mage"
+-- %s #2: %s #2: the specialization this fallback rotation is for, e.g. "Fire Mage"
 [799] = "Estás jugando con %s; esta rotación de reserva es para %s, así que no se usa ahora.",
 -- 70ef639a English: You are playing %s; this rotation is for %s, so it is not selectable now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, or "no specialization yet", e.g. "Frost Mage"
+-- %s #2: %s #2: the specializations this rotation is for, separated by commas, e.g. "Fire Mage"
 [800] = "Estás jugando con %s; esta rotación es para %s, así que no se puede seleccionar ahora.",
 -- 10eeff18 English: you have not chosen a specialization yet, so Rotation Master uses %s, which the
 --     Rotations editor does not offer
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
 [801] = "aún no has elegido una especialización, así que Rotation Master usa %s, que el editor de Rotaciones no ofrece",
 -- d2039939 English: You have not chosen a specialization yet, so Rotation Master uses %s (%s). The
 --     Rotations editor only offers %s, so rotations saved there cannot run until you choose a
 --     specialization.
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
+-- %s #2: %s #2: its internal number or ID, e.g. "0"
+-- %s #3: %s #3: the specializations the editor offers, separated by commas, e.g. "Arcane, Fire, Frost"
 [802] = "Aún no has elegido una especialización, así que Rotation Master usa %s (%s). El editor de Rotaciones solo ofrece %s, por lo que las rotaciones guardadas allí no pueden ejecutarse hasta que elijas una especialización.",
 -- 97aa7322 English: this client has no ranged slot
 [803] = "este cliente no tiene ranura a distancia",
@@ -1694,12 +2846,20 @@ addon.translation = {
 -- 2e996f7c English: this edition has no point resource
 [810] = "esta edición no tiene recurso de puntos",
 -- 364e833a English: Different WoW edition
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different WoW edition (e.g. Classic vs Retail).
 [811] = "Edición de WoW distinta",
 -- fbb263cb English: Different class
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different class.
 [812] = "Clase distinta",
 -- 178bde4c English: Different specialization
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different specialization.
 [813] = "Especialización distinta",
 -- b7964470 English: Different action context
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation needs a
+--     different action context (e.g. vehicle bar).
 [814] = "Contexto de acción distinto",
 -- 46d39e12 English: Character level is unavailable
 [815] = "El nivel del personaje no está disponible",
@@ -1708,6 +2868,8 @@ addon.translation = {
 -- d34ab535 English: Game build is unavailable
 [817] = "La compilación del juego no está disponible",
 -- 139114dc English: Different game build
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different game client build.
 [818] = "Compilación del juego distinta",
 -- a55c1483 English: Required context is not supported yet
 [819] = "El contexto necesario aún no es compatible",
@@ -1718,28 +2880,48 @@ addon.translation = {
 -- ca12b41f English: Built In · read-only
 [822] = "Integrada · solo lectura",
 -- d11d9681 English: Level range: %s–%s; revision %s
+-- %s #1: %s #1: the lowest character level the Built In rotation is for, e.g. 1
+-- %s #2: %s #2: the highest character level, or "?" when there is no limit, e.g. 60
+-- %s #3: %s #3: the revision number, e.g. 4
 [823] = "Rango de niveles: %s–%s; revisión %s",
 -- a0b53ded English: Available for this character
 [824] = "Disponible para este personaje",
 -- a77cc377 English: Not available for this character: %s
+-- %s #1: %s #1: why the Built In rotation is not available, a short phrase (translated), e.g. "Different class"
 [825] = "No disponible para este personaje: %s",
 -- 91f1e71a English: Enable Built In
+-- Context: Checkbox/button in the Built In rotation panel: turn this Built In rotation on for your
+--     profile.
 [826] = "Activar integrada",
 -- 763de8e1 English: Could not update this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [827] = "No se ha podido actualizar esta rotación integrada: %s",
 -- ba6d03f9 English: Clone to edit
+-- Context: Button in the Built In rotation panel: copy the read-only Built In into your own
+--     editable rotation (verb phrase).
 [828] = "Clonar para editar",
 -- e1ad50fb English: Could not duplicate this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [829] = "No se ha podido duplicar esta rotación integrada: %s",
 -- ac89ec89 English: %d. %s
+-- %d #1: %d #1: the position in a numbered list, counting from 1, e.g. 2
+-- %s #2: %s #2: the text of that list entry, e.g. "Cast Frostbolt"
 [830] = "%d. %s",
 -- 36021c12 English: Condition preview unavailable
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Message
+--     'Condition preview unavailable' for a condition that could not be previewed.
 [831] = "Vista previa de la condición no disponible",
 -- caf85b08 English: Sources
+-- Context: Heading of the list of sources/citations for a rotation (where the Built In was derived
+--     from).
 [832] = "Fuentes",
 -- ca184496 English: Unavailable
+-- Context: Status/heading text: something is unavailable (help for a missing subject, debugger
+--     status, validation).
 [833] = "No disponible",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In rotation for TBC Shaman, Enhancement spec, based on an Icy Veins
+--     guide; a trailing site name in parentheses.
 [834] = "Mejora (Icy Veins)",
 -- a97cd0b7 English: Melee Enhancement from level 1 to 70, and the default for any Shaman no other
 --     premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire
@@ -1771,6 +2953,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism.
 [839] = "Elemental a distancia para el árbol de talentos Elemental. Descarga de relámpagos es el relleno; Cadena de relámpagos se lanza con Maestría elemental, con Lanzamiento libre mientras tengas un 40 % de maná, o libremente por encima del 80 %; Choque de llamas solo en movimiento; Choque de tierra interrumpe; Nova de Fuego, Cadena de relámpagos y magma contra grupos de enemigos. Antes de Cadena de relámpagos, a un objetivo cuerpo a cuerpo se le deja con el ataque automático para ahorrar maná. Recordatorios: Escudo de agua o de relámpagos, una imbuición de arma, Tótem de cólera (o Tótem abrasador en combates largos), Cólera de aire, Fuente de maná, Llamada totémica tras el combate, Maestría elemental y Ansia de sangre/Heroísmo.",
 -- 6c2dcf2e English: Elemental (Wowhead)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on a Wowhead guide;
+--     the site name is in parentheses.
 [840] = "Elemental (Wowhead)",
 -- c4c0aa4c English: Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental
 --     premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain
@@ -1780,6 +2964,8 @@ addon.translation = {
 --     variant.
 [841] = "El Elemental de Wowhead, una alternativa a la rotación integrada de Elemental de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. A nivel 70, Cadena de relámpagos cada vez que esté disponible con Descargas de relámpagos entre medias (durante la subida de nivel, solo con Maestría elemental o Lanzamiento libre), Choque de llamas solo en movimiento y Choque de tierra para rematar a un objetivo que moriría antes de completar un lanzamiento. Los mismos recordatorios de tótems, escudos y tiempos de reutilización que la variante de Icy Veins.",
 -- bb13bf18 English: Elemental (NextActionTBC)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on the NextActionTBC
+--     addon's logic; the source is in parentheses.
 [842] = "Elemental (NextActionTBC)",
 -- 2ec2f692 English: NextActionTBC's Elemental, an alternative to the recommended Icy Veins
 --     Elemental premade, off by default: enable it and disable that one, or raise its priority.
@@ -1788,6 +2974,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism; totems stay manual.
 [843] = "El Elemental de NextActionTBC, una alternativa a la rotación integrada de Elemental de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Mantiene Choque de llamas en el objetivo, Cadena de relámpagos solo contra dos o más enemigos mientras tengas más del 30 % de maná, y Descarga de relámpagos en los demás casos. Te recuerda Escudo de relámpagos, una imbuición de arma, Maestría elemental y Ansia de sangre/Heroísmo; los tótems siguen siendo manuales.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In rotation for TBC Shaman, Restoration spec (the spec name
+--     Restoration).
 [844] = "Restauración",
 -- e6f434e0 English: Healing for the Restoration talent tree, on your friendly target (or yourself
 --     with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies,
@@ -1798,10 +2986,13 @@ addon.translation = {
 --     Choosing whom to heal and which rank stays with you.
 [845] = "Sanación para el árbol de talentos Restauración, sobre tu objetivo amistoso (o sobre ti si no tienes objetivo): Presteza de la Naturaleza y Ola de sanación u Ola de sanación inferior en emergencias, Curar envenenamiento y Curar enfermedad, Escudo de tierra sobre tu foco, Sanación en cadena cuando hay tres aliados heridos cerca y Ola de sanación en los demás casos. Con un objetivo hostil cambia a Choque de llamas y Descarga de relámpagos para jugar en solitario. Recordatorios: Escudo de agua, Escudo de tierra sobre tu foco (pon al tanque como foco), Marea de maná, Fuente de maná y Fuerza de la tierra en grupo, Ansia de sangre/Heroísmo. Elegir a quién sanar y con qué rango queda a tu cargo.",
 -- b177f0bb English: Could not duplicate this rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [846] = "No se ha podido duplicar esta rotación: %s",
 -- efaafe62 English: Could not duplicate this step: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [847] = "No se ha podido duplicar este paso: %s",
 -- 5ad38304 English: absent
+-- Context: Word in a rotation comparison: the compared field has no value in the current rotation.
 [848] = "ausente",
 -- 4303eed3 English: This comparison could not be completed.
 [849] = "No se ha podido completar esta comparación.",
@@ -1810,12 +3001,22 @@ addon.translation = {
 -- 70277515 English: No differences.
 [851] = "Sin diferencias.",
 -- 783ee9d8 English: Added %s: %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the new value, e.g. "Frostbolt"
 [852] = "Añadido %s: %s",
 -- cbd1cc0c English: Removed %s: %s
+-- %s #1: %s #1: where in the rotation the setting was, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the removed value, e.g. "Frostbolt"
 [853] = "Eliminado %s: %s",
 -- 9ffda67b English: Moved %s: priority %s → %s
+-- %s #1: %s #1: where in the rotation the step is, as a path, e.g. "rotation[3]"
+-- %s #2: %s #2: the old priority (position), e.g. 3
+-- %s #3: %s #3: the new priority (position), e.g. 1
 [854] = "Movido %s: prioridad %s → %s",
 -- 496c1fce English: Changed %s: %s → %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].spell"
+-- %s #2: %s #2: the old value, e.g. "Frostbolt"
+-- %s #3: %s #3: the new value, e.g. "Ice Lance"
 [855] = "Cambiado %s: %s → %s",
 -- 222fd90b English: Read-only comparison. Priority moves are listed; rotations are not merged.
 [856] = "Comparación de solo lectura. Se enumeran los cambios de prioridad; las rotaciones no se fusionan.",
@@ -1826,6 +3027,8 @@ addon.translation = {
 -- e4e1807d English: Differences from the current Built In rotation
 [859] = "Diferencias con la rotación integrada actual",
 -- f44ec53e English: Overlapping field edits
+-- Context: Heading in the rotation comparison: fields changed both by you and by the new Built In
+--     version.
 [860] = "Ediciones de campos superpuestas",
 -- d1d87a47 English: No overlapping field edits detected. Priority order still needs review.
 [861] = "No se han detectado ediciones de campos superpuestas. El orden de prioridad aún debe revisarse.",
@@ -1834,46 +3037,71 @@ addon.translation = {
 -- c72b77cf English: Some display text was truncated. Rotation data has not been changed.
 [863] = "Se ha recortado parte del texto mostrado. Los datos de la rotación no han cambiado.",
 -- 184940bb English: Compare rotations
+-- Context: Title of the rotation comparison window; also the button in the rotation editor that
+--     opens it (verb phrase).
 [864] = "Comparar rotaciones",
 -- ad26c965 English: Your rotation: %s
+-- %s #1: %s #1: the name of the player's own rotation, e.g. "Frost Single Target"
 [865] = "Tu rotación: %s",
 -- d30f9619 English: Compare against
+-- Context: Label of the dropdown choosing what to compare the rotation against in the comparison
+--     window.
 [866] = "Comparar con",
 -- 5cbf27df English: Copy comparison
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     comparison' to copy the comparison result to the clipboard.
 [867] = "Copiar comparación",
 -- 7f25ffda English: Review the differences, then select Copy and press Ctrl+C.
 [868] = "Revisa las diferencias y luego selecciona Copiar y pulsa Ctrl+C.",
 -- 9078f91f English: Comparison unavailable: %s
+-- %s #1: %s #1: why the comparison cannot be shown, a short reason, e.g. "the rotation could not be read"
 [869] = "Comparación no disponible: %s",
 -- 73484f4d English: Unknown spell (%s)
+-- Context: Placeholder name for a spell whose name cannot be read; %s is the spell ID.
+-- %s #1: %s #1: the spell ID that the game does not know, e.g. 133
 [870] = "Hechizo desconocido (%s)",
 -- e328ada9 English: Beyond Melee Range
+-- Context: Name of the Beyond Melee Range condition (the target is farther than melee distance).
 [871] = "Fuera del alcance cuerpo a cuerpo",
 -- 2652c653 English: %s is beyond melee range
+-- %s #1: %s #1: the unit that is out of reach, e.g. "your target"
 [872] = "%s está fuera del alcance cuerpo a cuerpo",
 -- 4aaede20 English: Switch conditions
+-- Context: Heading for the conditions used to automatically switch rotations in a comparison or
+--     reference view; also a comparison row label.
 [873] = "Condiciones de cambio",
 -- 4e9a0f45 English: Optional highlight
+-- Context: Title of a cooldown step card in a rotation reference: a highlight that is independent
+--     of the sequence.
 [874] = "Resaltado opcional",
 -- 6ba1c0c2 English: Priority %s
+-- Context: Title of a sequential step card in a rotation reference; %s is its position number.
+-- %s #1: %s #1: the step's position in the priority list, counting from 1, e.g. 3
 [875] = "Prioridad %s",
 -- 38728cc5 English: Stop the sequence here
 [876] = "Detener la secuencia aquí",
 -- b1fb02b4 English: Item or item set: %s
+-- %s #1: %s #1: the name of the item or item set, e.g. "Healthstone"
 [877] = "Objeto o conjunto de objetos: %s",
 -- 0bbc45af English: Use this exact spell rank
 [878] = "Usar este rango de hechizo exacto",
 -- 59291ee2 English: No steps in this section.
 [879] = "No hay pasos en esta sección.",
 -- 6f32b2f4 English: Optional highlights
+-- Context: Heading in the rotation comparison and reference: the cooldown steps that highlight
+--     independently.
 [880] = "Resaltados opcionales",
 -- 6f79a2fd English: These reminders highlight independently whenever their conditions are met.
 [881] = "Estos recordatorios se resaltan de forma independiente siempre que se cumplen sus condiciones.",
 -- 681ceb51 English: Sequential priority
+-- Context: Heading in the rotation comparison and reference: the main steps where the first
+--     eligible one is recommended.
 [882] = "Prioridad secuencial",
 -- 89166303 English: The first eligible step is recommended. Later steps provide alternatives.
 [883] = "Se recomienda el primer paso elegible. Los pasos posteriores ofrecen alternativas.",
 -- 2624dd07 English: View full rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'View
+--     full rotation' to open the complete rotation in the viewer.
 [884] = "Ver la rotación completa",
 -- d1843213 English: Built In rotation reference
 [885] = "Referencia de la rotación integrada",
@@ -1882,30 +3110,45 @@ addon.translation = {
 -- a77963c6 English: Additional settings changed. Copy diagnostic details to inspect all fields.
 [887] = "Han cambiado otros ajustes. Copia los detalles de diagnóstico para revisar todos los campos.",
 -- 8597bf22 English: At cloning
+-- Context: Column title in the comparison window: the rotation as it was when it was cloned from
+--     the Built In.
 [888] = "Al clonar",
 -- 9cc733fc English: Selected rotation
+-- Context: Column title in the comparison window: the rotation you picked in the list.
 [889] = "Rotación seleccionada",
 -- c9e13168 English: Your rotation
+-- Context: Column title in the comparison window: the user's own rotation.
 [890] = "Tu rotación",
 -- dd2e2975 English: No corresponding step
+-- Context: Message in a comparison column: there is no step matching the one in the other column.
 [891] = "Ningún paso correspondiente",
 -- 6b02e0d3 English: Added
+-- Context: Status tag in a rotation comparison row (shown in green): this step was added.
 [892] = "Añadido",
 -- 4118fb4f English: Removed
+-- Context: Status tag in a rotation comparison row (shown in red): this step was removed.
 [893] = "Eliminado",
 -- 2a6141e4 English: Changed
+-- Context: Status tag in a rotation comparison row (shown in amber): this step was changed.
 [894] = "Cambiado",
 -- b11c9047 English: Moved
+-- Context: Status tag in a rotation comparison row (shown in blue): this step moved to a different
+--     position.
 [895] = "Movido",
 -- 88b6f742 English: Unchanged
+-- Context: Status tag in a rotation comparison row: nothing changed in this step.
 [896] = "Sin cambios",
 -- f5f36595 English: Comparison diagnostic details
+-- Context: Title of the diagnostic details report in the comparison window.
 [897] = "Detalles de diagnóstico de la comparación",
 -- 61d7fa13 English: Press Ctrl+C to copy the selected diagnostic details.
 [898] = "Pulsa Ctrl+C para copiar los detalles de diagnóstico seleccionados.",
 -- bb35fd44 English: Comparison view
+-- Context: Label of the dropdown choosing the comparison direction/view in the comparison window.
 [899] = "Vista de comparación",
 -- c489054c English: Copy diagnostic details
+-- Context: Button that copies diagnostic details about a rotation or comparison to the clipboard
+--     (verb).
 [900] = "Copiar detalles de diagnóstico",
 -- 383100d5 English: Built In updates since cloning
 [901] = "Actualizaciones de la integrada desde la clonación",
@@ -1914,39 +3157,57 @@ addon.translation = {
 -- b3ec34b2 English: Current Built In rotation
 [903] = "Rotación integrada actual",
 -- e6b8f377 English: Unknown item
+-- Context: Placeholder text in a rotation reference for an item that cannot be identified.
 [904] = "Objeto desconocido",
 -- 36f3765b English: Item %s
+-- Context: Label for an item identified by ID or name; %s is the item ID or name.
+-- %s #1: %s #1: the item ID or name that the game cannot resolve, e.g. 5512
 [905] = "Objeto %s",
 -- 710f81fe English: Item set: %s
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [906] = "Conjunto de objetos: %s",
 -- 3ec02e0c English: Unknown action type
+-- Context: Message in a rotation reference card: the step has a type the addon does not know.
 [907] = "Tipo de acción desconocido",
 -- b3fee308 English: Player spell
+-- Context: Step type description in a rotation reference: a spell cast by the player.
 [908] = "Hechizo del jugador",
 -- aebfceb4 English: Player or pet spell
 [909] = "Hechizo del jugador o de la mascota",
 -- c910d474 English: General
+-- Context: Name of the 'General' settings tab.
 [910] = "General",
 -- 839ffbca English: Copy this export, or paste a rotation and preview it. Import creates a new
 --     editable copy.
 [911] = "Copia esta exportación o pega una rotación y previsualízala. Importar crea una copia nueva editable.",
 -- 2c7dec65 English: Rotation text
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Rotation text' for the exported text of a rotation.
 [912] = "Texto de la rotación",
 -- 9d89d908 English: Name for imported copy
 [913] = "Nombre de la copia importada",
 -- 05ca5c89 English: Imported rotation
+-- Context: Default name given to a rotation created by importing text.
 [914] = "Rotación importada",
 -- a0d7b2fa English: Copy export
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     export' to copy exported text to the clipboard.
 [915] = "Copiar exportación",
 -- ab5c8e55 English: Preview import
+-- Context: Button in the import dialog: preview what the import would change before applying it
+--     (verb phrase); also a help heading.
 [916] = "Previsualizar importación",
 -- ebc64351 English: Compare import
+-- Context: Button in the import dialog (replace mode): compare the import with the existing entry
+--     before applying (verb phrase).
 [917] = "Comparar importación",
 -- ed144b77 English: Import preview
+-- Context: Title of the window previewing an import, read-only.
 [918] = "Vista previa de la importación",
 -- 53fb6864 English: Import as new rotation
 [919] = "Importar como rotación nueva",
 -- 89411b23 English: Export unavailable: %s
+-- %s #1: %s #1: why the export is not possible, a short reason, e.g. "nothing selected"
 [920] = "Exportación no disponible: %s",
 -- 4ea0b645 English: Preview a pasted rotation before importing it.
 [921] = "Previsualiza una rotación pegada antes de importarla.",
@@ -1955,56 +3216,79 @@ addon.translation = {
 -- a3396230 English: Text changed. Compare again before importing.
 [923] = "Texto modificado. Vuelve a comparar antes de importar.",
 -- 815a23ae English: This import cannot be shown in full (%s). Use Check import for details.
+-- %s #1: %s #1: what is wrong with the import, a short reason, e.g. "unknown field"
 [924] = "Esta importación no se puede mostrar completa (%s). Usa Comprobar importación para ver los detalles.",
 -- c409c01f English: Import preview unavailable: %s
+-- %s #1: %s #1: why the import cannot be previewed, a short reason, e.g. "invalid-format"
 [925] = "Vista previa de importación no disponible: %s",
 -- 7fa00152 English: Ready to import as a new copy.
 [926] = "Lista para importarse como copia nueva.",
 -- 8bc94920 English: This import cannot be applied: %s
+-- %s #1: %s #1: why the import cannot be applied, a short reason, e.g. "the rotation is for another class"
 [927] = "Esta importación no se puede aplicar: %s",
 -- d1e71918 English: Legacy export: WoW edition and class scope were not supplied.
 [928] = "Exportación antigua: no se indicaron la edición de WoW ni el ámbito de clase.",
 -- 898a9c6d English: Could not import this rotation: %s
+-- %s #1: %s #1: why the import failed, a short reason, e.g. "invalid-data"
 [929] = "No se ha podido importar esta rotación: %s",
 -- 29b67037 English: Incoming rotation
+-- Context: Column title in the comparison window: the rotation being imported.
 [930] = "Rotación entrante",
 -- de9f057a English: Always
+-- Context: Condition text for an empty condition list: the step always applies; also status text.
 [931] = "Siempre",
 -- d51cec9c English: Condition reference (code is not run).
 [932] = "Referencia de condición (el código no se ejecuta).",
 -- 40afa4aa English: Check import
+-- Context: Button in the import dialog: check the pasted import text for problems (verb phrase).
 [933] = "Comprobar importación",
 -- 817bfd7b English: This import window is out of date. Close it and open it again.
 [934] = "Esta ventana de importación está desactualizada. Ciérrala y ábrela de nuevo.",
 -- e301820a English: Incoming
+-- Context: Heading of the column showing the entry being imported, in the import preview.
 [935] = "Entrante",
 -- a7b182f8 English: Problems
+-- Context: Heading of the list of problems found in an import report.
 [936] = "Problemas",
 -- 8a7525b1 English: Notes
+-- Context: Heading of the list of notes (informational messages) in an import report.
 [937] = "Notas",
 -- 2191a0b7 English: No problems found.
 [938] = "No se encontraron problemas.",
 -- 460c60bd English: This import can be applied.
 [939] = "Esta importación se puede aplicar.",
 -- 03f266f9 English: Fields shown: %d
+-- %d #1: %d #1: the number of settings shown, e.g. 12
 [940] = "Campos mostrados: %d",
 -- 77810b90 English: Field order
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Field order' in custom function documentation (order of the fields).
 [941] = "Orden de los campos",
 -- bbd21338 English: Required fields
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Required fields' in custom condition documentation.
 [942] = "Campos obligatorios",
 -- e68b36b1 English: Parameters
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Parameters' in custom function documentation (a function's input values).
 [943] = "Parámetros",
 -- ea33a267 English: Code: %s
+-- %s #1: %s #1: the name of the code field being compared, e.g. "evaluate", "print" or "widget" (shown as-is)
 [944] = "Código: %s",
 -- bd795f03 English: %d more settings are not shown.
+-- %d #1: %d #1: how many settings are left out of the list, e.g. 5
 [945] = "No se muestran %d ajustes más.",
 -- 1a5d255a English: ... %d more characters not shown.
+-- %d #1: %d #1: how many characters of the code are cut off, e.g. 1200
 [946] = "... no se muestran %d caracteres más.",
 -- 0ee9b450 English: This is a dependency bundle. Import opens the bundle review.
 [947] = "Esto es un paquete de dependencias. Importar abre la revisión del paquete.",
 -- 2a6f7cb8 English: Export Built In
+-- Context: Button in the Built In rotation panel: export the Built In rotation as text (verb
+--     phrase).
 [948] = "Exportar integrada",
 -- 57152733 English: Comparison
+-- Context: Fallback title of a comparison view tab/dropdown entry in the comparison window.
 [949] = "Comparación",
 -- c849416a English: A condition could not be validated. Use /rm errors for details.
 [950] = "No se ha podido validar una condición. Usa /rm errors para ver los detalles.",
@@ -2016,38 +3300,57 @@ addon.translation = {
 --     evaluated.
 [952] = "Y se detiene en la primera no coincidencia; O se detiene en la primera coincidencia. NO invierte un resultado conocido. Los datos no disponibles encontrados siguen sin estar disponibles. Los hijos omitidos no se evalúan.",
 -- 60a0d835 English: Add condition
+-- Context: Button in the condition editor: add a single condition to the list (verb phrase).
 [953] = "Añadir condición",
 -- da431313 English: All (AND)
+-- Context: Name of the AND group type in the condition editor: all inner conditions must be true.
 [954] = "Todas (Y)",
 -- fca19d27 English: Any (OR)
+-- Context: Name of the OR group type in the condition editor: any inner condition may be true.
 [955] = "Cualquiera (O)",
 -- 31e392d1 English: Apply
+-- Context: Button in editors that saves the pending changes (verb).
 [956] = "Aplicar",
 -- d9c7876b English: Apply or cancel the open condition before editing another.
 [957] = "Aplica o cancela la condición abierta antes de editar otra.",
 -- 19766ed6 English: Cancel
+-- Context: Button/tooltip in dialogs that closes the dialog without saving (verb).
 [958] = "Cancelar",
 -- 838e8c5b English: Changes not applied.
 [959] = "Cambios no aplicados.",
 -- 270bc3e1 English: Choose a condition
+-- Context: Placeholder text in condition text where no condition is chosen yet; imperative.
 [960] = "Elige una condición",
 -- 03557ba7 English: Complete the selected condition's fields before applying.
 [961] = "Completa los campos de la condición seleccionada antes de aplicar.",
 -- 5399c49c English: Disable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Disable condition' on a condition card.
 [962] = "Desactivar condición",
 -- ebae65ff English: Enable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Enable condition' on a condition card.
 [963] = "Activar condición",
 -- 2015044c English: Find condition type
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Label/placeholder 'Find condition type' for the condition type search.
 [964] = "Buscar tipo de condición",
 -- 65d9d4e3 English: Group with %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Condition
+--     card action 'Group with %s'; %s names another condition.
+-- %s #1: %s #1: how the condition is grouped, "All" or "Any", e.g. "Any"
 [965] = "Agrupar con %s",
 -- e3de7bbd English: Invalid disabled flag
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Error text
+--     'Invalid disabled flag' for a condition with an invalid disabled value.
 [966] = "Indicador de desactivación no válido",
 -- a1ed1d35 English: Not (NOT)
+-- Context: Name of the NOT group type in the condition editor: negates the inner condition.
 [967] = "No (NO)",
 -- cf440966 English: Only the first 200 conditions are shown. Other conditions are preserved.
 [968] = "Solo se muestran las primeras 200 condiciones. Las demás se conservan.",
 -- 5ac0b06f English: Remove condition
+-- Context: Button/tooltip on a condition card: remove this condition (verb phrase).
 [969] = "Quitar condición",
 -- f2f59bcc English: Select a child on the left to edit its fields. Use Add condition to extend this
 --     group.
@@ -2068,12 +3371,16 @@ addon.translation = {
 -- 79bdd6f5 English: This draft refers to missing data. Resolve those references before applying.
 [977] = "Este borrador hace referencia a datos que faltan. Resuelve esas referencias antes de aplicar.",
 -- b57ef478 English: Ungroup
+-- Context: Button/tooltip on a condition card: remove the group but keep its inner conditions
+--     (verb).
 [978] = "Desagrupar",
 -- e70375d8 English: Ungroup requires a group with at most one child.
 [979] = "Desagrupar requiere un grupo con un hijo como máximo.",
 -- 608c89a1 English: Unknown condition: %s
+-- %s #1: %s #1: the internal name of the condition, e.g. "BUFF"
 [980] = "Condición desconocida: %s",
 -- e77e940c English: Always (no condition)
+-- Context: Title for a step with no condition in the condition editor: it always applies.
 [981] = "Siempre (sin condición)",
 -- 422835ec English: An empty AND group always matches. Add a condition to restrict it.
 [982] = "Un grupo Y vacío siempre coincide. Añade una condición para restringirlo.",
@@ -2085,22 +3392,28 @@ addon.translation = {
 --     reopen the current one.
 [985] = "La rotación o el paso original se ha eliminado o sustituido. Cancela este borrador y vuelve a abrir el actual.",
 -- 7412ffde English: Show unchanged steps
+-- Context: Checkbox in the comparison window: also show steps that did not change.
 [986] = "Mostrar pasos sin cambios",
 -- 4b23882b English: %s unchanged steps hidden.
+-- %s #1: %s #1: how many steps are hidden because they did not change, e.g. 7
 [987] = "%s pasos sin cambios ocultos.",
 -- 128afc72 English: No other rotations to compare.
 [988] = "No hay otras rotaciones que comparar.",
 -- 4e170ba0 English: Spell Recharge Time
+-- Context: Name of the Spell Recharge Time condition (seconds until the next charge of a spell).
 [989] = "Tiempo de recarga del hechizo",
 -- d0db4227 English: Pet Spell Recharge Time
 [990] = "Tiempo de recarga del hechizo de mascota",
 -- 6852f826 English: Any Spell Recharge Time
 [991] = "Tiempo de recarga de cualquier hechizo",
 -- 62d868ef English: Rotation names
+-- Context: Heading in the rotation comparison: the name of the rotation changed.
 [992] = "Nombres de rotación",
 -- a0e34049 English: Custom step name
+-- Context: Label in a rotation reference: this step has a name you typed.
 [993] = "Nombre de paso personalizado",
 -- f5945a5c English: Automatic step name
+-- Context: Label in a rotation reference: this step's name is generated from its action.
 [994] = "Nombre de paso automático",
 -- 3b913c3a English: Spell search data is unavailable.
 [995] = "Los datos de búsqueda de hechizos no están disponibles.",
@@ -2113,20 +3426,36 @@ addon.translation = {
 -- 473d3033 English: Known and referenced spells. Enter a spell ID or link to find another spell.
 [999] = "Hechizos conocidos y referenciados. Introduce un ID o un enlace de hechizo para buscar otro.",
 -- e04de746 English: Search rotations
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Placeholder/label 'Search rotations' for the search box in the rotation browser.
 [1000] = "Buscar rotaciones",
 -- a52ace42 English: All
+-- Context: Option label meaning all of the items: the condition category 'All' filter and the 'All'
+--     side of an AND group toggle.
 [1001] = "Todas",
 -- 019a32de English: Built In
+-- Context: Rotation kind in the rotation browser: a rotation shipped with the addon (Built In);
+--     also a filter option. Keep the term consistent with other 'Built In' strings.
 [1002] = "Integrada",
 -- 5ca6606f English: No rotations match this search.
 [1003] = "Ninguna rotación coincide con esta búsqueda.",
 -- 68f12a84 English: New rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'New
+--     rotation' to create an empty rotation.
 [1004] = "Nueva rotación",
 -- 325e8493 English: Fallback
+-- Context: Rotation kind in the rotation browser: the default fallback rotation used when none
+--     applies.
 [1005] = "Reserva",
 -- 71e6453b English: %d of %d rotations
+-- Context: Counter below the rotation browser list; the first %d is how many rotations are shown,
+--     the second how many exist in total.
+-- %d #1: %d #1: how many rotations are listed now, e.g. 3
+-- %d #2: %d #2: how many rotations exist in total, e.g. 12
 [1006] = "%d de %d rotaciones",
 -- cae7d57b English: Stop
+-- Context: Step type in the rotation step editor: the step stops the rotation (no further
+--     recommendation); also a help heading.
 [1007] = "Detener",
 -- 05a85640 English: Actions automatically require a learned spell or carried item, usable
 --     resources, cooldown readiness and valid range. Conditions can additionally test other
@@ -2139,6 +3468,8 @@ addon.translation = {
 --     highlight and never presses a button.
 [1009] = "Cuando ninguna acción prioritaria está lista, el ataque automático (Atacar o Disparar) es la última opción implícita contra un objetivo hostil vivo en combate: Atacar en alcance cuerpo a cuerpo; más allá, Disparo automático o Disparar con varita mientras el objetivo esté a su alcance y ese botón esté en tus barras de acción. No se recomienda nada mientras ese ataque automático ya está activo. Usa el resaltado normal de la rotación y nunca pulsa ningún botón.",
 -- 5c68c9c6 English: Implicit final fallback
+-- Context: Heading in a rotation reference for the automatic final step the addon appends (the
+--     basic attack) when nothing else applies.
 [1010] = "Última opción implícita",
 -- d56153b6 English: Also suppress auto-attack (Attack or Shoot)
 [1011] = "Suprimir también el ataque automático (Atacar o Disparar)",
@@ -2148,30 +3479,46 @@ addon.translation = {
 --     Stop.
 [1013] = "El ataque automático implícito (Atacar o Disparar) aún puede recomendarse después de este Detener.",
 -- 762ebb70 English: Group name
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Group
+--     name' for the name of a condition category group.
 [1014] = "Nombre del grupo",
 -- 9d5097a8 English: All categories
+-- Context: Dropdown option in the condition picker that shows conditions of every category.
 [1015] = "Todas las categorías",
 -- 848b0fa0 English: Choose or search condition type
 [1016] = "Elige o busca un tipo de condición",
 -- 0f8a2a34 English: Incomplete: %s is required
+-- %s #1: %s #1: the name of the missing field, e.g. "spell" (or "?" when unknown)
 [1017] = "Incompleto: %s es obligatorio",
 -- f9575aeb English: Invalid or unsupported condition fields
 [1018] = "Campos de condición no válidos o no compatibles",
 -- 010b483d English: %d conditions
+-- Context: Summary line in a collection comparison: how many conditions an entry has; %d is the
+--     count.
+-- %d #1: %d #1: the number of conditions in the category, e.g. 8
 [1019] = "%d condiciones",
 -- c417805d English: Expand to edit fields
 [1020] = "Desplegar para editar campos",
 -- a063783d English: Negate each
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Negate each' (apply NOT to each selected condition).
 [1021] = "Negar cada una",
 -- a9ee2142 English: Version: %s  ·  Author: %s
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
+-- %s #2: %s #2: the author, e.g. "PreZ"
 [1022] = "Versión: %s  ·  Autor: %s",
 -- e2311633 English: Configure rotations, conditions and highlights in the Rotation Master window.
 [1023] = "Configura rotaciones, condiciones y resaltados en la ventana de Rotation Master.",
 -- 23010764 English: Open Options
+-- Context: Large button on the addon's settings page in the game's Options window: opens the
+--     Rotation Master configuration window.
 [1024] = "Abrir opciones",
 -- b764cdc0 English: Unknown
+-- Context: Placeholder shown when a value cannot be determined (unknown encounter name, unknown
+--     client edition, unknown addon version or author).
 [1025] = "Desconocido",
 -- a9080cb3 English: Scale: %d%%
+-- %d #1: %d #1: the window scale as a percentage, e.g. 100 (the %% after it is a literal percent sign)
 [1026] = "Escala: %d%%",
 -- 17a87f02 English: Right-click the title bar to close.
 [1027] = "Haz clic derecho en la barra de título para cerrar.",
@@ -2184,68 +3531,117 @@ addon.translation = {
 -- f4326302 English: Click to add group name
 [1030] = "Haz clic para añadir un nombre de grupo",
 -- f2b59370 English: Negate condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Negate condition' on a condition card.
 [1031] = "Negar condición",
 -- 56693400 English: Enable or disable condition
 [1032] = "Activar o desactivar condición",
 -- 7a2fb682 English: Switch All / Any
 [1033] = "Cambiar Todas / Cualquiera",
 -- ca7981b4 English: Off
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'Off'.
 [1034] = "No",
 -- 13001175 English: On
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'On'.
 [1035] = "Sí",
 -- a8566033 English: Negated
+-- Context: Not referenced directly by the current code (legacy or built dynamically). State word
+--     'Negated' for a condition that is inverted (NOT).
 [1036] = "Negada",
 -- bc47dc21 English: New condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New condition' (create a condition).
 [1037] = "Nueva condición",
 -- f66edce3 English: New All group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New All group' (create an AND group).
 [1038] = "Nuevo grupo Todas",
 -- fb19b6a9 English: New Any group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New Any group' (create an OR group).
 [1039] = "Nuevo grupo Cualquiera",
 -- 36a53913 English: Drag into the tree to insert
 [1040] = "Arrastra al árbol para insertar",
 -- 25f7b372 English: Collapse all
+-- Context: Button in the condition editor and rotation view: collapse every card in the list; verb
+--     phrase.
 [1041] = "Plegar todo",
 -- a3e586be English: Expand all
+-- Context: Button in the condition editor and rotation view: expand every card in the list; verb
+--     phrase.
 [1042] = "Desplegar todo",
 -- d4d773af English: Group as All
+-- Context: Button in the condition editor: wrap the selected conditions in an AND group (all must
+--     be true); verb phrase.
 [1043] = "Agrupar como Todas",
 -- e658538c English: Group as Any
+-- Context: Button in the condition editor: wrap the selected conditions in an OR group (any may be
+--     true); verb phrase.
 [1044] = "Agrupar como Cualquiera",
 -- 27e78c35 English: Move %d conditions
+-- Context: Drag-and-drop tooltip in the condition editor: moving several selected conditions; %d is
+--     how many.
+-- %d #1: %d #1: how many conditions are being dragged, e.g. 3
 [1045] = "Mover %d condiciones",
 -- 8fa50cbc English: Insert condition
+-- Context: Drag-and-drop tooltip in the condition editor: a new condition is being inserted at the
+--     drop position; verb phrase.
 [1046] = "Insertar condición",
 -- f54d0e38 English: Duplicate condition
+-- Context: Button/tooltip on a condition card: make a copy of this condition (verb phrase).
 [1047] = "Duplicar condición",
 -- e21f935f English: Copy
+-- Context: Button that copies the shown text to the clipboard (transfer dialog); also a column
+--     heading in the help window.
 [1048] = "Copiar",
 -- 2b505597 English: Any
+-- Context: Toggle label: match any one of several things; condition group operator button (OR) and
+--     the tag filter mode pill in the rotation browser.
 [1049] = "Cualquiera",
 -- 3fe9bd3a English: Resolve the wrapper's name or unsupported fields before removing its negation.
 [1050] = "Resuelve el nombre o los campos no compatibles del contenedor antes de quitar su negación.",
 -- e49e9c8f English: Not evaluated: an enclosing group is disabled
 [1051] = "Sin evaluar: un grupo contenedor está desactivado",
 -- 754e2703 English: %d selected
+-- Context: Counter label showing how many cards/conditions are selected; %d is the count.
+-- %d #1: %d #1: how many items are selected, e.g. 3
 [1052] = "%d seleccionadas",
 -- 4e3bbfa6 English: Conditional branch
+-- Context: Title of a conditional branch step (a step that chooses between two paths based on a
+--     condition) in a rotation reference; noun phrase.
 [1053] = "Rama condicional",
 -- 9c46a836 English: Evaluate condition
+-- Context: Branch step mode: the branch decides by evaluating its condition.
 [1054] = "Evaluar condición",
 -- 049e212e English: Always true
+-- Context: Branch step mode: the branch always takes the true path.
 [1055] = "Siempre verdadero",
 -- 4d15e741 English: Always false
+-- Context: Branch step mode: the branch always takes the false path; also condition text for a
+--     negated empty condition.
 [1056] = "Siempre falso",
 -- 0f8c87a3 English: Unknown branch mode
+-- Context: Message in a rotation reference: the branch step has a mode the addon does not know.
 [1057] = "Modo de rama desconocido",
 -- 3cbc87c7 English: True
+-- Context: Boolean result word: true; the true arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1058] = "Verdadero",
 -- 60a33e6c English: False
+-- Context: Boolean result word: false; the false arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1059] = "Falso",
 -- 06f1af3a English: Rotation tree cannot be displayed.
 [1060] = "No se puede mostrar el árbol de la rotación.",
 -- 1e3abf61 English: If
+-- Context: Toggle on a condition card showing the condition applies normally (reads like 'If ...');
+--     the alternative is 'Unless'.
 [1061] = "Si",
 -- b89c64be English: Unless
+-- Context: Toggle on a condition card showing the condition is negated (reads like 'Unless ...');
+--     the alternative is 'If'.
 [1062] = "Salvo que",
 -- ea2dca67 English: If matches this condition; Unless negates it.
 [1063] = "Si coincide con esta condición; Salvo que la niega.",
@@ -2254,6 +3650,8 @@ addon.translation = {
 -- 8898675a English: Condition description truncated; the draft is unchanged.
 [1065] = "Descripción de la condición recortada; el borrador no ha cambiado.",
 -- df796c65 English: New group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New group'.
 [1066] = "Nuevo grupo",
 -- 17c23d28 English: Drag card headers to move; drag New into a gap.
 [1067] = "Arrastra los encabezados de las tarjetas para moverlas; arrastra Nuevo a un hueco.",
@@ -2280,18 +3678,31 @@ addon.translation = {
 -- 777f6a10 English: Rotation Master information and credits.
 [1078] = "Información y créditos de Rotation Master.",
 -- 72a43eab English: TBC
+-- Context: Name of the Burning Crusade Classic game edition (abbreviation), shown in the window
+--     footer and in rotation applicability text.
 [1079] = "TBC",
 -- d63015c7 English: Classic Era
+-- Context: Name of the Classic Era game edition (vanilla Classic), shown in the window footer and
+--     in rotation applicability text.
 [1080] = "Classic Era",
 -- 7d4352ca English: Classic Progression
+-- Context: Name of the Classic Progression game edition (Classic servers that advance through
+--     expansions), shown in the window footer.
 [1081] = "Classic Progression",
 -- cdb38c8d English: Retail
+-- Context: Name of the Retail game edition (current live WoW), shown in the window footer and
+--     rotation applicability text.
 [1082] = "Retail",
 -- 55f980cf English: Forever
+-- Context: Name of the Classic 'Forever' game edition (a client that stays on one expansion), shown
+--     in the window footer.
 [1083] = "Forever",
 -- 21b6a798 English: Development
+-- Context: Version label used when the addon runs from source (an unpackaged development build)
+--     instead of a release version.
 [1084] = "Desarrollo",
 -- 57a9e910 English: Right-click to close
+-- Context: Hint in the window footer: right-clicking the Rotation Master window closes it.
 [1085] = "Clic derecho para cerrar",
 -- 5e2f1cfb English: Drag to resize the list. Double-click to reset.
 [1086] = "Arrastra para cambiar el tamaño de la lista. Doble clic para restablecerlo.",
@@ -2299,8 +3710,11 @@ addon.translation = {
 --     then click an empty slot.
 [1087] = "Arrastra a cualquier casilla de la barra de acción (se intercambia con lo que haya) o haz clic en Asignar y luego en una casilla vacía.",
 -- ba118bf7 English: English
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Language name
+--     'English' in a language list.
 [1088] = "Inglés",
 -- b5a229ac English: Website
+-- Context: Label of the website link in the About area of the configuration window; noun.
 [1089] = "Sitio web",
 -- 8149bb52 English: English is the installed translation; other languages use English until
 --     translated.
@@ -2311,8 +3725,12 @@ addon.translation = {
 -- 8c4b42bc English: Optional addon settings.
 [1092] = "Ajustes opcionales de addons.",
 -- fe166e78 English: Read-only condition
+-- Context: Status text in the condition editor footer: this condition cannot be edited (a Built
+--     In).
 [1093] = "Condición de solo lectura",
 -- e2d0a549 English: Delete
+-- Context: Button/tooltip that deletes the selected entry (rotation, item set, effect,
+--     announcement...); verb, also a help heading.
 [1094] = "Borrar",
 -- 9d85c78b English: Only the first 200 rotation cards are shown. Other cards are preserved.
 [1095] = "Solo se muestran las primeras 200 tarjetas de rotación. Las demás se conservan.",
@@ -2320,34 +3738,53 @@ addon.translation = {
 --     condition evaluation.
 [1096] = "Las ramas eligen un brazo y luego se reúnen con la prioridad siguiente. Los modos forzados omiten la evaluación de condiciones.",
 -- 79b92f59 English: New action
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New action' (add a spell/item step).
 [1097] = "Nueva acción",
 -- 7f445154 English: New branch
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New branch' (add a conditional branch step).
 [1098] = "Nueva rama",
 -- 6f0d96c6 English: New optional
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New optional' (add an optional highlight step).
 [1099] = "Nuevo opcional",
 -- 1abcf34a English: Drag into a gap, or click to append.
 [1100] = "Arrastra a un hueco o haz clic para añadir al final.",
 -- eb1a70e3 English: Discard
+-- Context: Button in editors that throws away the pending changes and restores the saved state
+--     (verb).
 [1101] = "Descartar",
 -- cd272c87 English: Changes applied.
 [1102] = "Cambios aplicados.",
 -- c7f93783 English: Choose
+-- Context: Default button text for a picker button that has no value chosen yet (verb: choose).
 [1103] = "Elegir",
 -- d8dba008 English: Items: separate item IDs or names with commas
 [1104] = "Objetos: separa los ID o nombres de objeto con comas",
 -- dfd0e008 English: Use profile effect
+-- Context: Dropdown entry in a rotation step's effect chooser: do not override, use the effect from
+--     the profile settings.
 [1105] = "Usar el efecto del perfil",
 -- eea6c6fc English: Color: red, green, blue, alpha (0–1); blank inherits
 [1106] = "Color: rojo, verde, azul, alfa (0–1); en blanco se hereda",
 -- 31b888e2 English: Use profile position
+-- Context: Tooltip of a small reset button next to a step's highlight position fields: use the
+--     profile's position setting instead.
 [1107] = "Usar la posición del perfil",
 -- a581aec9 English: Horizontal offset
+-- Context: Tooltip/label of the horizontal (X) offset field of a highlight position.
 [1108] = "Desplazamiento horizontal",
 -- 923e59df English: Vertical offset
+-- Context: Tooltip/label of the vertical (Y) offset field of a highlight position.
 [1109] = "Desplazamiento vertical",
 -- fda1b8a0 English: Created by %s
+-- Context: Footer text in the Rotation Master window; %s is the author's name.
+-- %s #1: %s #1: the author name, e.g. "PreZ"
 [1110] = "Creado por %s",
 -- 64464db9 English: Unsaved rotation changes
+-- Context: Title of the dialog warning that the rotation editor has unsaved changes when you
+--     navigate away.
 [1111] = "Cambios de rotación sin guardar",
 -- 4c8f5e18 English: Apply this draft, discard its changes, or keep editing.
 [1112] = "Aplica este borrador, descarta sus cambios o sigue editando.",
@@ -2355,71 +3792,107 @@ addon.translation = {
 --     editing.
 [1113] = "No se ha podido aplicar el borrador. Completa los campos marcados o pulsa Cancelar para seguir editando.",
 -- dd7a42d2 English: Drag to place
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     place' for dragging an item to a position.
 [1114] = "Arrastra para colocar",
 -- a7b99a64 English: Copy full condition
+-- Context: Button in the condition text window: copy the complete condition text to the clipboard
+--     (verb phrase).
 [1115] = "Copiar la condición completa",
 -- 81a5118e English: Full condition text
+-- Context: Title of the window showing a condition's full text in readable form.
 [1116] = "Texto completo de la condición",
 -- 21b111cb English: Default
+-- Context: Button that resets a value (highlight color or position) to the default; also the name
+--     of the built-in default rotation.
 [1117] = "Predeterminado",
 -- c9a3dbb0 English: Click to add branch name
 [1118] = "Haz clic para añadir un nombre de rama",
 -- ab0a9cf9 English: Switch condition
+-- Context: Name of the section of a rotation that holds the condition used for automatic switching,
+--     in change summaries and path descriptions.
 [1119] = "Condición de cambio",
 -- 18f3acc3 English: No switch condition: this rotation can be selected automatically whenever its
 --     specialization and level apply.
 [1120] = "Sin condición de cambio: esta rotación se puede seleccionar automáticamente siempre que se cumplan su especialización y su nivel.",
 -- 464c4ffd English: Edit
+-- Context: Button in the Conditions page (custom condition row): edit this custom condition; verb.
 [1121] = "Editar",
 -- 7515ddaa English: Delete rotation
+-- Context: Tooltip of the delete button in the rotation editor: deletes the rotation (verb phrase).
 [1122] = "Borrar rotación",
 -- bc48b710 English: Discard this new rotation
 [1123] = "Descartar esta nueva rotación",
 -- 6390ba9c English: Add action
+-- Context: Button in the rotation view: adds a new spell/item action step to the main rotation
+--     (verb phrase).
 [1124] = "Añadir acción",
 -- 1947a735 English: Add branch
+-- Context: Button in the rotation view: adds a new conditional branch step to the rotation (verb
+--     phrase).
 [1125] = "Añadir rama",
 -- 48dfa1a9 English: Add cooldown
+-- Context: Button in the rotation view: adds a new cooldown (optional highlight) step (verb
+--     phrase).
 [1126] = "Añadir tiempo de reutilización",
 -- cfb5635b English: Delete this custom rotation and its unsaved draft? This cannot be undone.
 [1127] = "¿Borrar esta rotación personalizada y su borrador sin guardar? No se puede deshacer.",
 -- d1afca1a English: Rotation details
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Rotation details'.
 [1128] = "Detalles de la rotación",
 -- 2f839a00 English: Complete the highlighted input fields before applying.
 [1129] = "Completa los campos resaltados antes de aplicar.",
 -- 6d81521d English: Drop in a highlighted gap.
 [1130] = "Suelta en un hueco resaltado.",
 -- dcd1d522 English: Name
+-- Context: Label of the name field (rotation, effect, item set, announcement, category); noun, also
+--     a help heading and comparison row label.
 [1131] = "Nombre",
 -- bb82fca1 English: Incomplete input: %s
+-- %s #1: %s #1: what input is incomplete, a short phrase, e.g. "Spell is required"
 [1132] = "Entrada incompleta: %s",
 -- 0a392308 English: Click condition text on any card to view or edit its conditions.
 [1133] = "Haz clic en el texto de la condición de cualquier tarjeta para ver o editar sus condiciones.",
 -- 286353b7 English: View condition
+-- Context: Button in a rotation step: open the condition read-only (for a Built In); verb phrase.
 [1134] = "Ver condición",
 -- 61514750 English: Edit condition
+-- Context: Button in a rotation step: open the condition editor to change the step's condition;
+--     verb phrase.
 [1135] = "Editar condición",
 -- 19a05c66 English: Cycle between summary, fields and name only. Drag the name to move the card.
 [1136] = "Alterna entre resumen, campos y solo nombre. Arrastra el nombre para mover la tarjeta.",
 -- 9eddf573 English: Metadata
+-- Context: Button in the rotation editor (and the title of its dialog) for the rotation's
+--     description, tags and author; noun.
 [1137] = "Metadatos",
 -- 8fe26115 English: This rotation cannot run until its incomplete or unavailable data is resolved.
 [1138] = "Esta rotación no puede ejecutarse hasta que se resuelvan sus datos incompletos o no disponibles.",
 -- 40a9941b English: Rotation validation
+-- Context: Title of the window listing validation problems found in the rotation.
 [1139] = "Validación de la rotación",
 -- 5677f1c7 English: Preview effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Preview effect' to show how a highlight effect looks.
 [1140] = "Previsualizar efecto",
 -- 44e4c2fb English: Show or hide branch paths
 [1141] = "Mostrar u ocultar las rutas de las ramas",
 -- 5735b9a9 English: Expand or collapse the card. Click action or condition text for details.
 [1142] = "Despliega o pliega la tarjeta. Haz clic en el texto de la acción o de la condición para ver los detalles.",
 -- 2478da41 English: Click to expand
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Click
+--     to expand' on a collapsed section.
 [1143] = "Haz clic para desplegar",
 -- 94901258 English: Add group
+-- Context: Button in the condition editor: add an empty AND group (a bracket of conditions); verb
+--     phrase.
 [1144] = "Añadir grupo",
 -- ad19b82b English: Click to append; drag into a gap to insert.
 [1145] = "Haz clic para añadir al final; arrastra a un hueco para insertar.",
 -- 36e5aa8a English: Preview highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Preview highlight' for the highlight preview.
 [1146] = "Previsualizar resaltado",
 -- 5e4de8d1 English: This previews the glow used on action buttons. Click the preview icon again to
 --     close.
@@ -2427,104 +3900,168 @@ addon.translation = {
 -- 1094644b English: Choose a highlight effect in the action details or General settings.
 [1148] = "Elige un efecto de resaltado en los detalles de la acción o en los ajustes generales.",
 -- e3cb6179 English: Rotation metadata
+-- Context: Title of the help window for the rotation metadata dialog.
 [1149] = "Metadatos de la rotación",
 -- d95082a2 English: Author
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Author' (who wrote the rotation).
 [1150] = "Autor",
 -- 2919fe85 English: Realm
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Realm' (author's realm).
 [1151] = "Reino",
 -- 969ccbd3 English: Email
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Email' (author's email address).
 [1152] = "Correo electrónico",
 -- dd167905 English: Version
+-- Context: Column heading in the integrations list: the addon version; also a metadata field.
 [1153] = "Versión",
 -- b8bece73 English: Use changes
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Use
+--     changes' to apply the edited values.
 [1154] = "Usar cambios",
 -- b02bc1bc English: Use changes updates the draft. Apply the rotation to save it.
 [1155] = "Usar cambios actualiza el borrador. Aplica la rotación para guardarla.",
 -- 38274b15 English: Built In rotation: duplicate it to edit its metadata.
 [1156] = "Rotación integrada: duplícala para editar sus metadatos.",
 -- 0e570ca6 English: Source
+-- Context: Fallback heading for a rotation source/citation without its own title; noun.
 [1157] = "Fuente",
 -- 9d7de300 English: Saved metadata is invalid (%s). Editing these fields replaces it.
+-- %s #1: %s #1: the invalid saved metadata value as text, e.g. "true" (shown as-is)
 [1158] = "Los metadatos guardados no son válidos (%s). Editar estos campos los sustituye.",
 -- 6b73191a English: Color
+-- Context: Label of the color field in the rotation step effect settings and the title of the color
+--     picker; also a help heading.
 [1159] = "Color",
 -- 2e51d20c English: Choose an effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Placeholder
+--     'Choose an effect' for the effect dropdown.
 [1160] = "Elige un efecto",
 -- d1a44f24 English: Use profile color
+-- Context: Tooltip of a reset button next to a step's color: use the color from the profile
+--     settings.
 [1161] = "Usar el color del perfil",
 -- b840b1dd English: Center the highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Checkbox
+--     label 'Center the highlight'.
 [1162] = "Centrar el resaltado",
 -- 6dc46510 English: Move highlight; hold Shift for ten pixels
 [1163] = "Mover el resaltado; mantén Mayús para diez píxeles",
 -- 294bb35f English: Preview sound
+-- Context: Tooltip of a play button next to the sound dropdown: plays the chosen sound; imperative.
 [1164] = "Previsualizar sonido",
 -- fa39a479 English: Sound preview is unavailable.
 [1165] = "La vista previa del sonido no está disponible.",
 -- ac2276b9 English: Choose an available sound to preview.
 [1166] = "Elige un sonido disponible para previsualizarlo.",
 -- d6807b3f English: Use color
+-- Context: Tooltip of the check mark button in the color picker: accepts the chosen color.
 [1167] = "Usar color",
 -- 8807635f English: Offsets
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Offsets' for the highlight position offsets.
 [1168] = "Desplazamientos",
 -- de5a6f78 English: V
+-- Context: Abbreviation (letter V) on the vertical-offset field of a highlight position; tooltip is
+--     'Vertical offset'.
 [1169] = "V",
 -- 44bd7ae6 English: H
+-- Context: Abbreviation (letter H) on the horizontal-offset field of a highlight position; tooltip
+--     is 'Horizontal offset'.
 [1170] = "H",
 -- 36c4ddbf English: RGBA channels accept decimal values from 0 to 1.
 [1171] = "Los canales RGBA aceptan valores decimales de 0 a 1.",
 -- a5163f27 English: %s: %s
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
+-- %s #2: %s #2: the name of the window or section, e.g. "Edit Condition #2"
 [1172] = "%s: %s",
 -- 76b2629a English: Rotation Master
+-- Context: Name of the addon in a window title/subtitle (brand name; keep untranslated if the addon
+--     name is not localized).
 [1173] = "Rotation Master",
 -- 39b36d38 English: Condition
+-- Context: Generic word for a single condition: window heading/context in the condition editor.
 [1174] = "Condición",
 -- 0924a671 English: Cooldown
+-- Context: Section name for cooldown steps (optional highlights) in change summaries and the step
+--     editor; noun.
 [1175] = "Tiempo de reutilización",
 -- d85693fc English: All of
+-- Context: Header text for an AND group of conditions on a condition card: all of the following
+--     must be true.
 [1176] = "Todas las de",
 -- f44e288e English: Any of
+-- Context: Header text for an OR group of conditions on a condition card: any of the following may
+--     be true.
 [1177] = "Cualquiera de",
 -- 0ec5ba4e English: Action bar binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Action
+--     bar binding'.
 [1178] = "Asignación a la barra de acción",
 -- 380684a5 English: Add announcement
+-- Context: Button in the Announces settings page: create a new announcement; verb phrase.
 [1179] = "Añadir anuncio",
 -- 1005d35c English: Add custom condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Add
+--     custom condition' to create a custom condition.
 [1180] = "Añadir condición personalizada",
 -- 8fce42d6 English: Add effect
+-- Context: Button in the Effects settings page: create a new highlight effect; verb phrase.
 [1181] = "Añadir efecto",
 -- d1a0b329 English: Add item
+-- Context: Button in item set editors: add an item to the set; verb phrase, also a help heading.
 [1182] = "Añadir objeto",
 -- da10655e English: Add item set
+-- Context: Button and heading in the Item Sets settings page: create a new item set; verb phrase.
 [1183] = "Añadir conjunto de objetos",
 -- 839bd5e0 English: Add step
+-- Context: Button in the effect sequence editor: add a step (frame) to the sequence; verb phrase.
 [1184] = "Añadir paso",
 -- 96f2ac95 English: An item from this set must be available before binding.
 [1185] = "Un objeto de este conjunto debe estar disponible antes de asignarlo.",
 -- 2a5562d3 English: Bind item set
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Bind
+--     item set' to bind an item set to action bar slots.
 [1186] = "Asignar conjunto de objetos",
 -- 292c06f0 English: Category
+-- Context: Label of the category dropdown for a condition and a heading in the icon picker; noun.
 [1187] = "Categoría",
 -- 8adaa206 English: Choose an action first.
 [1188] = "Elige antes una acción.",
 -- eb58aed0 English: Choose an item first.
 [1189] = "Elige antes un objeto.",
 -- b269dc4e English: Commands
+-- Context: Heading on the Profiles page above a short list of slash commands.
 [1190] = "Comandos",
 -- eebdd24a English: Confirm
+-- Context: Button in confirmation prompts: confirm the action; verb.
 [1191] = "Confirmar",
 -- 29bbf82e English: Copy and reset
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     and reset' in the profile tools.
 [1192] = "Copiar y restablecer",
 -- 2da43a1c English: Copy from profile
+-- Context: Label of the dropdown in the Profiles page: copy settings from another profile into the
+--     current one; also a help heading.
 [1193] = "Copiar desde perfil",
 -- 47cc49a7 English: Copy this text to export. Import replaces the selected settings.
 [1194] = "Copia este texto para exportar. Importar sustituye los ajustes seleccionados.",
 -- 61d30d99 English: Create profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Create profile'.
 [1195] = "Crear perfil",
 -- 70aede1c English: Current profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Current profile'.
 [1196] = "Perfil actual",
 -- 47311af4 English: Delete profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Delete profile'.
 [1197] = "Borrar perfil",
 -- 526f44a0 English: Delete profile %s? This cannot be undone.
+-- %s #1: %s #1: the name of the profile to delete, e.g. "Default"
 [1198] = "¿Borrar el perfil %s? No se puede deshacer.",
 -- 0a1b391c English: Delete this custom condition? Existing rotations using it will become
 --     unavailable.
@@ -2535,14 +4072,20 @@ addon.translation = {
 --     another item set.
 [1201] = "¿Borrar este conjunto de objetos y su asignación? Las rotaciones que hagan referencia a él necesitarán otro conjunto de objetos.",
 -- 5342e09f English: Enable
+-- Context: Checkbox in General settings, Recommendations section: turns Rotation Master
+--     recommendations on or off; verb; also a help heading.
 [1202] = "Activar",
 -- eccca39d English: Enter a name first.
 [1203] = "Introduce antes un nombre.",
 -- 27bf030d English: Enter a profile name first.
 [1204] = "Introduce antes un nombre de perfil.",
 -- dab97264 English: History and preview
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'History and preview'.
 [1205] = "Historial y vista previa",
 -- 9b10587f English: Identifier
+-- Context: Label of the identifier field (a unique key for an announcement or custom condition);
+--     noun.
 [1206] = "Identificador",
 -- c6af6542 English: Invalid effect.
 [1207] = "Efecto no válido.",
@@ -2551,40 +4094,61 @@ addon.translation = {
 -- 6987106d English: Invalid item list.
 [1209] = "Lista de objetos no válida.",
 -- c8edea5f English: Item %d
+-- Context: Label of an item row in a list by position; %d is the position number.
+-- %d #1: %d #1: the position of the item in the item set, counting from 1, e.g. 2
 [1210] = "Objeto %d",
 -- 08bc6729 English: Items in priority order
 [1211] = "Objetos en orden de prioridad",
 -- 9024c197 English: Links
+-- Context: Heading of a section listing web links (Profiles page; help window).
 [1212] = "Enlaces",
 -- dba20004 English: New profile name
+-- Context: Label of the text field for the name of a new profile.
 [1213] = "Nombre del nuevo perfil",
 -- a6a2aa10 English: Not bound
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Status text
+--     'Not bound' for an item set with no action bar binding.
 [1214] = "Sin asignar",
 -- 14908ce9 English: Profile changes apply immediately. Rotations and settings belong to the active
 --     profile.
 [1215] = "Los cambios de perfil se aplican al instante. Las rotaciones y los ajustes pertenecen al perfil activo.",
 -- 0738ee00 English: Recommendations
+-- Context: Section heading in General settings for the options controlling recommendations.
 [1216] = "Recomendaciones",
 -- e8781b01 English: Remove binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Remove binding'.
 [1217] = "Quitar asignación",
 -- e89af9bb English: Replace the current profile with %s?
+-- %s #1: %s #1: the name of the profile to copy from, e.g. "Raiding"
 [1218] = "¿Sustituir el perfil actual por %s?",
 -- daee7606 English: Reset
+-- Context: Button that resets the current editor or item set to the saved or default state (verb);
+--     also a help heading.
 [1219] = "Restablecer",
 -- 15d5cb3f English: Reset current profile
+-- Context: Button in the Profiles page: reset the current profile to defaults (verb phrase); also a
+--     help heading.
 [1220] = "Restablecer el perfil actual",
 -- 4ddce508 English: Reset preview position
+-- Context: Tooltip/help heading for the button that puts the preview window back to its default
+--     position.
 [1221] = "Restablecer la posición de la vista previa",
 -- 7986b163 English: Reset this profile to its defaults? Custom rotations and settings in it will be
 --     replaced.
 [1222] = "¿Restablecer los valores predeterminados de este perfil? Se sustituirán sus rotaciones y ajustes personalizados.",
 -- 2a78025d English: Select
+-- Context: Placeholder text on a dropdown button that has nothing selected; also the 'Select'
+--     option in an integrations choice (verb).
 [1223] = "Seleccionar",
 -- 10151a40 English: Step %d
+-- Context: Label for a step row by position in a comparison; %d is the position.
+-- %d #1: %d #1: the number of the step, counting from 1, e.g. 3
 [1224] = "Paso %d",
 -- b1912f1a English: This name is already in use.
 [1225] = "Este nombre ya está en uso.",
 -- 52656e81 English: Branch
+-- Context: Step type name for a conditional branch step (as in 'Branch'); noun.
 [1226] = "Rama",
 -- b8e156bb English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2601,8 +4165,10 @@ addon.translation = {
 --     replaces its item list.
 [1229] = "Elige un conjunto de objetos y edita su lista de prioridad. Global comparte el conjunto entre perfiles. Las flechas cambian la prioridad de los objetos. Asignar conjunto de objetos toma un objeto disponible para colocarlo en una barra de acción; Quitar asignación lo desvincula. Restablecer recupera un conjunto incluido. Importar sustituye su lista de objetos.",
 -- 584f475e English: Condition editor
+-- Context: Title of the help window for the condition editor.
 [1230] = "Editor de condiciones",
 -- dae8a15b English: Description and attribution
+-- Context: Heading in the help for the rotation metadata dialog: the description and author fields.
 [1231] = "Descripción y autoría",
 -- 0bff7d0e English: Drag the title bar to move. Set Scale with the top-left slider; child windows
 --     follow it. The question mark toggles Help. Close with X, Escape, or right-click in the
@@ -2618,8 +4184,12 @@ addon.translation = {
 --     new entry after an action is selected.
 [1234] = "Despliega un anuncio para elegir su acción, evento, canal y texto. Los campos de hechizo buscan en el catálogo; si el cliente tiene rangos de hechizo, «Usar este rango de hechizo exacto» limita las coincidencias al rango que elegiste. Activado activa o desactiva el anuncio. Añadir anuncio crea una entrada nueva después de seleccionar una acción.",
 -- 2c02392e English: Groups and toggles
+-- Context: Heading in help text explaining AND/OR/NOT groups and the If/Unless and Enabled/Disabled
+--     toggles in the condition editor.
 [1235] = "Grupos e interruptores",
 -- 3d69858e English: Help and saving
+-- Context: Heading in help text describing the Help (question mark) button and how saving works
+--     (Undo/Redo/Apply) in the editor.
 [1236] = "Ayuda y guardado",
 -- 99855946 English: Move, copy and remove
 [1237] = "Mover, copiar y quitar",
@@ -2633,18 +4203,25 @@ addon.translation = {
 --     on click and filter as you type. Section headings collapse or expand their contents.
 [1239] = "Estos ajustes se aplican al instante. Pulsa Intro o sal de un campo de texto para confirmarlo. El texto no válido se queda en rojo y bloquea la navegación hasta que se corrija. Los selectores con búsqueda se abren al hacer clic y filtran mientras escribes. Los encabezados de sección pliegan o despliegan su contenido.",
 -- 00a767bc English: Unknown spell
+-- Context: Placeholder name for a spell that cannot be found by ID (announcement list, reference
+--     catalog).
 [1240] = "Hechizo desconocido",
 -- 52ffc6a8 English: Item data loading
+-- Context: Placeholder shown for an item whose name has not loaded from the server yet.
 [1241] = "Cargando datos del objeto",
 -- d6572bd2 English: No matches.
 [1242] = "No hay coincidencias.",
 -- 18fdd549 English: New
+-- Context: Button that creates a new entry (rotation, item set, effect, condition category...);
+--     verb.
 [1243] = "Nuevo",
 -- 7f406b7e English: No matching items.
 [1244] = "No hay objetos que coincidan.",
 -- f9ad9fda English: Click a result or enter an item name, ID or link.
 [1245] = "Haz clic en un resultado o introduce el nombre, ID o enlace de un objeto.",
 -- a4ae750b English: Anchor
+-- Context: Label of the anchor point dropdown for a highlight (which part of the button the
+--     highlight attaches to); also a help heading.
 [1246] = "Anclaje",
 -- 1edc56cd English: Return the preview window to the center of the screen.
 [1247] = "Devuelve la ventana de vista previa al centro de la pantalla.",
@@ -2657,10 +4234,16 @@ addon.translation = {
 --     pixels. Center resets both offsets.
 [1250] = "Desplazamiento horizontal en píxeles. Izquierda y Derecha lo cambian; mantén Mayús para diez píxeles. Centrar restablece ambos desplazamientos.",
 -- 49cf9ec6 English: Manage categories
+-- Context: Heading and button on the Conditions page: switch to managing condition categories (add,
+--     rename, reorder).
 [1251] = "Gestionar categorías",
 -- eda2efcd English: Back to conditions
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Back
+--     to conditions' to return from category management to the condition list.
 [1252] = "Volver a condiciones",
 -- 8137101b English: Built-in category
+-- Context: Status text on the Conditions page: the selected category is built in and cannot be
+--     edited.
 [1253] = "Categoría integrada",
 -- d7c828bc English: Delete this category? Its conditions will remain available under Other.
 [1254] = "¿Borrar esta categoría? Sus condiciones seguirán disponibles en Otros.",
@@ -2682,58 +4265,94 @@ addon.translation = {
 --     separately for automatic-switch availability.
 [1259] = "Mueve la condición seleccionada a una categoría con nombre o a Otros. Usa Condición de cambio por separado para la disponibilidad en el cambio automático.",
 -- 85a39ab3 English: Yes
+-- Context: Boolean value word 'Yes' (true) in condition text and comparison views.
 [1260] = "Sí",
 -- 1ea442a1 English: No
+-- Context: Boolean value word 'No' (false) in condition text and comparison views.
 [1261] = "No",
 -- f8bfdb1e English: Show unchanged
+-- Context: Checkbox in the comparison window: also list entries that are identical on both sides.
 [1262] = "Mostrar sin cambios",
 -- 8307fb6b English: Changed fields: %d
+-- %d #1: %d #1: the number of fields that differ, e.g. 4
 [1263] = "Campos cambiados: %d",
 -- e888155d English: Compare
+-- Context: Button and window title prefix for comparing two entries (rotations, profiles,
+--     collections); verb.
 [1264] = "Comparar",
 -- 72bb9089 English: Read-only
+-- Context: Subtitle/badge on windows that only display data and cannot be edited; adjective.
 [1265] = "Solo lectura",
 -- e21330cf English: Imported item set
+-- Context: Default name given to an item set created by importing text.
 [1266] = "Conjunto de objetos importado",
 -- ef86a0ed English: Drag to reorder
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     reorder' for reorderable list entries.
 [1267] = "Arrastra para reordenar",
 -- 9b6766d2 English: Item ID: %s
+-- %s #1: %s #1: the numeric item ID, e.g. 5512
 [1268] = "ID de objeto: %s",
 -- fe76866f English: Item reference: %s
+-- %s #1: %s #1: the item reference as stored (a name or link text), e.g. "Healthstone"
 [1269] = "Referencia de objeto: %s",
 -- 1f439481 English: Built-in
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Adjective
+--     'Built-in' (shipped with the addon).
 [1270] = "Integrada",
 -- 36619693 English: Built-in condition
+-- Context: Status text for a condition that ships with the addon (as opposed to a custom one), on
+--     the Conditions page.
 [1271] = "Condición integrada",
 -- 1a63dcb7 English: Custom condition
+-- Context: Name for a condition you wrote yourself in the Lua editor, in settings and editor
+--     titles; noun phrase.
 [1272] = "Condición personalizada",
 -- c3b0c07b English: Game icon
+-- Context: Fallback name for a game icon with no known name in the icon picker.
 [1273] = "Icono del juego",
 -- b33708ba English: Game icons
+-- Context: Group heading in the icon picker: the icons that come from the game's macro icon list.
 [1274] = "Iconos del juego",
 -- a35abcd6 English: Icon
+-- Context: Label of the icon field of a condition category/custom condition and a comparison row
+--     label; noun.
 [1275] = "Icono",
 -- 41ca9dad English: Item icons
+-- Context: Group heading in the icon picker: the item icons from the game.
 [1276] = "Iconos de objetos",
 -- 059e5b06 English: Known spells
+-- Context: Group heading in the icon picker: icons of spells your character knows.
 [1277] = "Hechizos conocidos",
 -- bb50071a English: Manage conditions
+-- Context: Button on the category management page: go back to editing individual conditions.
 [1278] = "Gestionar condiciones",
 -- 1ff57a29 English: Next
+-- Context: Tooltip of the next-page button in the icon picker; imperative.
 [1279] = "Siguiente",
 -- e71ca826 English: Page %d of %d
+-- Context: Page indicator in the icon picker; the first %d is the current page, the second the
+--     total pages.
+-- %d #1: %d #1: the current page, e.g. 2
+-- %d #2: %d #2: the total number of pages, e.g. 14
 [1280] = "Página %d de %d",
 -- a57b08a4 English: Previous
+-- Context: Tooltip of the previous-page button in the icon picker; imperative.
 [1281] = "Anterior",
 -- fe3f2a5d English: Activate profile
+-- Context: Button in the Profiles page: make the selected profile the active one (verb phrase);
+--     also a help heading.
 [1282] = "Activar perfil",
 -- 5608b89a English: Active profile
+-- Context: Status/button text in the Profiles page: the selected profile is already the active one.
 [1283] = "Perfil activo",
 -- 1946c44c English: Apply pending changes before leaving? Use Cancel on the page to discard them.
 [1284] = "¿Aplicar los cambios pendientes antes de salir? Usa Cancelar en la página para descartarlos.",
 -- 92b4440b English: Audible
+-- Context: Announce channel dropdown option: play a sound instead of showing text.
 [1285] = "Sonoro",
 -- b8b1d894 English: Categories
+-- Context: Comparison row label: the condition categories (groups) in a profile.
 [1286] = "Categorías",
 -- ddd736ba English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2750,14 +4369,21 @@ addon.translation = {
 --     operations.
 [1288] = "Elige un conjunto de objetos y edita su lista de prioridad. Global comparte el conjunto entre perfiles. Las flechas cambian la prioridad de los objetos. Asignar conjunto de objetos toma un objeto disponible para colocarlo en una barra de acción; al desasignar fuera de combate, la etiqueta de asignación quita las acciones asignadas coincidentes de la barra. Restablecer recupera un conjunto incluido. Busca o arrastra objetos a los campos de referencia. Aplicar guarda los ajustes; Cancelar los descarta. Los cambios de asignación son operaciones explícitas sobre la barra de acción.",
 -- bd245266 English: Clone sources
+-- Context: Comparison row label: the list of Built In rotations that your rotations were cloned
+--     from.
 [1289] = "Fuentes de clonación",
 -- 72e094ed English: Comparison history
+-- Context: Comparison row label: records of past rotation comparisons.
 [1290] = "Historial de comparaciones",
 -- 61062ba2 English: Complete the effect settings before applying.
 [1291] = "Completa los ajustes del efecto antes de aplicar.",
 -- 2a6b24ad English: Credits
+-- Context: Label on the settings page: the credits line (people who contributed); noun, followed by
+--     a colon and names.
 [1292] = "Créditos",
 -- b91bfdbb English: Built In preferences
+-- Context: Comparison row label: your saved preferences about Built In rotations (enabled or
+--     disabled).
 [1293] = "Preferencias de las integradas",
 -- a1ceb156 English: Edits stay in a draft until Apply. Cancel restores saved settings. Changing
 --     tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect
@@ -2771,10 +4397,13 @@ addon.translation = {
 --     Apply saves changes.
 [1295] = "Despliega un anuncio para elegir su acción, evento, canal y texto. Los campos de hechizo buscan en el catálogo; si el cliente tiene rangos de hechizo, «Usar este rango de hechizo exacto» limita las coincidencias al rango que elegiste. Activado activa o desactiva el anuncio. Nuevo abre un borrador con Aplicar y Cancelar. Sonoro sustituye el texto por la selección de sonido y Reproducir. Duplicar, Importar/exportar y Comparar están debajo de la lista; las importaciones se validan y nunca ejecutan código. Aplicar guarda los cambios.",
 -- 6d5af309 English: Ignore mana
+-- Context: Comparison row label for the 'Ignore Mana' setting in a profile.
 [1296] = "Ignorar maná",
 -- 96bb8a4a English: Ignore range
+-- Context: Comparison row label for the 'Ignore Range' setting in a profile.
 [1297] = "Ignorar alcance",
 -- 7df60b64 English: Imports
+-- Context: Comparison row label: the records of imported entries.
 [1298] = "Importaciones",
 -- fa4ba363 English: Invalid announcement.
 [1299] = "Anuncio no válido.",
@@ -2785,42 +4414,65 @@ addon.translation = {
 -- 0fabe810 English: Leave combat before changing action bar bindings.
 [1302] = "Sal del combate antes de cambiar las asignaciones de la barra de acción.",
 -- c011d609 English: License
+-- Context: Label on the settings page: the license line, followed by a colon and the license name.
 [1303] = "Licencia",
 -- e7fdbd0c English: Localizations
+-- Context: Label on the settings page: the list of translations, followed by a colon.
 [1304] = "Traducciones",
 -- aac6c842 English: No rotations in this profile.
 [1305] = "No hay rotaciones en este perfil.",
 -- 15ba8148 English: Preview position
+-- Context: Comparison row label for the position of the preview window setting.
 [1306] = "Posición de la vista previa",
 -- 08f04b51 English: Rotation library
+-- Context: Comparison row label: the collection of all rotations in a profile.
 [1307] = "Biblioteca de rotaciones",
 -- 7bde8757 English: Search or drag a spell here
 [1308] = "Busca o arrastra un hechizo aquí",
 -- 21c38898 English: Move %d selected cards
+-- Context: Drag-and-drop tooltip in the rotation editor: moving several selected step cards; %d is
+--     how many.
+-- %d #1: %d #1: how many selected cards are being dragged, e.g. 3
 [1309] = "Mover %d tarjetas seleccionadas",
 -- 6c0b9d10 English: Duplicate selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: duplicate every selected card
+--     (verb phrase).
 [1310] = "Duplicar las tarjetas seleccionadas",
 -- 30a9f853 English: Enable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: enable every selected card
+--     (verb phrase).
 [1311] = "Activar las tarjetas seleccionadas",
 -- d3b30c10 English: Disable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: disable every selected card
+--     (verb phrase).
 [1312] = "Desactivar las tarjetas seleccionadas",
 -- 48d65c02 English: Delete selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: delete every selected card
+--     (verb phrase).
 [1313] = "Borrar las tarjetas seleccionadas",
 -- cea4d2e0 English: Clear selection
+-- Context: Tooltip of a bulk button in the rotation editor: deselect all cards (verb phrase).
 [1314] = "Limpiar selección",
 -- c58ed264 English: Target casting: %s
+-- %s #1: %s #1: the spell being cast by the target, e.g. "Fireball"
 [1315] = "Lanzamiento del objetivo: %s",
 -- ffaf018a English: Focus casting: %s
+-- %s #1: %s #1: the spell being cast by the focus target, e.g. "Fireball"
 [1316] = "Lanzamiento del foco: %s",
 -- 0b303a00 English: Target channeling: %s
+-- %s #1: %s #1: the spell being channelled by the target, e.g. "Arcane Missiles"
 [1317] = "Canalización del objetivo: %s",
 -- 2a66fe87 English: Focus channeling: %s
+-- %s #1: %s #1: the spell being channelled by the focus target, e.g. "Arcane Missiles"
 [1318] = "Canalización del foco: %s",
 -- f6b58a2a English: Recently cast: %s
+-- %s #1: %s #1: a spell the player cast recently, e.g. "Frostbolt"
 [1319] = "Lanzado recientemente: %s",
 -- db04a504 English: Trinket 1: %s
+-- %s #1: %s #1: the item equipped in the first trinket slot, e.g. "Trinket of the Sun"
 [1320] = "Abalorio 1: %s",
 -- 93b4d929 English: Trinket 2: %s
+-- %s #1: %s #1: the item equipped in the second trinket slot, e.g. "Trinket of the Moon"
 [1321] = "Abalorio 2: %s",
 -- b31f1cc4 English: No equipped trinket to insert.
 [1322] = "No hay ningún abalorio equipado que insertar.",
@@ -2843,17 +4495,27 @@ addon.translation = {
 -- b0413d32 English: Settings changed elsewhere. Cancel to reload them before applying.
 [1329] = "Los ajustes han cambiado en otro lugar. Cancela para recargarlos antes de aplicar.",
 -- 1973cc09 English: Slots %s · Unbind
+-- Context: Item set binding button when slots are bound; first part is the bound action bar slot
+--     numbers (%s), pressing it unbinds.
+-- %s #1: %s #1: the slot numbers the item set is bound to, separated by commas, e.g. "13, 14"
 [1330] = "Casillas %s · Desasignar",
 -- 46124e02 English: Sound
+-- Context: Label of the sound dropdown in an announcement and a help heading; also a comparison row
+--     label.
 [1331] = "Sonido",
 -- 410cc927 English: Structured settings
+-- Context: Placeholder shown in a comparison where a setting is a nested table rather than a simple
+--     value.
 [1332] = "Ajustes estructurados",
 -- 1ed6b5ea English: Unnamed rotation
+-- Context: Fallback name for a rotation that has no name.
 [1333] = "Rotación sin nombre",
 -- 62704b0c English: Use arrows or drag rows in the condition sidebar to reorder within the selected
 --     category. In Manage categories, the same controls order the categories themselves.
 [1334] = "Usa las flechas o arrastra las filas de la barra lateral de condiciones para reordenarlas dentro de la categoría seleccionada. En Gestionar categorías, los mismos controles ordenan las propias categorías.",
 -- 8e37953d English: Value
+-- Context: Label of the numeric value field in the Stagger and group state conditions (the value
+--     the operator compares to); noun.
 [1335] = "Valor",
 -- 2d11fd64 English: Choose an action and complete the announcement before applying.
 [1336] = "Elige una acción y completa el anuncio antes de aplicar.",
@@ -2867,30 +4529,44 @@ addon.translation = {
 --     destination before importing.
 [1340] = "Elige una copia nueva con nombre o sustituye la entrada editable seleccionada. Revisa el destino antes de importar.",
 -- 83b12c22 English: Clear
+-- Context: Button in the transfer dialog: clears the text box (verb).
 [1341] = "Limpiar",
 -- e25a9c83 English: Confirm the Lua import, then review it before saving.
 [1342] = "Confirma la importación de Lua y revísala antes de guardar.",
 -- 8aaf46c6 English: IMPORTED_CONDITION
+-- Context: Default placeholder name for an imported custom condition when its name cannot be read;
+--     written in capital letters with an underscore.
 [1343] = "IMPORTED_CONDITION",
 -- 8237a9a5 English: Import comparison
+-- Context: Title of the window comparing imported text with the existing entry; also a help
+--     heading.
 [1344] = "Comparación de importación",
 -- 9d886886 English: Imported announcement
+-- Context: Default name given to an announcement created by importing text.
 [1345] = "Anuncio importado",
 -- 456358c4 English: Imported category
+-- Context: Default name given to a condition category created by importing text.
 [1346] = "Categoría importada",
 -- a77b0984 English: Imported effect
+-- Context: Default name given to an effect created by importing text.
 [1347] = "Efecto importado",
 -- 2f91d1e1 English: Imported profile
+-- Context: Default name given to a profile created by importing text.
 [1348] = "Perfil importado",
 -- ec38d3c0 English: Invalid custom condition.
 [1349] = "Condición personalizada no válida.",
 -- a265e30c English: Name not supplied
+-- Context: Placeholder in the import dialog: the imported text did not contain a name.
 [1350] = "No se ha indicado ningún nombre",
 -- fb66a1af English: Original name
+-- Context: Label in the import dialog preceding the name found in the imported text, followed by a
+--     colon.
 [1351] = "Nombre original",
 -- 327093d7 English: Ready to import. Choose replacement or a named copy.
 [1352] = "Listo para importar. Elige sustituir o una copia con nombre.",
 -- 0d9a1fb4 English: Replace selected entry
+-- Context: Checkbox in the import dialog: overwrite the entry currently selected instead of
+--     creating a new one.
 [1353] = "Sustituir la entrada seleccionada",
 -- a84aab9e English: That condition identifier already exists.
 [1354] = "Ese identificador de condición ya existe.",
@@ -2902,10 +4578,16 @@ addon.translation = {
 -- ae820bc2 English: Use letters, numbers and underscores for the condition identifier.
 [1357] = "Usa letras, números y guiones bajos para el identificador de la condición.",
 -- 24c87ffc English: Check %s: %s
+-- %s #1: %s #1: the part of the custom condition that failed the check, e.g. "evaluate" or "Definition"
+-- %s #2: %s #2: the detail of the failure, e.g. "unexpected symbol near end"
 [1358] = "Comprobar %s: %s",
 -- 8e09cadd English: Check syntax
+-- Context: Button in the Lua editors: check the code for syntax errors without running it (verb
+--     phrase).
 [1359] = "Comprobar sintaxis",
 -- 1ae4fec7 English: Choose icon
+-- Context: Tooltip of the icon button in the custom condition editor: opens the icon picker;
+--     imperative.
 [1360] = "Elegir icono",
 -- 18156f45 English: Custom Lua has the same access as the addon. Only import code you trust. Syntax
 --     validation cannot establish that a callback is safe or correct. Existing custom widget
@@ -2916,34 +4598,54 @@ addon.translation = {
 --     data and never evaluated as Lua.
 [1362] = "Declara campos con nombre, tipos primitivos, registros anidados y uniones. Ejemplo: { spell = { string, number }, unit = string, tests = condition[] }. El texto del esquema se analiza como datos y nunca se evalúa como Lua.",
 -- 9813fafb English: Definition
+-- Context: Label naming the whole definition of a custom condition (its callbacks and fields) in
+--     errors and comparison rows; noun.
 [1363] = "Definición",
 -- 9b8e27c6 English: Editing code
+-- Context: Heading in help text for the code editor (Undo, Redo, Reset, Check syntax, Apply).
 [1364] = "Edición de código",
 -- 966591fe English: Evaluate
+-- Context: Name of the evaluate callback tab of a custom condition: the code that decides if the
+--     condition is true; noun.
 [1365] = "Evaluar",
 -- 7b08f80e English: Field schema
+-- Context: Heading and label for the schema of a custom condition's fields (their names and types).
 [1366] = "Esquema de campos",
 -- 1aab5f2f English: Fields UI
+-- Context: Name of the callback tab of a custom condition: the code that builds the condition's
+--     editing widgets; noun.
 [1367] = "Interfaz de campos",
 -- 43dab9e3 English: Function tabs edit separate callbacks. Changes stay in a draft. Check syntax
 --     compiles every callback without running it. Apply registers the callbacks and can run
 --     registration code. Cancel discards the draft. Undo and Redo work across function tabs.
 [1368] = "Las pestañas de funciones editan callbacks separados. Los cambios se quedan en un borrador. Comprobar sintaxis compila todos los callbacks sin ejecutarlos. Aplicar registra los callbacks y puede ejecutar código de registro. Cancelar descarta el borrador. Deshacer y Rehacer funcionan en todas las pestañas de funciones.",
 -- 6a696870 English: On register
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     registered.
 [1369] = "Al registrar",
 -- 06f9af14 English: On unregister
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     unregistered.
 [1370] = "Al anular el registro",
 -- 8e76a94a English: Summary
+-- Context: Name of the callback tab of a custom condition: code that builds the condition's text
+--     summary; noun.
 [1371] = "Resumen",
 -- d9f668a3 English: Syntax checked. No custom code was executed.
 [1372] = "Sintaxis comprobada. No se ha ejecutado ningún código personalizado.",
 -- 39286cd6 English: The custom condition changed elsewhere. Reopen it before saving.
 [1373] = "La condición personalizada ha cambiado en otro lugar. Vuelve a abrirla antes de guardar.",
 -- 6e33a7dd English: Trusted code
+-- Context: Heading in help text warning that custom Lua code has full addon access and only trusted
+--     code should be imported.
 [1374] = "Código de confianza",
 -- 40611abb English: Validate
+-- Context: Name of the callback tab of a custom condition: code that validates the condition's
+--     fields; verb used as a tab name.
 [1375] = "Validar",
 -- 7c39c16d English: All tags
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Filter option
+--     'All tags' in the rotation browser tag filter.
 [1376] = "Todas las etiquetas",
 -- 08c83906 English: Edit the description, tags, author, realm, email, website and version. Source
 --     citations remain separate from your attribution. Use changes updates the rotation draft;
@@ -2955,12 +4657,19 @@ addon.translation = {
 --     label is allowed.
 [1379] = "Separa las etiquetas con comas. Usa comillas para las etiquetas que contengan comas. Se permite cualquier etiqueta personal.",
 -- 1331275b English: Tags
+-- Context: Label of the rotation tags field and of the tag filter in the rotation browser; plural
+--     noun.
 [1380] = "Etiquetas",
 -- 1dd4ab9e English: Switch priority
+-- Context: Label of the rotation's priority for automatic switching in change summaries and
+--     comparisons; noun phrase.
 [1381] = "Prioridad de cambio",
 -- 1e51f6c3 English: Priority %d
+-- Context: Priority line in a rotation browser entry; %d is the priority number.
+-- %d #1: %d #1: the rotation's switch priority, e.g. 5
 [1382] = "Prioridad %d",
 -- defa7982 English: Invalid priority
+-- Context: Text shown in place of a priority number when the stored priority is not valid.
 [1383] = "Prioridad no válida",
 -- 1501b340 English: Switch priority must be a whole number between -100000 and 100000.
 [1384] = "La prioridad de cambio debe ser un número entero entre -100000 y 100000.",
@@ -2974,77 +4683,167 @@ addon.translation = {
 --     use name, then identity. Blank means zero.
 [1386] = "Los números más altos se prueban primero; tus rotaciones y las integradas compiten solo por prioridad. La rotación de reserva solo se usa cuando ninguna otra coincide. A igual prioridad se usa el nombre y después la identidad. En blanco equivale a cero.",
 -- 2040fdbd English: Invalid switch priority for %s:%s; explicit repair resets it to zero.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1387] = "Prioridad de cambio no válida en %s:%s; una reparación explícita la restablece a cero.",
 -- babdd022 English: %s (any rank)
+-- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
+--     (Classic ranked spells).
+-- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
 [1388] = "%s (cualquier rango)",
 -- a80c618c English: Unticked, any rank of the spell matches. Ticked, only the rank you chose
 --     matches.
 [1389] = "Sin marcar, coincide cualquier rango del hechizo. Marcada, solo coincide el rango que elegiste.",
 -- 264ad9c0 English: Cast Progress
+-- Context: Name of the Cast Progress condition (how far the current cast has progressed, in
+--     percent).
 [1390] = "Progreso del lanzamiento",
 -- 02ad1e66 English: Channel Progress
+-- Context: Name of the Channel Progress condition (how far the current channel has progressed, in
+--     percent).
 [1391] = "Progreso de la canalización",
 -- b19c05d2 English: Talent Tree Points
+-- Context: Name of the Talent Tree Points condition (points spent in a talent tree; Classic).
 [1392] = "Puntos del árbol de talentos",
 -- ef4ebbe8 English: points spent in %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text fragment 'points spent in %s'; %s is a talent tree.
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1393] = "puntos gastados en %s",
 -- 4fd19fe4 English: Primary Talent Tree
+-- Context: Name of the Primary Talent Tree condition (the tree in which you have the most points;
+--     Classic).
 [1394] = "Árbol de talentos principal",
 -- cffd0628 English: your primary talent tree is %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1395] = "tu árbol de talentos principal es %s",
 -- f831a06b English: Arms
+-- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1396] = "Armas",
 -- 8d6b26d9 English: Fury
+-- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1397] = "Furia",
 -- 0e97ad02 English: Protection
+-- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
+--     Tree dropdown of talent conditions.
 [1398] = "Protección",
 -- 56eee6a5 English: Holy
+-- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
+--     talent conditions; not the magic school.
 [1399] = "Sagrado",
 -- 1d79fa22 English: Retribution
+-- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
+--     of talent conditions.
 [1400] = "Reprensión",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
+--     dropdown of talent conditions.
 [1401] = "Dominio de bestias",
 -- 03f000fc English: Marksmanship
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1402] = "Puntería",
 -- 8302496d English: Survival
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1403] = "Supervivencia",
 -- 727eeac8 English: Assassination
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1404] = "Asesinato",
 -- 49fcf2c7 English: Combat
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1405] = "Combate",
 -- fca36d62 English: Subtlety
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1406] = "Sutileza",
 -- a1b14db9 English: Discipline
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1407] = "Disciplina",
 -- 4c764cb6 English: Shadow
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1408] = "Sombra",
 -- 8a7961ab English: Blood
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1409] = "Sangre",
 -- 17636dd6 English: Frost
+-- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
+--     and rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1410] = "Escarcha",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1411] = "Profano",
 -- 4309e83a English: Elemental
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1412] = "Elemental",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1413] = "Mejora",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1414] = "Restauración",
 -- 93006d61 English: Arcane
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1415] = "Arcano",
 -- c141faa8 English: Fire
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1416] = "Fuego",
 -- ed64274f English: Affliction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1417] = "Aflicción",
 -- c0e4afa6 English: Demonology
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1418] = "Demonología",
 -- e848f2c5 English: Destruction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1419] = "Destrucción",
 -- d05e07b7 English: Balance
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1420] = "Equilibrio",
 -- 454d4a9c English: Feral Combat
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1421] = "Combate feral",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Frost).
 [1422] = "Escarcha",
 -- 35223466 English: Frost from level 1 to 70, and the Mage default before talents. Frostbolt
 --     (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or
@@ -3054,6 +4853,10 @@ addon.translation = {
 --     Block, kiting and target choice stay with you.
 [1423] = "Escarcha del nivel 1 al 70, y la opción predeterminada del mago antes de los talentos. Descarga de Escarcha (Bola de Fuego antes del nivel 4), Nova de Escarcha cuando algo te golpea, Cono de frío con Ventisca o Deflagración Arcana cuando hay tres o más enemigos trabados en combate, Lanza de hielo sobre objetivos congelados y en movimiento, y varita cuando te quedas sin maná. Recordatorios: armadura, Intelecto Arcano, gema de maná, Evocación, Contrahechizo, Robar hechizo, Barrera de hielo, Venas heladas, Golpe frío y elemental de agua. Traslación, Bloqueo de hielo, el kiteo y la elección de objetivo quedan a tu cargo.",
 -- 7c2241f3 English: Fire (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1424] = "Fuego (Icy Veins)",
 -- 1e584220 English: Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast
 --     opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball
@@ -3062,6 +4865,10 @@ addon.translation = {
 --     gem, Evocation and the shared Mage utilities.
 [1425] = "Fuego según Icy Veins, elegida cuando Fuego es tu árbol de talentos principal. Piroexplosión abre el combate una vez aprendida, Agostar mejorado mantiene cinco acumulaciones de Vulnerabilidad de Fuego, Bola de Fuego hace de relleno y Explosión de Fuego es para moverse; Ola explosiva, Aliento de dragón y Fogonazo contra tres o más enemigos. Recordatorios: Armadura de arrabio, de mago o de hielo, Combustión con el objetivo por debajo del 20 % de salud, gema de maná, Evocación y las utilidades de mago compartidas.",
 -- c3a8c4ee English: Fire (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1426] = "Fuego (Wowhead)",
 -- a335455e English: Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves
 --     Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with
@@ -3069,6 +4876,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1427] = "Fuego según Wowhead y wowsims. Como la rotación integrada de Fuego de Icy Veins, pero intercala Explosión de Fuego siempre que está lista mientras estás quieto (más daño, más maná) y abre con Bola de Fuego en lugar de Piroexplosión. Es una alternativa a la rotación integrada de Fuego de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Arcane).
 [1428] = "Arcano",
 -- d64a2c81 English: Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane
 --     Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane
@@ -3077,14 +4886,24 @@ addon.translation = {
 --     Reminders include Arcane Power, Presence of Mind, mana gem and Evocation.
 [1429] = "Arcano, elegida cuando Arcano es tu árbol de talentos principal. Antes del nivel 64: Misiles Arcanos, con Descarga de Escarcha cuando escasea el maná. Desde el 64: Explosión Arcana mientras quemas maná (Poder Arcano, Ansia de sangre o más del 35 % de maná); si no, tres acumulaciones de Explosión Arcana y Descarga de Escarcha hasta que estén a punto de desaparecer. Deflagración Arcana y Cono de frío contra tres o más enemigos. Los recordatorios incluyen Poder Arcano, Presencia mental, gema de maná y Evocación.",
 -- 31e9be18 English: Diagram view
+-- Context: Rotation editor: label of the view-mode toggle button while the list layout is active
+--     (clicking switches to the diagram), and the "Diagram" option in the General settings "Default
+--     rotation view" dropdown. Names a way of viewing a rotation, not an action.
 [1430] = "Vista de diagrama",
 -- 5d8c3e1b English: List view
+-- Context: "List" option of the rotation view: the compact tree list. Shown on the rotation
+--     editor's view-mode toggle button and as an entry in the General settings "Default rotation
+--     view" dropdown.
 [1431] = "Vista de lista",
 -- 0dca2dc5 English: Switch between the diagram and compact tree list. This changes only the view.
 [1432] = "Alterna entre el diagrama y la lista compacta en árbol. Solo cambia la vista.",
 -- bc7b631a English: Zoom out
+-- Context: Tooltip of the minus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram smaller (verb).
 [1433] = "Alejar",
 -- 0e47f09a English: Zoom in
+-- Context: Tooltip of the plus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram larger (verb).
 [1434] = "Acercar",
 -- ed28d6c9 English: Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is
 --     unchanged.
@@ -3098,6 +4917,9 @@ addon.translation = {
 --     preserved.
 [1436] = "Diagrama / Lista solo cambia la vista de la rotación; los ajustes generales eligen la predeterminada. El diagrama tiene controles flotantes de menos, porcentaje y más abajo a la derecha. Usa la rueda para hacer zoom del 25% al 200%; haz clic en el porcentaje o con el botón central para volver al 100%. Arrastra el espacio vacío del diagrama para desplazarte. Lista usa barras de desplazamiento normales con tarjetas contiguas y brazos de rama enmarcados, Falso antes que Verdadero. Los tiempos de reutilización usan una cuadrícula desplazable aparte. Arrastrar tarjetas las reordena en todas las vistas. Cada espacio de trabajo muestra actualmente un máximo de 200 tarjetas; las demás tarjetas guardadas se conservan.",
 -- b1fd3756 English: Custom emote
+-- Context: Announcement output channel: sends the message as a custom emote. Entry in the channel
+--     dropdown of an announcement output (shown only for emote outputs) and a topic title in the
+--     Announces help.
 [1437] = "Emoción personalizada",
 -- 6dd86cd7 English: Use spell recipient ({{target}})
 [1438] = "Usar el destinatario del hechizo ({{target}})",
@@ -3109,6 +4931,8 @@ addon.translation = {
 --     click and filter as you type. Section headings collapse or expand their contents.
 [1440] = "Pulsa Intro o sal de un campo de texto para preparar su valor; Aplicar guarda el borrador. El texto no válido se queda en rojo y bloquea la navegación hasta que se corrija. Los selectores con búsqueda se abren al hacer clic y filtran mientras escribes. Los encabezados de sección pliegan o despliegan su contenido.",
 -- c546b857 English: Default rotation view
+-- Context: General settings: label of the dropdown that chooses whether rotations open as a diagram
+--     or a list by default; also a help topic title and a row label in the profile comparison.
 [1441] = "Vista de rotación predeterminada",
 -- d11b9246 English: Choose Diagram or List as the starting rotation view. This profile preference
 --     applies when opening a rotation; changing the view inside the editor does not change this
@@ -3122,53 +4946,94 @@ addon.translation = {
 -- ffcd3171 English: Drag one entry; Ctrl-drag moves it and all following siblings.
 [1445] = "Arrastra una entrada; Ctrl+arrastrar la mueve junto con todos los hermanos siguientes.",
 -- 773001f9 English: %d cards
+-- Context: Small count label on the stacked hover card of the rotation view, e.g. "3 cards"; %d is
+--     the number of cards stacked together.
+-- %d #1: %d #1: the number of cards being dragged, e.g. 3
 [1446] = "%d tarjetas",
 -- 454b5fb4 English:  (%d hidden)
+-- Context: Suffix on a True/False branch button in the rotation diagram when part of that branch is
+--     folded away; %d is the number of hidden steps. Keeps its leading space, appended right after
+--     "True" or "False".
+-- %d #1: %d #1: the number of cards hidden inside the folded branch, e.g. 4 (the text starts with a space and follows "True" or "False")
 [1447] = " (%d ocultas)",
 -- 9db3d1ae English: Click to fold or unfold this branch arm. Other cards and conditions are
 --     unchanged.
 [1448] = "Haz clic para plegar o desplegar este brazo de la rama. Las demás tarjetas y condiciones no cambian.",
 -- a7c224a3 English: %s {{!are|are not}} PVP flagged
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1449] = "%s {{!estás|no estás}} marcado para JcJ",
 -- a2e6fde9 English: %s {{!are|are not}} a %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1450] = "%s {{!eres|no eres}} %s",
 -- a9c26592 English: %s {{!are|are not}} currently casting %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1451] = "%s {{!estás|no estás}} lanzando %s",
 -- c0e4c355 English: %s {{!are|are not}} currently channeling %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [1452] = "%s {{!estás|no estás}} canalizando %s",
 -- df4ccc9d English: %s {{!are|are not}} in combat
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1453] = "%s {{!estás|no estás}} en combate",
 -- afbc6f6d English: %s {{!has|does not have}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1454] = "%s {{!tiene|no tiene}} %s",
 -- 450074be English: %s {{!has|does not have}} a %s debuff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1455] = "%s {{!tiene|no tiene}} un perjuicio de %s",
 -- e7bdefdc English: %s {{!have|do not have}} %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1456] = "%s {{!tienes|no tienes}} %s",
 -- 4d5d691c English: %s {{!have|do not have}} %s where %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1457] = "%s {{!tienes|no tienes}} %s donde %s",
 -- abf6cfd4 English: %s {{!have|do not have}} a %s debuff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1458] = "%s {{!tienes|no tienes}} un perjuicio de %s",
 -- 79e495d3 English: %s {{!is|is not}} PVP flagged
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1459] = "%s {{!está|no está}} marcado para JcJ",
 -- 491c7ee4 English: %s {{!is|is not}} a %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1460] = "%s {{!es|no es}} %s",
 -- 09b32050 English: %s {{!is|is not}} active with %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1461] = "%s {{!está|no está}} activo con %s",
 -- c58e76ae English: %s {{!is|is not}} an enemy
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1462] = "%s {{!es|no es}} un enemigo",
 -- 2c1ba7dc English: %s {{!is|is not}} attackable
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1463] = "%s {{!es|no es}} atacable",
 -- 742f7cb6 English: %s {{!is|is not}} currently casting %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1464] = "%s {{!está|no está}} lanzando %s",
 -- ae551afe English: %s {{!is|is not}} in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [1465] = "el rol %s {{!es|no es}} %s",
 -- f6ca7ce9 English: %s {{!is|is not}} in combat
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1466] = "%s {{!está|no está}} en combate",
 -- 0af84407 English: %s's channeled spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1467] = "el hechizo canalizado de %s {{!es|no es}} interrumpible",
 -- 7240fa38 English: %s's spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1468] = "el hechizo de %s {{!es|no es}} interrumpible",
 -- 8c1704ad English: Your talent {{!is|is not}} a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [1469] = "Tu talento {{!corresponde|no corresponde}} al rol de %s",
 -- c66f7ad7 English: is not evenly divisible by
 [1470] = "no es divisible entre",
@@ -3181,24 +5046,36 @@ addon.translation = {
 -- 92bbf51d English: is not less than or equal to
 [1474] = "no es menor o igual que",
 -- 970de09b English: not (%s)
+-- Context: Wrapper used when describing a negated condition group in text: the %s is the
+--     description of the conditions, so it reads like "not (<conditions>)".
+-- %s #1: %s #1: the full text of the condition that is being negated, e.g. "you are in combat"
 [1475] = "no (%s)",
 -- d4c2a5ad English: you {{!are|are not}} in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [1476] = "{{!estás|no estás}} en forma de %s",
 -- 330c2126 English: you {{!are|are not}} in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [1477] = "{{!estás|no estás}} en una estancia de tipo %s",
 -- 0f79bc56 English: you {{!are|are not}} in a outdoors
 [1478] = "{{!estás|no estás}} al aire libre",
 -- 25ce1dd9 English: you {{!have|do not have}} %s equipped
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [1479] = "{{!tienes|no tienes}} %s equipado",
 -- f5b5e754 English: you {{!have|do not have}} %s glyph
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [1480] = "{{!tienes|no tienes}} el glifo %s",
 -- 7c1be9a0 English: you {{!have|do not have}} a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1481] = "{{!tienes|no tienes}} un tótem de %s activo con %s",
 -- 6691324c English: you {{!have|do not have}} a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [1482] = "{{!tienes|no tienes}} una mascota llamada %s",
 -- 8fbf9338 English: zone {{!is|is not}} a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [1483] = "la zona {{!es|no es}} de tipo %s",
 -- 07e00292 English: {{!in|not in}} %s
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [1484] = "{{!en|fuera de}} %s",
 -- f9337f4a English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; right-click to choose its color.
@@ -3207,16 +5084,27 @@ addon.translation = {
 --     remove it; right-click to choose its color.
 [1486] = "Busca etiquetas existentes y selecciona tantas como quieras. Haz clic en una etiqueta seleccionada para quitarla; haz clic derecho para elegir su color.",
 -- 90f64b52 English: Decrease priority
+-- Context: Tooltip of the minus icon button beside the Priority box in the rotation editor header:
+--     lowers the rotation's priority number (verb phrase).
 [1487] = "Bajar prioridad",
 -- c31a4a7d English: Increase priority
+-- Context: Tooltip of the plus icon button beside the Priority box in the rotation editor header:
+--     raises the rotation's priority number (verb phrase).
 [1488] = "Subir prioridad",
 -- 0abba441 English: Horizontal
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (laid out in a row); the other choice is "Vertical". Also a help topic title.
 [1489] = "Horizontal",
 -- 727cd3a6 English: Vertical
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (stacked in a column); the other choice is "Horizontal". Also a row label in the profile
+--     comparison.
 [1490] = "Vertical",
 -- 6e9ad9af English: Lock preview position and size
 [1491] = "Bloquear la posición y el tamaño de la vista previa",
 -- fc3dbf19 English: Preview window opacity
+-- Context: General settings: label of the slider that sets the transparency of the preview window;
+--     also a help topic title and a profile comparison row.
 [1492] = "Opacidad de la ventana de vista previa",
 -- a625f9d4 English: Choose a whole number of upcoming recommendations, from zero (hidden) to five.
 --     The preview shows the current priority results, not a full simulation of future cooldowns or
@@ -3232,30 +5120,51 @@ addon.translation = {
 -- 10d580ca English: Lock position and size
 [1496] = "Bloquear posición y tamaño",
 -- 0e556ee1 English: Open General settings
+-- Context: Entry in the preview window's right-click menu: opens the General settings page.
 [1497] = "Abrir ajustes generales",
 -- f65ed2ec English: View Changes
+-- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
+--     differs between the saved and unsaved version.
 [1498] = "Ver cambios",
 -- b5c120b3 English: Saved
+-- Context: Left column heading of the View Changes dialog: the version currently stored, before the
+--     pending edits.
 [1499] = "Guardado",
 -- 6250d572 English: Unsaved
+-- Context: Right column heading of the View Changes dialog: the draft with pending edits that have
+--     not been applied yet.
 [1500] = "Sin guardar",
 -- bc6e0973 English: Pending input
+-- Context: Row label prefix in the View Changes dialog, shown as "Pending input: <field>": text
+--     typed into a field that has not been committed yet.
 [1501] = "Entrada pendiente",
 -- 4b96e273 English: Not inspected
+-- Context: Value shown in the "Saved" column of View Changes for a custom widget whose content
+--     cannot be compared; indicates the saved side was not examined.
 [1502] = "Sin examinar",
 -- 12be1b12 English: Custom widget has pending input.
 [1503] = "El widget personalizado tiene una entrada pendiente.",
 -- 70e5c0fd English: Selected entry
+-- Context: Default left column heading in the comparison dialog when the first item has no name:
+--     the entry currently selected in the list. Also used when comparing an import.
 [1504] = "Entrada seleccionada",
 -- f6cf1462 English: Compared entry
+-- Context: Default right column heading in the comparison dialog when the second item has no name:
+--     the entry it is compared with.
 [1505] = "Entrada comparada",
 -- 002a5d77 English: Use step name
+-- Context: Name of a rotation-step option (checkbox) that makes the step use its own custom name;
+--     shown as a row label when two profiles are compared.
 [1506] = "Usar el nombre del paso",
 -- 6dd777d2 English: Preview icon size
+-- Context: General settings: label of the slider for the size of the icons in the preview window;
+--     also a row label in the profile comparison.
 [1507] = "Tamaño de los iconos de la vista previa",
 -- 9710bd5e English: Add or search tags
 [1508] = "Añadir o buscar etiquetas",
 -- 93bc41f4 English: Search tags
+-- Context: Placeholder text in the search box of the tag picker (when new tags cannot be created):
+--     invites the user to type to filter existing tags.
 [1509] = "Buscar etiquetas",
 -- bdb18f62 English: Click to remove this tag. Right-click to choose its color.
 [1510] = "Haz clic para quitar esta etiqueta. Haz clic derecho para elegir su color.",
@@ -3266,50 +5175,77 @@ addon.translation = {
 --     rotation to save it. Cancel or Escape restores this dialog’s opening values.
 [1512] = "Edita la descripción, las etiquetas, el autor, el reino, el correo electrónico, el sitio web y la versión. Las citas de las fuentes se mantienen separadas de tu atribución. Aplicar actualiza el borrador de la rotación; aplica la rotación para guardarla. Cancelar o Escape restaura los valores con los que se abrió este diálogo.",
 -- 616f48c1 English: Fields
+-- Context: Fallback row label in View Changes for unsaved edits whose individual field name is not
+--     known; stands for "form fields".
 [1513] = "Campos",
 -- 7f553822 English: Search...
 [1514] = "Buscar...",
 -- 9fd728c6 English: Add
+-- Context: Button in the Conditions settings roster header that adds a new custom condition (verb).
 [1515] = "Añadir",
 -- b5a66eb6 English: Comparison limit
+-- Context: Row label in View Changes shown when the comparison was cut short, followed by the note
+--     that only the first 512 conditions per side are shown; a noun.
 [1516] = "Límite de comparación",
 -- 2dc363a7 English: Showing the first 512 conditions per side.
 [1517] = "Se muestran las primeras 512 condiciones de cada lado.",
 -- 1710782c English: Weapon
+-- Context: Weapon-related icons: an icon name in the icon picker's group list, and a category
+--     filter chip in the picker.
 [1518] = "Arma",
 -- 15b61974 English: Location
+-- Context: Icon name in the icon picker: a map/location marker (noun).
 [1519] = "Ubicación",
 -- 909cb811 English: Book
+-- Context: Icon name in the icon picker: a book (noun, the object).
 [1520] = "Libro",
 -- 289aff12 English: Question
+-- Context: Icon name in the icon picker: a question mark (noun).
 [1521] = "Pregunta",
 -- 5919dcd4 English: Swords
+-- Context: Icon name in the icon picker: crossed swords (plural noun).
 [1522] = "Espadas",
 -- 480d4be7 English: Shield
+-- Context: Icon name in the icon picker: a shield (noun, the item). Also used as an equipment
+--     category in the equipped-item condition.
 [1523] = "Escudo",
 -- 44bc3799 English: Healing
+-- Context: Icon name in the icon picker: healing (a heart/cross style icon).
 [1524] = "Sanación",
 -- 41e68f2c English: Lightning
+-- Context: Icon name in the icon picker: a lightning bolt (noun).
 [1525] = "Relámpago",
 -- b5e0cd8a English: Potions
+-- Context: Icon name in the icon picker: potions (plural noun).
 [1526] = "Pociones",
 -- e4eb1806 English: Food
+-- Context: Icon name in the icon picker: food (noun).
 [1527] = "Comida",
 -- a592855d English: Armor
+-- Context: Icon name in the icon picker: armor (noun, the item type).
 [1528] = "Armadura",
 -- 39bbb719 English: Groups
+-- Context: Icon name in the icon picker: several people (plural; a group icon).
 [1529] = "Grupos",
 -- 34ca0e76 English: Group
+-- Context: Icon name in the icon picker: a group of people (singular noun; a group icon).
 [1530] = "Grupo",
 -- d461a493 English: Automatic
+-- Context: Option in the Lua editor syntax-highlighting dropdown: the editor picks highlighting by
+--     itself.
 [1531] = "Automático",
 -- b8715031 English: Built In syntax highlighting
 [1532] = "Resaltado de sintaxis integrado",
 -- cf416625 English: Plain text
+-- Context: Option in the Lua editor syntax-highlighting dropdown: no highlighting, just plain text.
 [1533] = "Texto sin formato",
 -- 090512d9 English: Integrations
+-- Context: Top-level tab of the settings window (next to General, Conditions, Functions ...):
+--     integrations with other addons.
 [1534] = "Integraciones",
 -- 90c92d4c English: Lua editor
+-- Context: Title of the Lua editor help window, and the name of a Lua editor settings row in the
+--     profile comparison.
 [1535] = "Editor de Lua",
 -- d8cfde4d English: Choose optional addon integrations.
 [1536] = "Elige integraciones opcionales con addons.",
@@ -3331,30 +5267,44 @@ addon.translation = {
 --     integration availability.
 [1541] = "Elige el editor para las condiciones Lua personalizadas. El resaltado de sintaxis integrado y el texto sin formato funcionan sin otro addon. Automático usa un proveedor opcional registrado cuando está disponible y, si no, vuelve a una opción segura. Aplicar guarda la elección; un editor abierto conserva su proveedor actual hasta que se vuelve a abrir. El estado de carga de LuaWorkbench y WowLua se muestra aparte de la disponibilidad de la integración.",
 -- dfab6835 English: Invalid condition: %s
+-- %s #1: %s #1: why the custom condition is invalid, a short reason, e.g. "unexpected symbol near end"
 [1542] = "Condición no válida: %s",
 -- a3d021a9 English: Unavailable condition: %s
+-- %s #1: %s #1: the description of the condition, e.g. "In Combat"
 [1543] = "Condición no disponible: %s",
 -- ffb313cc English: This condition definition is disabled. Rotations using it are unavailable.
 [1544] = "La definición de esta condición está desactivada. Las rotaciones que la usan no están disponibles.",
 -- 12f67f85 English: Availability
 [1545] = "Disponibilidad",
 -- ef8f927d English: Edit fields
+-- Context: Row text and tooltip in the custom condition source preview when a condition has no
+--     named field yet: invites editing the condition's input fields (verb phrase).
 [1546] = "Editar campos",
 -- 9f088dbe English: Advanced
+-- Context: Checkbox at the top right of the schema editor of a custom condition: switches to the
+--     raw schema editor (equivalent text form) instead of the graphical field editor.
 [1547] = "Avanzado",
 -- bd82cf16 English: Number
+-- Context: Value type in the condition field type dropdown: a numeric value.
 [1548] = "Número",
 -- a066ff92 English: Boolean
+-- Context: Value type in the condition field type dropdown: true/false.
 [1549] = "Booleano",
 -- 5f3107cf English: Condition list
+-- Context: Value type in the condition field type dropdown: a list of conditions.
 [1550] = "Lista de condiciones",
 -- c5025e68 English: Record / map
+-- Context: Value type in the condition field type dropdown: a record, i.e. a table of named values
+--     (key/value map).
 [1551] = "Registro / mapa",
 -- 58e1de5e English: Allowed types / list alternatives
 [1552] = "Tipos permitidos / alternativas de lista",
 -- a9b310ef English: Invalid field schema: %s
+-- %s #1: %s #1: what is wrong with the field schema, a short code or the field key, e.g. "invalid-required-fields" (shown as-is)
 [1553] = "Esquema de campos no válido: %s",
 -- 76900f1b English: Back
+-- Context: Label of the back-navigation control in the embedded Lua editor's API knowledge window
+--     (go to the previous page).
 [1554] = "Atrás",
 -- 02dbfe6e English: Named fields. Choose a type, then edit its children for nested data.
 [1555] = "Campos con nombre. Elige un tipo y luego edita sus hijos para los datos anidados.",
@@ -3363,8 +5313,11 @@ addon.translation = {
 -- 130a1408 English: Showing the first 200 fields. Use Advanced schema for larger definitions.
 [1557] = "Se muestran los primeros 200 campos. Usa el esquema avanzado para definiciones más grandes.",
 -- 5f42d901 English: Add field
+-- Context: Button in the field schema editor: adds a new input field to the custom condition (verb
+--     phrase).
 [1558] = "Añadir campo",
 -- cb4190b5 English: Tag color
+-- Context: Tooltip of the colored swatch in a tag entry in a selector list: the tag's color.
 [1559] = "Color de la etiqueta",
 -- 08b91fc6 English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; use the search results to change tag colors.
@@ -3383,14 +5336,21 @@ addon.translation = {
 -- 047aff36 English: No native Lua editor has been opened this session.
 [1564] = "No se ha abierto ningún editor Lua nativo en esta sesión.",
 -- 5472dd28 English: Lua input diagnostics
+-- Context: Title of the report window that shows Lua editor input diagnostics, for testers to copy.
 [1565] = "Diagnóstico de la entrada Lua",
 -- 5c126363 English: Native input test
+-- Context: Title of a test dialog (Lua editor input probe): checks the game's native text input.
 [1566] = "Prueba de entrada nativa",
 -- 6043d2ec English: Input test
+-- Context: Subtitle in the header of the native input test dialog (short noun phrase).
 [1567] = "Prueba de entrada",
 -- 5a832570 English: Stock font
+-- Context: Button in the native input test dialog, and the status text that follows it: use the
+--     game's default font in the sample box.
 [1568] = "Fuente estándar",
 -- d92ba9ef English: RM font
+-- Context: Button in the native input test dialog, and the status text that follows it: use
+--     Rotation Master's own font in the sample box. "RM" is short for Rotation Master.
 [1569] = "Fuente de RM",
 -- c7b373e3 English: Click the sample, then try Up/Down and look for the caret. Compare Stock font
 --     and RM font. This temporary text is not saved.
@@ -3406,6 +5366,8 @@ addon.translation = {
 -- 9ee41d20 English: Show input diagnostics for this open Lua editor.
 [1575] = "Muestra el diagnóstico de entrada de este editor Lua abierto.",
 -- 6ecc3df6 English: Move
+-- Context: Small label in the custom condition source pane, in front of the category dropdown that
+--     moves the condition into another category (verb, imperative).
 [1576] = "Mover",
 -- 9e3bd238 English: Edit fields opens a graphical schema draft. Add, name, reorder or remove
 --     fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and
@@ -3453,8 +5415,12 @@ addon.translation = {
 -- 95a1b634 English: Release resources when the condition is removed or replaced.
 [1597] = "Libera recursos cuando la condición se quita o se sustituye.",
 -- 7f816072 English: Arguments
+-- Context: Heading for a function's argument list: in the generated function documentation and in
+--     the function source pane.
 [1598] = "Argumentos",
 -- 16dcaa92 English: Returns
+-- Context: Heading for a function's return values: in the generated function documentation and in
+--     the function source pane.
 [1599] = "Retornos",
 -- b92993e1 English: Field names are Lua identifiers. Choose a field type from its dropdown. Records
 --     contain named fields; allowed types contain alternatives, including nested records.
@@ -3468,34 +5434,46 @@ addon.translation = {
 --     condition unchanged. Red borders mark invalid names or incomplete types.
 [1602] = "El cheurón oculta o muestra los campos anidados. Añadir campo añade al final de ese contenedor. Deshacer / Rehacer afectan al borrador. Aplicar valida y prepara el esquema; Cancelar deja la condición sin cambios. Los bordes rojos marcan nombres no válidos o tipos incompletos.",
 -- 521fc51f English: Packaged helper from %s.
+-- %s #1: %s #1: the file path of the packaged helper, e.g. "Functions/text.lua"
 [1603] = "Función auxiliar incluida de %s.",
 -- 75e942e5 English: Functions
+-- Context: Top-level settings tab listing the user-written Lua functions; also the fallback title
+--     in the function bundle import/export dialog.
 [1604] = "Funciones",
 -- 786697a7 English: Browse packaged helpers and edit reusable custom Lua functions.
 [1605] = "Explora las funciones auxiliares incluidas y edita funciones Lua personalizadas reutilizables.",
 -- fc6e1f0d English: Function unavailable: %s
+-- %s #1: %s #1: why the function cannot be used, a short code, e.g. "disabled-function" (shown as-is)
 [1606] = "Función no disponible: %s",
 -- 2abb9d73 English: Argument name
+-- Context: Tooltip of the name box of an argument row in the function source pane (noun phrase).
 [1607] = "Nombre del argumento",
 -- 6956b2bc English: Add argument
 [1608] = "Añadir argumento",
 -- b38d87b4 English: Add return
 [1609] = "Añadir retorno",
 -- 355cc18a English: Built-in function
+-- Context: Heading of the function source pane for a function that ships with Rotation Master
+--     (read-only).
 [1610] = "Función integrada",
 -- 0d1f23b5 English: Custom function
+-- Context: Heading of the function source pane for a function written by the user (editable).
 [1611] = "Función personalizada",
 -- 4dcab896 English: Delete this function? Existing dependents will become unavailable.
 [1612] = "¿Borrar esta función? Lo que dependa de ella dejará de estar disponible.",
 -- 3ac00ae7 English: Deletion staged. Apply to remove this function.
 [1613] = "Borrado preparado. Aplica para quitar esta función.",
 -- f2dc99c6 English: Function bindings
+-- Context: Row label in the comparison of two custom functions: the function's list of bindings
+--     (aliases to other helper functions).
 [1614] = "Vínculos de la función",
 -- b19e02e9 English: Alias
 [1615] = "Alias",
 -- e64bbf11 English: This alias is already in use.
 [1616] = "Este alias ya está en uso.",
 -- c8037103 English: Function
+-- Context: Word before the name in the function bundle review list: marks the entry as a function
+--     (the alternative is Condition); followed by ": name".
 [1617] = "Función",
 -- a94fd0ee English: Add binding
 [1618] = "Añadir vínculo",
@@ -3520,33 +5498,53 @@ addon.translation = {
 -- e3b56b53 English: Review the dependency bundle before applying it.
 [1626] = "Revisa el paquete de dependencias antes de aplicarlo.",
 -- e0ad4daf English: Function bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1627] = "Vínculos de funciones (%d)",
 -- 1f10215d English: Aliases are local names in your Lua body. Changing an alias does not rewrite
 --     the body.
 [1628] = "Los alias son nombres locales en tu cuerpo Lua. Cambiar un alias no reescribe el cuerpo.",
 -- f81e71de English: Reuse existing
+-- Context: Conflict action in the function bundle import: keep the function already present and
+--     discard the imported one (dropdown entry).
 [1629] = "Reutilizar existente",
 -- c72a3c56 English: Replace existing
+-- Context: Conflict action in the function bundle import: overwrite the function already present
+--     with the imported one (dropdown entry).
 [1630] = "Sustituir existente",
 -- 548fcd9a English: Import with new identifier
 [1631] = "Importar con un identificador nuevo",
 -- 4759498a English: Create
+-- Context: Conflict action in the function bundle import: add the imported entry as a new item
+--     (dropdown entry).
 [1632] = "Crear",
 -- 41d342bd English: Review source
+-- Context: Subtitle and heading of the dialog that shows the source code of a bundle entry so it
+--     can be inspected before the import is applied.
 [1633] = "Revisar código",
 -- 195aae02 English: Original identifier
+-- Context: Label in the function bundle review: the identifier the entry has in the bundle, shown
+--     as "<label>: <id>".
 [1634] = "Identificador original",
 -- 8bec02bf English: Destination identifier
+-- Context: Label and edit-box title in the function bundle review: the identifier the entry will
+--     get after import.
 [1635] = "Identificador de destino",
 -- 32e8d276 English: Callback
+-- Context: Label of the dropdown in the function-source review dialog that selects which callback
+--     (a part of the code) to view.
 [1636] = "Callback",
 -- 222b67d3 English: Include custom function dependencies
 [1637] = "Incluir dependencias de funciones personalizadas",
 -- df750ab9 English: Review import
+-- Context: Button in the function bundle import dialog: checks the pasted bundle and lists what
+--     would change, without applying it.
 [1638] = "Revisar importación",
 -- 454d876b English: Apply import
+-- Context: Button in the function bundle review dialog: carries out the import (verb).
 [1639] = "Aplicar importación",
 -- b7143073 English: Function dependency bundle
+-- Context: Title of the dialog for exporting/importing a bundle of functions together with the
+--     functions they depend on.
 [1640] = "Paquete de dependencias de funciones",
 -- 44fc47f3 English: Review the complete bundle before applying an import. Imported Lua can execute
 --     when registered; only apply code you trust.
@@ -3555,14 +5553,21 @@ addon.translation = {
 --     the complete reviewed bundle.
 [1642] = "Revisa cada nombre original, destino y dependencia de abajo. Aplicar importación guarda el paquete completo revisado.",
 -- 0f2dd42f English: Conflict action
+-- Context: Label of the dropdown in the function bundle review that chooses what to do when an
+--     identifier already exists (Reuse, Replace, ...).
 [1643] = "Acción ante conflictos",
 -- 4e81098c English: Imported name
+-- Context: Label of the edit box in the function bundle review holding the display name the
+--     imported entry will have.
 [1644] = "Nombre importado",
 -- 8e818b1f English: Existing dependents
+-- Context: Label in the function bundle review, followed by a list: the existing functions or
+--     conditions that already use the one being replaced.
 [1645] = "Dependientes existentes",
 -- 75c417a1 English: This imported definition is disabled. Its dependents remain unavailable.
 [1646] = "Esta definición importada está desactivada. Sus dependientes siguen sin estar disponibles.",
 -- 2643e762 English: Required functions
+-- Context: Heading in the function bundle review for the functions the import depends on.
 [1647] = "Funciones necesarias",
 -- 103c8bbb English: Paste a bundle above, then review its original names, destinations and required
 --     functions.
@@ -3579,8 +5584,12 @@ addon.translation = {
 -- 9d60841e English: Check
 [1651] = "Comprobar",
 -- b64ac05f English: Live
+-- Context: Checkbox in the condition test dialog: keeps re-running the test repeatedly while the
+--     dialog stays open (live updating).
 [1652] = "En vivo",
 -- 324b134f English: Preview
+-- Context: Title of a help topic: the preview of an effect in the effect editor, and the preview
+--     window's sample in General settings help. A noun.
 [1653] = "Vista previa",
 -- a31ec5d7 English: The preview failed. Use /rm errors for details.
 [1654] = "La vista previa ha fallado. Usa /rm errors para ver los detalles.",
@@ -3589,8 +5598,12 @@ addon.translation = {
 -- c1ab4306 English: Condition check
 [1656] = "Comprobación de la condición",
 -- 0fa00491 English: Fields UI preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's fields user interface.
 [1657] = "Vista previa de la interfaz de campos",
 -- 367bba74 English: Help preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's help page.
 [1658] = "Vista previa de la ayuda",
 -- 59e490f3 English: Edit detached test values below. Check validates them before evaluating. Live
 --     is opt-in; test values are saved separately from the condition source.
@@ -3606,10 +5619,13 @@ addon.translation = {
 -- 6a255986 English: Skipped: invalid test values
 [1663] = "Omitido: valores de prueba no válidos",
 -- 4607aa3d English: Validation: %s
+-- %s #1: %s #1: the validation result, one of "Passed", "Failed" or "Unavailable" (translated), e.g. "Passed"
 [1664] = "Validación: %s",
 -- 436fe71b English: Passed
+-- Context: Result word in the condition test dialog: the test passed.
 [1665] = "Correcto",
 -- 4c852a7e English: Evaluation: %s
+-- %s #1: %s #1: the result of the test evaluation, a short phrase such as "True", "False" or "Skipped: invalid test values" (translated), e.g. "True"
 [1666] = "Evaluación: %s",
 -- 55a7b6a1 English: Fields UI and Help offer an explicit Preview of the current callback. Preview
 --     uses detached sample values and the normal field or help renderer. It does not save,
@@ -3624,6 +5640,8 @@ addon.translation = {
 --     Live.
 [1668] = "Evaluar y Validar ofrecen Comprobar con la misma interfaz de campos y valores de ejemplo independientes. Comprobar ejecuta primero la validación y luego evalúa solo los valores válidos. Los resultados muestran verdadero, falso o un motivo de no disponibilidad. En vivo es opcional y comprueba como máximo dos veces por segundo mientras se muestra este panel; al cerrarlo se detiene. Los valores de prueba se guardan aparte y nunca entran en las exportaciones de condiciones ni en las ediciones de rotación. Los cambios en el código no ejecutan callbacks a menos que vuelvas a comprobar o actives En vivo.",
 -- 5d331ffe English: Functions reference
+-- Context: Title of a section in the custom condition editor's help: the page that documents public
+--     helper functions (noun phrase).
 [1669] = "Referencia de funciones",
 -- 64334745 English: The Functions page documents public helpers and their typed arguments, return
 --     values and source. Context completion and hover use that reference; Ctrl-click a known helper
@@ -3636,10 +5654,16 @@ addon.translation = {
 -- 4087dcf1 English: Complete the highlighted test inputs before checking.
 [1673] = "Completa los campos de prueba resaltados antes de comprobar.",
 -- 532eaabd English: Test
+-- Context: Button in the custom condition editor, and the dialog subtitle: runs the condition once
+--     with sample input (verb).
 [1674] = "Prueba",
 -- e031e0df English: Run test
+-- Context: Button and tooltip in the Lua workbench query panel: runs the entered code once with the
+--     test arguments (verb phrase).
 [1675] = "Ejecutar prueba",
 -- 312acdf1 English: Test condition
+-- Context: Title of the dialog that tries a custom condition with sample values (verb phrase used
+--     as a title).
 [1676] = "Probar condición",
 -- 34fb96f5 English: Debugger output
 [1677] = "Salida del depurador",
@@ -3657,14 +5681,20 @@ addon.translation = {
 --     separate from source, exports and rotation edits. Check syntax never runs a callback.
 [1681] = "Prueba abre un diálogo a nivel de condición desde cualquier pestaña de callback. Muestra la interfaz de campos y la Ayuda juntas con valores independientes. Elige los campos y pulsa Ejecutar prueba para validar y luego evaluar solo los valores válidos. Abrir el diálogo no evalúa los valores por defecto. En vivo es opcional y se detiene al cerrar el diálogo. Los valores de prueba confirmados están disponibles para el depurador y se mantienen separados del código, las exportaciones y las ediciones de rotación. Comprobar sintaxis nunca ejecuta un callback.",
 -- deba1c35 English: Nullable
+-- Context: Checkbox in the argument/return type editor of the function source pane: the value may
+--     also be nil (empty).
 [1682] = "Admite nil",
 -- fbf338e4 English: Add return value
 [1683] = "Añadir valor de retorno",
 -- c75ed23e English: Lua returns multiple values in order. Each row documents one result.
 [1684] = "Lua devuelve varios valores en orden. Cada fila documenta un resultado.",
 -- f968686c English: Expand code editor
+-- Context: Tooltip of the button on the code editor corner in the function source pane: enlarges
+--     the editor to fill the pane (verb phrase).
 [1685] = "Ampliar el editor de código",
 -- cc81db61 English: Restore code editor
+-- Context: Tooltip of the same button after the editor is enlarged: shrinks it back to its normal
+--     size (verb phrase).
 [1686] = "Restaurar el editor de código",
 -- cb050073 English: Choose a source helper and the local name used to call it in this Lua body.
 --     Renaming the local name does not rewrite code. Source modules distinguish helpers with the
@@ -3673,6 +5703,8 @@ addon.translation = {
 -- cfaec007 English: Local name in code
 [1688] = "Nombre local en el código",
 -- d076565e English: Source helper
+-- Context: Column caption in the function bindings table: the existing function the alias points
+--     to.
 [1689] = "Función auxiliar de origen",
 -- b49f05b5 English: Function names use letters, numbers and underscores, beginning with a letter or
 --     underscore. Names suggest the local binding used to call them; registry identifiers stay
@@ -3683,6 +5715,7 @@ addon.translation = {
 -- f07f87d9 English: Delete this announcement?
 [1692] = "¿Borrar este anuncio?",
 -- da985348 English: Type: %s
+-- %s #1: %s #1: the Lua type name of the symbol, e.g. "number" or "string"
 [1693] = "Tipo: %s",
 -- 78a0b485 English: Supported unit-token to localized unit-name lookup. Use value.unit as a key;
 --     for example addon.units[value.unit]. Available tokens vary by client.
@@ -3705,6 +5738,9 @@ addon.translation = {
 -- 902c5c44 English: Rotation Master built-in function
 [1700] = "Función integrada de Rotation Master",
 -- 0443c4a6 English: Rotation Master value
+-- Context: Heading in the Lua editor's hover text for a symbol that is a plain value provided by
+--     Rotation Master (not a function); the alternatives are 'Rotation Master custom function' and
+--     'Rotation Master built-in function'.
 [1701] = "Valor de Rotation Master",
 -- 1a845fe0 English: Global function (documentation unavailable on this client)
 [1702] = "Función global (documentación no disponible en este cliente)",
@@ -3718,6 +5754,8 @@ addon.translation = {
 --     binding under Function bindings. Built In examples show dot or colon explicitly.
 [1705] = "Las funciones se comparten entre perfiles tras Aplicar. Llama a las utilidades personalizadas como functions.name(...); aceptar un autocompletado añade el vínculo de dependencia. Las llamadas escritas a mano necesitan un vínculo en Vínculos de funciones. Los ejemplos integrados muestran explícitamente el punto o los dos puntos.",
 -- d03262ba English: Show line numbers
+-- Context: Checkbox in Integrations settings (Lua editor section): shows line numbers in the Lua
+--     code editors; also a help topic title.
 [1706] = "Mostrar números de línea",
 -- f12fff00 English: Line-number visibility applies to every condition and function code editor.
 [1707] = "La visibilidad de los números de línea se aplica a todos los editores de código de condiciones y funciones.",
@@ -3734,6 +5772,8 @@ addon.translation = {
 --     LuaWorkbench and WowLua loading status is shown separately from integration availability.
 [1709] = "Elige el editor para las condiciones y funciones Lua personalizadas. Mostrar números de línea se aplica a todos los editores de código. El resaltado de sintaxis integrado y el texto sin formato funcionan sin otro addon. Automático selecciona un proveedor conectado o vuelve a una opción segura. Aplicar guarda los ajustes; los cambios de editor surten efecto al volver a abrirlo, y la visibilidad de los números de línea se actualiza en los editores abiertos. El estado de carga de LuaWorkbench y WowLua se muestra aparte de la disponibilidad de la integración.",
 -- 50c3cb6e English: All namespaces
+-- Context: First entry of the namespace filter dropdown on the Functions page: show functions from
+--     every namespace.
 [1710] = "Todos los espacios de nombres",
 -- 5605815a English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3750,8 +5790,12 @@ addon.translation = {
 -- 5226404c English: Existing API
 [1713] = "API existente",
 -- e572edc2 English: Name in code
+-- Context: Column caption in the function bindings table and tooltip of the alias field: the name a
+--     binding is called inside the Lua code.
 [1714] = "Nombre en el código",
 -- c4e4e7ab English: Namespace
+-- Context: Label of the namespace box in the function source pane and a help section title: the
+--     dotted group name under which a function is listed.
 [1715] = "Espacio de nombres",
 -- c6d86222 English: Namespaces group functions; they do not supply a receiver. Accept a completion
 --     to bind the shown dotted call. For a typed call, add the same qualified name under Function
@@ -3762,8 +5806,11 @@ addon.translation = {
 --     callback.
 [1717] = "Espacio de nombres privado de funciones de utilidad. Solo contiene los vínculos explícitos de este callback.",
 -- 481da3a7 English: Argument
+-- Context: Row title and add-button text in the function source pane: one function argument (noun).
+--     The same place has "Return".
 [1718] = "Argumento",
 -- e0836fce English: Bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1719] = "Vínculos (%d)",
 -- 6ecb5a70 English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3785,6 +5832,8 @@ addon.translation = {
 --     need changes; RM does not rewrite call sites.
 [1722] = "Haz clic en el encabezado Argumentos o Retornos para plegarlo o desplegarlo. + Argumento y + Retorno añaden al final al hacer clic, o insertan en un hueco resaltado al arrastrarlos. Arrastra una fila o usa Arriba / Abajo para reordenar; Ctrl+arrastrar lleva las filas siguientes. La papelera quita una fila. Tipo y Admite nil documentan los valores aceptados; Descripción explica cada entrada o resultado. Lua puede devolver varios resultados ordenados. Reordenar una función guardada muestra un aviso porque las llamadas posicionales pueden necesitar cambios; RM no reescribe los puntos de llamada.",
 -- 6b0143d0 English: Return
+-- Context: Row title and add-button text in the function source pane: one function return value
+--     (noun). The same place has "Argument".
 [1723] = "Retorno",
 -- 2584fdfb English: Changing argument order can break existing callers. Rotation Master will not
 --     rewrite their Lua code. Continue?
@@ -3793,6 +5842,8 @@ addon.translation = {
 --     existing callers. Review the Lua body and callers for the new order. Continue?
 [1725] = "Cambiar el orden de la documentación de los retornos no reescribe las sentencias return ni las llamadas existentes. Revisa el cuerpo Lua y las llamadas para el nuevo orden. ¿Continuar?",
 -- 2266dd0b English: Card controls
+-- Context: Heading of a section in the argument editor help: explains the controls on an argument's
+--     card.
 [1726] = "Controles de las tarjetas",
 -- 1f03f52f English: Describe this value for function documentation, completion and hover help.
 --     Changes remain in the draft until Apply.
@@ -3819,18 +5870,27 @@ addon.translation = {
 --     They document the contract; they do not rewrite or validate values in the Lua body.
 [1733] = "Tipo y Admite nil describen los valores que esta función acepta o devuelve. Documentan el contrato; no reescriben ni validan valores en el cuerpo Lua.",
 -- 42e8bcf1 English: Debuffs
+-- Context: Condition category in the icon picker's category list: debuff-related icons (plural
+--     noun).
 [1734] = "Perjuicios",
 -- e89b30aa English: Resources
+-- Context: Condition category in the icon picker's category list: resources such as mana and rage.
 [1735] = "Recursos",
 -- 8f0d1b30 English: Pet
+-- Context: Condition category in the icon picker's category list: pet-related icons.
 [1736] = "Mascota",
 -- 7c400199 English: Logic
+-- Context: Condition category in the icon picker's category list: logical operators (and/or/not).
 [1737] = "Lógica",
 -- 9e471951 English: Environment
+-- Context: Condition category in the icon picker's category list: environment (weather, zone ...).
 [1738] = "Entorno",
 -- 33b93476 English: Time
+-- Context: Condition category in the icon picker's category list: time-related icons.
 [1739] = "Tiempo",
 -- 66f9cfa2 English: Spell Auto-Repeat Active
+-- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
+--     Also an icon name in the icon picker.
 [1740] = "Repetición automática de hechizo activa",
 -- 35f743e1 English: Retribution (Wowhead & wowsims)
 [1741] = "Reprensión (Wowhead y wowsims)",
@@ -3844,6 +5904,10 @@ addon.translation = {
 --     separate premade.
 [1742] = "Reprensión cuerpo a cuerpo del nivel 1 al 70, y la opción predeterminada para cualquier paladín al que no se ajuste ninguna otra rotación integrada. Abre contra cada objetivo con Sentencia de sabiduría (con poco maná) o la del cruzado, mantiene activo tu mejor sello (Sangre o Mártir, Orden y luego Rectitud), Golpe de cruzado, solo juzga Rectitud, Sangre o Mártir (u Orden sobre un objetivo aturdido), Exorcismo contra no-muertos y demonios, y Consagración contra tres o más enemigos si te sobra maná. Martillo de cólera queda a tu cargo (Wowhead solo lo usa contra objetivos que huyen). Recordatorios: Aura de santidad, de reprensión o de devoción, una Bendición sobre ti mismo, una sanación tras el combate y Cólera vengativa. La alternancia de sellos es otra rotación integrada.",
 -- 89f00a09 English: Retribution (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = "Reprensión (Icy Veins)",
 -- c68e9ea0 English: Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3853,6 +5917,8 @@ addon.translation = {
 --     levelers. Same reminders as the Wowhead variant.
 [1744] = "La Reprensión de Icy Veins, una alternativa a la rotación integrada de Reprensión de Wowhead recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sentencia del cruzado una vez por objetivo, Sello de rectitud (Orden solo con un arma lenta; Sangre o Mártir en cuanto lo aprendas), Golpe de cruzado, Martillo de cólera y Sentencia cada vez que estén disponibles, Consagración contra dos o más enemigos, Exorcismo contra no-muertos y demonios, y Choque Sagrado para quienes suben de nivel como Sagrado. Los mismos recordatorios que la variante de Wowhead.",
 -- 85d846bd English: Retribution seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / Twist).
 [1745] = "Reprensión con alternancia de sellos",
 -- 34a6a34f English: Off by default; enable it if you twist seals (level 64+, Seal of Command and
 --     Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of
@@ -3872,6 +5938,10 @@ addon.translation = {
 --     Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you.
 [1748] = "Tanqueo para el árbol de Protección o cualquier paladín con Furia recta activa. Inicia el combate con Escudo Sagrado, Escudo de vengador y Sentencia; contra un objetivo que asesta golpes aplastantes (jefe del mundo o tres o más niveles por encima de ti) Escudo Sagrado va primero; después Consagración, Exorcismo contra no-muertos y demonios, Sentencia, Escudo Sagrado, Cólera Sagrada contra grupos de no-muertos y Escudo de vengador salvo contra objetivos que asestan golpes aplastantes. Sello de sabiduría contra grupos de enemigos si falta maná; si no, Rectitud. Recordatorios: Furia recta, Aura de devoción, Salvaguardia (o Reyes, o Sabiduría), Cólera vengativa e Imposición de manos. Las provocaciones y los cambios de objetivo quedan a tu cargo.",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1749] = "Protección (Icy Veins)",
 -- 3ae9045e English: Icy Veins' tanking, an alternative to the recommended Wowhead Protection
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3896,6 +5966,10 @@ addon.translation = {
 --     the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.
 [1754] = "La sanación de tanques en banda de Wowhead, una alternativa a la rotación integrada de Sagrado recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Luz Sagrada siempre que a tu objetivo le falte una décima parte de su salud, Destello de Luz solo para déficits pequeños, con las mismas emergencias, limpiezas, Sentencia y recordatorios que la rotación integrada Sagrado combinada.",
 -- 4396ff42 English: Ranged DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1755] = "DPS a distancia (wowsims)",
 -- 2b43c4a1 English: Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot,
 --     keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot
@@ -3908,6 +5982,10 @@ addon.translation = {
 --     with you.
 [1756] = "Niveles 1–70, todas las especializaciones. Inicia el combate con Marca del cazador, Disparo de puntería y Disparo automático, mantiene activo Disparo automático y usa golpes cuerpo a cuerpo cuando un objetivo te alcanza. Antes de Disparo firme mantiene tu Picadura de serpiente y gasta maná en Disparo de puntería, Multidisparo y Disparo Arcano solo mientras te sobre. Desde el nivel 62: Multidisparo cuando esté listo, Disparo firme justo después de cada Disparo automático, Disparo Arcano para llenar el hueco y Picadura de serpiente en solitario. Con tres o más enemigos luchando contra ti, Multidisparo siempre que esté listo. Te recuerda los aspectos (Víbora cuando escasea el maná, de nuevo Halcón a mitad de maná), el cuidado de la mascota, Matar, los tiempos de reutilización importantes contra élites y jefes, y Disparo silenciador. Las órdenes a la mascota, Redirección, las trampas, Salva, intercalar ataques cuerpo a cuerpo y Fingir muerte quedan a tu cargo.",
 -- 825c84d1 English: Ranged DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1757] = "DPS a distancia (Wowhead)",
 -- fb9ad1ee English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
 --     leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady
@@ -3918,6 +5996,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1758] = "Niveles 1–70, todas las especializaciones, según los consejos de banda de Wowhead. El mismo inicio de combate, cuerpo a cuerpo, disparos de subida de nivel, Multidisparo contra varios objetivos y recordatorios que la versión de wowsims, pero una vez aprendido Disparo firme solo ofrece Multidisparo y Disparo firme después de cada Disparo automático: sin Disparo Arcano de relleno (salvo en movimiento), sin Picadura de serpiente y sin recordatorio de Aspecto de la víbora. Las órdenes a la mascota, Redirección, las trampas, Salva, intercalar ataques cuerpo a cuerpo y Fingir muerte quedan a tu cargo. Es una alternativa a la rotación integrada de DPS a distancia de wowsims recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1759] = "DPS cuerpo a cuerpo (wowsims)",
 -- a600e4ad English: Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or
 --     Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte,
@@ -3929,6 +6011,10 @@ addon.translation = {
 --     Feint, Vanish and positioning stay with you.
 [1760] = "Niveles 1–70, todas las especializaciones. Desde sigilo: Premeditación, y después Golpe bajo en solitario o Garrote en grupo; si no, Emboscada (con una daga en la mano principal). En combate: Contestación, Hacer picadillo desde dos puntos de combo (renovado en sus dos últimos segundos), Eviscerar sobre un objetivo a punto de morir y, con cinco puntos, Ruptura si va a durar (no mientras Aluvión de acero golpea a varios objetivos); si no, Eviscerar. Genera puntos con Mutilar o Puñalada (daga) cuando el objetivo no te está atacando; si no, con Hemorragia o Golpe siniestro. Te recuerda los venenos que faltan, Patada, Aluvión de acero y Subidón de adrenalina, Sangre fría y Evasión. Exponer armadura, Golpe en los riñones, Amago, Esfumarse y el posicionamiento quedan a tu cargo.",
 -- 5f9b3940 English: Melee DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1761] = "DPS cuerpo a cuerpo (Wowhead)",
 -- 19e52877 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
 --     reminders as the wowsims version, but Slice and Dice starts from one combo point and every
@@ -3937,6 +6023,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1762] = "Niveles 1–70, todas las especializaciones, según Wowhead. Las mismas aperturas desde sigilo, generadores y recordatorios que la versión de wowsims, pero Hacer picadillo empieza desde un punto de combo y todo remate de cinco puntos es Eviscerar: sin Ruptura. Exponer armadura, Golpe en los riñones, Amago, Esfumarse y el posicionamiento quedan a tu cargo. Es una alternativa a la rotación integrada de DPS cuerpo a cuerpo de wowsims recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Balance).
 [1763] = "Equilibrio",
 -- 8177cc43 English: Caster Balance from level 1 to 70, and the default for any Druid no other
 --     premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving,
@@ -3958,6 +6046,10 @@ addon.translation = {
 --     optional step that starts off (it needs a powershift macro).
 [1766] = "Felino y oso para el árbol de Combate feral, según tu forma. Felino: apertura desde sigilo (Abalanzarse, Devastar o Triturar), Fuego feérico (feral), Destripar con cuatro puntos de combo sobre un objetivo que vaya a sobrevivir, Mordedura feroz entre Destripar sin Lanzamiento libre, Destrozar siempre activo, Triturar por la espalda o Destrozar/Zarpa cuando el objetivo te está atacando. Oso: Fuego feérico, Lacerar renovado antes de que se agote, Rugido desmoralizador salvo que esté activo el Grito de un guerrero, Flagelo contra grupos de enemigos, Destrozar, cinco Lacerar y Flagelo. En forma humanoide sugiere Forma felina (o de oso). Recordatorios: Marca, Espinas, Augurio, Magullar con ira de sobra, Furia del tigre antes de iniciar el combate y Regeneración frenética. El powershifting es un paso opcional que empieza desactivado (necesita una macro de powershift).",
 -- 4c55a525 English: Feral (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1767] = "Feral (Wowhead)",
 -- 9092413a English: Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off
 --     by default: enable it and disable that one, or raise its priority. Rip whenever it is down at
@@ -3966,6 +6058,8 @@ addon.translation = {
 --     Otherwise the same as the Icy Veins variant.
 [1768] = "El Feral de Wowhead, una alternativa a la rotación integrada de Feral de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Destripar siempre que falte con cuatro puntos de combo y Mordedura feroz solo sobre un objetivo a punto de morir (sin intercalar mordeduras); los osos gastan los tiempos de reutilización globales libres en Lacerar antes de Flagelo. Estimular cuando un felino se queda sin maná. Por lo demás, igual que la variante de Icy Veins.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Restoration).
 [1769] = "Restauración",
 -- da5557c1 English: Healing for the Restoration tree on your friendly target (or yourself): Healing
 --     Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or
@@ -3975,6 +6069,10 @@ addon.translation = {
 --     Innervate and Rebirth. Choosing whom to heal and downranking stay with you.
 [1770] = "Sanación para el árbol de Restauración sobre tu objetivo amistoso (o sobre ti): Toque de sanación tras Presteza de la Naturaleza, Alivio presto sobre un objetivo a punto de morir que tenga tu Rejuvenecimiento o Recrecimiento, tres Flor de vida renovadas sin pausa en combate, Rejuvenecimiento y Recrecimiento cuando faltan, y después Recrecimiento en Árbol de vida o Toque de sanación fuera de él. Un objetivo hostil recibe Fuego lunar y Cólera para jugar en solitario. Recordatorios: Marca, Augurio, Árbol de vida, Presteza de la Naturaleza, Tranquilidad, Estimular y Renacer. Elegir a quién sanar y usar rangos inferiores queda a tu cargo.",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1771] = "DPS cuerpo a cuerpo (wowsims)",
 -- e30bf8c3 English: Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept,
 --     Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is
@@ -3994,6 +6092,10 @@ addon.translation = {
 --     disable that one, or raise its priority.
 [1774] = "Niveles 1–70, Armas o Furia, según Icy Veins. El mismo inicio de combate, recordatorios y pasos de subida de nivel que la versión de wowsims, pero con Golpe mortal va primero Ejecutar, con Sed de sangre Ejecutar va justo después, Torbellino sigue sin reservar ira y Seccionar solo con la ira casi llena. El momento de Embate, el cambio de actitudes e Ira rabiosa quedan a tu cargo. Es una alternativa a la rotación integrada de DPS cuerpo a cuerpo de wowsims recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 871d5911 English: Tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1775] = "Tanque (Wowhead)",
 -- 91dfa1ce English: Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge,
 --     Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder
@@ -4003,6 +6105,10 @@ addon.translation = {
 --     utility stay with you.
 [1776] = "Niveles 10–70, elegida mientras estás en Actitud defensiva. Embate con escudo, Revancha, y Atronar y Grito desmoralizador mantenidos contra élites y jefes; después Devastar o Hender armadura. Contra grupos de enemigos: primero Atronar y Grito desmoralizador. Te recuerda Bloquear con escudo (con un escudo equipado) contra jefes y enemigos de nivel superior, Golpe heroico o Rajar, Grito de batalla, Ira sangrienta, Azote de escudo y, en emergencias, Última carga y Muro de escudo. Las provocaciones y otras utilidades quedan a tu cargo.",
 -- ea76d926 English: Tank (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1777] = "Tanque (Icy Veins)",
 -- aa141592 English: Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins.
 --     Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until
@@ -4012,6 +6118,10 @@ addon.translation = {
 --     default: enable it and disable that one, or raise its priority.
 [1778] = "Niveles 10–70, elegida mientras estás en Actitud defensiva, según Icy Veins. Embate con escudo, Revancha y después Devastar o Hender armadura, con Desgarrar al inicio del combate hasta aprender Embate con escudo. Contra grupos de enemigos: Atronar, y Grito desmoralizador contra élites. Bloquear con escudo se recuerda siempre que tu objetivo te está atacando y llevas un escudo. Las provocaciones y otras utilidades quedan a tu cargo. Es una alternativa a la rotación integrada de tanque de Wowhead recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 3adec7ba English: Damage (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1779] = "Daño (Icy Veins)",
 -- 9b0711bb English: Damage from level 1 to 70, used whenever the healer premade does not apply.
 --     Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric
@@ -4022,6 +6132,10 @@ addon.translation = {
 --     healing stay with you.
 [1780] = "Daño del nivel 1 al 70, usada siempre que no se aplique la rotación integrada de sanador. Al principio Fusta y varita; después Explosión mental, Palabra de las Sombras: dolor, Tortura mental, Forma de las Sombras, Toque vampírico y Palabra de las Sombras: muerte a medida que los aprendes; los DoT antes de Explosión mental; en solitario, a un objetivo a punto de morir se le remata con la varita. Los sacerdotes Sagrado y Disciplina que hacen misiones reciben Fuego Sagrado y Fusta. Recordatorios: Fuego interno, Entereza, beneficios raciales, Enfoque interno y Maligno de las Sombras. Una Tortura mental pasado su primer pulso se corta si hay una Explosión mental lista, o Palabra de las Sombras: muerte con más de la mitad de salud. Los escudos y la sanación quedan a tu cargo.",
 -- ce79d246 English: Damage (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1781] = "Daño (Wowhead)",
 -- fe006eaa English: Damage after Wowhead's guides, an alternative to the recommended Icy Veins
 --     damage premade, off by default: enable it and disable that one, or raise its priority. Mind
@@ -4030,6 +6144,10 @@ addon.translation = {
 --     premade.
 [1782] = "Daño según las guías de Wowhead, una alternativa a la rotación integrada de daño de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Explosión mental abre el combate y va antes de renovar los DoT, Abrazo vampírico solo cuando baja tu salud, y a un objetivo a punto de morir se le rematan con hechizos en lugar de la varita. Por lo demás, igual que la rotación integrada recomendada.",
 -- d0f0e9e6 English: Healer (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1783] = "Sanador (Wowhead)",
 -- d31781e0 English: Healing in a group when Holy or Discipline is your main talent tree. It advises
 --     on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and
@@ -4038,6 +6156,10 @@ addon.translation = {
 --     as a cheap top-up. With an enemy targeted it offers light damage.
 [1784] = "Sanación en grupo cuando Sagrado o Disciplina es tu árbol de talentos principal. Aconseja sobre la unidad amistosa que tengas como objetivo; tú eliges a quién sanar. Rezo de alivio antes de iniciar el combate y siempre que esté listo, Renovar, Palabra de poder: escudo en emergencias, disipaciones, Círculo de sanación o Rezo de sanación para el daño al grupo, Sanación conjunta, Sanación relámpago y Sanación superior, y Sanación superior de rango 1 como retoque barato. Con un enemigo como objetivo ofrece algo de daño.",
 -- 45321807 English: Healer (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1785] = "Sanador (Icy Veins)",
 -- e31d4277 English: Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash
 --     Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to
@@ -4054,6 +6176,10 @@ addon.translation = {
 --     Soulshatter. Fears and other curses stay with you.
 [1788] = "Todos los árboles de talentos del nivel 1 al 70. Maldición, y después Aflicción inestable, Inmolar, Corrupción y Succionar vida según los aprendas, Descarga de las Sombras o Incinerar; primero las activaciones de Ocaso y Contragolpe; Semilla de corrupción, Llamas infernales y Furia de las Sombras contra tres o más enemigos. En solitario drena cuando estás herido, usa Transfusión de vida y la varita, y usa Drenar alma o un remate sobre un objetivo a punto de morir. Recordatorios: Armadura vil, Armadura demoníaca o Piel de demonio, tu demonio, el sacrificio, Enlace de alma, Amplificar maldición y Despedazar alma. Los miedos y otras maldiciones quedan a tu cargo.",
 -- e3790b25 English: Drain-tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1789] = "Tanque de drenaje (Wowhead)",
 -- 522ed69f English: Warlock after Wowhead's guides, an alternative to the recommended Icy Veins
 --     Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo
@@ -4069,10 +6195,13 @@ addon.translation = {
 -- 550c388b English: The item list changed elsewhere. Close and reopen it before applying.
 [1793] = "La lista de objetos ha cambiado en otro lugar. Ciérrala y vuelve a abrirla antes de aplicar.",
 -- 67559dc7 English: Native settings page unavailable: %s
+-- %s #1: %s #1: the internal key of the settings page, e.g. "profiles" (shown as-is)
 [1794] = "Página de ajustes nativa no disponible: %s",
 -- 0f6314b0 English: The native rotation editor is unavailable.
 [1795] = "El editor de rotaciones nativo no está disponible.",
 -- 4850b174 English: Required
+-- Context: Checkbox on a field card in the schema editor (and its help title): the field must be
+--     filled in before the condition can run.
 [1796] = "Obligatorio",
 -- 9bcec068 English: Required field references need review. Apply keeps the displayed root
 --     requirements.
@@ -4082,18 +6211,27 @@ addon.translation = {
 --     into a nested structure makes it optional. Undo restores both. Callback code is unchanged.
 [1798] = "Los campos raíz obligatorios deben tener un valor antes de que esta condición pueda ejecutarse. Renombrar, reordenar y duplicar conservan este indicador; quitar el campo quita su requisito. Moverlo dentro de una estructura anidada lo hace opcional. Deshacer restaura ambos. El código del callback no cambia.",
 -- 8b8cd45b English: Copy condition description
+-- Context: Button in the condition editor: copies the plain-language description of the condition
+--     to the clipboard (verb phrase).
 [1799] = "Copiar la descripción de la condición",
 -- b5739be0 English: This condition exceeds the supported editor limits.
 [1800] = "Esta condición supera los límites admitidos por el editor.",
 -- df58aeb6 English: Proc Glow
+-- Context: Effect type in the effect editor dropdown and Effects help: a glow in the style of the
+--     game's spell-proc highlight.
 [1801] = "Resplandor de activación",
 -- dce1c179 English: Loop duration
+-- Context: Help topic title and setting for the proc glow effect: how long one loop of the glow
+--     animation lasts.
 [1802] = "Duración del bucle",
 -- a4f0db33 English: Start burst
+-- Context: Checkbox in the effect editor for the proc glow effect (and its help title): plays the
+--     start burst animation when the glow begins.
 [1803] = "Destello inicial",
 -- b89fd7fd English: Proc Glow is unavailable on this client; Pixel glow will be used.
 [1804] = "El Resplandor de activación no está disponible en este cliente; se usará el resplandor Píxel.",
 -- 34ae0a26 English: Rotation data requires recovery: %s
+-- %s #1: %s #1: why the data cannot be used, a short code or reason, e.g. "unsupported-version" (shown as-is)
 [1805] = "Los datos de la rotación necesitan recuperación: %s",
 -- 8b4e37b9 English: Copies belong to your Class unless This character is selected. Replacement
 --     keeps its original owner.
@@ -4101,32 +6239,50 @@ addon.translation = {
 -- 0faa3bd8 English: Archive report truncated; saved data is unchanged.
 [1807] = "Informe del archivo recortado; los datos guardados no han cambiado.",
 -- 414c7fd3 English: Recover unassigned rotations
+-- Context: Button in the banner that appears when older rotations lack an owner, and title of a
+--     help section/window: opens the unassigned rotation archive so they can be adopted.
 [1808] = "Recuperar rotaciones sin asignar",
 -- 291f821c English: Ownership required
+-- Context: Subtitle of the unassigned rotation recovery window: tells the user these rotations need
+--     an owner (class or character) before they can be used.
 [1809] = "Se requiere propietario",
 -- cd16196a English: These records have no assigned owner. Choose Class or This character
 --     explicitly. No ownership is inferred from names, spells or profile history.
 [1810] = "Estos registros no tienen propietario asignado. Elige Clase o Este personaje explícitamente. La propiedad no se deduce de los nombres, los hechizos ni el historial del perfil.",
 -- ce112847 English: Recovery unavailable: %s
+-- %s #1: %s #1: why the recovery list cannot be shown, a short code, e.g. "rotation-store-unavailable" (shown as-is)
 [1811] = "Recuperación no disponible: %s",
 -- af7356f1 English: Unassigned rotation archive
+-- Context: Title of the report window with the contents of the unassigned rotation archive.
 [1812] = "Archivo de rotaciones sin asignar",
 -- d17af82d English: Character archive
+-- Context: Label in the recover window: the archive that belongs to a single character (see
+--     "Profile archive").
 [1813] = "Archivo del personaje",
 -- 8ce8b3ed English: Profile archive
+-- Context: Label in the recover window: the archive that belongs to the whole profile (see
+--     "Character archive").
 [1814] = "Archivo del perfil",
 -- 4064b908 English: No unassigned rotations.
 [1815] = "No hay rotaciones sin asignar.",
 -- 46bb2f53 English: Archive: %s; specialization: %s; identifier: %s
+-- %s #1: %s #1: the kind of archive, "Character archive" or "Profile archive" (translated), e.g. "Profile archive"
+-- %s #2: %s #2: the specialization number the record belongs to, e.g. 64
+-- %s #3: %s #3: the record's identifier, e.g. "a1b2c3d4"
 [1816] = "Archivo: %s; especialización: %s; identificador: %s",
 -- a7232fd4 English: Export archive
+-- Context: Button in the recover window: exports the archive's contents as text (verb phrase).
 [1817] = "Exportar archivo",
 -- b650b12a English: Adopt rotation
+-- Context: Button in the recover window: assigns the selected unowned rotation to a class or
+--     character (verb phrase).
 [1818] = "Adoptar rotación",
 -- 2b1bc965 English: Could not adopt this record: %s
+-- %s #1: %s #1: why the record cannot be adopted, a short code, e.g. "missing-archival-body" (shown as-is)
 [1819] = "No se ha podido adoptar este registro: %s",
 -- 041c7071 English: More than one rotation is named %s. Select its Class or This character entry in
 --     the rotation browser.
+-- %s #1: %s #1: the rotation name the player typed, e.g. "Frost AoE"
 [1820] = "Hay más de una rotación llamada %s. Selecciona su entrada de Clase o de Este personaje en el explorador de rotaciones.",
 -- 71ddae9f English: The fallback rotation is unavailable. Open Rotations to complete or recover it.
 [1821] = "La rotación de reserva no está disponible. Abre Rotaciones para completarla o recuperarla.",
@@ -4143,6 +6299,7 @@ addon.translation = {
 -- d5cade7e English: Stock
 [1826] = "Estándar",
 -- 9286002a English: Questie
+-- Context: Name of the addon "Questie" shown in the Integrations settings list; stays unchanged.
 [1827] = "Questie",
 -- 6dff3b3c English: Waiting for Questie.
 [1828] = "Esperando a Questie.",
@@ -4157,10 +6314,16 @@ addon.translation = {
 -- a414f778 English: Questie adapter unavailable.
 [1833] = "Adaptador de Questie no disponible.",
 -- a0b302b0 English: Questie version: %s (%s)
+-- %s #1: %s #1: the Questie version, e.g. "9.7.1"
+-- %s #2: %s #2: how well it is tested, "source-tested" or "unverified" (translated), e.g. "unverified"
 [1834] = "Versión de Questie: %s (%s)",
 -- 97b7e2db English: unverified
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: the
+--     version has not been checked against Rotation Master's tests (lowercase).
 [1835] = "sin verificar",
 -- 0d6aeafd English: Client family: %s (%s)
+-- %s #1: %s #1: the game client family, e.g. "Classic Era"
+-- %s #2: %s #2: the compatibility status, "declared; unverified" or "unsupported" (translated), e.g. "unsupported"
 [1836] = "Familia de cliente: %s (%s)",
 -- ff3a37e2 English: declared; unverified
 [1837] = "declarado; sin verificar",
@@ -4173,61 +6336,110 @@ addon.translation = {
 --     preference. No background polling is used.
 [1840] = "Questie es opcional y está desactivado por defecto. Aplicar guarda esta preferencia del perfil. No se usa ningún sondeo en segundo plano.",
 -- f0486ac1 English: Refresh Questie status
+-- Context: Button in the Questie integration part of Integrations settings: checks again whether
+--     Questie is loaded and connected (verb phrase).
 [1841] = "Actualizar el estado de Questie",
 -- ee7e05e5 English: Supported addons
+-- Context: Heading above the list of supported addons in Integrations settings.
 [1842] = "Addons compatibles",
 -- 2fc99337 English: Loaded; integration not connected.
 [1843] = "Cargado; integración no conectada.",
 -- 5b205b7f English: %s (version %s)
+-- Context: Addon name followed by its version in the Integrations list; first %s is the addon name,
+--     second %s its version.
+-- %s #1: %s #1: the name of the add-on integration, e.g. "Questie"
+-- %s #2: %s #2: its version, e.g. "9.7.1"
 [1844] = "%s (versión %s)",
 -- bad4af6a English: Supported addons are listed even when missing. Loaded addons are only marked
 --     connected when their integration is available.
 [1845] = "Los addons compatibles se muestran aunque falten. Los addons cargados solo se marcan como conectados cuando su integración está disponible.",
 -- 11b28c68 English: ExtendedCharacterStats
+-- Context: Name of the addon "ExtendedCharacterStats" shown in the Integrations settings list;
+--     stays unchanged.
 [1846] = "ExtendedCharacterStats",
 -- cbc21d63 English: LuaWorkbench
+-- Context: Name of the addon "LuaWorkbench" (an external Lua editor) shown in the Integrations
+--     settings list; stays unchanged.
 [1847] = "LuaWorkbench",
 -- 696b160a English: ElvUI
+-- Context: Name of the action bar addon "ElvUI" shown in the Integrations settings list; stays
+--     unchanged.
 [1848] = "ElvUI",
 -- fc95169b English: Bartender4
+-- Context: Name of the action bar addon "Bartender4" shown in the Integrations settings list; stays
+--     unchanged.
 [1849] = "Bartender4",
 -- 73198132 English: ButtonForge
+-- Context: Name of the action bar addon "ButtonForge" shown in the Integrations settings list;
+--     stays unchanged.
 [1850] = "ButtonForge",
 -- 42fa5fc0 English: LUI
+-- Context: Name of the addon "LUI" (interface suite with action bars) shown in the Integrations
+--     settings list; stays unchanged.
 [1851] = "LUI",
 -- efc3965e English: Dominos
+-- Context: Name of the action bar addon "Dominos" shown in the Integrations settings list; stays
+--     unchanged.
 [1852] = "Dominos",
 -- 14548eff English: AzeriteUI
+-- Context: Name of the addon "AzeriteUI" (interface suite with action bars) shown in the
+--     Integrations settings list; stays unchanged.
 [1853] = "AzeriteUI",
 -- 7c811de6 English: FarmingBar
+-- Context: Name of the addon "FarmingBar" shown in the Integrations settings list; stays unchanged.
 [1854] = "FarmingBar",
 -- e866b4e8 English: TotemTimers
+-- Context: Name of the addon "TotemTimers" shown in the Integrations settings list; stays
+--     unchanged.
 [1855] = "TotemTimers",
 -- 06c879f3 English: AzeriteUI6
+-- Context: Name of the addon "AzeriteUI6" shown in the Integrations settings list; stays unchanged.
 [1856] = "AzeriteUI6",
 -- 5bd55adb English: BigWigs
+-- Context: Name of the boss-mod addon "BigWigs" shown in the Integrations settings list; stays
+--     unchanged.
 [1857] = "BigWigs",
 -- 1c91d8be English: Boss mods
+-- Context: Group heading in Integrations settings for boss-mod addons (BigWigs, DBM) that supply
+--     encounter timers; also a help topic title.
 [1858] = "Mods de jefes",
 -- c5eddceb English: Top panels
+-- Context: Group heading in Integrations settings for addons that show panels at the top of the
+--     screen (Titan Panel); also a help topic title.
 [1859] = "Paneles superiores",
 -- 22965568 English: Connected
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded and connected
+--     to Rotation Master.
 [1860] = "Conectado",
 -- 8777e3a9 English: Incompatible
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded but its
+--     version cannot be used with Rotation Master.
 [1861] = "Incompatible",
 -- 56178c4b English: Loaded; connection not confirmed.
 [1862] = "Cargado; conexión no confirmada.",
 -- 3c586673 English: Capture casts (30s)
+-- Context: Button text in General settings that starts a 30-second spell cast recording; also a
+--     help topic title.
 [1863] = "Capturar lanzamientos (30 s)",
 -- b90c2cce English: Cast report
+-- Context: Label of the button/report in General settings that shows the finished cast recording;
+--     also a help topic title.
 [1864] = "Informe de lanzamientos",
 -- 548d9c5c English: Stop CPU capture
+-- Context: Button text in General settings, shown while the CPU recording is running: stops it
+--     (verb phrase).
 [1865] = "Detener captura de CPU",
 -- 5ba35474 English: Stop runtime capture
+-- Context: Button text in General settings, shown while the runtime recording is running: stops it
+--     (verb phrase).
 [1866] = "Detener captura de ejecución",
 -- 0f122dcf English: Stop cast capture
+-- Context: Button text in General settings, shown while the cast recording is running: stops it
+--     (verb phrase).
 [1867] = "Detener captura de lanzamientos",
 -- ba691ba0 English: unavailable
+-- Context: Status word in the performance and analytics reports where a value could not be read
+--     (lowercase, fits in running text).
 [1868] = "no disponible",
 -- a43f31c1 English: Apply changes the editor used the next time a source editor opens. Enable an
 --     editor before selecting it.
@@ -4240,22 +6452,29 @@ addon.translation = {
 -- 78a6a8fe English: Built in
 [1872] = "Integrado",
 -- f85577f0 English: Description / status
+-- Context: Column heading in the Integrations table: what the integration does and its state.
 [1873] = "Descripción / estado",
 -- d9494bd4 English: Editor options
 [1874] = "Opciones del editor",
 -- b9c3bfb3 English: Enable / Select
+-- Context: Column heading in the Integrations table over the checkbox or button that turns an
+--     integration on or lets the user choose it.
 [1875] = "Activar / Seleccionar",
 -- 1ce31af1 English: Lua editors
 [1876] = "Editores Lua",
 -- 4207e3fc English: None (plain editor)
+-- Context: Option in the Lua editor mode choice: no special editor, just the plain text box.
 [1877] = "Ninguno (editor simple)",
 -- c935b9fd English: Shared editor settings.
 [1878] = "Ajustes compartidos del editor.",
 -- bea3f386 English: Editor settings
+-- Context: Heading above the Lua editor options in Integrations settings.
 [1879] = "Ajustes del editor",
 -- 332b0b0a English: Enable built-in syntax highlighting
 [1880] = "Activar el resaltado de sintaxis integrado",
 -- a1aa075c English: Syntax highlighting
+-- Context: Checkbox in Integrations settings (Lua editor section): turn on color highlighting of
+--     Lua syntax; also a help topic title.
 [1881] = "Resaltado de sintaxis",
 -- dc3bae06 English: Addon release pages
 [1882] = "Páginas de versiones de addons",
@@ -4263,18 +6482,24 @@ addon.translation = {
 --     client may be unverified.
 [1883] = "Los listados del autor describen la disponibilidad de versiones; puede que el comportamiento de la integración en este cliente no esté verificado.",
 -- 839b59a4 English: Copy %s
+-- %s #1: %s #1: what is copied, e.g. "Rotation"
 [1884] = "Copiar %s",
 -- 6377056a English: Release links checked: 2026-10-20.
 [1885] = "Enlaces de versiones comprobados: 2026-10-20.",
 -- 06a1145d English: CurseForge — LUI Classic
 [1886] = "CurseForge — LUI Classic",
 -- 26330782 English: Copy link %d
+-- %d #1: %d #1: the number of the link, counting from 1, e.g. 2
 [1887] = "Copiar enlace %d",
 -- 382bc741 English: Preview appearance
+-- Context: Group heading in Integrations settings for the options that affect how the preview
+--     window looks (Masque skins).
 [1888] = "Apariencia de la vista previa",
 -- 71e7edd7 English: Skin preview buttons with Masque
 [1889] = "Aplicar aspectos de Masque a los botones de la vista previa",
 -- 0e769600 English: History
+-- Context: Heading in General settings above the three sliders that set how many seconds of spell,
+--     combat and damage history are remembered.
 [1890] = "Historial",
 -- 46811e29 English: Bypass observation cache
 [1891] = "Omitir la caché de observaciones",
@@ -4283,64 +6508,101 @@ addon.translation = {
 -- 6b6e2380 English: Bypass observation cache (pending)
 [1893] = "Omitir la caché de observaciones (pendiente)",
 -- 1fc91201 English: Skin
+-- Context: Label of the Masque skin dropdown in General settings for the preview buttons; also a
+--     help topic title.
 [1894] = "Aspecto",
 -- f24d3294 English: Blizzard Classic
+-- Context: Name of the built-in default button skin choice in the Masque skin dropdown (no Masque
+--     skin applied).
 [1895] = "Blizzard Classic",
 -- a41fff13 English: Preview skin is unavailable.
 [1896] = "El aspecto de la vista previa no está disponible.",
 -- 8f31d7c7 English: Sample icon
+-- Context: Tooltip of the example icon shown in the preview window.
 [1897] = "Icono de ejemplo",
 -- a87bca24 English: Saved manual choice is unavailable in the current context.
 [1898] = "La elección manual guardada no está disponible en el contexto actual.",
 -- f51aa35f English: Edit announcement conditions
+-- Context: Tooltip of the button in an announcement output that opens the editor for the conditions
+--     deciding when it is announced (verb phrase).
 [1899] = "Editar las condiciones del anuncio",
 -- 90b95311 English: Announcement conditions
+-- Context: Title of the announcement conditions editor window and a help topic title; noun phrase.
 [1900] = "Condiciones del anuncio",
 -- b291861f English: Spell recipient
+-- Context: Unit choice in the condition editor when editing announcements: the person the spell is
+--     cast on.
 [1901] = "Destinatario del hechizo",
 -- 6edf74a9 English: {unit} {{!is|is not}} in a raid
 [1902] = "{unit} {{!está|no está}} en una banda",
 -- 60f5f5ce English: Announcement target
+-- Context: Unit choice in the condition editor when editing announcement conditions: the target
+--     named in the announcement; also a label in condition summaries.
 [1903] = "Objetivo del anuncio",
 -- fe664929 English: Is Dead or Ghost
 [1904] = "Está muerto o es un fantasma",
 -- b2bdc8d6 English: Is Friendly
+-- Context: Condition type title: the unit is friendly. Also an icon name in the icon picker.
 [1905] = "Es amistoso",
 -- 12062b75 English: {unit} {{!is dead or a ghost|is alive}}
 [1906] = "{unit} {{!está muerto o es un fantasma|está vivo}}",
 -- c1454135 English: Workbench Help
+-- Context: Fallback title of the help window opened without a topic.
 [1907] = "Ayuda del banco de trabajo",
 -- 3db65f8c English: Navigation
+-- Context: Help section title in the workbench window help: how to move around the window.
 [1908] = "Navegación",
 -- 293d404a English: Destination
+-- Context: Help section title in the profile import/export dialog: where the imported profile will
+--     be placed.
 [1909] = "Destino",
 -- e5f16b07 English: Via Macro
+-- Context: Event text substituted for {{event}} in macro-driven announcements: the announcement was
+--     triggered by a macro.
 [1910] = "Mediante macro",
 -- 79c3596b English: Via Script/Macro
+-- Context: Announcement type dropdown entry: the announcement is triggered from a macro or script
+--     call, not by casting; also a help topic title.
 [1911] = "Mediante script/macro",
 -- 73210659 English: Use a unique Via Script/Macro identifier.
 [1912] = "Usa un identificador Mediante script/macro único.",
 -- 41714d2c English: Whisper
+-- Context: Announcement channel dropdown entry: sends the message as a whisper to a player.
 [1913] = "Susurrar",
 -- 02e363ed English: Use supplied macro target ({{target}})
 [1914] = "Usar el objetivo proporcionado por la macro ({{target}})",
 -- 6ce2aa2e English: Macro call: %s
+-- %s #1: %s #1: the macro command that calls the announcement, e.g. "/run RM_Annouce("FOO","mouseover",nil)"
 [1915] = "Llamada de macro: %s",
 -- 5a435552 English: Announcement Condition
+-- Context: Checkbox in the custom condition source pane (and its help title): offers this condition
+--     type when editing announcement conditions.
 [1916] = "Condición de anuncio",
 -- 028cd1c8 English: Announcement
+-- Context: Entry in the Conditions settings category filter that lists conditions available for
+--     announcements.
 [1917] = "Anuncio",
 -- d763075f English: Show this condition in the announcement condition editor.
 [1918] = "Muestra esta condición en el editor de condiciones de anuncios.",
 -- e7ce9976 English: Outputs
+-- Context: Heading for the list of outputs of an announcement (each output sends one message); also
+--     a help topic title and a comparison row.
 [1919] = "Salidas",
 -- 1a3f4334 English: Output %d
+-- Context: Name of one announcement output in the list, numbered; %d is the position (1, 2, ...).
+-- %d #1: %d #1: the number of the announcement output, counting from 1, e.g. 2
 [1920] = "Salida %d",
 -- cafb5358 English: Output state
+-- Context: Tooltip of the enable checkbox of an announcement output: tells whether the output is on
+--     or off.
 [1921] = "Estado de la salida",
 -- 1674ce8b English: Add output
+-- Context: Button in the announcement editor: adds another output message to the announcement (verb
+--     phrase).
 [1922] = "Añadir salida",
 -- ce4683e7 English: Channel
+-- Context: Announcement output type dropdown entry: send to a numbered chat channel; also a help
+--     topic title and a comparison row.
 [1923] = "Canal",
 -- 32c16791 English: Complete this output or choose a destination available for this action type.
 [1924] = "Completa esta salida o elige un destino disponible para este tipo de acción.",
@@ -4351,8 +6613,10 @@ addon.translation = {
 -- 19489a96 English: {unit} {{!are dead or a ghost|are alive}}
 [1927] = "{unit} {{!estás muerto o eres un fantasma|estás vivo}}",
 -- bb52ff6b English: %s {{!are|are not}} an enemy
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1928] = "%s {{!eres|no eres}} un enemigo",
 -- 5a04bf0d English: %s {{!are|are not}} attackable
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1929] = "%s {{!eres|no eres}} atacable",
 -- a551fec4 English: {unit} {{!are|are not}} in a raid
 [1930] = "{unit} {{!estás|no estás}} en una banda",
@@ -4365,10 +6629,16 @@ addon.translation = {
 -- 64f6064c English: Group membership option is invalid.
 [1934] = "La opción de pertenencia al grupo no es válida.",
 -- e18851d3 English: For %s
+-- Context: Part of a condition description: appended after a dash and followed by the subject, e.g.
+--     "For Fireball"; %s is the subject name.
+-- %s #1: %s #1: the unit the condition applies to, e.g. "your target"
 [1935] = "Para %s",
 -- 610c1d8d English: Saved settings
+-- Context: Label in a condition description, followed by a list of saved field values.
 [1936] = "Ajustes guardados",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, WoW
+--     Forever (variant key: DPS).
 [1937] = "DPS cuerpo a cuerpo",
 -- f8f8f256 English: Melee damage for every Rogue specialization from level 1 to 60, built from Icy
 --     Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister
@@ -4405,6 +6675,8 @@ addon.translation = {
 --     one, or raise its priority.
 [1942] = "La Sutileza de Wowhead: Premeditación y Garrote en cada apertura, y Esfumarse (y después Preparación) usado dentro de la rotación para volver a abrir con Garrote cuando el anterior haya expirado. Hacer picadillo siempre activo, Exponer armadura en grupo, Ruptura como remate de cinco puntos y Hemorragia como único generador. Esto gasta Esfumarse, tu vía de escape, en daño: elígela a propósito. Se aplica con Sutileza como tu árbol de talentos principal, Malas artes aprendida y Premeditación conocida. Los mismos recordatorios de venenos y tiempos de reutilización que la rotación integrada recomendada. Es una alternativa a la rotación integrada de DPS de pícaro recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Restoration).
 [1943] = "Restauración",
 -- d54e5a0a English: Healing once Restoration is your main talent tree with 16 points (Mana Tide
 --     Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use
@@ -4417,6 +6689,8 @@ addon.translation = {
 --     group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf.
 [1944] = "Sanación una vez que Restauración es tu árbol de talentos principal con 16 puntos (la fila del Tótem de marea de maná), según Icy Veins. Con un objetivo amistoso: una Onda de curación instantánea una vez que uses Rapidez de la Naturaleza, Curar veneno y Curar enfermedad, Mareas vivas sobre un objetivo que no lo tenga, Curación en cadena en grupo y Onda de curación. Eliges a quién sanar seleccionándolo como objetivo; la salud y el maná están ocultos para los addons en Forever, así que cuándo usar Rapidez de la Naturaleza y Onda inferior de curación lo decides tú. Con un objetivo hostil y nadie a quien sanar: Nova de Fuego y Cadena de relámpagos contra grupos de enemigos, Golpe de tormenta y Choque de tierra si conoces Golpe de tormenta, Choque de llamas sobre élites y jefes, Descarga de relámpagos y después cuerpo a cuerpo. Recordatorios: Escudo de agua, la interrupción con Choque de tierra, Marea de maná y los tótems de beneficio de grupo. Quedan a tu cargo: usar rangos inferiores, los demás tótems, Purgar y Lobo fantasmal.",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Elemental).
 [1945] = "Elemental",
 -- 2fcd0801 English: Ranged Elemental once Elemental is your main talent tree with 21 points (Lava
 --     Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid
@@ -4429,6 +6703,10 @@ addon.translation = {
 --     Left to you: Earthbind kiting, Frost Shock, Purge and other totems.
 [1946] = "Elemental a distancia una vez que Elemental es tu árbol de talentos principal con 21 puntos (la fila de Ráfaga de lava), según Icy Veins (antes de eso, la rotación integrada de Mejora juega el híbrido cuerpo a cuerpo que recomiendan todas las guías). Inicia el combate con Descarga de relámpagos (Cadena de relámpagos contra un grupo de enemigos), en movimiento solo lanza instantáneos, usa Nova de Fuego y Cadena de relámpagos contra tres o más enemigos, mantiene Choque de llamas activo, Ráfaga de lava cada vez que esté disponible, Golpe de tormenta y Choque de tierra si conoces Golpe de tormenta, Nova de Fuego con Conjuro libre en grupo y después Descarga de relámpagos. Recordatorios: escudo, imbuición de arma, Tótem abrasador o Tótem de magma, tótems de grupo, Maestría elemental e interrupción. La salud y el maná están ocultos para los addons en Forever, así que curarte y parar para recuperar maná lo decides tú. Quedan a tu cargo: kitear con Nexo Terrestre, Choque de Escarcha, Purgar y los demás tótems.",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1947] = "Mejora (Icy Veins)",
 -- 339ec7e4 English: Melee Enhancement from level 1 to 60, and the default for any Shaman before
 --     Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on
@@ -4443,6 +6721,10 @@ addon.translation = {
 --     totems.
 [1948] = "Mejora cuerpo a cuerpo del nivel 1 al 60, y la opción predeterminada para cualquier chamán antes de Ráfaga de lava o del Tótem de marea de maná. Inicia el combate con Descarga de relámpagos a distancia y después Golpe de tormenta cada vez que esté disponible, una Descarga de relámpagos instantánea con cinco acumulaciones de Arma vorágine, Nova de Fuego (con un tótem de fuego colocado) y Choque de llamas contra tres o más enemigos, Choque de tierra aprovechando el perjuicio de Golpe de tormenta, Choque de llamas en grupo y Choque de tierra cada vez que esté disponible; Descarga de relámpagos cubre el hueco mientras el objetivo está fuera de alcance. La salud y el maná están ocultos para los addons en Forever, así que curarte y parar para recuperar maná lo decides tú (la rotación integrada de Wowhead ahorra maná en su lugar). Recordatorios: imbuición de arma (Viento Furioso; si no, Lengua de Fuego; si no, Comerrocas), Escudo de agua o de relámpagos, la interrupción con Choque de tierra, Tótem abrasador o Tótem de magma, tótems de grupo, Ira del clarividente, Tótem Garra de piedra. Quedan a tu cargo: los preajustes de tótems, Choque de Escarcha, Purgar y los demás tótems.",
 -- eb2363b2 English: Enhancement, mana-efficient (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1949] = "Mejora, eficiente en maná (Wowhead)",
 -- abc72f43 English: Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work,
 --     Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in
@@ -4452,6 +6734,8 @@ addon.translation = {
 --     premade, off by default: enable it and disable that one, or raise its priority.
 [1950] = "La Mejora de ahorro de maná de Wowhead y Mobalytics: el ataque automático hace el trabajo, Golpe de tormenta solo mientras no esté activa la regeneración de maná de Golpe de tormenta mejorado, sin Choque de tierra en la rotación (los choques sirven para iniciar el combate e interrumpir) y, en grupo o contra grupos de enemigos, Tótem abrasador con Nova de Fuego cada vez que esté disponible. Los mismos recordatorios de imbuición, escudo e interrupción que la rotación integrada de Icy Veins. Elígela en lugar de esa rotación integrada si te quedas sin maná. Es una alternativa a la rotación integrada de Mejora recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 7e8fd1de English: All trees
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS).
 [1951] = "Todas las ramas",
 -- 157e4fa1 English: Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead
 --     and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate
@@ -4480,6 +6764,10 @@ addon.translation = {
 --     raise its priority.
 [1954] = "La subida de nivel de brujo de Icy Veins: la varita es el relleno en solitario, el abisario es el demonio predeterminado, Aflicción y Destrucción sacrifican a su demonio y juegan sin él (desde el 41 y el 55), Demonología mantiene Marca demoníaca y usa Inmolar solo como relleno, y Destrucción pone Terror de caos sobre el enemigo más resistente de un grupo y usa Conflagrar cada vez que esté disponible una vez que conoces Incinerar. Elígela en lugar de la rotación integrada de brujo recomendada si sigues Icy Veins. La salud, el maná y el tiempo hasta la muerte están ocultos para los addons en Forever, así que Drenar vida cuando estás herido, Transfusión de vida y qué objetivos vivirán lo bastante para los DoT lo decides tú. Es una alternativa a la rotación integrada de DPS de brujo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- b9f016be English: All trees (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1955] = "Todas las ramas (Wowhead)",
 -- 02cc5c3e English: Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the
 --     Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight;
@@ -4492,6 +6780,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1956] = "El brujo de nivel 30 de Wowhead: Aflicción y Demonología tanquean drenando con el súcubo (Corrupción y Agonía, sin Inmolar, y después Drenar vida el resto del combate; la salud y el maná están ocultos en Forever, así que Transfusión de vida la decides tú), Demonología mantiene Marca demoníaca y aplica Agonía solo a los objetivos grandes, Destrucción pone Agonía, Corrupción e Inmolar sobre cada enemigo, usa Conflagrar justo antes de que termine Inmolar, reserva Quemadura de las Sombras para el golpe de gracia y usa la varita con el abisario. Amplificar maldición cada vez que esté disponible; Maldición de los Elementos y Terror de fatalidad solo contra élites y jefes; sin sección para grupos de enemigos. Las guías de Wowhead llegan solo hasta el nivel 30. Es una alternativa a la rotación integrada de DPS de brujo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1957] = "Protección (Icy Veins)",
 -- 95bdeac5 English: Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to
 --     pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies
@@ -4539,6 +6831,8 @@ addon.translation = {
 --     enable it and disable that one, or raise its priority.
 [1964] = "La lista de gasto continuo de Warcraft Tavern para grupos y bandas: primero cinco Hender armadura, Ejecutar por encima de todo por debajo del 20 %, Abrumar, Desgarrar hasta tener Sed de sangre, Golpe mortal, Sed de sangre, Huracán, Lanzazo cada vez que esté disponible, Embate una vez elegido Embate mejorado; Golpe heroico o Mellar siempre que puedas permitírtelos (la ira está oculta en Forever, así que no hay umbral de 60 de ira ni Seccionar con ira de sobra), y Temeridad cada vez que esté disponible junto con Deseo de la Muerte. Elígela en lugar de la rotación integrada de Icy Veins si juegas en grupo y no necesitas guardar ira entre combates. Es una alternativa a la rotación integrada de DPS cuerpo a cuerpo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Balance).
 [1965] = "Equilibrio",
 -- fdac9d3d English: Balance from level 1 to 60, and the default for any Forever Druid no other
 --     premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while
@@ -4575,6 +6869,8 @@ addon.translation = {
 --     are your call. Taunts, interrupts and positioning stay with you.
 [1970] = "Felino y oso en una sola rotación integrada, elegidos según tu forma; toma el control una vez que Feral es tu árbol de talentos principal (o tiene 11 puntos), o cuando adoptas la Forma felina o de oso. Felino: Devastar o Triturar desde Acechar, Fuego feérico, Destripar con cuatro puntos de combo, Mordedura feroz mientras Destripar está activo, Arañazo y después Triturar cuando el objetivo no te mira (si no, Zarpa). Oso: Fuego feérico y Carga feral a distancia, Clamor desmoralizador en grupo o contra dos enemigos, Mordisco primigenio, Flagelo contra tres o más, Lacerar y Flagelo. En forma humanoide sugiere Forma felina (de oso si aún no tienes la felina). Recordatorios: Machaque siempre que puedas permitírtelo en Forma de oso, Enfurecer, Rabia en combates grandes o contra élites, Estimular en solitario, Marca de lo salvaje, Espinas. La salud, la energía, la ira y el maná están ocultos para los addons en Forever, así que el cambio de forma para recuperar energía, Regeneración frenética y curarte los decides tú. Las provocaciones, las interrupciones y el posicionamiento quedan a tu cargo.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Restoration).
 [1971] = "Restauración",
 -- 2bcf6375 English: Group healing after Warcraft Tavern, once Restoration is your main talent tree
 --     with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild
@@ -4595,6 +6891,10 @@ addon.translation = {
 --     and hostile-target list as the Restoration premade.
 [1974] = "La sanación con HoT primero de Icy Veins, una alternativa a la rotación integrada de Restauración recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sobre tu objetivo amistoso: Rejuvenecimiento, después Recrecimiento cuando falta, Toque curativo solo con ambos HoT activos, Arreglo rápido sobre un objetivo con HoT y después Crecimiento salvaje (la salud está oculta en Forever, así que el objetivo que eliges decide a quién se sana). Estimular cada vez que esté disponible. Por lo demás, los mismos recordatorios y la misma lista para objetivos hostiles que la rotación integrada de Restauración.",
 -- 8335d07b English: Ranged (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1975] = "A distancia (Wowhead)",
 -- 5c5cdd9b English: Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and
 --     Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper
@@ -4610,6 +6910,10 @@ addon.translation = {
 --     so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours.
 [1976] = "Todos los cazadores a distancia del nivel 1 al 60 (Bestias, Puntería y Supervivencia hasta Patada de zancudo), y la opción predeterminada del cazador de Forever. Inicio del combate: Marca del cazador, Disparo de francotirador mientras dure Matanza rápida y Tiro automático. Después tu propio Aguijón de serpiente, Invocar halcón dos veces y Tiro Arcano una vez en su tiempo de reutilización compartido (Tiro Arcano cada vez que esté disponible antes de Invocar halcón), Disparo de francotirador con Matanza rápida o contra élites, y Tiro de puntería. Con dos o más enemigos luchando contra ti: Multidisparo en lugar de Tiro de puntería, Trampa explosiva con tres cerca de ti y Lluvia con cinco. En movimiento: solo disparos instantáneos. Un enemigo cuerpo a cuerpo recibe Golpe de raptor y Mordedura de mangosta. Recordatorios: Aspecto del halcón (el del mono antes de tenerlo), Aura de disparo certero, llamar a la mascota y revivirla, Fuego rápido, Ira de bestias y Furia sangrienta contra élites o en mazmorras, e Intimidación cuando un enemigo te ataca. Las órdenes a la mascota, alimentarla, el kiteo y Fingir muerte quedan a tu cargo; desactiva los recordatorios de mascota si juegas con Lobo solitario. Nunca lee tu maná ni la salud de nadie, que Forever oculta a los addons, así que Marca del cazador y Aguijón de serpiente se aplican a todos los objetivos y Sanar mascota queda a tu cargo.",
 -- a82fce4f English: Ranged, mana-saving (Mobalytics)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1977] = "A distancia, ahorro de maná (Mobalytics)",
 -- 530b5b4d English: Mobalytics' mana-saving leveling style, an alternative to the recommended
 --     Wowhead ranged premade, off by default: enable it and disable that one, or raise its
@@ -4619,6 +6923,10 @@ addon.translation = {
 --     as the Wowhead premade.
 [1978] = "El estilo de subida de nivel con ahorro de maná de Mobalytics, una alternativa a la rotación integrada a distancia de Wowhead recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Mantiene tu Aguijón de serpiente, un halcón de Invocar halcón, Tiro de puntería (Multidisparo contra dos o más enemigos), y nunca Tiro Arcano una vez que conoces Invocar halcón; se omite su segundo halcón sobre un objetivo con mucha salud, ya que Forever oculta la salud del objetivo. El mismo inicio de combate, cuerpo a cuerpo, movimiento y recordatorios que la rotación integrada de Wowhead.",
 -- 5f8e7ecc English: Survival melee (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1979] = "Supervivencia cuerpo a cuerpo (Wowhead)",
 -- 8da10e55 English: Dual-wield melee Survival once Survival is your main talent tree with 21
 --     points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise).
@@ -4639,6 +6947,8 @@ addon.translation = {
 --     moving; RM follows your range.
 [1982] = "El estilo de entrar y salir de Wowhead para un cazador de Supervivencia con arma a dos manos, una alternativa a la rotación integrada de Supervivencia cuerpo a cuerpo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Cuerpo a cuerpo: Mordedura de mangosta y Golpe de raptor; cuando a Golpe de raptor le faltan más de 2,5 segundos, Patada de zancudo y te alejas. Fuera del cuerpo a cuerpo: Aguijón de serpiente, Tiro Arcano, Tiro de puntería y Tiro automático hasta que Golpe de raptor esté casi listo, y vuelves a acercarte. Tú te mueves; RM sigue tu distancia.",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Frost).
 [1983] = "Escarcha",
 -- 115d3d5e English: Frost from level 1 to 60, and the Forever Mage default before talent spells
 --     (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of
@@ -4654,6 +6964,8 @@ addon.translation = {
 --     stay with you too.
 [1984] = "Escarcha del nivel 1 al 60, y la opción predeterminada del mago de Forever antes de los hechizos de talento (Bola de Fuego hasta Descarga de Escarcha a nivel 4). Inicia el combate con Descarga de Escarcha; después Lanza de hielo con Dedos de Escarcha o sobre un objetivo congelado (también mientras aún se lanza Descarga de Escarcha, para cancelarla o agruparlas), Cono de frío con cinco acumulaciones de Escalofrío del invierno, Misiles Arcanos con Tromba de misiles, Descarga de Escarcha y una varita en solitario cuando no puedes permitirte Descarga de Escarcha. En movimiento: Lanza de hielo; si no, Explosión de Fuego. Con tres o más enemigos luchando contra ti: Cono de frío; con cinco o más: Ventisca, o Deflagración Arcana si un enemigo te está atacando. Se incluye el área de Fogonazo y Deflagración Arcana de Warcraft Tavern, pero desactivada. Recordatorios: Intelecto Arcano, armadura (de hielo o de escarcha en solitario, Armadura de mago en grupo, sin sustituir nunca la que hayas elegido), Barrera de hielo, Contrahechizo, Deshacer maldición inferior, Nova de Escarcha cuando un enemigo te alcanza y Mordedura helada. La salud y el maná están ocultos para los addons en Forever, así que rematar objetivos con poca salud con Explosión de Fuego, Evocación y Bloqueo de hielo lo decides tú; Traslación, el kiteo, Polimorfia y las gemas de maná quedan también a tu cargo.",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Fire).
 [1985] = "Fuego",
 -- 0f5f59f3 English: Fire once Fire is your main talent tree with 11 points (Pyroblast's tier).
 --     Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three
@@ -4675,6 +6987,8 @@ addon.translation = {
 --     premade, without Combustion and Presence of Mind.
 [1988] = "La build de Fuego para subir de nivel de Icy Veins sin Chamuscar mejorado, una alternativa a la rotación integrada de Fuego recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Inicia el combate con Piroexplosión, usa Explosión de Fuego para gastar Estela de Fuego, Chamuscar mientras el enemigo se acerca (la salud del objetivo está oculta en Forever, así que los remates sobre objetivos con poca salud los decides tú), y después Descarga de Pirofrío (desde el 40) o Bola de Fuego. La misma área, movimiento, varita y recordatorios que la rotación integrada de Fuego, sin Combustión ni Presencia mental.",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Arcane).
 [1989] = "Arcano",
 -- c17e7c93 English: Arcane once Arcane is your main talent tree with 11 points and you know Arcane
 --     Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile
@@ -4687,6 +7001,8 @@ addon.translation = {
 --     longer waits for half your mana), plus the Mage upkeep reminders.
 [1990] = "Arcano una vez que Arcano es tu árbol de talentos principal con 11 puntos y conoces Explosión Arcana. Inicia el combate con Descarga de Escarcha en solitario o Explosión Arcana en grupo; después Misiles Arcanos con Tromba de misiles, Explosión Arcana con Conjuro libre, Cólera Arcana con tres acumulaciones de Explosión Arcana, Explosión Arcana hasta cuatro acumulaciones contra élites y dos contra otros objetivos mientras puedas permitírtelo (el maná está oculto en Forever), después Descarga de Pirofrío, Descarga de Escarcha o Bola de Fuego para buscar Tromba de misiles, y una varita en solitario cuando no puedes permitirte un hechizo. Sin Cólera Arcana (el diseño anterior de la beta), Explosión de Fuego gasta las acumulaciones. En movimiento: Explosión de Fuego. Con tres o más enemigos luchando contra ti: Deflagración Arcana. Recordatorios: Presencia mental y Poder Arcano contra élites (Poder Arcano ya no espera a que tengas la mitad del maná), además de los recordatorios de mantenimiento del mago.",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Retribution).
 [1991] = "Reprensión",
 -- 4d5c0907 English: Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin
 --     default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged
@@ -4701,6 +7017,10 @@ addon.translation = {
 --     from level-30 beta guides.
 [1992] = "Reprensión y todo paladín cuerpo a cuerpo del nivel 1 al 60, y la opción predeterminada del paladín de Forever. Mantiene un sello de daño activo, renovado solo cuando le queda poco: Sello del Cruzado juzgado una vez sobre un objetivo élite, después Sello de orden con un arma lenta (3,0 s) o, si no, Sello de rectitud. Después Golpe Sagrado cada vez que esté disponible, Choque Sagrado y Vigilia de la Luz para un Shockadin, Exorcismo contra no-muertos y demonios, Consagración contra tres o más enemigos, Martillo de cólera cuando se puede lanzar, y cuerpo a cuerpo. Sentencia no activa el tiempo de reutilización global, así que es un recordatorio siempre que haya un sello activo. Otros recordatorios: tu aura y tu Bendición (Aura de castigo y Reyes una vez aprendidas; se respetan las tuyas). Paso opcional, desactivado por defecto: Martillo de justicia antes de una Sentencia con Sello de orden. El maná, la salud y el temporizador de golpes están ocultos para los addons en Forever, así que ahorrar maná, sanarte, Imposición de manos y la alternancia de sellos con Giro de la Luz las decides tú. Basada en guías de la beta de nivel 30.",
 -- 2ba64aad English: Protection (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1993] = "Protección (Wowhead)",
 -- 65aad40e English: Tanking, once Protection is your main talent tree or you turn on Righteous
 --     Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt),
@@ -4720,6 +7040,8 @@ addon.translation = {
 --     Undead and Demons. Same tank reminders otherwise.
 [1996] = "El estilo de tanqueo de Icy Veins, una alternativa a la rotación integrada de Protección de Wowhead recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Consagración primero siempre que puedas permitírtelo, también contra un solo enemigo; Sentencia se reserva para provocar (sin recordatorio de usarla cada vez que esté disponible), con Juicio presto para reiniciarla; después Golpe Sagrado y Exorcismo contra no-muertos y demonios. Por lo demás, los mismos recordatorios de tanque.",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Holy).
 [1997] = "Sagrado",
 -- 23d8ec27 English: Group healing once Holy is your main talent tree with 21 points (Holy Shock's
 --     tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current
@@ -4777,6 +7099,9 @@ addon.translation = {
 --     Discipline healer before Penance (20–29) selects it by hand.
 [2006] = "Sanación de grupo una vez que Disciplina o Sagrado es tu árbol de talentos principal y no conoces Forma de las Sombras. Sana a tu objetivo amistoso actual: antes del combate, Palabra de poder: escudo, Rezo de alivio y Renovar; Disipar magia y Suprimir o Curar enfermedad; Rezo de alivio; Nova Sagrada con Propósito Sagrado; Penitencia; Renovar cuando falta; Curar (Curación inferior antes de ella). Contra un enemigo: Palabra de las Sombras: Dolor, Fuego Sagrado, Penitencia, Acometida y varita. Recordatorios: Fuego interno, Entereza, Espíritu divino, Infusión de poder sobre otro jugador, Enfoque interno en combate y los hechizos raciales. La salud y el maná están ocultos para los addons en Forever, así que el objetivo que eliges es la única señal de quién necesita sanación; las sanaciones de emergencia, Rezo de curación, Sanación conjunta, Curación superior, Destello curativo, Rezo desesperado y Sacrificio oscuro los decides tú. Tú eliges a quién sanar y el rango; un sanador de Disciplina antes de Penitencia (20–29) la selecciona a mano.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Blood). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2007] = "Ayudante de combate de Blizzard",
 -- d2ca4d91 English: Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4801,6 +7126,10 @@ addon.translation = {
 --     Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders.
 [2010] = "Solo de referencia, desactivada por defecto: la prioridad de Sangre de las guías. En el combate de Midnight, tus beneficios y los perjuicios del objetivo están ocultos para los addons, así que los pasos que los leen esperan allí; léela o duplícala para experimentar. La salud y el poder rúnico están ocultos en Retail, así que Golpe letal se usa siempre que puedas permitírtelo. Inicia el combate con Caricia de la Muerte. Golpe letal; Rasgamédulas (Caricia de la Muerte fuera del cuerpo a cuerpo) cuando falta Escudo óseo, tiene menos de cinco cargas, está a punto de expirar o está activo Exterminar; durante Don de los San'layn, Golpe letal, un Hervor de sangre, Muerte y descomposición con Plaga carmesí y Golpe en el corazón; Muerte y descomposición con Plaga carmesí o contra cuatro enemigos; Golpe vampírico; Consumo; Hervor de sangre con Punto de ebullición, si falta Peste de sangre o con todas las cargas; Golpe en el corazón. Recordatorios: Levantar muerto, Sangre vampírica, Marca de segador, Arma de runa danzante tras Marca de segador, además de los recordatorios de utilidad de la rotación integrada del Ayudante de combate.",
 -- 2b5ecbd1 English: Deathbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2011] = "Libramorte de referencia (SimulationCraft)",
 -- 8ed0754d English: Reference only, off by default: SimulationCraft's Deathbringer list, which
 --     spends runic power on Death Strike for damage. Hidden combat data keeps it from running in
@@ -4811,6 +7140,9 @@ addon.translation = {
 --     and the utility reminders.
 [2012] = "Solo de referencia, desactivada por defecto: la lista Libramorte de SimulationCraft, que gasta el poder rúnico en Golpe letal para hacer daño. Los datos de combate ocultos le impiden funcionar en el combate de Midnight, y el poder rúnico está oculto en Retail, así que no hay descarga en el tope. Muerte y descomposición siempre que no esté activa, Marca de segador, Rasgamédulas con Exterminar, Caricia de la Muerte para Escudo óseo cuando faltan runas (si no, Rasgamédulas), Golpe letal, Hervor de sangre, Consumo fuera de Arma de runa danzante, Golpe en el corazón. Recordatorios: Levantar muerto, Arma de runa danzante, Sangre vampírica y los recordatorios de utilidad.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2013] = "Ayudante de combate de Blizzard",
 -- 9750dd93 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4832,6 +7164,11 @@ addon.translation = {
 --     Dead, Empower Rune Weapon at two charges, plus the utility reminders.
 [2016] = "Solo de referencia, desactivada por defecto: la prioridad de Escarcha de las guías. Máquina de matar, Helada blanca y Cuchilla de hielo están ocultas en el combate de Midnight, así que no puede funcionar allí; el poder rúnico está oculto en Retail, así que no hay comprobación de tope. Asolar con dos acumulaciones de Máquina de matar, o con una y tres runas; Golpe de Escarcha hasta cinco acumulaciones de Cuchilla de hielo con Hoja devastadora; Explosión aullante con Helada blanca; Asolar con Máquina de matar; Golpe de Escarcha; Asolar; con tres o más enemigos entran Guadaña de Escarcha y Avance glacial; Explosión aullante fuera del cuerpo a cuerpo. Recordatorios: Invierno sin remordimientos, Pilar de Escarcha, Aliento de Sindragosa y Furia de la vermis de escarcha durante Pilar, Marca de segador, Levantar muerto, Potenciar arma de runas con dos cargas, además de los recordatorios de utilidad.",
 -- 0d4e8b80 English: Reference (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2017] = "Referencia (Wowhead)",
 -- 6899840b English: Reference only, off by default: Wowhead's Frost order, which puts its cooldowns
 --     in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is
@@ -4842,6 +7179,9 @@ addon.translation = {
 --     enemies swap in Frostscythe and Glacial Advance.
 [2018] = "Solo de referencia, desactivada por defecto: el orden de Escarcha de Wowhead, que incluye sus tiempos de reutilización en la rotación. Los datos de combate ocultos le impiden funcionar en el combate de Midnight; el poder rúnico está oculto en Retail, así que no hay comprobación de tope. Potenciar arma de runas con dos cargas, Marca de segador, Pilar de Escarcha, Aliento de Sindragosa, Furia de la vermis de escarcha; después, Asolar con dos acumulaciones de Máquina de matar o con una y Exterminar, Explosión aullante con Helada blanca, Asolar con Máquina de matar, Potenciar arma de runas para conseguir otra Máquina de matar, Golpe de Escarcha, Asolar, Explosión aullante. Con tres o más enemigos entran Guadaña de Escarcha y Avance glacial.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Unholy). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2019] = "Ayudante de combate de Blizzard",
 -- c11d2249 English: Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -4863,6 +7203,11 @@ addon.translation = {
 --     your plagues are missing, plus the utility reminders.
 [2022] = "Solo de referencia, desactivada por defecto: la prioridad de Profano de las guías. Las activaciones y las pestes están ocultas en el combate de Midnight, así que no puede funcionar allí; el poder rúnico y la salud del objetivo están ocultos en Retail, así que se omiten la fase de ejecución y el gasto de poder rúnico de San'layn. Levantar muerto si no tienes necrófago; Guadaña purulenta para mantener la celeridad de su peste; Segador de almas con Siega; Pudrir durante Transformación oscura; Espiral de la muerte (Epidemia contra cuatro o más enemigos) con Fatalidad súbita o Conocimiento prohibido; Golpe purulento sin cargas de Necrófago inferior y Golpe de la Plaga con ellas; Espiral de la muerte. Recordatorios: Ejército de muertos, Transformación oscura, Brote cuando faltan tus pestes, además de los recordatorios de utilidad.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2023] = "Referencia (SimulationCraft)",
 -- 100d5361 English: Reference only, off by default: SimulationCraft's Unholy list, which spends
 --     Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic
@@ -4875,6 +7220,9 @@ addon.translation = {
 --     Transformation.
 [2024] = "Solo de referencia, desactivada por defecto: la lista de Profano de SimulationCraft, que gasta Espiral de la muerte mucho más a menudo. Los datos de combate ocultos le impiden funcionar en el combate de Midnight; el poder rúnico y la salud del objetivo están ocultos en Retail, así que se omiten las comprobaciones de tope y de ejecución. Mantener Guadaña purulenta, Segador de almas en Transformación oscura, Espiral de la muerte con Fatalidad súbita, Pudrir en Transformación oscura, Espiral de la muerte en Transformación oscura o con Conocimiento prohibido y siempre que a Ejército de muertos le falten más de 5 segundos, Golpe de la Plaga con cargas de Necrófago inferior, Golpe purulento. Con tres o más enemigos: Epidemia en lugar de Espiral de la muerte, y Golpe purulento con menos de tres cargas. Recordatorios: Brote, Muerte y descomposición contra grupos de enemigos, Ejército de muertos, Transformación oscura.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2025] = "Ayudante de combate de Blizzard",
 -- 16bdde1a English: Recommended before you choose a specialization (while the game reports the
 --     Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4884,6 +7232,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2026] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del caballero de la muerte). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de caballero de la muerte, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Havoc). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2027] = "Ayudante de combate de Blizzard",
 -- c4a310af English: Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4907,6 +7258,9 @@ addon.translation = {
 --     Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur.
 [2030] = "Solo de referencia, desactivada por defecto: la prioridad de Devastación de las guías. Tus activaciones, Metamorfosis y Rotura de esencia están ocultos para los addons en el combate de Midnight, así que esta lista no puede funcionar allí; léela o duplícala para experimentar. La Ira está oculta en Retail, así que Hoja mácula no espera a tener hueco. Atracador Aldrachi: Guja de atracador cuando no están activos ni Ataque desgarrador ni Aluvión de gujas, y Golpe de caos con Ataque desgarrador. Marcado por la vileza: Rotura de esencia, Danza de hojas y Golpe de caos en Metamorfosis. Después, Danza de hojas y Golpe de caos dentro de Rotura de esencia, Aura de inmolación con dos cargas, Haz ocular, Hoja mácula para Impulso, Rotura de esencia cuando a Haz ocular le falten más de 4 segundos, Danza de hojas, Aura de inmolación contra dos enemigos, Golpe de caos, Hoja mácula, Aura de inmolación, Lanzar guja, Carga vil. Recordatorios: Metamorfosis una vez gastados Haz ocular y Danza de hojas, La caza, Retirada vengativa, además de Interrumpir y Disiparse.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Vengeance). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2031] = "Ayudante de combate de Blizzard",
 -- ad54981d English: Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4930,6 +7284,11 @@ addon.translation = {
 --     Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur.
 [2034] = "Solo de referencia, desactivada por defecto: el orden de Venganza de Wowhead con los objetivos de Icy Veins para cada árbol de héroe. Tus beneficios están ocultos en el combate de Midnight, así que no puede funcionar allí; la Ira está oculta en Retail, así que las habilidades que gastan esperan solo a su coste y las que generan no evitan llegar al tope. Atracador Aldrachi: Guja de atracador, Fractura con Ataque desgarrador, Rajar alma con Aluvión de gujas. Después, Fractura con todas las cargas, Bomba de espíritu contra tres o más enemigos, Aura de inmolación, Sigilo de llamas, Rajar alma contra un solo objetivo, Devastación vil, Rajar alma, Fractura, Hoja mácula, Lanzar guja. Rotation Master no puede contar los Trozos de alma, así que Bomba de espíritu se guía por el número de enemigos. Recordatorios: Púas de demonio cuando expira, Metamorfosis, Marca ígnea, Sigilo de maldad, Trinchador de almas (Golpe infernal con dos cargas está desactivado), además de Interrumpir y Disiparse.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2035] = "Referencia (SimulationCraft)",
 -- d4f52cf1 English: Reference only, off by default: SimulationCraft's Vengeance lists. Hidden
 --     combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its
@@ -4942,6 +7301,9 @@ addon.translation = {
 --     Demon Spikes, Disrupt, Blur.
 [2036] = "Solo de referencia, desactivada por defecto: las listas de Venganza de SimulationCraft. Los datos de combate ocultos le impiden funcionar en el combate de Midnight, y la Ira está oculta en Retail, así que se omiten sus umbrales de Ira. Atracador Aldrachi: primero Sigilo de llamas y Aura de inmolación, Metamorfosis, el ciclo de Guja de atracador con Hoja mácula, Marca ígnea, Sigilo de maldad, Bomba de espíritu contra grupos de enemigos, Trinchador de almas durante Perdición ígnea, y después Fractura, Rajar alma, Hoja mácula, Devastación vil. Aniquilador: gasta una Caída del Vacío lista con Bomba de espíritu o Rajar alma, Fractura con dos acumulaciones de Caída del Vacío, Metamorfosis, Bomba de espíritu, Sigilo de maldad, Fractura con todas las cargas, Aura de inmolación, Sigilo de llamas, Fractura, Rajar alma, Hoja mácula, Lanzar guja. Recordatorios: Púas de demonio, Interrumpir, Disiparse.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Devourer). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2037] = "Ayudante de combate de Blizzard",
 -- ca03d1af English: Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4952,6 +7314,11 @@ addon.translation = {
 --     Retail, so when to use Blur is your call.
 [2038] = "Recomendada para Devorador. Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas Rayo de Vacío. Junto a él, recordatorios de lo que el Ayudante de combate deja a tu cargo: Metamorfosis del Vacío, La caza y Hoja del Vacío siempre que estén disponibles en combate, Interrumpir ante un lanzamiento interrumpible, y Disiparse siempre que esté disponible en combate. Los lanzamientos enemigos están ocultos en combate, así que Interrumpir solo se ilumina donde el juego los muestra; la salud está oculta en Retail, así que cuándo usar Disiparse lo decides tú.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2039] = "Referencia (Icy Veins)",
 -- 5da6da74 English: Reference only, off by default: Icy Veins' Annihilator priority. Most of your
 --     buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so
@@ -4963,6 +7330,11 @@ addon.translation = {
 --     cooldown. Reminders: Disrupt and Blur.
 [2040] = "Solo de referencia, desactivada por defecto: la prioridad Aniquilador de Icy Veins. La mayoría de tus beneficios están ocultos en el combate de Midnight, así que no puede funcionar allí; la Ira está oculta en Retail, así que Rayo de Vacío espera solo a su coste. Fuera de Metamorfosis del Vacío: Consumir con Ráfaga de almas, Segar, Inmolación de alma cuando no esté ardiendo, Hoja del Vacío y La caza en cuanto Metamorfosis del Vacío esté lista, Metamorfosis del Vacío, Tajo hambriento, Rayo de Vacío, Consumir. Dentro de ella: Devorar con Ráfaga de almas, Rayo de Vacío, los golpes de Marcado por el Vacío si los tienes, Estrella en colapso, Masacre, Devorar, Inmolación de alma. Rotation Master no puede contar los Trozos de alma, así que Segar y Masacre se usan cada vez que están disponibles. Recordatorios: Interrumpir y Disiparse.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2041] = "Referencia (SimulationCraft)",
 -- 0228846e English: Reference only, off by default: SimulationCraft's Annihilator list, which
 --     enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in
@@ -4973,6 +7345,9 @@ addon.translation = {
 --     Devour. Reminders: Disrupt and Blur.
 [2042] = "Solo de referencia, desactivada por defecto: la lista Aniquilador de SimulationCraft, que entra en Metamorfosis del Vacío en cuanto está lista. Los datos de combate ocultos le impiden funcionar en el combate de Midnight. Fuera: Hoja del Vacío con Mordedura de devorador contra hasta tres enemigos y con Metamorfosis del Vacío completa, Metamorfosis del Vacío, Consumir con Ráfaga de almas, Segar, Rayo de Vacío, Inmolación de alma contra grupos de enemigos, Consumir. Dentro: Devorar con Ráfaga de almas contra un solo objetivo, La caza y Hoja del Vacío con Mordedura de devorador, Rayo de Vacío contra grupos de enemigos, Estrella en colapso, Masacre, Rayo de Vacío, Inmolación de alma, Devorar. Recordatorios: Interrumpir y Disiparse.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2043] = "Ayudante de combate de Blizzard",
 -- a6d0d810 English: Recommended before you choose a specialization (while the game reports the
 --     Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4982,6 +7357,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2044] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del cazador de demonios). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de cazador de demonios, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Balance). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2045] = "Ayudante de combate de Blizzard",
 -- 3941b2ad English: Recommended for Balance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5006,6 +7384,9 @@ addon.translation = {
 --     Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders.
 [2048] = "Solo de referencia, desactivada por defecto: la prioridad de Equilibrio de las guías. Tus DoT, Eclipse y las activaciones están ocultos para los addons en el combate de Midnight, así que no puede funcionar allí; léela o duplícala para experimentar. El Poder Astral está oculto en Retail, así que Oleada de estrellas gasta según su coste en lugar de antes del tope. Inicia el combate con Forma de lechúcico lunar y Cólera. Fuego solar y Fuego lunar cuando faltan o están a punto de expirar; Eclipse cuando no hay ninguno activo (lunar contra tres o más enemigos; si no, solar); Lluvia de estrellas con Urdimbre del tejestrellas, Tocar el cosmos o contra grupos de enemigos; Oleada de estrellas con Trama del tejestrellas o Tocar el cosmos; Luna nueva, Medialuna y Luna llena; Champiñón salvaje durante un Eclipse; Oleada de estrellas siempre que puedas permitírtela; Fuego estelar durante un Eclipse lunar o contra grupos de enemigos y, si no, Cólera. Recordatorios: Alineación celestial o Encarnación, Furia de Elune y Fuerza de la Naturaleza antes de un Eclipse, Convocar durante Alineación celestial, Rayo solar, además de los recordatorios de utilidad.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Feral). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2049] = "Ayudante de combate de Blizzard",
 -- e3e320b6 English: Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5029,6 +7410,9 @@ addon.translation = {
 --     Instincts, plus the utility reminders. Snapshotting is left to you.
 [2052] = "Solo de referencia, desactivada por defecto: la prioridad Feral de las guías. Los sangrados y las activaciones están ocultos en el combate de Midnight (los puntos de combo no), así que no puede funcionar allí; la energía está oculta en Retail. Abre con Forma felina, Acechar y Arañazo. Dentellada; Mordedura feroz con Ansia del superdepredador; con cinco puntos de combo, Cólera primigenia contra dos o más enemigos, Destripar cuando falta o en sus últimos segundos y, si no, Mordedura feroz, esperando a tener energía en lugar de acumular más de cinco; con menos de cinco, Arañazo cuando falta o está a punto de expirar, Fuego lunar de Inspiración lunar, Flagelo contra tres o más enemigos, Triturar. Recordatorios: Furia del tigre siempre que esté disponible en combate, Rabia o Encarnación y Frenesí feral o Frenesí frenético (con dos puntos o menos) durante Furia del tigre, Convocar durante Furia del tigre y Rabia con Destripar activo, Testarazo, Instintos de supervivencia, además de los recordatorios de utilidad. El snapshotting queda a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Guardian). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2053] = "Ayudante de combate de Blizzard",
 -- 2a16fe9b English: Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5051,6 +7435,10 @@ addon.translation = {
 --     Bash, plus the utility reminders.
 [2056] = "Solo de referencia, desactivada por defecto: la prioridad de Guardián de las guías. Los perjuicios y las activaciones están ocultos en el combate de Midnight, así que no puede funcionar allí; la ira y la salud están ocultas en Retail, así que el gasto de Arremetida arrasadora y Magullar con 80 de ira queda a tu cargo. Vapulear y Destrozar cada vez que estén disponibles, Luna roja contra un solo objetivo, Fuego lunar cuando falta o con Guardián galáctico, Flagelo. Recordatorios siempre que estén disponibles en combate: Pelaje férreo, Regeneración frenética, Instintos de supervivencia; Forma de oso entre combates; Rabia o Encarnación, Haz lunar, Convocar, Corazón de lo Salvaje, Testarazo, además de los recordatorios de utilidad.",
 -- beb78fe5 English: Defensive reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2057] = "Defensiva de referencia (SimulationCraft)",
 -- f0f6bfc8 English: Reference only, off by default: SimulationCraft's Guardian list, which spends
 --     rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage
@@ -5073,6 +7461,9 @@ addon.translation = {
 --     racial cooldown whenever they are ready in combat, Mark of the Wild between pulls.
 [2060] = "Recomendada para Restauración. Con un enemigo como objetivo, resalta la sugerencia del Ayudante de combate de Blizzard, la lista de daño de Restauración de Blizzard en forma felina o humanoide. Si no, sugiere los lanzamientos de mantenimiento de Icy Veins sobre tu objetivo amistoso (o sobre ti): Flor de vida, Floración en combate, Alivio presto sobre un objetivo con Rejuvenecimiento, Crecimiento salvaje en grupo en combate, Recrecimiento con Lanzamiento libre o con cinco acumulaciones de Abundancia, Rejuvenecimiento cuando falta. La salud y el maná están ocultos en Retail, así que estos pasos siguen al objetivo que elijas, no lo heridos que estén los demás; tus sanaciones en el tiempo están ocultas en el combate de Midnight, así que los pasos que las leen esperan allí. A quién sanar, y todos los tiempos de reutilización de sanación, quedan a tu cargo. Recordatorios: Estimular, Piel de corteza y tu habilidad racial siempre que estén listos en combate, y Marca de lo Salvaje entre combates.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2061] = "Ayudante de combate de Blizzard",
 -- 65160bfe English: Recommended before you choose a specialization (while the game reports the
 --     Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5082,6 +7473,9 @@ addon.translation = {
 --     premades take over.
 [2062] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del druida). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de druida, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Devastation). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2063] = "Ayudante de combate de Blizzard",
 -- 4950c9f2 English: Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5107,6 +7501,9 @@ addon.translation = {
 --     Breath ready, Deep Breath for Scalecommander, plus the utility reminders.
 [2066] = "Solo de referencia, desactivada por defecto: la prioridad óptima de Devastación. Las activaciones, los tiempos de reutilización y la quemadura del objetivo están ocultos en el combate de Midnight, así que no puede funcionar allí; léela o duplícala para experimentar. Inicia el combate con Llama viva. Escamandante (con Desintegración en masa aprendida): Oleada de eternidad, Aliento de Fuego, Aliento profundo contra dos o más enemigos, Desintegrar con cargas de Desintegración en masa, Pira contra cinco o más, Desintegrar, Llama viva con Consunción y Llamas saltarinas, Llama desatada con menos de dos acumulaciones de Explosión de esencia, Barrido azur. Moldeallamas: Oleada de eternidad, Aliento de Fuego cuando su quemadura falta o está terminando, Pira contra cinco o más, Desintegrar, Aliento profundo contra cuatro o más, Llama desatada, Llama viva con Consunción y Llamas saltarinas, Barrido azur. Después, Ataque azur en movimiento, Llama viva, Ataque azur. Usa las potenciaciones en el nivel 1 contra un solo objetivo (Icy Veins). Recordatorios: Ira de dragón, Inclinar la balanza durante Ira de dragón o con Aliento de Fuego listo, Aliento profundo para Escamandante, además de los recordatorios de utilidad.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Augmentation). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2067] = "Icy Veins",
 -- 02c50a1b English: Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one
 --     of the few buffs the game still shows addons in Midnight combat, so its upkeep works there.
@@ -5120,6 +7517,9 @@ addon.translation = {
 --     is up to you.
 [2068] = "Recomendada para Aumento: la prioridad de Poderío de ébano de Icy Veins. Poderío de ébano es uno de los pocos beneficios que el juego aún muestra a los addons en el combate de Midnight, así que su mantenimiento funciona allí. Fuera de combate: Escamas virulentas sobre un objetivo amistoso del grupo que no las tenga, Llama viva sobre un enemigo. Después, Poderío de ébano cuando falta o le quedan menos de 4 segundos, y cada vez que esté disponible salvo que Aliento de los eones esté listo; Presciencia; Aliento de Fuego; Agitación; Erupción durante Poderío de ébano o con dos acumulaciones de Explosión de esencia; Ataque azur; Llama viva. En combate, los beneficios ocultos solo omiten su propio paso. Recordatorios: Aliento de los eones y Aliento profundo (tú los apuntas), Inclinar la balanza con Aliento de Fuego listo, Salto temporal con Aliento de Fuego y Agitación ambos en reutilización, además de los recordatorios de utilidad. Presciencia y Escamas virulentas van sobre tu objetivo: elegir el aliado, y el nivel de potenciación, queda a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: AugmentationAssisted). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2069] = "Ayudante de combate de Blizzard",
 -- 9442cdce English: Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the
 --     recommended Icy Veins Augmentation premade, off by default: enable it and disable that one,
@@ -5129,6 +7529,11 @@ addon.translation = {
 --     Magic as in the other Evoker premades.
 [2070] = "La sugerencia del Ayudante de combate de Blizzard para Aumento, una alternativa a la rotación integrada de Aumento de Icy Veins recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Vuelve a lanzar Poderío de ébano solo después de que haya expirado, y espera mientras lanzas o mantienes un hechizo potenciado. Recordatorios en combate para Aliento de los eones, Aliento profundo, Inclinar la balanza y Salto temporal, además de Sofocar, Escamas obsidiana, Bendición de bronce y Fuente de magia, como en las demás rotaciones integradas de evocador.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2071] = "Referencia (Icy Veins)",
 -- 21ab41c4 English: Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and
 --     every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom
@@ -5139,6 +7544,9 @@ addon.translation = {
 --     premades. Healing stays with you.
 [2072] = "Solo de referencia, desactivada por defecto. La salud de los aliados, Eco, Reversión, Explosión de esencia y todos los tiempos de reutilización están ocultos para los addons en el combate de Midnight, Rotation Master no puede elegir a quién sanar y Blizzard no tiene ninguna rotación del Ayudante de combate para sanadores, así que esta rotación integrada no sana. Te recuerda Bendición de bronce y Fuente de magia fuera de combate y, cuando tu objetivo es un enemigo, sugiere daño: Aliento de Fuego, Desintegrar, Llama viva, y Ataque azur en movimiento. Recordatorios de Sofocar y Escamas obsidiana como en las demás rotaciones integradas de evocador. La sanación queda a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2073] = "Ayudante de combate de Blizzard",
 -- 63133e23 English: Recommended before you choose a specialization (while the game reports the
 --     Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5148,6 +7556,9 @@ addon.translation = {
 --     premades take over.
 [2074] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del evocador). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de evocador, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: BeastMastery). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2075] = "Ayudante de combate de Blizzard",
 -- c71902c5 English: Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5172,6 +7583,9 @@ addon.translation = {
 --     reminders.
 [2078] = "Solo de referencia, desactivada por defecto: la prioridad optimizada de Bestias. Las cargas, los tiempos de reutilización y las activaciones están ocultos para los addons en el combate de Midnight, así que no puede funcionar allí; léela o duplícala para experimentar. El Enfoque está oculto en Retail. Invoca a tu mascota y marca al objetivo antes de iniciar el combate. Disparo con púas justo antes de Cólera de las bestias o antes de llegar al tope de cargas; Cólera de las bestias; Matar con Aullido de la manada o Aliado de la naturaleza, o libremente mientras a Cólera de las bestias le falte mucho; Disparo de cobra con Colmillo de la cobra; Disparo de cobra; Disparo con púas cuando no te alcanza el Enfoque para Disparo de cobra. Forestal oscuro: Flecha negra durante Fuego devastador y Flecha lastimera cuando termina. Con tres o más enemigos (dos con Tajo de la bestia): Paliza salvaje para iniciar Tajo de la bestia y, mientras dura, Matar, Disparo con púas y Disparo de cobra. Recordatorios: Derramamiento de sangre y los recordatorios de utilidad de la rotación integrada del Ayudante de combate.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Marksmanship). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2079] = "Ayudante de combate de Blizzard",
 -- 494a0bb6 English: Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5196,6 +7610,9 @@ addon.translation = {
 --     Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you.
 [2082] = "Solo de referencia, desactivada por defecto: la prioridad optimizada de Puntería, que gasta Disparos precisos antes del siguiente Disparo de puntería. Las activaciones y las cargas están ocultas en el combate de Midnight, así que no puede funcionar allí; el Enfoque está oculto en Retail, así que se omite el Multidisparo con 70 de Enfoque contra grupos. Marca al objetivo y abre con Disparo de puntería. Centinela: Disparo explosivo, Salva, Disparo certero, Chakram de luz lunar antes de que termine su ventana, Disparo de puntería durante Disparo certero sin Disparos precisos, Fuego rápido, Disparo mortal, Multidisparo (contra dos enemigos con Aspecto de la hidra) o Disparo Arcano con Disparos precisos, Disparo de puntería, Chakram de luz lunar, Disparo firme. Forestal oscuro: primero Flecha negra con Disparos precisos, nada de Disparo explosivo durante Bloquear y cargar, Disparo de puntería antes de llegar al tope de cargas, Flecha lastimera. Con tres o más enemigos y Disparos trucados: Disparo explosivo, Salva, Multidisparo para aplicar Disparos trucados, Disparo certero y, mientras dura, Fuego rápido y Disparo de puntería. Usar Disparo certero con 30 acumulaciones de Diana o contra un objetivo sin marcar queda a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Survival). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2083] = "Ayudante de combate de Blizzard",
 -- fc59d6b9 English: Recommended for Survival. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5207,6 +7624,11 @@ addon.translation = {
 --     included) is your call.
 [2084] = "Recomendada para Supervivencia. Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight (invoca a tu mascota por sí mismo); espera mientras lanzas o canalizas. Junto a él, recordatorios de lo que el Ayudante de combate deja a tu cargo: Derribo y tu habilidad racial en combate, Amordazar ante un lanzamiento interrumpible, y Supervivencia del más fuerte siempre que esté lista en combate. Los lanzamientos enemigos están ocultos en combate, así que la interrupción solo se ilumina donde el juego la muestra; la salud está oculta en Retail, así que cuándo usar tus defensivas (incluidas Excitación y Aspecto de la tortuga) lo decides tú.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2085] = "Referencia (SimulationCraft)",
 -- 1b766914 English: Reference only, off by default: SimulationCraft's Survival priority, where Kill
 --     Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike
@@ -5220,6 +7642,9 @@ addon.translation = {
 --     the utility reminders.
 [2086] = "Solo de referencia, desactivada por defecto: la prioridad de Supervivencia de SimulationCraft, en la que Matar genera Punta de la lanza y Derribo, Bocarda, Bomba de fuego salvaje y Golpe de raptor la gastan. Punta de la lanza y las cargas están ocultas en el combate de Midnight, así que no puede funcionar allí. Invoca a tu mascota, marca al objetivo y abre con Bomba de fuego salvaje. Centinela: Matar sin Punta de la lanza, Bocarda, Bomba de fuego salvaje con Marca de centinela, Matar antes de que Derribo esté listo, Derribo, Chakram de luz lunar, Golpe de raptor y, después, Matar, Bomba de fuego salvaje y Derribo. Líder de manada: Matar con Aullido de la manada y, después, Derribo, Bomba de fuego salvaje, Bocarda y Golpe de raptor con Punta de la lanza. Con tres o más enemigos: Bocarda y Bomba de fuego salvaje antes de Derribo, Flagelo de raptor. Recordatorios: Aspecto del águila fuera del cuerpo a cuerpo y los recordatorios de utilidad.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2087] = "Ayudante de combate de Blizzard",
 -- ea9140e9 English: Recommended before you choose a specialization (while the game reports the
 --     Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5229,6 +7654,9 @@ addon.translation = {
 --     premades take over.
 [2088] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del cazador). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de cazador, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Arcane). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2089] = "Ayudante de combate de Blizzard",
 -- 074da909 English: Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5256,6 +7684,9 @@ addon.translation = {
 --     the Assisted premade's reminders.
 [2092] = "Solo de referencia, desactivada por defecto: la prioridad de Arcano de las guías. Andanada Arcana y Lanzamiento libre están ocultos para los addons en el combate de Midnight (solo las cargas Arcanas siguen visibles), así que no puede funcionar allí; el maná está oculto en Retail, así que la Evocación con poco maná la decides tú; léela o duplícala para experimentar. Inicia el combate con Explosión Arcana. Furiasolar: Misiles Arcanos con Lanzamiento libre por debajo de 12 de Andanada, Descarga prismática fuera de Alma Arcana, Tromba Arcana con cuatro cargas y 12 de Andanada con Lanzamiento libre o 25 de Andanada, o con Alma Arcana con cualquier número de cargas, Descarga prismática, Orbe Arcano con menos de tres cargas, Pulso Arcano contra tres enemigos o sin cargas, Explosión Arcana. Lanzahechizos (con Hechicería astillada aprendida): Descarga prismática, Orbe contra grupos de enemigos, Tromba con 20 de Andanada (contra dos o más enemigos, solo con cuatro cargas), Misiles con Lanzamiento libre por debajo de 15 de Andanada, Orbe y Pulso con menos de tres cargas (sin Pulso durante Oleada Arcana), Explosión Arcana. Tromba Arcana cuando no se puede lanzar Explosión. Recordatorios: Oleada Arcana, Toque de los magi tras una Tromba o una Descarga prismática durante Oleada o mucho antes de ella, Presencia mental sin cargas tras una Tromba, además de los recordatorios de la rotación integrada del Ayudante de combate.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Fire). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2093] = "Ayudante de combate de Blizzard",
 -- 42f4c6c3 English: Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5277,6 +7708,9 @@ addon.translation = {
 --     Waiting for Firestarter and timing Meteor into Combustion stay with you.
 [2096] = "Solo de referencia, desactivada por defecto: la prioridad de Fuego de las guías. Buena racha, Calentamiento, Piroestallido y las cargas de Explosión de Fuego están ocultos en el combate de Midnight, así que no puede funcionar allí. Explosión de Fuego mientras termina un lanzamiento para convertir Calentamiento en Buena racha; inicia el combate con Piroexplosión. Piroexplosión (Fogonazo contra cuatro o más enemigos) con Hipertermia, Meteoro, Piroexplosión con Buena racha, Explosión de Fuego con Calentamiento dentro de Combustión, Piroexplosión con Piroestallido, Agostar con Fulgor de calor o en movimiento, Explosión de Fuego con Calentamiento y, después, Descarga de Pirofrío o Bola de Fuego. Recordatorios: Combustión al terminar un lanzamiento con tiempo de lanzamiento, Barrera llameante y los recordatorios de utilidad. Esperar a Acelerador de ignición y hacer coincidir Meteoro con Combustión quedan a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2097] = "Ayudante de combate de Blizzard",
 -- 4d8c78c6 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5303,6 +7737,9 @@ addon.translation = {
 --     utility reminders.
 [2100] = "Solo de referencia, desactivada por defecto: la prioridad de Escarcha de las guías para cada árbol de héroe. Las activaciones, las acumulaciones de Congelación y los tiempos de reutilización están ocultos en el combate de Midnight, así que no puede funcionar allí. Inicia el combate con Descarga de Pirofrío o Descarga de Escarcha. Pirofrío (con Descarga de Pirofrío aprendida): Pica glacial cuando está lista, Lluvia de cometas contra uno o dos enemigos, Aluvión con Congelación cerebral sin Vacío térmico, Lanza de hielo con dos acumulaciones de Dedos de Escarcha, Rayo de Escarcha, Orbe congelado, Ventisca con Lluvia congelante contra tres enemigos, Lanza de hielo con Dedos de Escarcha si tienes Vacío térmico o con doce de Congelación, Aluvión, Nova de hielo o Cono de frío contra cinco y, después, Pica glacial o Descarga de Pirofrío. Lanzahechizos: Lluvia de cometas, Aluvión con Congelación cerebral, Lanza de hielo con dos Dedos, Orbe congelado, Pica glacial cuando está lista, Ventisca con Lluvia congelante, Lanza de hielo con Dedos de Escarcha o con seis de Congelación, Rayo de Escarcha, Aluvión, Nova de hielo o Cono de frío contra cuatro, Ventisca contra siete y, después, Pica glacial o Descarga de Escarcha. Lanza de hielo en movimiento. Recordatorios: Invocar elemental de agua, Barrera de hielo y los recordatorios de utilidad.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2101] = "Ayudante de combate de Blizzard",
 -- f9d1d4a4 English: Recommended before you choose a specialization (while the game reports the
 --     Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5325,6 +7762,11 @@ addon.translation = {
 --     Brew is your call.
 [2104] = "Recomendada para Maestro cervecero. Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. El Ayudante de combate no usa ningún brebaje, así que, como aconseja Icy Veins, los brebajes son recordatorios junto a él: Brebaje del Buey Negro, Invocar a Niuzao, Brebaje purificador, Brebaje celestial o Infusión celestial y Toque de la muerte se iluminan siempre que estén disponibles en combate (Rotation Master aún no puede leer Aplazar, así que valorar su gravedad queda a tu criterio). También Golpe de mano de lanza ante un lanzamiento interrumpible, y Brebaje reconstituyente y tu habilidad racial siempre que estén listos en combate; los lanzamientos enemigos están ocultos en combate, así que la interrupción solo se ilumina donde el juego la muestra, y la salud está oculta en Retail, así que cuándo usar Brebaje reconstituyente lo decides tú.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2105] = "Referencia (Icy Veins)",
 -- a07ba74a English: Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft
 --     agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so
@@ -5336,6 +7778,9 @@ addon.translation = {
 --     Brew or Infusion, Touch of Death, plus the utility reminders.
 [2106] = "Solo de referencia, desactivada por defecto: la prioridad de Maestro cervecero de Icy Veins (la de SimulationCraft coincide en lo esencial). Combo impactante, Barril vacío y las cargas están ocultos en el combate de Midnight, así que no puede funcionar allí. Inicia el combate con Embate con barril. Patada oscura; Ráfaga de chi (Maestro de la armonía); Palma del tigre con Combo impactante; Embate con barril con todas las cargas o con Barril vacío; Aliento de Fuego; Viento de jade impetuoso antes de Barril detonante; Ráfaga de chi (Shadopan); Embate con barril; Viento de jade impetuoso y Patada giratoria de la grulla contra tres o más enemigos; Palma del tigre; Expulsar daño. Recordatorios: Brebaje del Buey Negro una vez gastados Brebaje purificador y Brebaje celestial, Invocar a Niuzao, Brebaje purificador, Brebaje celestial o Infusión celestial, Toque de la muerte, además de los recordatorios de utilidad.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Windwalker). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2107] = "Ayudante de combate de Blizzard",
 -- ac8fdaae English: Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5361,6 +7806,11 @@ addon.translation = {
 --     fillers. Reminder: Touch of Karma, plus the utility reminders.
 [2110] = "Solo de referencia, desactivada por defecto: la prioridad de Conducto de los Celestiales de Icy Veins. Cada paso respeta Maestría: Golpes de combo (nunca el último hechizo que lanzaste); el Chi y tus propios lanzamientos siguen siendo legibles, pero Corazón del dragón de jade, Cénit, ¡Patada oscura! y Danza de Chi-Ji están ocultos en el combate de Midnight, así que no puede funcionar allí; la energía está oculta en Retail, así que se omite la Palma del tigre antes del tope de energía. Puñetazo giratorio del dragón cuando a Xuen le falten más de 10 segundos; Pisotón cénit con poco Chi o cuando termina Cénit; Conducto celestial sin Corazón; Puños de furia cuando termina Corazón; Conducto celestial, Invocar a Xuen, Puños de furia, Puñetazo giratorio del dragón, Golpe del Señor del Viento; Patada oscura cuando falta Chi para Puños; Patada del viento impetuoso, Patada del sol naciente; Patada oscura con dos cargas de ¡Patada oscura! o durante Cénit; Patada giratoria de la grulla durante Cénit o con Danza de Chi-Ji; Toque de la muerte; Palma del tigre, Patada oscura y Vientos cortantes como relleno. Recordatorio: Toque de karma, además de los recordatorios de utilidad.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2111] = "Referencia (Icy Veins)",
 -- 671bd99c English: Reference only, off by default. Blizzard offers no Assisted Combat list for
 --     healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks
@@ -5370,6 +7820,9 @@ addon.translation = {
 --     Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat.
 [2112] = "Solo de referencia, desactivada por defecto. Blizzard no ofrece ninguna lista del Ayudante de combate para sanadores y, en el combate de Midnight, la salud de tus aliados, las cargas de Niebla renovadora, las acumulaciones de Té de maná y las activaciones están ocultas para los addons, así que no es posible dar consejos de sanación; elige tú mismo tus sanaciones. Sobre un objetivo hostil sugiere el relleno cuerpo a cuerpo (fistweaving): Patada del sol naciente, Patada oscura y Palma del tigre; sobre un objetivo amistoso, o sin objetivo, no sugiere nada. Recordatorios: Golpe de mano de lanza, y Brebaje reconstituyente y tu habilidad racial siempre que estén listos en combate.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2113] = "Ayudante de combate de Blizzard",
 -- 7799708b English: Recommended before you choose a specialization (while the game reports the
 --     Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5379,6 +7832,9 @@ addon.translation = {
 --     premades take over.
 [2114] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del monje). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de monje, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2115] = "Ayudante de combate de Blizzard",
 -- d3e8f0e2 English: Recommended for Retribution in Midnight. In combat the game now hides buffs,
 --     debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5389,6 +7845,11 @@ addon.translation = {
 --     Trinkets and racials stay with you.
 [2116] = "Recomendada para Reprensión en Midnight. En combate, el juego ahora oculta a los addons los beneficios, los perjuicios, los tiempos de reutilización y la salud, así que esta rotación muestra en tus barras de acción la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón), y se detiene mientras lanzas o no tienes un enemigo como objetivo. También te recuerda lo que esa sugerencia nunca cubre: un aura entre combates, Reprimenda ante un lanzamiento interrumpible y Protección divina siempre que esté lista en combate. La salud está oculta en Retail, así que cuándo usar Protección divina e Imposición de manos lo decides tú. Los abalorios y las habilidades raciales quedan a tu cargo.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2117] = "Referencia (Icy Veins)",
 -- 66c84fb8 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably
@@ -5401,6 +7862,9 @@ addon.translation = {
 --     defensives.
 [2118] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft lee beneficios, cargas y números de enemigos que Midnight oculta en combate, así que no puede funcionar allí de forma fiable. Martillo de Luz; una habilidad de gasto gratuita con Propósito divino; con 5 de Poder sagrado mientras Estela de cenizas se recarga, la habilidad de gasto; Estela de cenizas; Estrago divino; Hoja de justicia con Arte de la guerra; Martillo de cólera antes de llegar al tope de cargas; con 3 o más de Poder sagrado, Tormenta divina contra dos o más enemigos (o con Poder empíreo) y, si no, Veredicto final; Martillo de cólera; Hoja de justicia; Sentencia; Golpe de templario o Golpe de cruzado. El Poder sagrado sigue visible en combate, así que sus umbrales de gasto funcionan allí. Recordatorios: Cólera vengativa, Sentencia de ejecución con Estela de cenizas disponible, aura, Reprimenda, defensivas.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2119] = "Ayudante de combate de Blizzard",
 -- 3e1487eb English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and
@@ -5410,6 +7874,11 @@ addon.translation = {
 --     Lay on Hands, is your call. Taunting and positioning stay with you.
 [2120] = "Recomendada para Protección en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard, que ya incluye Escudo del honrado, Cólera vengativa y Centinela, y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: un aura entre combates, Reprimenda ante un lanzamiento interrumpible, y Defensor candente y Guardián de los antiguos reyes siempre que estén listos en combate. La salud está oculta en Retail, así que cuándo usarlos, e Imposición de manos, lo decides tú. Las provocaciones y el posicionamiento quedan a tu cargo.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2121] = "Referencia (Icy Veins)",
 -- f169797b English: Reference only, off by default: the Icy Veins and SimulationCraft order needs
 --     the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat.
@@ -5427,6 +7896,9 @@ addon.translation = {
 --     Word of Glory below half health is left to you. Same reminders as the Icy Veins reference.
 [2124] = "Solo de referencia, desactivada por defecto: el orden de tanqueo de Wowhead. Sentencia cada vez que esté disponible, Escudo del honrado, Escudo de vengador, Estrago divino con 0 de Poder sagrado, Martillo bendito o Martillo del honrado, y Consagración solo como relleno. La salud está oculta en Retail, así que Palabra de gloria por debajo de la mitad de la salud queda a tu cargo. Los mismos recordatorios que la referencia de Icy Veins.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2125] = "Icy Veins",
 -- ce9bbe93 English: Holy in Midnight, for reference: Rotation Master picks a spell, not a target,
 --     and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns
@@ -5441,6 +7913,9 @@ addon.translation = {
 --     to you. Avenging Wrath and Aura Mastery are left to you.
 [2126] = "Sagrado en Midnight, como referencia: Rotation Master elige un hechizo, no un objetivo, y el juego oculta la salud de todos en combate, así que esta rotación sigue gastando tu Poder sagrado y usando tus tiempos de reutilización sobre lo que tengas como objetivo, y deja a tu cargo decidir quién necesita sanación. El Poder sagrado sigue visible en combate, así que se gasta primero con 5 y, con 3 o más, después de tus otras sanaciones. Sobre un objetivo amistoso: Llama eterna o Palabra de gloria con 5 de Poder sagrado, Destello de Luz con Infusión de Luz, Choque Sagrado, Llama eterna o Palabra de gloria con 3 o más, Luz Sagrada, Destello de Luz; Luz del alba queda a tu cargo. Sobre un enemigo: Escudo del honrado con 5 de Poder sagrado, Choque Sagrado, Escudo del honrado con 3 o más, Sentencia, Golpe de cruzado, Consagración. Recordatorios en combate: Estrago divino, Prisma Sagrado, Baluarte Sagrado o Arma sacra, Señal de virtud sobre un objetivo amistoso, Protección divina; un aura entre combates; Reprimenda. Imposición de manos queda a tu cargo. Cólera vengativa y Maestría de aura quedan a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2127] = "Ayudante de combate de Blizzard",
 -- 4c581641 English: Recommended before you choose a specialization (while the game reports the
 --     Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5450,6 +7925,9 @@ addon.translation = {
 --     premades take over.
 [2128] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del paladín). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de paladín, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2129] = "Ayudante de combate de Blizzard",
 -- e88d5282 English: Recommended for Shadow in Midnight. In combat the game now hides your DoTs,
 --     buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5461,6 +7939,11 @@ addon.translation = {
 --     call.
 [2130] = "Recomendada para Sombra en Midnight. En combate, el juego ahora oculta a los addons tus DoT, tus beneficios, los tiempos de reutilización y la salud, así que esta rotación muestra la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón, que mantiene tus DoT, Forma de las Sombras y Forma del Vacío y deja terminar Tortura mental), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Infusión de poder en los 20 segundos siguientes a lanzar Forma del Vacío, Forma de las Sombras y Palabra de poder: entereza entre combates, Silencio ante un lanzamiento interrumpible (solo se ilumina donde el juego permite leer el lanzamiento). La salud está oculta en Retail, así que Rezo desesperado lo decides tú.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2131] = "Referencia (Icy Veins)",
 -- 1cbf9308 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are
@@ -5473,6 +7956,10 @@ addon.translation = {
 --     Voidform with both DoTs up, Power Infusion in Voidform.
 [2132] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft lee los temporizadores de los DoT, Locura y Forma del Vacío, que Midnight oculta en combate; la Demencia y la salud están ocultas en Retail, así que Locura en el tope de Demencia, el remate con Palabra de las Sombras: muerte y Rezo desesperado quedan a tu cargo. Toque vampírico antes de iniciar el combate; Embate de tentáculo para aplicar Toque vampírico; Toque vampírico y Palabra de las Sombras: dolor renovados en su último 30 %; Palabra de las Sombras: locura cuando está terminando o en Forma del Vacío; Explosión del Vacío durante Locura; Embate de tentáculo con dos cargas; Torrente del Vacío; Explosión mental; Embate de tentáculo; Tortura mental: demencia durante Locura; Salva del Vacío; Palabra de las Sombras: muerte y dolor en movimiento; Tortura mental, interrumpida para una Explosión mental lista. Recordatorios: Halo, Forma del Vacío con ambos DoT activos, Infusión de poder en Forma del Vacío.",
 -- 6a76d2e3 English: Atonement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2133] = "Expiación (Icy Veins)",
 -- c8fa3896 English: Discipline in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5491,6 +7978,9 @@ addon.translation = {
 --     target. Same reminders as the Icy Veins premade.
 [2136] = "Solo de referencia, desactivada por defecto: el orden de Oráculo de la temporada 1 de Wowhead, que mantiene Palabra de las Sombras: dolor leyendo el perjuicio que Midnight oculta en combate. Palabra de las Sombras: dolor, Palabra de las Sombras: muerte cada vez que esté disponible, Penitencia, Explosión mental, Punición; sobre un objetivo amistoso, primero Penitencia. Los mismos recordatorios que la rotación integrada de Icy Veins.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2137] = "Icy Veins",
 -- d7f52f6f English: Holy in Midnight, for reference: the game hides everyone's health in combat and
 --     Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending
@@ -5503,6 +7993,9 @@ addon.translation = {
 --     it is about to die is your call), Fortitude. Desperate Prayer is yours.
 [2138] = "Sagrado en Midnight, como referencia: el juego oculta la salud de todos en combate y Rotation Master elige un hechizo, no un objetivo, así que esta rotación mantiene en marcha tus Palabras sagradas, Rezo de alivio y las activaciones sobre lo que tengas como objetivo, y deja a tu cargo el triaje. Sobre un objetivo amistoso: Palabra sagrada: santificar, Palabra sagrada: serenidad, Rezo de alivio, Rezo de sanación con Oleada de Luz, Plegaria de bendición, Rezo de sanación con Tejeluz, Sanación relámpago con Oleada de Luz, Rezo de sanación en grupo, Nova Sagrada en movimiento, Sanación relámpago. Sobre un enemigo: Palabra sagrada: condena, Fuego Sagrado, Nova Sagrada en movimiento, Punición. Recordatorios: Apoteosis, Himno divino y Halo en combate, Espíritu guardián sobre un objetivo amistoso (la salud está oculta en Retail, así que si está a punto de morir lo decides tú), Entereza. Rezo desesperado queda a tu cargo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2139] = "Ayudante de combate de Blizzard",
 -- 4b29903d English: Recommended before you choose a specialization (while the game reports the
 --     Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5512,6 +8005,9 @@ addon.translation = {
 --     premades take over.
 [2140] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del sacerdote). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de sacerdote, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2141] = "Ayudante de combate de Blizzard",
 -- ea331596 English: Recommended for Assassination in Midnight. In combat the game now hides your
 --     bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own
@@ -5523,6 +8019,11 @@ addon.translation = {
 --     Crimson Vial is your call.
 [2142] = "Recomendada para Asesinato en Midnight. En combate, el juego ahora oculta a los addons tus sangrados, tus beneficios, la energía, los tiempos de reutilización y la salud, así que esta rotación muestra la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón, que se encarga de la apertura desde sigilo, Garrote, Ruptura, Envenenar, Marca letal y Perdición de Reyes), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: un veneno letal y uno no letal y Sigilo entre combates, Esfumarse cuando estás fuera de sigilo en combate, Patada ante un lanzamiento interrumpible (solo se ilumina donde el juego permite leer el lanzamiento). La salud está oculta en Retail, así que Vial carmesí lo decides tú.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2143] = "Referencia (Icy Veins)",
 -- 04026a9b English: Reference only, off by default: the Icy Veins and SimulationCraft order keeps
 --     bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its
@@ -5534,6 +8035,9 @@ addon.translation = {
 --     whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders.
 [2144] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft mantiene los sangrados según sus temporizadores, y Midnight oculta esos datos en combate; la energía está oculta en Retail, así que se omite su acumulación de energía. Desde sigilo, Garrote y luego Emboscada. Garrote en su último 30 % mientras no tengas todos los puntos de combo, Ruptura con 5 o más en su último 30 %; con 5 o más puntos de combo, Golpe de gracia o Envenenar; con menos, Tempestad carmesí contra tres o más enemigos, Abanico de cuchillos contra dos o más cercanos, Emboscada, Mutilar. Recordatorios: Marca letal con ambos sangrados activos, Perdición de Reyes junto a ella, Esfumarse con Marca letal lista, Puyazo sobre un objetivo con Marca de mortacechador, Té de cardo siempre que esté listo en combate, además de los recordatorios compartidos de venenos, Sigilo y Patada.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2145] = "Ayudante de combate de Blizzard",
 -- bb9cc61b English: Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the
@@ -5543,6 +8047,11 @@ addon.translation = {
 --     with you: the game hides how many Roll the Bones buffs you have.
 [2146] = "Recomendada para Forajido en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (se encarga de la apertura desde sigilo, A suertes, Aluvión de acero, Subidón de adrenalina, Entre ceja y ceja y los remates), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: venenos y Sigilo entre combates, Esfumarse cuando estás fuera de sigilo en combate, Patada. La salud está oculta en Retail, así que Vial carmesí lo decides tú. Suerte prolongada queda a tu cargo: el juego oculta cuántos beneficios de A suertes tienes.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2147] = "Referencia (Icy Veins)",
 -- 3a3eecef English: Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead
 --     order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in
@@ -5554,6 +8063,9 @@ addon.translation = {
 --     Blade Rush are all cooling. Keep It Rolling stays manual.
 [2148] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins, SimulationCraft y Wowhead lee los beneficios de A suertes, las acumulaciones de Oportunidad y la energía, que Midnight oculta en combate. Desde sigilo, Emboscada. Con un punto de combo menos del máximo o más: Entre ceja y ceja, Asesinato múltiple, Golpe de gracia, Despachar. Si no, Emboscada con Audacia, Disparo de pistola con seis acumulaciones de Oportunidad (tres con pocos puntos de combo), Emboscada, Golpe siniestro. Recordatorios: A suertes sin ninguna tirada activa, Subidón de adrenalina con dos puntos de combo o menos, Aluvión de acero mantenido contra dos o más enemigos, Carga de hojas, Preparación cuando Subidón de adrenalina, Entre ceja y ceja y Carga de hojas están todos en reutilización. Suerte prolongada sigue siendo manual.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2149] = "Ayudante de combate de Blizzard",
 -- 96f6f8ea English: Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance,
@@ -5562,6 +8074,11 @@ addon.translation = {
 --     cast. Health is hidden on Retail, so Crimson Vial is your call.
 [2150] = "Recomendada para Sutileza en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (se encarga de la apertura desde sigilo, Hojas de las Sombras, Mordedura de Buchegore, Danza de las Sombras, Técnica secreta y los remates), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: venenos y Sigilo entre combates, Patada ante un lanzamiento interrumpible. La salud está oculta en Retail, así que Vial carmesí lo decides tú.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2151] = "Referencia (Icy Veins)",
 -- 5fff6443 English: Reference only, off by default: the Icy Veins and SimulationCraft order holds
 --     Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which
@@ -5574,6 +8091,9 @@ addon.translation = {
 --     points.
 [2152] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft reserva Danza de las Sombras para Técnica secreta y lee Danza de las Sombras, Noche cerrada y la energía, que Midnight oculta en combate. En sigilo antes de iniciar el combate: Embate de las Sombras. Con un punto de combo menos del máximo o más: Eviscerar con Noche cerrada, Técnica secreta en Danza de las Sombras, Golpe de gracia, Pólvora negra contra tres o más enemigos, Eviscerar. Si no, Embate de las Sombras, Tormenta de shuriken contra dos o más, Hoja de la penumbra o Puñalada. Recordatorios: Mordedura de Buchegore en Danza de las Sombras, Hojas de las Sombras con Danza de las Sombras lista, Danza de las Sombras con dos puntos de combo o menos (o seis o más) cuando Técnica secreta está lista o con Hojas de las Sombras en curso, Esfumarse fuera de sigilo con dos puntos de combo o menos.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2153] = "Ayudante de combate de Blizzard",
 -- 797e018d English: Recommended before you choose a specialization (while the game reports the
 --     Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5583,6 +8103,9 @@ addon.translation = {
 --     premades take over.
 [2154] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del pícaro). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de pícaro, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2155] = "Ayudante de combate de Blizzard",
 -- 14b1a04b English: Recommended for Elemental in Midnight. In combat the game now hides Flame
 --     Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's
@@ -5594,6 +8117,11 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2156] = "Recomendada para Elemental en Midnight. En combate, el juego ahora oculta a los addons Choque de llamas, tus beneficios, la Vorágine, los tiempos de reutilización y la salud, así que esta rotación muestra la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Ascensión, Elemental de Fuego o Elemental de tormenta y Presteza de la Naturaleza en combate, Gracia del caminaespíritus en movimiento, Escudo de relámpagos y Furia del cielo entre combates (la sugerencia de Blizzard mantiene las imbuiciones de arma y de escudo), Corte de viento ante un lanzamiento interrumpible (solo se ilumina donde el juego permite leer el lanzamiento), Cambio astral siempre que esté listo en combate (la salud está oculta en Retail, así que cuándo usarlo lo decides tú).",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2157] = "Referencia (Icy Veins)",
 -- 8fc57d38 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat;
@@ -5609,6 +8137,9 @@ addon.translation = {
 --     shared ones.
 [2158] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft lee Choque de llamas, Maestro de los elementos y Guardia de la Tormenta, que Midnight oculta en combate; la Vorágine está oculta en Retail, así que las habilidades de gasto se usan por su coste en lugar de con la Vorágine casi llena. Guardia de la Tormenta y Ráfaga de lava antes de iniciar el combate. Contra tres o más enemigos trabados en combate: Guardia de la Tormenta, Presteza ancestral, Choque de llamas, Cadena de relámpagos con Guardia de la Tormenta, Explosión elemental, Terremoto, Ráfaga de lava con Oleada de lava, Tempestad, Cadena de relámpagos. Si no, Guardia de la Tormenta, Presteza ancestral, Choque de llamas y Llamarada voltaica en su último 30 % fuera de Maestro de los elementos, Ráfaga de lava para activarlo, Tempestad y la Descarga de relámpagos de Guardia de la Tormenta dentro de él, Explosión elemental o Choque de tierra dentro de él, Llamarada voltaica, Tempestad, Choque de llamas o Choque de Escarcha en movimiento, Explosión elemental o Choque de tierra siempre que puedas permitírtelo, Descarga de relámpagos. Recordatorios: Ascensión una vez usado Guardia de la Tormenta, los elementales, Gracia del caminaespíritus y los compartidos.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2159] = "Ayudante de combate de Blizzard",
 -- 2b518620 English: Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and
@@ -5617,6 +8148,10 @@ addon.translation = {
 --     pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift.
 [2160] = "Recomendada para Mejora en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (gasta las acumulaciones de Arma vorágine, mantiene Choque de llamas y se encarga de Tótem emergente y Hendimiento), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Ascensión, Vientos de fatalidad y Espíritu feral en combate, Escudo de relámpagos y Furia del cielo entre combates (la sugerencia de Blizzard mantiene Arma Viento furioso), Corte de viento, Cambio astral.",
 -- 5c90fed4 English: Stormbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = "Invocatormentas (referencia de SimulationCraft)",
 -- 4890c5e6 English: Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins
 --     and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers,
@@ -5630,6 +8165,10 @@ addon.translation = {
 --     and the shared ones.
 [2162] = "Solo de referencia, desactivada por defecto: la lista de Invocatormentas de SimulationCraft (Icy Veins y Wowhead coinciden) lee Choque de llamas, Estallido de relámpagos, Llamas lacerantes y los temporizadores de los tiempos de reutilización, que Midnight oculta en combate. Contra tres o más enemigos trabados en combate: Estallido de relámpagos por su beneficio, Tempestad con 10 acumulaciones de Arma vorágine, Cadena de relámpagos con 9, Estallido de relámpagos, Latigazo de lava, Hendimiento. Después, Tormenta primigenia con 9, Llamarada voltaica o Choque de llamas cuando falta Choque de llamas, Hendimiento, Estallido de relámpagos por su beneficio, Latigazo de lava para Llamas lacerantes, Golpe de viento, Tempestad o Descarga de relámpagos con 10 (8 si Llamarada voltaica o Estallido de relámpagos están a punto de estar listos), Golpe de tormenta con dos cargas, Latigazo de lava, Golpe de tormenta, Llamarada voltaica, Estallido de relámpagos, Descarga de relámpagos con 5, Choque de llamas. Recordatorios: Vientos de fatalidad, Ascensión fuera de Vientos de fatalidad, Espíritu feral y los compartidos.",
 -- 33731fb7 English: Totemic reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2163] = "Totémico (referencia de SimulationCraft)",
 -- 4485ad39 English: Reference only, off by default: SimulationCraft's Totemic list reads Flame
 --     Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in
@@ -5641,6 +8180,9 @@ addon.translation = {
 --     Stormbringer reference.
 [2164] = "Solo de referencia, desactivada por defecto: la lista de Totémico de SimulationCraft lee Choque de llamas, Mano caliente, Torbellino de fuego, Estallido de relámpagos y Vientos de fatalidad, que Midnight oculta en combate. Contra tres o más enemigos trabados en combate: Estallido de relámpagos, Cadena de relámpagos con 5 acumulaciones de Arma vorágine. Después, Llamarada voltaica o Choque de llamas cuando falta Choque de llamas, Tótem emergente, Hendimiento, Latigazo de lava con Mano caliente o Torbellino de fuego, Estallido de relámpagos por su beneficio, Tormenta primigenia con 10, Golpe de viento, Estallido de relámpagos y Golpe de tormenta durante Vientos de fatalidad, Descarga de relámpagos con 5, Estallido de relámpagos, Latigazo de lava, Golpe de tormenta, Llamarada voltaica, Choque de llamas. Los mismos recordatorios que la referencia de Invocatormentas.",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Restoration). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2165] = "Icy Veins",
 -- 6bac9c2a English: Restoration in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5652,6 +8194,9 @@ addon.translation = {
 --     Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift.
 [2166] = "Restauración en Midnight, como referencia: el Ayudante de combate de Blizzard no cubre a los sanadores, el juego oculta la salud de todos en combate y Rotation Master elige un hechizo, no un objetivo, así que esta rotación ordena tus herramientas de sanación según su disponibilidad sobre lo que tengas como objetivo, y deja a tu cargo decidir a quién sanar. Sobre un objetivo amistoso: Tótem Corriente de sanación, Desatar vida, Lluvia de sanación en grupo, Tótem emergente, Mareas vivas, Sanación en cadena en grupo, Ola de sanación. Sobre un enemigo: Choque de llamas cuando falta, Ráfaga de lava, Descarga de relámpagos. Recordatorios: Escudo de agua, Escudo de tierra sobre un objetivo amistoso y Furia del cielo entre combates; Presteza de la Naturaleza en combate; Tótem de Marea de sanación y Tótem Enlace de espíritu en combate en grupo; Corte de viento; Cambio astral.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2167] = "Ayudante de combate de Blizzard",
 -- 75442137 English: Recommended before you choose a specialization (while the game reports the
 --     Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5661,6 +8206,9 @@ addon.translation = {
 --     premades take over.
 [2168] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del chamán). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de chamán, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2169] = "Ayudante de combate de Blizzard",
 -- be7ca540 English: Recommended for Affliction in Midnight. In combat the game now hides your DoTs,
 --     procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5673,6 +8221,11 @@ addon.translation = {
 --     call).
 [2170] = "Recomendada para Aflicción en Midnight. En combate, el juego ahora oculta a los addons tus DoT, las activaciones, los tiempos de reutilización y la salud, así que esta rotación muestra la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón, que mantiene Agonía y Corrupción, gasta los fragmentos de alma en Aflicción inestable y se encarga de Grimorio de sacrificio), y se detiene mientras lanzas, canalizas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Invocar miradaoscura en combate, Invocar manáfago entre combates salvo que hayas sacrificado a tu demonio, Dominar demonio ante un lanzamiento interrumpible (solo se ilumina donde el juego permite leer el lanzamiento), Pacto oscuro y Resolución inagotable siempre que estén listos en combate (la salud está oculta en Retail, así que cuándo usarlos lo decides tú).",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2171] = "Referencia (Icy Veins)",
 -- d01f383a English: Reference only, off by default: the Icy Veins and SimulationCraft (Soul
 --     Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in
@@ -5684,6 +8237,9 @@ addon.translation = {
 --     the shared ones.
 [2172] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft (Cosechador de almas) lee los temporizadores de los DoT, Ocaso e Inestabilidad de fragmento, que Midnight oculta en combate. Poseer antes de iniciar el combate; Semilla de corrupción contra tres o más enemigos trabados en combate sin tu Corrupción; Poseer; Agonía y Corrupción o Marchitar con menos de 3 segundos; Cosecha siniestra con dos fragmentos o menos; Aflicción inestable con 5 fragmentos; Yugo maléfico (si no, Descarga de las Sombras) con dos acumulaciones de Ocaso; Aflicción inestable con Inestabilidad de fragmento o con 4 fragmentos; Drenar alma; Descarga de las Sombras. Recordatorios: Invocar miradaoscura una vez que Cosecha siniestra esté en reutilización, Malevolencia, Invocar manáfago y los compartidos.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2173] = "Ayudante de combate de Blizzard",
 -- c6249f11 English: Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and
@@ -5693,6 +8249,11 @@ addon.translation = {
 --     pulls, Command Demon, Dark Pact, Unending Resolve.
 [2174] = "Recomendada para Demonología en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (Llamar a terracechadores, Mano de Gul'dan, Descarga de demonio, Succión de poder y Tirano), y se detiene mientras lanzas, canalizas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Invocar tirano demoníaco mientras sigan fuera los terracechadores que llamaste en los últimos 12 segundos, Grimorio: Señor de los diablillos, Grimorio: Devastador vil e Invocar guardia apocalíptico en combate, Invocar guardia vil entre combates, Dominar demonio, Pacto oscuro, Resolución inagotable.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2175] = "Referencia (Icy Veins)",
 -- 631224a9 English: Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist)
 --     order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat.
@@ -5703,6 +8264,9 @@ addon.translation = {
 --     Core below 4, Shadow Bolt.
 [2176] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft (Diabolista) lee Núcleo demoníaco, el número de diablillos y los temporizadores de los tiempos de reutilización, que Midnight oculta en combate. Succión de poder, Descarga de demonio y Descarga de las Sombras antes de iniciar el combate; después, Succión de poder con un Núcleo demoníaco o ninguno, Grimorio: Señor de los diablillos, Grimorio: Devastador vil, Invocar guardia apocalíptico, Llamar a terracechadores, Invocar tirano demoníaco con 5 fragmentos, Implosión contra tres o más enemigos trabados en combate, Ruina, Mano de Gul'dan con 3 fragmentos o más, Descarga infernal con menos de 3, Descarga de demonio con Núcleo demoníaco y menos de 4, Descarga de las Sombras.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2177] = "Ayudante de combate de Blizzard",
 -- e652e84a English: Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire,
@@ -5711,6 +8275,11 @@ addon.translation = {
 --     demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you.
 [2178] = "Recomendada para Destrucción en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (Inmolar o Marchitar, Conflagrar, Descarga de caos, Lluvia de Fuego, Fuego de alma, Malevolencia), y se detiene mientras lanzas, canalizas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Invocar infernal en combate, Invocar diablillo entre combates salvo que hayas sacrificado a tu demonio, Dominar demonio, Pacto oscuro, Resolución inagotable. Estragos sobre un segundo objetivo queda a tu cargo.",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2179] = "Referencia (SimulationCraft)",
 -- ad764c7b English: Reference only, off by default: SimulationCraft's order reads Immolate,
 --     Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and
@@ -5728,6 +8297,9 @@ addon.translation = {
 --     Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate.
 [2182] = "Solo de referencia, desactivada por defecto: el orden de Clamainferno de Icy Veins, que gasta los fragmentos en Descarga de caos antes de que lleguen al tope y usa Quemadura de las Sombras y Canalizar fuego demoníaco cada vez que están disponibles. Lluvia de Fuego contra tres o más enemigos trabados en combate; Marchitar o Inmolar siempre activo; Invocar infernal; Malevolencia; Quemadura de las Sombras; Fuego de alma con menos de 4 fragmentos; Descarga de caos con 4 o más; Cataclismo; Descarga infernal con menos de 4; Canalizar fuego demoníaco; Conflagrar; Incinerar.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2183] = "Ayudante de combate de Blizzard",
 -- 9f1e219f English: Recommended before you choose a specialization (while the game reports the
 --     Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5737,6 +8309,9 @@ addon.translation = {
 --     premades take over.
 [2184] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del brujo). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de brujo, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2185] = "Ayudante de combate de Blizzard",
 -- 182c0efa English: Recommended for Arms in Midnight. In combat the game now hides rage, Rend,
 --     Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own
@@ -5747,6 +8322,10 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2186] = "Recomendada para Armas en Midnight. En combate, el juego ahora oculta a los addons la ira, Desgarrar, Machaque colosal, las activaciones, los tiempos de reutilización y la salud, así que esta rotación muestra la propia sugerencia del Ayudante de combate de Blizzard (la rotación de un solo botón), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Golpe heroico (un botón básico que la sugerencia nunca usa), Avatar y Lanza del campeón en combate, Grito de batalla entre combates, Zurrar ante un lanzamiento interrumpible (solo se ilumina donde el juego permite leer el lanzamiento), Muerte a espada siempre que esté lista en combate (la salud está oculta en Retail, así que cuándo usarla lo decides tú).",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2187] = "Asesino (referencia de SimulationCraft)",
 -- 4c91f0b4 English: Reference only, off by default: the Slayer order from SimulationCraft, Icy
 --     Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which
@@ -5758,6 +8337,10 @@ addon.translation = {
 --     Pummel.
 [2188] = "Solo de referencia, desactivada por defecto: el orden de Asesino de SimulationCraft, Icy Veins y Wowhead lee la ira, Desgarrar, Machaque colosal, Muerte súbita y Oportunista, que Midnight oculta en combate. Abre con Cargar; Golpes de barrido contra dos o más enemigos trabados en combate; Desgarrar antes de Machaque colosal cuando está a punto de agotarse; Devastador justo antes de Machaque colosal; Ejecutar con dos acumulaciones de Muerte súbita; Machaque colosal; Filotormenta durante Machaque colosal o Avatar; Golpe heroico; Abrumar con dos acumulaciones de Oportunista; Golpe mortal; Ejecutar; Abrumar; Desgarrar con menos de 5 segundos; Embate. Recordatorios: Avatar con Machaque colosal listo, Muerte a espada, Grito de batalla, Zurrar.",
 -- 8a86f34e English: Colossus reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2189] = "Coloso (referencia de SimulationCraft)",
 -- 5b252489 English: Reference only, off by default: the Colossus order from SimulationCraft and Icy
 --     Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat.
@@ -5768,6 +8351,9 @@ addon.translation = {
 --     the Sword, Battle Shout, Pummel.
 [2190] = "Solo de referencia, desactivada por defecto: el orden de Coloso de SimulationCraft y Icy Veins acumula Poderío colosal con Golpe mortal y lee beneficios que Midnight oculta en combate. Abre con Cargar; Golpes de barrido contra dos o más; Golpe mortal con menos de cinco acumulaciones de Poderío colosal; Desgarrar antes de Machaque colosal; Devastador; Ejecutar con dos acumulaciones de Muerte súbita; Machaque colosal; Lanza del campeón; Demoler durante Machaque colosal con Poderío colosal; Golpe heroico; Golpe mortal; Ejecutar; Abrumar; Desgarrar con menos de 5 segundos; Filotormenta contra dos o más; Embate. Recordatorios: Avatar, Muerte a espada, Grito de batalla, Zurrar.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2191] = "Ayudante de combate de Blizzard",
 -- b7ca5a34 English: Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you
@@ -5776,6 +8362,10 @@ addon.translation = {
 --     it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2192] = "Recomendada para Furia en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard (Desenfreno, Sed de sangre, Arremetida enfurecida, Ejecutar, Furia de Odyn y Filotormenta), y se detiene mientras lanzas o no tienes un enemigo como objetivo. Recordatorios de lo que deja fuera: Temeridad, Avatar y Lanza del campeón en combate, Grito de batalla entre combates, Zurrar, Regeneración enfurecida siempre que esté lista en combate (la salud está oculta en Retail, así que cuándo usarla lo decides tú).",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2193] = "Asesino (referencia de SimulationCraft)",
 -- 082fcea6 English: Reference only, off by default: SimulationCraft's Slayer order reads Enrage,
 --     Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so
@@ -5796,6 +8386,9 @@ addon.translation = {
 --     Whirlwind. Same reminders as the Slayer reference.
 [2196] = "Solo de referencia, desactivada por defecto: el orden de Señor feudal de la montaña de SimulationCraft y Icy Veins intercala Explosión de trueno y lee beneficios que Midnight oculta en combate. Abre con Cargar; Torbellino por su beneficio contra dos o más; Desenfreno cuando Enfurecer falta o está terminando (la ira está oculta en Retail, así que no hay Desenfreno con 100 de ira); Baño de sangre durante Temeridad; Explosión de trueno con dos acumulaciones; Golpe aplastante; Baño de sangre; Desenfreno durante Temeridad; Explosión de trueno durante Avatar; Arremetida enfurecida; Explosión de trueno; Desenfreno; Sed de sangre; Ejecutar; Furia de Odyn; Atronar; Torbellino. Los mismos recordatorios que la referencia de Asesino.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2197] = "Ayudante de combate de Blizzard",
 -- c6991b2c English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion for your damage and threat, and stops while you cast or have no enemy targeted.
@@ -5807,6 +8400,11 @@ addon.translation = {
 --     else, Battle Shout between pulls, Pummel.
 [2198] = "Recomendada para Protección en Midnight. Muestra la sugerencia del Ayudante de combate de Blizzard para tu daño y tu amenaza, y se detiene mientras lanzas o no tienes un enemigo como objetivo. La sugerencia nunca lanza Bloquear con escudo ni Ignorar dolor, así que ambos son recordatorios siempre que se puedan usar y tu objetivo te esté atacando; el juego oculta la ira, así que Ignorar dolor se iluminará más a menudo de lo que lo necesitas. Otros recordatorios: Avatar, Grito desmoralizador y Lanza del campeón en combate, Muro de escudo y Última carga siempre que estén listos en combate (la salud está oculta en Retail, así que cuándo usarlos lo decides tú), Provocar en grupo cuando tu objetivo ataca a otro, Grito de batalla entre combates, Zurrar.",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2199] = "Referencia (Icy Veins)",
 -- b8b51708 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and
@@ -5817,6 +8415,9 @@ addon.translation = {
 --     are ready in combat, Battle Shout, Pummel.
 [2200] = "Solo de referencia, desactivada por defecto: el orden de Icy Veins y SimulationCraft lee Bloquear con escudo, Explosión de trueno y Poderío colosal, que Midnight oculta en combate; la ira y la salud están ocultas en Retail. Abre con Cargar; Devastador; Explosión de trueno con dos acumulaciones; Demoler con cinco acumulaciones de Poderío colosal; Carga con escudo; Explosión de trueno; Embate con escudo; Atronar; Ejecutar; Revancha; Devastar. Recordatorios: Bloquear con escudo cuando su beneficio no está activo y estás tanqueando, Ignorar dolor, Avatar, Grito desmoralizador, Lanza del campeón, Muro de escudo y Última carga siempre que estén listos en combate, Grito de batalla, Zurrar.",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2201] = "Ayudante de combate de Blizzard",
 -- 2e97cda9 English: Recommended before you choose a specialization (while the game reports the
 --     Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5826,6 +8427,8 @@ addon.translation = {
 --     premades take over.
 [2202] = "Recomendada antes de elegir una especialización (mientras el juego informa de la especialización inicial del guerrero). Resalta el próximo hechizo que sugiere el Ayudante de combate de Blizzard, el único consejo de rotación que el juego aún permite leer a un addon en el combate de Midnight; espera mientras lanzas o canalizas. Junto a él, los recordatorios que comparten todas las rotaciones integradas de guerrero, cada uno cuando conoces su hechizo. Cuando elijas una especialización a nivel 10, las rotaciones integradas de esa especialización toman el relevo.",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance).
 [2203] = "Equilibrio",
 -- df418098 English: Balance from level 1 to 60, and the Druid default before talents or when no
 --     other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on
@@ -5837,6 +8440,10 @@ addon.translation = {
 --     stay with you.
 [2204] = "Equilibrio del nivel 1 al 60, y la opción predeterminada del druida antes de los talentos o cuando no se ajusta ninguna otra rotación integrada. Fuego estelar como relleno una vez aprendido (antes, Cólera; Fuego estelar primero cuando se activa Gracia de la naturaleza), Fuegolunar y Enjambre de insectos mantenidos sobre objetivos que vayan a sobrevivir mientras tu maná esté por encima del 30 %, Huracán cuando tres o más enemigos luchan contra ti, Fuego feérico en grupo, instantáneos en movimiento y cuerpo a cuerpo cuando te quedas sin maná. En Forma felina o Forma de oso da en su lugar los consejos de Combate feral. Recordatorios: Marca de lo salvaje, Espinas en solitario, Augurio de claridad, Forma de lechúcico lunar cuando no tienes ninguna forma, Estimular y Trabazón con la Naturaleza. Usar rangos inferiores de Fuego estelar, los enraizamientos y la elección de objetivo quedan a tu cargo.",
 -- 3c5a26cc English: Balance (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2205] = "Equilibrio (Icy Veins)",
 -- 72e2ae3e English: Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the
 --     recommended Balance premade, off by default: enable it and disable that one, or raise its
@@ -5845,6 +8452,8 @@ addon.translation = {
 --     recommended premade.
 [2206] = "La lista de banda de Icy Veins para reinos con el límite de 16 perjuicios, una alternativa a la rotación integrada de Equilibrio recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Fuego estelar y nada más, sin Fuegolunar ni Enjambre de insectos, Huracán cuando tres o más enemigos luchan contra ti y Cólera solo antes de aprender Fuego estelar. Los mismos recordatorios que la rotación integrada de Equilibrio recomendada.",
 -- 24983899 English: Feral
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Feral).
 [2207] = "Feral",
 -- 46898c22 English: Feral cat and bear from level 10 when Feral is your main talent tree; your form
 --     decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred,
@@ -5880,6 +8489,8 @@ addon.translation = {
 --     Feral premade, off by default: enable it and disable that one, or raise its priority.
 [2214] = "El felino de la rotación integrada de Feral recomendada con el oso de banda bien equipado de Wowhead: Machaque en cada golpe (el Machaque con tabulador contra grupos de enemigos queda a tu cargo), Flagelo solo con 60 de ira de sobra y, si no, Fuego feérico (feral); sin Clamor desmoralizador ni Enfurecer en combate. Es una alternativa a la rotación integrada de Feral recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration).
 [2215] = "Restauración",
 -- 877af0fd English: Restoration from level 10 when Restoration is your main talent tree. Heals your
 --     current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your
@@ -5890,6 +8501,10 @@ addon.translation = {
 --     Rebirth, poison and curse removal. Choosing whom to heal stays with you.
 [2216] = "Recuperación desde el nivel 10 cuando Recuperación es tu árbol de talentos principal. Sana a tu objetivo amistoso actual: Toque curativo tras Rapidez de la Naturaleza, Arreglo rápido por debajo del 40 % sobre tu propio HoT, Rejuvenecimiento y Recrecimiento renovados sin pausa, Recrecimiento como sanación principal con Recrecimiento mejorado, Toque curativo de rango máximo por debajo del 45 % o cuando se activa Gracia de la naturaleza y, si no, Toque curativo de rango 4. Contra un enemigo: Fuegolunar, Enjambre de insectos y Cólera. No sugiere nada en Forma felina o Forma de oso. Recordatorios: Marca de lo salvaje, Augurio de claridad, Rapidez de la Naturaleza, Tranquilidad, Enervar, Renacer, y quitar venenos y maldiciones. Elegir a quién sanar queda a tu cargo.",
 -- b765b6c7 English: Restoration (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2217] = "Restauración (Warcraft Tavern)",
 -- 8cdc97b9 English: Warcraft Tavern's damage tiers, an alternative to the recommended Restoration
 --     premade, off by default: enable it and disable that one, or raise its priority. On your
@@ -5898,6 +8513,10 @@ addon.translation = {
 --     proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade.
 [2218] = "Los umbrales de daño de Warcraft Tavern, una alternativa a la rotación integrada de Restauración recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sobre tu objetivo amistoso, sin mantener HoT mientras el daño es bajo: Arreglo rápido por debajo del 40 %, Recrecimiento de rango 5 por debajo del 50 %, Rejuvenecimiento y Recrecimiento de rango 3 por debajo del 75 %, Toque curativo de rango máximo cuando se activa Gracia de la naturaleza y Toque curativo de rango 3 por debajo del 90 %. Recordatorios como en la rotación integrada de Restauración recomendada.",
 -- d6247adc English: Balance (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2219] = "Equilibrio (SoD)",
 -- 5bcfabec English: Season of Discovery Balance from level 1 to 60, and the default for any Druid
 --     no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and
@@ -5917,6 +8536,10 @@ addon.translation = {
 --     filler. Reminders as the recommended premade.
 [2222] = "La lista de Icy Veins para la Temporada del Descubrimiento, una alternativa a la rotación integrada de Equilibrio de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Oleada de estrellas cada vez que esté disponible, Huracán contra cuatro o más enemigos (por Viento huracanado), Fuego estelar cuando Oleada de estrellas lo potencia, Fuegolunar, Fuego solar y Enjambre de insectos siempre activos, y Cólera como relleno. Recordatorios como en la rotación integrada recomendada.",
 -- c4d16f19 English: Balance (SoD, Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2223] = "Equilibrio (SoD, Wowhead)",
 -- 75dabca6 English: Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery
 --     Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath
@@ -5926,6 +8549,10 @@ addon.translation = {
 --     recommended premade.
 [2224] = "La lista de la fase 8 de Wowhead, una alternativa a la rotación integrada de Equilibrio de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Cólera para iniciar el combate, Oleada de estrellas cada vez que esté disponible, Huracán contra seis o más, Enjambre de insectos solo en movimiento, Fuego solar y Fuegolunar siempre activos, Cólera cuando a tu Fuego solar le queden menos de 5 segundos si Fuegos de Elune está grabado para prolongarlo, Fuego estelar con Eclipse: Lunar y, si no, Cólera. Recordatorios como en la rotación integrada recomendada.",
 -- 3e1ff241 English: Feral cat (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2225] = "Feral felino (SoD)",
 -- e7b0a6ca English: Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your
 --     main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe
@@ -5936,6 +8563,10 @@ addon.translation = {
 --     Innervate. Positioning stays with you.
 [2226] = "Felino de la Temporada del Descubrimiento, elegida cuando tienes grabada la runa de Rugido salvaje (o Combate feral es tu árbol principal sin otra runa de piernas). Fuego feérico (feral) cuando no hay ninguno activo, Rugido salvaje, Flagelo (felino) contra cuatro o más enemigos, el perjuicio de Destrozar, Conjuro libre en Triturar, Destripar con cinco puntos de combo mientras a Rugido salvaje le queden 8 segundos, Arañazo, Triturar por la espalda o Destrozar desde delante, powershift con Furor 5/5 y, al final, renovar Fuego feérico. En Forma de oso da los consejos de tanque. Recordatorios: Furia del tigre con 60 de energía o menos, Rabia con Furia del tigre, Machaque y Enervar. El posicionamiento queda a tu cargo.",
 -- 3c52079f English: Bear tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2227] = "Tanque oso (SoD)",
 -- 6ae09c71 English: Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire
 --     (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown,
@@ -5952,6 +8583,10 @@ addon.translation = {
 --     as the recommended tank premade.
 [2230] = "Desactivada por defecto; para expertos cuyo equipo también otorga Rugido salvaje. La alternancia felina de la fase 7 de wowsims: deja la forma de oso por la felina cuando tu Arañazo ha expirado, mantiene Rugido salvaje y Arañazo (Furia del tigre y Destrozar para generar) y después vuelve a Forma de oso nefasto y juega la lista de tanque. Recordatorios como en la rotación integrada de tanque recomendada.",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2231] = "Restauración (SoD)",
 -- ba307284 English: Season of Discovery Restoration, chosen when Lifebloom is engraved (or
 --     Restoration is your main tree without another legs rune). Heals your current friendly target:
@@ -5963,6 +8598,8 @@ addon.translation = {
 --     dispels. Choosing whom to heal stays with you.
 [2232] = "Recuperación de la Temporada del Descubrimiento, elegida cuando tienes grabada la runa de Flor de vida (o Recuperación es tu árbol principal sin otra runa de piernas). Sana a tu objetivo amistoso actual: Toque curativo instantáneo tras Rapidez de la Naturaleza o Furia de Tempestira, Crecimiento salvaje cuando hay dos o más aliados heridos cerca, Arreglo rápido sobre tu HoT para Floración o por debajo del 40 %, tres acumulaciones de Flor de vida renovadas cuando les queda un segundo, Rejuvenecimiento, Recrecimiento por debajo del 60 %, Nutrir y Toque curativo de rango 4. Contra un enemigo: Fuego solar, Fuegolunar y Cólera. Recordatorios: Árbol de vida e Instintos de supervivencia en los momentos de mucho daño, Rapidez de la Naturaleza, Tranquilidad, Enervar, Renacer, Revivir y disipaciones. Elegir a quién sanar queda a tu cargo.",
 -- 3f0b51a2 English: Ranged
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Classic Era (variant key: Ranged).
 [2233] = "A distancia",
 -- 9b31e6a0 English: Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark,
 --     Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot,
@@ -5989,6 +8626,10 @@ addon.translation = {
 --     used.
 [2238] = "Desactivada por defecto; actívala cuando la banda tenga hueco de perjuicios para tu aguijón. Como Cazador: a distancia, pero en grupo Aguijón de serpiente se mantiene en todas partes, también en bandas, y se renueva por debajo de 5 segundos mientras Tiro de puntería y Multidisparo se recargan; Tiro Arcano no se usa nunca.",
 -- 1fa5802f English: Ranged (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2239] = "A distancia (SoD)",
 -- 09b14a5d English: Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are
 --     used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot
@@ -6004,6 +8645,10 @@ addon.translation = {
 --     weaving and positioning stay with you.
 [2240] = "Todo cazador a distancia en un reino de la Temporada del Descubrimiento, del nivel 1 al 60; las runas se usan una vez grabadas. Aguijón de serpiente siempre activo y renovado con Disparo de quimera. Con la runa de piernas Disparo mortal: Multidisparo con cuatro Disparos trucados, Disparo mortal durante Fuego veloz y sobre objetivos en fase de ejecución, Disparo de quimera y después Trampa explosiva y Tiro Arcano mientras Multidisparo se recarga. Sin ella: Disparo de quimera, Tiro de puntería con dos acumulaciones de Instrucción de francotirador (sin esa runa, justo después de un Tiro automático), trampas justo antes de que Disparo de quimera esté listo (Trampa de Escarcha solo para alimentar Bloquear y cargar), Disparo explosivo, Disparo firme, Multidisparo y Tiro Arcano. Golpes cuerpo a cuerpo cuando un enemigo está demasiado cerca, instantáneos en movimiento, y trampas, Multidisparo y Lluvia contra tres o más enemigos. Recordatorios: Halcón, Víbora por debajo del 10 % de maná, Corazón del león, Aura de disparo certero, el cuidado de la mascota (ninguno con Lobo solitario grabado), Enfocar Fuego con cinco acumulaciones de Frenesí, Fuego veloz, beneficios raciales e Ira de bestias contra élites y en mazmorras. Con Bloquear y cargar grabado, una Trampa de Escarcha antes del combate. Intercalar ataques cuerpo a cuerpo y el posicionamiento quedan a tu cargo.",
 -- fb035172 English: Melee (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2241] = "Cuerpo a cuerpo (SoD)",
 -- 4c275cc2 English: Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern
 --     Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff
@@ -6016,6 +8661,8 @@ addon.translation = {
 --     stay with you.
 [2242] = "Elegida en un reino de la Temporada del Descubrimiento una vez que grabas Golpe de flanco, Golpe de dracoleón o Trinchar, y ni Disparo de quimera ni Disparo explosivo. Mantiene activo el beneficio de Golpe de flanco, Mordedura de mangosta con cuatro acumulaciones de Furia de raptor, Golpe de dracoleón con Golpes astutos, Golpe de raptor en cada reinicio y después Mordedura de mangosta, Golpe de dracoleón, Golpe de flanco y Trinchar; Trampa de inmolación y Cortar alas solo en momentos libres. Trinchar y Trampa explosiva contra tres o más enemigos; Aguijón de serpiente y disparos mientras no alcances al objetivo. Recordatorios: Aspecto del falcón (Halcón antes del 60), Víbora por debajo del 5 % de maná, el cuidado de la mascota (ninguno con Lobo solitario grabado), Fuego veloz y beneficios raciales una vez acumulado Golpe de flanco, e Ira de bestias. El posicionamiento y las órdenes a la mascota quedan a tu cargo.",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Frost).
 [2243] = "Escarcha",
 -- c7006e3e English: Frost from level 1 to 60, also for Arcane builds and the Mage default before
 --     talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on
@@ -6037,6 +8684,8 @@ addon.translation = {
 --     and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you.
 [2246] = "Subida de nivel con Ventisca según la guía de farmeo de área de Icy Veins, elegida automáticamente cuando juegas en solitario con Ventisca mejorada. Desde dos enemigos trabados en combate: Nova de Escarcha sobre el grupo, Cono de frío mientras Nova se recarga, Ventisca cuando no hay nada a tu lado y Deflagración Arcana cuando sí lo hay; Descarga de Escarcha contra un solo objetivo, y Explosión de Fuego y la varita para rematar. Escudo de maná y Barrera de hielo se ponen antes de cada combate. Reunir al grupo de enemigos, Traslación y el kiteo quedan a tu cargo.",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire).
 [2247] = "Fuego",
 -- 2a7f1272 English: Fire from level 10 to 60, chosen when you have Fire points and none in Frost,
 --     or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind;
@@ -6048,6 +8697,10 @@ addon.translation = {
 --     default: weaving Fire Blast whenever it is ready.
 [2248] = "Fuego del nivel 10 al 60, elegida cuando tienes puntos en Fuego y ninguno en Escarcha, o Fuego es tu árbol principal. Piroexplosión (si no, Bola de Fuego) abre el combate; Piroexplosión tras Presencia mental; Chamuscar mantiene cinco acumulaciones de Vulnerabilidad de Fuego con Chamuscar mejorado sobre objetivos que vayan a sobrevivir; Explosión de Fuego y Chamuscar rematan; Bola de Fuego hace de relleno. Con tres o más enemigos trabados en combate: Ola explosiva, Fogonazo, Deflagración Arcana, Cono de frío y Ventisca. Recordatorios: Combustión con cinco acumulaciones de Chamuscar contra élites y en combates largos, armadura, Intelecto Arcano, gemas de maná, Barrera de hielo, Escudo de maná, Evocación, Contrahechizo, Deshacer maldición inferior, Bloqueo de hielo y Presencia mental. Desactivado por defecto: intercalar Explosión de Fuego siempre que esté lista.",
 -- 76354bcf English: Fire (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2249] = "Fuego (Warcraft Tavern)",
 -- 83ffa7ee English: Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off
 --     by default: enable it and disable that one, or raise its priority. Combustion is spent at the
@@ -6057,6 +8710,10 @@ addon.translation = {
 --     range. Same reminders as the Fire premade.
 [2250] = "Fuego según Warcraft Tavern, una alternativa a la rotación integrada de Fuego recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Combustión se gasta al iniciar el combate contra élites y jefes en lugar de esperar a las acumulaciones de Chamuscar; Piroexplosión abre el combate; Chamuscar mantiene cinco acumulaciones con Chamuscar mejorado; Bola de Fuego hace de relleno; Explosión de Fuego solo en movimiento. Contra grupos de enemigos: primero Fogonazo, después Deflagración Arcana, Cono de frío y Ola explosiva de cerca, y Ventisca a distancia. Los mismos recordatorios que la rotación integrada de Fuego.",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2251] = "Fuego (SoD)",
 -- 67a08e15 English: Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses
 --     the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets
@@ -6070,6 +8727,10 @@ addon.translation = {
 --     Bomb across targets stays with you.
 [2252] = "Fuego de la Temporada del Descubrimiento del nivel 1 al 60, y la opción predeterminada del mago allí. Usa las runas que tengas grabadas: Piroexplosión con Buena racha al instante; Bomba viva mantenida sobre objetivos que vayan a sobrevivir; Chamuscar con Chamuscar mejorado mientras Vulnerabilidad de Fuego tenga menos de dos acumulaciones o esté a punto de desaparecer; Llama viva cada vez que esté disponible; Descarga de Fuegotorvo con cinco acumulaciones de Vulnerabilidad de Fuego, nunca con cuatro o más acumulaciones de Fuegotorvo (la quinta te mata); Descarga de Pirofrío y, si no, Bola de Fuego. Bomba viva, Llama viva y Explosión de Fuego en movimiento; Llama viva, Bomba viva, Ola explosiva, Cono de frío, Fogonazo y Ventisca contra grupos de enemigos. Recordatorios: Explosión de Fuego con Recalentamiento, Combustión, Venas heladas y Mordedura helada, Armadura de arrabio u otra armadura, Intelecto Arcano, gemas de maná, Barrera de hielo, Escudo de maná, Evocación, Contrahechizo, quitar maldiciones y Bloqueo de hielo. Extender Bomba viva a varios objetivos queda a tu cargo.",
 -- 0f6cec9f English: Frost (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2253] = "Escarcha (SoD)",
 -- b6fc82b9 English: Season of Discovery Frost from level 10, chosen when Frost is your main tree.
 --     Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into
@@ -6091,6 +8752,10 @@ addon.translation = {
 --     Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders.
 [2256] = "La build de Escarcha con runas de Fuego de la fase 4 de Warcraft Tavern, una alternativa a la rotación integrada de Escarcha de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Piroexplosión abre el combate; Piroexplosión con Buena racha; Bomba viva siempre activa; Chamuscar hasta cinco acumulaciones con Chamuscar mejorado; Descarga de Fuegotorvo solo cuando se activa Congelación cerebral y nunca con cuatro o más acumulaciones de Fuegotorvo; Descarga de Pirofrío hace de relleno. Bomba viva y Explosión de Fuego en movimiento; Bomba viva, Cono de frío y Ventisca contra grupos de enemigos. Recordatorios: Explosión de Fuego con Recalentamiento, Orbe congelado durante Venas heladas, Venas heladas, Mordedura helada y los demás recordatorios de mago.",
 -- 3a7614c3 English: Arcane (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2257] = "Arcano (SoD)",
 -- a0acdff9 English: Season of Discovery Arcane damage, chosen when Arcane is your main tree and
 --     Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane
@@ -6100,6 +8765,10 @@ addon.translation = {
 --     Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders.
 [2258] = "Daño Arcano de la Temporada del Descubrimiento, elegida cuando Arcano es tu árbol principal y tienes grabada la runa de Explosión Arcana. Misiles Arcanos con Tromba de misiles; Tromba Arcana con cuatro acumulaciones de Explosión Arcana; Descarga de Fuegotorvo cuando es seguro, nunca con cuatro o más acumulaciones de Fuegotorvo; Llama viva cada vez que esté disponible; Explosión Arcana hace de relleno. Tromba Arcana y Explosión de Fuego en movimiento; Llama viva y Deflagración Arcana contra grupos de enemigos. Recordatorios: Poder Arcano contra élites y en combates largos, Presencia mental con Poder Arcano o en movimiento, Venas heladas, Mordedura helada y los demás recordatorios de mago.",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2259] = "Sanador (SoD)",
 -- 83b2fb47 English: Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration
 --     is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half
@@ -6113,6 +8782,8 @@ addon.translation = {
 --     direct healing is small). Choosing whom to heal stays with you.
 [2260] = "Sanación de mago de la Temporada del Descubrimiento, elegida cuando tienes grabada la runa de Regeneración o de Regeneración en masa. Con un objetivo amistoso: Retroceder en el tiempo y Preservación cronostática por debajo de la mitad de la salud, Regeneración cuando falta tu Baliza temporal, Regeneración en masa y Anomalía temporal. Con un objetivo enemigo, daño que sana a tus balizas: Descarga de Fríoarcano para sanadores de Escarcha; si no, Misiles Arcanos con Tromba de misiles, Tromba Arcana con dos acumulaciones de Explosión Arcana, Descarga de Fuegotorvo cuando es seguro (nunca con cuatro o más acumulaciones de Fuegotorvo) y Explosión Arcana. Recordatorios: Poder Arcano, Presencia mental, Orbe congelado y los demás recordatorios de mago. Desactivados por defecto: Deflagración Arcana contra grupos de enemigos, y Lanza de hielo y Congelación profunda para sanadores de Escarcha. Mientras canalizas Regeneración en masa ya se muestra el siguiente hechizo, así que puedes cancelarla de inmediato (su sanación directa es pequeña). Elegir a quién sanar queda a tu cargo.",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution).
 [2261] = "Reprensión",
 -- 623b26cb English: Melee Retribution from level 1 to 60, and the default for any Paladin no other
 --     premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and
@@ -6124,6 +8795,8 @@ addon.translation = {
 --     Seal twisting is a separate premade; target choice and positioning stay with you.
 [2262] = "Reprensión cuerpo a cuerpo del nivel 1 al 60, y la opción predeterminada para cualquier paladín al que no se ajuste ninguna otra rotación integrada. Contra élites y en combates largos fuera de bandas, pone Sello del Cruzado y lo juzga una vez; si no, mantiene activo un sello (Orden con un arma de 3,5 segundos o más lenta; si no, Rectitud), Exorcismo y Cólera sagrada contra no-muertos y demonios, Martillo de cólera, Sentencia cada vez que esté disponible, y Consagración mientras Venganza esté activa o contra dos o más enemigos cercanos. Recordatorios: Aura de santidad, de castigo o de devoción, Bendición de Sabiduría en solitario o del poderío en grupo, una sanación entre combates, y Escudo divino, Protección divina o Emposición cuando estás a punto de morir. La alternancia de sellos es otra rotación integrada; la elección de objetivo y el posicionamiento quedan a tu cargo.",
 -- a2754c34 English: Retribution, seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution / Twist).
 [2263] = "Reprensión, alternancia de sellos",
 -- 34017594 English: Off by default; enable it if you twist seals. For a Retribution Paladin with
 --     Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last
@@ -6132,6 +8805,8 @@ addon.translation = {
 --     and good timing. Same reminders as the Retribution premade.
 [2264] = "Desactivada por defecto; actívala si alternas sellos. Para un paladín de Reprensión con Sello de orden: mantiene activo Sello de rectitud, cambia a Sello de orden de rango 1 en los últimos 0,4 segundos antes de un golpe y vuelve otra vez, Sentencia siempre que esté lista, Exorcismo y Cólera sagrada contra no-muertos y demonios, Martillo de cólera y Consagración con Venganza. Necesita mucho maná y buena sincronización. Los mismos recordatorios que la rotación integrada de Reprensión.",
 -- 0e97ad02 English: Protection
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Protection).
 [2265] = "Protección",
 -- 8b566adc English: Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree.
 --     Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement
@@ -6151,6 +8826,8 @@ addon.translation = {
 --     raid. Same reminders as the recommended premade.
 [2268] = "El tanqueo de banda de Icy Veins con la rotación de Sabiduría de Wowhead, una alternativa a la rotación integrada de Protección recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Mantiene activo Sello de sabiduría y lo juzga siempre que el objetivo no tenga Sentencia de Sabiduría; si no, solo juzga para iniciar el combate; Escudo Sagrado, Consagración cada vez que esté disponible, Cólera sagrada contra grupos de no-muertos y demonios, Exorcismo, y Bendición superior de reyes como relleno de amenaza en banda. Los mismos recordatorios que la rotación integrada recomendada.",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Holy).
 [2269] = "Sagrado",
 -- 9d4ec18a English: Healing in a group with the Holy tree, from level 10. Acts on your friendly
 --     target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move,
@@ -6161,6 +8838,10 @@ addon.translation = {
 --     you; soloing Holy Paladins get the Retribution premade.
 [2270] = "Sanación en grupo con el árbol Sagrado, desde el nivel 10. Actúa sobre tu objetivo amistoso y elige la sanación según la salud que le falte: Purgación o Purificar, Choque Sagrado mientras te mueves, Luz Sagrada de rango máximo por debajo del 40 %, Luz Sagrada de rango 6 por debajo del 65 %, Destello de Luz de rango máximo por debajo del 85 % y Destello de Luz de rango 4 por debajo del 95 %. Con un enemigo al alcance cuerpo a cuerpo: Sello de sabiduría y, fuera de bandas, Sentencia. Recordatorios: Aura de concentración o de devoción, Bendición de Sabiduría, Favor divino y Emposición para un objetivo con muy poca salud. Elegir a quién sanar queda a tu cargo; un paladín Sagrado que juega en solitario recibe la rotación integrada de Reprensión.",
 -- 8094efdd English: Retribution (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2271] = "Reprensión (SoD)",
 -- 0cc623b4 English: Season of Discovery melee from level 1 to 60, and the default for any Paladin
 --     there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism,
@@ -6199,6 +8880,10 @@ addon.translation = {
 --     Judgement while both seals are up.
 [2278] = "Desactivada por defecto; actívala con la runa Alma del portador del sello o con el conjunto de seis piezas que hace que los sellos persistan (Rotation Master no puede ver ninguno de los dos). Mantiene activos tanto Sello de orden como Sello de martirio, Tormenta divina con tres de Poder Sagrado, Golpe de cruzado, Exorcismo, Cólera sagrada contra no-muertos y demonios (contra cualquier cosa con Poder purificador grabado), Consagración, y Sentencia mientras ambos sellos estén activos.",
 -- 68461fe5 English: Shockadin (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2279] = "Shockadin (SoD, wowsims)",
 -- 9a1756b6 English: Off by default; enable it if you deal damage with the Holy tree. It applies
 --     with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else
@@ -6206,6 +8891,10 @@ addon.translation = {
 --     Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade.
 [2280] = "Desactivada por defecto; actívala si haces daño con el árbol Sagrado. Se aplica con Sagrado como tu árbol principal y Conmoción y pavor grabado. Sello de martirio (si no, Rectitud), juzgado cuando se agota, Choque Sagrado para mantener Luz solar o con tres de Poder Sagrado, Exorcismo y Golpe de cruzado. Los mismos recordatorios que la rotación integrada de Reprensión de la Temporada del Descubrimiento.",
 -- 924f353b English: Protection (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2281] = "Protección (SoD)",
 -- 58619700 English: Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of
 --     the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull
@@ -6217,6 +8906,10 @@ addon.translation = {
 --     40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.
 [2282] = "Tanqueo de la Temporada del Descubrimiento, elegida por Furia recta, por tener grabada la runa de Martillo del honrado o de Escudo de rectitud, o por el árbol de Protección. Sello de martirio, inicio de combate con Escudo Sagrado, Escudo de vengador y Exorcismo, y Escudo Sagrado siempre activo; contra un objetivo, Martillo del honrado, Escudo de rectitud, Exorcismo, Escudo de vengador, Sentencia, Tormenta divina y Consagración; con tres o más enemigos luchando contra ti, Martillo del honrado, Escudo de vengador, Consagración, Escudo de rectitud y Exorcismo. Recordatorios: Furia recta, Escudo Sagrado antes de iniciar el combate, Aura de devoción, Santuario o Reyes, Cólera vengativa, Protección divina por debajo del 40 %, Emposición, y Mano de expiación en grupo cuando tu objetivo ataca a otro.",
 -- 29a17682 English: Protection (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2283] = "Protección (SoD, wowsims)",
 -- f2677084 English: The wowsims tank list, an alternative to the recommended Season of Discovery
 --     Protection premade, off by default: enable it and disable that one, or raise its priority.
@@ -6225,6 +8918,10 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2284] = "La lista de tanque de wowsims, una alternativa a la rotación integrada de Protección de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sentencia siempre que haya un sello activo, el sello renovado justo antes de que se agote, Escudo Sagrado, Escudo de vengador, Martillo del honrado, Exorcismo y, al final, Escudo de rectitud. Los mismos recordatorios que la rotación integrada recomendada.",
 -- e757b87a English: Holy (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2285] = "Sagrado (SoD)",
 -- 45b566d4 English: Season of Discovery healing in a group, chosen by an engraved Beacon of Light,
 --     Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your
@@ -6244,6 +8941,8 @@ addon.translation = {
 --     premade.
 [2288] = "El orden de sanación de la fase 4 de Wowhead para equipo con mucho crítico, una alternativa a la rotación integrada Sagrado de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Luz divina o Luz Sagrada por debajo del 75 %; después Purgación, Choque Sagrado para déficits pequeños o en movimiento, y Destello de Luz por debajo del 95 %. Los mismos recordatorios que la rotación integrada recomendada.",
 -- 0c874f58 English: Damage
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Dps).
 [2289] = "Daño",
 -- 3af8cf40 English: Damage from level 1 to 60, and the Priest default whenever the healer premade
 --     does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a
@@ -6273,6 +8972,8 @@ addon.translation = {
 --     one, or raise its priority.
 [2294] = "La prioridad de daño recomendada con la elección de banda de wowsims para sacerdotes no-muertos: Enfoque interno se gasta en Peste devoradora en lugar de Explosión mental, y Peste devoradora también se lanza en bandas, así que úsala solo donde tu banda tenga huecos de perjuicios de sobra. Sin Abrazo vampírico. Es una alternativa a la rotación integrada de daño recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad.",
 -- a491a33c English: Healer
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Healer).
 [2295] = "Sanador",
 -- dae36c27 English: Chosen in a group when Holy or Discipline is your main talent tree. Heals the
 --     friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer
@@ -6284,6 +8985,10 @@ addon.translation = {
 --     stay with you.
 [2296] = "Elegida en grupo cuando Sagrado o Disciplina es tu árbol de talentos principal. Sana a la unidad amistosa que tengas como objetivo: Palabra de poder: escudo por debajo del 30 %, Destello curativo por debajo del 40 %, disipaciones, Rezo de curación cuando tres miembros de tu grupo están heridos, Curación superior (Curar o Curación inferior antes de aprenderla) por debajo de la mitad de la salud, Renovar en movimiento o con daño leve, y después Curar de rango 3 como relleno eficiente. Fuera de combate ofrece Entereza sobre tu objetivo. Si tienes como objetivo a un enemigo, da Palabra de las Sombras: Dolor y Acometida. Recordatorios: Fuego interno, Entereza, Espíritu divino, Enfoque interno y Rezo desesperado; Infusión de poder está desactivada por defecto. Elegir a quién sanar y usar rangos inferiores quedan a tu cargo.",
 -- 999e9eba English: Damage (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2297] = "Daño (SoD)",
 -- 63f3ee22 English: Damage on Season of Discovery realms, from level 1 to 60, using the runes you
 --     have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite
@@ -6304,6 +9009,10 @@ addon.translation = {
 --     Mind Spike as the filler. Everything else matches the recommended premade.
 [2300] = "El enfoque de Wowhead y Warcraft Tavern para la Temporada del Descubrimiento, una alternativa a la rotación integrada de daño de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Explosión mental espera a tres de tus acumulaciones de Púa mental en el objetivo (se lanza con normalidad hasta que grabas Púa mental), Despelleje mental solo con Caras fundentes y Púa mental como relleno. Todo lo demás coincide con la rotación integrada recomendada.",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2301] = "Sanador (SoD)",
 -- 37b39f3b English: Chosen on Season of Discovery realms in a group when Holy or Discipline is your
 --     main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending
@@ -6325,6 +9034,8 @@ addon.translation = {
 --     stacks (with Serendipity engraved; else below 30%).
 [2304] = "El ciclo de Serendipia de Warcraft Tavern, creado para Serendipia y Amparo de alma, una alternativa a la rotación integrada de sanador de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Rezo de alivio cada vez que esté disponible, Escudo sobre tu objetivo siempre que pueda recibir uno (con Amparo de alma grabado; si no, por debajo de la mitad de la salud), Penitencia con daño fuerte, Círculo de sanación con tres heridos, Curación superior o Rezo de curación con tres acumulaciones de Serendipia, Renovar con daño leve, y Destello curativo con heridas leves para generar las acumulaciones (con Serendipia grabada; si no, por debajo del 30 %).",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Classic Era (variant key: DPS).
 [2305] = "DPS cuerpo a cuerpo",
 -- b5cd3c00 English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
 --     wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
@@ -6360,6 +9071,10 @@ addon.translation = {
 --     recommended premade.
 [2310] = "El orden de Combate «exigente» de wowsims para Especialización en espada, una alternativa a la rotación integrada de DPS cuerpo a cuerpo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Golpe siniestro solo justo después de un golpe de la mano principal (2,0 segundos o más hasta el siguiente, ajustado para una espada de velocidad 2,6–2,8; duplícala para cambiarlo), salvo que la energía esté casi llena o el objetivo esté a punto de morir, para que el ataque extra de espada no retrase tu golpe. Eviscerar con cinco también espera a Hacer picadillo, a tener la energía llena o a un objetivo a punto de morir. Por lo demás, como la rotación integrada recomendada.",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2311] = "DPS cuerpo a cuerpo (SoD)",
 -- d3dc0f9a English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
 --     wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
@@ -6392,6 +9107,10 @@ addon.translation = {
 --     the glove-rune builder. The Vanish and Cold Blood burst stays with you.
 [2316] = "La lista simplificada de Zockify para la Temporada del Descubrimiento, una alternativa a la rotación integrada de DPS cuerpo a cuerpo de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sin sangrados ni Exponer armadura. Cuchillo envenenado con cuatro acumulaciones de veneno, Hacer picadillo cuando falta (desde dos puntos, cuatro con Tajo de sable), Envenenar con cinco y después el generador de la runa de guantes. La ráfaga de Esfumarse y Sangre fría queda a tu cargo.",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2317] = "Tanque (SoD)",
 -- d50349d8 English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
 --     from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
@@ -6404,6 +9123,8 @@ addon.translation = {
 --     Shadowstep and Sebacious Poison duty stay with you.
 [2318] = "Tanque de la Temporada del Descubrimiento, elegida cuando Una simple herida superficial está grabada; basada en la fase 6 de wowsims, Icy Veins, Zockify y Warcraft Tavern. Estocada, Daga de guardamano cada vez que esté disponible, Danza de hojas desde un punto de combo (renovada desde tres), Hacer picadillo desde tres (renovado desde cuatro), Abanico de cuchillos, Tempestad carmesí y Trabuco contra tres o más enemigos, Trabuco mientras Danza de hojas esté activa, Eviscerar con cinco y ambos beneficios activos, Cuchillo envenenado con poca energía, y después Tajo de sable, Mutilar o Golpe siniestro. Recordatorios: Chinchar en grupo cuando tu objetivo ataca a otro, Patada, Evasión por debajo de la mitad de la salud, Ráfaga con espada, Subidón de adrenalina, Té de cardo y venenos de arma (el de la mano secundaria solo con un arma en ella). Paso de las Sombras y mantener Veneno sebáceo quedan a tu cargo.",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Enhancement).
 [2319] = "Mejora",
 -- 5faeab70 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
 --     talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range;
@@ -6425,6 +9146,8 @@ addon.translation = {
 --     Lightning on packs. Same totems and reminders as the recommended premade.
 [2322] = "La Mejora de Warcraft Tavern, una alternativa a la rotación integrada de Mejora recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Arma tótem Viento Furioso en cuanto la aprendes, Golpe de tormenta, Choque de llamas antes de cualquier choque directo y después Choque de tierra mientras tu amenaza sea baja, o Choque de Escarcha en grupo cuando ya sea alta; Tótem de magma y Cadena de relámpagos contra grupos de enemigos. Los mismos tótems y recordatorios que la rotación integrada recomendada.",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Elemental).
 [2323] = "Elemental",
 -- 5ee9955c English: Elemental from level 10 (most points in Elemental); built from Icy Veins and
 --     Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame
@@ -6444,6 +9167,8 @@ addon.translation = {
 --     same interrupt, totems and reminders.
 [2326] = "La lista Elemental de wowsims, una alternativa a la rotación integrada de Elemental recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Cadena de relámpagos cada vez que esté disponible, incluso contra un solo objetivo, Choque de tierra mientras Maestría elemental esté activa y, si no, Descarga de relámpagos. Más rápida, pero gasta mucho más maná que la rotación integrada recomendada; la misma interrupción, tótems y recordatorios.",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Restoration).
 [2327] = "Restauración",
 -- 5119f4dc English: Restoration from level 10 (most points in Restoration); built from Icy Veins
 --     and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's
@@ -6463,6 +9188,10 @@ addon.translation = {
 --     enemies and totem reminders as the recommended premade.
 [2330] = "La Restauración de Warcraft Tavern, una alternativa a la rotación integrada de Restauración recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Curación en cadena es la sanación para cualquiera por debajo del 90 %, con Onda inferior de curación para quien esté a punto de morir; Onda de curación es solo para un sanador asignado al tanque con Forma curativa (aparece desactivada). Las mismas curas, daño contra enemigos y recordatorios de tótems que la rotación integrada recomendada.",
 -- 37e5b161 English: Enhancement (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2331] = "Mejora (SoD)",
 -- 929796a6 English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
 --     two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins
@@ -6476,6 +9205,10 @@ addon.translation = {
 --     Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
 [2332] = "Temporada del Descubrimiento, niveles 1–60 con las runas a medida que las grabas, con dos armas o con un arma a dos manos, y todo chamán de la Temporada del Descubrimiento al que no se ajuste ninguna otra rotación integrada; basada en la fase 6 de wowsims, Icy Veins y Wowhead. Choque de llamas inicia el combate; Choque de tierra interrumpe. Contra tres o más enemigos: Tótem de magma, Nova de Fuego con un tótem de fuego, Cadena de relámpagos con cuatro acumulaciones de Arma vorágine y Choque de llamas. Después, Ráfaga de lava con cinco acumulaciones de Arma vorágine, Golpe de tormenta, Latigazo de lava, Descarga de relámpagos con cinco acumulaciones, Choque de llamas cuando vaya a durar, Choque de tierra, Explosión de arrabio y Descarga de relámpagos a distancia. Recordatorios: Arma tótem Viento Furioso (antes, Arma comerrocas), Arma lengua de Fuego en un arma de la mano secundaria con Latigazo de lava (si no, Viento Furioso; nunca en un escudo; una línea de Icy Veins con Viento Furioso en ambas aparece desactivada), Escudo de agua o de relámpagos, Espíritu del alfa, Espíritu feral, Ira del chamán por debajo del 65 % de maná, tótems y Guía ancestral. Proyección totémica, las disipaciones y las purgas quedan a tu cargo.",
 -- 0fb65642 English: Elemental (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2333] = "Elemental (SoD)",
 -- f9d25821 English: Season of Discovery Elemental from level 10 (most points in Elemental); built
 --     from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
@@ -6488,6 +9221,10 @@ addon.translation = {
 --     Trinkets, Totemic Projection, dispels and purges stay with you.
 [2334] = "Elemental de la Temporada del Descubrimiento desde el nivel 10 (la mayoría de los puntos en Elemental); basada en la fase 6 de wowsims, Wowhead e Icy Veins. Choque de tierra interrumpe. En movimiento: Choque de llamas, Choque de tierra con ocho cargas de Escudo de relámpagos, y Ráfaga de lava o Cadena de relámpagos cuando se activa Oleada de poder. Contra tres o más enemigos: Choque de llamas, Cadena de relámpagos, Nova de Fuego, Ráfaga de lava, Choque de tierra con ocho cargas y Tótem de magma. Después, Ráfaga de lava con Oleada de poder, Choque de llamas siempre activo, Ráfaga de lava mientras dure tu Choque de llamas, Choque de tierra con ocho cargas, Cadena de relámpagos contra dos enemigos y Descarga de relámpagos. Recordatorios: Arma lengua de Fuego para Quemar, Escudo de relámpagos, Escudo de tierra sobre ti, Espíritu del alfa, Espíritu feral, Ira del chamán, Maestría elemental y tótems. Las alhajas, Proyección totémica, las disipaciones y las purgas quedan a tu cargo.",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2335] = "Restauración (SoD)",
 -- ff16512c English: Season of Discovery Restoration from level 10 (most points in Restoration);
 --     built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave
@@ -6510,6 +9247,8 @@ addon.translation = {
 --     Shamanistic Rage, Searing or Magma, and group totems.
 [2338] = "Tanque de la Temporada del Descubrimiento, elegida una vez que Camino de la tierra está grabado; basada en Icy Veins, Wowhead, wowsims y Warcraft Tavern. Choque de llamas inicia el combate. Choque de tierra provoca a un objetivo cuerpo a cuerpo que no te está atacando, e interrumpe. Contra dos o más enemigos: Explosión de arrabio, Choque de llamas, Cadena de relámpagos con cinco acumulaciones de Arma vorágine o con Oleada de poder, y Nova de Fuego con cinco acumulaciones. Después, Choque de llamas siempre activo, Ráfaga de lava con Oleada de poder o mientras dure Choque de llamas, Golpe de tormenta, Choque de tierra, Descarga de relámpagos con cinco acumulaciones, Explosión de arrabio y Choque de Escarcha. Recordatorios: Arma comerrocas, Escudo de relámpagos, Espíritu del alfa sobre ti, Espíritu feral, Ira del chamán, Tótem abrasador o de magma, y los tótems de grupo.",
 -- 2628a00c English: Every tree
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Classic Era (variant key: DPS).
 [2339] = "Todas las ramas",
 -- 67b0af4c English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
 --     from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and
@@ -6545,6 +9284,10 @@ addon.translation = {
 --     Siphon Life. Leveling and dungeons play as the recommended premade.
 [2344] = "La lista de Icy Veins para reinos con el límite de 16 perjuicios, una alternativa a la rotación integrada de brujo recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. En bandas, solo tu maldición y Corrupción, y después Descarga de las Sombras, sin Inmolar ni Succionar vida. La subida de nivel y las mazmorras se juegan como en la rotación integrada recomendada.",
 -- 4f0bc39e English: Tank (SoD, Metamorphosis)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2345] = "Tanque (SoD, Metamorfosis)",
 -- 1e24cbef English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
 --     wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is
@@ -6558,6 +9301,10 @@ addon.translation = {
 --     Infernal Armor stays with you.
 [2346] = "Tanque de la Temporada del Descubrimiento, elegida una vez que tienes grabada la runa de Metamorfosis; basada en wowsims, Icy Veins, Wowhead y Warcraft Tavern. Cuchilla de las Sombras siempre que falte Resolución del defensor o esté a punto de acabar, ¡Fuego de alma! cuando se activa, Incinerar para mantener su beneficio de fuego; contra tres o más enemigos, Cuchilla de las Sombras, Lago de Fuego, Pirosombra y Piroinferno. Después, una maldición (Agonía o, si no, Temeridad cuando nadie la tiene), Pirosombra (Inmolar antes de grabarla), Drenar vida con Maestro canalizador, Corrupción, Succionar vida, Conflagrar para Explosión de humo, Fuego de alma con Exterminio por debajo del 35 % y Dolor abrasador como relleno de amenaza. Recordatorios: Metamorfosis, Armadura vil, tu mascota, Aura de Inmolación, Gracia demoníaca, Venganza con poca salud, Amenaza cuando el objetivo ataca a otro, Aullido demoníaco contra grupos de enemigos, Amplificar maldición y Transfusión de vida para una mascota con poco maná. Armadura infernal queda a tu cargo.",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2347] = "Fuego (SoD)",
 -- b3afd0ce English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
 --     engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
@@ -6601,6 +9348,8 @@ addon.translation = {
 --     proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.
 [2354] = "La lista de Aflicción de la fase 6 de wowsims para una build de Succión de alma, una alternativa a la rotación integrada de Sombras de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Drenar alma es el relleno con cualquier salud, y el siguiente paso aparece en cuanto toca para que puedas cortar la canalización; cualquier otra canalización se deja terminar. Aflicción inestable y Pirosombra renovados cuando les quedan 7,5 segundos, Agonía y Corrupción cuando les quedan 6, Drenar vida con Maestro canalizador, Poseer, Descarga de las Sombras solo cuando se activa Trance de las Sombras, Succionar vida y Transfusión de vida por debajo del 10 % de maná. Los mismos recordatorios que la rotación integrada recomendada.",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: DPS).
 [2355] = "DPS cuerpo a cuerpo",
 -- c080d284 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
 --     Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull,
@@ -6615,6 +9364,8 @@ addon.translation = {
 --     Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.
 [2356] = "Niveles 1–60, Armas y Furia, y todo guerrero fuera de Actitud defensiva, también en reinos Hardcore y en modo de opción personal; basada en wowsims, Icy Veins y Wowhead. Cargar para iniciar el combate, Interceptar contra un objetivo lejano, Huracán (Trueno antes de aprenderlo) con tres o más enemigos luchando contra ti, y después: primero Ejecutar por debajo del 20 %, Hender armadura hasta cinco contra jefes sin Exponer armadura, Sed de sangre, Golpe mortal, Embate justo después de un golpe con Embate mejorado (ajustado para un arma a dos manos; duplícala para cambiarlo), Huracán guardando ira para tu golpe principal, Abrumar, Desgarrar hasta aprender tu golpe principal, Hender armadura sobre objetivos con mucha salud y Seccionar cerca del tope de ira. Recordatorios: Grito de guerra, Golpe heroico desde 40 de ira (20 durante la subida de nivel), Mellar contra grupos de enemigos, Sanguinario, Golpes de barrido, Deseo de la Muerte (jefes: sus últimos 30 segundos), Temeridad con Deseo de la Muerte, y Zurrar o Azote de escudo. Grito intimidador y Represalias aparecen desactivados para emergencias en Hardcore; el cambio de actitudes queda a tu cargo.",
 -- c0b21fb1 English: Tank
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: Protection).
 [2357] = "Tanque",
 -- 6949294b English: Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a
 --     two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing
@@ -6635,6 +9386,10 @@ addon.translation = {
 --     tank; go back to Sunder when focusing one target in a crowd.
 [2360] = "El tanqueo «sin Hender» de Icy Veins para grupos en los que cuatro o más jugadores oyen tu grito (Grito de guerra de la fase 5 en adelante), una alternativa a la rotación integrada de tanque recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Grito desmoralizador siempre activo, Revancha, Embate con escudo o Sed de sangre, y después Grito de guerra como relleno de amenaza en lugar de Hender armadura; Embate con escudo y Bloquear con escudo solo con un escudo equipado. Los mismos recordatorios que la rotación integrada de tanque recomendada; vuelve a Hender cuando te centres en un solo objetivo dentro de un grupo grande.",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2361] = "DPS cuerpo a cuerpo (SoD)",
 -- dbdfa29c English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
 --     dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built
@@ -6667,6 +9422,10 @@ addon.translation = {
 --     the recommended premade.
 [2366] = "Las páginas de Furia y Armas de Icy Veins para la Temporada del Descubrimiento, una alternativa a la rotación integrada de DPS cuerpo a cuerpo de la Temporada del Descubrimiento recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Ejecutar casi en primer lugar por debajo del 20 % o con Muerte súbita, Embate con Oleada sangrienta, Sed de sangre o Golpe mortal, Huracán, Abrumar, Arremetida enfurecida, y después Golpe rápido y Seccionar solo por encima de 60 de ira; sin Desgarrar; Golpe heroico solo por encima de 80 de ira. Los mismos recordatorios que la rotación integrada recomendada.",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2367] = "Tanque (SoD)",
 -- 93f460da English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
 --     8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge,
@@ -6679,6 +9438,9 @@ addon.translation = {
 --     are listed off; the Gladiator swap for Execute stays with you.
 [2368] = "Tanque de la Temporada del Descubrimiento, elegida en Actitud defensiva; basada en la fase 8 de Wowhead y wowsims. Cargar; contra dos o más enemigos, Trueno, Ola de choque, Embate con escudo, Revancha, Huracán y Devastar; después, Embate con escudo siempre que falte Resolución del defensor o esté a punto de acabar, Revancha, Embate con escudo, Ola de choque, Ejecutar, Huracán con cinco acumulaciones de Astucia de gladiador, Devastar (antes, Hender), Grito desmoralizador y Trueno contra élites, y Desgarrar antes de Embate con escudo; Embate con escudo y Bloquear con escudo solo con un escudo equipado. Recordatorios: Grito de guerra y Grito de orden, Bloquear con escudo, Golpe heroico desde 50 de ira, Mellar desde 55, Sanguinario, Desenfreno, Última posición e interrupciones. Irritar, Muro de escudo, Deseo de la Muerte, Temeridad y Represalias aparecen desactivados; el cambio a Gladiador para Ejecutar queda a tu cargo.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
+--     the specialization.
 [2369] = "Recomendada",
 -- 235cf9c7 English: Recommended for Blood tanks, chosen in the Blood specialization. Pulls from
 --     range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood
@@ -6695,6 +9457,10 @@ addon.translation = {
 --     Anti-Magic Shell (off) and big defensives are yours.
 [2370] = "Recomendada para tanques de Sangre, elegida en la especialización Sangre. Inicia el combate a distancia con Brote, Toque helado o Atracción letal. Golpe letal por debajo de la mitad de la salud, siempre que falte Escudo de sangre (desde el 80) y antes de que las cuatro runas de escarcha y profanas estén llenas; Golpe con runa cerca de 90 de poder rúnico (Espiral de la muerte con 80 antes de aprenderlo); Brote o, si no, Toque helado y Golpe de peste para las enfermedades, y Hervor de sangre para renovarlas desde el 68; Segador de almas por debajo del 35 %; Golpe en el corazón (Golpe sangriento antes del 60) con dos runas de sangre; Plaga carmesí en Muerte y descomposición mientras duren las enfermedades y, si no, Hervor de sangre; Transfusión de sangre con once cargas; después, Golpe letal, Golpe en el corazón, Golpe con runa y Cuerno de invierno. Con tres enemigos luchando contra ti: Muerte y descomposición, extender las enfermedades (Hervor de sangre con Sangre turbia o, si no, Pestilencia) y Hervor de sangre. Recordatorios: Presencia de sangre cuando no tienes ninguna, Escudo óseo, Cuerno de invierno, Helada mental, y Transfusión de runa, Sangre vampírica, Entereza ligada al hielo, Potenciar arma de runas y Pacto de la Muerte según tu salud, Arma de runa danzante contra élites y Ejército de muertos antes de un jefe en grupo. No puede ver el daño entrante, así que Caparazón antimagia (desactivado) y los defensivos importantes quedan a tu cargo.",
 -- a7eb3532 English: Health-reactive (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2371] = "Reactiva a la salud (wowsims)",
 -- a92e9e2e English: An alternative to the recommended Blood premade for raid tanks with healers,
 --     off by default: enable it and disable that one, or raise its priority. Death Strike only
@@ -6704,6 +9470,8 @@ addon.translation = {
 --     same reminders as the recommended one.
 [2372] = "Una alternativa a la rotación integrada de Sangre recomendada para tanques de banda con sanadores, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Golpe letal solo por debajo del 70 % de salud, cuando falta Escudo de sangre o está a punto de desaparecer, o antes de que las runas de escarcha y profanas lleguen al tope, en lugar de con cada runa; una runa de sangre suelta va a Golpe en el corazón cuando a las runas de escarcha y profanas les falta más de un segundo. No tiene sección de área y usa los mismos recordatorios que la recomendada.",
 -- 747fb182 English: Two weapons
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: FrostDualWield).
 [2373] = "Dos armas",
 -- 0c806576 English: Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the
 --     Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast
@@ -6718,6 +9486,8 @@ addon.translation = {
 --     Death Pact when low, Army of the Dead before a group boss.
 [2374] = "Recomendada para Escarcha con dos armas de una mano (Masterfrost); elegida en la especialización Escarcha mientras tu mano secundaria sostiene un arma. Inicia el combate con Brote o Explosión aullante (Atracción letal en solitario). Golpe letal con Socorro oscuro o por debajo del 35 % de salud, Transfusión de sangre con once cargas, enfermedades (Añublo profano, Brote, Explosión aullante, Golpe de peste), Segador de almas por debajo del 35 %, Golpe de Escarcha con Máquina de matar o por encima de 89 de poder rúnico, Explosión aullante con Helada blanca o con ambas runas de escarcha o ambas de muerte listas, Asolar con dos runas profanas por debajo de 77 de poder rúnico, Golpe de Escarcha por encima de 76, Asolar, Explosión aullante, Absorber plaga antes de que expiren las enfermedades con Brote listo, Golpe de Escarcha con 40 y Cuerno de invierno. Con tres enemigos luchando contra ti: extender las enfermedades, Muerte y descomposición y Explosión aullante. Recordatorios: Presencia de escarcha, Pilar de Escarcha, Levantar a muerto, Potenciar arma de runas con todas las runas gastadas, Cuerno de invierno, Helada mental, Entereza ligada al hielo y Pacto de la Muerte con poca salud, y Ejército de muertos antes de un jefe en grupo.",
 -- 9562e8af English: Two-hander
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Frost).
 [2375] = "Arma a dos manos",
 -- d33a6f74 English: Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost
 --     specialization whenever the two-weapon premade does not apply. Same opening, diseases,
@@ -6728,6 +9498,8 @@ addon.translation = {
 --     premade.
 [2376] = "Escarcha con un arma a dos manos, la configuración habitual para subir de nivel; elegida en la especialización Escarcha siempre que no se aplique la rotación integrada de dos armas. El mismo inicio de combate, enfermedades, supervivencia y área que la rotación integrada de dos armas, y después Asolar con Máquina de matar, Golpe de Escarcha por encima de 76 de poder rúnico, Explosión aullante con Helada blanca, Asolar siempre que un par de runas esté lleno, Asolar, Explosión aullante, Absorber plaga, Golpe de Escarcha con 40 y Cuerno de invierno. Antes de Asolar (58), Golpe letal gasta tus runas profanas. Los mismos recordatorios que la rotación integrada de dos armas.",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Unholy).
 [2377] = "Profano",
 -- 5c6efba1 English: Recommended for Unholy, and the premade for any Death Knight Blood and Frost do
 --     not claim, including one without a specialization. Pulls from range with Outbreak or Icy
@@ -6752,6 +9524,9 @@ addon.translation = {
 --     AoE and reminders as the recommended one.
 [2380] = "Una alternativa a la rotación integrada de Profano recomendada, tal como la juegan el simulador, wowtbc.gg, Method y MaxDps; desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Mientras Transformación oscura no está activa, Espiral de la muerte se dedica a reconstruir Infusión de Sombras; Golpe de la Plaga va primero cuando están listas ambas runas profanas o ambas de muerte, y Golpe purulento primero cuando lo están ambas de sangre y ambas de escarcha; por lo demás, el mismo inicio de combate, enfermedades, área y recordatorios que la recomendada.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2381] = "Antes de una especialización",
 -- 3efc9d82 English: For levels 1 to 9, or any druid who has not chosen a specialization yet; the
 --     specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends
@@ -6762,6 +9537,9 @@ addon.translation = {
 --     targeted.
 [2382] = "Para los niveles 1 a 9, o cualquier druida que aún no haya elegido especialización; las rotaciones integradas de especialización toman el relevo en cuanto eliges una. En Forma felina mantiene Arañazo, gasta cinco puntos de combo (o dos sobre un objetivo a punto de morir) en Mordedura feroz y genera con Destrozar; en Forma de oso usa Destrozar y Magullar. Si no, inicia el combate con Cólera, mantiene Fuego lunar sobre objetivos que vayan a durar, lanza Cólera (Fuego lunar en movimiento) y sugiere Rejuvenecimiento sobre ti cuando estás por debajo de la mitad de la salud y solo. Se detiene mientras lanzas, viajas o no tienes ningún enemigo como objetivo.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
+--     specialization.
 [2383] = "Recomendada",
 -- 625c32c1 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
 --     wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts
@@ -6776,6 +9554,9 @@ addon.translation = {
 --     or Bear Form, or have no enemy targeted.
 [2384] = "Recomendada para Equilibrio desde el nivel 10, según la lista de la fase 5 de Wowhead y wowsims. Mantiene Fuego lunar y Fuego solar y los renueva dentro del Eclipse correspondiente, lanza Lluvia de estrellas en Eclipse (Lunar), Oleada de estrellas con Estrellas fugaces y cada vez que esté disponible, Huracán en Eclipse (Solar) o Tormenta astral en Eclipse (Lunar) contra cinco enemigos, Fuego estelar durante y después del lunar y Cólera durante y después del solar. Rotation Master no puede leer la energía de Eclipse, así que entre Eclipses sigue lanzando Fuego estelar si Fuego estelar fue uno de tus tres últimos lanzamientos y, si no, Cólera. Recordatorios: Marca de lo Salvaje, Forma de lechúcico lunar, Encarnación al empezar un Eclipse y Alineación celestial al terminar uno (contra élites o en combates largos), Vigilia de la Naturaleza, Fuerza de la Naturaleza, Presteza de la Naturaleza para Sueño de Cenarius, Estimular, Rayo solar, y Piel de corteza y Renovación con poca salud. La colocación de Champiñón salvaje sigue siendo manual; el recordatorio de Detonación de champiñón salvaje está desactivado por defecto. Se detiene mientras lanzas, viajas, estás en Forma felina o Forma de oso, o no tienes ningún enemigo como objetivo.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
+--     specialization.
 [2385] = "Recomendada",
 -- 008c4d0b English: Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list.
 --     Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up,
@@ -6799,6 +9580,9 @@ addon.translation = {
 --     Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away.
 [2388] = "El orden de Feral de Icy Veins (la regla de Mordedura de Wowhead coincide), una alternativa a la rotación integrada de Feral recomendada: actívala y desactiva la otra, o súbele la prioridad. El mismo inicio, Rugido salvaje, Toque de sanación y área, pero con el objetivo por encima del 25 % de salud los puntos de combo solo van a Destripar y Rugido salvaje: Mordedura feroz solo renueva Destripar en fase de ejecución (o gasta cinco puntos antes de que aprendas Destripar). Arañazo se renueva a los dos segundos, Vapulear solo con Lanzamiento libre, y Rabia espera a tener 90 de energía con Furia del tigre a 15 segundos o más.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
+--     specialization.
 [2389] = "Recomendada",
 -- b19b167d English: Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase
 --     5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened
@@ -6812,6 +9596,9 @@ addon.translation = {
 --     Might of Ursoc stay manual (both reminders are off by default).
 [2390] = "Recomendada para tanques Guardián desde el nivel 10, según wowsims y la lista de la fase 5 de Wowhead. Te pone en Forma de oso, inicia el combate con Fuego feérico a distancia o Destrozar, mantiene Golpes debilitados con Vapulear y Armadura debilitada con Fuego feérico contra élites, usa un Toque de sanación de Sueño de Cenarius cuando estás herido, Destrozar cada vez que esté disponible, Vapulear y Flagelo contra tres enemigos, y después Lacerar, Vapulear y Fuego feérico. En Forma felina (Corazón de lo Salvaje) da una lista corta de daño. Recordatorios: Defensa salvaje siempre que no esté activa, Enfurecer para generar ira, Regeneración frenética con poca salud o con la ira al tope, Magullar por encima de 90 de ira o con Garras y dientes, Piel de corteza mientras el objetivo te ataca, Instintos de supervivencia con poca salud, Rabia y Encarnación contra dos enemigos o un jefe, Fuerza de la Naturaleza, Vigilia de la Naturaleza, Resguardo de Cenarius, Testarazo y Marca de lo Salvaje. Las provocaciones y Poderío de Ursoc siguen siendo manuales (ambos recordatorios están desactivados por defecto).",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2391] = "Recomendada",
 -- de6705ed English: Recommended for Restoration from level 10, after Wowhead's Phase 5 group
 --     healing. Heals your current friendly target, or you with no target; choosing whom to heal is
@@ -6825,6 +9612,10 @@ addon.translation = {
 --     Mushroom placement, Tranquility and Genesis reminders are off by default.
 [2392] = "Recomendada para Restauración desde el nivel 10, según la sanación de grupo de la fase 5 de Wowhead. Sana a tu objetivo amistoso actual, o a ti si no tienes objetivo; elegir a quién sanar queda a tu cargo. Alivio presto sobre un objetivo con tu HoT cuando tiene poca salud, cuando Armonía ha expirado, o para enlazar con Crecimiento salvaje con Alma del bosque; Crecimiento salvaje cuando hay tres personas heridas cerca; Toque de sanación instantáneo con Presteza de la Naturaleza; Recrecimiento con Lanzamiento libre o sobre un objetivo a punto de morir; Rejuvenecimiento; y después Toque de sanación y Nutrir mientras estás quieto. Un objetivo atacable recibe Fuego lunar y Cólera. Recordatorios: acumulaciones de Flor de vida y Corteza de hierro sobre tu foco (pon al tanque como foco), Florecimiento de champiñón salvaje con daño en el grupo, Fuerza de la Naturaleza, Encarnación, Vigilia de la Naturaleza, Presteza de la Naturaleza, Estimular, Cura de la Naturaleza, Resguardo de Cenarius, Piel de corteza y Marca de lo Salvaje. Los recordatorios de colocación de Champiñón salvaje, Tranquilidad y Génesis están desactivados por defecto.",
 -- f3d02e30 English: Tank healing (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2393] = "Sanación de tanques (Wowhead)",
 -- 28164e24 English: Wowhead's single-target tank-healing order, an alternative to the recommended
 --     Restoration premade for when you are assigned to the tank: enable it and disable that one, or
@@ -6834,6 +9625,9 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2394] = "El orden de sanación de tanques de un solo objetivo de Wowhead, una alternativa a la rotación integrada de Restauración recomendada para cuando te asignan al tanque: actívala y desactiva la otra, o súbele la prioridad. Mantén al tanque como objetivo: le mantiene tres Flor de vida y Rejuvenecimiento, usa Recrecimiento para daño fuerte, Nutrir para daño leve, Toque de sanación una vez que Flor de vida y Rejuvenecimiento están activos y el tanque está por debajo de la mitad, y Alivio presto para mantenerlo con la salud llena. Los mismos recordatorios que la rotación integrada recomendada.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: BeastMastery). The standard recommended rotation for
+--     the specialization.
 [2395] = "Recomendada",
 -- 74d539a0 English: Chosen automatically in the Beast Mastery specialization. Opens with Hunter's
 --     Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is
@@ -6849,6 +9643,9 @@ addon.translation = {
 --     Exhilaration and Deterrence reminders are off by default.
 [2396] = "Elegida automáticamente en la especialización Bestias. Abre con Marca del cazador y Matar, y después: Disparo mortal, Matar (retenido un momento cuando Cólera de las bestias está a punto de estar lista), Bandada de cuervos, Carrera de lince, Bestia temible y tu disparo del nivel 6 de talentos cuando lo tienes, Enfocar Fuego con cinco acumulaciones de Frenesí (o cuatro a punto de expirar) pero no durante Cólera de las bestias, Picadura de serpiente sobre objetivos que vayan a sobrevivir, Disparo de cobra para renovarla, Disparo Arcano con 80 de enfoque o durante Cólera de las bestias, y después Disparo de cobra (Disparo firme antes del 81). Con dos o más enemigos luchando contra ti mantiene Tajo de la bestia con Multidisparo, guarda Matar para el enfoque sobrante contra grupos grandes y sugiere Trampa explosiva desde tres. Recordatorios: mascota invocada, revivida y aliviada, Aspecto del halcón o del halcón de hierro, Contradisparo, Fervor, y Cólera de las bestias, Fuego rápido, Estampida y beneficios raciales cuando el combate lo merece (un élite, una mazmorra o banda, o un objetivo que vaya a sobrevivir). La colocación de trampas, Redirección, Fingir muerte y los defensivos quedan a tu cargo; los recordatorios de Exaltación y Disuasión están desactivados por defecto.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Marksmanship). The standard recommended rotation for
+--     the specialization.
 [2397] = "Recomendada",
 -- a1f9c291 English: Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot,
 --     then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on
@@ -6868,6 +9665,9 @@ addon.translation = {
 --     disable the Marksmanship premade, or raise its priority.
 [2400] = "Una alternativa a la rotación integrada de Puntería, tal como la juegan Icy Veins, Method, wowtbc.gg y Hekili: Disparo de puntería con tiempo de lanzamiento completo solo con el objetivo por encima del 80 % de salud o bajo Fuego rápido o Ansia de sangre, y el enfoque sobrante va en cambio a Disparo Arcano con 60. Enfoque firme se renueva por debajo de 4 segundos; contra cuatro o más enemigos, Multidisparo va primero. Desactivada por defecto: actívala y desactiva la rotación integrada de Puntería, o súbele la prioridad.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Survival). The standard recommended rotation for the
+--     specialization.
 [2401] = "Recomendada",
 -- 1d1f9ae1 English: Chosen automatically in the Survival specialization. Opens with Hunter's Mark,
 --     Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load,
@@ -6879,6 +9679,9 @@ addon.translation = {
 --     traps for Lock and Load procs stay with you.
 [2402] = "Elegida automáticamente en la especialización Supervivencia. Abre con Marca del cazador, Flecha negra y Disparo explosivo, y después: Disparo explosivo cada vez que esté disponible y con cada Bloquear y cargar, Disparo mortal, Flecha negra sobre objetivos que vayan a sobrevivir, tus talentos, Picadura de serpiente mantenida con Disparo de cobra, Disparo Arcano con 75 de enfoque, con Emoción de la caza o con 55 cuando Flecha negra no vaya a estar lista pronto, y después Disparo de cobra (Disparo firme antes del 81). Contra dos o más enemigos: primero Multidisparo con Bloquear y cargar y el enfoque lleno, Disparo explosivo hasta cinco objetivos, Disparo mortal, Flecha negra, Trampa explosiva desde tres y Multidisparo para gastar. Los mismos recordatorios que las demás rotaciones integradas de cazador; las trampas para activar Bloquear y cargar quedan a tu cargo.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2403] = "Antes de una especialización",
 -- d00315ae English: For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast
 --     Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization.
@@ -6887,6 +9690,9 @@ addon.translation = {
 --     call, revive and mend your pet and to keep Aspect of the Hawk up.
 [2404] = "Para los niveles 1 a 9 y cualquier cazador que no haya elegido especialización; las rotaciones integradas de Bestias, Puntería y Supervivencia toman el relevo en cuanto eliges una especialización. Inicia el combate con Marca del cazador y Disparo Arcano, y después Picadura de serpiente sobre objetivos que vayan a sobrevivir, Multidisparo contra tres o más enemigos, Disparo Arcano, Disparo firme y Disparo automático. Te recuerda invocar, revivir y aliviar a tu mascota y mantener Aspecto del halcón.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Arcane). The standard recommended rotation for the
+--     specialization.
 [2405] = "Recomendada",
 -- 4f5292d5 English: Recommended for Arcane, from level 10 to 90 (selected in the Arcane
 --     specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc
@@ -6910,6 +9716,9 @@ addon.translation = {
 --     disable the recommended Arcane premade, or raise its priority.
 [2408] = "La regla de Arcano de las guías (Icy Veins, Wowhead, Method, wowtbc.gg), una alternativa a la rotación integrada de Arcano recomendada: con cuatro Cargas Arcanas, Misiles Arcanos si hay una activación y, si no, Tromba Arcana, tengas el maná que tengas; Misiles solo con cuatro cargas. Todo lo demás (Alterar el tiempo, bombas, área, movimiento, recordatorios) coincide con la recomendada, salvo que Poder Arcano se sugiere con cuatro cargas sin esperar a una activación. Desactivada por defecto: actívala y desactiva la rotación integrada de Arcano recomendada, o súbele la prioridad.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Fire). The standard recommended rotation for the
+--     specialization.
 [2409] = "Recomendada",
 -- 82cfe9d2 English: Recommended for Fire, from level 10 to 90 (selected in the Fire
 --     specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns
@@ -6932,6 +9741,9 @@ addon.translation = {
 --     premade, or raise its priority.
 [2412] = "El Fuego de Icy Veins, Method y wowtbc.gg, una alternativa a la rotación integrada de Fuego recomendada: una activación de ¡Piroexplosión! se retiene hasta que se le une un Calentamiento, y entonces se lanza junto con tu Bola de Fuego; solo se gasta sola cuando está a punto de expirar. Todo lo demás coincide con la recomendada. Desactivada por defecto: actívala y desactiva la rotación integrada de Fuego recomendada, o súbele la prioridad.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Frost). The standard recommended rotation for the
+--     specialization.
 [2413] = "Recomendada",
 -- a656a280 English: Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at
 --     two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice
@@ -6945,6 +9757,9 @@ addon.translation = {
 --     Warp and Spellsteal are off.
 [2414] = "Escarcha del nivel 10 al 90 (seleccionada en la especialización Escarcha). Lanza de hielo con dos Dedos de Escarcha, Descarga de Pirofrío con Congelación cerebral, tu bomba de talento, Orbe congelado, Lanza de hielo con un Dedos de Escarcha y Descarga de Escarcha; desde el 87, una activación se retiene para Alterar el tiempo cuando le faltan menos de 10 segundos. Con dos o más enemigos: Orbe congelado, Cono de frío y Deflagración Arcana cuando están cerca, y Ventisca cuando cuatro se quedan quietos. Lanza de hielo y Explosión de Fuego en movimiento sin Témpanos de hielo. Recordatorios: Elemental de agua, Congelar sobre cualquier cosa que no sea un jefe (colócalo tú), Venas heladas sincronizado con Alterar el tiempo, Alterar el tiempo con dos Dedos de Escarcha durante Venas heladas, Armadura de Escarcha (Armadura de arrabio antes del 54), Gema de maná, Luminosidad Arcana, Contrahechizo, Reflejo exacto, Barrera de hielo, Témpanos de hielo, e Invocación o Runa de poder. Mordedura de frío, Presencia mental, Distorsión temporal y Robar hechizo están desactivados.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2415] = "Antes de una especialización",
 -- aa9bffd1 English: For levels 1 to 9, and any Mage who has not chosen a specialization yet.
 --     Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once
@@ -6953,6 +9768,9 @@ addon.translation = {
 --     reach them. Choosing a specialization at 10 switches to that specialization's premade.
 [2416] = "Para los niveles 1 a 9, y cualquier mago que aún no haya elegido especialización. Descarga de Pirofrío, Explosión de Fuego para rematar un objetivo o en movimiento, Lanza de hielo en movimiento una vez aprendida, y Deflagración Arcana cuando hay tres o más enemigos al alcance cuerpo a cuerpo. Recordatorios: Nova de Escarcha cuando un enemigo te alcanza, Contrahechizo, y Armadura de arrabio y Luminosidad Arcana si llegas a ellas. Elegir una especialización en el nivel 10 cambia a la rotación integrada de esa especialización.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster). The standard recommended rotation for
+--     the specialization.
 [2417] = "Recomendada",
 -- 94fb9e53 English: Picked automatically in the Brewmaster specialization. Keeps Shuffle up with
 --     Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once
@@ -6966,6 +9784,10 @@ addon.translation = {
 --     Harm, Zen Meditation and Provoke stay with you.
 [2418] = "Elegida automáticamente en la especialización Maestro cervecero. Mantiene Deslizarse con Patada oscura, usa Embate con barril siempre que quepa su chi, Expulsar daño cuando estás herido (al momento por debajo del 35 %), Atizar para gastar energía, Palma del tigre para Poder del tigre y como relleno gratuito (Atizar genera chi antes del nivel 34), y Toque de la muerte cuando se puede usar. A distancia fuera de combate: Ola de chi, Estupor mareante, Colisión o Embate con barril. Contra tres o más enemigos: Viento de jade impetuoso, Aliento de Fuego y Patada giratoria de la grulla solo mientras a Deslizarse le quede tiempo. Recordatorios: Buey robusto, Legado del Emperador, Brebaje purificador con Aplazamiento severo (Aplazamiento moderado cuando Deslizarse tiene tiempo de sobra), Brebaje esquivo desde seis acumulaciones, Guardia con Guardia poderosa, Brebaje de chi, Xuen, y Brebaje reconstituyente, Mitigar daño o Difuminar magia con poca salud, y Golpe de mano de lanza. El recordatorio de la estatua del Buey Negro está desactivado; Evitar daño, Meditación zen y Burla quedan a tu cargo.",
 -- fbb1d180 English: Damage first (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2419] = "Daño primero (wowsims)",
 -- e83b14c9 English: An alternative to the Brewmaster premade, off by default: enable it and disable
 --     that one, or raise its priority. Follows the simulator's damage-first list for a tank who
@@ -6974,6 +9796,9 @@ addon.translation = {
 --     Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders.
 [2420] = "Una alternativa a la rotación integrada de Maestro cervecero, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sigue la lista de daño primero del simulador para un tanque cuyo equipo supera el contenido: Viento de jade impetuoso antes de Embate con barril, el chi gastado en Patada oscura para hacer daño, y sin Brebaje purificador ni Guardia rutinarios (Brebaje purificador solo se ilumina con la activación de Purificador del tier 15). Brebaje esquivo, Brebaje de chi, Xuen y Brebaje reconstituyente siguen siendo recordatorios.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Windwalker). The standard recommended rotation for
+--     the specialization.
 [2421] = "Recomendada",
 -- d0726f89 English: Picked automatically in the Windwalker specialization. Touch of Death when
 --     usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker
@@ -6997,6 +9822,9 @@ addon.translation = {
 --     Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60.
 [2424] = "Una alternativa a la rotación integrada de Viajero del viento, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. La lista original de SimulationCraft que incluyen los addons Hekili y MaxDps: Poder del tigre renovado a los tres segundos, Patada del sol naciente primero mientras falte su perjuicio, Puños de furia reservado para Brebaje de ojo de tigre (activo o con 15 acumulaciones), y Brebaje de ojo de tigre con 20 acumulaciones o con 15 con chi y ambos beneficios activos. Contra tres o más enemigos gasta en Patada giratoria de la grulla, usa Patada del sol naciente solo con el chi lleno y acumula energía por debajo de 60.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Mistweaver). The standard recommended rotation for
+--     the specialization.
 [2425] = "Recomendada",
 -- 2d084655 English: Picked automatically in the Mistweaver specialization. With a friendly target
 --     it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are
@@ -7011,12 +9839,18 @@ addon.translation = {
 --     Revival (reminder off) and Healing Sphere stay with you.
 [2426] = "Elegida automáticamente en la especialización Tejedor de niebla. Con un objetivo amistoso sana a ese objetivo: Niebla renovadora cada vez que esté disponible, Inspirar cuando hay tres o más aliados heridos cerca, Expulsar daño y tu talento de chi para generar chi, Viento de jade impetuoso o Patada giratoria de la grulla para un grupo herido, Oleada de niebla con cinco Niebla vital, Niebla reconfortante cuando el objetivo está por debajo del 80 %, y después Niebla envolvente y Oleada de niebla dentro de esa canalización. Con un objetivo enemigo sana a puñetazos: Palma del tigre y Patada oscura con Memoria muscular para mantener Poder del tigre y Celo del dragón, Patada oscura cuando el chi está lleno, Oleada de niebla con cinco Niebla vital, Niebla renovadora y Expulsar daño para generar chi, y Atizar. Recordatorios: Estilo del dragón sabio, Legado del Emperador, la estatua del Dragón de Jade en grupo, Té de maná en momentos tranquilos, Té de enfoque del trueno, Brebaje de chi, Crisálida vital sobre un aliado por debajo del 35 %, Xuen, Depuración, defensivos y Golpe de mano de lanza. Tú eliges a quién sanar; Reanimación (recordatorio desactivado) y Esfera de sanación quedan a tu cargo.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2427] = "Antes de una especialización",
 -- e00ba6b1 English: For levels 1 to 9, or any monk who has not chosen a specialization; a
 --     specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power
 --     up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise.
 [2428] = "Para los niveles 1 a 9, o cualquier monje que no haya elegido especialización; una rotación integrada de especialización toma el relevo en cuanto eliges una. Mantiene Estilo del tigre fiero y Poder del tigre, gasta dos de chi en Patada oscura, usa Expulsar daño cuando estás herido y, si no, Atizar.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Retribution). The standard recommended rotation for
+--     the specialization.
 [2429] = "Recomendada",
 -- a115bc01 English: Recommended for Retribution, from level 10 in the Retribution specialization.
 --     Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends
@@ -7043,6 +9877,9 @@ addon.translation = {
 --     is left to you.
 [2432] = "Una alternativa a la rotación integrada de Reprensión recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Primero va Exorcismo cada vez que esté disponible y con cada reinicio de El arte de la guerra; Inquisición se lanza con cualquier cantidad de Poder sagrado cuando falta y se renueva con 3 en sus últimos 20 segundos; después, Golpe de cruzado, Sentencia, Veredicto del templario y Martillo de cólera (el primero durante Cólera vengativa con Cólera santificada). Contra dos o más enemigos usa Golpe de cruzado, Martillo de la Luz, Sentencia, Tormenta divina y Martillo de cólera. Cólera vengativa y Guardián de los antiguos reyes solo se sugieren contra élites. El Sello de Rectitud de la guía contra cualquier grupo de dos o más enemigos queda a tu cargo.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2433] = "Recomendada",
 -- 0c1b3a03 English: Recommended for Protection, from level 10 in the Protection specialization.
 --     Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's
@@ -7069,6 +9906,9 @@ addon.translation = {
 --     with the same three-enemy AoE order. Boss-timed defensives are yours.
 [2436] = "Una alternativa a la rotación integrada de Protección recomendada, desactivada por defecto: actívala y desactiva la otra, o súbele la prioridad. Sigue las listas de tanque del simulador: Escudo del honrado espera a tener el Poder sagrado lleno salvo que bajes del 40 % de salud o Propósito divino lo haga gratuito; Llama eterna justo antes de que expire con más de dos acumulaciones de Bastión de gloria; Escudo Sagrado siempre activo; Vengador sagrado y Cólera vengativa cada vez que estén disponibles. Los generadores siguen el orden Golpe de cruzado, Sentencia, y después Escudo de vengador, Cólera Sagrada, el talento de nivel 90 y Martillo de cólera, con el mismo orden de área contra tres enemigos. Los defensivos sincronizados con los jefes quedan a tu cargo.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2437] = "Recomendada",
 -- ba77c874 English: For Holy, from level 10 in the Holy specialization. With a friend targeted it
 --     heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt,
@@ -7084,6 +9924,9 @@ addon.translation = {
 --     healing stay with you.
 [2438] = "Para Sagrado, desde el nivel 10 en la especialización Sagrado. Con un aliado como objetivo, sana: con 3 de Poder sagrado (o Propósito divino), Luz del alba cuando hay tres personas heridas cerca de ti; si no, Llama eterna sobre un objetivo que no la tenga; si no, Palabra de gloria; Choque Sagrado cada vez que esté disponible; Infusión de Luz en Radiancia Sagrada o Luz divina, tres acumulaciones de Sanación desinteresada en Radiancia Sagrada o Destello de Luz; Destello de Luz por debajo del 35 %; Radiancia Sagrada para un grupo herido; Luz divina y después Luz Sagrada para completar la salud. Con un enemigo como objetivo, hace daño: Choque Sagrado, Sentencia, Golpe de cruzado, Prisma Sagrado, Sentencia de ejecución, Martillo de cólera y Acusar. Recordatorios: Sello de Perspicacia cuando hay otro sello activo (salvo Rectitud) o ninguno, bendiciones, Reprimenda, Señal de la Luz y Escudo Sagrado sobre tu foco (pon al tanque como foco), Súplica divina por debajo del 60 % de maná, Martillo de la Luz y tus tiempos de reutilización de sanación cuando tres personas están por debajo del 70 %, e Imposición de manos sobre un objetivo a punto de morir. Elegir a quién sanar, las disipaciones y la sanación con el ratón por encima quedan a tu cargo.",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2439] = "Antes de una especialización",
 -- fce883af English: For levels 1 to 9, and any paladin who has not chosen a specialization yet; a
 --     specialization's premade takes over as soon as you pick one. Pulls from range with Judgment,
@@ -7093,6 +9936,9 @@ addon.translation = {
 --     hurt.
 [2440] = "Para los niveles 1 a 9, y cualquier paladín que aún no haya elegido especialización; la rotación integrada de una especialización toma el relevo en cuanto eliges una. Inicia el combate a distancia con Sentencia, y después Golpe de cruzado y Sentencia, con Martillo de Justicia cuando estás en solitario y por debajo de la mitad de la salud, y Palabra de gloria por debajo del 40 %. Recordatorios: Sello de orden (Sello de Verdad desde el 24) cuando no estás en él, Bendición de reyes, Reprimenda, y Destello de Luz fuera de combate cuando estás herido.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Discipline). The standard recommended rotation for
+--     the specialization.
 [2441] = "Recomendada",
 -- 360a55ef English: Discipline healing from level 10 to 90, chosen in the Discipline
 --     specialization. Target a friend to heal them: Power Word: Shield when they are low, before
@@ -7108,6 +9954,9 @@ addon.translation = {
 --     on the tank.
 [2442] = "Sanación de Disciplina del nivel 10 al 90, elegida en la especialización Disciplina. Pon a un aliado como objetivo para sanarlo: Palabra de poder: escudo cuando tiene poca salud, antes de iniciar el combate y aproximadamente cada 12 segundos para Éxtasis; Sanación relámpago con Oleada de Luz; Penitencia; Sanación relámpago cuando tiene muy poca salud; Sanación conjunta cuando ambos estáis heridos; Rezo de alivio; Rezo de sanación y tu talento del nivel 6 cuando hay tres aliados heridos; Sanación superior; Renovar en movimiento; Sanar para completar la salud. Con Coraza espiritual sugiere Rezo de sanación o Sanación superior. Pon a un enemigo como objetivo para sanar mediante Contrición: Penitencia, Palabra de poder: consuelo o Fuego Sagrado, tu talento del nivel 6 contra grupos de enemigos, Palabra de las Sombras: dolor en solitario y Punición. Recordatorios: Fuego interno, Entereza, Arcángel con cinco de Evangelización, Enfoque interno, Supresión de dolor sobre un objetivo a punto de morir, Maligno de las Sombras o Dominamentes para el maná, Infusión de poder y Rezo desesperado. Quedan a tu cargo: a quién sanar, el momento de Coraza espiritual (un recordatorio que puedes activar), Palabra de poder: barrera, Relevo del vacío y las acumulaciones de Gracia en el tanque.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2443] = "Recomendada",
 -- 1d7fb6cd English: Holy healing from level 10 to 90, chosen in the Holy specialization. Target a
 --     friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when
@@ -7133,6 +9982,9 @@ addon.translation = {
 --     one to use it.
 [2446] = "Desactivada por defecto. El orden Sagrado de Icy Veins, elegido según tu chakra. En Chakra: Santuario: Palabra Sagrada: Santuario cuando hay tres aliados heridos, Renovar, Círculo de sanación, Rezo de alivio, Rezo de sanación, y después Sanación conjunta y Sanación relámpago solo en emergencias. Si no: Renovar, Palabra Sagrada: Serenidad, Rezo de alivio, Sanación superior, Sanar, Sanación conjunta, Sanación relámpago, Palabra de poder: escudo al final, y Sanación relámpago como relleno antes de aprender Sanar. El mismo cambio de chakra, recordatorios y lista de daño que la rotación integrada Sagrado recomendada; actívala y desactiva la otra para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Shadow). The standard recommended rotation for the
+--     specialization.
 [2447] = "Recomendada",
 -- 6c0c75e0 English: Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens
 --     with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind
@@ -7157,6 +10009,9 @@ addon.translation = {
 --     recommended one to use it.
 [2450] = "Desactivada por defecto. El orden de Sombra de Warcraft Tavern: Peste devoradora con tres Orbes de las Sombras, Palabra de las Sombras: muerte por debajo del 20 %, Explosión mental, Toque vampírico, Palabra de las Sombras: dolor, Púa mental con Oleada de oscuridad, tu talento del nivel 6 y Tortura mental. A diferencia de la rotación integrada de Sombra recomendada, nunca adelanta Tortura mental durante Peste devoradora ni retiene Peste devoradora para Explosión mental. Los mismos pasos de inicio de combate, movimiento, grupos de enemigos y recordatorios; actívala y desactiva la recomendada para usarla.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2451] = "Sin especialización",
 -- 31c78194 English: For levels 1 to 9, or any priest who has not chosen a specialization yet. On an
 --     enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal
@@ -7165,6 +10020,9 @@ addon.translation = {
 --     premade.
 [2452] = "Para los niveles 1 a 9, o cualquier sacerdote que aún no haya elegido especialización. Contra un enemigo: Palabra de las Sombras: dolor cuando vaya a vivir lo suficiente, y después Punición. Sobre un aliado: Sanación relámpago cuando tiene poca salud y, si no, Palabra de poder: escudo. Recordatorios: Fuego interno, y un escudo sobre ti cuando estás en solitario y herido. Elegir una especialización en el nivel 10 cambia a su propia rotación integrada.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
+--     the specialization.
 [2453] = "Recomendada",
 -- be1774f6 English: Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for
 --     Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo,
@@ -7189,6 +10047,9 @@ addon.translation = {
 --     this one, enable it and disable the recommended one.
 [2456] = "Desactivada por defecto. El orden de Icy Veins y Method: Esfumarse cada vez que esté disponible para un Mutilar desde sigilo, Vendetta cada vez que esté disponible cuando el combate dure lo suficiente, Envenenar solo con cinco puntos, Ruptura siempre activa, Despachar por debajo del 35 % o con Punto ciego, y Mutilar. De cuatro a ocho enemigos: Abanico de cuchillos con Ruptura con tres puntos o más; nueve o más: solo Abanico de cuchillos y Envenenar. La rotación integrada de Asesinato recomendada sigue en cambio los consejos más recientes de la fase 5; para usar esta, actívala y desactiva la recomendada.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
+--     specialization.
 [2457] = "Recomendada",
 -- 43003559 English: Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5).
 --     Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is
@@ -7213,6 +10074,10 @@ addon.translation = {
 --     one.
 [2460] = "Desactivada por defecto, y superada en la fase 5. El orden de Icy Veins, Warcraft Tavern, Method y wowtbc.gg de antes del parche del Asedio de Orgrimmar: Hacer picadillo, Golpe revelador siempre activo, Ruptura de cinco puntos en un combate largo contra un solo objetivo y Eviscerar, con Golpe siniestro como generador. Los mismos recordatorios y juego contra grupos de enemigos que la rotación integrada de Combate recomendada. Elígela solo si sigues esas guías; actívala y desactiva la recomendada.",
 -- 972be132 English: Anticipation (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2461] = "Anticipación (Hekili)",
 -- a677df00 English: Off by default. The Hekili MoP order for Combat with Anticipation: Revealing
 --     Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four
@@ -7222,6 +10087,9 @@ addon.translation = {
 --     with Anticipation talented. Enable it and disable the recommended Combat premade to use it.
 [2462] = "Desactivada por defecto. El orden de Hekili para MoP para Combate con Anticipación: Golpe revelador es el único generador, incluso bajo Ansia de sangre; los remates esperan a Perspicacia profunda, a cuatro cargas de Anticipación o a que vuelva Hojas de las Sombras, y después Hacer picadillo, Ruptura sobre uno o dos objetivos que vayan a vivir mucho, Tempestad carmesí contra siete enemigos y Eviscerar; Hacer picadillo se renueva pronto con 11 acumulaciones de Astucia del bandido; Abanico de cuchillos desde cuatro enemigos. Solo se aplica con el talento Anticipación. Actívala y desactiva la rotación integrada de Combate recomendada para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
+--     specialization.
 [2463] = "Recomendada",
 -- 53ec1c4b English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and
 --     Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the
@@ -7236,6 +10104,10 @@ addon.translation = {
 --     Expose Armor (listed but off).
 [2464] = "Recomendada para Sutileza con Enfoque de las Sombras, del nivel 10 al 90 (wowsims y Wowhead para la fase 5). En Sigilo o Danza de las Sombras: Premeditación, Hacer picadillo antes de iniciar el combate, remates con cinco puntos, Emboscada y Garrote. Fuera de ellos: Hacer picadillo; con cinco puntos, Hacer picadillo y Ruptura cuando están a punto de expirar, y Eviscerar mientras duren ambos; Marcado para morir; Hemorragia para mantener su sangrado; Puñalada (con una daga) cuando el objetivo no te está atacando y, si no, Hemorragia. Contra tres o más enemigos: Hacer picadillo, Tempestad carmesí, Eviscerar y Abanico de cuchillos. En solitario añade Reponerse y Golpe en los riñones. Recordatorios: venenos, Patada, Danza de las Sombras con 75 de energía con Hacer picadillo y Ruptura activos, Esfumarse cuando Descubrir debilidad está a punto de acabar, Preparación, Hojas de las Sombras fuera de Danza y de Sigilo, Paso de las Sombras y Evasión en solitario. Quedan a tu cargo: colocarte detrás del objetivo (RM no puede ver la orientación), Secretos del oficio y Exponer armadura (en la lista, pero desactivados).",
 -- a7cbb172 English: Subterfuge (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = "Subterfugio (Warcraft Tavern)",
 -- 01394d1f English: Chosen automatically instead of the Shadow Focus premade when your tier-1
 --     talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the
@@ -7247,6 +10119,9 @@ addon.translation = {
 --     them to trinket procs, as Tavern suggests, is up to you.
 [2466] = "Elegida automáticamente en lugar de la rotación integrada de Enfoque de las Sombras cuando tu talento del nivel 1 es Subterfugio (la build de Warcraft Tavern). Premeditación y Hacer picadillo antes de iniciar el combate; en Sigilo, Danza de las Sombras o mientras persiste Subterfugio, remates con cinco puntos y después Emboscada tantas veces como impacte. Dos o tres enemigos: mantén Ruptura y gasta cinco puntos en Tempestad carmesí en lugar de Eviscerar; con cuatro o más se añade Abanico de cuchillos. Un objetivo: Hacer picadillo, Ruptura, Eviscerar, Hemorragia por su sangrado, Puñalada por la espalda con una daga y, si no, Hemorragia. Danza de las Sombras y Esfumarse son recordatorios con 60 de energía y Hacer picadillo activo; sincronizarlos con las activaciones de abalorios, como sugiere Tavern, queda a tu cargo.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2467] = "Sin especialización",
 -- 60f6bea5 English: For levels 1 to 9, or a rogue who has not chosen a specialization yet; each
 --     specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot
@@ -7256,6 +10131,9 @@ addon.translation = {
 --     solo.
 [2468] = "Para los niveles 1 a 9, o un pícaro que aún no haya elegido especialización; la rotación integrada de cada especialización toma el relevo en cuanto eliges una. Abre desde Sigilo con Golpe bajo en solitario, Emboscada o Golpe siniestro; sugiere Sigilo fuera de combate; Hacer picadillo desde dos puntos, Reponerse y Golpe en los riñones en solitario y herido, Eviscerar con cuatro puntos (dos cuando el objetivo está a punto de morir) y Golpe siniestro. Recordatorios: venenos una vez aprendidos, Patada y Evasión en solitario.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Elemental). The standard recommended rotation for the
+--     specialization.
 [2469] = "Recomendada",
 -- 013214a9 English: Recommended for Elemental from level 10, chosen in the Elemental
 --     specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury),
@@ -7271,6 +10149,9 @@ addon.translation = {
 --     Spiritwalker's Grace, Flame Shock on extra targets and where to stand.
 [2470] = "Recomendada para Elemental desde el nivel 10, elegida en la especialización Elemental. El orden de Wowhead: una Descarga de relámpagos para iniciar el combate (Ráfaga de lava con Furia desatada), Desatar elementos con Furia desatada, Choque de llamas cuando falta o está a punto de agotarse sobre un objetivo que vaya a sobrevivir, Ráfaga de lava sobre Choque de llamas (y con cada Oleada de lava), Explosión elemental, Choque de tierra con seis cargas de Escudo de relámpagos mientras a Choque de llamas le queden 6 segundos, Cadena de relámpagos contra dos enemigos y Descarga de relámpagos. Con cuatro o más enemigos luchando contra ti: Tótem de Magma cuerpo a cuerpo, Ráfagas de lava gratuitas, Haz de lava durante Ascensión y Cadena de relámpagos. En movimiento solo muestra instantáneos. Recordatorios: Escudo de relámpagos, Arma Lengua de Fuego, Tótem abrasador, Tótem Elemental de Fuego contra élites y jefes, Maestría elemental, Ascensión tras una Ráfaga de lava, Presteza ancestral, Tótem Látigo de tormenta y Ansia de sangre en grupo, Corte de viento, Tormenta de truenos para el maná, e Ira del chamán y Cambio astral con poca salud. Terremoto y Tótem Elemental de Tierra están en la lista, pero desactivados. Quedan a tu cargo: Gracia del caminaespíritus, Choque de llamas sobre objetivos adicionales y dónde colocarte.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Enhancement). The standard recommended rotation for
+--     the specialization.
 [2471] = "Recomendada",
 -- 30126acf English: Recommended for Enhancement from level 10, chosen in the Enhancement
 --     specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements
@@ -7304,6 +10185,9 @@ addon.translation = {
 --     recommended premade.
 [2476] = "Desactivada por defecto; tiene la misma condición de cambio que la rotación integrada de Mejora recomendada, así que actívala y desactiva la otra para usarla. El orden de Icy Veins: Golpe de tormenta, después Latigazo de lava antes de gastar Arma vorágine, Descarga de relámpagos con cinco acumulaciones o desde tres cuando impacta antes de tu siguiente golpe, Desatar elementos y después Choque de llamas, y Choque de tierra. Contra cuatro o más enemigos extiende Choque de llamas con Latigazo de lava y usa Nova de Fuego; Cadena de relámpagos sustituye a Descarga de relámpagos contra grupos de enemigos. Ira del chamán se sugiere cada vez que esté disponible en combate; los demás recordatorios, como en la rotación integrada recomendada.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2477] = "Recomendada",
 -- 786ac591 English: Recommended for Restoration from level 10, chosen in the Restoration
 --     specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater
@@ -7318,6 +10202,10 @@ addon.translation = {
 --     them when your raid assigns them.
 [2478] = "Recomendada para Restauración desde el nivel 10, elegida en la especialización Restauración. Sana a tu objetivo amistoso (Rotation Master no puede elegir a quién sanar): Ola de sanación superior con Presteza ancestral, Oleada de sanación por debajo del 35 %, Purificar espíritu contra magia o maldiciones, Desatar elementos y después Lluvia de sanación cuando hay tres aliados heridos cerca, Mareas Vivas, Sanación en cadena para daño de grupo, Ola de sanación superior por debajo del 60 % y Ola de sanación por debajo del 90 %. Con un objetivo atacable hace daño en su lugar (Choque de llamas, Ráfaga de lava, Explosión elemental, Descarga de relámpagos). Recordatorios: Escudo de agua, Arma de Vida terrestre, Escudo de tierra sobre tu foco, Tótem Corriente de sanación cuando alguien está herido, Tótem Marea de maná, Tótem de Marea de sanación para daño de grupo fuerte, Maestría elemental o Guía ancestral, Presteza ancestral sobre un objetivo con poca salud, Gracia del caminaespíritus en movimiento, Ansia de sangre y Corte de viento. Ascensión y Tótem Enlace de espíritu están en la lista, pero desactivados: úsalos cuando tu banda te los asigne.",
 -- 98ae06d3 English: Health ladder (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2479] = "Escala de salud (Hekili)",
 -- db083550 English: Off by default; same switch as the recommended Restoration premade, so enable
 --     it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your
@@ -7328,6 +10216,9 @@ addon.translation = {
 --     Earth Shock.
 [2480] = "Desactivada por defecto; tiene la misma condición de cambio que la rotación integrada de Restauración recomendada, así que actívala y desactiva la otra para usarla. La lista de Hekili mantiene Escudo de tierra y Mareas Vivas sobre tu objetivo, y Tótem Corriente de sanación y Lluvia de sanación siempre que no estén activos, y después sana según la salud media de tu grupo en un radio de 40 metros: Sanación en cadena por debajo del 80 %, Ola de sanación sobre un objetivo por debajo del 70 %, Ola de sanación superior por debajo del 60 % y Oleada de sanación por debajo del 40 %, con Tótem de Marea de sanación, Guía ancestral y Tótem Marea de maná en la misma escala. Un objetivo atacable recibe daño más Choque de tierra.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2481] = "Sin especialización",
 -- 8c70a307 English: For levels 1 to 9, and any Shaman who has not chosen a specialization yet;
 --     every specialization premade takes over once you pick one. Lightning Bolt to pull from range,
@@ -7335,6 +10226,9 @@ addon.translation = {
 --     while out of melee range. Keeps Lightning Shield up.
 [2482] = "Para los niveles 1 a 9, y cualquier chamán que aún no haya elegido especialización; la rotación integrada de cada especialización toma el relevo en cuanto eliges una. Descarga de relámpagos para iniciar el combate a distancia, Oleada de sanación cuando tienes poca salud y estás solo, Golpe primigenio, Choque de tierra, y Descarga de relámpagos mientras estés fuera del alcance cuerpo a cuerpo. Mantiene activo Escudo de relámpagos.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Affliction). The standard recommended rotation for
+--     the specialization.
 [2483] = "Recomendada",
 -- e15e8094 English: Recommended for Affliction from level 10 to 90 (chosen in the Affliction
 --     specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn
@@ -7355,6 +10249,9 @@ addon.translation = {
 --     shard. Enable it and disable the recommended Affliction premade to use it.
 [2486] = "Desactivada por defecto. La gestión de fragmentos de Warcraft Tavern y Method: el mismo mantenimiento de DoT que la rotación integrada de Aflicción recomendada, pero Poseer se reserva para cuatro fragmentos o Alma oscura: Angustia, y por debajo del 20 % Quemar alma y Trueque de alma renuevan todos los DoT siempre que tengas un fragmento. Actívala y desactiva la rotación integrada de Aflicción recomendada para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Demonology). The standard recommended rotation for
+--     the specialization.
 [2487] = "Recomendada",
 -- daf1315b English: Recommended for Demonology from level 10 to 90 (chosen in the Demonology
 --     specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of
@@ -7376,6 +10273,9 @@ addon.translation = {
 --     premade to use it.
 [2490] = "Desactivada por defecto. El consenso de las guías (Method, wowtbc.gg, Warcraft Tavern, Wowhead): la rotación integrada de Demonología recomendada, salvo que en forma normal Metamorfosis espera a tener 900 de furia demoníaca o Alma oscura, y Fuego de alma solo se lanza con ocho acumulaciones de Núcleo de magma o por debajo del 25 %, para que las acumulaciones se gasten en forma demoníaca. Actívala y desactiva la rotación integrada de Demonología recomendada para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Destruction). The standard recommended rotation for
+--     the specialization.
 [2491] = "Recomendada",
 -- b2f67ea8 English: For Destruction from level 10 to 90 (chosen in the Destruction specialization).
 --     Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers
@@ -7388,12 +10288,18 @@ addon.translation = {
 --     yourself), Doomguard or Infernal, Ember Tap and defensives.
 [2492] = "Para Destrucción del nivel 10 al 90 (elegida en la especialización Destrucción). Prelanza Incinerar, mantiene Inmolar, nunca se queda con dos cargas de Conflagrar, gasta ascuas en Descarga de Caos (Quemadura de las Sombras por debajo del 20 %) con 3,5 ascuas o durante Alma oscura: Inestabilidad, usa Explosión de humo en Incinerar y rellena con Incinerar; un objetivo a punto de morir recibe Quemadura de las Sombras. Contra tres o más enemigos: Lluvia de Fuego, y Fuego y azufre contra cuatro, y después Inmolar, Conflagrar e Incinerar, con un aviso para desactivar Fuego y azufre cuando se te acaban las ascuas. En movimiento: Quemadura de las Sombras, Conflagrar y Llama vil. Recordatorios: tu mascota o Grimorio de sacrificio, Llamas de Xoroth, Propósito oscuro, Alma oscura, Estragos contra dos o más enemigos (lánzalo tú sobre el segundo objetivo), guardia apocalíptico o infernal, Transfusión de ascuas y defensivos.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2493] = "Sin especialización",
 -- a4d9e0da English: For a Warlock without a specialization (levels 1 to 9, or later before you
 --     choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt.
 --     Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls.
 [2494] = "Para un brujo sin especialización (niveles 1 a 9, o más tarde antes de que elijas una). Corrupción para iniciar el combate y mantenida, Drenar vida por debajo de la mitad de la salud y Descarga de las Sombras. Recordatorios: el abisario en solitario (el diablillo en grupo) y una Piedra de salud entre combates.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Arms). The standard recommended rotation for the
+--     specialization.
 [2495] = "Recomendada",
 -- 6b5ddd88 English: Recommended for Arms from level 10 to 90, picked in the Arms specialization.
 --     Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing
@@ -7419,6 +10325,9 @@ addon.translation = {
 --     that one to use it.
 [2498] = "Desactivada por defecto. El orden de Armas de Icy Veins y Wowhead: fuera de la ventana de Machaque colosal usa Abrumar y Embate solo por encima de 80 de ira, guardando ira para la ventana en lugar de usar Embate como relleno. Dentro de la ventana: Golpe mortal, Embate, Abrumar y Lanzamiento heroico. Por debajo del 20 % de salud: Machaque colosal, Golpe mortal, Ejecutar, Abrumar y Rugido de dragón. Golpes de barrido contra dos enemigos, y una lista con Atronar contra grupos de tres o más. Golpe heroico o Rajar solo cerca del tope de ira. Los mismos recordatorios que la rotación integrada de Armas recomendada. Actívala y desactiva la otra para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Fury). The standard recommended rotation for the
+--     specialization.
 [2499] = "Recomendada",
 -- 32c50d3a English: Recommended for Fury from level 10 to 90, picked in the Fury specialization.
 --     Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one
@@ -7443,6 +10352,9 @@ addon.translation = {
 --     reminders as the recommended Fury premade. Enable it and disable that one to use it.
 [2502] = "Desactivada por defecto. El orden de Furia de Icy Veins gasta primero Filotormenta o Rugido de dragón dentro de la ventana de Machaque colosal, y pone Ejecutar por delante de Sed de sangre por debajo del 20 % de salud. Fuera de la ventana: Machaque colosal, Sed de sangre, Arremetida enfurecida solo con dos cargas, Golpe salvaje con Oleada de sangre, grito y Golpe salvaje. Contra cuatro o más enemigos: Sed de sangre para Enfurecer, Torbellino hasta tres acumulaciones de Cuchilla de carne y Arremetida enfurecida. Golpe heroico o Rajar solo cerca del tope de ira. Los mismos recordatorios que la rotación integrada de Furia recomendada. Actívala y desactiva la otra para usarla.",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2503] = "Recomendada",
 -- f3fe2f00 English: Tanking from level 10 to 90, picked in the Protection specialization. Charge or
 --     Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon
@@ -7457,45 +10369,70 @@ addon.translation = {
 --     Left to you: whom to taunt, and Block versus Barrier against magic.
 [2504] = "Tanqueo del nivel 10 al 90, elegida en la especialización Protección. Cargar o Lanzamiento heroico para iniciar el combate. Devastar para mantener tres de Armadura debilitada contra élites y jefes, Rugido de dragón, Filotormenta, Ola de choque contra tres enemigos y Atronar cada vez que esté disponible contra tres o más. Después, Revancha para la última ira de un Bloquear con escudo, Embate con escudo, Revancha con Defender el frente, Devastar para Heridas profundas, Ataque de la victoria por debajo del 60 % de salud, Revancha, Atronar para Golpes debilitados, Ejecutar, Descarga tormentosa, un grito para generar ira y Devastar (Hender armadura antes del 26). Recordatorios: Actitud defensiva, un grito cuando no hay ninguno activo, Bloquear con escudo siempre que no esté activo, Barrera de escudos cuando estás herido y te sobra ira, Golpe heroico o Rajar con Ultimátum, Incitar o cerca del tope, Grito desmoralizador, Ira rabiosa, Regeneración iracunda, Última carga y Muro de escudo con poca salud, tus tiempos de reutilización ofensivos y Zurrar. Provocar y Salto heroico están en la lista, pero desactivados. Quedan a tu cargo: a quién provocar, y Bloquear o Barrera contra la magia.",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2505] = "Sin especialización",
 -- 9e4fdb28 English: For levels 1 to 9, or until you choose a specialization. Charge to pull,
 --     Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle
 --     Stance if you are in no stance.
 [2506] = "Para los niveles 1 a 9, o hasta que elijas una especialización. Cargar para iniciar el combate, Ataque de la victoria, Ejecutar y Golpe heroico cuando tienes 30 de ira; te recuerda ponerte en Actitud de batalla si no estás en ninguna actitud.",
 -- ddbcf067 English: Silent
+-- Context: Entry in the General settings log level dropdown: no messages at all.
 [2507] = "Silencioso",
 -- 35eb2a7f English: Set Pieces
+-- Context: Condition type title: equipped set pieces count. Also an icon name in the icon picker.
 [2508] = "Piezas del conjunto",
 -- 64cd5df4 English: Weapon Imbue
+-- Context: Condition type title: temporary weapon enchants (poison, imbue). Also an icon name in
+--     the icon picker.
 [2509] = "Imbuición de arma",
 -- 754e76f8 English: Assisted Combat Suggestion
+-- Context: Condition type title: the spell currently recommended by Blizzard's Assisted Combat.
+--     Also an icon name in the icon picker.
 [2510] = "Sugerencia del Ayudante de combate",
 -- 3fa562a1 English: Blizzard's suggestion
+-- Context: Step description of a rotation step that follows the game's built-in rotation helper
+--     suggestion; also shown in the rotation help.
 [2511] = "Sugerencia de Blizzard",
 -- 90dc6c00 English: Recommends the spell Blizzard's Assisted Combat suggests
 [2512] = "Recomienda el hechizo que sugiere el Ayudante de combate de Blizzard",
 -- 423a9284 English: Assisted Combat Rotation Spell
 [2513] = "Hechizo de rotación del Ayudante de combate",
 -- 70a4e33d English: Assisted Combat Available
+-- Context: Condition type title: whether Blizzard's Assisted Combat is available. Also an icon name
+--     in the icon picker.
 [2514] = "Ayudante de combate disponible",
 -- 4de7b468 English: Blizzard's suggestion highlight
+-- Context: General settings: label of the dropdown for how the suggested spell of Blizzard's
+--     Assisted Combat is highlighted; also a help topic title.
 [2515] = "Resaltado de la sugerencia de Blizzard",
 -- 019a5647 English: Rotation Master's glow
+-- Context: Choice in that dropdown: only Rotation Master's own glow is shown.
 [2516] = "Resplandor de Rotation Master",
 -- e24abd9f English: Blizzard's Assisted Highlight
+-- Context: Choice in that dropdown: only the game's native highlight is shown.
 [2517] = "Resaltado asistido de Blizzard",
 -- b6c1d862 English: Both
+-- Context: Choice in that dropdown: both highlights are shown.
 [2518] = "Ambos",
 -- cd3a1b13 English: Assisted Combat is not available for your current specialization, so Blizzard's
 --     highlight stays off.
 [2519] = "El Ayudante de combate no está disponible para tu especialización actual, así que el resaltado de Blizzard permanece desactivado.",
 -- 9aab05d6 English: Engraved Rune
+-- Context: Condition type title: whether a given Season of Discovery rune is engraved. Also an icon
+--     name in the icon picker.
 [2520] = "Runa grabada",
 -- ea43639d English: ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [2521] = "rangos en %s",
 -- 1dd73b64 English: Show talent tree
+-- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
+--     from.
 [2522] = "Mostrar árbol de talentos",
 -- 3e590ed8 English: Hero Talents
+-- Context: Heading label in the talent window and a source name in the talent condition editor for
+--     the hero talent trees.
 [2523] = "Talentos de héroe",
 -- 8107299a English: The talent tree cannot be shown during combat.
 [2524] = "El árbol de talentos no se puede mostrar durante el combate.",
@@ -7506,8 +10443,10 @@ addon.translation = {
 -- 80ea0eae English: Click a talent to choose it for this condition.
 [2527] = "Haz clic en un talento para elegirlo en esta condición.",
 -- 6f1df5fc English: Selected: %s
+-- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
 [2528] = "Seleccionado: %s",
 -- 7a5e089f English: Ranks: %d
+-- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [2529] = "Rangos: %d",
 -- 26722619 English: Choose one of the talents on this node.
 [2530] = "Elige uno de los talentos de este nodo.",
@@ -7518,58 +10457,92 @@ addon.translation = {
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [2533] = "Cierra primero la build que muestra tu propia ventana de talentos.",
 -- f831a06b English: Arms
+-- Context: Specialization name (Warrior, first tree). Used in the specialization condition and
+--     rotation scope; follows the game's naming.
 [2534] = "Armas",
 -- 8d6b26d9 English: Fury
+-- Context: Specialization name (Warrior, second tree).
 [2535] = "Furia",
 -- 0e97ad02 English: Protection
+-- Context: Specialization name (Warrior or Paladin tank tree).
 [2536] = "Protección",
 -- 1d79fa22 English: Retribution
+-- Context: Specialization name (Paladin damage tree).
 [2537] = "Reprensión",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Specialization name (Hunter, first tree).
 [2538] = "Bestias",
 -- 03f000fc English: Marksmanship
+-- Context: Specialization name (Hunter, second tree).
 [2539] = "Puntería",
 -- 8302496d English: Survival
+-- Context: Specialization name (Hunter, third tree).
 [2540] = "Supervivencia",
 -- 727eeac8 English: Assassination
+-- Context: Specialization name (Rogue, first tree).
 [2541] = "Asesinato",
 -- fca36d62 English: Subtlety
+-- Context: Specialization name (Rogue, third tree).
 [2542] = "Sutileza",
 -- a1b14db9 English: Discipline
+-- Context: Specialization name (Priest, first tree).
 [2543] = "Disciplina",
 -- b12b36cf English: Enhancement
+-- Context: Specialization name (Shaman, second tree).
 [2544] = "Mejora",
 -- 6a3c6c77 English: Restoration
+-- Context: Specialization name (Shaman or Druid healer tree).
 [2545] = "Restauración",
 -- ed64274f English: Affliction
+-- Context: Specialization name (Warlock, first tree).
 [2546] = "Aflicción",
 -- c0e4afa6 English: Demonology
+-- Context: Specialization name (Warlock, second tree).
 [2547] = "Demonología",
 -- e848f2c5 English: Destruction
+-- Context: Specialization name (Warlock, third tree).
 [2548] = "Destrucción",
 -- d05e07b7 English: Balance
+-- Context: Specialization name (Druid, first tree).
 [2549] = "Equilibrio",
 -- 1f397413 English: Initial
+-- Context: Specialization name for a character of level 1 to 9 that has not chosen a specialization
+--     yet.
 [2550] = "Inicial",
 -- 7214aeb1 English: Specialization
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     specialization.
 [2551] = "Especialización",
 -- 20356d41 English: specialization %d
+-- Context: Fallback text for a specialization that has no known name; %d is the numeric
+--     specialization ID.
+-- %d #1: %d #1: the specialization number, used when the game gives no name, e.g. 64
 [2552] = "especialización %d",
 -- d22bb30c English: Weapon Type
+-- Context: Condition type title and dropdown label in the condition editor: the kind of weapon
+--     equipped.
 [2553] = "Tipo de arma",
 -- ed3897f1 English: Main Hand
+-- Context: Equipment slot option in the equipped-item condition: the main-hand weapon slot.
 [2554] = "Mano principal",
 -- 3f0b51a2 English: Ranged
+-- Context: Equipment slot option in the equipped-item condition and a checkbox label in the weapon
+--     condition: the ranged weapon slot.
 [2555] = "A distancia",
 -- 9e9c1c72 English: Nothing equipped
+-- Context: Category option in the equipped-item condition: the slot is empty.
 [2556] = "Nada equipado",
 -- d1c5d83c English: Any weapon
+-- Context: Category option in the equipped-item condition: any weapon.
 [2557] = "Cualquier arma",
 -- 723e86de English: One-handed weapon
+-- Context: Category option in the equipped-item condition: a one-handed weapon.
 [2558] = "Arma de una mano",
 -- 432f6b17 English: Two-handed weapon
+-- Context: Category option in the equipped-item condition: a two-handed weapon.
 [2559] = "Arma a dos manos",
 -- e55ba453 English: Ranged weapon
+-- Context: Category option in the equipped-item condition: a ranged weapon.
 [2560] = "Arma a distancia",
 -- ef734bb6 English: Held in off hand
 [2561] = "En la mano secundaria",
@@ -7580,10 +10553,16 @@ addon.translation = {
 [2563] = "1 de los hechizos que Blizzard puede sugerir no está en tus barras de acción, así que la tarjeta lo omite.",
 -- cc735c50 English: %d of the spells Blizzard can suggest aren't on your action bars, so the card
 --     skips them.
+-- %d #1: %d #1: how many suggested spells are missing from the action bars, e.g. 3
 [2564] = "%d de los hechizos que Blizzard puede sugerir no están en tus barras de acción, así que la tarjeta los omite.",
 -- 29258402 English: %s, and %d more
+-- Context: End of a spell list in a tooltip: %s is the first few spell names (comma-separated) not
+--     on the action bars, %d is how many more are not shown, giving 'A, B, C, and 4 more'.
+-- %s #1: %s #1: the names of the first missing spells, separated by commas, e.g. "Fireball, Frostbolt, Ice Lance"
+-- %d #2: %d #2: how many more are not listed, e.g. 4
 [2565] = "%s y %d más",
 -- f657f763 English: Not on your action bars: %s.
+-- %s #1: %s #1: the names of the spells that are not on the action bars, separated by commas, e.g. "Fireball, Frostbolt"
 [2566] = "No está en tus barras de acción: %s.",
 -- d60bbc94 English: Rotation Master highlights a step by lighting the action button that holds it.
 --     No action bar button holds this action right now, so this step is skipped and the next step
@@ -7601,22 +10580,33 @@ addon.translation = {
 --     action bar to use them.
 [2569] = "Rotation Master resalta una acción iluminando el botón que la contiene, así que no puede resaltar estos hechizos. La tarjeta sigue funcionando con toda sugerencia que esté en tus barras: solo omite una cuando se sugiere, y se usa el siguiente paso en su lugar. Colócalos en una barra de acción para usarlos.",
 -- c6fa3ead English: Skipped, not on your action bars (they cannot be highlighted): %s.
+-- %s #1: %s #1: the skipped steps, separated by semicolons, each with its name and place, e.g. "Fireball (step 3); Frostbolt (cooldown)"
 [2570] = "Omitidos, no están en tus barras de acción (no se pueden resaltar): %s.",
 -- 435eac3e English: step %s
+-- Context: Location in a report line about an unbound rotation step (a step whose spell is not on
+--     the action bars): %s is the step's position number, e.g. 'step 3'.
+-- %s #1: %s #1: the number of the step in the rotation, counting from 1 (a "?" when unknown), e.g. 3
 [2571] = "paso %s",
 -- 09182dd8 English: cooldown
+-- Context: Location in a report line about an unbound rotation step: the step sits in the cooldowns
+--     section rather than the numbered list (lowercase).
 [2572] = "tiempo de reutilización",
 -- c9e1a473 English: Currently Matches
+-- Context: Headline on a rotation card when the condition is true right now.
 [2573] = "Se cumple ahora",
 -- 6fafaf30 English: Does Not Currently Match
 [2574] = "No se cumple ahora",
 -- f70be4d8 English: Unavailable: %s
+-- %s #1: %s #1: why the live status cannot be read, a short reason (translated), e.g. "unreadable right now"
 [2575] = "No disponible: %s",
 -- a463bcd3 English: unreadable right now
+-- Context: Reason shown in a card headline or tooltip when a condition's value cannot be read in
+--     the current situation (lowercase).
 [2576] = "no se puede leer ahora",
 -- 8a0dcf23 English: the condition could not be evaluated
 [2577] = "no se pudo evaluar la condición",
 -- 01e62ea3 English: Checked %d seconds ago.
+-- %d #1: %d #1: how many seconds ago the condition was last checked, e.g. 2
 [2578] = "Comprobado hace %d segundos.",
 -- 37822fb8 English: Rotation Master is advising this step now.
 [2579] = "Rotation Master está aconsejando este paso ahora.",
@@ -7625,46 +10615,79 @@ addon.translation = {
 -- 42ee3bdd English: This rotation is advising now.
 [2581] = "Esta rotación está aconsejando ahora.",
 -- 81f39eb5 English: Mounted
+-- Context: Option in the player state condition: the player is on a mount.
 [2582] = "Montado",
 -- 54230802 English: Swimming
+-- Context: Option in the player state condition: the player is swimming.
 [2583] = "Nadando",
 -- 6192f184 English: Falling
+-- Context: Option in the player state condition: the player is falling.
 [2584] = "Cayendo",
 -- 75a4c2fe English: Flying
+-- Context: Option in the player state condition: the player is flying.
 [2585] = "Volando",
 -- 4ae9e2a1 English: In a Rested Area
 [2586] = "En una zona de descanso",
 -- 5cc337a5 English: Boss Encounter
+-- Context: Condition type title: a boss fight is in progress. Also an icon name in the icon picker.
 [2587] = "Encuentro con jefe",
 -- 87a6b205 English: Instance Difficulty
+-- Context: Label of the dropdown in the instance condition: the difficulty of the dungeon or raid.
 [2588] = "Dificultad de la estancia",
 -- fce1b615 English: Mythic+ Keystone Level
+-- Context: Condition type title: the level of the Mythic+ keystone of the current dungeon. Also the
+--     title of its help page.
 [2589] = "Nivel de piedra angular de Mítica+",
 -- 26566745 English: Hero Talent Tree
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     hero talent tree. Also an icon name in the icon picker.
 [2590] = "Árbol de talentos de héroe",
 -- 6115798c English: Spell Proc Glow
+-- Context: Condition type title: the spell currently has the proc glow on its action button. Also
+--     an icon name in the icon picker.
 [2591] = "Destello de activación del hechizo",
 -- c563bae9 English: Trinket 1
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the first
+--     trinket slot instead of a named item.
 [2592] = "Abalorio 1",
 -- 4595f2ac English: Trinket 2
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the second
+--     trinket slot instead of a named item.
 [2593] = "Abalorio 2",
 -- a91c3e5e English: Pet Happiness
+-- Context: Condition type title and dropdown label in the condition editor: a Hunter pet's mood.
+--     Also an icon name in the icon picker.
 [2594] = "Felicidad de la mascota",
 -- 37108f8a English: Unhappy
+-- Context: Option in the Pet Happiness dropdown: the lowest of the three moods (the pet is
+--     unhappy).
 [2595] = "Infeliz",
 -- 47bd2907 English: Content
+-- Context: Option in the Pet Happiness dropdown: the middle mood (the pet is content, neither happy
+--     nor unhappy).
 [2596] = "Contento",
 -- 725accb5 English: Happy
+-- Context: Option in the Pet Happiness dropdown: the highest mood (the pet is happy).
 [2597] = "Feliz",
 -- b575a12f English: Stagger
+-- Context: Condition type title: the Brewmaster's Stagger pool. Also the label of its comparison
+--     and its help page title.
 [2598] = "Tambaleo",
 -- fbfcff79 English: Eclipse Direction
+-- Context: Label of the dropdown in the Eclipse condition: which Eclipse direction the bar is
+--     heading toward.
 [2599] = "Dirección del eclipse",
 -- cc23ba6c English: a Solar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Solar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Solar Eclipse'.
 [2600] = "un eclipse solar",
 -- 1dc3e526 English: a Lunar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Lunar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Lunar Eclipse'.
 [2601] = "un eclipse lunar",
 -- f2fcd3f7 English: Energy
+-- Context: Label of the comparison in the Eclipse condition: the Eclipse bar's energy value; the
+--     other measure is Direction.
 [2602] = "Energía",
 -- d8877585 English: only Retail has this
 [2603] = "solo Retail lo tiene",
@@ -7682,26 +10705,46 @@ addon.translation = {
 -- aca68a8a English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned
 --     rotations.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2609] = "%d rotaciones de antes de la versión 2 esperan en un archivo y no se ejecutan hasta que las adoptes. Abre Rotation Master, elige Rotaciones y después Recuperar rotaciones sin asignar.",
 -- a64b8edb English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2610] = "%d rotaciones de antes de la versión 2 esperan en un archivo y no se ejecutan hasta que las adoptes.",
 -- 48845bff English: Dismiss
+-- Context: Button in the banner about unassigned rotations: closes the banner without opening the
+--     archive (verb).
 [2611] = "Descartar",
 -- e11a6591 English: Adopt all %d for %s
+-- Context: Button in the recovery window that adopts every listed rotation at once: %d is how many
+--     rotations, %s is the destination (a class name or 'This character').
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2612] = "Adoptar las %d para %s",
 -- c727dc7d English: Adopt all %d from specialization %d for %s
+-- %d #1: %d #1: how many rotations of this specialization will be adopted, e.g. 3
+-- %d #2: %d #2: the specialization number, e.g. 64
+-- %s #3: %s #3: who will own them, e.g. "your Mage class"
 [2613] = "Adoptar las %d de la especialización %d para %s",
 -- dcf0a82d English: Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation
 --     that cannot be adopted stays in the archive.
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2614] = "¿Adoptar %d rotaciones sin asignar para %s? Cada una conserva su identificador. Una rotación que no se pueda adoptar permanece en el archivo.",
 -- bf328c9e English: Adopted %d of %d. These stay in the archive: %s
+-- %d #1: %d #1: how many rotations were adopted, e.g. 4
+-- %d #2: %d #2: how many were attempted, e.g. 5
+-- %s #3: %s #3: the names of those that were not adopted, separated by commas, e.g. "Old Fire"
 [2615] = "Adoptadas %d de %d. Estas permanecen en el archivo: %s",
 -- 23bfc44f English: Player State
+-- Context: Condition type title: groups simple player states (mounted, swimming, flying ...). Also
+--     an icon name in the icon picker.
 [2616] = "Estado del jugador",
 -- 68a2f69b English: Group Count
+-- Context: Condition type title: the number of players in the group. Also its help page title.
 [2617] = "Recuento del grupo",
 -- de24e677 English: Eclipse
+-- Context: Condition type title: the Druid Eclipse bar. Also its help page title.
 [2618] = "Eclipse",
 -- 5baf9a05 English: your group's main tank
 [2619] = "el tanque principal de tu grupo",
@@ -7720,8 +10763,12 @@ addon.translation = {
 -- 1f321239 English: your group's assigned healer's
 [2626] = "del sanador asignado de tu grupo",
 -- 343dc906 English: your group's leader
+-- Context: Phrase for the unit choice 'group leader' in condition summaries, e.g. '<this> {{!is|is
+--     not}} your group's leader'; the next string is its possessive form.
 [2627] = "el líder de tu grupo",
 -- 1d3180fa English: your group's leader's
+-- Context: Possessive form of 'your group's leader' used in condition summaries before a noun, e.g.
+--     'your group's leader's health'.
 [2628] = "del líder de tu grupo",
 -- fad43537 English: Absolute health target (negative means deficit) or percentage fraction.
 [2629] = "Objetivo de salud absoluto (negativo significa déficit) o fracción porcentual.",
@@ -8178,6 +11225,7 @@ addon.translation = {
 -- d27c5ef2 English: Lookup key.
 [2780] = "Clave de búsqueda.",
 -- d746509f English: Lua pattern character-class separator, default %s for whitespace.
+-- %s #1: %s #1: not a placeholder; it is the literal Lua pattern class for whitespace, shown to the user as text, e.g. "default %s for whitespace". Keep %s exactly as written.
 [2781] = "Separador de clase de caracteres de patrón Lua; por defecto, %s para los espacios en blanco.",
 -- 3aeb0664 English: Mark the positive wording as the primary named alternative.
 [2782] = "Marca la redacción positiva como alternativa principal con nombre.",
@@ -8986,6 +12034,8 @@ addon.translation = {
 --     select both.
 [3041] = "noheals selecciona solo el daño; nodmg selecciona solo la sanación; los demás valores legibles seleccionan ambos.",
 -- 02586670 English: Translation (%s): %s
+-- %s #1: %s #1: the name of the game language, e.g. "German"
+-- %s #2: %s #2: the translators' names, separated by commas, e.g. "Anna, Boris"
 [4043] = "Traducción (%s): %s",
 -- 7e412986 English: the %s-marked unit
 -- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries

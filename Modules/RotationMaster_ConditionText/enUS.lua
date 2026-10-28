@@ -40,8 +40,13 @@ local E = {
 -- d3742617
 [3393] = "the number of {item} you are carrying {comparison} {quantity}",
 -- ee0ed821
+-- Context: Sentence template for the summary of an Extended Character Stats condition. The words in
+--     {braces} are filled in and must stay unchanged: {stat} the statistic name, {comparison} e.g.
+--     'is at least', {value} the number.
 [3394] = "{stat} {comparison} {value}",
 -- 9aabc8c2
+-- Context: Same template as the previous one but the value is a percentage; the '%' after {value}
+--     stays.
 [3395] = "{stat} {comparison} {value}%",
 -- 6be74ff6
 [3396] = "The number of {members} members{pets} within {distance} yards of {unit} whose health deficit {qualifier} {threshold} {comparison} {value}",
@@ -68,12 +73,21 @@ local E = {
 -- 1117cff5
 [3407] = "The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%",
 -- e2f99617
+-- Context: Checkbox in the buff condition editor: only count buffs that you cast yourself. Also a
+--     help heading.
 [3408] = "Own Buff",
 -- 6a63971b
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you applied yourself.
+--     Also a help heading.
 [3409] = "Own Debuff",
 -- c83645d3
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you can dispel. Also a
+--     help heading.
 [3410] = "Dispellable",
 -- fe483cd0
+-- Context: Part of a buff or debuff summary: %s is the buff/debuff name, giving 'your own Renew'.
+--     Used when the 'only my own' option is on.
+-- %s #1: %s #1: the buff or debuff name, e.g. "Power Word: Fortitude" (the sentence reads "your own" followed by it)
 [3411] = "your own %s",
 -- fd008b93
 [3412] = "{unit} {{!have|do not have}} {aura}",
@@ -86,252 +100,477 @@ local E = {
 -- b6de011b
 [3416] = "the number of stacks of {aura} on {unit} {comparison} {quantity}",
 -- 0a2d00cc
+-- Context: Phrase appended to a debuff summary when the Dispellable option is on, e.g. '... of type
+--     Magic that is dispellable'.
 [3417] = "that is dispellable",
 -- 0021d5fe
+-- Context: Checkbox in the number-of-units-in-range condition: count enemies (unchecked counts
+--     non-enemies). Also a help heading.
 [3418] = "Enemy",
 -- 974b3bbb
+-- Context: Placeholder in a level-condition summary shown until a level is entered; keep the angle
+--     brackets.
 [3419] = "<level>",
 -- 6a59c476
+-- Context: Phrase in a level-condition summary, %s is a unit's name or description: 'the target's
+--     level'. The apostrophe-s makes it possessive.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [3420] = "%s's level",
 -- d7e82e52
+-- Context: Phrase in a level-condition summary for the player's own level; the alternative form
+--     uses a unit.
 [3421] = "your level",
 -- 8e99cd98
+-- Context: Checkbox in the unit level condition: the entered level is relative to the player's own
+--     level. Also a help heading.
 [3422] = "Relative",
 -- c35070bc
+-- Context: Label of the comparison in the resistance condition (the amount of resistance), and its
+--     help heading.
 [3423] = "Resistance",
 -- e16703f1
+-- Context: Label of the dropdown in the resistance condition: which school of magic (Fire, Frost
+--     ...). Also a help heading.
 [3424] = "Spell School",
 -- a4d50fb8
+-- Context: Checkbox in the resistance condition: count partial immunity too. Also a help heading.
 [3425] = "Partial",
 -- a4130d7d
+-- Context: Label of the comparison in the talent condition: the number of points in a talent.
 [3426] = "Rank",
 -- 55ca6cfd
+-- Context: Item list text: %s is the first item, %d how many other items there are, giving 'Item or
+--     3 others'.
+-- %s #1: %s #1: the first item, as a link or name, e.g. "[Healthstone]"
+-- %d #2: %d #2: how many other items are in the list, e.g. 2
 [3427] = "%s or %d others",
 -- 7d538635
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [3428] = "a %s item set item",
 -- 7db896a5
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [3429] = "time until %s health reaches %s%%",
 -- d7514051
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [3430] = "time until %s health reaches %s",
 -- 9db8edbd
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health deficit (missing health) that is waited for, e.g. 20000
 [3431] = "time until %s health deficit reaches %s",
 -- 54bc9c29
+-- Context: Phrase added to a unit-count summary when pets are included, shown in parentheses:
+--     'including pets'.
 [3432] = "including pets",
 -- 17b8d67a
+-- Context: Placeholder in condition summaries shown until a unit is chosen; keep the angle
+--     brackets.
 [3433] = "<unit>",
 -- f5c3527b
+-- Context: Placeholder in condition summaries shown until an action is chosen (e.g. a kind of
+--     action performed); keep the angle brackets.
 [3434] = "<action>",
 -- de16c890
+-- Context: Placeholder in condition summaries shown until an item is chosen; keep the angle
+--     brackets.
 [3435] = "<item>",
 -- 92c7c398
+-- Context: Placeholder in condition summaries shown until a role (tank/healer/damage) is chosen;
+--     keep the angle brackets.
 [3436] = "<role>",
 -- 5eacbf77
+-- Context: Placeholder in condition summaries shown until a class is chosen; keep the angle
+--     brackets.
 [3437] = "<class>",
 -- 1107a6db
+-- Context: Placeholder in condition summaries shown until a creature type is chosen; keep the angle
+--     brackets.
 [3438] = "<creature type>",
 -- 763c736c
+-- Context: Placeholder in condition summaries shown until a classification (normal, elite, boss
+--     ...) is chosen; keep the angle brackets.
 [3439] = "<classification>",
 -- 32a8619d
+-- Context: Placeholder in condition summaries shown until a talent is chosen; keep the angle
+--     brackets.
 [3440] = "<talent>",
 -- 226723c3
+-- Context: Placeholder in condition summaries shown until a talent tree is chosen; keep the angle
+--     brackets.
 [3441] = "<talent tree>",
 -- 903fbb57
+-- Context: Placeholder in condition summaries shown until a glyph is chosen; keep the angle
+--     brackets.
 [3442] = "<glyph>",
 -- cb9c16d7
+-- Context: Placeholder in condition summaries shown until a rune type (Death Knight) is chosen;
+--     keep the angle brackets.
 [3443] = "<rune type>",
 -- 9137bf37
+-- Context: Placeholder in condition summaries shown until a buff is chosen; keep the angle
+--     brackets.
 [3444] = "<buff>",
 -- 729e2db0
+-- Context: Placeholder in condition summaries shown until a debuff is chosen; keep the angle
+--     brackets.
 [3445] = "<debuff>",
 -- 985669df
+-- Context: Placeholder in totem condition summaries shown until a totem element is chosen; keep the
+--     angle brackets.
 [3446] = "<element>",
 -- ebb7e176
+-- Context: Placeholder in totem condition summaries shown until a totem is chosen; keep the angle
+--     brackets.
 [3447] = "<totem>",
 -- 8b998a99
+-- Context: Placeholder in threat condition summaries shown until a threat level is chosen; keep the
+--     angle brackets.
 [3448] = "<threat>",
 -- 0316e1e6
+-- Context: Placeholder in the shapeshift condition summary shown until a form is chosen; keep the
+--     angle brackets.
 [3449] = "<form>",
 -- 22cc14cd
+-- Context: Placeholder in the zone condition summary shown until a zone name is entered; keep the
+--     angle brackets.
 [3450] = "<zone>",
 -- 7be59ec0
+-- Context: Placeholder in the pet-name condition summary shown until a name is entered; keep the
+--     angle brackets.
 [3451] = "<name>",
 -- 131a415a
+-- Context: Placeholder in distance-based condition summaries shown until a distance is entered;
+--     keep the angle brackets.
 [3452] = "<distance>",
 -- b0b287ea
+-- Context: Placeholder in item-count and item-set-count summaries shown until a number is entered;
+--     keep the angle brackets.
 [3453] = "<quantity>",
 -- 5cf485b5
+-- Context: Placeholder in resistance condition summaries shown until a spell school is chosen; keep
+--     the angle brackets.
 [3454] = "<school>",
 -- 6327939f
+-- Context: Placeholder in the loss-of-control summary shown until a control type (stun, fear ...)
+--     is chosen; keep the angle brackets.
 [3455] = "<control type>",
 -- e5cd35fd
+-- Context: Placeholder in group health summaries shown until a math operation (average, lowest ...)
+--     is chosen; keep the angle brackets.
 [3456] = "<operation>",
 -- be607902
+-- Context: Placeholder in stat condition summaries shown until a statistic is chosen; keep the
+--     angle brackets.
 [3457] = "<stat>",
 -- e31b37e6
+-- Context: Summary sentence for the health forecast condition: first %s is the comparison ('time
+--     until your health reaches 30% is at most 5 seconds'), second %s is the burn-rate mode (e.g.
+--     'both' or a trend setting).
+-- %s #1: %s #1: the comparison sentence about the time until the health target is reached, e.g. "time until your target's health reaches 30% is less than 10 seconds"
+-- %s #2: %s #2: the burn-rate mode, e.g. "both" or "recent" (translated)
 [3458] = "%s with %s",
 -- 0a09d74b
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree, e.g. "Arcane"
 [3459] = "the number of talent points in %s (%s)",
 -- 3155a253
+-- Context: Phrase in the resistance summary: first %s is a unit (possessive, 'your'), second %s is
+--     the school, e.g. 'your resistance to Fire'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [3460] = "%s resistance to %s",
 -- 0f044feb
+-- Context: Label of the dropdown in the group health condition and its help heading: the math
+--     operation (average, lowest ...).
 [3461] = "Operation",
 -- 37bac495
+-- Context: Label of the comparison in the class count condition (how many party/raid members) and
+--     its help heading.
 [3462] = "Count",
 -- 822bab8d
+-- Context: Label of the comparison in the item-in-bags condition: how many of the item are carried.
+--     Also a help heading.
 [3463] = "Quantity",
 -- 498024de
+-- Context: Checkbox in the units-in-range conditions: only count units in your own raid group. Also
+--     a help heading.
 [3464] = "Same Group",
 -- f56f56f0
+-- Context: Checkbox in the units-in-range conditions: also count pets. Also a help heading.
 [3465] = "Include Pets",
 -- 0417caa6
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'your health'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3466] = "%s health",
 -- d3e6835a
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'target's health deficit'
+--     (how much health is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3467] = "%s health deficit",
 -- 0b7f509c
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3468] = "%s mana",
 -- c26c9d56
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana deficit' (how much
+--     mana is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3469] = "%s mana deficit",
 -- 38e9ce41
+-- Context: Phrase in power condition summaries (rage, energy, etc.); %s is whose power, e.g. 'your
+--     power'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3470] = "%s power",
 -- 8e8bafed
+-- Context: Phrase in power condition summaries; %s is whose power, e.g. 'your power deficit' (how
+--     much is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3471] = "%s power deficit",
 -- ee7787cd
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point total'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3472] = "%s point total",
 -- 30f011ad
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point deficit' (how many are missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3473] = "%s point deficit",
 -- 309b1607
+-- Context: Label of the dropdown in the Death Knight rune condition: which kind of rune. Also a
+--     help heading.
 [3474] = "Rune Type",
 -- 4a6d5ef7
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [3475] = "the number of %s runes available",
 -- 02c78980
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [3476] = "cooldown on your next %s rune",
 -- 2bfe8a1c
+-- Context: Wraps a cooldown or recharge comparison in the summary: %s is the comparison text,
+--     giving 'the cooldown on X is at most 5 seconds'.
+-- %s #1: %s #1: a comparison about a cooldown, charges or recharge time, e.g. "cooldown on [Fireball] is less than 5 seconds"
 [3477] = "the %s",
 -- f95180b3
+-- Context: Phrase in spell cooldown summaries; %s is the spell link, e.g. 'cooldown on Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3478] = "cooldown on %s",
 -- cae44083
+-- Context: Number of seconds in a summary; %s is the number, e.g. '5 seconds'.
+-- %s #1: %s #1: the number of seconds, e.g. 10
 [3479] = "%s seconds",
 -- 381a8e96
+-- Context: Label of the comparison in the spell cooldown condition: a number of seconds. Also a
+--     help heading.
 [3480] = "Seconds",
 -- de838855
+-- Context: Label of the comparison in the boss mod stage condition: the current encounter stage
+--     number.
 [3481] = "Stage",
 -- b1097936
 [3482] = "Encounter ID (blank for any)",
 -- 8002bd2a
 [3483] = "Boss ability spell ID",
 -- 938af2ed
+-- Context: Prefix in the boss mod timer description, followed by a list of the running timers.
 [3484] = "Running timers:",
 -- db93de5e
 [3485] = "No boss-mod timers are running.",
 -- d25fe6e9
 [3486] = "No boss-mod encounter is in progress.",
 -- bb8c3466
+-- %s #1: %s #1: why the boss mod data is unavailable, a short code (shown as-is), e.g. "adapter-unavailable"
 [3487] = "Boss mod data unavailable: %s",
 -- 163f58b8
+-- %s #1: %s #1: the encounter name, e.g. "Ragnaros"
+-- %s #2: %s #2: the encounter ID, or "none", e.g. "672"
+-- %s #3: %s #3: the encounter stage number, e.g. 2
 [3488] = "Current encounter: %s (ID %s), stage %s",
 -- d0ee75f0
+-- %s #1: %s #1: the boss encounter ID, e.g. "672"
 [3489] = "your boss mod reports encounter %s {{!is|is not}} in progress",
 -- 9f2947bc
 [3490] = "your boss mod {{!reports|does not report}} an encounter in progress",
 -- 772d9f0d
 [3491] = "the boss-mod encounter stage",
 -- 03f1bf98
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Hellfire (spell ID 1949)"
 [3492] = "the boss-mod timer for %s",
 -- aac06d0a
 [3493] = "Seconds until the boss mod expects the ability. A paused timer keeps its remaining time.",
 -- a3b0ec0a
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3494] = "number of charges on %s",
 -- d3f9533d
+-- Context: Label of the comparison in the spell charges condition (number of charges). Also a help
+--     heading.
 [3495] = "Charges",
 -- d9f8ffbe
+-- Context: Phrase in spell-cast history summaries; %s is a count, e.g. '3 casts ago'.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [3496] = "%s casts ago",
 -- ebffec66
+-- Context: Phrase in history summaries; %s is a number of seconds, e.g. '5 seconds ago'.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [3497] = "%s seconds ago",
 -- 093ae2d4
+-- Context: Phrase in action-history summaries; %s is a count, e.g. '2 actions ago'.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [3498] = "%s actions ago",
 -- 61bb6794
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
+-- %s #2: %s #2: when it was cast, e.g. "fewer than 3 casts ago" or "more than 5 seconds ago"
 [3499] = "%s {{!was|was not}} cast %s",
 -- 7a55e41d
+-- %s #1: %s #1: the unit; the "were" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3500] = "%s {{!were|were not}} %s %s",
 -- 089cd4ce
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3501] = "%s {{!was|was not}} %s %s",
 -- d72cc5dd
+-- Context: Phrase in buff/debuff duration summaries: the time left on the aura.
 [3502] = "the remaining time",
 -- 5242ce0a
+-- Context: Label of the comparison in the buff stacks condition (application count). Also a help
+--     heading.
 [3503] = "Stacks",
 -- 6f54bbcb
+-- Context: Placeholder in debuff-type summaries shown until a type (Magic, Poison ...) is chosen;
+--     keep the angle brackets.
 [3504] = "<debuff type>",
 -- cf1e1b18
+-- Context: Label of the dropdown in the debuff type condition: Magic, Curse, Disease, Poison. Also
+--     a help heading.
 [3505] = "Debuff Type",
 -- 2464ac36
 [3506] = "Check If Not Carrying",
 -- cc1059c6
 [3507] = ", even if you do not currently have one",
 -- 7e67190c
+-- Context: Label of the dropdown in the loss-of-control condition: the kind of control (stun, fear
+--     ...). Also a help heading.
 [3508] = "Control Type",
 -- e4a034d6
+-- Context: Phrase in the loss-of-control summary; %s is the control type, e.g. 'time remaining on
+--     stun'.
+-- %s #1: %s #1: the type of loss-of-control effect, e.g. "Stun" or "Silence"
 [3509] = "time remaining on %s",
 -- b7d036de
+-- Context: Label of the dropdown in the school lockout condition: which school is locked. Also a
+--     help heading.
 [3510] = "School Blocked",
 -- 48c8596c
+-- %s #1: %s #1: the spell school that is blocked, e.g. "Fire"
 [3511] = "time remaining on block of your %s abilities",
 -- 2f024fe4
+-- Context: Option in the shapeshift form dropdown: not shapeshifted. Also named in the form help
+--     text; lowercase.
 [3512] = "humanoid",
 -- e112b377
+-- Context: Phrase in the form summary when no shapeshift form is active: 'humanoid form'.
 [3513] = "humanoid form",
 -- 2e0e960a
+-- Context: Label of the dropdown in the shapeshift condition (also stances and stealth). Also a
+--     help heading.
 [3514] = "Form",
 -- 4d95bdd5
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [3515] = "the number of %s members%s within %s yards of %s",
 -- 4c543e99
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [3516] = "the number of enemies on which you are at least %s",
 -- bd310339
+-- Context: Phrase in the distance summary: %s is a number, e.g. 'closer than 10 yards'.
+-- %s #1: %s #1: the distance in yards, e.g. 10
 [3517] = "closer than %s yards",
 -- 30d28f49
+-- Context: Plural noun in the unit-count summary: friendly units.
 [3518] = "allies",
 -- d0110013
+-- Context: Plural noun in the unit-count summary: hostile units.
 [3519] = "enemies",
 -- 7002c54a
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3520] = "Number of %s within %s yards",
 -- f9d6358c
+-- %s #1: %s #1: the class name, e.g. "Mage" (the "s" after %s is a plural ending in English)
+-- %s #2: %s #2: the group, "Party" or "Raid", e.g. "Raid"
 [3521] = "Number of %ss in the %s",
 -- 796861d3
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3522] = "the time remaining on %s channel",
 -- 029b1c92
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3523] = "the time remaining on %s cast",
 -- 4bca01ec
+-- Context: Option in the zone PVP dropdown and its summary: the zone has no PVP rules.
 [3524] = "no PVP",
 -- 5e23ec6a
+-- Context: Label of the dropdown in the zone PVP condition: the zone's PVP status. Also a help
+--     heading.
 [3525] = "Mode",
 -- d50c7904
+-- Context: Option in the instance type dropdown and its summary: the instance is none of the usual
+--     types (a scenario).
 [3526] = "Other (scenario)",
 -- f6fe5e59
+-- Context: Checkbox in the zone condition: compare the sub zone instead of the zone name. Also a
+--     help heading.
 [3527] = "SubZone",
 -- 2c7564b7
+-- Context: Item set name with its number: first %s is the set name, %d its set number.
+-- %s #1: %s #1: the name of the set bonus (item set), e.g. "Plate of the Dread Lord"
+-- %d #2: %d #2: the item set ID, e.g. 1234
 [3528] = "%s (set %d)",
 -- eb179560
+-- Context: Item set entry in the dropdown of sets you wear: first %s is the set label, %d how many
+--     pieces are equipped.
+-- %s #1: %s #1: the item set, as its name and ID or "item set 1234", e.g. "Plate of the Dread Lord (set 1234)"
+-- %d #2: %d #2: how many pieces of the set are equipped, e.g. 4
 [3529] = "%s, %d equipped",
 -- d5c50d7b
+-- Context: Placeholder in the action context summary shown until an action bar is chosen; keep the
+--     angle brackets.
 [3530] = "<action bar>",
 -- fbf90b5a
+-- Context: Placeholder in the weapon enchant summary shown until an enchant ID is entered; keep the
+--     angle brackets.
 [3531] = "<enchant>",
 -- 23127ea1
+-- Context: Placeholder in item set summaries shown until a set is chosen; keep the angle brackets.
 [3532] = "<item set>",
 -- 7c027705
 [3533] = "A rotation of your own is used only on your own bar unless its switch condition requires another action context with this condition; it is then used, and its buttons found, while that bar is up.",
 -- fcefef14
 [3534] = "Currently: no temporary enchant",
 -- f1ce6167
+-- %d #1: %d #1: the ID of the temporary weapon enchant now active, e.g. 5400
 [3535] = "Currently: temporary enchant %d",
 -- ef4a5266
+-- Context: Label of the edit box in the weapon enchant condition: the numeric ID of the temporary
+--     enchant. Also a help heading.
 [3536] = "Enchant ID",
 -- 77078c59
+-- Context: Label of the dropdown in the item set condition listing the sets you currently wear.
 [3537] = "Equipped Sets",
 -- 4eb9c836
+-- Context: Label of the edit box in the item set condition: the numeric ID of an item set. Also a
+--     help heading.
 [3538] = "Item Set ID",
 -- 27e95eae
 [3539] = "Matches the bar you are acting through: your own, a vehicle, a possessed (mind controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from Wrath, pet battles only on Retail.",
 -- dd05d0e2
+-- Context: Label of the comparison in the item set condition: number of set pieces equipped. Also a
+--     help heading.
 [3540] = "Pieces",
 -- 4f9a6625
 [3541] = "The game's item set (for example a tier set). Sets you are wearing are offered in the list; the count is taken from your equipped items' metadata and stays unavailable while any of it is still loading.",
@@ -340,30 +579,50 @@ local E = {
 -- 07cc311f
 [3543] = "The temporary enchant on the weapon: a poison, oil, sharpening stone or weapon imbue. The current enchant ID of the selected hand is shown below the field.",
 -- de2d2147
+-- Context: Fallback name for an item set whose name is not known; %d is the set number.
+-- %d #1: %d #1: the item set ID, e.g. 1234
 [3544] = "item set %d",
 -- a693df35
 [3545] = "the number of {set} pieces you have equipped {comparison} {quantity}",
 -- 84463f60
+-- %s #1: %s #1: the action bar or context, e.g. "Main action bar"
 [3546] = "you {{!are|are not}} acting through %s",
 -- c16cbdbc
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: the temporary enchant ID, e.g. "5400"
 [3547] = "your %s weapon {{!has|does not have}} temporary enchant %s",
 -- 9e163ca5
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3548] = "the time remaining on your %s weapon buff",
 -- 6153a726
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3549] = "the number of stacks of your %s weapon buff",
 -- 4320f428
+-- Context: Sentence in weapon speed summaries: first %s is the weapon (main hand, off hand,
+--     ranged), second %s is the comparison, e.g. 'Your main hand weapon attack speed is at least 2
+--     seconds'.
+-- %s #1: %s #1: which weapon, "ranged", "off hand" or "main hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the attack speed or swing time, e.g. "attack speed is less than 2 seconds"
 [3550] = "Your %s weapon %s",
 -- 1f8df0f5
+-- Context: Weapon slot in summaries: the off-hand weapon (lowercase).
 [3551] = "off hand",
 -- c8f1b901
+-- Context: Weapon slot in summaries: the main-hand weapon (lowercase).
 [3552] = "main hand",
 -- c4756181
+-- Context: Quantity compared in the weapon speed summary: how many seconds one swing takes
+--     (lowercase).
 [3553] = "attack speed",
 -- 736e26ef
+-- Context: Label of the comparison in the weapon attack speed condition and its help heading.
 [3554] = "Attack Speed",
 -- d30240f8
+-- Context: Quantity compared in the swing timer summary: the time left until the next swing
+--     (lowercase).
 [3555] = "swing time remaining",
 -- 0f6a6d02
+-- Context: Label of the comparison in the swing timer condition and its help heading.
 [3556] = "Swing Time Remaining",
 -- ec8bc0f2
 [3557] = "Pet Spell History Memory (seconds)",
@@ -392,6 +651,9 @@ local E = {
 -- 51ba09a6
 [3569] = "Uses the native Attack range check when available. Otherwise it uses LibRangeCheck's public interval to distinguish close range from beyond five yards; that estimate does not prove exact melee geometry for every target. An interval spanning the boundary, missing data or restricted data stays unavailable, including under NOT.",
 -- 2c7c2760
+-- Context: Phrase in spell recharge summaries; %s is the spell link, e.g. 'recharge time on
+--     Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3570] = "recharge time on %s",
 -- a407140e
 [3571] = "Seconds until the next spell charge. Full charges and inactive recharge timers report zero. Missing, restricted, or non-charge spell data stays unavailable.",
@@ -404,6 +666,7 @@ local E = {
 -- f347bf5d
 [3575] = "This reference belongs to another talent layout. Selecting a talent explicitly replaces it; viewing does not convert it.",
 -- a08e2044
+-- %s #1: %s #1: the old talent slot number, e.g. 7
 [3576] = "Historical talent slot %s (unavailable)",
 -- d511337a
 [3577] = "This client uses a different talent system. This reference is preserved but cannot be evaluated.",
@@ -412,24 +675,37 @@ local E = {
 -- e014c33d
 [3579] = "A form is chosen by its spell, so the condition keeps working as new forms are learned and on every client language. Any rank of the form matches. The list shows the forms on your stance bar, then your class's other forms on this client. A condition saved by stance bar slot keeps that slot until you choose a form. If the client cannot read the active form, the condition is unavailable, including under NOT.",
 -- 114a5b8b
+-- %s #1: %s #1: the stance bar slot number, e.g. 2
+-- %s #2: %s #2: the name of the stance in that slot, e.g. "Defensive Stance"
 [3580] = "Stance bar slot %s (%s)",
 -- 2eaf81a4
+-- Context: Phrase in cast progress summaries; %s is a unit, e.g. 'target's cast progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3581] = "%s cast progress",
 -- 4df1232e
+-- Context: Phrase in channel progress summaries; %s is a unit, e.g. 'target's channel progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3582] = "%s channel progress",
 -- 4664827f
+-- Context: Label of the comparison in the cast/channel progress conditions: percent completed. Also
+--     a help heading.
 [3583] = "Progress",
 -- 8b7f75d4
 [3584] = "How much of the current cast of {unit} is done, from 0% when it starts to 100% when it completes. It follows haste and pushback, because it is measured against the cast's own start and end. If the unit is not casting, this condition is not successful, whatever the operator; if the cast's times cannot be read, it is unavailable, including under NOT.",
 -- 0a64e269
 [3585] = "How much of the current channel of {unit} is done, from 0% when it starts to 100% when it ends. Ticks are evenly spaced through a channel, so tick N of a K-tick channel lands at N/K whatever your haste: to clip Mind Flay (3 ticks) after its second tick, use at least 66%. Pushback shortens a channel and the progress follows it. If the unit is not channeling, this condition is not successful, whatever the operator; if the channel's times cannot be read, it is unavailable, including under NOT.",
 -- 51b0dd92
+-- Context: Fallback name for a talent tree that has no known name; %s is its number.
+-- %s #1: %s #1: the talent tree number, e.g. 2
 [3586] = "Talent tree %s",
 -- d695f0be
 [3587] = "This client does not expose a Classic talent-tree layout. The saved tree reference is preserved.",
 -- 87d6a3d4
+-- Context: Label of the dropdown in the talent condition for choosing a Classic talent tree (e.g.
+--     Arms, Fury, Protection).
 [3588] = "Talent tree",
 -- fd027208
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3589] = "the number of points spent in %s",
 -- 7661e068
 [3590] = "Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported.",
@@ -446,86 +722,139 @@ local E = {
 -- f889e499
 [3596] = "Item Available checks the required level and enabled item cooldown. An active cooldown qualifies only when it ends with the readable global cooldown. This condition does not bypass the action's implicit ownership, usability and range checks.",
 -- e22e898a
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [3597] = "%s totem {{!is|is not}} active",
 -- b0cc0e08
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your target" or "closer than 10 yards"
 [3598] = "%s {{!are|are not}} %s",
 -- 93814226
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3599] = "%s {{!are|are not}} currently casting",
 -- 7e8e3a71
 [3600] = "{unit} {{!are|are not}} currently casting {spell}",
 -- b5ad374e
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3601] = "%s {{!are|are not}} currently channeling",
 -- e2a66ca1
 [3602] = "{unit} {{!are|are not}} currently channeling {spell}",
 -- e30aee86
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3603] = "%s {{!has|does not have}} a debuff of type %s",
 -- abd3a229
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3604] = "%s {{!has|does not have}} a debuff you applied of type %s",
 -- c12a1e93
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3605] = "%s {{!has|does not have}} a stealable buff",
 -- 8cf6f25f
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3606] = "%s {{!have|do not have}} a stealable buff",
 -- ec3d55c7
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3607] = "%s {{!have|do not have}} a debuff of type %s",
 -- 5a1ec624
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3608] = "%s {{!have|do not have}} a debuff you applied of type %s",
 -- f06faf9e
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your focus target" or "closer than 10 yards"
 [3609] = "%s {{!is|is not}} %s",
 -- 9f491513
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the class name, e.g. "Mage"
 [3610] = "%s class {{!is|is not}} %s",
 -- 19a6a0f4
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the creature type, e.g. "Undead"
 [3611] = "%s creature type {{!is|is not}} %s",
 -- f7f4eee9
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the unit classification, e.g. "Rare Elite"
 [3612] = "%s classification {{!is|is not}} %s",
 -- 7d66ae03
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 [3613] = "%s {{!is|is not}} active",
 -- 8f9c8fcf
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3614] = "%s {{!is|is not}} active or pending",
 -- ad8a0ce2
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3615] = "%s {{!is|is not}} active where %s",
 -- fb5dc62c
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3616] = "%s {{!is|is not}} available",
 -- cb0383c3
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3617] = "%s {{!is|is not}} beyond melee range",
 -- 309913f6
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3618] = "%s {{!are|are not}} beyond melee range",
 -- 03733067
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3619] = "%s {{!is|is not}} currently casting",
 -- a1cfb513
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3620] = "%s {{!is|is not}} currently channeling",
 -- 31089dcd
 [3621] = "{unit} {{!is|is not}} currently casting {spell}",
 -- 99f8dade
 [3622] = "{unit} {{!is|is not}} currently channeling {spell}",
 -- 31ab9f8e
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3623] = "%s {{!is|is not}} immune to %s",
 -- 872345c0
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3624] = "%s {{!are|are not}} immune to %s",
 -- 5b36d6f3
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [3625] = "%s role {{!is|is not}} %s",
 -- 72a91bd3
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3626] = "%s {{!is|is not}} in range",
 -- a9486ed1
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3627] = "%s {{!is|is not}} sometimes immune to %s",
 -- f4b3cec6
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3628] = "%s {{!are|are not}} sometimes immune to %s",
 -- 893b04d1
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [3629] = "%s {{!will|will not}} run",
 -- 29755793
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3630] = "%s channeled spell {{!is|is not}} interruptible",
 -- 372c957d
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3631] = "%s spell {{!is|is not}} interruptible",
 -- 970cadca
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Fireball (spell ID 133)"
 [3632] = "You {{!know|do not know}} %s",
 -- 6306f609
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3633] = "Your %s weapon {{!is|is not}} enchanted",
 -- 715d2919
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Bite (spell ID 17253)"
 [3634] = "Your pet {{!knows|does not know}} %s",
 -- a0f98b32
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [3635] = "you {{!are|are not}} at least %s on %s",
 -- fa0b7d5f
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [3636] = "you {{!are|are not}} in %s",
 -- aaf9e864
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3637] = "your instance type {{!is|is not}} %s",
 -- 30f15e23
 [3638] = "you {{!are|are not}} in a group",
@@ -540,24 +869,33 @@ local E = {
 -- 9993a0fe
 [3643] = "you {{!are|are not}} stealthed",
 -- 3216151b
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [3644] = "you {{!are|are not}} talented in %s",
 -- 0d61ee4d
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [3645] = "you {{!have|do not have}} %s active",
 -- 568fa9d4
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3646] = "you {{!have|do not have}} a %s totem active where %s",
 -- 06e77f0d
 [3647] = "you {{!have|do not have}} a pet",
 -- 8be0937e
 [3648] = "you {{!have|do not have}} a pet named {name}",
 -- 011430be
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3649] = "your primary talent tree {{!is|is not}} %s",
 -- 1ebc1187
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [3650] = "the zone's PVP status {{!is|is not}} %s",
 -- 0bcca767
 [3651] = "{{!in|not in}} {zone}",
 -- c14661e2
+-- Context: Name of the measure compared in the combat-time condition summary: how long the player
+--     has been in combat (followed by 'is at least 10 seconds').
 [3652] = "Time in combat",
 -- 33629208
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3653] = "%s {{!is|is not}} auto-repeating",
 -- 9544d41a
 [3654] = "Tests whether the selected spell is currently auto-repeating, such as Shoot or Auto Shot. This is different from a spell being current or queued: a queued cast alone does not satisfy this condition. Unavailable client observations remain unavailable even when negated.",
@@ -588,12 +926,14 @@ local E = {
 -- b9151b16
 [3667] = "Assisted Combat {{!is|is not}} suggesting a spell",
 -- 43bf497e
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3668] = "Assisted Combat {{!suggests|does not suggest}} %s",
 -- 6c9594a9
 [3669] = "Matches when Blizzard's Assisted Combat suggests this spell as the next cast. An override counts as its base spell, and the base spell as its override. With no spell chosen, matches whenever Assisted Combat suggests anything.",
 -- 44e850ce
 [3670] = "Assisted Combat exists on Retail (and is declared on Forever). Where the game does not offer it, for this character or specialization, or the suggestion cannot be read, this condition is unavailable rather than false, including under NOT.",
 -- 32c737f7
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3671] = "%s {{!is|is not}} in Blizzard's Assisted Combat rotation",
 -- ae726224
 [3672] = "Matches when this spell is one Blizzard's Assisted Combat can suggest for your current specialization. Its current override and its base spell count too. Use it to highlight what Assisted Combat leaves out, for example a cooldown that is not in the set.",
@@ -606,26 +946,45 @@ local E = {
 -- 65331c0d
 [3676] = "Unavailable only where the client has no Assisted Combat API or its answer cannot be read, including under NOT.",
 -- 6f6ccc8f
+-- Context: Fallback name for a rune with no known spell name; %s is the spell ID (Season of
+--     Discovery rune condition).
+-- %s #1: %s #1: the spell ID of the rune, e.g. 400000
 [3677] = "rune spell %s",
 -- 7bf70ccc
+-- Context: Fallback name for a rune with no known name; %s is the rune ID (Season of Discovery rune
+--     condition).
+-- %s #1: %s #1: the rune number, e.g. 12
 [3678] = "rune %s",
 -- 54791384
+-- %s #1: %s #1: the name of the engraved rune, e.g. "Rune of the Fire"
 [3679] = "you {{!have|do not have}} the rune %s engraved",
 -- e999d0a1
+-- Context: Placeholder in the engraved-rune summary shown until a rune is chosen; keep the angle
+--     brackets.
 [3680] = "<rune>",
 -- 4e0d82c9
 [3681] = "Your runes have not loaded yet. Reopen this condition shortly, or enter an ID below.",
 -- 1327b43b
 [3682] = "This character cannot engrave runes. A rune entered by ID below is kept, and is unavailable here.",
 -- 7294ffa8
+-- Context: Fallback name for an equipment slot group in the rune condition's slot dropdown; %d is
+--     the slot number.
+-- %d #1: %d #1: the equipment slot category number, e.g. 5
 [3683] = "Slot %d",
 -- 1eccb682
+-- Context: Label of the dropdown in the rune condition: the equipment slot (chest, hands, legs ...)
+--     the rune is engraved on.
 [3684] = "Equipment Slot",
 -- f55862c6
+-- Context: Label of the dropdown in the rune condition: which rune. Also a help heading.
 [3685] = "Rune",
 -- 577a2fa4
+-- Context: Label of the edit box in the rune condition: the ID of a spell the rune teaches. Also
+--     part of a help heading.
 [3686] = "Rune Spell ID",
 -- b84ca6e3
+-- Context: Label of the edit box in the rune condition: the rune's own numeric ID, for runes that
+--     teach no spell. Also part of a help heading.
 [3687] = "Rune ID",
 -- a698651e
 [3688] = "Matches when a Season of Discovery rune is engraved on one of your equipped items. Passive runes count too, which a known-spell test cannot see.",
@@ -636,32 +995,53 @@ local E = {
 -- 868afb4d
 [3691] = "Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition.",
 -- 2cfaca8e
+-- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
 [3692] = "Your talents cannot be listed right now (%s). A node ID entered below is kept and evaluated.",
 -- 0d2b4c68
 [3693] = "Talents can be listed only for your own class. A node ID entered below is kept and evaluated.",
 -- 7417e36a
+-- Context: Group heading in the talent dropdown: talents shared by all specializations of the
+--     class.
 [3694] = "Class talents",
 -- 9900921e
+-- Context: Group heading in the talent dropdown: talents of the chosen specialization only.
 [3695] = "Specialization talents",
 -- 6eaab468
 [3696] = "Class and specialization talents",
 -- 7d26d446
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3697] = "Hero talents: %s",
 -- cb9e8664
+-- Context: Label of the dropdown in the Classic grid talent condition: which row (tier) of talents.
 [3698] = "Tier",
 -- 1ba2a4e3
+-- Context: Entry in the talent tier dropdown; first %d is the tier number, second %d the character
+--     level at which it unlocks.
+-- %d #1: %d #1: the talent tier, 1 to 6, e.g. 3
+-- %d #2: %d #2: the character level at which the tier unlocks, e.g. 30
 [3699] = "Tier %d (level %d)",
 -- 8dfbb734
+-- Context: Talent name in the talent dropdown when the talent is one of two or more choices at a
+--     node; %s is the talent name.
+-- %s #1: %s #1: the name of a talent that is one of several choices on its node, e.g. "Improved Blink"
 [3700] = "%s (choice)",
 -- e8871b70
+-- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3701] = "Talents",
 -- d6f5d4a1
+-- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
 [3702] = "Talent Node ID",
 -- 3e359295
+-- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
+--     choice node.
 [3703] = "Choice Entry ID",
 -- 986b4c09
+-- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
+--     12345'.
+-- %s #1: %s #1: the talent node ID, e.g. 82000
 [3704] = "talent node %s",
 -- 905d8751
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3705] = "the number of ranks in %s",
 -- ddb10d64
 [3706] = "Retail and Forever compare the rank of a talent in your active loadout. Pick it from the talents of the rotation's specialization (the Specialization list shows another specialization's, outside combat), or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation. A choice node's entry has rank zero unless it is the chosen one, a hero talent outside your chosen hero tree has rank zero, and so does a talent of a specialization you are not playing. A talent picked from the list also remembers its spell, and is found again by it if Blizzard renumbers the talent tree. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT.",
@@ -674,74 +1054,117 @@ local E = {
 -- 252b33d6
 [3710] = "Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees.",
 -- bd69e217
+-- Context: Specialization name (Monk, tank). Used in the specialization condition.
 [3711] = "Brewmaster",
 -- de575836
+-- Context: Specialization name (Monk, melee damage). Used in the specialization condition.
 [3712] = "Windwalker",
 -- 7b362214
+-- Context: Specialization name (Monk, healer). Used in the specialization condition.
 [3713] = "Mistweaver",
 -- 24983899
+-- Context: Specialization name (Druid, cat form damage). Used in the specialization condition.
 [3714] = "Feral",
 -- 1d228f25
+-- Context: Specialization name (Druid, bear form tank). Used in the specialization condition.
 [3715] = "Guardian",
 -- e1304437
+-- Context: Specialization name (Demon Hunter, damage). Used in the specialization condition.
 [3716] = "Havoc",
 -- f67321da
+-- Context: Specialization name (Demon Hunter, tank). Used in the specialization condition.
 [3717] = "Vengeance",
 -- 7e6e6092
+-- Context: Specialization name (Demon Hunter, third specialization). Used in the specialization
+--     condition.
 [3718] = "Devourer",
 -- e1a21b9f
+-- Context: Specialization name (Evoker, damage). Used in the specialization condition.
 [3719] = "Devastation",
 -- 9ca6fa0d
+-- Context: Specialization name (Evoker, healer). Used in the specialization condition.
 [3720] = "Preservation",
 -- 9647da85
+-- Context: Specialization name (Evoker, support damage). Used in the specialization condition.
 [3721] = "Augmentation",
 -- 679dfacd
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in one hand.
 [3722] = "One-Handed Axes",
 -- 763d2d16
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in two hands.
 [3723] = "Two-Handed Axes",
 -- f09abd25
+-- Context: Weapon type name (item subclass), plural: bows.
 [3724] = "Bows",
 -- 1105a900
+-- Context: Weapon type name (item subclass), plural: guns.
 [3725] = "Guns",
 -- 23a81b2e
+-- Context: Weapon type name (item subclass), plural: maces held in one hand.
 [3726] = "One-Handed Maces",
 -- 87982fd9
+-- Context: Weapon type name (item subclass), plural: maces held in two hands.
 [3727] = "Two-Handed Maces",
 -- d3efea7f
+-- Context: Weapon type name (item subclass), plural: polearms.
 [3728] = "Polearms",
 -- db31cc85
+-- Context: Weapon type name (item subclass), plural: swords held in one hand.
 [3729] = "One-Handed Swords",
 -- 80c5ae37
+-- Context: Weapon type name (item subclass), plural: swords held in two hands.
 [3730] = "Two-Handed Swords",
 -- 43176c16
+-- Context: Weapon type name (item subclass), plural: warglaives.
 [3731] = "Warglaives",
 -- 62105c37
+-- Context: Weapon type name (item subclass), plural: staves.
 [3732] = "Staves",
 -- bd0d3b19
+-- Context: Weapon type name (item subclass), plural: fist weapons.
 [3733] = "Fist Weapons",
 -- 72d13cd4
+-- Context: Weapon type name (item subclass), plural: daggers.
 [3734] = "Daggers",
 -- 5cc449eb
+-- Context: Weapon type name (item subclass): thrown weapons.
 [3735] = "Thrown",
 -- 806891f5
+-- Context: Weapon type name (item subclass), plural: crossbows.
 [3736] = "Crossbows",
 -- 7edc4dae
+-- Context: Weapon type name (item subclass), plural: wands.
 [3737] = "Wands",
 -- b9d0aded
+-- Context: Weapon type name (item subclass), plural: fishing poles.
 [3738] = "Fishing Poles",
 -- d041f0fe
+-- Context: Placeholder in the specialization summary shown until a specialization is chosen; keep
+--     the angle brackets.
 [3739] = "<specialization>",
 -- 077ba255
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
 [3740] = "your specialization {{!is|is not}} %s",
 -- 79689782
+-- Context: Label of the dropdown in the weapon type condition: which equipment slot is checked.
 [3741] = "Slot",
 -- d72c5ffe
+-- Context: Placeholder in the weapon type summary shown until a slot is chosen; keep the angle
+--     brackets.
 [3742] = "<slot>",
 -- ecdfbb4c
+-- Context: Placeholder in the weapon type summary shown until a weapon type is chosen; keep the
+--     angle brackets.
 [3743] = "<weapon type>",
 -- cd3e4c2f
+-- Context: Fallback name for a weapon type that has no known name; %d is the item subclass number.
+-- %d #1: %d #1: the weapon type number, used when the game gives no name, e.g. 7
 [3744] = "weapon type %d",
 -- 5e915dd9
+-- %s #1: %s #1: the equipment slot, e.g. "main hand"
+-- %s #2: %s #2: the kind of item or weapon type, e.g. "Two-Handed Sword" or "Shield"
 [3745] = "your %s slot {{!holds|does not hold}} %s",
 -- da3a44eb
 [3746] = "you {{!are|are not}} mounted",
@@ -758,10 +1181,16 @@ local E = {
 -- f623619b
 [3752] = "a boss encounter {{!is|is not}} in progress",
 -- 6a7230fc
+-- Context: Fallback name for a dungeon or raid difficulty without a known name; %d is the
+--     difficulty ID.
+-- %d #1: %d #1: the difficulty ID, used when the game gives no name, e.g. 14
 [3753] = "difficulty %d",
 -- 0dc49fb5
+-- Context: Label of the edit box in the instance condition: the numeric ID of the instance.
 [3754] = "Instance ID",
 -- 2454a15f
+-- %s #1: %s #1: the instance name, e.g. "Molten Core"
+-- %d #2: %d #2: the instance ID, e.g. 409
 [3755] = "You are in %s (instance ID %d).",
 -- f9099ef5
 [3756] = "The instance you are in cannot be read right now.",
@@ -772,78 +1201,116 @@ local E = {
 -- be48718c
 [3759] = "the number of players in your group",
 -- 567825fa
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3760] = "the number of group members whose assigned role is %s",
 -- 63780dda
 [3761] = "the number of dead or ghost members of your group",
 -- f81258cf
+-- Context: Fallback name for a hero talent tree that has no known name; %d is its numeric ID.
+-- %d #1: %d #1: the hero talent tree ID, e.g. 31
 [3762] = "hero talent tree %d",
 -- 9fb8f548
 [3763] = "you {{!have|have not}} chosen a hero talent tree",
 -- 48f1d066
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3764] = "your hero talent tree {{!is|is not}} %s",
 -- d18f5f74
+-- Context: Placeholder in the hero talent tree summary shown until a tree is chosen; keep the angle
+--     brackets.
 [3765] = "<hero talent tree>",
 -- 613b90e8
 [3766] = "Any hero talent tree",
 -- f55aa333
 [3767] = "Hero talent tree ID (blank for any)",
 -- dacd0c2e
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3768] = "%s {{!is|is not}} glowing with a proc",
 -- 1f8204e7
+-- Context: Label of the dropdown in the item cooldown condition: use a trinket slot instead of a
+--     named item. Also a help heading.
 [3769] = "Trinket Slot",
 -- a088a328
+-- %s #1: %s #1: the trinket slot, e.g. "Trinket 1"
 [3770] = "the cooldown on your %s",
 -- a1b86dcf
+-- Context: Placeholder in the item cooldown summary shown until a trinket slot is chosen; keep the
+--     angle brackets.
 [3771] = "<trinket slot>",
 -- e949e9a1
+-- %s #1: %s #1: the pet mood, e.g. "Happy"
 [3772] = "your pet {{!is|is not}} %s",
 -- ae72b05a
+-- Context: Placeholder in the Hunter pet happiness summary shown until a mood is chosen; keep the
+--     angle brackets.
 [3773] = "<mood>",
 -- d203280c
 [3774] = "the damage in your Stagger pool",
 -- 89eb5572
 [3775] = "your Stagger as a percent of your maximum health",
 -- 88f6385c
+-- Context: A percentage in a summary; %s is the number, e.g. '50 percent'.
+-- %s #1: %s #1: the percentage number, e.g. 40
 [3776] = "%s percent",
 -- 132e5dce
 [3777] = "As a percent of maximum health",
 -- 1e9ed579
 [3778] = "The damage waiting in your Stagger pool, or the same as a percent of your maximum health when the box is ticked.",
 -- 551d172c
+-- %s #1: %s #1: the Eclipse direction, e.g. "Lunar" or "Solar"
 [3779] = "your Eclipse bar {{!is|is not}} heading toward %s",
 -- cc6d2f75
+-- Context: Placeholder in the Eclipse summary shown until a direction is chosen; keep the angle
+--     brackets.
 [3780] = "<Eclipse>",
 -- acd890d7
+-- Context: Name of the measure in the Eclipse summary: the Eclipse bar value (lowercase; follows
+--     'is at least').
 [3781] = "your Eclipse energy",
 -- 3080873d
 [3782] = "The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar Eclipse).",
 -- a3b50c47
+-- Context: Label of the dropdown in the player state condition: which state (mounted, swimming
+--     ...).
 [3783] = "State",
 -- ec9b10a4
+-- Context: Option in the player state dropdown: the player is dead.
 [3784] = "Dead",
 -- df1bc498
+-- Context: Option in the player state dropdown: the player has released and is a ghost.
 [3785] = "Ghost",
 -- 4d3a12b0
 [3786] = "you {{!are|are not}} dead",
 -- 0cc73293
 [3787] = "you {{!are|are not}} a ghost",
 -- cf0dba5a
+-- %s #1: %s #1: the player state, e.g. "mounted" (this generic fallback shows a placeholder such as "<state>")
 [3788] = "you {{!are|are not}} %s",
 -- 1ff78f4d
+-- Context: Placeholder in the player state summary shown until a state is chosen; keep the angle
+--     brackets.
 [3789] = "<state>",
 -- fd369188
+-- Context: Placeholder in the group count summary shown until a measure is chosen; keep the angle
+--     brackets.
 [3790] = "<measure>",
 -- ebf940f2
+-- Context: Label of the dropdown in the Eclipse condition: whether to compare the bar's energy or
+--     its direction.
 [3791] = "Measure",
 -- 9c8a9579
+-- Context: Option in the Eclipse measure dropdown: the direction the bar is moving; the other
+--     option is Energy.
 [3792] = "Direction",
 -- b675e8c2
 [3793] = "Players in the group",
 -- ca604d55
+-- Context: Option in the group count dropdown: players with the tank role (plural).
 [3794] = "Tanks",
 -- 7ad6d8d0
+-- Context: Option in the group count dropdown: players with the healer role (plural).
 [3795] = "Healers",
 -- 552833e2
+-- Context: Option in the group count dropdown: players with the damage role (plural).
 [3796] = "Damage dealers",
 -- 96362b07
 [3797] = "Dead or ghost members",
@@ -852,28 +1319,42 @@ local E = {
 -- 98436f9a
 [3799] = "the percent of your group that is dead or a ghost",
 -- 50e66626
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3800] = "the percent of your group whose assigned role is %s",
 -- 389a3660
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3801] = "the percent of your group counted as %s",
 -- 622e5828
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3802] = "the number of group members counted as %s",
 -- 658bb8cf
+-- Context: Weapon slot in summaries: the ranged weapon (lowercase).
 [3803] = "ranged",
 -- 80c798fc
+-- Context: Part of the instance summary; %s is the instance type, e.g. 'type Dungeon'.
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3804] = "type %s",
 -- 78aee9bb
+-- Context: Part of the instance summary; %s is the difficulty name, e.g. 'difficulty Heroic'.
+-- %s #1: %s #1: the difficulty name, e.g. "Heroic"
 [3805] = "difficulty %s",
 -- 5e900d17
+-- Context: Part of the instance summary; %s is the instance ID number, e.g. 'ID 33'.
+-- %s #1: %s #1: the instance ID, e.g. 409
 [3806] = "ID %s",
 -- 08c231ad
+-- %s #1: %s #1: the instance details separated by commas, e.g. "type Raid, difficulty Heroic, ID 409"
 [3807] = "you {{!are|are not}} in an instance (%s)",
 -- 364397ab
+-- Context: Option at the top of the instance difficulty dropdown: do not restrict by difficulty.
 [3808] = "Any difficulty",
 -- bd945e03
 [3809] = "None (use the item above)",
 -- 02de34c4
 [3810] = "A number of players, or a percent of the whole group when the box is ticked. You are always part of the group and of every count you fit.",
 -- a8b3d1b8
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3817] = "Number of %s in combat within %s yards",
 -- 42f0cd37
 -- Context: Choice in the mark dropdown of the Raid Mark condition: the unit carries any raid

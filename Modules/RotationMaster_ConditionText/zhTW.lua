@@ -14,8 +14,13 @@ addon.translation = {
 -- d3742617 English: the number of {item} you are carrying {comparison} {quantity}
 [3393] = "你攜帶的{item}數量{comparison}{quantity}",
 -- ee0ed821 English: {stat} {comparison} {value}
+-- Context: Sentence template for the summary of an Extended Character Stats condition. The words in
+--     {braces} are filled in and must stay unchanged: {stat} the statistic name, {comparison} e.g.
+--     'is at least', {value} the number.
 [3394] = "{stat}{comparison}{value}",
 -- 9aabc8c2 English: {stat} {comparison} {value}%
+-- Context: Same template as the previous one but the value is a percentage; the '%' after {value}
+--     stays.
 [3395] = "{stat}{comparison}{value}%",
 -- 6be74ff6 English: The number of {members} members{pets} within {distance} yards of {unit} whose
 --     health deficit {qualifier} {threshold} {comparison} {value}
@@ -54,12 +59,21 @@ addon.translation = {
 --     yards of {unit} {comparison} {threshold}%
 [3407] = "{unit} {distance} 碼內{members}成員{pets}的{operation}法力百分比{comparison}{threshold}%",
 -- e2f99617 English: Own Buff
+-- Context: Checkbox in the buff condition editor: only count buffs that you cast yourself. Also a
+--     help heading.
 [3408] = "自身增益",
 -- 6a63971b English: Own Debuff
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you applied yourself.
+--     Also a help heading.
 [3409] = "自身減益",
 -- c83645d3 English: Dispellable
+-- Context: Checkbox in the debuff condition editor: only count debuffs that you can dispel. Also a
+--     help heading.
 [3410] = "可驅散",
 -- fe483cd0 English: your own %s
+-- Context: Part of a buff or debuff summary: %s is the buff/debuff name, giving 'your own Renew'.
+--     Used when the 'only my own' option is on.
+-- %s #1: %s #1: the buff or debuff name, e.g. "Power Word: Fortitude" (the sentence reads "your own" followed by it)
 [3411] = "你自己的%s",
 -- fd008b93 English: {unit} {{!have|do not have}} {aura}
 [3412] = "{unit}{{!擁有|沒有}}{aura}",
@@ -72,237 +86,454 @@ addon.translation = {
 -- b6de011b English: the number of stacks of {aura} on {unit} {comparison} {quantity}
 [3416] = "{unit}身上{aura}的層數{comparison}{quantity}",
 -- 0a2d00cc English: that is dispellable
+-- Context: Phrase appended to a debuff summary when the Dispellable option is on, e.g. '... of type
+--     Magic that is dispellable'.
 [3417] = "可驅散的",
 -- 0021d5fe English: Enemy
+-- Context: Checkbox in the number-of-units-in-range condition: count enemies (unchecked counts
+--     non-enemies). Also a help heading.
 [3418] = "敵人",
 -- 974b3bbb English: <level>
+-- Context: Placeholder in a level-condition summary shown until a level is entered; keep the angle
+--     brackets.
 [3419] = "<等級>",
 -- 6a59c476 English: %s's level
+-- Context: Phrase in a level-condition summary, %s is a unit's name or description: 'the target's
+--     level'. The apostrophe-s makes it possessive.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [3420] = "%s的等級",
 -- d7e82e52 English: your level
+-- Context: Phrase in a level-condition summary for the player's own level; the alternative form
+--     uses a unit.
 [3421] = "你的等級",
 -- 8e99cd98 English: Relative
+-- Context: Checkbox in the unit level condition: the entered level is relative to the player's own
+--     level. Also a help heading.
 [3422] = "相對",
 -- c35070bc English: Resistance
+-- Context: Label of the comparison in the resistance condition (the amount of resistance), and its
+--     help heading.
 [3423] = "抗性",
 -- e16703f1 English: Spell School
+-- Context: Label of the dropdown in the resistance condition: which school of magic (Fire, Frost
+--     ...). Also a help heading.
 [3424] = "法術類型",
 -- a4d50fb8 English: Partial
+-- Context: Checkbox in the resistance condition: count partial immunity too. Also a help heading.
 [3425] = "部分",
 -- a4130d7d English: Rank
+-- Context: Label of the comparison in the talent condition: the number of points in a talent.
 [3426] = "等級",
 -- 55ca6cfd English: %s or %d others
+-- Context: Item list text: %s is the first item, %d how many other items there are, giving 'Item or
+--     3 others'.
+-- %s #1: %s #1: the first item, as a link or name, e.g. "[Healthstone]"
+-- %d #2: %d #2: how many other items are in the list, e.g. 2
 [3427] = "%s或其他 %d 個",
 -- 7d538635 English: a %s item set item
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [3428] = "%s物品組中的物品",
 -- 7db896a5 English: time until %s health reaches %s%%
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [3429] = "%s生命力降至 %s%% 所需的時間",
 -- d7514051 English: time until %s health reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [3430] = "%s生命力降至 %s 所需的時間",
 -- 9db8edbd English: time until %s health deficit reaches %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the health deficit (missing health) that is waited for, e.g. 20000
 [3431] = "%s損失的生命力達到 %s 所需的時間",
 -- 54bc9c29 English: including pets
+-- Context: Phrase added to a unit-count summary when pets are included, shown in parentheses:
+--     'including pets'.
 [3432] = "包括寵物",
 -- 17b8d67a English: <unit>
+-- Context: Placeholder in condition summaries shown until a unit is chosen; keep the angle
+--     brackets.
 [3433] = "<單位>",
 -- f5c3527b English: <action>
+-- Context: Placeholder in condition summaries shown until an action is chosen (e.g. a kind of
+--     action performed); keep the angle brackets.
 [3434] = "<動作>",
 -- de16c890 English: <item>
+-- Context: Placeholder in condition summaries shown until an item is chosen; keep the angle
+--     brackets.
 [3435] = "<物品>",
 -- 92c7c398 English: <role>
+-- Context: Placeholder in condition summaries shown until a role (tank/healer/damage) is chosen;
+--     keep the angle brackets.
 [3436] = "<職責>",
 -- 5eacbf77 English: <class>
+-- Context: Placeholder in condition summaries shown until a class is chosen; keep the angle
+--     brackets.
 [3437] = "<職業>",
 -- 1107a6db English: <creature type>
+-- Context: Placeholder in condition summaries shown until a creature type is chosen; keep the angle
+--     brackets.
 [3438] = "<生物類型>",
 -- 763c736c English: <classification>
+-- Context: Placeholder in condition summaries shown until a classification (normal, elite, boss
+--     ...) is chosen; keep the angle brackets.
 [3439] = "<分類>",
 -- 32a8619d English: <talent>
+-- Context: Placeholder in condition summaries shown until a talent is chosen; keep the angle
+--     brackets.
 [3440] = "<天賦>",
 -- 226723c3 English: <talent tree>
+-- Context: Placeholder in condition summaries shown until a talent tree is chosen; keep the angle
+--     brackets.
 [3441] = "<天賦樹>",
 -- 903fbb57 English: <glyph>
+-- Context: Placeholder in condition summaries shown until a glyph is chosen; keep the angle
+--     brackets.
 [3442] = "<雕紋>",
 -- cb9c16d7 English: <rune type>
+-- Context: Placeholder in condition summaries shown until a rune type (Death Knight) is chosen;
+--     keep the angle brackets.
 [3443] = "<符文類型>",
 -- 9137bf37 English: <buff>
+-- Context: Placeholder in condition summaries shown until a buff is chosen; keep the angle
+--     brackets.
 [3444] = "<增益>",
 -- 729e2db0 English: <debuff>
+-- Context: Placeholder in condition summaries shown until a debuff is chosen; keep the angle
+--     brackets.
 [3445] = "<減益>",
 -- 985669df English: <element>
+-- Context: Placeholder in totem condition summaries shown until a totem element is chosen; keep the
+--     angle brackets.
 [3446] = "<元素>",
 -- ebb7e176 English: <totem>
+-- Context: Placeholder in totem condition summaries shown until a totem is chosen; keep the angle
+--     brackets.
 [3447] = "<圖騰>",
 -- 8b998a99 English: <threat>
+-- Context: Placeholder in threat condition summaries shown until a threat level is chosen; keep the
+--     angle brackets.
 [3448] = "<威脅值>",
 -- 0316e1e6 English: <form>
+-- Context: Placeholder in the shapeshift condition summary shown until a form is chosen; keep the
+--     angle brackets.
 [3449] = "<形態>",
 -- 22cc14cd English: <zone>
+-- Context: Placeholder in the zone condition summary shown until a zone name is entered; keep the
+--     angle brackets.
 [3450] = "<區域>",
 -- 7be59ec0 English: <name>
+-- Context: Placeholder in the pet-name condition summary shown until a name is entered; keep the
+--     angle brackets.
 [3451] = "<名稱>",
 -- 131a415a English: <distance>
+-- Context: Placeholder in distance-based condition summaries shown until a distance is entered;
+--     keep the angle brackets.
 [3452] = "<距離>",
 -- b0b287ea English: <quantity>
+-- Context: Placeholder in item-count and item-set-count summaries shown until a number is entered;
+--     keep the angle brackets.
 [3453] = "<數量>",
 -- 5cf485b5 English: <school>
+-- Context: Placeholder in resistance condition summaries shown until a spell school is chosen; keep
+--     the angle brackets.
 [3454] = "<類型>",
 -- 6327939f English: <control type>
+-- Context: Placeholder in the loss-of-control summary shown until a control type (stun, fear ...)
+--     is chosen; keep the angle brackets.
 [3455] = "<失控類型>",
 -- e5cd35fd English: <operation>
+-- Context: Placeholder in group health summaries shown until a math operation (average, lowest ...)
+--     is chosen; keep the angle brackets.
 [3456] = "<運算>",
 -- be607902 English: <stat>
+-- Context: Placeholder in stat condition summaries shown until a statistic is chosen; keep the
+--     angle brackets.
 [3457] = "<屬性>",
 -- e31b37e6 English: %s with %s
+-- Context: Summary sentence for the health forecast condition: first %s is the comparison ('time
+--     until your health reaches 30% is at most 5 seconds'), second %s is the burn-rate mode (e.g.
+--     'both' or a trend setting).
+-- %s #1: %s #1: the comparison sentence about the time until the health target is reached, e.g. "time until your target's health reaches 30% is less than 10 seconds"
+-- %s #2: %s #2: the burn-rate mode, e.g. "both" or "recent" (translated)
 [3458] = "%s，%s",
 -- 0a09d74b English: the number of talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree, e.g. "Arcane"
 [3459] = "%s的天賦點數（%s）",
 -- 3155a253 English: %s resistance to %s
+-- Context: Phrase in the resistance summary: first %s is a unit (possessive, 'your'), second %s is
+--     the school, e.g. 'your resistance to Fire'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [3460] = "%s對%s的抗性",
 -- 0f044feb English: Operation
+-- Context: Label of the dropdown in the group health condition and its help heading: the math
+--     operation (average, lowest ...).
 [3461] = "運算",
 -- 37bac495 English: Count
+-- Context: Label of the comparison in the class count condition (how many party/raid members) and
+--     its help heading.
 [3462] = "計數",
 -- 822bab8d English: Quantity
+-- Context: Label of the comparison in the item-in-bags condition: how many of the item are carried.
+--     Also a help heading.
 [3463] = "數量",
 -- 498024de English: Same Group
+-- Context: Checkbox in the units-in-range conditions: only count units in your own raid group. Also
+--     a help heading.
 [3464] = "同一隊伍",
 -- f56f56f0 English: Include Pets
+-- Context: Checkbox in the units-in-range conditions: also count pets. Also a help heading.
 [3465] = "包括寵物",
 -- 0417caa6 English: %s health
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'your health'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3466] = "%s生命力",
 -- d3e6835a English: %s health deficit
+-- Context: Phrase in health condition summaries; %s is whose health, e.g. 'target's health deficit'
+--     (how much health is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3467] = "%s損失的生命力",
 -- 0b7f509c English: %s mana
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3468] = "%s法力",
 -- c26c9d56 English: %s mana deficit
+-- Context: Phrase in mana condition summaries; %s is whose mana, e.g. 'your mana deficit' (how much
+--     mana is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3469] = "%s損失的法力",
 -- 38e9ce41 English: %s power
+-- Context: Phrase in power condition summaries (rage, energy, etc.); %s is whose power, e.g. 'your
+--     power'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3470] = "%s能量",
 -- 8e8bafed English: %s power deficit
+-- Context: Phrase in power condition summaries; %s is whose power, e.g. 'your power deficit' (how
+--     much is missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3471] = "%s能量缺口",
 -- ee7787cd English: %s point total
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point total'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3472] = "%s點數總計",
 -- 30f011ad English: %s point deficit
+-- Context: Phrase in point-resource condition summaries (combo points and similar); %s is whose
+--     points, e.g. 'your point deficit' (how many are missing).
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3473] = "%s點數缺口",
 -- 309b1607 English: Rune Type
+-- Context: Label of the dropdown in the Death Knight rune condition: which kind of rune. Also a
+--     help heading.
 [3474] = "符文類型",
 -- 4a6d5ef7 English: the number of %s runes available
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [3475] = "%s可用符文數",
 -- 02c78980 English: cooldown on your next %s rune
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [3476] = "你下一個%s符文的冷卻",
 -- 2bfe8a1c English: the %s
+-- Context: Wraps a cooldown or recharge comparison in the summary: %s is the comparison text,
+--     giving 'the cooldown on X is at most 5 seconds'.
+-- %s #1: %s #1: a comparison about a cooldown, charges or recharge time, e.g. "cooldown on [Fireball] is less than 5 seconds"
 [3477] = "%s",
 -- f95180b3 English: cooldown on %s
+-- Context: Phrase in spell cooldown summaries; %s is the spell link, e.g. 'cooldown on Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3478] = "%s的冷卻",
 -- cae44083 English: %s seconds
+-- Context: Number of seconds in a summary; %s is the number, e.g. '5 seconds'.
+-- %s #1: %s #1: the number of seconds, e.g. 10
 [3479] = "%s 秒",
 -- 381a8e96 English: Seconds
+-- Context: Label of the comparison in the spell cooldown condition: a number of seconds. Also a
+--     help heading.
 [3480] = "秒",
 -- de838855 English: Stage
+-- Context: Label of the comparison in the boss mod stage condition: the current encounter stage
+--     number.
 [3481] = "階段",
 -- b1097936 English: Encounter ID (blank for any)
 [3482] = "首領戰 ID（留空表示任意）",
 -- 8002bd2a English: Boss ability spell ID
 [3483] = "首領技能法術 ID",
 -- 938af2ed English: Running timers:
+-- Context: Prefix in the boss mod timer description, followed by a list of the running timers.
 [3484] = "正在執行的計時條：",
 -- db93de5e English: No boss-mod timers are running.
 [3485] = "沒有正在執行的首領模組計時條。",
 -- d25fe6e9 English: No boss-mod encounter is in progress.
 [3486] = "目前沒有進行中的首領模組首領戰。",
 -- bb8c3466 English: Boss mod data unavailable: %s
+-- %s #1: %s #1: why the boss mod data is unavailable, a short code (shown as-is), e.g. "adapter-unavailable"
 [3487] = "首領模組資料無法使用：%s",
 -- 163f58b8 English: Current encounter: %s (ID %s), stage %s
+-- %s #1: %s #1: the encounter name, e.g. "Ragnaros"
+-- %s #2: %s #2: the encounter ID, or "none", e.g. "672"
+-- %s #3: %s #3: the encounter stage number, e.g. 2
 [3488] = "目前首領戰：%s（ID %s），階段 %s",
 -- d0ee75f0 English: your boss mod reports encounter %s {{!is|is not}} in progress
+-- %s #1: %s #1: the boss encounter ID, e.g. "672"
 [3489] = "你的首領模組回報首領戰 %s {{!正在|未在}}進行中",
 -- 9f2947bc English: your boss mod {{!reports|does not report}} an encounter in progress
 [3490] = "你的首領模組{{!回報|未回報}}有首領戰正在進行",
 -- 772d9f0d English: the boss-mod encounter stage
 [3491] = "首領模組首領戰階段",
 -- 03f1bf98 English: the boss-mod timer for %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Hellfire (spell ID 1949)"
 [3492] = "首領模組中%s的計時條",
 -- aac06d0a English: Seconds until the boss mod expects the ability. A paused timer keeps its
 --     remaining time.
 [3493] = "距離首領模組預計該技能出現的秒數。暫停的計時條會保留其剩餘時間。",
 -- a3b0ec0a English: number of charges on %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3494] = "%s的充能次數",
 -- d3f9533d English: Charges
+-- Context: Label of the comparison in the spell charges condition (number of charges). Also a help
+--     heading.
 [3495] = "充能",
 -- d9f8ffbe English: %s casts ago
+-- Context: Phrase in spell-cast history summaries; %s is a count, e.g. '3 casts ago'.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [3496] = "%s次施法之前",
 -- ebffec66 English: %s seconds ago
+-- Context: Phrase in history summaries; %s is a number of seconds, e.g. '5 seconds ago'.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [3497] = "%s 秒前",
 -- 093ae2d4 English: %s actions ago
+-- Context: Phrase in action-history summaries; %s is a count, e.g. '2 actions ago'.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [3498] = "%s個動作之前",
 -- 61bb6794 English: %s {{!was|was not}} cast %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
+-- %s #2: %s #2: when it was cast, e.g. "fewer than 3 casts ago" or "more than 5 seconds ago"
 [3499] = "%s{{!曾在|未在}}%s施放",
 -- 7a55e41d English: %s {{!were|were not}} %s %s
+-- %s #1: %s #1: the unit; the "were" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3500] = "%s%s：{{!發生於|未發生於}}%s",
 -- 089cd4ce English: %s {{!was|was not}} %s %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
+-- %s #3: %s #3: when it happened, e.g. "fewer than 3 actions ago" or "more than 5 seconds ago"
 [3501] = "%s%s：{{!發生於|未發生於}}%s",
 -- d72cc5dd English: the remaining time
+-- Context: Phrase in buff/debuff duration summaries: the time left on the aura.
 [3502] = "剩餘時間",
 -- 5242ce0a English: Stacks
+-- Context: Label of the comparison in the buff stacks condition (application count). Also a help
+--     heading.
 [3503] = "層數",
 -- 6f54bbcb English: <debuff type>
+-- Context: Placeholder in debuff-type summaries shown until a type (Magic, Poison ...) is chosen;
+--     keep the angle brackets.
 [3504] = "<減益類型>",
 -- cf1e1b18 English: Debuff Type
+-- Context: Label of the dropdown in the debuff type condition: Magic, Curse, Disease, Poison. Also
+--     a help heading.
 [3505] = "減益類型",
 -- 2464ac36 English: Check If Not Carrying
 [3506] = "未攜帶時也檢查",
 -- cc1059c6 English: , even if you do not currently have one
 [3507] = "，即使你目前沒有攜帶",
 -- 7e67190c English: Control Type
+-- Context: Label of the dropdown in the loss-of-control condition: the kind of control (stun, fear
+--     ...). Also a help heading.
 [3508] = "控制類型",
 -- e4a034d6 English: time remaining on %s
+-- Context: Phrase in the loss-of-control summary; %s is the control type, e.g. 'time remaining on
+--     stun'.
+-- %s #1: %s #1: the type of loss-of-control effect, e.g. "Stun" or "Silence"
 [3509] = "%s的剩餘時間",
 -- b7d036de English: School Blocked
+-- Context: Label of the dropdown in the school lockout condition: which school is locked. Also a
+--     help heading.
 [3510] = "法術類型被封鎖",
 -- 48c8596c English: time remaining on block of your %s abilities
+-- %s #1: %s #1: the spell school that is blocked, e.g. "Fire"
 [3511] = "你的%s技能被封鎖的剩餘時間",
 -- 2f024fe4 English: humanoid
+-- Context: Option in the shapeshift form dropdown: not shapeshifted. Also named in the form help
+--     text; lowercase.
 [3512] = "人形",
 -- e112b377 English: humanoid form
+-- Context: Phrase in the form summary when no shapeshift form is active: 'humanoid form'.
 [3513] = "人形形態",
 -- 2e0e960a English: Form
+-- Context: Label of the dropdown in the shapeshift condition (also stances and stealth). Also a
+--     help heading.
 [3514] = "形態",
 -- 4d95bdd5 English: the number of %s members%s within %s yards of %s
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [3515] = "%s成員%s在 %s 碼內（以%s為中心）的數量",
 -- 4c543e99 English: the number of enemies on which you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [3516] = "你的威脅值狀態至少為%s的敵人數量",
 -- bd310339 English: closer than %s yards
+-- Context: Phrase in the distance summary: %s is a number, e.g. 'closer than 10 yards'.
+-- %s #1: %s #1: the distance in yards, e.g. 10
 [3517] = "距離小於 %s 碼",
 -- 30d28f49 English: allies
+-- Context: Plural noun in the unit-count summary: friendly units.
 [3518] = "盟友",
 -- d0110013 English: enemies
+-- Context: Plural noun in the unit-count summary: hostile units.
 [3519] = "敵人",
 -- 7002c54a English: Number of %s within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3520] = "%s在 %s 碼內的數量",
 -- f9d6358c English: Number of %ss in the %s
+-- %s #1: %s #1: the class name, e.g. "Mage" (the "s" after %s is a plural ending in English)
+-- %s #2: %s #2: the group, "Party" or "Raid", e.g. "Raid"
 [3521] = "%s的數量（在%s中）",
 -- 796861d3 English: the time remaining on %s channel
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3522] = "%s法術引導的剩餘時間",
 -- 029b1c92 English: the time remaining on %s cast
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3523] = "%s法術施放的剩餘時間",
 -- 4bca01ec English: no PVP
+-- Context: Option in the zone PVP dropdown and its summary: the zone has no PVP rules.
 [3524] = "無 PvP",
 -- 5e23ec6a English: Mode
+-- Context: Label of the dropdown in the zone PVP condition: the zone's PVP status. Also a help
+--     heading.
 [3525] = "模式",
 -- d50c7904 English: Other (scenario)
+-- Context: Option in the instance type dropdown and its summary: the instance is none of the usual
+--     types (a scenario).
 [3526] = "其他（事件）",
 -- f6fe5e59 English: SubZone
+-- Context: Checkbox in the zone condition: compare the sub zone instead of the zone name. Also a
+--     help heading.
 [3527] = "子區域",
 -- 2c7564b7 English: %s (set %d)
+-- Context: Item set name with its number: first %s is the set name, %d its set number.
+-- %s #1: %s #1: the name of the set bonus (item set), e.g. "Plate of the Dread Lord"
+-- %d #2: %d #2: the item set ID, e.g. 1234
 [3528] = "%s（套裝 %d）",
 -- eb179560 English: %s, %d equipped
+-- Context: Item set entry in the dropdown of sets you wear: first %s is the set label, %d how many
+--     pieces are equipped.
+-- %s #1: %s #1: the item set, as its name and ID or "item set 1234", e.g. "Plate of the Dread Lord (set 1234)"
+-- %d #2: %d #2: how many pieces of the set are equipped, e.g. 4
 [3529] = "%s，已裝備 %d 件",
 -- d5c50d7b English: <action bar>
+-- Context: Placeholder in the action context summary shown until an action bar is chosen; keep the
+--     angle brackets.
 [3530] = "<快捷列>",
 -- fbf90b5a English: <enchant>
+-- Context: Placeholder in the weapon enchant summary shown until an enchant ID is entered; keep the
+--     angle brackets.
 [3531] = "<附魔>",
 -- 23127ea1 English: <item set>
+-- Context: Placeholder in item set summaries shown until a set is chosen; keep the angle brackets.
 [3532] = "<物品組>",
 -- 7c027705 English: A rotation of your own is used only on your own bar unless its switch condition
 --     requires another action context with this condition; it is then used, and its buttons found,
@@ -311,18 +542,26 @@ addon.translation = {
 -- fcefef14 English: Currently: no temporary enchant
 [3534] = "目前：無暫時附魔",
 -- f1ce6167 English: Currently: temporary enchant %d
+-- %d #1: %d #1: the ID of the temporary weapon enchant now active, e.g. 5400
 [3535] = "目前：暫時附魔 %d",
 -- ef4a5266 English: Enchant ID
+-- Context: Label of the edit box in the weapon enchant condition: the numeric ID of the temporary
+--     enchant. Also a help heading.
 [3536] = "附魔 ID",
 -- 77078c59 English: Equipped Sets
+-- Context: Label of the dropdown in the item set condition listing the sets you currently wear.
 [3537] = "已裝備的套裝",
 -- 4eb9c836 English: Item Set ID
+-- Context: Label of the edit box in the item set condition: the numeric ID of an item set. Also a
+--     help heading.
 [3538] = "套裝 ID",
 -- 27e95eae English: Matches the bar you are acting through: your own, a vehicle, a possessed (mind
 --     controlled) unit, an override bar, or a pet battle. Vehicles and override bars exist from
 --     Wrath, pet battles only on Retail.
 [3539] = "比對你目前操作所用的快捷列：你自己的、載具、被控制（精神控制）的單位、覆蓋快捷列或寵物對戰。載具與覆蓋快捷列從巫妖王之怒開始存在，寵物對戰僅在正式版中存在。",
 -- dd05d0e2 English: Pieces
+-- Context: Label of the comparison in the item set condition: number of set pieces equipped. Also a
+--     help heading.
 [3540] = "件數",
 -- 4f9a6625 English: The game's item set (for example a tier set). Sets you are wearing are offered
 --     in the list; the count is taken from your equipped items' metadata and stays unavailable
@@ -334,30 +573,50 @@ addon.translation = {
 --     imbue. The current enchant ID of the selected hand is shown below the field.
 [3543] = "武器上的暫時附魔：毒藥、油、磨刀石或武器灌注。所選手的目前附魔 ID 顯示在該欄位下方。",
 -- de2d2147 English: item set %d
+-- Context: Fallback name for an item set whose name is not known; %d is the set number.
+-- %d #1: %d #1: the item set ID, e.g. 1234
 [3544] = "套裝 %d",
 -- a693df35 English: the number of {set} pieces you have equipped {comparison} {quantity}
 [3545] = "你已裝備的{set}件數{comparison}{quantity}",
 -- 84463f60 English: you {{!are|are not}} acting through %s
+-- %s #1: %s #1: the action bar or context, e.g. "Main action bar"
 [3546] = "你{{!正在|沒有}}透過%s進行操作",
 -- c16cbdbc English: your %s weapon {{!has|does not have}} temporary enchant %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: the temporary enchant ID, e.g. "5400"
 [3547] = "你的%s武器{{!有|沒有}}暫時附魔%s",
 -- 9e163ca5 English: the time remaining on your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3548] = "你的%s武器增益的剩餘時間",
 -- 6153a726 English: the number of stacks of your %s weapon buff
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3549] = "你的%s武器增益的層數",
 -- 4320f428 English: Your %s weapon %s
+-- Context: Sentence in weapon speed summaries: first %s is the weapon (main hand, off hand,
+--     ranged), second %s is the comparison, e.g. 'Your main hand weapon attack speed is at least 2
+--     seconds'.
+-- %s #1: %s #1: which weapon, "ranged", "off hand" or "main hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the attack speed or swing time, e.g. "attack speed is less than 2 seconds"
 [3550] = "你的%s武器%s",
 -- 1f8df0f5 English: off hand
+-- Context: Weapon slot in summaries: the off-hand weapon (lowercase).
 [3551] = "副手",
 -- c8f1b901 English: main hand
+-- Context: Weapon slot in summaries: the main-hand weapon (lowercase).
 [3552] = "主手",
 -- c4756181 English: attack speed
+-- Context: Quantity compared in the weapon speed summary: how many seconds one swing takes
+--     (lowercase).
 [3553] = "攻擊速度",
 -- 736e26ef English: Attack Speed
+-- Context: Label of the comparison in the weapon attack speed condition and its help heading.
 [3554] = "攻擊速度",
 -- d30240f8 English: swing time remaining
+-- Context: Quantity compared in the swing timer summary: the time left until the next swing
+--     (lowercase).
 [3555] = "普通攻擊剩餘時間",
 -- 0f6a6d02 English: Swing Time Remaining
+-- Context: Label of the comparison in the swing timer condition and its help heading.
 [3556] = "普通攻擊剩餘時間",
 -- ec8bc0f2 English: Pet Spell History Memory (seconds)
 [3557] = "寵物法術歷史保留時間（秒）",
@@ -403,6 +662,9 @@ addon.translation = {
 --     boundary, missing data or restricted data stays unavailable, including under NOT.
 [3569] = "在可用時使用原生的「攻擊」距離檢查。否則使用 LibRangeCheck 的公開距離區間來區分近距離與五碼以外；該估算並不能保證對每個目標都精確反映近戰判定。跨越邊界的區間、缺少資料或受限資料維持為無法使用，在 NOT 下同樣如此。",
 -- 2c7c2760 English: recharge time on %s
+-- Context: Phrase in spell recharge summaries; %s is the spell link, e.g. 'recharge time on
+--     Fireball'.
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3570] = "%s的充能時間",
 -- a407140e English: Seconds until the next spell charge. Full charges and inactive recharge timers
 --     report zero. Missing, restricted, or non-charge spell data stays unavailable.
@@ -421,6 +683,7 @@ addon.translation = {
 --     replaces it; viewing does not convert it.
 [3575] = "此參照屬於另一種天賦配置。明確選擇一個天賦會取代它；僅檢視不會轉換它。",
 -- a08e2044 English: Historical talent slot %s (unavailable)
+-- %s #1: %s #1: the old talent slot number, e.g. 7
 [3576] = "歷史天賦欄位 %s（無法使用）",
 -- d511337a English: This client uses a different talent system. This reference is preserved but
 --     cannot be evaluated.
@@ -436,12 +699,20 @@ addon.translation = {
 --     the condition is unavailable, including under NOT.
 [3579] = "形態以其法術選擇，因此隨著學會新形態，該條件仍然有效，並且在所有用戶端語言下都有效。形態的任何等級都會符合。清單先顯示姿態列上的形態，再顯示此用戶端上你職業的其他形態。以姿態列欄位儲存的條件會保留該欄位，直到你選擇一個形態。如果用戶端無法讀取目前形態，該條件無法使用，在 NOT 下同樣如此。",
 -- 114a5b8b English: Stance bar slot %s (%s)
+-- %s #1: %s #1: the stance bar slot number, e.g. 2
+-- %s #2: %s #2: the name of the stance in that slot, e.g. "Defensive Stance"
 [3580] = "姿態列欄位 %s（%s）",
 -- 2eaf81a4 English: %s cast progress
+-- Context: Phrase in cast progress summaries; %s is a unit, e.g. 'target's cast progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3581] = "%s 施法進度",
 -- 4df1232e English: %s channel progress
+-- Context: Phrase in channel progress summaries; %s is a unit, e.g. 'target's channel progress'.
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3582] = "%s 引導進度",
 -- 4664827f English: Progress
+-- Context: Label of the comparison in the cast/channel progress conditions: percent completed. Also
+--     a help heading.
 [3583] = "進度",
 -- 8b7f75d4 English: How much of the current cast of {unit} is done, from 0% when it starts to 100%
 --     when it completes. It follows haste and pushback, because it is measured against the cast's
@@ -456,13 +727,18 @@ addon.translation = {
 --     cannot be read, it is unavailable, including under NOT.
 [3585] = "{unit} 目前引導完成了多少，從開始時的 0% 到結束時的 100%。跳數在引導過程中均勻分布，因此 K 跳引導的第 N 跳無論加速如何都落在 N/K：要在第二跳之後打斷精神鞭笞（3 跳），請使用至少 66%。施法推遲會縮短引導，進度隨之變化。如果該單位沒有在引導，則無論使用什麼運算子，此條件都不成立；如果無法讀取引導時間，則無法使用，在 NOT 下同樣如此。",
 -- 51b0dd92 English: Talent tree %s
+-- Context: Fallback name for a talent tree that has no known name; %s is its number.
+-- %s #1: %s #1: the talent tree number, e.g. 2
 [3586] = "天賦樹 %s",
 -- d695f0be English: This client does not expose a Classic talent-tree layout. The saved tree
 --     reference is preserved.
 [3587] = "此用戶端未提供經典版天賦樹配置。已儲存的天賦樹參照會被保留。",
 -- 87d6a3d4 English: Talent tree
+-- Context: Label of the dropdown in the talent condition for choosing a Classic talent tree (e.g.
+--     Arms, Fury, Protection).
 [3588] = "天賦樹",
 -- fd027208 English: the number of points spent in %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3589] = "%s中投入的點數",
 -- 7661e068 English: Talent tree selects the Classic tree whose spent points are compared. Public
 --     points are read again on the next evaluation; missing or restricted points are unavailable,
@@ -494,86 +770,139 @@ addon.translation = {
 --     not bypass the action's implicit ownership, usability and range checks.
 [3596] = "「物品可用」會檢查所需等級與已啟用的物品冷卻。只有當冷卻隨可讀的共用冷卻一同結束時，正在進行的冷卻才算符合。此條件不會繞過動作隱含的擁有、可用性與距離檢查。",
 -- e22e898a English: %s totem {{!is|is not}} active
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [3597] = "%s圖騰{{!正在|沒有}}生效",
 -- b0cc0e08 English: %s {{!are|are not}} %s
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your target" or "closer than 10 yards"
 [3598] = "%s{{!是|不是}}%s",
 -- 93814226 English: %s {{!are|are not}} currently casting
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3599] = "%s{{!正在|沒有在}}施法",
 -- 7e8e3a71 English: {unit} {{!are|are not}} currently casting {spell}
 [3600] = "{unit}{{!正在|沒有在}}施放{spell}",
 -- b5ad374e English: %s {{!are|are not}} currently channeling
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3601] = "%s{{!正在|沒有在}}引導法術",
 -- e2a66ca1 English: {unit} {{!are|are not}} currently channeling {spell}
 [3602] = "{unit}{{!正在|沒有在}}引導{spell}",
 -- e30aee86 English: %s {{!has|does not have}} a debuff of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3603] = "%s{{!擁有|沒有}}%s類減益效果",
 -- abd3a229 English: %s {{!has|does not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3604] = "%s{{!擁有|沒有}}由你施加的%s類減益效果",
 -- c12a1e93 English: %s {{!has|does not have}} a stealable buff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3605] = "%s{{!擁有|沒有}}可竊取的增益效果",
 -- 8cf6f25f English: %s {{!have|do not have}} a stealable buff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3606] = "%s{{!擁有|沒有}}可竊取的增益效果",
 -- ec3d55c7 English: %s {{!have|do not have}} a debuff of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3607] = "%s{{!擁有|沒有}}%s類減益效果",
 -- 5a1ec624 English: %s {{!have|do not have}} a debuff you applied of type %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [3608] = "%s{{!擁有|沒有}}由你施加的%s類減益效果",
 -- f06faf9e English: %s {{!is|is not}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the unit compared with, or a distance phrase, e.g. "your focus target" or "closer than 10 yards"
 [3609] = "%s{{!是|不是}}%s",
 -- 9f491513 English: %s class {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the class name, e.g. "Mage"
 [3610] = "%s職業{{!是|不是}}%s",
 -- 19a6a0f4 English: %s creature type {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the creature type, e.g. "Undead"
 [3611] = "%s生物類型{{!是|不是}}%s",
 -- f7f4eee9 English: %s classification {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the unit classification, e.g. "Rare Elite"
 [3612] = "%s分類{{!是|不是}}%s",
 -- 7d66ae03 English: %s {{!is|is not}} active
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 [3613] = "%s{{!正在|沒有}}生效",
 -- 8f9c8fcf English: %s {{!is|is not}} active or pending
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3614] = "%s{{!正在生效或待生效|未生效也未待生效}}",
 -- ad8a0ce2 English: %s {{!is|is not}} active where %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3615] = "%s{{!正在|沒有}}生效，且%s",
 -- fb5dc62c English: %s {{!is|is not}} available
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3616] = "%s{{!可用|無法使用}}",
 -- cb0383c3 English: %s {{!is|is not}} beyond melee range
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3617] = "%s{{!已|未}}超出近戰範圍",
 -- 309913f6 English: %s {{!are|are not}} beyond melee range
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [3618] = "%s{{!已|未}}超出近戰範圍",
 -- 03733067 English: %s {{!is|is not}} currently casting
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3619] = "%s{{!正在|沒有在}}施法",
 -- a1cfb513 English: %s {{!is|is not}} currently channeling
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [3620] = "%s{{!正在|沒有在}}引導法術",
 -- 31089dcd English: {unit} {{!is|is not}} currently casting {spell}
 [3621] = "{unit}{{!正在|沒有在}}施放{spell}",
 -- 99f8dade English: {unit} {{!is|is not}} currently channeling {spell}
 [3622] = "{unit}{{!正在|沒有在}}引導{spell}",
 -- 31ab9f8e English: %s {{!is|is not}} immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3623] = "%s{{!對|不對}}%s免疫",
 -- 872345c0 English: %s {{!are|are not}} immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3624] = "%s{{!對|不對}}%s免疫",
 -- 5b36d6f3 English: %s role {{!is|is not}} %s
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [3625] = "%s職責{{!是|不是}}%s",
 -- 72a91bd3 English: %s {{!is|is not}} in range
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3626] = "%s{{!在|不在}}射程內",
 -- a9486ed1 English: %s {{!is|is not}} sometimes immune to %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3627] = "%s{{!有時|並非有時}}對%s免疫",
 -- f4b3cec6 English: %s {{!are|are not}} sometimes immune to %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [3628] = "%s{{!有時|並非有時}}對%s免疫",
 -- 893b04d1 English: %s {{!will|will not}} run
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [3629] = "%s{{!會|不會}}逃跑",
 -- 29755793 English: %s channeled spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3630] = "%s引導法術{{!可以|不可}}被中斷",
 -- 372c957d English: %s spell {{!is|is not}} interruptible
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's" or "your"
 [3631] = "%s法術{{!可以|不可}}被中斷",
 -- 970cadca English: You {{!know|do not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Fireball (spell ID 133)"
 [3632] = "你{{!已學會|未學會}}%s",
 -- 6306f609 English: Your %s weapon {{!is|is not}} enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 [3633] = "你的%s武器{{!已|未}}附魔",
 -- 715d2919 English: Your pet {{!knows|does not know}} %s
+-- %s #1: %s #1: the spell, as its name and ID, e.g. "Bite (spell ID 17253)"
 [3634] = "你的寵物{{!已學會|未學會}}%s",
 -- a0f98b32 English: you {{!are|are not}} at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [3635] = "你的威脅值狀態{{!至少|未達}}為%s（對%s）",
 -- fa0b7d5f English: you {{!are|are not}} in %s
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [3636] = "你{{!處於|不處於}}%s",
 -- aaf9e864 English: your instance type {{!is|is not}} %s
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3637] = "你所在的副本類型{{!為|不為}}%s",
 -- 30f15e23 English: you {{!are|are not}} in a group
 [3638] = "你{{!在|不在}}隊伍中",
@@ -588,24 +917,33 @@ addon.translation = {
 -- 9993a0fe English: you {{!are|are not}} stealthed
 [3643] = "你{{!處於|不處於}}潛行狀態",
 -- 3216151b English: you {{!are|are not}} talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [3644] = "你{{!點選了|沒有點選}}天賦%s",
 -- 0d61ee4d English: you {{!have|do not have}} %s active
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [3645] = "你{{!已啟用|未啟用}}%s",
 -- 568fa9d4 English: you {{!have|do not have}} a %s totem active where %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [3646] = "你{{!有|沒有}}一個%s圖騰正在生效，且%s",
 -- 06e77f0d English: you {{!have|do not have}} a pet
 [3647] = "你{{!擁有|沒有}}寵物",
 -- 8be0937e English: you {{!have|do not have}} a pet named {name}
 [3648] = "你{{!擁有|沒有}}名為{name}的寵物",
 -- 011430be English: your primary talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [3649] = "你的主要天賦樹{{!為|不為}}%s",
 -- 1ebc1187 English: the zone's PVP status {{!is|is not}} %s
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [3650] = "所在區域的PvP狀態{{!為|不為}}%s",
 -- 0bcca767 English: {{!in|not in}} {zone}
 [3651] = "{{!在|不在}}{zone}",
 -- c14661e2 English: Time in combat
+-- Context: Name of the measure compared in the combat-time condition summary: how long the player
+--     has been in combat (followed by 'is at least 10 seconds').
 [3652] = "戰鬥時間",
 -- 33629208 English: %s {{!is|is not}} auto-repeating
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3653] = "%s{{!正在|沒有在}}自動重複",
 -- 9544d41a English: Tests whether the selected spell is currently auto-repeating, such as Shoot or
 --     Auto Shot. This is different from a spell being current or queued: a queued cast alone does
@@ -651,6 +989,7 @@ addon.translation = {
 -- b9151b16 English: Assisted Combat {{!is|is not}} suggesting a spell
 [3667] = "戰鬥助手{{!正在|沒有}}建議法術",
 -- 43bf497e English: Assisted Combat {{!suggests|does not suggest}} %s
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3668] = "戰鬥助手{{!建議|不建議}}%s",
 -- 6c9594a9 English: Matches when Blizzard's Assisted Combat suggests this spell as the next cast.
 --     An override counts as its base spell, and the base spell as its override. With no spell
@@ -661,6 +1000,7 @@ addon.translation = {
 --     this condition is unavailable rather than false, including under NOT.
 [3670] = "戰鬥助手存在於正式版（並在永久中宣告）。若遊戲未為此角色或專精提供該功能，或無法讀取建議，此條件為無法使用而非假，在 NOT 下同樣如此。",
 -- 32c737f7 English: %s {{!is|is not}} in Blizzard's Assisted Combat rotation
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3671] = "%s {{!在|不在}}暴雪戰鬥助手的循環中",
 -- ae726224 English: Matches when this spell is one Blizzard's Assisted Combat can suggest for your
 --     current specialization. Its current override and its base spell count too. Use it to
@@ -681,12 +1021,21 @@ addon.translation = {
 --     cannot be read, including under NOT.
 [3676] = "僅當用戶端沒有戰鬥助手 API 或無法讀取其回應時才無法使用，在 NOT 下同樣如此。",
 -- 6f6ccc8f English: rune spell %s
+-- Context: Fallback name for a rune with no known spell name; %s is the spell ID (Season of
+--     Discovery rune condition).
+-- %s #1: %s #1: the spell ID of the rune, e.g. 400000
 [3677] = "符文法術 %s",
 -- 7bf70ccc English: rune %s
+-- Context: Fallback name for a rune with no known name; %s is the rune ID (Season of Discovery rune
+--     condition).
+-- %s #1: %s #1: the rune number, e.g. 12
 [3678] = "符文 %s",
 -- 54791384 English: you {{!have|do not have}} the rune %s engraved
+-- %s #1: %s #1: the name of the engraved rune, e.g. "Rune of the Fire"
 [3679] = "你{{!已|沒有}}銘刻符文 %s",
 -- e999d0a1 English: <rune>
+-- Context: Placeholder in the engraved-rune summary shown until a rune is chosen; keep the angle
+--     brackets.
 [3680] = "<符文>",
 -- 4e0d82c9 English: Your runes have not loaded yet. Reopen this condition shortly, or enter an ID
 --     below.
@@ -695,14 +1044,24 @@ addon.translation = {
 --     unavailable here.
 [3682] = "此角色無法銘刻符文。在下方以 ID 輸入的符文會被保留，但在這裡無法使用。",
 -- 7294ffa8 English: Slot %d
+-- Context: Fallback name for an equipment slot group in the rune condition's slot dropdown; %d is
+--     the slot number.
+-- %d #1: %d #1: the equipment slot category number, e.g. 5
 [3683] = "欄位 %d",
 -- 1eccb682 English: Equipment Slot
+-- Context: Label of the dropdown in the rune condition: the equipment slot (chest, hands, legs ...)
+--     the rune is engraved on.
 [3684] = "裝備欄位",
 -- f55862c6 English: Rune
+-- Context: Label of the dropdown in the rune condition: which rune. Also a help heading.
 [3685] = "符文",
 -- 577a2fa4 English: Rune Spell ID
+-- Context: Label of the edit box in the rune condition: the ID of a spell the rune teaches. Also
+--     part of a help heading.
 [3686] = "符文法術 ID",
 -- b84ca6e3 English: Rune ID
+-- Context: Label of the edit box in the rune condition: the rune's own numeric ID, for runes that
+--     teach no spell. Also part of a help heading.
 [3687] = "符文 ID",
 -- a698651e English: Matches when a Season of Discovery rune is engraved on one of your equipped
 --     items. Passive runes count too, which a known-spell test cannot see.
@@ -720,33 +1079,54 @@ addon.translation = {
 [3691] = "銘刻只存在於探索賽季伺服器。在其他情況下，以及登入後你的符文載入完成之前，此條件無法使用而不是為假，在 NOT 下同樣如此。第七階段的肩部符文不是銘刻，不會被辨識。這不是死亡騎士的符文條件。",
 -- 2cfaca8e English: Your talents cannot be listed right now (%s). A node ID entered below is kept
 --     and evaluated.
+-- %s #1: %s #1: why the talents cannot be listed, a short code (shown as-is), e.g. "not-ready"
 [3692] = "目前無法列出你的天賦（%s）。下方輸入的節點 ID 會被保留並參與判定。",
 -- 0d2b4c68 English: Talents can be listed only for your own class. A node ID entered below is kept
 --     and evaluated.
 [3693] = "只能列出你自己職業的天賦。下方輸入的節點 ID 會被保留並參與判定。",
 -- 7417e36a English: Class talents
+-- Context: Group heading in the talent dropdown: talents shared by all specializations of the
+--     class.
 [3694] = "職業天賦",
 -- 9900921e English: Specialization talents
+-- Context: Group heading in the talent dropdown: talents of the chosen specialization only.
 [3695] = "專精天賦",
 -- 6eaab468 English: Class and specialization talents
 [3696] = "職業與專精天賦",
 -- 7d26d446 English: Hero talents: %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3697] = "英雄天賦：%s",
 -- cb9e8664 English: Tier
+-- Context: Label of the dropdown in the Classic grid talent condition: which row (tier) of talents.
 [3698] = "層級",
 -- 1ba2a4e3 English: Tier %d (level %d)
+-- Context: Entry in the talent tier dropdown; first %d is the tier number, second %d the character
+--     level at which it unlocks.
+-- %d #1: %d #1: the talent tier, 1 to 6, e.g. 3
+-- %d #2: %d #2: the character level at which the tier unlocks, e.g. 30
 [3699] = "第 %d 層（%d 級）",
 -- 8dfbb734 English: %s (choice)
+-- Context: Talent name in the talent dropdown when the talent is one of two or more choices at a
+--     node; %s is the talent name.
+-- %s #1: %s #1: the name of a talent that is one of several choices on its node, e.g. "Improved Blink"
 [3700] = "%s（選擇）",
 -- e8871b70 English: Talents
+-- Context: Fallback group heading in the talent dropdown when a talent group has no name.
 [3701] = "天賦",
 -- d6f5d4a1 English: Talent Node ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the talent node.
 [3702] = "天賦節點 ID",
 -- 3e359295 English: Choice Entry ID
+-- Context: Label of the edit box in the talent condition: the numeric ID of the entry chosen at a
+--     choice node.
 [3703] = "選擇項 ID",
 -- 986b4c09 English: talent node %s
+-- Context: Fallback name for a talent whose name is not known; %s is the node ID, e.g. 'talent node
+--     12345'.
+-- %s #1: %s #1: the talent node ID, e.g. 82000
 [3704] = "天賦節點 %s",
 -- 905d8751 English: the number of ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power", or "talent node 82000"
 [3705] = "%s的等級數",
 -- ddb10d64 English: Retail and Forever compare the rank of a talent in your active loadout. Pick it
 --     from the talents of the rotation's specialization (the Specialization list shows another
@@ -772,74 +1152,117 @@ addon.translation = {
 --     any talent change. Retail has no such trees.
 [3710] = "永久服是例外：天賦樹是你目前啟用配置的三棵天賦樹之一（依天賦視窗顯示的順序）；它們的點數會在任何天賦改變後重新讀取。正式版沒有這樣的天賦樹。",
 -- bd69e217 English: Brewmaster
+-- Context: Specialization name (Monk, tank). Used in the specialization condition.
 [3711] = "釀酒",
 -- de575836 English: Windwalker
+-- Context: Specialization name (Monk, melee damage). Used in the specialization condition.
 [3712] = "御風",
 -- 7b362214 English: Mistweaver
+-- Context: Specialization name (Monk, healer). Used in the specialization condition.
 [3713] = "織霧",
 -- 24983899 English: Feral
+-- Context: Specialization name (Druid, cat form damage). Used in the specialization condition.
 [3714] = "野性",
 -- 1d228f25 English: Guardian
+-- Context: Specialization name (Druid, bear form tank). Used in the specialization condition.
 [3715] = "守護者",
 -- e1304437 English: Havoc
+-- Context: Specialization name (Demon Hunter, damage). Used in the specialization condition.
 [3716] = "災虐",
 -- f67321da English: Vengeance
+-- Context: Specialization name (Demon Hunter, tank). Used in the specialization condition.
 [3717] = "復仇",
 -- 7e6e6092 English: Devourer
+-- Context: Specialization name (Demon Hunter, third specialization). Used in the specialization
+--     condition.
 [3718] = "噬滅",
 -- e1a21b9f English: Devastation
+-- Context: Specialization name (Evoker, damage). Used in the specialization condition.
 [3719] = "破滅",
 -- 9ca6fa0d English: Preservation
+-- Context: Specialization name (Evoker, healer). Used in the specialization condition.
 [3720] = "護持",
 -- 9647da85 English: Augmentation
+-- Context: Specialization name (Evoker, support damage). Used in the specialization condition.
 [3721] = "強化",
 -- 679dfacd English: One-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in one hand.
 [3722] = "單手斧",
 -- 763d2d16 English: Two-Handed Axes
+-- Context: Weapon type name (item subclass) in the weapon type dropdown; used when the game does
+--     not supply the name. Axes held in two hands.
 [3723] = "雙手斧",
 -- f09abd25 English: Bows
+-- Context: Weapon type name (item subclass), plural: bows.
 [3724] = "弓",
 -- 1105a900 English: Guns
+-- Context: Weapon type name (item subclass), plural: guns.
 [3725] = "槍械",
 -- 23a81b2e English: One-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in one hand.
 [3726] = "單手錘",
 -- 87982fd9 English: Two-Handed Maces
+-- Context: Weapon type name (item subclass), plural: maces held in two hands.
 [3727] = "雙手錘",
 -- d3efea7f English: Polearms
+-- Context: Weapon type name (item subclass), plural: polearms.
 [3728] = "長柄武器",
 -- db31cc85 English: One-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in one hand.
 [3729] = "單手劍",
 -- 80c5ae37 English: Two-Handed Swords
+-- Context: Weapon type name (item subclass), plural: swords held in two hands.
 [3730] = "雙手劍",
 -- 43176c16 English: Warglaives
+-- Context: Weapon type name (item subclass), plural: warglaives.
 [3731] = "戰刃",
 -- 62105c37 English: Staves
+-- Context: Weapon type name (item subclass), plural: staves.
 [3732] = "法杖",
 -- bd0d3b19 English: Fist Weapons
+-- Context: Weapon type name (item subclass), plural: fist weapons.
 [3733] = "拳套",
 -- 72d13cd4 English: Daggers
+-- Context: Weapon type name (item subclass), plural: daggers.
 [3734] = "匕首",
 -- 5cc449eb English: Thrown
+-- Context: Weapon type name (item subclass): thrown weapons.
 [3735] = "投擲武器",
 -- 806891f5 English: Crossbows
+-- Context: Weapon type name (item subclass), plural: crossbows.
 [3736] = "弩",
 -- 7edc4dae English: Wands
+-- Context: Weapon type name (item subclass), plural: wands.
 [3737] = "魔杖",
 -- b9d0aded English: Fishing Poles
+-- Context: Weapon type name (item subclass), plural: fishing poles.
 [3738] = "魚竿",
 -- d041f0fe English: <specialization>
+-- Context: Placeholder in the specialization summary shown until a specialization is chosen; keep
+--     the angle brackets.
 [3739] = "<專精>",
 -- 077ba255 English: your specialization {{!is|is not}} %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
 [3740] = "你的專精{{!是|不是}} %s",
 -- 79689782 English: Slot
+-- Context: Label of the dropdown in the weapon type condition: which equipment slot is checked.
 [3741] = "欄位",
 -- d72c5ffe English: <slot>
+-- Context: Placeholder in the weapon type summary shown until a slot is chosen; keep the angle
+--     brackets.
 [3742] = "<欄位>",
 -- ecdfbb4c English: <weapon type>
+-- Context: Placeholder in the weapon type summary shown until a weapon type is chosen; keep the
+--     angle brackets.
 [3743] = "<武器類型>",
 -- cd3e4c2f English: weapon type %d
+-- Context: Fallback name for a weapon type that has no known name; %d is the item subclass number.
+-- %d #1: %d #1: the weapon type number, used when the game gives no name, e.g. 7
 [3744] = "武器類型 %d",
 -- 5e915dd9 English: your %s slot {{!holds|does not hold}} %s
+-- %s #1: %s #1: the equipment slot, e.g. "main hand"
+-- %s #2: %s #2: the kind of item or weapon type, e.g. "Two-Handed Sword" or "Shield"
 [3745] = "你的 %s 欄位{{!持有|不持有}} %s",
 -- da3a44eb English: you {{!are|are not}} mounted
 [3746] = "你{{!正在|沒有}}騎乘",
@@ -856,10 +1279,16 @@ addon.translation = {
 -- f623619b English: a boss encounter {{!is|is not}} in progress
 [3752] = "首領戰{{!正在進行|沒有進行}}",
 -- 6a7230fc English: difficulty %d
+-- Context: Fallback name for a dungeon or raid difficulty without a known name; %d is the
+--     difficulty ID.
+-- %d #1: %d #1: the difficulty ID, used when the game gives no name, e.g. 14
 [3753] = "難度 %d",
 -- 0dc49fb5 English: Instance ID
+-- Context: Label of the edit box in the instance condition: the numeric ID of the instance.
 [3754] = "副本 ID",
 -- 2454a15f English: You are in %s (instance ID %d).
+-- %s #1: %s #1: the instance name, e.g. "Molten Core"
+-- %d #2: %d #2: the instance ID, e.g. 409
 [3755] = "你在 %s（副本 ID %d）。",
 -- f9099ef5 English: The instance you are in cannot be read right now.
 [3756] = "目前無法讀取你所在的副本。",
@@ -871,38 +1300,55 @@ addon.translation = {
 -- be48718c English: the number of players in your group
 [3759] = "你的隊伍中的玩家數量",
 -- 567825fa English: the number of group members whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3760] = "被指定職責為%s的隊伍成員數量",
 -- 63780dda English: the number of dead or ghost members of your group
 [3761] = "你的隊伍中已死亡或處於鬼魂狀態的成員數量",
 -- f81258cf English: hero talent tree %d
+-- Context: Fallback name for a hero talent tree that has no known name; %d is its numeric ID.
+-- %d #1: %d #1: the hero talent tree ID, e.g. 31
 [3762] = "英雄天賦樹 %d",
 -- 9fb8f548 English: you {{!have|have not}} chosen a hero talent tree
 [3763] = "你{{!已選擇|沒有選擇}}英雄天賦樹",
 -- 48f1d066 English: your hero talent tree {{!is|is not}} %s
+-- %s #1: %s #1: the name of the hero talent tree, e.g. "Herald of the Sun"
 [3764] = "你的英雄天賦樹{{!是|不是}} %s",
 -- d18f5f74 English: <hero talent tree>
+-- Context: Placeholder in the hero talent tree summary shown until a tree is chosen; keep the angle
+--     brackets.
 [3765] = "<英雄天賦樹>",
 -- 613b90e8 English: Any hero talent tree
 [3766] = "任意英雄天賦樹",
 -- f55aa333 English: Hero talent tree ID (blank for any)
 [3767] = "英雄天賦樹 ID（留空表示任意）",
 -- dacd0c2e English: %s {{!is|is not}} glowing with a proc
+-- %s #1: %s #1: a clickable spell link, e.g. "[Fireball]"
 [3768] = "%s{{!正在|沒有}}因觸發而高亮",
 -- 1f8204e7 English: Trinket Slot
+-- Context: Label of the dropdown in the item cooldown condition: use a trinket slot instead of a
+--     named item. Also a help heading.
 [3769] = "飾品欄位",
 -- a088a328 English: the cooldown on your %s
+-- %s #1: %s #1: the trinket slot, e.g. "Trinket 1"
 [3770] = "%s的冷卻時間",
 -- a1b86dcf English: <trinket slot>
+-- Context: Placeholder in the item cooldown summary shown until a trinket slot is chosen; keep the
+--     angle brackets.
 [3771] = "<飾品欄位>",
 -- e949e9a1 English: your pet {{!is|is not}} %s
+-- %s #1: %s #1: the pet mood, e.g. "Happy"
 [3772] = "你的寵物{{!處於|不處於}}%s狀態",
 -- ae72b05a English: <mood>
+-- Context: Placeholder in the Hunter pet happiness summary shown until a mood is chosen; keep the
+--     angle brackets.
 [3773] = "<狀態>",
 -- d203280c English: the damage in your Stagger pool
 [3774] = "你的 Stagger 池中的傷害量",
 -- 89eb5572 English: your Stagger as a percent of your maximum health
 [3775] = "你的 Stagger 占最大生命值的百分比",
 -- 88f6385c English: %s percent
+-- Context: A percentage in a summary; %s is the number, e.g. '50 percent'.
+-- %s #1: %s #1: the percentage number, e.g. 40
 [3776] = "百分之%s",
 -- 132e5dce English: As a percent of maximum health
 [3777] = "以最大生命值的百分比計",
@@ -910,41 +1356,62 @@ addon.translation = {
 --     maximum health when the box is ticked.
 [3778] = "Stagger 池中等待結算的傷害量；勾選後改為占最大生命值的百分比。",
 -- 551d172c English: your Eclipse bar {{!is|is not}} heading toward %s
+-- %s #1: %s #1: the Eclipse direction, e.g. "Lunar" or "Solar"
 [3779] = "你的日月蝕條{{!正向|沒有向}}%s移動",
 -- cc6d2f75 English: <Eclipse>
+-- Context: Placeholder in the Eclipse summary shown until a direction is chosen; keep the angle
+--     brackets.
 [3780] = "<日月蝕>",
 -- acd890d7 English: your Eclipse energy
+-- Context: Name of the measure in the Eclipse summary: the Eclipse bar value (lowercase; follows
+--     'is at least').
 [3781] = "你的日月蝕能量",
 -- 3080873d English: The Eclipse bar, from -100 (a full Lunar Eclipse) to 100 (a full Solar
 --     Eclipse).
 [3782] = "日月蝕條的數值，從 -100（完整的月蝕）到 100（完整的日蝕）。",
 -- a3b50c47 English: State
+-- Context: Label of the dropdown in the player state condition: which state (mounted, swimming
+--     ...).
 [3783] = "狀態",
 -- ec9b10a4 English: Dead
+-- Context: Option in the player state dropdown: the player is dead.
 [3784] = "已死亡",
 -- df1bc498 English: Ghost
+-- Context: Option in the player state dropdown: the player has released and is a ghost.
 [3785] = "鬼魂狀態",
 -- 4d3a12b0 English: you {{!are|are not}} dead
 [3786] = "你{{!已|沒有}}死亡",
 -- 0cc73293 English: you {{!are|are not}} a ghost
 [3787] = "你{{!處於|不處於}}鬼魂狀態",
 -- cf0dba5a English: you {{!are|are not}} %s
+-- %s #1: %s #1: the player state, e.g. "mounted" (this generic fallback shows a placeholder such as "<state>")
 [3788] = "你{{!處於|不處於}}%s",
 -- 1ff78f4d English: <state>
+-- Context: Placeholder in the player state summary shown until a state is chosen; keep the angle
+--     brackets.
 [3789] = "<狀態>",
 -- fd369188 English: <measure>
+-- Context: Placeholder in the group count summary shown until a measure is chosen; keep the angle
+--     brackets.
 [3790] = "<指標>",
 -- ebf940f2 English: Measure
+-- Context: Label of the dropdown in the Eclipse condition: whether to compare the bar's energy or
+--     its direction.
 [3791] = "指標",
 -- 9c8a9579 English: Direction
+-- Context: Option in the Eclipse measure dropdown: the direction the bar is moving; the other
+--     option is Energy.
 [3792] = "方向",
 -- b675e8c2 English: Players in the group
 [3793] = "隊伍中的玩家",
 -- ca604d55 English: Tanks
+-- Context: Option in the group count dropdown: players with the tank role (plural).
 [3794] = "坦克",
 -- 7ad6d8d0 English: Healers
+-- Context: Option in the group count dropdown: players with the healer role (plural).
 [3795] = "治療者",
 -- 552833e2 English: Damage dealers
+-- Context: Option in the group count dropdown: players with the damage role (plural).
 [3796] = "傷害輸出",
 -- 96362b07 English: Dead or ghost members
 [3797] = "已死亡或處於鬼魂狀態的成員",
@@ -953,22 +1420,34 @@ addon.translation = {
 -- 98436f9a English: the percent of your group that is dead or a ghost
 [3799] = "你的隊伍中已死亡或處於鬼魂狀態的成員所佔百分比",
 -- 50e66626 English: the percent of your group whose assigned role is %s
+-- %s #1: %s #1: the group role, e.g. "Tank", "DPS" or "Healer"
 [3800] = "被指定職責為%s的隊伍成員所佔百分比",
 -- 389a3660 English: the percent of your group counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3801] = "計為%s的隊伍成員所佔百分比",
 -- 622e5828 English: the number of group members counted as %s
+-- %s #1: %s #1: the group measure, e.g. "dead" or "melee"
 [3802] = "計為%s的隊伍成員數量",
 -- 658bb8cf English: ranged
+-- Context: Weapon slot in summaries: the ranged weapon (lowercase).
 [3803] = "遠程",
 -- 80c798fc English: type %s
+-- Context: Part of the instance summary; %s is the instance type, e.g. 'type Dungeon'.
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [3804] = "類型%s",
 -- 78aee9bb English: difficulty %s
+-- Context: Part of the instance summary; %s is the difficulty name, e.g. 'difficulty Heroic'.
+-- %s #1: %s #1: the difficulty name, e.g. "Heroic"
 [3805] = "難度%s",
 -- 5e900d17 English: ID %s
+-- Context: Part of the instance summary; %s is the instance ID number, e.g. 'ID 33'.
+-- %s #1: %s #1: the instance ID, e.g. 409
 [3806] = "副本 ID %s",
 -- 08c231ad English: you {{!are|are not}} in an instance (%s)
+-- %s #1: %s #1: the instance details separated by commas, e.g. "type Raid, difficulty Heroic, ID 409"
 [3807] = "你{{!在|不在}}副本（%s）中",
 -- 364397ab English: Any difficulty
+-- Context: Option at the top of the instance difficulty dropdown: do not restrict by difficulty.
 [3808] = "任意難度",
 -- bd945e03 English: None (use the item above)
 [3809] = "無（使用上方的物品）",
@@ -1008,6 +1487,8 @@ addon.translation = {
 --     Burning Crusade and Mists of Pandaria but not on Retail or Forever.
 [3816] = "測量你的自動射擊或魔杖射擊，而不是近戰武器。請在「副手」和「遠程」中二選一，不能同時選擇。剩餘時間需要戰鬥記錄，因此可用於經典版、燃燒的遠征和潘達利亞之謎，但不適用於正式服和 Forever。",
 -- a8b3d1b8 English: Number of %s in combat within %s yards
+-- %s #1: %s #1: either "enemies" or "allies", e.g. "enemies"
+-- %s #2: %s #2: the distance in yards, e.g. 10
 [3817] = "%s在戰鬥中且在 %s 碼內的數量",
 -- e7ccbb83 English: Count only units that are in combat. For enemies that is the ones fighting
 --     right now, not every enemy whose nameplate is visible. A unit whose combat state the game

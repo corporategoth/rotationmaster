@@ -20,32 +20,60 @@ addon.translation = {
 --     observations.
 [3] = "/rm perf cpu||runtime||memory [seconds||stop||report] - 采集性能观测数据。",
 -- 3e47dffa English: Capture memory (10m)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-minute memory-usage
+--     capture. Also the heading of its help entry.
 [4] = "采集内存（10分钟）",
 -- b84bcf99 English: Memory report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     memory capture. Also the heading of its help entry.
 [5] = "内存报告",
 -- 07027ca8 English: Stop memory capture
+-- Context: Button label in General settings, Diagnostics area: replaces the 'Capture memory' button
+--     while a capture runs and stops it.
 [6] = "停止内存采集",
 -- 9eff4745 English: Capture runtime (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second capture of which
+--     addon functions use CPU time. Also a help entry heading.
 [7] = "采集运行时（10秒）",
 -- ceb34b2f English: Runtime report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished
+--     runtime capture. Also a help entry heading.
 [8] = "运行时报告",
 -- b6ce788d English: Report
+-- Context: Subtitle (second heading line) of the condition-text window, used when it shows a text
+--     report of a rotation's conditions; the noun 'report'.
 [9] = "报告",
 -- a518abfe English: Capture CPU (10s)
+-- Context: Button label in General settings, Diagnostics area: starts a 10-second CPU profile of
+--     the addon. Also a help entry heading.
 [10] = "采集 CPU（10秒）",
 -- b7aa6f62 English: CPU report
+-- Context: Button label in General settings, Diagnostics area: shows the report of the finished CPU
+--     capture. Also a help entry heading.
 [11] = "CPU 报告",
 -- 17eb3c01 English: disabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     disabled' (the shipped default state of a built-in rotation).
 [12] = "已禁用",
 -- fb9cf756 English: enabled
+-- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
+--     enabled' (the shipped default state of a built-in rotation).
 [13] = "已启用",
 -- fa79d474 English: exact
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), shown after 'Callback
+--     arguments:' etc.: the callback received exactly the expected arguments.
 [14] = "精确",
 -- 5acbfff1 English: mismatch
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g. 'Callback
+--     arguments: mismatch': the observed value differs from what was expected.
 [15] = "不匹配",
 -- 4d4c7eee English: present
+-- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g.
+--     'C_AddOnProfiler: present': the game API exists.
 [16] = "存在",
 -- 7a0d9159 English: restricted
+-- Context: Status word in the Native profiler probe report (CPU diagnostics): the game restricts
+--     the checked capability.
 [17] = "受限",
 -- a9283b41 English: Bypass observation cache (reload required)
 [18] = "绕过观测缓存（需要重载）",
@@ -57,59 +85,111 @@ addon.translation = {
 --     allocations. Off by default; reload to change the running mode.
 [21] = "观测缓存可以减少重复查询，但会增加表分配。默认关闭；更改运行模式需要重载界面。",
 -- a30d7f9f English: Observation cache: %s\nNext reload: %s
+-- %s #1: %s #1: the observation-cache mode the game session is running now, one of the words "cached" or "direct" (shown translated), e.g. "cached"
+-- %s #2: %s #2: the mode that will be used after the next UI reload, "cached" or "direct", e.g. "direct"
 [22] = "观测缓存：%s\n下次重载：%s",
 -- 3673014e English: cached
+-- Context: Status word in diagnostic reports: observation caching mode 'cached' (results of lookups
+--     are reused); the alternative is 'direct'.
 [23] = "已缓存",
 -- d15690f0 English: direct
+-- Context: Status word in diagnostic reports: observation caching mode 'direct' (every lookup is
+--     read again); the alternative is 'cached'.
 [24] = "直接",
 -- b279b4aa English: Cache diagnostic saved for the next reload. Active mode: %s.
+-- %s #1: %s #1: the observation-cache mode that is active now, "cached" or "direct" (shown translated), e.g. "direct"
 [25] = "缓存诊断设置已保存，将在下次重载时生效。当前模式：%s。",
 -- 6ea030dd English: Cache diagnostic is unavailable.
 [26] = "缓存诊断不可用。",
 -- c0f60371 English: Cancel capture
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button 'Cancel capture' of the old CPU diagnostics (now replaced by the Stop
+--     button).
 [27] = "取消采集",
 -- c1aa81e6 English: Invalid rotation ownership data in profile %s (%s); record preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: a short technical reason code for why the data is invalid, e.g. "invalid-owner" (shown as-is; do not translate)
 [28] = "配置文件 %s 中的循环归属数据无效（%s）；记录已保留。",
 -- 6ee818aa English: View source
+-- Context: Tooltip of a small icon button next to a function binding row in the custom-function
+--     editor: opens the source code of the bound helper function.
 [29] = "查看源码",
 -- 576aa29b English: Change source helper
+-- Context: Tooltip of a dropdown-arrow icon button on a function binding row: lets you choose a
+--     different source helper function for that dependency.
 [30] = "更改源辅助函数",
 -- 33ba28a9 English: Dependencies (%d)
+-- Context: Button in the custom-function editor that expands or collapses the list of functions
+--     this function depends on; %d is how many dependencies there are.
+-- %d #1: %d #1: the number of function bindings (dependencies) in the list, e.g. 3
 [31] = "依赖项（%d）",
 -- d28ff2b8 English: Function dependencies
+-- Context: Heading of a help section (and the Functions help topic) explaining the dependency list
+--     of a custom function; also the dependency list's name.
 [32] = "函数依赖项",
 -- d038ddbf English: Add dependency
+-- Context: Button in the custom-function editor's dependency list: adds a new dependency (a helper
+--     function this function calls).
 [33] = "添加依赖项",
 -- ffdb8428 English: Remove dependency
+-- Context: Button/tooltip in the custom-function editor's dependency list: removes this dependency
+--     row.
 [34] = "移除依赖项",
 -- 1f5ef520 English: Arcane Ring
+-- Context: Name of a decorative overlay (a glowing arcane ring graphic) in the overlay picker for
+--     rotation icons.
 [35] = "奥术之环",
 -- e3dfa9b3 English: Ember Corners
+-- Context: Name of a decorative overlay (glowing ember corners graphic) in the overlay picker for
+--     rotation icons.
 [36] = "余烬边角",
 -- ed0b6679 English: Frost Shards
+-- Context: Name of a decorative overlay (frost shard graphics) in the overlay picker for rotation
+--     icons.
 [37] = "冰霜碎片",
 -- 4a5ff6e0 English: Nature Vines
+-- Context: Name of a decorative overlay (nature vines graphic) in the overlay picker for rotation
+--     icons.
 [38] = "自然藤蔓",
 -- 67f985cc English: Lightning Sweep
+-- Context: Name of a decorative overlay (a lightning sweep graphic) in the overlay picker for
+--     rotation icons.
 [39] = "闪电横扫",
 -- 37476fc2 English: Holy Rays
+-- Context: Name of a decorative overlay (holy light rays graphic) in the overlay picker for
+--     rotation icons.
 [40] = "神圣光芒",
 -- 693a2003 English: Shadow Claws
+-- Context: Name of a decorative overlay (shadowy claw marks graphic) in the overlay picker for
+--     rotation icons.
 [41] = "暗影之爪",
 -- 1e58829b English: Rune Diamond
+-- Context: Name of a decorative overlay (a rune-marked diamond graphic) in the overlay picker for
+--     rotation icons.
 [42] = "符文菱形",
 -- 0dcf5b86 English: Neutral Arcane Ring
+-- Context: Name of a decorative overlay (an arcane ring in neutral, uncolored style) in the overlay
+--     picker for rotation icons.
 [43] = "中性奥术之环",
 -- 84f6ccc1 English: Choose overlay
+-- Context: Tooltip of a dropdown-arrow button in the settings form that opens the picker of
+--     decorative overlay textures.
 [44] = "选择叠加效果",
 -- 084e6cf7 English: This character
+-- Context: Option in the 'Applies to' choice (checkbox in the rotation adoption page, and shown in
+--     pending-change lists): the setting applies to the current character only, as opposed to the
+--     whole class.
 [45] = "此角色",
 -- 6687458b English: Applies to
+-- Context: Label for a choice/field saying whom a rotation applies to: this character or the whole
+--     class (adoption page, pending-change list, help section heading).
 [46] = "适用于",
 -- d172148e English: Legacy character %s data conflicts with the active profile; character data
 --     preserved.
+-- %s #1: %s #1: which kind of legacy per-character data conflicts, the internal table name (shown as-is), e.g. "itemsets" or "announces"
 [47] = "旧版角色 %s 的数据与当前配置文件冲突；角色数据已保留。",
 -- 0da554c3 English: Invalid rotation fallback configuration in profile %s; data preserved.
+-- %s #1: %s #1: the profile name, e.g. "Default"
 [48] = "配置文件 %s 中的后备循环配置无效；数据已保留。",
 -- 86637dd3 English: Condition summary unavailable: invalid template or values.
 [49] = "条件摘要不可用：模板或数值无效。",
@@ -155,10 +235,15 @@ addon.translation = {
 -- 7a633806 English: The current source could not be compiled. Fix it before testing again.
 [62] = "当前源码无法编译。请修复后再测试。",
 -- 0e916101 English: Refresh
+-- Context: Button that reloads/refreshes the display: in the Lua debugger output window and in the
+--     rotation adoption page.
 [63] = "刷新",
 -- 5f623ee6 English: Debug output
+-- Context: Title of the Lua debugger output window (shows the debugger's full output and errors).
 [64] = "调试输出",
 -- b2439bcb English: Output
+-- Context: Noun: button in the Lua workbench that opens the debugger output window (also that
+--     window's subtitle); also a column/row label for one result in the collection compare view.
 [65] = "输出",
 -- fccce64b English: Set values in Test before debugging this condition.
 [66] = "调试此条件前，请先在“测试”中设置数值。",
@@ -168,26 +253,50 @@ addon.translation = {
 -- 2f3f04fc English: Localized Rotation Master text, indexed by its English key.
 [68] = "本地化的 Rotation Master 文本，以其英文键为索引。",
 -- a8283ade English: Undo
+-- Context: Button/tooltip in the condition and custom-function editors: undoes the last edit
+--     (verb).
 [69] = "撤销",
 -- 74273989 English: Redo
+-- Context: Button/tooltip in the condition and custom-function editors: redoes the edit that was
+--     just undone (verb).
 [70] = "重做",
 -- 7dac8415 English: Invalid item reference for announce %s:%s; reference preserved; announcement
 --     disabled.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [71] = "通报 %s:%s 的物品引用无效；引用已保留；通报已禁用。",
 -- 048f2dd8 English: Invalid item reference for announce %s:%s; explicit repair will preserve the
 --     reference and disable the announcement.
+-- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
+-- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
 [72] = "通报 %s:%s 的物品引用无效；显式修复将保留该引用并禁用此通报。",
 -- bde1631d English: Invalid custom condition %s:%s field %s (%s); source preserved; condition
 --     disabled.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [73] = "自定义条件 %s:%s 的字段 %s 无效（%s）；源码已保留；条件已禁用。",
 -- c3f0309d English: Invalid custom condition %s:%s field %s (%s); explicit repair will preserve
 --     source and disable the condition.
+-- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
+-- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
+-- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
+-- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
 [74] = "自定义条件 %s:%s 的字段 %s 无效（%s）；显式修复将保留源码并禁用该条件。",
 -- b496eb37 English: Non-finite minimap value in profile %s: %s.
+-- %s #1: %s #1: the profile name, e.g. "Default"
+-- %s #2: %s #2: the name of the minimap setting holding the bad number (shown as-is), e.g. "minimapPos" or "radius"
 [75] = "配置文件 %s 中的小地图数值不是有限数：%s。",
 -- 504dd0b6 English: Invalid effect ID for rotation step %s:%s:%d.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
+-- %d #3: %d #3: the position of the step in the rotation, counting from 1, e.g. 4
 [76] = "循环步骤 %s:%s:%d 的效果 ID 无效。",
 -- d485d6e1 English: Unknown effect type for %s:%s (%s); record preserved.
+-- %s #1: %s #1: where the effect is stored, "global" or "profile:" and the profile name, e.g. "global"
+-- %s #2: %s #2: the effect's ID, e.g. "a1b2c3d4"
+-- %s #3: %s #3: the unrecognised effect type value, e.g. "unknown_type" (shown as-is)
 [77] = "%s:%s 的效果类型未知（%s）；记录已保留。",
 -- 9148825e English: /rm help                - This text.
 [78] = "/rm help                - 显示此说明。",
@@ -215,33 +324,57 @@ addon.translation = {
 -- 71773a7c English: No rotation is currently active.
 [88] = "当前没有激活的循环。",
 -- f5951390 English: The current rotation is |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the active rotation, e.g. "Frost Single Target"
 [89] = "当前循环为 |cFFFFFFFF%s|cFF7BC653",
 -- 1122c922 English: Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation the player chose, e.g. "Frost Single Target"
 [90] = "已手动将当前循环切换为 |cFFFFFFFF%s|cFF7BC653",
 -- b406bd3a English: Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current
 --     specialization.
+-- %s #1: %s #1: the rotation name the player typed after the slash command, e.g. "Frost AoE"
 [91] = "找不到适用于你当前专精、名为 |cFFFFFFFF%s|cFFB212B7 的循环。",
 -- f6b5a992 English: Invalid option |cFFFFFFFF%s|cFFB212B7
+-- Context: Chat warning when a slash command option is not recognized (/rm ...); %s is the option
+--     typed; the color codes must stay.
+-- %s #1: %s #1: the unrecognised option the player typed after the slash command, e.g. "foo"
 [92] = "无效选项 |cFFFFFFFF%s|cFFB212B7",
 -- 56693a8f English: Starting up version %s
+-- Context: Chat message printed at addon startup; %s is the addon version number.
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
 [93] = "正在启动版本 %s",
 -- 45d8dada English: Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653
+-- %s #1: %s #1: the name of the rotation that was selected automatically, e.g. "Frost Single Target"
 [94] = "已自动将当前循环切换为 |cFFFFFFFF%s|cFF7BC653",
 -- d4f91385 English: No rotation is active as there is none suitable to automatically switch to.
 [95] = "没有合适的循环可自动切换，因此当前没有激活的循环。",
 -- fe0d07c7 English: Battle rotation enabled
+-- Context: Minimap menu checkbox / chat message: the automatic battle rotation (recommendations) is
+--     turned on; status text.
 [96] = "战斗循环已启用",
 -- d3cca26b English: Battle rotation disabled
+-- Context: Minimap button tooltip line (red) / chat message: the automatic battle rotation is
+--     turned off; status text.
 [97] = "战斗循环已禁用",
 -- 8b75ea84 English: Current Rotation
+-- Context: Title line in the minimap menu and tooltip above the name of the rotation currently in
+--     use.
 [98] = "当前循环",
 -- 11d80e12 English: Automatic Switching
+-- Context: Entry in the minimap menu rotation list: let Rotation Master pick the rotation
+--     automatically (the alternative is picking one by hand).
 [99] = "自动切换",
 -- ea046a56 English: Toggle %s |cFF00FFFF/rm toggle|r
+-- Context: Key-binding name shown in the game's Key Bindings screen; %s is the addon name; the
+--     colored '/rm toggle' slash command must stay.
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
 [100] = "切换%s |cFF00FFFF/rm toggle|r",
 -- 0ee9fb73 English: Validating database integrity
+-- Context: Chat message when running the /rm check or /rm repair command: the saved settings
+--     database is being validated.
 [101] = "正在验证数据库完整性",
 -- a256b212 English: [Tier: %d, Column: %d]
+-- %d #1: %d #1: the talent tier (row), 1 to 7, e.g. 3
+-- %d #2: %d #2: the talent column, 1 to 3, e.g. 2
 [102] = "[层级：%d，列：%d]",
 -- d634fd5e English: Autoswitch rotation list has been updated.
 [103] = "自动切换循环列表已更新。",
@@ -254,289 +387,504 @@ addon.translation = {
 -- cc9f8575 English: Active rotation is incomplete and may not work correctly!
 [107] = "当前循环不完整，可能无法正常工作！",
 -- 9e4feae8 English: Cache hit rate at %.02f%%
+-- %.02f #1: %.02f #1: the cache hit rate as a percentage with two decimals, e.g. 87.35 (the %% after it is a literal percent sign)
 [108] = "缓存命中率为 %.02f%%",
 -- 6a0a0288 English: Spells
+-- Context: Name of the 'Spells' category of conditions; also a category in the icon picker (icons
+--     showing spells/magic).
 [109] = "法术",
 -- fb8e7a1a English: Items
+-- Context: Name of the 'Items' condition category; also the label for an items entry when comparing
+--     collections, and an icon-picker category.
 [110] = "物品",
 -- 966dac79 English: Buffs
+-- Context: Name of the 'Buffs' condition category (auras on a unit); also a category/tag in the
+--     icon picker.
 [111] = "增益效果",
 -- 49fcf2c7 English: Combat
+-- Context: Name of the 'Combat' condition category; also a category/tag in the icon picker.
 [112] = "战斗",
 -- 1405a63e English: Character
+-- Context: Name of the 'Character' condition category (conditions about your own character, class,
+--     level); also an icon-picker category.
 [113] = "角色",
 -- f97e9da0 English: Other
+-- Context: Name of the catch-all condition category for conditions that fit no other category (a
+--     dropdown option / group heading); the adjective 'Other'.
 [114] = "其他",
 -- f94a59f5 English: Spatial
+-- Context: Name of the 'Spatial' condition category (zone, distance, proximity conditions); also an
+--     icon-picker category.
 [115] = "空间",
 -- 494ca78f English: Custom
+-- Context: Dropdown option meaning 'an ad-hoc custom item set': choose it instead of a saved
+--     reusable item set, then enter items by hand.
 [116] = "自定义",
 -- 56b9b63d English: Bind
+-- Context: Button in the item settings that binds the selected item to action-bar slots (verb);
+--     when slots are bound its label becomes 'Slots ... · Unbind'.
 [117] = "绑定",
 -- dca68375 English: Unbind
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Unbind' for item sets bound to action bar slots (now shown as
+--     'Slots ... · Unbind').
 [118] = "解绑",
 -- 67236b42 English: {unit} {stacks} {comparison} {quantity}
 [119] = "{unit}{stacks}{comparison}{quantity}",
 -- ebc99a61 English: is less than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is less than N'
+--     (numeric comparison).
 [120] = "小于",
 -- 103999f5 English: is less than or equal to
 [121] = "小于或等于",
 -- 4ccdd13e English: is greater than
+-- Context: Comparison operator in the sentence of a condition's dropdown: 'value is greater than N'
+--     (numeric comparison).
 [122] = "大于",
 -- 31742930 English: is greater than or equal to
 [123] = "大于或等于",
 -- cb9f4031 English: is equal to
+-- Context: Comparison operator in a condition's dropdown: 'is equal to' (also used for the negated
+--     'is not' operator set where it is reversed).
 [124] = "等于",
 -- f3bab6c4 English: is not equal to
 [125] = "不等于",
 -- 46fd28a6 English: is evenly divisible by
 [126] = "能被整除于",
 -- bb0347a4 English: you
+-- Context: Unit name used inside condition sentences, e.g. 'Health of you'; here the player's own
+--     character as the subject.
 [127] = "你",
 -- ae77a704 English: your pet
+-- Context: Unit name used inside condition sentences: the player's pet.
 [128] = "你的宠物",
 -- 5c6909af English: your target
+-- Context: Unit name used inside condition sentences: the player's current target.
 [129] = "你的目标",
 -- c03e55b9 English: your focus target
+-- Context: Unit name used inside condition sentences: the player's focus target (only for game
+--     versions that have a focus target).
 [130] = "你的焦点目标",
 -- b3cccabc English: your mouseover target
+-- Context: Unit name used inside condition sentences: the unit the mouse pointer is over.
 [131] = "你的鼠标悬停目标",
 -- 475bae27 English: your pet's target
+-- Context: Unit name used inside condition sentences: the target of the player's pet.
 [132] = "你的宠物的目标",
 -- 36be7c3f English: your target's target
+-- Context: Unit name used inside condition sentences: the target of the player's target.
 [133] = "你的目标的目标",
 -- ad57c70e English: your focus target's target
 [134] = "你的焦点目标的目标",
 -- f445919a English: your mouseover target's target
 [135] = "你的鼠标悬停目标的目标",
 -- 4d040d3f English: your
+-- Context: Possessive unit word used in condition sentences, e.g. 'your health': the player's own
+--     character.
 [136] = "你的",
 -- 0f29cbcd English: your pet's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's (e.g. 'your pet's
+--     health').
 [137] = "你的宠物的",
 -- 86535199 English: your target's
+-- Context: Possessive unit phrase used in condition sentences: the player's target's (e.g. 'your
+--     target's health').
 [138] = "你的目标的",
 -- b263b9c4 English: your focus target's
+-- Context: Possessive unit phrase used in condition sentences: the player's focus target's (only
+--     for game versions with a focus target).
 [139] = "你的焦点目标的",
 -- 9c1fb6c2 English: your mouseover target's
+-- Context: Possessive unit phrase used in condition sentences: the mouseover unit's (e.g. 'your
+--     mouseover target's health').
 [140] = "你的鼠标悬停目标的",
 -- 4df38978 English: your pet's target's
+-- Context: Possessive unit phrase used in condition sentences: the player's pet's target's (e.g.
+--     'your pet's target's health').
 [141] = "你的宠物的目标的",
 -- 6c2c38e9 English: your target's target's
+-- Context: Possessive unit phrase used in condition sentences: the target of your target's (e.g.
+--     'your target's target's health').
 [142] = "你的目标的目标的",
 -- 5028affe English: your focus target's target's
 [143] = "你的焦点目标的目标的",
 -- 32961613 English: your mouseover target's target's
 [144] = "你的鼠标悬停目标的目标的",
 -- 71f18ea0 English: healed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was
+--     healed ('your target healed ...').
 [145] = "被治疗",
 -- 4ddc4e8a English: dodged
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     dodged.
 [146] = "被躲闪",
 -- 6973dddd English: blocked
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     blocked.
 [147] = "被格挡",
 -- 63d04dee English: hit
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was hit
+--     by an attack.
 [148] = "被命中",
 -- 0e347254 English: critically hit
+-- Context: Past-tense verb phrase in the Last Combat Action condition's action dropdown: the unit
+--     was hit by a critical strike.
 [149] = "被爆击",
 -- 4f0a566d English: hit with a crushing blow
 [150] = "被碾压",
 -- fb785161 English: hit with a glancing blow
 [151] = "被偏斜",
 -- 1c33629a English: missed
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack missed.
 [152] = "未命中",
 -- 2fe44909 English: parried
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     parried.
 [153] = "被招架",
 -- 57ac7325 English: resisted
+-- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
+--     resisted.
 [154] = "被抵抗",
 -- d9460674 English: Center
+-- Context: Option in an anchor-position dropdown (where a highlight/frame attaches to the screen or
+--     an icon): the exact center.
 [155] = "居中",
 -- 1cb2052a English: Top Left
+-- Context: Option in an anchor-position dropdown: the top-left corner.
 [156] = "左上",
 -- dccff16f English: Top Right
+-- Context: Option in an anchor-position dropdown: the top-right corner.
 [157] = "右上",
 -- 7499760f English: Bottom Left
+-- Context: Option in an anchor-position dropdown: the bottom-left corner.
 [158] = "左下",
 -- 09b28cd7 English: Bottom Right
+-- Context: Option in an anchor-position dropdown: the bottom-right corner.
 [159] = "右下",
 -- 271eac34 English: Top Center
+-- Context: Option in an anchor-position dropdown: the middle of the top edge.
 [160] = "顶部居中",
 -- 6818850e English: Bottom Center
+-- Context: Option in an anchor-position dropdown: the middle of the bottom edge.
 [161] = "底部居中",
 -- 24b15e35 English: Left Center
+-- Context: Option in an anchor-position dropdown: the middle of the left edge.
 [162] = "左侧居中",
 -- 8f0626ff English: Right Center
+-- Context: Option in an anchor-position dropdown: the middle of the right edge.
 [163] = "右侧居中",
 -- bdbea4f8 English: Select Icon
+-- Context: Title of the icon picker window, where you choose an icon for a condition or rotation;
+--     imperative 'Select an icon'.
 [164] = "选择图标",
 -- 99a52df3 English: Key
+-- Context: Bold term in the Custom Condition help text: the field that holds the condition's unique
+--     key/identifier (a name used in code).
 [165] = "键",
 -- eef729cf English: Custom Condition
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Custom Condition' for the custom condition editor/help.
 [166] = "自定义条件",
 -- e0b9479a English: Edit Condition
+-- Context: Window title of the condition editor when no number is shown (verb + noun: you edit a
+--     condition); also the title of the Edit Condition dialog in the rotation editor.
 [167] = "编辑条件",
 -- 526e0087 English: Description
+-- Context: Field label for the free-text description: in the custom condition help, and as a row
+--     label when comparing two collections.
 [168] = "描述",
 -- d689600f English: Post-Registration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On register' callback (code run after the
+--     condition is registered).
 [169] = "注册后函数",
 -- 2bd03442 English: Pre-Unregistration Function
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Old name of the custom condition 'On unregister' callback (code run before the
+--     condition is unregistered).
 [170] = "注销前函数",
 -- eaf0fe0a English: Warrior
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warrior. The game's own localized class names are used in class
+--     pickers; use the standard WoW class name.
 [171] = "战士",
 -- a7d973a7 English: Paladin
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Paladin. Use the standard WoW class name for your language.
 [172] = "圣骑士",
 -- 680ce380 English: Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Hunter. Use the standard WoW class name for your language.
 [173] = "猎人",
 -- 0b8cdd9e English: Rogue
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Rogue. Use the standard WoW class name for your language.
 [174] = "潜行者",
 -- 909a4523 English: Priest
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Priest. Use the standard WoW class name for your language.
 [175] = "牧师",
 -- 483f6fa9 English: Death Knight
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Death Knight. Use the standard WoW class name for your language.
 [176] = "死亡骑士",
 -- 0953e68a English: Shaman
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Shaman. Use the standard WoW class name for your language.
 [177] = "萨满祭司",
 -- e181bc01 English: Mage
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Mage. Use the standard WoW class name for your language.
 [178] = "法师",
 -- 6e7e607f English: Warlock
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Warlock. Use the standard WoW class name for your language.
 [179] = "术士",
 -- a670c8d2 English: Monk
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Monk. Use the standard WoW class name for your language.
 [180] = "武僧",
 -- 274814f1 English: Druid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Druid. Use the standard WoW class name for your language.
 [181] = "德鲁伊",
 -- 66b96f76 English: Demon Hunter
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Class name Demon Hunter. Use the standard WoW class name for your language.
 [182] = "恶魔猎手",
 -- 628bf77a English: Beast
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Beast').
 [183] = "野兽",
 -- 4a70eb4d English: Dragonkin
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Dragonkin').
 [184] = "龙类",
 -- 83bd7784 English: Demon
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Demon').
 [185] = "恶魔",
 -- 4309e83a English: Elemental
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Elemental').
 [186] = "元素生物",
 -- db5bea37 English: Giant
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Giant').
 [187] = "巨人",
 -- a5bb6066 English: Undead
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Undead').
 [188] = "亡灵",
 -- d2253641 English: Humanoid
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Humanoid').
 [189] = "人型生物",
 -- 14e2f7b4 English: Critter
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Critter').
 [190] = "小动物",
 -- 39bf205e English: Mechanical
+-- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Mechanical').
 [191] = "机械",
 -- dc12bec5 English: Not specified
+-- Context: Creature type in the Creature condition's dropdown for units with no creature type (WoW
+--     'Not specified'); also shown where a value is missing in condition text.
 [192] = "未指定",
 -- 8f7ae0c0 English: Totem
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Totem'); also the label of the
+--     Totem condition's dropdown choosing the totem slot (Fire, Earth, Water, Air).
 [193] = "图腾",
 -- 87f8c315 English: Non-combat Pet
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Non-combat Pet', i.e.
+--     companion/vanity pets).
 [194] = "非战斗宠物",
 -- b2098aeb English: Gas Cloud
+-- Context: Creature type in the Creature condition's dropdown (WoW 'Gas Cloud' units, such as in
+--     raid encounters).
 [195] = "气体云雾",
 -- a703e47b English: World Boss
+-- Context: Unit classification in the Classification condition's dropdown: a world boss.
 [196] = "世界首领",
 -- 7c32325f English: Rare Elite
+-- Context: Unit classification in the Classification condition's dropdown: a rare elite mob.
 [197] = "稀有精英",
 -- 1d6953e0 English: Elite
+-- Context: Unit classification in the Classification condition's dropdown: an elite mob.
 [198] = "精英",
 -- 291d2a97 English: Rare
+-- Context: Unit classification in the Classification condition's dropdown: a rare mob.
 [199] = "稀有",
 -- a7248eeb English: Normal
+-- Context: Unit classification in the Classification condition's dropdown: an ordinary (normal)
+--     mob.
 [200] = "普通",
 -- 73fba898 English: Trivial
+-- Context: Unit classification in the Classification condition's dropdown: a trivial (low-level,
+--     grey) mob.
 [201] = "无足轻重",
 -- 9befa3c6 English: Minus
+-- Context: Unit classification in the Classification condition's dropdown: a 'minus' mob, a
+--     weaker-than-normal mob (e.g. swarm adds).
 [202] = "杂兵",
 -- c0b21fb1 English: Tank
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Tank').
 [203] = "坦克",
 -- caece7f5 English: DPS
+-- Context: Group role in the Role condition's dropdown and its help text: damage dealer
+--     (abbreviation for damage per second).
 [204] = "伤害输出",
 -- a491a33c English: Healer
+-- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Healer').
 [205] = "治疗者",
 -- ed1a5a81 English: Magic
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Magic').
 [206] = "魔法",
 -- 7bce5b94 English: Disease
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Disease').
 [207] = "疾病",
 -- d5a78b99 English: Poison
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Poison').
 [208] = "中毒",
 -- 88b3d8ee English: Curse
+-- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Curse').
 [209] = "诅咒",
 -- c6e5d717 English: Enrage
+-- Context: Debuff type in the Debuff Type condition's dropdown: an enrage effect on a hostile unit
+--     (dispelled by e.g. Tranquilizing Shot).
 [210] = "激怒",
 -- 77d7cd99 English: Arena
+-- Context: PvP zone status option in the PvP condition dropdown and help ('You are in an arena');
+--     also instance mode 'Arena' in the Instance Mode condition.
 [211] = "竞技场",
 -- b2fb8b8a English: Controlled by your faction
 [212] = "由你的阵营控制",
 -- 9f22dfe6 English: Contested
+-- Context: PvP zone status option in the PvP condition's dropdown and help: a contested zone,
+--     controlled by neither faction.
 [213] = "争夺中",
 -- bdd63a7e English: Controlled by opposing faction
 [214] = "由敌对阵营控制",
 -- 5f18bd94 English: Sanctuary (no PVP)
+-- Context: PvP zone status option in the PvP condition's dropdown: a sanctuary where PvP is
+--     impossible.
 [215] = "安全区域（无 PvP）",
 -- 7d73fb0c English: Combat (auto-flagged)
+-- Context: PvP zone status option in the PvP condition's dropdown: a combat zone where players are
+--     flagged for PvP automatically.
 [216] = "战斗区域（自动开启 PvP）",
 -- dacf1516 English: Outside
+-- Context: Instance mode option in the Instance condition's dropdown: you are not in any instance
+--     (the open world).
 [217] = "野外",
 -- 40964db2 English: Battleground
+-- Context: Instance mode option in the Instance condition's dropdown: a PvP battleground.
 [218] = "战场",
 -- 73054bd6 English: Dungeon
+-- Context: Instance mode option in the Instance condition's dropdown: a five-player dungeon; also
+--     used as the dungeon group of difficulty names.
 [219] = "地下城",
 -- 7dabeb63 English: Raid
+-- Context: Group-type word: the Raid checkbox in group conditions ('check the whole raid, not only
+--     the party'); also an instance mode option.
 [220] = "团队副本",
 -- c141faa8 English: Fire
+-- Context: Name of the Fire totem slot in the Totem condition's dropdown; also a spell school
+--     (Fire) and an icon-picker category.
 [221] = "火焰",
 -- b7c9b5cc English: Earth
+-- Context: Name of the Earth totem slot in the Totem condition's dropdown.
 [222] = "大地",
 -- 7ca7dea9 English: Water
+-- Context: Name of the Water totem slot in the Totem condition's dropdown.
 [223] = "水",
 -- aa42ff59 English: Air
+-- Context: Name of the Air totem slot in the Totem condition's dropdown.
 [224] = "空气",
 -- 735beee2 English: Minimum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the lowest value
+--     among units; also its help term.
 [225] = "最小值",
 -- e17f73ea English: lowest
+-- Context: Adjective used inside a condition sentence, e.g. 'the lowest health of ...' (the Minimum
+--     operation).
 [226] = "最低",
 -- 66c9ab17 English: Maximum
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the highest value
+--     among units; also its help term.
 [227] = "最大值",
 -- 4d8fa801 English: highest
+-- Context: Adjective used inside a condition sentence, e.g. 'the highest health of ...' (the
+--     Maximum operation).
 [228] = "最高",
 -- b38ae2c5 English: Average
+-- Context: Option in the Operation dropdown of spatial statistics conditions: use the mean value
+--     among units; also its help term.
 [229] = "平均值",
 -- 184df936 English: average
+-- Context: Adjective used inside a condition sentence, e.g. 'the average health of ...' (the
+--     Average operation).
 [230] = "平均",
 -- 8fd58c92 English: no threat risk
+-- Context: Threat-level option in the Threat condition's dropdown and its help: you are in no
+--     danger of taking threat from the tank.
 [231] = "无仇恨风险",
 -- 748beef5 English: higher threat than tank
 [232] = "仇恨高于坦克",
 -- bee526bf English: tanking, at risk
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit but not
+--     top of the threat table, so you may lose it.
 [233] = "坦克中，有风险",
 -- f40da142 English: tanking, secure
+-- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit and are
+--     not at risk of losing it.
 [234] = "坦克中，稳定",
 -- 0f179dbf English: <value>
+-- Context: Placeholder shown in red in a condition's text when a value is not yet filled in;
+--     literally the angle-bracketed word 'value'.
 [235] = "<数值>",
 -- 98bf8ca2 English: <operator>
+-- Context: Placeholder shown in a condition's text when the comparison operator is not yet chosen
+--     (e.g. '<operator> 3 actions ago'); keep the angle brackets.
 [236] = "<运算符>",
 -- 77300ce2 English: Enable Rotation Master
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label of the main enable checkbox (now just 'Enable' in General settings).
 [237] = "启用 Rotation Master",
 -- 1e28d34e English: Polling Interval (seconds)
+-- Context: Label of the polling interval slider in General settings (seconds between rotation
+--     recommendation refreshes); also a help heading.
 [238] = "轮询间隔（秒）",
 -- 96414600 English: Idle Re-check Interval (seconds)
 [239] = "空闲时重新检查间隔（秒）",
 -- 9e4deebb English: Auto-Switch Re-check Interval (seconds)
 [240] = "自动切换重新检查间隔（秒）",
 -- 43deba51 English: Ignore Mana
+-- Context: Checkbox in General settings: recommend spells even when the unit lacks the mana for
+--     them; also a help heading.
 [241] = "忽略法力值",
 -- 3427b677 English: Ignore Range
+-- Context: Checkbox in General settings: recommend spells even when the target is out of range;
+--     also a help heading.
 [242] = "忽略距离",
 -- 4764e65b English: Skip rotation entries or disable cooldown highlights because you don't have
 --     enough to cast them.
 [243] = "因资源不足以施放而跳过循环条目或禁用冷却高亮。",
 -- e6b6aad8 English: Effect Options
+-- Context: Section heading in General settings for options about the highlight effect (effect,
+--     magnification, color, anchor).
 [244] = "效果选项",
 -- cfa79416 English: Magnification
+-- Context: Label of the highlight size multiplier (zoom of the effect) in General settings,
+--     rotation steps and the effect editor; also a help heading.
 [245] = "放大倍数",
 -- 48aae415 English: Highlight Color
+-- Context: Label of the highlight color picker in General settings and in the rotation step editor
+--     (the color of the bar highlight); also a help heading.
 [246] = "高亮颜色",
 -- 6d031af1 English: Position
+-- Context: Label of the step position field in the rotation step editor (where in the rotation list
+--     the step sits); also a help term and a line in change summaries.
 [247] = "位置",
 -- f4a13303 English: Specialization Names
+-- Context: Section heading in General settings (Classic clients only): fields for naming your
+--     primary and secondary talent specializations.
 [248] = "专精名称",
 -- 1cfb0bd9 English: Tooltips
+-- Context: Section heading in General settings for options controlling the lines Rotation Master
+--     adds to spell and item tooltips.
 [249] = "提示信息",
 -- 4e430b3e English: Show Rotation Master in tooltips
 [250] = "在提示信息中显示 Rotation Master",
@@ -545,32 +893,54 @@ addon.translation = {
 -- e0ebe3cd English: List rotations in spell and item tooltips
 [252] = "在法术和物品提示中列出循环",
 -- 9c73797e English: Include rotation conditions
+-- Context: Checkbox in General settings, Tooltips section: also list the rotation's conditions in
+--     spell/item tooltips; also a help heading.
 [253] = "包含循环条件",
 -- c6b7619f English: Names listed per tooltip line
 [254] = "每行提示列出的名称数",
 -- 7fb301ab English: Rotation Master item sets
 [255] = "Rotation Master 物品组",
 -- 6a361b20 English: Rotation Master rotations
+-- Context: Prefix label of a line in spell and item tooltips, followed by the names of the
+--     rotations that use that spell or item.
 [256] = "Rotation Master 循环",
 -- 9204c375 English: %s (disabled)
+-- Context: Rotation name in a tooltip line when that rotation is disabled; %s is the rotation name.
+-- %s #1: %s #1: the name of a rotation that is turned off, e.g. "Frost Single Target"
 [257] = "%s（已禁用）",
 -- d5b57b61 English: (+%d more)
+-- Context: Suffix at the end of a tooltip line listing names, when more exist than are shown; %d is
+--     how many were left out.
+-- %d #1: %d #1: how many further rotations are not listed, e.g. 3
 [258] = "（另有 %d 个）",
 -- d440fcce English: Debugging Options
+-- Context: Section heading in General settings for debugging options (log level, detailed
+--     profiling).
 [259] = "调试选项",
 -- 12fe4737 English: Log Level
+-- Context: Label of the log verbosity dropdown in General settings, Debugging section; also a help
+--     heading and a comparison row label.
 [260] = "日志级别",
 -- c0ebb7d6 English: Quiet
+-- Context: Option in the Log Level dropdown: only minimal addon chat output.
 [261] = "安静",
 -- 1a03bd2f English: Debug
+-- Context: Option in the Log Level dropdown: extra debug messages are printed.
 [262] = "调试",
 -- 2cd57109 English: Verbose
+-- Context: Option in the Log Level dropdown: the most detailed log messages.
 [263] = "详细",
 -- f2438f82 English: Detailed Profiling
+-- Context: Checkbox in General settings, Debugging section: collect detailed performance timing of
+--     the addon; also a help heading.
 [264] = "详细性能分析",
 -- 0ca3f824 English: Disable Auto-Switching
+-- Context: Label of a setting that turns off automatic rotation switching; shown as a row name when
+--     comparing two profile collections.
 [265] = "禁用自动切换",
 -- 9ac1f2c5 English: Minimap Icon
+-- Context: Checkbox in General settings: show or hide the Rotation Master button on the minimap;
+--     also a help heading.
 [266] = "小地图图标",
 -- 7de50af6 English: Spell History Memory (seconds)
 [267] = "法术历史记忆时长（秒）",
@@ -581,8 +951,12 @@ addon.translation = {
 -- 67e53fcd English: Live Status Update Frequency (seconds)
 [270] = "实时状态更新频率（秒）",
 -- 8e8f30f5 English: Disable Bar Highlighting
+-- Context: Checkbox in General settings: turn off the highlight Rotation Master draws on action bar
+--     buttons; also a help heading.
 [271] = "禁用动作条高亮",
 -- 7079e1f5 English: Preview Spells
+-- Context: Label of a slider in General settings: how many upcoming spells the preview window
+--     shows; also a help heading.
 [272] = "预览法术",
 -- e2f5f378 English: This is specifically how often the configuration pane will receive updates
 --     about live status.  Too frequently could make your configuration pane unusable.  0 =
@@ -596,14 +970,25 @@ addon.translation = {
 --     the effect list?
 [276] = "默认效果自上一版本以来已有变化，是否要重置效果列表？",
 -- 6db7e56b English: Import/Export Rotation
+-- Context: Title of the transfer dialog and its help for importing or exporting a rotation as text.
 [277] = "导入/导出循环",
 -- a66223ca English: Import/Export Item Set
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an item set as text
+--     (like 'Import/Export Rotation').
 [278] = "导入/导出物品组",
 -- 87c5e6a6 English: Import/Export Effect
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting an effect as text (like
+--     'Import/Export Rotation').
 [279] = "导入/导出效果",
 -- 1318e3a7 English: Import/Export Condition
+-- Context: Title of the transfer dialog for importing or exporting a custom condition as text.
 [280] = "导入/导出条件",
 -- a04def9c English: Import/Export Condition Group
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Title of the transfer dialog for importing or exporting a condition category as
+--     text.
 [281] = "导入/导出条件组",
 -- 6de338e2 English: Copy and paste this text share your rotation with others, or import someone
 --     else's.
@@ -618,20 +1003,38 @@ addon.translation = {
 --     someone else's.
 [285] = "复制并粘贴此文本，与他人分享你的自定义条件，或导入别人的自定义条件。",
 -- 277089d9 English: bytes
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'bytes' (size of text).
 [286] = "字节",
 -- 5ea44c39 English: lines
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Unit word 'lines' (number of text lines).
 [287] = "行",
 -- d4121e17 English: Parse Error
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Parse Error' for a failed import of text.
 [288] = "解析错误",
 -- f3bb01ec English: Copy of %s
+-- Context: Default name for a duplicated item (rotation, condition, profile): 'Copy of ...'; %s is
+--     the original name.
+-- %s #1: %s #1: the name of the item being copied (a rotation, effect, item set or condition), e.g. "Frost Single Target"
 [289] = "%s 的副本",
 -- 64780145 English: Imported on %c
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Note on an imported entry: 'Imported on <date>'; %c is a date and time
+--     formatted by the game.
+-- %c #1: %c #1: not a value but a date format code; the game replaces it with the current local date and time when an effect is imported, e.g. "10/28/26 13:45:00". Keep %c exactly.
 [290] = "导入于 %c",
 -- 42191ef4 English: Import/Export
+-- Context: Button label (and help term) for the dialog that exports or imports a definition as
+--     text; slash separates the two actions.
 [291] = "导入/导出",
 -- 2cff9baa English: Import
+-- Context: Button in the import dialog: imports the pasted text (verb).
 [292] = "导入",
 -- 821e6678 English: Switch Condition
+-- Context: Checkbox label and help heading: allow this condition type to be used when automatically
+--     choosing a rotation (switch conditions).
 [293] = "切换条件",
 -- acba80e5 English: No other rotations match.
 [294] = "没有其他匹配的循环。",
@@ -642,108 +1045,185 @@ addon.translation = {
 -- a60ad1de English: THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE
 [297] = "此循环不完整，将不会被使用",
 -- a857b1ff English: Cooldowns
+-- Context: Name of the second tab in the rotation view (steps used for cooldowns, as opposed to the
+--     main rotation); also a comparison row label.
 [298] = "冷却",
 -- 57b5e2fc English: Rotation
+-- Context: Name of the first tab in the rotation view (the main rotation steps); also a generic
+--     label for a rotation entry.
 [299] = "循环",
 -- 39921a74 English: Switch
+-- Context: Name of a condition category/filter (conditions that can be used for automatically
+--     switching rotations) in condition lists.
 [300] = "切换",
 -- e061b3f5 English: Condition Options
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Heading 'Condition Options'.
 [301] = "条件选项",
 -- 07724428 English: Rotations
+-- Context: Name of the top-level 'Rotations' tab in the settings window; also a row label when
+--     comparing collections.
 [302] = "循环",
 -- 49c266ba English: Search
+-- Context: Heading of the help text for the search box above the condition list (verb/noun).
 [303] = "搜索",
 -- baaddf70 English: Type
+-- Context: Label for the kind of something: the effect type dropdown in effect settings, and the
+--     step type in the rotation editor; also a column in comparisons.
 [304] = "类型",
 -- e28411a3 English: Texture
+-- Context: Effect type in the effect type dropdown (an icon/texture overlay effect); also the label
+--     of the texture picker.
 [305] = "材质",
 -- 2252d5cf English: Effect
+-- Context: Label of the highlight effect dropdown in General settings and rotation steps (the
+--     visual glow style); also a comparison row label.
 [306] = "效果",
 -- 5817280a English: Pixel
+-- Context: Effect type in the effect type dropdown: a glow of moving pixel lines around the button.
 [307] = "像素",
 -- 09968fe6 English: Auto Cast
+-- Context: Effect type in the effect type dropdown: a glow of orbiting sparkles like a pet autocast
+--     border.
 [308] = "自动施法",
 -- f534ed97 English: Glow
+-- Context: Effect type in the effect type dropdown: the standard Blizzard button glow.
 [309] = "发光",
 -- 96afc081 English: Dazzle
+-- Context: Effect type in the effect type dropdown: a dazzling flashing glow.
 [310] = "炫光",
 -- fd4a5f3d English: Animate
+-- Context: Effect type in the effect type dropdown: an animated texture effect.
 [311] = "动画",
 -- f7a403c6 English: Pulse
+-- Context: Effect type in the effect type dropdown: a texture that pulses (grows and shrinks).
 [312] = "脉冲",
 -- c3613b17 English: Rotate
+-- Context: Effect type in the effect type dropdown: a texture that rotates.
 [313] = "旋转",
 -- 0740f4ba English: Sequence
+-- Context: Heading of the list of sequence steps in the custom effect editor (an effect built from
+--     a series of frames).
 [314] = "序列",
 -- 4e1f49a9 English: Event
+-- Context: Label of the dropdown choosing which cast event (started, stopped, succeeded...)
+--     triggers an announcement; also a help heading.
 [315] = "事件",
 -- 358511c8 English: Effects
+-- Context: Name of the 'Effects' settings tab; refers to highlight effects.
 [316] = "效果",
 -- 4ea6bdd3 English: Item Sets
+-- Context: Name of the 'Item Sets' settings tab and help topic.
 [317] = "物品组",
 -- 7c326a4b English: Announces
+-- Context: Name of the 'Announces' settings tab (announcements sent when spells are cast); also a
+--     comparison row label.
 [318] = "通报",
 -- 535e52e4 English: Profiles
+-- Context: Name of the 'Profiles' settings tab; also the title of the profile transfer dialog.
 [319] = "配置文件",
 -- 3b26a542 English: Lines
+-- Context: Label of the number-of-lines setting of the Pixel effect.
 [320] = "线条数",
 -- 16b6668d English: Frequency
+-- Context: Label of a speed setting of an effect (how fast it animates, in cycles per second).
 [321] = "频率",
 -- 1de3df70 English: Steps
+-- Context: Label of the number-of-steps setting of the Rotate effect.
 [322] = "步数",
 -- fae1c6f1 English: Reverse
+-- Context: Checkbox in the Rotate effect settings: rotate in the opposite direction.
 [323] = "反向",
 -- 1968034b English: Angle
+-- Context: Label of the rotation angle (degrees, 0-359) of a sequence step in the effect editor.
 [324] = "角度",
 -- adc95605 English: Length
+-- Context: Label of the line length setting of the Pixel effect.
 [325] = "长度",
 -- 7b594414 English: Thickness
+-- Context: Label of the line thickness setting of the Pixel effect.
 [326] = "粗细",
 -- e73735cf English: Particles
+-- Context: Label of the number-of-particles setting of the Auto Cast effect.
 [327] = "粒子数",
 -- f102986b English: Scale
+-- Context: Label of a size/zoom setting: effect scale, and the UI scale slider of the configuration
+--     window.
 [328] = "缩放",
 -- 1709305c English: Level
+-- Context: Name of the Level condition (character level of a unit); also its operator field label
+--     in the condition editor.
 [329] = "等级",
 -- 75081b59 English: Disabled
+-- Context: Status text / button state: the item (condition, step, rotation) is turned off; also
+--     prefixes a condition's text when disabled.
 [330] = "已禁用",
 -- 92c1cdfd English: Enabled
+-- Context: Status text / toggle button state: the item (condition, function, definition) is turned
+--     on.
 [331] = "已启用",
 -- b79cac92 English: Help
+-- Context: Button/tooltip opening the help for the current editor or condition; also a comparison
+--     row label.
 [332] = "帮助",
 -- 8c89911a English: Time Until Health
+-- Context: Name of the Time Until Health condition (estimated seconds until a unit reaches a health
+--     value).
 [333] = "距离生命值达到所需时间",
 -- dd1e6bab English: Time Until Health Percentage
 [334] = "距离生命值百分比达到所需时间",
 -- 2184a4e3 English: Runner
+-- Context: Name of the Runner condition (the mob tends to flee at low health, per the MobInfo2
+--     addon).
 [335] = "逃跑者",
 -- 0a10734e English: %s will run
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text fragment '%s will run' for the Runner condition; %s is a unit.
+-- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
 [336] = "%s会逃跑",
 -- 93bea368 English: Resistant
+-- Context: Name of the Resistant condition (a unit resists a magic school above a value).
 [337] = "有抗性",
 -- 384f6084 English: Immune
+-- Context: Name of the Immune condition (a unit is immune to a magic school).
 [338] = "免疫",
 -- ecbc89cd English: Started
+-- Context: Cast event in the announcement Event dropdown: the cast has started; also a help
+--     heading.
 [339] = "已开始",
 -- 1a4f630a English: Stopped
+-- Context: Cast event in the announcement Event dropdown: the cast was stopped/cancelled by you;
+--     also a help heading.
 [340] = "已停止",
 -- 6d9a6f97 English: Succeeded
+-- Context: Cast event in the announcement Event dropdown: the cast completed successfully.
 [341] = "成功",
 -- 132d124d English: Interrupted
+-- Context: Cast event in the announcement Event dropdown: the cast was interrupted (e.g. by an
+--     enemy).
 [342] = "被打断",
 -- 031a8f0f English: Failed
+-- Context: Cast event in the announcement Event dropdown: the cast failed; also a validation status
+--     ('Failed') in the condition source preview.
 [343] = "失败",
 -- a5c19c9f English: Delayed
+-- Context: Cast event in the announcement Event dropdown: the cast was delayed (pushback).
 [344] = "延迟",
 -- 93006d61 English: Arcane
+-- Context: Magic school name (Arcane) in the school dropdown of the Resistant/Immune conditions.
 [345] = "奥术",
 -- 17636dd6 English: Frost
+-- Context: Magic school name (Frost) in the school dropdown; also a Death Knight rune type (Frost
+--     rune) in the rune condition help.
 [346] = "冰霜",
 -- 56eee6a5 English: Holy
+-- Context: Magic school name (Holy) in the school dropdown of the Resistant/Immune conditions.
 [347] = "神圣",
 -- c71ce8cc English: Nature
+-- Context: Magic school name (Nature) in the school dropdown; also an icon-picker category.
 [348] = "自然",
 -- 4c764cb6 English: Shadow
+-- Context: Magic school name (Shadow) in the school dropdown of the Resistant/Immune conditions.
 [349] = "暗影",
 -- 113ed31a English: Spells that you wish to conditionally highlight independent of your rotation. 
 --     Any or all of these may be highlighted at the same time.
@@ -752,398 +1232,774 @@ addon.translation = {
 --     spell being based on the first satisfied condition.
 [351] = "你的主要法术循环。同一时间只会高亮一个法术，具体高亮哪个取决于第一个满足的条件。",
 -- 1359626e English: Move Up
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position up; also a help heading.
 [352] = "上移",
 -- db60f7a9 English: Move to Top
+-- Context: Menu entry/button: moves the selected list entry to the top; also a help heading.
 [353] = "移到顶部",
 -- 89abfab0 English: Move to Bottom
+-- Context: Menu entry/button: moves the selected list entry to the bottom; also a help heading.
 [354] = "移到底部",
 -- b58330ac English: Move Down
+-- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
+--     selected entry one position down; also a help heading.
 [355] = "下移",
 -- 45986160 English: Move To
+-- Context: Label of the dropdown in the Conditions page for choosing the category to move a
+--     condition into (verb phrase 'Move to'); also a help heading.
 [356] = "移动到",
 -- 7e6fefff English: Hidden
+-- Context: Checkbox label: hide this condition from the Other category in the condition picker
+--     (adjective); also a comparison row label.
 [357] = "隐藏",
 -- 02cdaabf English: Duplicate
+-- Context: Button in the rotation list and rotation steps: makes a copy of the selected entry
+--     (verb); also a help heading.
 [358] = "复制",
 -- 4a787020 English: Action Type
+-- Context: Label of the dropdown choosing which kind of action to look for (e.g. healed, dodged,
+--     missed) in the Last Combat Action conditions; also a help heading for the announcement action
+--     type.
 [359] = "动作类型",
 -- 4e43f098 English: No Action
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Option label 'No Action' (a step that does nothing).
 [360] = "无动作",
 -- 63c5b771 English: Spell
+-- Context: Name of the Spell choice: the spell name/ID entry field label in conditions, the step
+--     type 'Spell' and a help term; noun.
 [361] = "法术",
 -- c8a18067 English: Pet Spell
+-- Context: Name of the Pet Spell choice: a step/announcement type that uses a spell of your pet;
+--     also used in pet spell condition help.
 [362] = "宠物法术",
 -- a4d187b1 English: Any Spell
+-- Context: Step type dropdown entry in the rotation step editor: a step that fires for any spell,
+--     not a specific one.
 [363] = "任意法术",
 -- 652bcc3a English: Item
+-- Context: Label of the item entry field (an item name or ID) in conditions; also the step type
+--     'Item' and a help term; noun.
 [364] = "物品",
 -- 97d4be89 English: Conditions
+-- Context: Heading of the conditions section of a rotation step/announcement and a help heading;
+--     also a comparison row label.
 [365] = "条件",
 -- c6877c9a English: NOTE: Some spells can not be selected (even if auto-completed) due to WoW
 --     internals.  It may reequire you to switch specs or summon the requisite pet first before
 --     being able to populate this field.
 [366] = "注意：由于 WoW 的内部机制，某些法术无法被选中（即使已自动补全）。你可能需要先切换专精或召唤所需的宠物，才能填写此字段。",
 -- 464557d7 English: %s is now available!
+-- %s #1: %s #1: a clickable spell link for the spell that became available, e.g. "[Fireball]" (or "Unknown spell (133)" when the game has no data)
 [367] = "%s 现已可用！",
 -- 2ab52f92 English: Announce
+-- Context: Label of the Announce checkbox/section in a rotation step (announce when the step
+--     triggers) and a help heading (verb/noun); also a comparison row label.
 [368] = "通报",
 -- f961b619 English: Audible Announce
+-- Context: Label of the dropdown in a rotation step choosing a sound to play when announcing.
 [369] = "声音通报",
 -- dc937b59 English: None
+-- Context: Dropdown option meaning 'no selection' or an empty value (e.g. no active rotation, no
+--     sound, no channel).
 [370] = "无",
 -- 51247512 English: Raid or Party
+-- Context: Dropdown option (announce channel) meaning raid chat when in a raid, otherwise party
+--     chat; also used inside condition text as 'members of raid or party'.
 [371] = "团队或小队",
 -- 272e43a2 English: Party Only
+-- Context: Announce channel dropdown option: send the announcement to party chat only; also a help
+--     heading.
 [372] = "仅小队",
 -- be5b8dfd English: Raid Warning
+-- Context: Announce channel dropdown option: send the announcement as a raid warning message; also
+--     a help heading.
 [373] = "团队警告",
 -- 64f3cd06 English: Say
+-- Context: Announce channel dropdown option: say (normal /say chat); also the chat-type of an
+--     announcement macro.
 [374] = "说",
 -- 938af47b English: Yell
+-- Context: Announce channel dropdown option: yell (/yell chat); also the chat-type of an
+--     announcement macro.
 [375] = "大喊",
 -- 5027e850 English: Emote
+-- Context: Announce channel dropdown option: perform a built-in emote; also the Emote field label
+--     in the announcement help.
 [376] = "表情",
 -- ff3a450e English: Local Only
+-- Context: Announce channel dropdown option: show the message only to you, not to others.
 [377] = "仅本地",
 -- 71988c4d English: Text
+-- Context: Label of a free-text field (the announcement text) and the schema field type 'Text' (a
+--     string) in custom function and schema editors.
 [378] = "文本",
 -- b0ef44de English: Item Set
+-- Context: Label of the item set dropdown in item conditions and the item set choice in
+--     announcements; noun.
 [379] = "物品组",
 -- 434702dc English: Click the icon above to bind to your action bar
 [380] = "点击上方图标以绑定到你的动作条",
 -- e71efd0e English: time until %s is at %s%% health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
 [381] = "%s生命值降至 %s%% 所需的时间",
 -- 4104ecce English: time until %s is at %s health
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
 [382] = "%s生命值降至 %s 所需的时间",
 -- cd7e49ac English: time until %s is at %s health defecit
+-- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
+-- %s #2: %s #2: the health deficit amount (missing health) that is waited for, e.g. 20000
 [383] = "%s生命值缺口达到 %s 所需的时间",
 -- 6344ed2a English: The %s health defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [384] = "%s生命值缺口：%s成员%s，%d码内，以%s为中心",
 -- b4b2caae English: The %s health of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [385] = "%s生命值：%s成员%s，%d码内，以%s为中心",
 -- 1bbec37f English: The number %s members%s within %d yards of %s whose
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [386] = "%s成员%s（%d码内，以%s为中心）中满足此条件的人数：",
 -- 91765b2b English: The %s health percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [387] = "%s生命值百分比：%s成员%s，%d码内，以%s为中心",
 -- 13a2b471 English: The number %s members%s within %d yards of %s whose health percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [388] = "%s成员%s（%d码内，以%s为中心）中满足此条件的人数：生命值百分比",
 -- 52cf9fe9 English: The %s mana defecit of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [389] = "%s法力值缺口：%s成员%s，%d码内，以%s为中心",
 -- 0a50ee9b English: The %s mana of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [390] = "%s法力值：%s成员%s，%d码内，以%s为中心",
 -- ed32b716 English: The %s mana percentage of %s members%s within %d yards of %s
+-- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
+-- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #4: %d #4: the distance in yards, e.g. 40
+-- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
 [391] = "%s法力值百分比：%s成员%s，%d码内，以%s为中心",
 -- 66dd29aa English: The number %s members%s within %d yards of %s whose mana percentage
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 40
+-- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
 [392] = "%s成员%s（%d码内，以%s为中心）中满足此条件的人数：法力值百分比",
 -- bd972cc4 English: AND
+-- Context: Name of the logical AND group condition: all conditions inside it must be true (a
+--     condition type in the condition picker).
 [393] = "与",
 -- 829e5b28 English: OR
+-- Context: Name of the logical OR group condition: at least one condition inside it must be true.
 [394] = "或",
 -- 8be3365c English: NOT
+-- Context: Name of the logical NOT group condition: negates the condition inside it; also used as a
+--     prefix in condition text.
 [395] = "非",
 -- f733d042 English: <INVALID CONDITION>
+-- Context: Placeholder shown in a condition list where a condition has a missing or unknown type;
+--     keep the angle brackets.
 [396] = "<无效条件>",
 -- b2295de9 English: Please Choose ...
 [397] = "请选择……",
 -- 9f24f04e English: Condition Type
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Label 'Condition Type'.
 [398] = "条件类型",
 -- df00fd14 English: Edit Condition #%d
+-- Context: Window title of the condition editor for the condition at a numbered position; %d is its
+--     position in the list.
+-- %d #1: %d #1: the position of the condition in the rotation step, counting from 1, e.g. 2
 [399] = "编辑条件 #%d",
 -- 55490a4b English: Up
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Up' (move up arrow).
 [400] = "上",
 -- b86d11af English: Down
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Button label 'Down' (move down arrow).
 [401] = "下",
 -- 3124aba4 English: <spell>
+-- Context: Placeholder shown in a condition's text where no spell has been chosen yet; keep the
+--     angle brackets.
 [402] = "<法术>",
 -- 99cd36a3 English: Your talent is a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [403] = "你的天赋属于%s职责",
 -- 8436c454 English: %s is in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [404] = "%s担任%s职责",
 -- 71fafa0a English: %s is a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is a %s' (singular, e.g. 'your target is a Beast');
+--     unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [405] = "%s是%s",
 -- f9030f9e English: %s are a %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are a %s' (plural subject); unit, then a type.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [406] = "%s是%s",
 -- 1c5be7b4 English: %s have %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s' (plural subject); unit, then a thing.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [407] = "%s拥有%s",
 -- 82320b64 English: %s has %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s' (singular subject); unit, then a thing.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
 [408] = "%s拥有%s",
 -- 3313549c English: %s is %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is %s' (singular subject); subject, then a state.
+-- %s #1: %s #1: the first unit, e.g. "your target"
+-- %s #2: %s #2: the unit it is compared with (or a distance such as "closer than 10 yards"), e.g. "your focus target"
 [409] = "%s%s",
 -- 4902371e English: %s are %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s are %s' (plural subject); subject, then a state.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the distance phrase, e.g. "closer than 10 yards"
 [410] = "%s%s",
 -- 2564e907 English: %s were %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s were %s' (plural subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action ("were" is used for the player), e.g. "you"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [411] = "%s%s",
 -- 96aacc3d English: %s was %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s was %s' (singular subject, past tense); subject,
+--     then a state.
+-- %s #1: %s #1: the unit that did the action, e.g. "your target"
+-- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
 [412] = "%s%s",
 -- 368387c7 English: %s have %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s have %s where %s' (plural subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [413] = "%s拥有%s，且%s",
 -- f161aa55 English: %s has %s where %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s has %s where %s' (singular subject); subject, a
+--     thing, a qualifier.
+-- %s #1: %s #1: the unit, e.g. "your target"
+-- %s #2: %s #2: the buff or debuff, e.g. "Rend"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [414] = "%s拥有%s，且%s",
 -- 38277209 English: you are talented in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [415] = "你点选了天赋%s",
 -- 32da26d1 English: talent points in %s (%s)
+-- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
+-- %s #2: %s #2: the name of the talent tree it is in, e.g. "Arcane"
 [416] = "%s的天赋点数（%s）",
 -- 85d523f6 English: %s's resistance to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template "%s's resistance to %s"; unit, then a magic school.
+-- %s #1: %s #1: the unit whose resistance is checked, possessive form, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Fire"
 [417] = "%s对%s的抗性",
 -- 0cad0ea7 English: %s is sometimes immune to %s
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [418] = "%s有时对%s免疫",
 -- e23ffa5e English: %s is immune to %s
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template '%s is immune to %s'; unit, then a magic school.
+-- %s #1: %s #1: the unit that is immune, e.g. "your target"
+-- %s #2: %s #2: the spell school, e.g. "Frost"
 [419] = "%s对%s免疫",
 -- 6d19eba6 English: you have %s glyph
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition-text template 'you have %s glyph'; %s is a glyph name.
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [420] = "你拥有雕文%s",
 -- 4e545960 English: Unit
+-- Context: Label of the unit dropdown in conditions (which unit is checked: you, your target, ...)
+--     and a help term; noun.
 [421] = "单位",
 -- 14736a2e English: Role
+-- Context: Name of the Role condition (tank, DPS or healer) and the label of its role dropdown.
 [422] = "职责",
 -- 4f3a9bd0 English: Class
+-- Context: Name of the Class condition and the label of its class dropdown; also a scope option
+--     (class vs. this character).
 [423] = "职业",
 -- 0df08730 English: Class In Group
+-- Context: Name of the Class In Group condition: counts group members of a given class.
 [424] = "队伍中的职业",
 -- e23f2e34 English: Is Same As
+-- Context: Name of the Is Same As condition: true when two units are the same unit.
 [425] = "是同一单位",
 -- 03d5b2de English: Creature Type
+-- Context: Name of the Creature Type condition (beast, demon, ...) and label of its dropdown.
 [426] = "生物类型",
 -- a1cf0927 English: Unit Classification
+-- Context: Name of the Unit Classification condition (normal, elite, boss...) and label of its
+--     dropdown.
 [427] = "单位分类",
 -- caa2e08f English: Talent
+-- Context: Label of the talent dropdown in the Talent condition (a specific talent).
 [428] = "天赋",
 -- 1aff4871 English: Glyph
+-- Context: Name of the Glyph condition: true while you have a given glyph (an item) applied.
 [429] = "雕文",
 -- b8790e72 English: Talent Tree
+-- Context: Label of the talent tree/group dropdown in the Talent condition and title of the talent
+--     picker popup.
 [430] = "天赋树",
 -- 291101a0 English: Operator
+-- Context: Label of the dropdown holding the comparison operator (is less than, equal to ...) in
+--     conditions, and a help term.
 [431] = "运算符",
 -- b7bdf7a2 English: Distance
+-- Context: Name of the Distance condition (yards to a unit) and label of its distance field.
 [432] = "距离",
 -- 7a347089 English: Distance Count
+-- Context: Name of the Distance Count condition: how many units are within a given distance.
 [433] = "距离内计数",
 -- 47da413b English: yards
+-- Context: Unit word 'yards' (distance unit). No direct call site in the current code; it appeared
+--     in distance conditions' text.
 [434] = "码",
 -- 55898449 English: Health
+-- Context: Label of the health value field in health-based conditions (e.g. 'Health Within Range')
+--     and the operator widget's value name; noun.
 [435] = "生命值",
 -- 3c01b3e3 English: %s health defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a health deficit comparison ('%s health deficit'; sic 'defecit' in the English
+--     key); %s is a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [436] = "%s生命值缺口",
 -- 59f92800 English: Health Percentage
+-- Context: Name of the Health Percentage condition (a unit's health as a percent of its maximum) in
+--     the condition picker.
 [437] = "生命值百分比",
 -- 066ffe4a English: Mana
+-- Context: Label of the mana value field in mana conditions (e.g. 'Mana Within Range'); noun.
 [438] = "法力值",
 -- ba32a92b English: %s mana defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a mana deficit comparison ('%s mana deficit'; sic 'defecit' in the key); %s is a
+--     value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [439] = "%s法力值缺口",
 -- 42dccab0 English: Mana Percentage
+-- Context: Name of the Mana Percentage condition (a unit's mana as a percent of its maximum).
 [440] = "法力值百分比",
 -- 848e9656 English: Power
+-- Context: Name of the Power condition (a unit's raw resource such as rage or energy) and the label
+--     of its value field.
 [441] = "能量",
 -- 0e4dfe83 English: %s power defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
+--     fragment for a power deficit comparison ('%s power deficit'; sic 'defecit' in the key); %s is
+--     a value.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [442] = "%s能量缺口",
 -- 6a612b86 English: Power Percentage
+-- Context: Name of the Power Percentage condition (a unit's resource as a percent of its maximum).
 [443] = "能量百分比",
 -- 77deabe2 English: Points
+-- Context: Name of the Points condition (combo points) and the label of its value field.
 [444] = "点数",
 -- 8208acbf English: %s points
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s points' (combo points); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [445] = "%s点数",
 -- 49e3a963 English: %s point defecit
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s point deficit' (sic 'defecit' in the key; combo points missing
+--     from max); %s is a number.
+-- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
 [446] = "%s点数缺口",
 -- 5af0278b English: Runes
+-- Context: Name of the Runes condition (Death Knight runes available) and the label of its count
+--     field.
 [447] = "符文",
 -- d62be657 English: Rune Cooldown
+-- Context: Name of the Rune Cooldown condition (seconds until a rune type is ready).
 [448] = "符文冷却",
 -- 9ba5f80d English: %s runes available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s runes available'; %s is a number.
+-- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
 [449] = "%s可用符文数",
 -- 61084a6e English: cooldown on %s rune
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'cooldown on %s rune'; %s is a rune type.
+-- %s #1: %s #1: the rune type, e.g. "Frost"
 [450] = "%s符文的冷却",
 -- 8a7961ab English: Blood
+-- Context: Death Knight rune type (Blood) in the Runes and Rune Cooldown conditions' rune dropdown.
 [451] = "鲜血",
 -- 4de5fe95 English: Unholy
+-- Context: Death Knight rune type (Unholy) in the Runes and Rune Cooldown conditions' rune
+--     dropdown.
 [452] = "邪恶",
 -- fcd6fea7 English: Death
+-- Context: Death Knight rune type (Death) in the Runes and Rune Cooldown conditions' rune dropdown.
 [453] = "死亡",
 -- 8a166eb0 English: Character Stat
+-- Context: Name of the Character Stat condition (a stat such as strength or armor) and the label of
+--     its stat dropdown.
 [454] = "角色属性",
 -- 0a79e909 English: Extended Character Stat
+-- Context: Name of the Extended Character Stat condition (stats provided by the
+--     ExtendedCharacterStats addon).
 [455] = "扩展角色属性",
 -- 9cd14132 English: Extended Character Stat Percentage
 [456] = "扩展角色属性百分比",
 -- d2923546 English: Spell Available
+-- Context: Name of the Spell Available condition (a spell is castable/known and available).
 [457] = "法术可用",
 -- b1557241 English: Pet Spell Available
+-- Context: Name of the Pet Spell Available condition (a pet spell is available).
 [458] = "宠物法术可用",
 -- d24390ed English: %s is available
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is available'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [459] = "%s可用",
 -- b2561670 English: Spell In Range
+-- Context: Name of the Spell In Range condition (the spell can reach the target).
 [460] = "法术在射程内",
 -- 67ef960b English: Pet Spell In Range
 [461] = "宠物法术在射程内",
 -- 12692f41 English: %s is in range
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in range'; %s is a spell.
+-- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
 [462] = "%s在射程内",
 -- 8baec846 English: Spell Cooldown
+-- Context: Name of the Spell Cooldown condition (seconds until a spell can be cast again); also the
+--     title of its help.
 [463] = "法术冷却",
 -- f7254914 English: Pet Spell Cooldown
+-- Context: Name of the Pet Spell Cooldown condition (seconds until a pet spell can be cast again).
 [464] = "宠物法术冷却",
 -- 9e4f8469 English: Boss Mod Encounter
+-- Context: Name of the Boss Mod Encounter condition (an encounter reported by a boss mod addon such
+--     as DBM/BigWigs is active).
 [465] = "首领模块首领战",
 -- fd1f1e3c English: Boss Mod Encounter Stage
 [466] = "首领模块首领战阶段",
 -- c07ffee7 English: Boss Mod Timer
+-- Context: Name of the Boss Mod Timer condition (seconds until a boss ability, from a boss mod
+--     addon).
 [467] = "首领模块计时条",
 -- 140bedbf English: none
+-- Context: Lowercase word 'none' inserted in a status line 'Current encounter: ..., ID none, stage
+--     ...' when there is no encounter ID.
 [468] = "无",
 -- f73bf30c English: Spell Active or Pending
 [469] = "法术生效中或待生效",
 -- c8ada1d7 English: Pet Spell Active or Pending
 [470] = "宠物法术生效中或待生效",
 -- 85f5aca6 English: %s is active or pending
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [471] = "%s生效中或待生效",
 -- fdb533df English: Spell Time Remaining
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     name of the Spell Time Remaining condition (time left on a spell).
 [472] = "法术剩余时间",
 -- 3422640c English: Pet Spell Time Remaining
 [473] = "宠物法术剩余时间",
 -- 369bb5dd English: remaining time on %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'remaining time on %s'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [474] = "%s的剩余时间",
 -- 0ce37091 English: Spell Charges
+-- Context: Name of the Spell Charges condition (how many charges of a spell are available).
 [475] = "法术充能",
 -- b9dd94ce English: Pet Spell Charges
+-- Context: Name of the Pet Spell Charges condition (charges of a pet spell).
 [476] = "宠物法术充能",
 -- bd7612e8 English: Spell Cast History Time
 [477] = "法术施放历史时间",
 -- e16b6508 English: Spell Cast History
+-- Context: Name of the Spell Cast History condition (a spell was cast N casts ago).
 [478] = "法术施放历史",
 -- 26483687 English: Pet Spell Cast History Time
 [479] = "宠物法术施放历史时间",
 -- 6f884dd0 English: Pet Spell Cast History
 [480] = "宠物法术施放历史",
 -- 193bb945 English: %s was cast
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s was cast'; %s is a spell.
+-- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
 [481] = "%s已施放",
 -- 0d112e0c English: Combat Action History Time
 [482] = "战斗动作历史时间",
 -- ec517441 English: Combat Action History
+-- Context: Name of the Combat Action History condition (a combat event such as dodged/healed N
+--     actions ago).
 [483] = "战斗动作历史",
 -- 9c434f34 English: fewer than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [484] = "少于%s次施法之前",
 -- 5966470f English: at most %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [485] = "最多%s次施法之前",
 -- c1a41894 English: more than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [486] = "多于%s次施法之前",
 -- fd9a7c72 English: at least %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [487] = "至少%s次施法之前",
 -- c53b5aea English: exactly %s casts ago
+-- Context: Phrase in condition text for the equals operator in cast history: '... exactly N casts
+--     ago'; %s is the number.
+-- %s #1: %s #1: the number of casts, e.g. 3
 [488] = "恰好%s次施法之前",
 -- 770b3b3e English: other than %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [489] = "%s次施法之前以外的时间",
 -- 75504648 English: a multiple of %s casts ago
+-- %s #1: %s #1: the number of casts, e.g. 3
 [490] = "%s的倍数次施法之前",
 -- 3619f661 English: fewer than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [491] = "少于%s个动作之前",
 -- 90c5ca9f English: at most %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [492] = "最多%s个动作之前",
 -- 03dcab2c English: more than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [493] = "多于%s个动作之前",
 -- 7688d933 English: at least %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [494] = "至少%s个动作之前",
 -- 506a71d6 English: exactly %s actions ago
+-- Context: Phrase in condition text for the equals operator in combat action history: '... exactly
+--     N actions ago'; %s is the number.
+-- %s #1: %s #1: the number of actions, e.g. 3
 [495] = "恰好%s个动作之前",
 -- 1a4b6a11 English: other than %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [496] = "%s个动作之前以外的时间",
 -- a5094423 English: a multiple of %s actions ago
+-- %s #1: %s #1: the number of actions, e.g. 3
 [497] = "%s的倍数个动作之前",
 -- 27db12a6 English: less than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [498] = "少于%s秒前",
 -- 4e0556a9 English: at most %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [499] = "最多%s秒前",
 -- 9644de21 English: more than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [500] = "多于%s秒前",
 -- 75c46f7d English: at least %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [501] = "至少%s秒前",
 -- a431b13b English: exactly %s seconds ago
+-- Context: Phrase in condition text for the equals operator in time-based history: '... exactly N
+--     seconds ago'; %s is the number.
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [502] = "恰好%s秒前",
 -- 4ac319b9 English: other than %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [503] = "%s秒前以外的时间",
 -- 2b2e3c59 English: a multiple of %s seconds ago
+-- %s #1: %s #1: the number of seconds, e.g. 5
 [504] = "%s的倍数秒前",
 -- ae4f356c English: Any Spell Available
+-- Context: Name of the Any Spell Available condition (any spell by name/ID, regardless of
+--     specialization).
 [505] = "任意法术可用",
 -- 11a84a9d English: Any Spell In Range
 [506] = "任意法术在射程内",
 -- 6a50cd59 English: Any Spell Cooldown
+-- Context: Name of the Any Spell Cooldown condition (seconds until any chosen spell is ready).
 [507] = "任意法术冷却",
 -- 56ef0943 English: Any Spell Time Remaining
 [508] = "任意法术剩余时间",
 -- a8212106 English: Any Spell Charges
+-- Context: Name of the Any Spell Charges condition (charges of any chosen spell).
 [509] = "任意法术充能",
 -- ae1e1aed English: Buff Present
+-- Context: Name of the Buff Present condition (an aura is on the unit).
 [510] = "存在增益效果",
 -- 8fb4de97 English: Buff Time Remaining
+-- Context: Name of the Buff Time Remaining condition (seconds left on a buff).
 [511] = "增益效果剩余时间",
 -- 666e85fc English: Buff Stacks
+-- Context: Name of the Buff Stacks condition (the application count of a buff).
 [512] = "增益效果层数",
 -- 16ace6d6 English: stacks of %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'stacks of %s'; %s is an aura.
+-- %s #1: %s #1: the buff or debuff, as a spell name or "your own" followed by it, e.g. "Sunder Armor"
 [513] = "%s的层数",
 -- b4f4e6c4 English: stacks
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text word 'stacks' (aura application count).
 [514] = "层数",
 -- 78fcf705 English: Has Stealable Buff
+-- Context: Name of the Has Stealable Buff condition (a unit has a buff you can steal or purge).
 [515] = "拥有可偷取的增益效果",
 -- 7588c154 English: %s has a stealable buff
+-- %s #1: %s #1: the unit, e.g. "your target"
 [516] = "%s拥有可偷取的增益效果",
 -- c057197d English: Debuff Present
+-- Context: Name of the Debuff Present condition (a debuff is on the unit).
 [517] = "存在减益效果",
 -- e12d628f English: Debuff Time Remaining
+-- Context: Name of the Debuff Time Remaining condition (seconds left on a debuff).
 [518] = "减益效果剩余时间",
 -- 68627f3e English: Debuff Stacks
+-- Context: Name of the Debuff Stacks condition (the application count of a debuff).
 [519] = "减益效果层数",
 -- fe1e836d English: Debuff Type Present
+-- Context: Name of the Debuff Type Present condition (e.g. Magic, Curse, Poison, Disease on the
+--     unit).
 [520] = "存在某类减益效果",
 -- 23f8a0cb English: %s have a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s have a %s debuff' (plural subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [521] = "%s拥有%s类减益效果",
 -- 7ab4967e English: %s has a %s debuff
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s has a %s debuff' (singular subject); first %s a unit, second a
+--     debuff type.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
 [522] = "%s拥有%s类减益效果",
 -- a7b891f5 English: Totem Present
+-- Context: Name of the Totem Present condition (a totem of a given element is active).
 [523] = "存在图腾",
 -- 0c3d3d7f English: %s totem is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s totem is active'; %s is a totem element.
+-- %s #1: %s #1: the totem element, e.g. "Fire"
 [524] = "%s图腾生效中",
 -- e885c330 English: %s is active
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active'; %s is a totem/spell.
+-- %s #1: %s #1: a clickable spell link for the totem or ability, e.g. "[Searing Totem]"
 [525] = "%s生效中",
 -- 66da3d47 English: Specific Totem Present
+-- Context: Name of the Specific Totem Present condition (a particular totem spell is active).
 [526] = "存在特定图腾",
 -- 5bf50471 English: Totem Time Remaining
+-- Context: Name of the Totem Time Remaining condition (seconds left on an active totem).
 [527] = "图腾剩余时间",
 -- 7543785b English: Specific Totem Time Remaining
 [528] = "特定图腾剩余时间",
 -- 68fb02a4 English: you have a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [529] = "你有一个%s图腾正在生效，且%s",
 -- a25252ca English: %s is active with %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is active with %s'; first %s a totem, second a detail (such as
+--     time left).
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [530] = "%s正在生效，且%s",
 -- 2fa842db English: Have Item Equipped
+-- Context: Name of the Have Item Equipped condition (you wear a given item).
 [531] = "已装备物品",
 -- 5554bebd English: you have %s equipped
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you have %s equipped'; %s is an item.
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [532] = "你已装备%s",
 -- 8e3be399 English: Have Item In Bags
 [533] = "背包中有物品",
 -- ef20a8e9 English: the number of %s you are carrying
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Healing Potion]"
 [534] = "你携带的%s数量",
 -- 86a036a1 English: Item Available
+-- Context: Name of the Item Available condition (you have the item and can use it).
 [535] = "物品可用",
 -- e01cd9e7 English: Item In Range
+-- Context: Name of the Item In Range condition (the item can reach the target).
 [536] = "物品在射程内",
 -- 64d7247f English: Item Cooldown
+-- Context: Name of the Item Cooldown condition (seconds until an item is usable again).
 [537] = "物品冷却",
 -- 1b0ab573 English: In Combat
+-- Context: Name of the In Combat condition; also a checkbox label in the Distance Count condition
+--     meaning 'only count units in combat'.
 [538] = "战斗中",
 -- 630eade3 English: %s are in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are in combat' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [539] = "%s正在战斗中",
 -- 89608711 English: %s is in combat
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is in combat' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [540] = "%s正在战斗中",
 -- a9bae210 English: Have Pet
+-- Context: Name of the Have Pet condition (you currently have a pet).
 [541] = "拥有宠物",
 -- 924d4ef6 English: you have a pet
 [542] = "你拥有宠物",
 -- 02734b33 English: Have Named Pet
+-- Context: Name of the Have Named Pet condition (your pet has a given name).
 [543] = "拥有指定名称的宠物",
 -- 0c21cff5 English: you have a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [544] = "你拥有名为%s的宠物",
 -- 526a40a4 English: Stealth
+-- Context: Name of the Stealth condition (the player is stealthed); noun.
 [545] = "潜行",
 -- daac7bb8 English: you are stealthed
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are stealthed'.
 [546] = "你处于潜行状态",
 -- d9237cea English: In Control
+-- Context: Name of the In Control condition (you are not stunned, feared, or otherwise lost
+--     control).
 [547] = "可控制",
 -- 7eea2830 English: you are in control of your character
 [548] = "你能控制你的角色",
@@ -1152,24 +2008,40 @@ addon.translation = {
 -- 7843bc0f English: Loss Of Control Blocked
 [550] = "失控封锁",
 -- 8dac743c English: Moving
+-- Context: Name of the Moving condition (the player is moving).
 [551] = "移动中",
 -- 09284586 English: you are moving
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'you are moving'.
 [552] = "你正在移动",
 -- 56aa198a English: Threat
+-- Context: Name of the Threat condition (your threat level against a unit) and the label of its
+--     threat-level dropdown.
 [553] = "仇恨",
 -- ffa83e17 English: Threat Count
+-- Context: Name of the Threat Count condition (the number of units on which you have at least a
+--     threat level).
 [554] = "仇恨计数",
 -- c74406db English: you are at least %s on %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
+-- %s #2: %s #2: the unit, e.g. "your target"
 [555] = "你的仇恨状态至少为%s（对%s）",
 -- 99157067 English: Shapeshift Form
+-- Context: Name of the Shapeshift Form condition (the druid/shaman form you are in).
 [556] = "变形形态",
 -- 89016283 English: Attackable
+-- Context: Name of the Attackable condition (the unit can be attacked by you).
 [557] = "可攻击",
 -- b3478c03 English: Hostile
+-- Context: Name of the Hostile condition (the unit is an enemy).
 [558] = "敌对",
 -- 46e36b4f English: Allies Within Range
+-- Context: Name of the Allies Within Range condition (number of allies within a distance of a
+--     unit).
 [559] = "范围内的盟友",
 -- afdfa696 English: Health Within Range
+-- Context: Name of the Health Within Range condition (health statistic over units within a
+--     distance).
 [560] = "范围内的生命值",
 -- a4d0252f English: Health Count Within Range
 [561] = "范围内的生命值计数",
@@ -1178,6 +2050,7 @@ addon.translation = {
 -- 324a4bd3 English: Health Percentage Count Within Range
 [563] = "范围内的生命值百分比计数",
 -- 8b7e70d8 English: Mana Within Range
+-- Context: Name of the Mana Within Range condition (mana statistic over units within a distance).
 [564] = "范围内的法力值",
 -- 94049799 English: Mana Count Within Range
 [565] = "范围内的法力值计数",
@@ -1186,22 +2059,39 @@ addon.translation = {
 -- 953ff9c3 English: Mana Percentage Count Within Range
 [567] = "范围内的法力值百分比计数",
 -- d709e95d English: %s is an enemy
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is an enemy'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [568] = "%s是敌人",
 -- 7024062a English: %s is attackable
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is attackable'; %s is a unit.
+-- %s #1: %s #1: the unit, e.g. "your target"
 [569] = "%s可被攻击",
 -- cd29bb25 English: number of %s members%s within %d yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %d #3: %d #3: the distance in yards, e.g. 30
 [570] = "%s成员%s在 %d 码内的数量",
 -- bb1fa7ca English: number of %s members%s within %s yards
+-- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
+-- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
+-- %s #3: %s #3: the distance in yards, e.g. 30
 [571] = "%s成员%s在 %s 码内的数量",
 -- ffc1e6b0 English: number of enemies you are at least %s
+-- %s #1: %s #1: the threat level, e.g. "tanking"
 [572] = "你的仇恨状态至少为%s的敌人数量",
 -- 1fc58dea English: you {{!are|are not}} on %s threat table
+-- %s #1: %s #1: the unit, in the possessive form, e.g. "your target's"
 [573] = "你{{!在|不在}}%s仇恨列表上",
 -- dbcea100 English: you {{!have|do not have}} at least as much threat on %s as its tank
+-- %s #1: %s #1: the unit, e.g. "your target"
 [574] = "你对%s的仇恨{{!至少|未达到}}与其坦克相同",
 -- 1a38484b English: you {{!are|are not}} tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [575] = "你{{!正在|没有在}}坦克%s",
 -- f893e9b8 English: you {{!are|are not}} securely tanking %s
+-- %s #1: %s #1: the unit, e.g. "your target"
 [576] = "你{{!正在|没有在}}稳定地坦克%s",
 -- 050bc6fc English: the number of enemies whose threat table you are on
 [577] = "你在其仇恨列表上的敌人数量",
@@ -1212,88 +2102,161 @@ addon.translation = {
 -- 39546907 English: the number of enemies you are securely tanking
 [580] = "你正在稳定坦克的敌人数量",
 -- d173b87e English: you are in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [581] = "你处于%s形态",
 -- 38ffcb03 English: Channeling
+-- Context: Name of the Channeling condition (a unit is channeling any spell).
 [582] = "引导中",
 -- a423f878 English: Specific Spell Channeling
+-- Context: Name of the Specific Spell Channeling condition (a unit is channeling a chosen spell).
 [583] = "引导特定法术",
 -- c5db67ca English: %s are currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [584] = "%s正在引导法术",
 -- f58eece7 English: %s is currently channeling
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [585] = "%s正在引导法术",
 -- 6960967b English: %s are currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently channeling %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [586] = "%s正在引导%s",
 -- 53ed0bfb English: %s is currently channeling %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently channeling %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [587] = "%s正在引导%s",
 -- 4c2aeef1 English: Channel Time Remaining
+-- Context: Name of the Channel Time Remaining condition (seconds left on a unit's current channel).
 [588] = "引导剩余时间",
 -- e38783fe English: time remaining on spell channel
 [589] = "法术引导的剩余时间",
 -- 39c51722 English: Channel Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Channel Interruptible condition name (now spelled 'Interruptible').
 [590] = "引导可打断",
 -- 09453a79 English: Channel Interruptible
+-- Context: Name of the Channel Interruptible condition (the unit's current channel can be
+--     interrupted).
 [591] = "引导可打断",
 -- 2a35e090 English: %s's channeled spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [592] = "%s的引导法术可被打断",
 -- 0c9e7b06 English: Casting
+-- Context: Name of the Casting condition (a unit is casting any spell); also an icon-picker
+--     category.
 [593] = "施法中",
 -- bc401bef English: Specific Spell Casting
+-- Context: Name of the Specific Spell Casting condition (a unit is casting a chosen spell).
 [594] = "施放特定法术",
 -- 53cc77b2 English: %s are currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [595] = "%s正在施法",
 -- f8e91c91 English: %s is currently casting
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [596] = "%s正在施法",
 -- 9ec6cde4 English: %s are currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are currently casting %s' (plural subject); unit, then spell.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [597] = "%s正在施放%s",
 -- 79bdf263 English: %s is currently casting %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is currently casting %s' (singular subject); unit, then spell.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [598] = "%s正在施放%s",
 -- 8f9d9bf5 English: Cast Time Remaining
+-- Context: Name of the Cast Time Remaining condition (seconds until a unit's current cast
+--     completes).
 [599] = "施法剩余时间",
 -- 24812186 English: time remaining on spell cast
 [600] = "法术施放的剩余时间",
 -- e2513da8 English: Cast Interruptable
+-- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
+--     spelling of the Cast Interruptible condition name (now spelled 'Interruptible').
 [601] = "施法可打断",
 -- d5c12268 English: Cast Interruptible
+-- Context: Name of the Cast Interruptible condition (the unit's current cast can be interrupted).
 [602] = "施法可打断",
 -- 8b182833 English: %s's spell is interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [603] = "%s的法术可被打断",
 -- 0d2970f9 English: PVP Flagged
+-- Context: Name of the PVP Flagged condition (a unit is flagged for player-versus-player combat).
 [604] = "PvP 状态",
 -- d27e8fdc English: %s are PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s are PVP flagged' (plural subject); %s is a unit.
+-- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 [605] = "%s处于 PvP 状态",
 -- c67f02e4 English: %s is PVP flagged
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment '%s is PVP flagged' (singular subject); %s is a unit.
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [606] = "%s处于 PvP 状态",
 -- 0489205b English: Zone PVP
+-- Context: Name of the Zone PVP condition (the PvP status of the area you are in).
 [607] = "区域 PvP",
 -- d09a2928 English: zone is a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [608] = "所在区域为%s区域",
 -- 425f2336 English: Instance
+-- Context: Name of the Instance condition (what kind of instance you are in: dungeon, raid,
+--     battleground...).
 [609] = "副本",
 -- e96c4ff4 English: you are in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [610] = "你在%s副本中",
 -- 6480caf6 English: in %s
+-- Context: Legacy condition-text template; the current code has no direct reference to it.
+--     Condition-text fragment 'in %s'; %s is a zone or instance.
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [611] = "在%s",
 -- a8a06e4a English: Zone
+-- Context: Name of the Zone condition (the zone or subzone you are in) and the label of its text
+--     field.
 [612] = "区域",
 -- 782fc4e1 English: In Group
+-- Context: Name of the In Group condition (you are in a party or raid).
 [613] = "在队伍中",
 -- b097d347 English: you are in a group
 [614] = "你在队伍中",
 -- c299367b English: In Raid
+-- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
+--     dynamically). Condition name 'In Raid' (replaced by the Raid checkbox in the In Group
+--     condition).
 [615] = "在团队中",
 -- 8985f5e8 English: you are in a raid
 [616] = "你在团队中",
 -- 8bf8ef16 English: Outdoors
+-- Context: Name of the Outdoors condition (you are in an outdoor area).
 [617] = "户外",
 -- 2fcb5d37 English: Scenario
+-- Context: Instance mode option in the Instance condition: a solo scenario; also a difficulty group
+--     name.
 [618] = "场景战役",
 -- 0229c086 English: you are in a outdoors
 [619] = "你在户外",
 -- 4340b353 English: Weapon Enchant Present
+-- Context: Name of the Weapon Enchant Present condition (a weapon has a temporary enchant/imbue).
 [620] = "存在武器附魔",
 -- 61ab108b English: Different season or game rules
 [621] = "不同的赛季或游戏规则",
 -- 6abe675a English: Action Context
+-- Context: Name of the Action Context condition (which action bar is in use: yours, a vehicle,
+--     override...) and the label of its dropdown.
 [622] = "动作上下文",
 -- 615c9003 English: Advice is suspended: no rotation applies while you are using another action
 --     bar.
@@ -1301,12 +2264,19 @@ addon.translation = {
 -- e9860cd7 English: Item Set Pieces Equipped
 [624] = "已装备的套装件数",
 -- e0317f0c English: Weapon Enchant Type
+-- Context: Name of the Weapon Enchant Type condition (which temporary weapon enchant is applied).
 [625] = "武器附魔类型",
 -- 32eedbe8 English: a pet battle
+-- Context: Value in the Action Context dropdown: you are in a pet battle (Retail only); lowercase
+--     phrase read in a sentence.
 [626] = "宠物对战",
 -- a688c1ab English: a possessed unit
+-- Context: Value in the Action Context dropdown: you control a possessed (mind controlled) unit;
+--     lowercase phrase read in a sentence.
 [627] = "被控制的单位",
 -- 7e4e79e6 English: a vehicle
+-- Context: Value in the Action Context dropdown: you are in a vehicle; lowercase phrase read in a
+--     sentence.
 [628] = "载具",
 -- 1f7bee61 English: an override action bar
 [629] = "覆盖动作条",
@@ -1315,52 +2285,92 @@ addon.translation = {
 -- 6d49f98c English: Weapon Enchant Time Remaining
 [631] = "武器附魔剩余时间",
 -- 872198ac English: Weapon Enchant Stacks
+-- Context: Name of the Weapon Enchant Stacks condition (the stack count of a temporary weapon
+--     enchant).
 [632] = "武器附魔层数",
 -- 9a08c36b English: Your %s weapon buff has %s
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
+-- %s #2: %s #2: a comparison on the remaining time or on the stack count, e.g. "the remaining time is greater than 10 seconds"
 [633] = "你的%s武器增益%s",
 -- 5aebbe0c English: Your %s weapon is enchanted
+-- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "off hand"
 [634] = "你的%s武器已附魔",
 -- bfd173c2 English: Off Hand
+-- Context: Equipment slot / checkbox label for the off-hand weapon slot in weapon and enchant
+--     conditions; noun.
 [635] = "副手",
 -- f0fa1c9c English: Weapon Swing Time
+-- Context: Name of the Weapon Swing Time condition (time until your next auto-attack swing).
 [636] = "武器攻击间隔",
 -- 8439ecbd English: Weapon Swing Time Remaining
 [637] = "武器攻击间隔剩余时间",
 -- a258b30f English: Global
+-- Context: Checkbox label for an item set: it is a global set shared by all characters; also a help
+--     heading.
 [638] = "全局",
 -- 601196cf English: Damage and Heals
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count both damage
+--     and healing taken by the unit.
 [639] = "伤害和治疗",
 -- 9d0e8a5a English: Damage Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only damage
+--     taken by the unit.
 [640] = "仅伤害",
 -- 26316d67 English: Heals Only
+-- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only healing
+--     received by the unit.
 [641] = "仅治疗",
 -- 64cff131 English: Action
+-- Context: Label for the combat action kind (hit, miss, parried...) field in the Combat Action
+--     History condition; noun, also a comparison row label.
 [642] = "动作",
 -- cd70c6b9 English: Time Since Combat Start
 [643] = "战斗开始后的时间",
 -- d49f3af6 English: Time in combat is %s %s seconds
+-- %s #1: %s #1: the comparison wording, e.g. "is greater than"
+-- %s #2: %s #2: the number of seconds, e.g. 10
 [644] = "战斗时间%s %s 秒",
 -- ffedb1c8 English: Copy report
+-- Context: Button that copies a text report to the clipboard (error window, condition text window);
+--     verb + noun.
 [645] = "复制报告",
 -- 7d9eb7ac English: Close
+-- Context: Button/tooltip of the window close icon (X) in dialogs; verb.
 [646] = "关闭",
 -- 67f981b6 English: /rm errors              - View and copy Rotation Master errors.
 [647] = "/rm errors              - 查看并复制 Rotation Master 错误。",
 -- 496d05e2 English: Spell Known
+-- Context: Name of the Spell Known condition (you or your pet know/have learned a spell).
 [648] = "已学会法术",
 -- 034f8d39 English: You know %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'You know %s'; %s is a spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Fireball (spell ID 133)"
 [649] = "你已学会%s",
 -- 5a072a25 English: Your pet knows %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text template 'Your pet knows %s'; %s is a pet spell.
+-- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Bite (spell ID 17253)"
 [650] = "你的宠物已学会%s",
 -- 41c1fdac English: %s (spell ID %s)
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Template '%s
+--     (spell ID %s)'; spell name, then numeric spell ID.
+-- %s #1: %s #1: the spell name, e.g. "Fireball"
+-- %s #2: %s #2: the spell ID, e.g. 133
 [651] = "%s（法术 ID %s）",
 -- 02ac5ded English: Spell ID
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Spell
+--     ID' for a numeric spell identifier.
 [652] = "法术 ID",
 -- 1be30861 English: Pet spell
+-- Context: Checkbox label in the Spell Known condition: the spell is a pet spell; also the step
+--     type description 'Pet spell' in the rotation reference.
 [653] = "宠物法术",
 -- 33579e22 English: Unavailable conditions or unsupported data
 [654] = "不可用的条件或不受支持的数据",
 -- 6289fcfd English: %s is not available on this client (%s).
+-- %s #1: %s #1: the name or description of the condition, e.g. "Pet happiness"
+-- %s #2: %s #2: the reason it cannot work here, as a short phrase (translated), e.g. "this edition has no pet happiness"
 [655] = "%s 在此客户端上不可用（%s）。",
 -- d0e9a0bb English: the combat log is not available to addons on this client
 [656] = "此客户端不向插件开放战斗记录",
@@ -1369,33 +2379,50 @@ addon.translation = {
 -- 32d80509 English: this power is secret on this client
 [658] = "此客户端上的这种能量是隐藏的",
 -- 38e49184 English: Active rotation: %s
+-- %s #1: %s #1: the name of the active rotation followed by "(manual)" or "(automatic)", or "None", e.g. "Frost Single Target (automatic)"
 [659] = "当前循环：%s",
 -- 95ebda6b English: a fallback saved for this character takes precedence
 [660] = "为此角色保存的后备循环优先",
 -- 53e0ff34 English: automatic
+-- Context: Word in the 'Active rotation: NAME (automatic)' status line: the rotation was chosen by
+--     automatic switching, not manually.
 [661] = "自动",
 -- 81600971 English: Cooldown %d
+-- Context: Label for a cooldown entry by position in a path description, e.g. 'Cooldown 2'; %d is
+--     the position number.
+-- %d #1: %d #1: the number of the cooldown in the list, counting from 1, e.g. 2
 [662] = "冷却 %d",
 -- 55899740 English: %d Built In rotations are disabled.
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 3
 [663] = "有 %d 个内置循环已被禁用。",
 -- 6fbad292 English: %d other Built In rotations are disabled (for another specialization, level or
 --     edition).
+-- %d #1: %d #1: how many other Built In rotations are disabled, e.g. 4
 [664] = "另有 %d 个内置循环已被禁用（属于其他专精、等级或版本）。",
 -- 856a3f22 English: %s: disabled by you (turn it back on in Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [665] = "%s：已被你禁用（可在“循环”的内置视图中重新开启）。",
 -- ceaa0803 English: %s: ships disabled, an alternative to the recommended one (turn it on in
 --     Rotations, in its Built In view).
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [666] = "%s：默认禁用，是推荐循环的替代方案（可在“循环”的内置视图中开启）。",
 -- 4fd646c3 English: then the fallback (%s)
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [667] = "然后是后备循环（%s）",
 -- 1e1885f9 English: Automatic switching tries: %s. Higher numbers are tried first; equal priorities
 --     go by name.
+-- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
 [668] = "自动切换会依次尝试：%s。数字越大越先尝试；优先级相同时按名称排序。",
 -- 724799e1 English: Automatic switching would choose: %s
+-- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
 [669] = "自动切换将选择：%s",
 -- 07d344c2 English: %d Built In disabled: %s
+-- %d #1: %d #1: how many Built In rotations are disabled, e.g. 2
+-- %s #2: %s #2: their names, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [670] = "已禁用 %d 个内置循环：%s",
 -- fd523668 English: Read-Only
+-- Context: Pill/badge at the top of the rotation editor for a rotation that cannot be edited (a
+--     Built In); adjective.
 [671] = "只读",
 -- 75920f9f English: Built In: it cannot be edited. Duplicate makes your own copy; Enabled and
 --     Priority are your settings for this profile.
@@ -1406,29 +2433,51 @@ addon.translation = {
 -- 7772b5b6 English: Import preview: the metadata is shown as imported and cannot be edited here.
 [674] = "导入预览：元数据按导入时的样子显示，无法在此编辑。",
 -- b5444cba English: level %d+
+-- Context: Part of a rotation's applicability description: the rotation needs at least this
+--     character level; %d is the level, e.g. 'level 60+'.
+-- %d #1: %d #1: the lowest character level, shown with a plus sign, e.g. 60
 [675] = "%d 级以上",
 -- 7ae623fd English: Season of Mastery
+-- Context: Name of the Classic 'Season of Mastery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [676] = "精通赛季",
 -- 20bc4e56 English: Season of Discovery
+-- Context: Name of the Classic 'Season of Discovery' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [677] = "探索赛季",
 -- e913447f English: Hardcore
+-- Context: Game ruleset name in rotation applicability text: Hardcore realms (one life).
 [678] = "专家模式",
 -- 61123c4d English: Anniversary
+-- Context: Name of the Classic 'Anniversary' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [679] = "周年纪念服",
 -- 935f9eea English: Anniversary Hardcore
+-- Context: Name of the Classic 'Anniversary Hardcore' ruleset, shown in rotation applicability text
+--     (translated through L when displayed).
 [680] = "周年纪念专家模式",
 -- 20170cbb English: Self-Found
+-- Context: Game ruleset name in rotation applicability text: Self-Found characters (no trading).
 [681] = "自给自足",
 -- db93324d English: Standard realms
+-- Context: Game ruleset name in rotation applicability text: normal (standard) realms, not seasonal
+--     or special rulesets.
 [682] = "标准服务器",
 -- b82c4d13 English: Season %s
+-- Context: Part of a rotation's applicability text: the game season; %s is the season number.
+-- %s #1: %s #1: the season number, e.g. 3
 [683] = "赛季 %s",
 -- 889ec415 English: Game mode %s
+-- Context: Part of a rotation's applicability text: a game mode; %s is its name.
+-- %s #1: %s #1: the game mode number, e.g. 2
 [684] = "游戏模式 %s",
 -- f06a6bb8 English: Automatic switching tries nothing else, then the fallback (%s): no enabled
 --     rotation here can be selected now.
+-- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
 [685] = "自动切换不会尝试其他循环，而是使用后备循环（%s）：这里没有任何已启用的循环现在可以被选择。",
 -- e87b125e English: Revision %s
+-- Context: Revision label of a built-in rotation, e.g. 'Revision 3'; %s is the revision number.
+-- %s #1: %s #1: the revision number of the Built In rotation, e.g. 4
 [686] = "修订版 %s",
 -- da0fa84c English: you switched it off (turn it back on in Rotations)
 [687] = "你已将其关闭（可在“循环”中重新开启）",
@@ -1436,6 +2485,8 @@ addon.translation = {
 --     Rotations)
 [688] = "它默认禁用，是推荐循环的替代方案（可在“循环”中开启）",
 -- 27a5b813 English: Identifier: %s (/rm set %s)
+-- %s #1: %s #1: the rotation's identifier, e.g. "frost"
+-- %s #2: %s #2: the same identifier, used in the slash command, e.g. "frost"
 [689] = "标识符：%s（/rm set %s）",
 -- 70f29af6 English: The fallback is always /rm set default.
 [690] = "后备循环始终是 /rm set default。",
@@ -1449,29 +2500,42 @@ addon.translation = {
 -- 763698c5 English: has an invalid identifier
 [694] = "标识符无效",
 -- 24adb964 English: %s is reserved for /rm set.
+-- %s #1: %s #1: the identifier the player typed, e.g. "auto"
 [695] = "%s 已保留给 /rm set 使用。",
 -- a33e5083 English: An identifier starts with a letter, then letters, digits, _ or -, up to 32
 --     characters.
 [696] = "标识符以字母开头，后面是字母、数字、_ 或 -，最多 32 个字符。",
 -- a15a0c4c English: %s already uses the identifier %s.
+-- %s #1: %s #1: the name of the rotation that already has this identifier, e.g. "Frost Single Target"
+-- %s #2: %s #2: the identifier, e.g. "frost"
 [697] = "%s 已经使用了标识符 %s。",
 -- 2f1b1b88 English: Rotations for %s (use /rm set <id>):
+-- %s #1: %s #1: the current specialization with its class, e.g. "Frost Mage"
 [698] = "%s 的循环（使用 /rm set <id>）：",
 -- 01e5a59a English: disabled by you
+-- Context: Status in a rotation list line: the player has turned this Built In rotation off.
 [699] = "已被你禁用",
 -- 3f88443b English: ships disabled
+-- Context: Status in a rotation list line: this Built In rotation is shipped turned off by default.
 [700] = "默认禁用",
 -- 4ac2f70c English: not for this character now
 [701] = "当前不适用于此角色",
 -- e8fe279c English: cannot be selected: %s
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "it has incomplete or unsupported data"
 [702] = "无法被选择：%s",
 -- 96879611 English: active
+-- Context: Status word in a rotation list line: this rotation is the one currently in use.
 [703] = "当前",
 -- b24d6d33 English: ready
+-- Context: Status word in a rotation list line: this rotation could be selected but is not the
+--     current one.
 [704] = "就绪",
 -- 5c7ee207 English: fallback
+-- Context: Kind word in parentheses in a rotation list line: the default fallback rotation.
 [705] = "后备",
 -- 5eb2da9c English: yours
+-- Context: Kind word in parentheses in a rotation list line: a rotation you created (as opposed to
+--     Built In).
 [706] = "你的",
 -- 7079adcd English: The rotation list opened in a window you can copy from.
 [707] = "循环列表已在一个可供复制的窗口中打开。",
@@ -1479,24 +2543,35 @@ addon.translation = {
 [708] = "循环及其标识符",
 -- 855192f1 English: More than one rotation uses the identifier %s. Give one of them another
 --     identifier in Rotations.
+-- %s #1: %s #1: the identifier the player typed, e.g. "frost"
 [709] = "有多个循环使用了标识符 %s。请在“循环”中为其中一个更换标识符。",
 -- 674aaa2c English: Identifiers you can use now: %s (or auto). /rm list shows every rotation.
+-- %s #1: %s #1: the identifiers that can be used now, separated by commas, e.g. "frost, fire"
 [710] = "现在可用的标识符：%s（或 auto）。/rm list 会显示所有循环。",
 -- 3843971d English: ID
+-- Context: Label of the read-only identifier field of a rotation in the rotation editor;
+--     abbreviation of 'identifier'.
 [711] = "ID",
 -- d60dbba0 English: Priority
+-- Context: Label of the priority number of a rotation in the rotation editor (order in which
+--     automatic selection tries rotations).
 [712] = "优先级",
 -- bc5b45ae English: Reset to default
+-- Context: Button in the rotation editor: reset the profile's override of the enable setting back
+--     to the Built In's shipped default.
 [713] = "恢复默认",
 -- 4273cc49 English: Use the Built In as it ships: its own Enabled setting and priority.
 [714] = "按内置循环的原样使用：采用它自带的启用设置和优先级。",
 -- c6ea26d1 English: Your setting for this profile. The Built In ships %s.
+-- %s #1: %s #1: whether the Built In rotation ships turned on, the word "enabled" or "disabled" (translated), e.g. "enabled"
 [715] = "你对此配置文件的设置。该内置循环默认%s。",
 -- 7f5ac649 English: As the Built In ships. Click to change it for this profile.
 [716] = "与内置循环的默认设置一致。点击可为此配置文件更改。",
 -- c3b9f3c3 English: Your priority for this profile; the Built In ships with %d.
+-- %d #1: %d #1: the priority the Built In rotation ships with, e.g. 5
 [717] = "你对此配置文件的优先级；该内置循环默认为 %d。",
 -- 5a1f096a English: Turn on
+-- Context: Button in the rotation browser: turn the selected Built In rotation on (verb phrase).
 [718] = "开启",
 -- 6d128898 English: Turn this Built In back on for this profile.
 [719] = "为此配置文件重新开启此内置循环。",
@@ -1513,41 +2588,60 @@ addon.translation = {
 [723] = "数字越大越先尝试；优先级相同时按名称排序。你自己的循环和内置循环仅按优先级竞争。",
 -- 73074f60 English: Same priority as %s: both can be selected at once, and the tie is decided by
 --     name.
+-- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [724] = "与 %s 优先级相同：两者可以同时被选择，平局由名称决定。",
 -- 6f39ad0a English: Can be selected together with %s: only priority decides which is chosen.
+-- %s #1: %s #1: the names of the rotations that can be selected together with this one, separated by commas, e.g. "Frost AoE, Frost Single Target"
 [725] = "可以与 %s 同时被选择：只由优先级决定选择哪一个。",
 -- 382c83c2 English: expansions %s–%s
+-- Context: Part of a rotation's applicability text: the WoW expansion range; both %s are expansion
+--     numbers, e.g. 'expansions 2–3'.
+-- %s #1: %s #1: the first expansion the rotation loads for, e.g. 0 (a "?" when not limited)
+-- %s #2: %s #2: the last expansion the rotation loads for, e.g. 4 (a "?" when not limited)
 [726] = "资料片 %s–%s",
 -- 5042b611 English: Loads only for: %s. Its specializations and switch condition decide the rest.
+-- %s #1: %s #1: the list of limits separated by " · ", e.g. "Mage · level 60+ · expansions 0–4"
 [727] = "仅为以下情况加载：%s。其余由它的专精和切换条件决定。",
 -- eedcafc1 English: Built In rotations turned back on (they had been switched off without your
 --     choice): %s
+-- %s #1: %s #1: the names of the Built In rotations that were turned back on, separated by commas, e.g. "Frost Leveling, Fire Leveling"
 [728] = "已重新开启的内置循环（它们并非由你主动关闭）：%s",
 -- ebed0a8c English: Disabled Built In rotations
 [729] = "已禁用的内置循环",
 -- dd2bac9e English: Open Rotations, select the Built In and turn it back on to make it selectable.
 [730] = "打开“循环”，选中该内置循环并重新开启它，即可使其可被选择。",
 -- f79331ec English: Fallback (%s)
+-- Context: Label for the default fallback rotation in a list of rotation choices; %s is its name.
+-- %s #1: %s #1: the name of the fallback rotation, e.g. "Default"
 [731] = "后备（%s）",
 -- 372d7008 English: has an action type this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [732] = "含有此版本无法识别的动作类型（%s）",
 -- d566274f English: has an invalid setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [733] = "含有无效的设置（%s）",
 -- 8cccea3a English: has an invalid switch priority
 [734] = "切换优先级无效",
 -- d17ef091 English: has a problem (%s)
+-- %s #1: %s #1: a short internal problem code, e.g. "invalid-id" (shown as-is; do not translate)
 [735] = "存在问题（%s）",
 -- 5fd06eb7 English: has a setting this version does not understand (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [736] = "含有此版本无法识别的设置（%s）",
 -- d80aa866 English: has no items
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': its
+--     item list is empty.
 [737] = "没有任何物品",
 -- 60b19b4c English: is missing a required setting (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [738] = "缺少必需的设置（%s）",
 -- 85bfd4b6 English: it has incomplete or unsupported data
 [739] = "它的数据不完整或不受支持",
 -- f8b96220 English: It has incomplete or unsupported data
 [740] = "它的数据不完整或不受支持",
 -- d7edee09 English: it is disabled
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': the
+--     rotation is turned off.
 [741] = "它已被禁用",
 -- bc0bcb96 English: it is for another class
 [742] = "它适用于其他职业",
@@ -1562,20 +2656,28 @@ addon.translation = {
 -- 7d8492c5 English: it is for another WoW edition
 [747] = "它适用于其他魔兽世界版本",
 -- f66da926 English: it is unavailable (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-unavailable" (shown as-is; do not translate)
 [748] = "它不可用（%s）",
 -- 3539504f English: it needs context Rotation Master cannot read yet
 [749] = "它需要 Rotation Master 目前还无法读取的上下文",
 -- 6c8b3a05 English: it uses a condition, item set or function that is disabled
 [750] = "它使用了已被禁用的条件、物品组或函数",
 -- 36bde66f English: manual
+-- Context: Word in the 'Active rotation: NAME (manual)' status line: the rotation was chosen by
+--     hand.
 [751] = "手动",
 -- 561c4c93 English: No %d
+-- Context: Label for the 'false' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'No 2'.
+-- %d #1: %d #1: the number of the card inside the "No" (false) branch of a condition, counting from 1, e.g. 2
 [752] = "否 %d",
 -- 61097c5a English: no fallback rotation is saved for %s
+-- %s #1: %s #1: the specialization with its class, e.g. "Frost Mage"
 [753] = "没有为 %s 保存后备循环",
 -- 994142c1 English: No rotation can run until your specialization is available.
 [754] = "在你的专精可用之前，没有任何循环可以运行。",
 -- 2e4e47d8 English: Reason: %s. Type /rm why to check every rotation.
+-- %s #1: %s #1: why the rotation cannot be selected, a sentence from the game (translated), e.g. "it is for Fire Mage"
 [755] = "原因：%s。输入 /rm why 可检查每个循环。",
 -- 21b77ae0 English: /rm why                 - Explain why each rotation can or cannot be selected.
 [756] = "/rm why                 - 说明每个循环为何能或不能被选择。",
@@ -1590,34 +2692,57 @@ addon.translation = {
 --     short or empty.
 [760] = "/rm debug talents [views] - 报告正式服和永恒服的天赋列表为何过短或为空。",
 -- 79eeac12 English: rotations cannot be read (%s)
+-- %s #1: %s #1: a short internal reason code, e.g. "rotation-store-unavailable" (shown as-is; do not translate)
 [761] = "无法读取循环（%s）",
 -- 6a8fd6ba English: Rotation %s cannot be selected.
+-- %s #1: %s #1: the rotation name, with its identifier in square brackets when one is set, e.g. "Frost Single Target [frost]"
 [762] = "循环 %s 无法被选择。",
 -- 9e742006 English: Rotation settings
+-- Context: Label naming the top-level settings of a rotation when describing where in a rotation a
+--     problem is.
 [763] = "循环设置",
 -- c8da2839 English: Rotation step %d
+-- Context: Label for a rotation step by position in a path description; %d is its position, e.g.
+--     'Rotation step 3'.
+-- %d #1: %d #1: the number of the step in the rotation list, counting from 1, e.g. 3
 [764] = "循环步骤 %d",
 -- 707d01e5 English: %s (Built In)
+-- Context: Name of a rotation with its source appended, e.g. 'Fire Mage (Built In)'; %s is the
+--     rotation name.
+-- %s #1: %s #1: the name of a Built In rotation, e.g. "Frost Mage Leveling"
 [765] = "%s（内置）",
 -- 19f8d44d English: %s: cannot be selected, %s.
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
+-- %s #2: %s #2: why it cannot be selected, a short phrase, e.g. "it is for Fire Mage"
 [766] = "%s：无法被选择，%s。",
 -- d707c233 English: Specialization: %s (%s), level %s
+-- %s #1: %s #1: the specialization name, e.g. "Frost"
+-- %s #2: %s #2: the specialization number or ID, e.g. "64"
+-- %s #3: %s #3: the character level, e.g. "70" (a "?" when unknown)
 [767] = "专精：%s（%s），等级 %s",
 -- 861decdd English: Spell %d
+-- Context: Label for a spell step identified only by its spell ID; %d is the spell ID.
+-- %d #1: %d #1: the spell ID, shown when the spell name is not known, e.g. 133
 [768] = "法术 %d",
 -- 1ed10cef English: %s: ready
+-- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 [769] = "%s：就绪",
 -- 9cb0ddf3 English: the game build is unavailable
 [770] = "无法获取游戏版本",
 -- 32258c52 English: (there is one for %s)
+-- %s #1: %s #1: the specializations that do have a fallback, separated by commas, e.g. "Fire Mage, Arcane Mage"
 [771] = "（%s 有一个）",
 -- 1ac2e769 English: This rotation cannot be selected. %s.
+-- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "Rotation step 3 has an invalid setting (duration)."
 [772] = "此循环无法被选择。%s。",
 -- bd35de7b English: uses a condition that is disabled in Settings (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [773] = "使用了在“设置”中被禁用的条件（%s）",
 -- e766db43 English: uses a condition this client does not have (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [774] = "使用了此客户端没有的条件（%s）",
 -- 7ee51c30 English: uses a custom condition whose function is unavailable (%s)
+-- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
 [775] = "使用了函数不可用的自定义条件（%s）",
 -- 9c4983d1 English: uses a highlight effect that no longer exists
 [776] = "使用了已不存在的高亮效果",
@@ -1628,6 +2753,9 @@ addon.translation = {
 -- 0f312508 English: Why rotations are or are not selected
 [779] = "循环为何被选择或未被选择",
 -- 0887c156 English: Yes %d
+-- Context: Label for the 'true' branch entry of a conditional step, by position; %d is the
+--     position, e.g. 'Yes 1'.
+-- %d #1: %d #1: the number of the card inside the "Yes" (true) branch of a condition, counting from 1, e.g. 2
 [780] = "是 %d",
 -- 2d0f9721 English: you are using another action bar
 [781] = "你正在使用其他动作条",
@@ -1638,24 +2766,40 @@ addon.translation = {
 -- 795c5030 English: your specialization is not available yet
 [784] = "你的专精尚不可用",
 -- 7139bb28 English: No specialization
+-- Context: Specialization name for characters that have not picked a specialization yet (Initial).
 [785] = "无专精",
 -- 49271412 English: Primary talents
+-- Context: Name of the first talent group on Classic clients (primary talents / spec).
 [786] = "主天赋",
 -- 1793e848 English: Secondary talents
+-- Context: Name of the second talent group on Classic clients (secondary talents / dual spec).
 [787] = "副天赋",
 -- 87a671ab English: Talent group %d
+-- Context: Name of a talent group by number on Classic clients; %d is the group number.
+-- %d #1: %d #1: the talent group number, e.g. 3
 [788] = "天赋组 %d",
 -- 7ff78404 English: %s (%s)
+-- %s #1: %s #1: either a difficulty name or a talent-group name, e.g. "Heroic" or "Primary talents"
+-- %s #2: %s #2: either the kind of content or the talent tree it belongs to, e.g. "Raid" or "Frost"
 [789] = "%s（%s）",
 -- 108db4c4 English: Unknown specialization
+-- Context: Text shown for a specialization ID the addon does not recognize.
 [790] = "未知专精",
 -- a9e9b05e English: Any specialization
+-- Context: Dropdown option in the rotation specialization selector: the rotation is not tied to a
+--     specialization.
 [791] = "任意专精",
 -- e4db2902 English: All specializations
+-- Context: Dropdown/filter option in the rotation browser: show rotations for all specializations.
 [792] = "全部专精",
 -- ca573462 English: no specialization yet
+-- Context: Fragment in 'You are playing %s; this rotation is for ...': the player has no
+--     specialization yet.
 [793] = "尚无专精",
 -- 254dcb81 English: it is for %s
+-- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...'; %s
+--     lists the specializations it is for.
+-- %s #1: %s #1: the specializations the rotation is for, separated by commas, e.g. "Frost Mage, Fire Mage"
 [794] = "它适用于 %s",
 -- 82612d65 English: has an invalid specialization list
 [795] = "专精列表无效",
@@ -1667,15 +2811,23 @@ addon.translation = {
 --     while you play one of them; Any means every specialization.
 [798] = "此循环适用的专精。只有在你使用其中一个专精时，它才会被列出并可被选择；“任意”表示所有专精。",
 -- 3e93e3f4 English: You are playing %s; this fallback is for %s, so it is not used now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, e.g. "Frost Mage"
+-- %s #2: %s #2: the specialization this fallback rotation is for, e.g. "Fire Mage"
 [799] = "你正在使用 %s；此后备循环适用于 %s，因此当前不会被使用。",
 -- 70ef639a English: You are playing %s; this rotation is for %s, so it is not selectable now.
+-- %s #1: %s #1: the specialization the player is in now, with its class, or "no specialization yet", e.g. "Frost Mage"
+-- %s #2: %s #2: the specializations this rotation is for, separated by commas, e.g. "Fire Mage"
 [800] = "你正在使用 %s；此循环适用于 %s，因此当前无法被选择。",
 -- 10eeff18 English: you have not chosen a specialization yet, so Rotation Master uses %s, which the
 --     Rotations editor does not offer
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
 [801] = "你尚未选择专精，因此 Rotation Master 使用 %s，而“循环”编辑器并不提供该选项",
 -- d2039939 English: You have not chosen a specialization yet, so Rotation Master uses %s (%s). The
 --     Rotations editor only offers %s, so rotations saved there cannot run until you choose a
 --     specialization.
+-- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
+-- %s #2: %s #2: its internal number or ID, e.g. "0"
+-- %s #3: %s #3: the specializations the editor offers, separated by commas, e.g. "Arcane, Fire, Frost"
 [802] = "你尚未选择专精，因此 Rotation Master 使用 %s（%s）。“循环”编辑器只提供 %s，所以在那里保存的循环要等你选择专精后才能运行。",
 -- 97aa7322 English: this client has no ranged slot
 [803] = "此客户端没有远程武器栏位",
@@ -1694,12 +2846,20 @@ addon.translation = {
 -- 2e996f7c English: this edition has no point resource
 [810] = "此版本没有点数资源",
 -- 364e833a English: Different WoW edition
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different WoW edition (e.g. Classic vs Retail).
 [811] = "不同的 WoW 版本",
 -- fbb263cb English: Different class
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different class.
 [812] = "不同的职业",
 -- 178bde4c English: Different specialization
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different specialization.
 [813] = "不同的专精",
 -- b7964470 English: Different action context
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation needs a
+--     different action context (e.g. vehicle bar).
 [814] = "不同的动作上下文",
 -- 46d39e12 English: Character level is unavailable
 [815] = "角色等级不可用",
@@ -1708,6 +2868,8 @@ addon.translation = {
 -- d34ab535 English: Game build is unavailable
 [817] = "游戏版本号不可用",
 -- 139114dc English: Different game build
+-- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
+--     different game client build.
 [818] = "不同的游戏版本号",
 -- a55c1483 English: Required context is not supported yet
 [819] = "尚不支持所需的上下文",
@@ -1718,28 +2880,48 @@ addon.translation = {
 -- ca12b41f English: Built In · read-only
 [822] = "内置 · 只读",
 -- d11d9681 English: Level range: %s–%s; revision %s
+-- %s #1: %s #1: the lowest character level the Built In rotation is for, e.g. 1
+-- %s #2: %s #2: the highest character level, or "?" when there is no limit, e.g. 60
+-- %s #3: %s #3: the revision number, e.g. 4
 [823] = "等级范围：%s–%s；修订版 %s",
 -- a0b53ded English: Available for this character
 [824] = "此角色可用",
 -- a77cc377 English: Not available for this character: %s
+-- %s #1: %s #1: why the Built In rotation is not available, a short phrase (translated), e.g. "Different class"
 [825] = "此角色不可用：%s",
 -- 91f1e71a English: Enable Built In
+-- Context: Checkbox/button in the Built In rotation panel: turn this Built In rotation on for your
+--     profile.
 [826] = "启用内置循环",
 -- 763de8e1 English: Could not update this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [827] = "无法更新此内置循环：%s",
 -- ba6d03f9 English: Clone to edit
+-- Context: Button in the Built In rotation panel: copy the read-only Built In into your own
+--     editable rotation (verb phrase).
 [828] = "克隆以编辑",
 -- e1ad50fb English: Could not duplicate this Built In rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [829] = "无法复制此内置循环：%s",
 -- ac89ec89 English: %d. %s
+-- %d #1: %d #1: the position in a numbered list, counting from 1, e.g. 2
+-- %s #2: %s #2: the text of that list entry, e.g. "Cast Frostbolt"
 [830] = "%d. %s",
 -- 36021c12 English: Condition preview unavailable
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Message
+--     'Condition preview unavailable' for a condition that could not be previewed.
 [831] = "条件预览不可用",
 -- caf85b08 English: Sources
+-- Context: Heading of the list of sources/citations for a rotation (where the Built In was derived
+--     from).
 [832] = "来源",
 -- ca184496 English: Unavailable
+-- Context: Status/heading text: something is unavailable (help for a missing subject, debugger
+--     status, validation).
 [833] = "不可用",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In rotation for TBC Shaman, Enhancement spec, based on an Icy Veins
+--     guide; a trailing site name in parentheses.
 [834] = "增强（Icy Veins）",
 -- a97cd0b7 English: Melee Enhancement from level 1 to 70, and the default for any Shaman no other
 --     premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire
@@ -1771,6 +2953,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism.
 [839] = "元素天赋树的施法型元素。闪电箭作为填充技能；闪电链在元素掌握期间、法力值不低于 40% 时的节能施法期间，或法力值高于 80% 时随意施放；仅在移动时使用烈焰震击；地震术用于打断；成群敌人时使用火焰新星、闪电链和熔岩图腾。在闪电链之前，若目标处于近战范围内，则交给自动攻击处理以节省法力值。提醒：水之护盾或闪电之盾、武器灌注、天怒图腾（长时间战斗则用灼热图腾）、空气之怒图腾、法力之泉图腾、战斗后的图腾召唤、元素掌握以及嗜血/英勇。",
 -- 6c2dcf2e English: Elemental (Wowhead)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on a Wowhead guide;
+--     the site name is in parentheses.
 [840] = "元素（Wowhead）",
 -- c4c0aa4c English: Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental
 --     premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain
@@ -1780,6 +2964,8 @@ addon.translation = {
 --     variant.
 [841] = "Wowhead 的元素，是推荐的 Icy Veins 元素内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。70 级时闪电链冷却完毕即施放，其间穿插闪电箭（升级期间仅在元素掌握或节能施法时施放闪电链），仅在移动时使用烈焰震击，用地震术收掉会在施法完成前死亡的目标。图腾、护盾和冷却技能提醒与 Icy Veins 版本相同。",
 -- bb13bf18 English: Elemental (NextActionTBC)
+-- Context: Name of a Built In rotation for TBC Shaman, Elemental spec, based on the NextActionTBC
+--     addon's logic; the source is in parentheses.
 [842] = "元素（NextActionTBC）",
 -- 2ec2f692 English: NextActionTBC's Elemental, an alternative to the recommended Icy Veins
 --     Elemental premade, off by default: enable it and disable that one, or raise its priority.
@@ -1788,6 +2974,8 @@ addon.translation = {
 --     Elemental Mastery and Bloodlust/Heroism; totems stay manual.
 [843] = "NextActionTBC 的元素，是推荐的 Icy Veins 元素内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。保持目标身上的烈焰震击，仅在面对两个或更多敌人且法力值高于 30% 时使用闪电链，否则使用闪电箭。会提醒你闪电之盾、武器灌注、元素掌握以及嗜血/英勇；图腾由你手动处理。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In rotation for TBC Shaman, Restoration spec (the spec name
+--     Restoration).
 [844] = "恢复",
 -- e6f434e0 English: Healing for the Restoration talent tree, on your friendly target (or yourself
 --     with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies,
@@ -1798,10 +2986,13 @@ addon.translation = {
 --     Choosing whom to heal and which rank stays with you.
 [845] = "恢复天赋树的治疗，作用于你的友方目标（没有目标时作用于你自己）：紧急情况下使用自然迅捷配合治疗波或次级治疗波，消毒术和祛病术，对你的焦点目标施放大地之盾，附近有三名盟友受伤时使用治疗链，否则使用治疗波。目标为敌对时切换为烈焰震击和闪电箭，用于单刷。提醒：水之护盾、对焦点目标施放大地之盾（请将坦克设为焦点目标）、法力之潮图腾、组队时的法力之泉图腾和大地之力图腾、嗜血/英勇。治疗谁以及使用哪个等级由你决定。",
 -- b177f0bb English: Could not duplicate this rotation: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [846] = "无法复制此循环：%s",
 -- efaafe62 English: Could not duplicate this step: %s
+-- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
 [847] = "无法复制此步骤：%s",
 -- 5ad38304 English: absent
+-- Context: Word in a rotation comparison: the compared field has no value in the current rotation.
 [848] = "不存在",
 -- 4303eed3 English: This comparison could not be completed.
 [849] = "无法完成此比较。",
@@ -1810,12 +3001,22 @@ addon.translation = {
 -- 70277515 English: No differences.
 [851] = "没有差异。",
 -- 783ee9d8 English: Added %s: %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the new value, e.g. "Frostbolt"
 [852] = "已添加 %s：%s",
 -- cbd1cc0c English: Removed %s: %s
+-- %s #1: %s #1: where in the rotation the setting was, as a path, e.g. "rotation[3].conditions"
+-- %s #2: %s #2: the removed value, e.g. "Frostbolt"
 [853] = "已移除 %s：%s",
 -- 9ffda67b English: Moved %s: priority %s → %s
+-- %s #1: %s #1: where in the rotation the step is, as a path, e.g. "rotation[3]"
+-- %s #2: %s #2: the old priority (position), e.g. 3
+-- %s #3: %s #3: the new priority (position), e.g. 1
 [854] = "已移动 %s：优先级 %s → %s",
 -- 496c1fce English: Changed %s: %s → %s
+-- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].spell"
+-- %s #2: %s #2: the old value, e.g. "Frostbolt"
+-- %s #3: %s #3: the new value, e.g. "Ice Lance"
 [855] = "已更改 %s：%s → %s",
 -- 222fd90b English: Read-only comparison. Priority moves are listed; rotations are not merged.
 [856] = "只读比较。会列出优先级变动；不会合并循环。",
@@ -1826,6 +3027,8 @@ addon.translation = {
 -- e4e1807d English: Differences from the current Built In rotation
 [859] = "与当前内置循环的差异",
 -- f44ec53e English: Overlapping field edits
+-- Context: Heading in the rotation comparison: fields changed both by you and by the new Built In
+--     version.
 [860] = "重叠的字段编辑",
 -- d1d87a47 English: No overlapping field edits detected. Priority order still needs review.
 [861] = "未检测到重叠的字段编辑。优先级顺序仍需检查。",
@@ -1834,46 +3037,71 @@ addon.translation = {
 -- c72b77cf English: Some display text was truncated. Rotation data has not been changed.
 [863] = "部分显示文本已被截断。循环数据未被更改。",
 -- 184940bb English: Compare rotations
+-- Context: Title of the rotation comparison window; also the button in the rotation editor that
+--     opens it (verb phrase).
 [864] = "比较循环",
 -- ad26c965 English: Your rotation: %s
+-- %s #1: %s #1: the name of the player's own rotation, e.g. "Frost Single Target"
 [865] = "你的循环：%s",
 -- d30f9619 English: Compare against
+-- Context: Label of the dropdown choosing what to compare the rotation against in the comparison
+--     window.
 [866] = "比较对象",
 -- 5cbf27df English: Copy comparison
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     comparison' to copy the comparison result to the clipboard.
 [867] = "复制比较结果",
 -- 7f25ffda English: Review the differences, then select Copy and press Ctrl+C.
 [868] = "查看差异，然后选择“复制”并按 Ctrl+C。",
 -- 9078f91f English: Comparison unavailable: %s
+-- %s #1: %s #1: why the comparison cannot be shown, a short reason, e.g. "the rotation could not be read"
 [869] = "比较不可用：%s",
 -- 73484f4d English: Unknown spell (%s)
+-- Context: Placeholder name for a spell whose name cannot be read; %s is the spell ID.
+-- %s #1: %s #1: the spell ID that the game does not know, e.g. 133
 [870] = "未知法术（%s）",
 -- e328ada9 English: Beyond Melee Range
+-- Context: Name of the Beyond Melee Range condition (the target is farther than melee distance).
 [871] = "超出近战范围",
 -- 2652c653 English: %s is beyond melee range
+-- %s #1: %s #1: the unit that is out of reach, e.g. "your target"
 [872] = "%s超出近战范围",
 -- 4aaede20 English: Switch conditions
+-- Context: Heading for the conditions used to automatically switch rotations in a comparison or
+--     reference view; also a comparison row label.
 [873] = "切换条件",
 -- 4e9a0f45 English: Optional highlight
+-- Context: Title of a cooldown step card in a rotation reference: a highlight that is independent
+--     of the sequence.
 [874] = "可选高亮",
 -- 6ba1c0c2 English: Priority %s
+-- Context: Title of a sequential step card in a rotation reference; %s is its position number.
+-- %s #1: %s #1: the step's position in the priority list, counting from 1, e.g. 3
 [875] = "优先级 %s",
 -- 38728cc5 English: Stop the sequence here
 [876] = "在此停止序列",
 -- b1fb02b4 English: Item or item set: %s
+-- %s #1: %s #1: the name of the item or item set, e.g. "Healthstone"
 [877] = "物品或物品组：%s",
 -- 0bbc45af English: Use this exact spell rank
 [878] = "使用这个确切的法术等级",
 -- 59291ee2 English: No steps in this section.
 [879] = "此部分没有步骤。",
 -- 6f32b2f4 English: Optional highlights
+-- Context: Heading in the rotation comparison and reference: the cooldown steps that highlight
+--     independently.
 [880] = "可选高亮",
 -- 6f79a2fd English: These reminders highlight independently whenever their conditions are met.
 [881] = "这些提醒只要其条件满足，就会独立高亮。",
 -- 681ceb51 English: Sequential priority
+-- Context: Heading in the rotation comparison and reference: the main steps where the first
+--     eligible one is recommended.
 [882] = "顺序优先级",
 -- 89166303 English: The first eligible step is recommended. Later steps provide alternatives.
 [883] = "推荐第一个符合条件的步骤。后面的步骤作为备选。",
 -- 2624dd07 English: View full rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'View
+--     full rotation' to open the complete rotation in the viewer.
 [884] = "查看完整循环",
 -- d1843213 English: Built In rotation reference
 [885] = "内置循环参考",
@@ -1882,30 +3110,45 @@ addon.translation = {
 -- a77963c6 English: Additional settings changed. Copy diagnostic details to inspect all fields.
 [887] = "其他设置已更改。复制诊断详情以检查所有字段。",
 -- 8597bf22 English: At cloning
+-- Context: Column title in the comparison window: the rotation as it was when it was cloned from
+--     the Built In.
 [888] = "克隆时",
 -- 9cc733fc English: Selected rotation
+-- Context: Column title in the comparison window: the rotation you picked in the list.
 [889] = "所选循环",
 -- c9e13168 English: Your rotation
+-- Context: Column title in the comparison window: the user's own rotation.
 [890] = "你的循环",
 -- dd2e2975 English: No corresponding step
+-- Context: Message in a comparison column: there is no step matching the one in the other column.
 [891] = "无对应步骤",
 -- 6b02e0d3 English: Added
+-- Context: Status tag in a rotation comparison row (shown in green): this step was added.
 [892] = "已添加",
 -- 4118fb4f English: Removed
+-- Context: Status tag in a rotation comparison row (shown in red): this step was removed.
 [893] = "已移除",
 -- 2a6141e4 English: Changed
+-- Context: Status tag in a rotation comparison row (shown in amber): this step was changed.
 [894] = "已更改",
 -- b11c9047 English: Moved
+-- Context: Status tag in a rotation comparison row (shown in blue): this step moved to a different
+--     position.
 [895] = "已移动",
 -- 88b6f742 English: Unchanged
+-- Context: Status tag in a rotation comparison row: nothing changed in this step.
 [896] = "未更改",
 -- f5f36595 English: Comparison diagnostic details
+-- Context: Title of the diagnostic details report in the comparison window.
 [897] = "比较诊断详情",
 -- 61d7fa13 English: Press Ctrl+C to copy the selected diagnostic details.
 [898] = "按 Ctrl+C 复制所选的诊断详情。",
 -- bb35fd44 English: Comparison view
+-- Context: Label of the dropdown choosing the comparison direction/view in the comparison window.
 [899] = "比较视图",
 -- c489054c English: Copy diagnostic details
+-- Context: Button that copies diagnostic details about a rotation or comparison to the clipboard
+--     (verb).
 [900] = "复制诊断详情",
 -- 383100d5 English: Built In updates since cloning
 [901] = "克隆后的内置更新",
@@ -1914,39 +3157,57 @@ addon.translation = {
 -- b3ec34b2 English: Current Built In rotation
 [903] = "当前内置循环",
 -- e6b8f377 English: Unknown item
+-- Context: Placeholder text in a rotation reference for an item that cannot be identified.
 [904] = "未知物品",
 -- 36f3765b English: Item %s
+-- Context: Label for an item identified by ID or name; %s is the item ID or name.
+-- %s #1: %s #1: the item ID or name that the game cannot resolve, e.g. 5512
 [905] = "物品 %s",
 -- 710f81fe English: Item set: %s
+-- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
 [906] = "物品组：%s",
 -- 3ec02e0c English: Unknown action type
+-- Context: Message in a rotation reference card: the step has a type the addon does not know.
 [907] = "未知动作类型",
 -- b3fee308 English: Player spell
+-- Context: Step type description in a rotation reference: a spell cast by the player.
 [908] = "玩家法术",
 -- aebfceb4 English: Player or pet spell
 [909] = "玩家或宠物法术",
 -- c910d474 English: General
+-- Context: Name of the 'General' settings tab.
 [910] = "常规",
 -- 839ffbca English: Copy this export, or paste a rotation and preview it. Import creates a new
 --     editable copy.
 [911] = "复制此导出内容，或粘贴一个循环并预览。导入会创建一个新的可编辑副本。",
 -- 2c7dec65 English: Rotation text
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Rotation text' for the exported text of a rotation.
 [912] = "循环文本",
 -- 9d89d908 English: Name for imported copy
 [913] = "导入副本的名称",
 -- 05ca5c89 English: Imported rotation
+-- Context: Default name given to a rotation created by importing text.
 [914] = "已导入的循环",
 -- a0d7b2fa English: Copy export
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     export' to copy exported text to the clipboard.
 [915] = "复制导出内容",
 -- ab5c8e55 English: Preview import
+-- Context: Button in the import dialog: preview what the import would change before applying it
+--     (verb phrase); also a help heading.
 [916] = "预览导入",
 -- ebc64351 English: Compare import
+-- Context: Button in the import dialog (replace mode): compare the import with the existing entry
+--     before applying (verb phrase).
 [917] = "比较导入",
 -- ed144b77 English: Import preview
+-- Context: Title of the window previewing an import, read-only.
 [918] = "导入预览",
 -- 53fb6864 English: Import as new rotation
 [919] = "作为新循环导入",
 -- 89411b23 English: Export unavailable: %s
+-- %s #1: %s #1: why the export is not possible, a short reason, e.g. "nothing selected"
 [920] = "导出不可用：%s",
 -- 4ea0b645 English: Preview a pasted rotation before importing it.
 [921] = "导入前先预览粘贴的循环。",
@@ -1955,56 +3216,79 @@ addon.translation = {
 -- a3396230 English: Text changed. Compare again before importing.
 [923] = "文本已更改。导入前请重新比较。",
 -- 815a23ae English: This import cannot be shown in full (%s). Use Check import for details.
+-- %s #1: %s #1: what is wrong with the import, a short reason, e.g. "unknown field"
 [924] = "此导入无法完整显示（%s）。请使用“检查导入内容”查看详情。",
 -- c409c01f English: Import preview unavailable: %s
+-- %s #1: %s #1: why the import cannot be previewed, a short reason, e.g. "invalid-format"
 [925] = "导入预览不可用：%s",
 -- 7fa00152 English: Ready to import as a new copy.
 [926] = "已准备好作为新副本导入。",
 -- 8bc94920 English: This import cannot be applied: %s
+-- %s #1: %s #1: why the import cannot be applied, a short reason, e.g. "the rotation is for another class"
 [927] = "无法应用此导入：%s",
 -- d1e71918 English: Legacy export: WoW edition and class scope were not supplied.
 [928] = "旧版导出：未提供 WoW 版本和职业范围。",
 -- 898a9c6d English: Could not import this rotation: %s
+-- %s #1: %s #1: why the import failed, a short reason, e.g. "invalid-data"
 [929] = "无法导入此循环：%s",
 -- 29b67037 English: Incoming rotation
+-- Context: Column title in the comparison window: the rotation being imported.
 [930] = "传入的循环",
 -- de9f057a English: Always
+-- Context: Condition text for an empty condition list: the step always applies; also status text.
 [931] = "总是",
 -- d51cec9c English: Condition reference (code is not run).
 [932] = "条件参考（不运行代码）。",
 -- 40afa4aa English: Check import
+-- Context: Button in the import dialog: check the pasted import text for problems (verb phrase).
 [933] = "检查导入内容",
 -- 817bfd7b English: This import window is out of date. Close it and open it again.
 [934] = "此导入窗口已过期。请关闭后重新打开。",
 -- e301820a English: Incoming
+-- Context: Heading of the column showing the entry being imported, in the import preview.
 [935] = "传入",
 -- a7b182f8 English: Problems
+-- Context: Heading of the list of problems found in an import report.
 [936] = "问题",
 -- 8a7525b1 English: Notes
+-- Context: Heading of the list of notes (informational messages) in an import report.
 [937] = "备注",
 -- 2191a0b7 English: No problems found.
 [938] = "未发现问题。",
 -- 460c60bd English: This import can be applied.
 [939] = "可以应用此导入。",
 -- 03f266f9 English: Fields shown: %d
+-- %d #1: %d #1: the number of settings shown, e.g. 12
 [940] = "显示的字段：%d",
 -- 77810b90 English: Field order
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Field order' in custom function documentation (order of the fields).
 [941] = "字段顺序",
 -- bbd21338 English: Required fields
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Required fields' in custom condition documentation.
 [942] = "必填字段",
 -- e68b36b1 English: Parameters
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Parameters' in custom function documentation (a function's input values).
 [943] = "参数",
 -- ea33a267 English: Code: %s
+-- %s #1: %s #1: the name of the code field being compared, e.g. "evaluate", "print" or "widget" (shown as-is)
 [944] = "代码：%s",
 -- bd795f03 English: %d more settings are not shown.
+-- %d #1: %d #1: how many settings are left out of the list, e.g. 5
 [945] = "另有 %d 项设置未显示。",
 -- 1a5d255a English: ... %d more characters not shown.
+-- %d #1: %d #1: how many characters of the code are cut off, e.g. 1200
 [946] = "……另有 %d 个字符未显示。",
 -- 0ee9b450 English: This is a dependency bundle. Import opens the bundle review.
 [947] = "这是依赖项包。导入会打开包审阅。",
 -- 2a6f7cb8 English: Export Built In
+-- Context: Button in the Built In rotation panel: export the Built In rotation as text (verb
+--     phrase).
 [948] = "导出内置循环",
 -- 57152733 English: Comparison
+-- Context: Fallback title of a comparison view tab/dropdown entry in the comparison window.
 [949] = "比较",
 -- c849416a English: A condition could not be validated. Use /rm errors for details.
 [950] = "有一个条件无法验证。详情请使用 /rm errors。",
@@ -2016,38 +3300,57 @@ addon.translation = {
 --     evaluated.
 [952] = "AND 在第一个不匹配处停止；OR 在第一个匹配处停止。NOT 会反转已知结果。遇到的不可用数据保持为不可用。被跳过的子条件不会被评估。",
 -- 60a0d835 English: Add condition
+-- Context: Button in the condition editor: add a single condition to the list (verb phrase).
 [953] = "添加条件",
 -- da431313 English: All (AND)
+-- Context: Name of the AND group type in the condition editor: all inner conditions must be true.
 [954] = "全部（AND）",
 -- fca19d27 English: Any (OR)
+-- Context: Name of the OR group type in the condition editor: any inner condition may be true.
 [955] = "任意（OR）",
 -- 31e392d1 English: Apply
+-- Context: Button in editors that saves the pending changes (verb).
 [956] = "应用",
 -- d9c7876b English: Apply or cancel the open condition before editing another.
 [957] = "编辑其他条件前，请先应用或取消当前打开的条件。",
 -- 19766ed6 English: Cancel
+-- Context: Button/tooltip in dialogs that closes the dialog without saving (verb).
 [958] = "取消",
 -- 838e8c5b English: Changes not applied.
 [959] = "更改未应用。",
 -- 270bc3e1 English: Choose a condition
+-- Context: Placeholder text in condition text where no condition is chosen yet; imperative.
 [960] = "选择一个条件",
 -- 03557ba7 English: Complete the selected condition's fields before applying.
 [961] = "应用前请先完成所选条件的字段。",
 -- 5399c49c English: Disable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Disable condition' on a condition card.
 [962] = "禁用条件",
 -- ebae65ff English: Enable condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Enable condition' on a condition card.
 [963] = "启用条件",
 -- 2015044c English: Find condition type
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Label/placeholder 'Find condition type' for the condition type search.
 [964] = "查找条件类型",
 -- 65d9d4e3 English: Group with %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Condition
+--     card action 'Group with %s'; %s names another condition.
+-- %s #1: %s #1: how the condition is grouped, "All" or "Any", e.g. "Any"
 [965] = "与%s组合",
 -- e3de7bbd English: Invalid disabled flag
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Error text
+--     'Invalid disabled flag' for a condition with an invalid disabled value.
 [966] = "无效的禁用标记",
 -- a1ed1d35 English: Not (NOT)
+-- Context: Name of the NOT group type in the condition editor: negates the inner condition.
 [967] = "非（NOT）",
 -- cf440966 English: Only the first 200 conditions are shown. Other conditions are preserved.
 [968] = "仅显示前 200 个条件。其他条件会被保留。",
 -- 5ac0b06f English: Remove condition
+-- Context: Button/tooltip on a condition card: remove this condition (verb phrase).
 [969] = "移除条件",
 -- f2f59bcc English: Select a child on the left to edit its fields. Use Add condition to extend this
 --     group.
@@ -2068,12 +3371,16 @@ addon.translation = {
 -- 79bdd6f5 English: This draft refers to missing data. Resolve those references before applying.
 [977] = "此草稿引用了缺失的数据。应用前请先解决这些引用。",
 -- b57ef478 English: Ungroup
+-- Context: Button/tooltip on a condition card: remove the group but keep its inner conditions
+--     (verb).
 [978] = "取消分组",
 -- e70375d8 English: Ungroup requires a group with at most one child.
 [979] = "取消分组要求该组最多只有一个子条件。",
 -- 608c89a1 English: Unknown condition: %s
+-- %s #1: %s #1: the internal name of the condition, e.g. "BUFF"
 [980] = "未知条件：%s",
 -- e77e940c English: Always (no condition)
+-- Context: Title for a step with no condition in the condition editor: it always applies.
 [981] = "总是（无条件）",
 -- 422835ec English: An empty AND group always matches. Add a condition to restrict it.
 [982] = "空的 AND 组总是匹配。添加条件以加以限制。",
@@ -2085,22 +3392,28 @@ addon.translation = {
 --     reopen the current one.
 [985] = "原始循环或步骤已被移除或替换。请取消此草稿并重新打开当前版本。",
 -- 7412ffde English: Show unchanged steps
+-- Context: Checkbox in the comparison window: also show steps that did not change.
 [986] = "显示未更改的步骤",
 -- 4b23882b English: %s unchanged steps hidden.
+-- %s #1: %s #1: how many steps are hidden because they did not change, e.g. 7
 [987] = "已隐藏 %s 个未更改的步骤。",
 -- 128afc72 English: No other rotations to compare.
 [988] = "没有其他可比较的循环。",
 -- 4e170ba0 English: Spell Recharge Time
+-- Context: Name of the Spell Recharge Time condition (seconds until the next charge of a spell).
 [989] = "法术充能时间",
 -- d0db4227 English: Pet Spell Recharge Time
 [990] = "宠物法术充能时间",
 -- 6852f826 English: Any Spell Recharge Time
 [991] = "任意法术充能时间",
 -- 62d868ef English: Rotation names
+-- Context: Heading in the rotation comparison: the name of the rotation changed.
 [992] = "循环名称",
 -- a0e34049 English: Custom step name
+-- Context: Label in a rotation reference: this step has a name you typed.
 [993] = "自定义步骤名称",
 -- f5945a5c English: Automatic step name
+-- Context: Label in a rotation reference: this step's name is generated from its action.
 [994] = "自动步骤名称",
 -- 3b913c3a English: Spell search data is unavailable.
 [995] = "法术搜索数据不可用。",
@@ -2113,20 +3426,36 @@ addon.translation = {
 -- 473d3033 English: Known and referenced spells. Enter a spell ID or link to find another spell.
 [999] = "已知和已引用的法术。输入法术 ID 或链接以查找其他法术。",
 -- e04de746 English: Search rotations
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Placeholder/label 'Search rotations' for the search box in the rotation browser.
 [1000] = "搜索循环",
 -- a52ace42 English: All
+-- Context: Option label meaning all of the items: the condition category 'All' filter and the 'All'
+--     side of an AND group toggle.
 [1001] = "全部",
 -- 019a32de English: Built In
+-- Context: Rotation kind in the rotation browser: a rotation shipped with the addon (Built In);
+--     also a filter option. Keep the term consistent with other 'Built In' strings.
 [1002] = "内置",
 -- 5ca6606f English: No rotations match this search.
 [1003] = "没有符合此搜索的循环。",
 -- 68f12a84 English: New rotation
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'New
+--     rotation' to create an empty rotation.
 [1004] = "新建循环",
 -- 325e8493 English: Fallback
+-- Context: Rotation kind in the rotation browser: the default fallback rotation used when none
+--     applies.
 [1005] = "后备",
 -- 71e6453b English: %d of %d rotations
+-- Context: Counter below the rotation browser list; the first %d is how many rotations are shown,
+--     the second how many exist in total.
+-- %d #1: %d #1: how many rotations are listed now, e.g. 3
+-- %d #2: %d #2: how many rotations exist in total, e.g. 12
 [1006] = "%d / %d 个循环",
 -- cae7d57b English: Stop
+-- Context: Step type in the rotation step editor: the step stops the rotation (no further
+--     recommendation); also a help heading.
 [1007] = "停止",
 -- 05a85640 English: Actions automatically require a learned spell or carried item, usable
 --     resources, cooldown readiness and valid range. Conditions can additionally test other
@@ -2139,6 +3468,8 @@ addon.translation = {
 --     highlight and never presses a button.
 [1009] = "当没有任何优先动作就绪时，自动攻击（“攻击”或“射击”）会作为隐含的最终后备，用于战斗中存活的敌对目标：在近战范围内为“攻击”；超出近战范围时，只要目标在射程内且该按钮在你的动作条上，则为“自动射击”或魔杖“射击”。该自动攻击已在进行时不推荐任何内容。它使用普通的循环高亮，从不按下任何按钮。",
 -- 5c68c9c6 English: Implicit final fallback
+-- Context: Heading in a rotation reference for the automatic final step the addon appends (the
+--     basic attack) when nothing else applies.
 [1010] = "隐含的最终后备",
 -- d56153b6 English: Also suppress auto-attack (Attack or Shoot)
 [1011] = "同时抑制自动攻击（“攻击”或“射击”）",
@@ -2148,30 +3479,46 @@ addon.translation = {
 --     Stop.
 [1013] = "在此“停止”之后仍可能推荐隐含的自动攻击（“攻击”或“射击”）。",
 -- 762ebb70 English: Group name
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Group
+--     name' for the name of a condition category group.
 [1014] = "组名称",
 -- 9d5097a8 English: All categories
+-- Context: Dropdown option in the condition picker that shows conditions of every category.
 [1015] = "所有分类",
 -- 848b0fa0 English: Choose or search condition type
 [1016] = "选择或搜索条件类型",
 -- 0f8a2a34 English: Incomplete: %s is required
+-- %s #1: %s #1: the name of the missing field, e.g. "spell" (or "?" when unknown)
 [1017] = "不完整：需要%s",
 -- f9575aeb English: Invalid or unsupported condition fields
 [1018] = "条件字段无效或不受支持",
 -- 010b483d English: %d conditions
+-- Context: Summary line in a collection comparison: how many conditions an entry has; %d is the
+--     count.
+-- %d #1: %d #1: the number of conditions in the category, e.g. 8
 [1019] = "%d 个条件",
 -- c417805d English: Expand to edit fields
 [1020] = "展开以编辑字段",
 -- a063783d English: Negate each
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Negate each' (apply NOT to each selected condition).
 [1021] = "逐个取反",
 -- a9ee2142 English: Version: %s  ·  Author: %s
+-- %s #1: %s #1: the addon version, e.g. "4.2.1"
+-- %s #2: %s #2: the author, e.g. "PreZ"
 [1022] = "版本：%s  ·  作者：%s",
 -- e2311633 English: Configure rotations, conditions and highlights in the Rotation Master window.
 [1023] = "在 Rotation Master 窗口中配置循环、条件和高亮。",
 -- 23010764 English: Open Options
+-- Context: Large button on the addon's settings page in the game's Options window: opens the
+--     Rotation Master configuration window.
 [1024] = "打开选项",
 -- b764cdc0 English: Unknown
+-- Context: Placeholder shown when a value cannot be determined (unknown encounter name, unknown
+--     client edition, unknown addon version or author).
 [1025] = "未知",
 -- a9080cb3 English: Scale: %d%%
+-- %d #1: %d #1: the window scale as a percentage, e.g. 100 (the %% after it is a literal percent sign)
 [1026] = "缩放：%d%%",
 -- 17a87f02 English: Right-click the title bar to close.
 [1027] = "右键点击标题栏以关闭。",
@@ -2184,68 +3531,117 @@ addon.translation = {
 -- f4326302 English: Click to add group name
 [1030] = "点击添加组名称",
 -- f2b59370 English: Negate condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Negate condition' on a condition card.
 [1031] = "取反条件",
 -- 56693400 English: Enable or disable condition
 [1032] = "启用或禁用条件",
 -- 7a2fb682 English: Switch All / Any
 [1033] = "切换 全部 / 任意",
 -- ca7981b4 English: Off
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'Off'.
 [1034] = "关",
 -- 13001175 English: On
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
+--     word 'On'.
 [1035] = "开",
 -- a8566033 English: Negated
+-- Context: Not referenced directly by the current code (legacy or built dynamically). State word
+--     'Negated' for a condition that is inverted (NOT).
 [1036] = "已取反",
 -- bc47dc21 English: New condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New condition' (create a condition).
 [1037] = "新建条件",
 -- f66edce3 English: New All group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New All group' (create an AND group).
 [1038] = "新建“全部”组",
 -- fb19b6a9 English: New Any group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New Any group' (create an OR group).
 [1039] = "新建“任意”组",
 -- 36a53913 English: Drag into the tree to insert
 [1040] = "拖入树中以插入",
 -- 25f7b372 English: Collapse all
+-- Context: Button in the condition editor and rotation view: collapse every card in the list; verb
+--     phrase.
 [1041] = "全部折叠",
 -- a3e586be English: Expand all
+-- Context: Button in the condition editor and rotation view: expand every card in the list; verb
+--     phrase.
 [1042] = "全部展开",
 -- d4d773af English: Group as All
+-- Context: Button in the condition editor: wrap the selected conditions in an AND group (all must
+--     be true); verb phrase.
 [1043] = "组合为“全部”",
 -- e658538c English: Group as Any
+-- Context: Button in the condition editor: wrap the selected conditions in an OR group (any may be
+--     true); verb phrase.
 [1044] = "组合为“任意”",
 -- 27e78c35 English: Move %d conditions
+-- Context: Drag-and-drop tooltip in the condition editor: moving several selected conditions; %d is
+--     how many.
+-- %d #1: %d #1: how many conditions are being dragged, e.g. 3
 [1045] = "移动 %d 个条件",
 -- 8fa50cbc English: Insert condition
+-- Context: Drag-and-drop tooltip in the condition editor: a new condition is being inserted at the
+--     drop position; verb phrase.
 [1046] = "插入条件",
 -- f54d0e38 English: Duplicate condition
+-- Context: Button/tooltip on a condition card: make a copy of this condition (verb phrase).
 [1047] = "复制条件",
 -- e21f935f English: Copy
+-- Context: Button that copies the shown text to the clipboard (transfer dialog); also a column
+--     heading in the help window.
 [1048] = "复制",
 -- 2b505597 English: Any
+-- Context: Toggle label: match any one of several things; condition group operator button (OR) and
+--     the tag filter mode pill in the rotation browser.
 [1049] = "任意",
 -- 3fe9bd3a English: Resolve the wrapper's name or unsupported fields before removing its negation.
 [1050] = "移除其取反之前，请先处理外层包装的名称或不受支持的字段。",
 -- e49e9c8f English: Not evaluated: an enclosing group is disabled
 [1051] = "未评估：外层组已禁用",
 -- 754e2703 English: %d selected
+-- Context: Counter label showing how many cards/conditions are selected; %d is the count.
+-- %d #1: %d #1: how many items are selected, e.g. 3
 [1052] = "已选择 %d 个",
 -- 4e3bbfa6 English: Conditional branch
+-- Context: Title of a conditional branch step (a step that chooses between two paths based on a
+--     condition) in a rotation reference; noun phrase.
 [1053] = "条件分支",
 -- 9c46a836 English: Evaluate condition
+-- Context: Branch step mode: the branch decides by evaluating its condition.
 [1054] = "评估条件",
 -- 049e212e English: Always true
+-- Context: Branch step mode: the branch always takes the true path.
 [1055] = "总是为真",
 -- 4d15e741 English: Always false
+-- Context: Branch step mode: the branch always takes the false path; also condition text for a
+--     negated empty condition.
 [1056] = "总是为假",
 -- 0f8c87a3 English: Unknown branch mode
+-- Context: Message in a rotation reference: the branch step has a mode the addon does not know.
 [1057] = "未知分支模式",
 -- 3cbc87c7 English: True
+-- Context: Boolean result word: true; the true arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1058] = "真",
 -- 60a33e6c English: False
+-- Context: Boolean result word: false; the false arm of a branch, and the result of testing a
+--     condition in the condition source preview.
 [1059] = "假",
 -- 06f1af3a English: Rotation tree cannot be displayed.
 [1060] = "无法显示循环树。",
 -- 1e3abf61 English: If
+-- Context: Toggle on a condition card showing the condition applies normally (reads like 'If ...');
+--     the alternative is 'Unless'.
 [1061] = "如果",
 -- b89c64be English: Unless
+-- Context: Toggle on a condition card showing the condition is negated (reads like 'Unless ...');
+--     the alternative is 'If'.
 [1062] = "除非",
 -- ea2dca67 English: If matches this condition; Unless negates it.
 [1063] = "“如果”匹配此条件；“除非”对其取反。",
@@ -2254,6 +3650,8 @@ addon.translation = {
 -- 8898675a English: Condition description truncated; the draft is unchanged.
 [1065] = "条件描述已截断；草稿未更改。",
 -- df796c65 English: New group
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New group'.
 [1066] = "新建组",
 -- 17c23d28 English: Drag card headers to move; drag New into a gap.
 [1067] = "拖动卡片标题来移动；将“新建”拖入空隙。",
@@ -2280,18 +3678,31 @@ addon.translation = {
 -- 777f6a10 English: Rotation Master information and credits.
 [1078] = "Rotation Master 信息和致谢。",
 -- 72a43eab English: TBC
+-- Context: Name of the Burning Crusade Classic game edition (abbreviation), shown in the window
+--     footer and in rotation applicability text.
 [1079] = "燃烧的远征",
 -- d63015c7 English: Classic Era
+-- Context: Name of the Classic Era game edition (vanilla Classic), shown in the window footer and
+--     in rotation applicability text.
 [1080] = "经典旧世",
 -- 7d4352ca English: Classic Progression
+-- Context: Name of the Classic Progression game edition (Classic servers that advance through
+--     expansions), shown in the window footer.
 [1081] = "经典进阶服",
 -- cdb38c8d English: Retail
+-- Context: Name of the Retail game edition (current live WoW), shown in the window footer and
+--     rotation applicability text.
 [1082] = "正式服",
 -- 55f980cf English: Forever
+-- Context: Name of the Classic 'Forever' game edition (a client that stays on one expansion), shown
+--     in the window footer.
 [1083] = "永久服",
 -- 21b6a798 English: Development
+-- Context: Version label used when the addon runs from source (an unpackaged development build)
+--     instead of a release version.
 [1084] = "开发版",
 -- 57a9e910 English: Right-click to close
+-- Context: Hint in the window footer: right-clicking the Rotation Master window closes it.
 [1085] = "右键点击以关闭",
 -- 5e2f1cfb English: Drag to resize the list. Double-click to reset.
 [1086] = "拖动以调整列表大小。双击以重置。",
@@ -2299,8 +3710,11 @@ addon.translation = {
 --     then click an empty slot.
 [1087] = "拖到任意动作条栏位上（会与原有内容交换），或点击“绑定”后再点击一个空栏位。",
 -- ba118bf7 English: English
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Language name
+--     'English' in a language list.
 [1088] = "英语",
 -- b5a229ac English: Website
+-- Context: Label of the website link in the About area of the configuration window; noun.
 [1089] = "网站",
 -- 8149bb52 English: English is the installed translation; other languages use English until
 --     translated.
@@ -2311,8 +3725,12 @@ addon.translation = {
 -- 8c4b42bc English: Optional addon settings.
 [1092] = "可选插件设置。",
 -- fe166e78 English: Read-only condition
+-- Context: Status text in the condition editor footer: this condition cannot be edited (a Built
+--     In).
 [1093] = "只读条件",
 -- e2d0a549 English: Delete
+-- Context: Button/tooltip that deletes the selected entry (rotation, item set, effect,
+--     announcement...); verb, also a help heading.
 [1094] = "删除",
 -- 9d85c78b English: Only the first 200 rotation cards are shown. Other cards are preserved.
 [1095] = "仅显示前 200 张循环卡片。其他卡片会被保留。",
@@ -2320,34 +3738,53 @@ addon.translation = {
 --     condition evaluation.
 [1096] = "分支会选择其中一条路径，然后回到后续的优先级。强制模式会跳过条件评估。",
 -- 79b92f59 English: New action
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New action' (add a spell/item step).
 [1097] = "新建动作",
 -- 7f445154 English: New branch
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New branch' (add a conditional branch step).
 [1098] = "新建分支",
 -- 6f0d96c6 English: New optional
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
+--     'New optional' (add an optional highlight step).
 [1099] = "新建可选项",
 -- 1abcf34a English: Drag into a gap, or click to append.
 [1100] = "拖入空隙，或点击以追加到末尾。",
 -- eb1a70e3 English: Discard
+-- Context: Button in editors that throws away the pending changes and restores the saved state
+--     (verb).
 [1101] = "放弃",
 -- cd272c87 English: Changes applied.
 [1102] = "更改已应用。",
 -- c7f93783 English: Choose
+-- Context: Default button text for a picker button that has no value chosen yet (verb: choose).
 [1103] = "选择",
 -- d8dba008 English: Items: separate item IDs or names with commas
 [1104] = "物品：用逗号分隔物品 ID 或名称",
 -- dfd0e008 English: Use profile effect
+-- Context: Dropdown entry in a rotation step's effect chooser: do not override, use the effect from
+--     the profile settings.
 [1105] = "使用配置文件效果",
 -- eea6c6fc English: Color: red, green, blue, alpha (0–1); blank inherits
 [1106] = "颜色：红、绿、蓝、透明度（0–1）；留空则继承",
 -- 31b888e2 English: Use profile position
+-- Context: Tooltip of a small reset button next to a step's highlight position fields: use the
+--     profile's position setting instead.
 [1107] = "使用配置文件位置",
 -- a581aec9 English: Horizontal offset
+-- Context: Tooltip/label of the horizontal (X) offset field of a highlight position.
 [1108] = "水平偏移",
 -- 923e59df English: Vertical offset
+-- Context: Tooltip/label of the vertical (Y) offset field of a highlight position.
 [1109] = "垂直偏移",
 -- fda1b8a0 English: Created by %s
+-- Context: Footer text in the Rotation Master window; %s is the author's name.
+-- %s #1: %s #1: the author name, e.g. "PreZ"
 [1110] = "作者：%s",
 -- 64464db9 English: Unsaved rotation changes
+-- Context: Title of the dialog warning that the rotation editor has unsaved changes when you
+--     navigate away.
 [1111] = "未保存的循环更改",
 -- 4c8f5e18 English: Apply this draft, discard its changes, or keep editing.
 [1112] = "应用此草稿、放弃其更改，或继续编辑。",
@@ -2355,71 +3792,107 @@ addon.translation = {
 --     editing.
 [1113] = "无法应用此草稿。请完成标记的字段，或点击“取消”继续编辑。",
 -- dd7a42d2 English: Drag to place
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     place' for dragging an item to a position.
 [1114] = "拖动以放置",
 -- a7b99a64 English: Copy full condition
+-- Context: Button in the condition text window: copy the complete condition text to the clipboard
+--     (verb phrase).
 [1115] = "复制完整条件",
 -- 81a5118e English: Full condition text
+-- Context: Title of the window showing a condition's full text in readable form.
 [1116] = "完整条件文本",
 -- 21b111cb English: Default
+-- Context: Button that resets a value (highlight color or position) to the default; also the name
+--     of the built-in default rotation.
 [1117] = "默认",
 -- c9a3dbb0 English: Click to add branch name
 [1118] = "点击添加分支名称",
 -- ab0a9cf9 English: Switch condition
+-- Context: Name of the section of a rotation that holds the condition used for automatic switching,
+--     in change summaries and path descriptions.
 [1119] = "切换条件",
 -- 18f3acc3 English: No switch condition: this rotation can be selected automatically whenever its
 --     specialization and level apply.
 [1120] = "没有切换条件：只要其专精和等级适用，此循环就可以被自动选择。",
 -- 464c4ffd English: Edit
+-- Context: Button in the Conditions page (custom condition row): edit this custom condition; verb.
 [1121] = "编辑",
 -- 7515ddaa English: Delete rotation
+-- Context: Tooltip of the delete button in the rotation editor: deletes the rotation (verb phrase).
 [1122] = "删除循环",
 -- bc48b710 English: Discard this new rotation
 [1123] = "放弃这个新循环",
 -- 6390ba9c English: Add action
+-- Context: Button in the rotation view: adds a new spell/item action step to the main rotation
+--     (verb phrase).
 [1124] = "添加动作",
 -- 1947a735 English: Add branch
+-- Context: Button in the rotation view: adds a new conditional branch step to the rotation (verb
+--     phrase).
 [1125] = "添加分支",
 -- 48dfa1a9 English: Add cooldown
+-- Context: Button in the rotation view: adds a new cooldown (optional highlight) step (verb
+--     phrase).
 [1126] = "添加冷却",
 -- cfb5635b English: Delete this custom rotation and its unsaved draft? This cannot be undone.
 [1127] = "删除此自定义循环及其未保存的草稿？此操作无法撤销。",
 -- d1afca1a English: Rotation details
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Rotation details'.
 [1128] = "循环详情",
 -- 2f839a00 English: Complete the highlighted input fields before applying.
 [1129] = "应用前请先完成高亮标出的输入字段。",
 -- 6d81521d English: Drop in a highlighted gap.
 [1130] = "放入高亮显示的空隙。",
 -- dcd1d522 English: Name
+-- Context: Label of the name field (rotation, effect, item set, announcement, category); noun, also
+--     a help heading and comparison row label.
 [1131] = "名称",
 -- bb82fca1 English: Incomplete input: %s
+-- %s #1: %s #1: what input is incomplete, a short phrase, e.g. "Spell is required"
 [1132] = "输入不完整：%s",
 -- 0a392308 English: Click condition text on any card to view or edit its conditions.
 [1133] = "点击任意卡片上的条件文本以查看或编辑其条件。",
 -- 286353b7 English: View condition
+-- Context: Button in a rotation step: open the condition read-only (for a Built In); verb phrase.
 [1134] = "查看条件",
 -- 61514750 English: Edit condition
+-- Context: Button in a rotation step: open the condition editor to change the step's condition;
+--     verb phrase.
 [1135] = "编辑条件",
 -- 19a05c66 English: Cycle between summary, fields and name only. Drag the name to move the card.
 [1136] = "在摘要、字段和仅名称之间循环切换。拖动名称可移动卡片。",
 -- 9eddf573 English: Metadata
+-- Context: Button in the rotation editor (and the title of its dialog) for the rotation's
+--     description, tags and author; noun.
 [1137] = "元数据",
 -- 8fe26115 English: This rotation cannot run until its incomplete or unavailable data is resolved.
 [1138] = "在解决其不完整或不可用的数据之前，此循环无法运行。",
 -- 40a9941b English: Rotation validation
+-- Context: Title of the window listing validation problems found in the rotation.
 [1139] = "循环验证",
 -- 5677f1c7 English: Preview effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
+--     'Preview effect' to show how a highlight effect looks.
 [1140] = "预览效果",
 -- 44e4c2fb English: Show or hide branch paths
 [1141] = "显示或隐藏分支路径",
 -- 5735b9a9 English: Expand or collapse the card. Click action or condition text for details.
 [1142] = "展开或折叠卡片。点击动作或条件文本以查看详情。",
 -- 2478da41 English: Click to expand
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Click
+--     to expand' on a collapsed section.
 [1143] = "点击展开",
 -- 94901258 English: Add group
+-- Context: Button in the condition editor: add an empty AND group (a bracket of conditions); verb
+--     phrase.
 [1144] = "添加组",
 -- ad19b82b English: Click to append; drag into a gap to insert.
 [1145] = "点击以追加；拖入空隙以插入。",
 -- 36e5aa8a English: Preview highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Preview highlight' for the highlight preview.
 [1146] = "预览高亮",
 -- 5e4de8d1 English: This previews the glow used on action buttons. Click the preview icon again to
 --     close.
@@ -2427,104 +3900,168 @@ addon.translation = {
 -- 1094644b English: Choose a highlight effect in the action details or General settings.
 [1148] = "在动作详情或常规设置中选择高亮效果。",
 -- e3cb6179 English: Rotation metadata
+-- Context: Title of the help window for the rotation metadata dialog.
 [1149] = "循环元数据",
 -- d95082a2 English: Author
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Author' (who wrote the rotation).
 [1150] = "作者",
 -- 2919fe85 English: Realm
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Realm' (author's realm).
 [1151] = "服务器",
 -- 969ccbd3 English: Email
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
+--     field label 'Email' (author's email address).
 [1152] = "电子邮件",
 -- dd167905 English: Version
+-- Context: Column heading in the integrations list: the addon version; also a metadata field.
 [1153] = "版本",
 -- b8bece73 English: Use changes
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Use
+--     changes' to apply the edited values.
 [1154] = "使用更改",
 -- b02bc1bc English: Use changes updates the draft. Apply the rotation to save it.
 [1155] = "“使用更改”会更新草稿。应用循环以保存。",
 -- 38274b15 English: Built In rotation: duplicate it to edit its metadata.
 [1156] = "内置循环：复制后才能编辑其元数据。",
 -- 0e570ca6 English: Source
+-- Context: Fallback heading for a rotation source/citation without its own title; noun.
 [1157] = "来源",
 -- 9d7de300 English: Saved metadata is invalid (%s). Editing these fields replaces it.
+-- %s #1: %s #1: the invalid saved metadata value as text, e.g. "true" (shown as-is)
 [1158] = "已保存的元数据无效（%s）。编辑这些字段会替换它。",
 -- 6b73191a English: Color
+-- Context: Label of the color field in the rotation step effect settings and the title of the color
+--     picker; also a help heading.
 [1159] = "颜色",
 -- 2e51d20c English: Choose an effect
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Placeholder
+--     'Choose an effect' for the effect dropdown.
 [1160] = "选择效果",
 -- d1a44f24 English: Use profile color
+-- Context: Tooltip of a reset button next to a step's color: use the color from the profile
+--     settings.
 [1161] = "使用配置文件颜色",
 -- b840b1dd English: Center the highlight
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Checkbox
+--     label 'Center the highlight'.
 [1162] = "居中高亮",
 -- 6dc46510 English: Move highlight; hold Shift for ten pixels
 [1163] = "移动高亮；按住 Shift 每次移动十像素",
 -- 294bb35f English: Preview sound
+-- Context: Tooltip of a play button next to the sound dropdown: plays the chosen sound; imperative.
 [1164] = "预览声音",
 -- fa39a479 English: Sound preview is unavailable.
 [1165] = "声音预览不可用。",
 -- ac2276b9 English: Choose an available sound to preview.
 [1166] = "选择一个可用的声音进行预览。",
 -- d6807b3f English: Use color
+-- Context: Tooltip of the check mark button in the color picker: accepts the chosen color.
 [1167] = "使用颜色",
 -- 8807635f English: Offsets
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'Offsets' for the highlight position offsets.
 [1168] = "偏移",
 -- de5a6f78 English: V
+-- Context: Abbreviation (letter V) on the vertical-offset field of a highlight position; tooltip is
+--     'Vertical offset'.
 [1169] = "纵",
 -- 44bd7ae6 English: H
+-- Context: Abbreviation (letter H) on the horizontal-offset field of a highlight position; tooltip
+--     is 'Horizontal offset'.
 [1170] = "横",
 -- 36c4ddbf English: RGBA channels accept decimal values from 0 to 1.
 [1171] = "RGBA 通道接受 0 到 1 之间的小数值。",
 -- a5163f27 English: %s: %s
+-- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
+-- %s #2: %s #2: the name of the window or section, e.g. "Edit Condition #2"
 [1172] = "%s：%s",
 -- 76b2629a English: Rotation Master
+-- Context: Name of the addon in a window title/subtitle (brand name; keep untranslated if the addon
+--     name is not localized).
 [1173] = "Rotation Master",
 -- 39b36d38 English: Condition
+-- Context: Generic word for a single condition: window heading/context in the condition editor.
 [1174] = "条件",
 -- 0924a671 English: Cooldown
+-- Context: Section name for cooldown steps (optional highlights) in change summaries and the step
+--     editor; noun.
 [1175] = "冷却",
 -- d85693fc English: All of
+-- Context: Header text for an AND group of conditions on a condition card: all of the following
+--     must be true.
 [1176] = "全部满足",
 -- f44e288e English: Any of
+-- Context: Header text for an OR group of conditions on a condition card: any of the following may
+--     be true.
 [1177] = "任一满足",
 -- 0ec5ba4e English: Action bar binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Action
+--     bar binding'.
 [1178] = "动作条绑定",
 -- 380684a5 English: Add announcement
+-- Context: Button in the Announces settings page: create a new announcement; verb phrase.
 [1179] = "添加通报",
 -- 1005d35c English: Add custom condition
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Add
+--     custom condition' to create a custom condition.
 [1180] = "添加自定义条件",
 -- 8fce42d6 English: Add effect
+-- Context: Button in the Effects settings page: create a new highlight effect; verb phrase.
 [1181] = "添加效果",
 -- d1a0b329 English: Add item
+-- Context: Button in item set editors: add an item to the set; verb phrase, also a help heading.
 [1182] = "添加物品",
 -- da10655e English: Add item set
+-- Context: Button and heading in the Item Sets settings page: create a new item set; verb phrase.
 [1183] = "添加物品组",
 -- 839bd5e0 English: Add step
+-- Context: Button in the effect sequence editor: add a step (frame) to the sequence; verb phrase.
 [1184] = "添加步骤",
 -- 96f2ac95 English: An item from this set must be available before binding.
 [1185] = "绑定前，此物品组中必须有一件物品可用。",
 -- 2a5562d3 English: Bind item set
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Bind
+--     item set' to bind an item set to action bar slots.
 [1186] = "绑定物品组",
 -- 292c06f0 English: Category
+-- Context: Label of the category dropdown for a condition and a heading in the icon picker; noun.
 [1187] = "分类",
 -- 8adaa206 English: Choose an action first.
 [1188] = "请先选择一个动作。",
 -- eb58aed0 English: Choose an item first.
 [1189] = "请先选择一件物品。",
 -- b269dc4e English: Commands
+-- Context: Heading on the Profiles page above a short list of slash commands.
 [1190] = "命令",
 -- eebdd24a English: Confirm
+-- Context: Button in confirmation prompts: confirm the action; verb.
 [1191] = "确认",
 -- 29bbf82e English: Copy and reset
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
+--     and reset' in the profile tools.
 [1192] = "复制并重置",
 -- 2da43a1c English: Copy from profile
+-- Context: Label of the dropdown in the Profiles page: copy settings from another profile into the
+--     current one; also a help heading.
 [1193] = "从配置文件复制",
 -- 47cc49a7 English: Copy this text to export. Import replaces the selected settings.
 [1194] = "复制此文本以导出。导入会替换所选的设置。",
 -- 61d30d99 English: Create profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Create profile'.
 [1195] = "创建配置文件",
 -- 70aede1c English: Current profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Label
+--     'Current profile'.
 [1196] = "当前配置文件",
 -- 47311af4 English: Delete profile
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button
+--     'Delete profile'.
 [1197] = "删除配置文件",
 -- 526f44a0 English: Delete profile %s? This cannot be undone.
+-- %s #1: %s #1: the name of the profile to delete, e.g. "Default"
 [1198] = "删除配置文件 %s？此操作无法撤销。",
 -- 0a1b391c English: Delete this custom condition? Existing rotations using it will become
 --     unavailable.
@@ -2535,14 +4072,20 @@ addon.translation = {
 --     another item set.
 [1201] = "删除此物品组及其绑定？引用它的循环将需要另选物品组。",
 -- 5342e09f English: Enable
+-- Context: Checkbox in General settings, Recommendations section: turns Rotation Master
+--     recommendations on or off; verb; also a help heading.
 [1202] = "启用",
 -- eccca39d English: Enter a name first.
 [1203] = "请先输入名称。",
 -- 27bf030d English: Enter a profile name first.
 [1204] = "请先输入配置文件名称。",
 -- dab97264 English: History and preview
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
+--     'History and preview'.
 [1205] = "历史和预览",
 -- 9b10587f English: Identifier
+-- Context: Label of the identifier field (a unique key for an announcement or custom condition);
+--     noun.
 [1206] = "标识符",
 -- c6af6542 English: Invalid effect.
 [1207] = "无效的效果。",
@@ -2551,40 +4094,61 @@ addon.translation = {
 -- 6987106d English: Invalid item list.
 [1209] = "无效的物品列表。",
 -- c8edea5f English: Item %d
+-- Context: Label of an item row in a list by position; %d is the position number.
+-- %d #1: %d #1: the position of the item in the item set, counting from 1, e.g. 2
 [1210] = "物品 %d",
 -- 08bc6729 English: Items in priority order
 [1211] = "按优先级排列的物品",
 -- 9024c197 English: Links
+-- Context: Heading of a section listing web links (Profiles page; help window).
 [1212] = "链接",
 -- dba20004 English: New profile name
+-- Context: Label of the text field for the name of a new profile.
 [1213] = "新配置文件名称",
 -- a6a2aa10 English: Not bound
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Status text
+--     'Not bound' for an item set with no action bar binding.
 [1214] = "未绑定",
 -- 14908ce9 English: Profile changes apply immediately. Rotations and settings belong to the active
 --     profile.
 [1215] = "配置文件的更改会立即生效。循环和设置属于当前激活的配置文件。",
 -- 0738ee00 English: Recommendations
+-- Context: Section heading in General settings for the options controlling recommendations.
 [1216] = "推荐",
 -- e8781b01 English: Remove binding
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Button/tooltip 'Remove binding'.
 [1217] = "移除绑定",
 -- e89af9bb English: Replace the current profile with %s?
+-- %s #1: %s #1: the name of the profile to copy from, e.g. "Raiding"
 [1218] = "用 %s 替换当前配置文件？",
 -- daee7606 English: Reset
+-- Context: Button that resets the current editor or item set to the saved or default state (verb);
+--     also a help heading.
 [1219] = "重置",
 -- 15d5cb3f English: Reset current profile
+-- Context: Button in the Profiles page: reset the current profile to defaults (verb phrase); also a
+--     help heading.
 [1220] = "重置当前配置文件",
 -- 4ddce508 English: Reset preview position
+-- Context: Tooltip/help heading for the button that puts the preview window back to its default
+--     position.
 [1221] = "重置预览位置",
 -- 7986b163 English: Reset this profile to its defaults? Custom rotations and settings in it will be
 --     replaced.
 [1222] = "将此配置文件重置为默认值？其中的自定义循环和设置将被替换。",
 -- 2a78025d English: Select
+-- Context: Placeholder text on a dropdown button that has nothing selected; also the 'Select'
+--     option in an integrations choice (verb).
 [1223] = "选择",
 -- 10151a40 English: Step %d
+-- Context: Label for a step row by position in a comparison; %d is the position.
+-- %d #1: %d #1: the number of the step, counting from 1, e.g. 3
 [1224] = "步骤 %d",
 -- b1912f1a English: This name is already in use.
 [1225] = "此名称已被使用。",
 -- 52656e81 English: Branch
+-- Context: Step type name for a conditional branch step (as in 'Branch'); noun.
 [1226] = "分支",
 -- b8e156bb English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2601,8 +4165,10 @@ addon.translation = {
 --     replaces its item list.
 [1229] = "选择一个物品组并编辑其优先级列表。“全局”会在所有配置文件间共享该物品组。移动箭头可更改物品优先级。“绑定物品组”会拾取一件可用物品以放置到动作条上；“移除绑定”会解除其关联。“重置”会恢复内置的物品组。“导入”会替换其物品列表。",
 -- 584f475e English: Condition editor
+-- Context: Title of the help window for the condition editor.
 [1230] = "条件编辑器",
 -- dae8a15b English: Description and attribution
+-- Context: Heading in the help for the rotation metadata dialog: the description and author fields.
 [1231] = "描述与署名",
 -- 0bff7d0e English: Drag the title bar to move. Set Scale with the top-left slider; child windows
 --     follow it. The question mark toggles Help. Close with X, Escape, or right-click in the
@@ -2618,8 +4184,12 @@ addon.translation = {
 --     new entry after an action is selected.
 [1234] = "展开一条通报以选择其动作、事件、频道和文本。法术字段会搜索法术目录；在有法术等级的客户端上，“使用这个确切的法术等级”会将匹配限制为你选择的等级。“已启用”用于开关该通报。选择动作后，“添加通报”会创建一个新条目。",
 -- 2c02392e English: Groups and toggles
+-- Context: Heading in help text explaining AND/OR/NOT groups and the If/Unless and Enabled/Disabled
+--     toggles in the condition editor.
 [1235] = "组与开关",
 -- 3d69858e English: Help and saving
+-- Context: Heading in help text describing the Help (question mark) button and how saving works
+--     (Undo/Redo/Apply) in the editor.
 [1236] = "帮助与保存",
 -- 99855946 English: Move, copy and remove
 [1237] = "移动、复制和移除",
@@ -2633,18 +4203,25 @@ addon.translation = {
 --     on click and filter as you type. Section headings collapse or expand their contents.
 [1239] = "这些设置会立即生效。按 Enter 或离开文本字段即可提交。无效文本会保持红色，并在更正前阻止页面切换。可搜索的选择器在点击时打开，并随输入进行筛选。分节标题可折叠或展开其内容。",
 -- 00a767bc English: Unknown spell
+-- Context: Placeholder name for a spell that cannot be found by ID (announcement list, reference
+--     catalog).
 [1240] = "未知法术",
 -- 52ffc6a8 English: Item data loading
+-- Context: Placeholder shown for an item whose name has not loaded from the server yet.
 [1241] = "物品数据加载中",
 -- d6572bd2 English: No matches.
 [1242] = "无匹配项。",
 -- 18fdd549 English: New
+-- Context: Button that creates a new entry (rotation, item set, effect, condition category...);
+--     verb.
 [1243] = "新建",
 -- 7f406b7e English: No matching items.
 [1244] = "没有匹配的物品。",
 -- f9ad9fda English: Click a result or enter an item name, ID or link.
 [1245] = "点击结果，或输入物品名称、ID 或链接。",
 -- a4ae750b English: Anchor
+-- Context: Label of the anchor point dropdown for a highlight (which part of the button the
+--     highlight attaches to); also a help heading.
 [1246] = "锚点",
 -- 1edc56cd English: Return the preview window to the center of the screen.
 [1247] = "将预览窗口移回屏幕中央。",
@@ -2657,10 +4234,16 @@ addon.translation = {
 --     pixels. Center resets both offsets.
 [1250] = "以像素为单位的水平偏移。“左”和“右”可更改它；按住 Shift 每次移动十像素。“居中”会重置两个偏移。",
 -- 49cf9ec6 English: Manage categories
+-- Context: Heading and button on the Conditions page: switch to managing condition categories (add,
+--     rename, reorder).
 [1251] = "管理分类",
 -- eda2efcd English: Back to conditions
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Back
+--     to conditions' to return from category management to the condition list.
 [1252] = "返回条件",
 -- 8137101b English: Built-in category
+-- Context: Status text on the Conditions page: the selected category is built in and cannot be
+--     edited.
 [1253] = "内置分类",
 -- d7c828bc English: Delete this category? Its conditions will remain available under Other.
 [1254] = "删除此分类？其中的条件仍可在“其他”下使用。",
@@ -2682,58 +4265,94 @@ addon.translation = {
 --     separately for automatic-switch availability.
 [1259] = "将所选条件移动到某个命名分类或“其他”。是否可用于自动切换请单独使用“切换条件”设置。",
 -- 85a39ab3 English: Yes
+-- Context: Boolean value word 'Yes' (true) in condition text and comparison views.
 [1260] = "是",
 -- 1ea442a1 English: No
+-- Context: Boolean value word 'No' (false) in condition text and comparison views.
 [1261] = "否",
 -- f8bfdb1e English: Show unchanged
+-- Context: Checkbox in the comparison window: also list entries that are identical on both sides.
 [1262] = "显示未更改项",
 -- 8307fb6b English: Changed fields: %d
+-- %d #1: %d #1: the number of fields that differ, e.g. 4
 [1263] = "已更改字段：%d",
 -- e888155d English: Compare
+-- Context: Button and window title prefix for comparing two entries (rotations, profiles,
+--     collections); verb.
 [1264] = "比较",
 -- 72bb9089 English: Read-only
+-- Context: Subtitle/badge on windows that only display data and cannot be edited; adjective.
 [1265] = "只读",
 -- e21330cf English: Imported item set
+-- Context: Default name given to an item set created by importing text.
 [1266] = "已导入的物品组",
 -- ef86a0ed English: Drag to reorder
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
+--     reorder' for reorderable list entries.
 [1267] = "拖动以重新排序",
 -- 9b6766d2 English: Item ID: %s
+-- %s #1: %s #1: the numeric item ID, e.g. 5512
 [1268] = "物品 ID：%s",
 -- fe76866f English: Item reference: %s
+-- %s #1: %s #1: the item reference as stored (a name or link text), e.g. "Healthstone"
 [1269] = "物品引用：%s",
 -- 1f439481 English: Built-in
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Adjective
+--     'Built-in' (shipped with the addon).
 [1270] = "内置",
 -- 36619693 English: Built-in condition
+-- Context: Status text for a condition that ships with the addon (as opposed to a custom one), on
+--     the Conditions page.
 [1271] = "内置条件",
 -- 1a63dcb7 English: Custom condition
+-- Context: Name for a condition you wrote yourself in the Lua editor, in settings and editor
+--     titles; noun phrase.
 [1272] = "自定义条件",
 -- c3b0c07b English: Game icon
+-- Context: Fallback name for a game icon with no known name in the icon picker.
 [1273] = "游戏图标",
 -- b33708ba English: Game icons
+-- Context: Group heading in the icon picker: the icons that come from the game's macro icon list.
 [1274] = "游戏图标",
 -- a35abcd6 English: Icon
+-- Context: Label of the icon field of a condition category/custom condition and a comparison row
+--     label; noun.
 [1275] = "图标",
 -- 41ca9dad English: Item icons
+-- Context: Group heading in the icon picker: the item icons from the game.
 [1276] = "物品图标",
 -- 059e5b06 English: Known spells
+-- Context: Group heading in the icon picker: icons of spells your character knows.
 [1277] = "已知法术",
 -- bb50071a English: Manage conditions
+-- Context: Button on the category management page: go back to editing individual conditions.
 [1278] = "管理条件",
 -- 1ff57a29 English: Next
+-- Context: Tooltip of the next-page button in the icon picker; imperative.
 [1279] = "下一页",
 -- e71ca826 English: Page %d of %d
+-- Context: Page indicator in the icon picker; the first %d is the current page, the second the
+--     total pages.
+-- %d #1: %d #1: the current page, e.g. 2
+-- %d #2: %d #2: the total number of pages, e.g. 14
 [1280] = "第 %d 页，共 %d 页",
 -- a57b08a4 English: Previous
+-- Context: Tooltip of the previous-page button in the icon picker; imperative.
 [1281] = "上一页",
 -- fe3f2a5d English: Activate profile
+-- Context: Button in the Profiles page: make the selected profile the active one (verb phrase);
+--     also a help heading.
 [1282] = "激活配置文件",
 -- 5608b89a English: Active profile
+-- Context: Status/button text in the Profiles page: the selected profile is already the active one.
 [1283] = "当前配置文件",
 -- 1946c44c English: Apply pending changes before leaving? Use Cancel on the page to discard them.
 [1284] = "离开前要应用待处理的更改吗？使用页面上的“取消”可放弃这些更改。",
 -- 92b4440b English: Audible
+-- Context: Announce channel dropdown option: play a sound instead of showing text.
 [1285] = "声音",
 -- b8b1d894 English: Categories
+-- Context: Comparison row label: the condition categories (groups) in a profile.
 [1286] = "分类",
 -- ddd736ba English: Choose a category and search for a condition. Hidden removes it from pickers
 --     without deleting its definition. Switch Condition controls its availability for automatic
@@ -2750,14 +4369,21 @@ addon.translation = {
 --     operations.
 [1288] = "选择一个物品组并编辑其优先级列表。“全局”会在所有配置文件间共享该物品组。移动箭头可更改物品优先级。“绑定物品组”会拾取一件可用物品以放置到动作条上；解绑时，绑定标签会在非战斗状态下移除动作条上匹配的已绑定动作。“重置”会恢复内置的物品组。在引用字段中搜索或拖入物品。“应用”会保存设置；“取消”会放弃它们。绑定的更改是显式的动作条操作。",
 -- bd245266 English: Clone sources
+-- Context: Comparison row label: the list of Built In rotations that your rotations were cloned
+--     from.
 [1289] = "克隆来源",
 -- 72e094ed English: Comparison history
+-- Context: Comparison row label: records of past rotation comparisons.
 [1290] = "比较历史",
 -- 61062ba2 English: Complete the effect settings before applying.
 [1291] = "应用前请先完成效果设置。",
 -- 2a6b24ad English: Credits
+-- Context: Label on the settings page: the credits line (people who contributed); noun, followed by
+--     a colon and names.
 [1292] = "致谢",
 -- b91bfdbb English: Built In preferences
+-- Context: Comparison row label: your saved preferences about Built In rotations (enabled or
+--     disabled).
 [1293] = "内置循环偏好",
 -- a1ceb156 English: Edits stay in a draft until Apply. Cancel restores saved settings. Changing
 --     tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect
@@ -2771,10 +4397,13 @@ addon.translation = {
 --     Apply saves changes.
 [1295] = "展开一条通报以选择其动作、事件、频道和文本。法术字段会搜索法术目录；在有法术等级的客户端上，“使用这个确切的法术等级”会将匹配限制为你选择的等级。“已启用”用于开关该通报。“新建”会打开一个带有“应用”和“取消”的草稿。“声音”会以声音选择和“播放”取代文本。“复制”“导入/导出”和“比较”位于列表下方；导入内容会经过验证，且从不执行代码。“应用”会保存更改。",
 -- 6d5af309 English: Ignore mana
+-- Context: Comparison row label for the 'Ignore Mana' setting in a profile.
 [1296] = "忽略法力值",
 -- 96bb8a4a English: Ignore range
+-- Context: Comparison row label for the 'Ignore Range' setting in a profile.
 [1297] = "忽略距离",
 -- 7df60b64 English: Imports
+-- Context: Comparison row label: the records of imported entries.
 [1298] = "导入",
 -- fa4ba363 English: Invalid announcement.
 [1299] = "无效的通报。",
@@ -2785,42 +4414,65 @@ addon.translation = {
 -- 0fabe810 English: Leave combat before changing action bar bindings.
 [1302] = "请先脱离战斗再更改动作条绑定。",
 -- c011d609 English: License
+-- Context: Label on the settings page: the license line, followed by a colon and the license name.
 [1303] = "许可证",
 -- e7fdbd0c English: Localizations
+-- Context: Label on the settings page: the list of translations, followed by a colon.
 [1304] = "本地化",
 -- aac6c842 English: No rotations in this profile.
 [1305] = "此配置文件中没有循环。",
 -- 15ba8148 English: Preview position
+-- Context: Comparison row label for the position of the preview window setting.
 [1306] = "预览位置",
 -- 08f04b51 English: Rotation library
+-- Context: Comparison row label: the collection of all rotations in a profile.
 [1307] = "循环库",
 -- 7bde8757 English: Search or drag a spell here
 [1308] = "在此搜索或拖入法术",
 -- 21c38898 English: Move %d selected cards
+-- Context: Drag-and-drop tooltip in the rotation editor: moving several selected step cards; %d is
+--     how many.
+-- %d #1: %d #1: how many selected cards are being dragged, e.g. 3
 [1309] = "移动 %d 张选中的卡片",
 -- 6c0b9d10 English: Duplicate selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: duplicate every selected card
+--     (verb phrase).
 [1310] = "复制选中的卡片",
 -- 30a9f853 English: Enable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: enable every selected card
+--     (verb phrase).
 [1311] = "启用选中的卡片",
 -- d3b30c10 English: Disable selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: disable every selected card
+--     (verb phrase).
 [1312] = "禁用选中的卡片",
 -- 48d65c02 English: Delete selected cards
+-- Context: Tooltip of a bulk button in the rotation/condition editor: delete every selected card
+--     (verb phrase).
 [1313] = "删除选中的卡片",
 -- cea4d2e0 English: Clear selection
+-- Context: Tooltip of a bulk button in the rotation editor: deselect all cards (verb phrase).
 [1314] = "清除选择",
 -- c58ed264 English: Target casting: %s
+-- %s #1: %s #1: the spell being cast by the target, e.g. "Fireball"
 [1315] = "目标施法：%s",
 -- ffaf018a English: Focus casting: %s
+-- %s #1: %s #1: the spell being cast by the focus target, e.g. "Fireball"
 [1316] = "焦点施法：%s",
 -- 0b303a00 English: Target channeling: %s
+-- %s #1: %s #1: the spell being channelled by the target, e.g. "Arcane Missiles"
 [1317] = "目标引导：%s",
 -- 2a66fe87 English: Focus channeling: %s
+-- %s #1: %s #1: the spell being channelled by the focus target, e.g. "Arcane Missiles"
 [1318] = "焦点引导：%s",
 -- f6b58a2a English: Recently cast: %s
+-- %s #1: %s #1: a spell the player cast recently, e.g. "Frostbolt"
 [1319] = "最近施放：%s",
 -- db04a504 English: Trinket 1: %s
+-- %s #1: %s #1: the item equipped in the first trinket slot, e.g. "Trinket of the Sun"
 [1320] = "饰品 1：%s",
 -- 93b4d929 English: Trinket 2: %s
+-- %s #1: %s #1: the item equipped in the second trinket slot, e.g. "Trinket of the Moon"
 [1321] = "饰品 2：%s",
 -- b31f1cc4 English: No equipped trinket to insert.
 [1322] = "没有可插入的已装备饰品。",
@@ -2843,17 +4495,27 @@ addon.translation = {
 -- b0413d32 English: Settings changed elsewhere. Cancel to reload them before applying.
 [1329] = "设置已在别处更改。请点击“取消”重新加载后再应用。",
 -- 1973cc09 English: Slots %s · Unbind
+-- Context: Item set binding button when slots are bound; first part is the bound action bar slot
+--     numbers (%s), pressing it unbinds.
+-- %s #1: %s #1: the slot numbers the item set is bound to, separated by commas, e.g. "13, 14"
 [1330] = "栏位 %s · 解绑",
 -- 46124e02 English: Sound
+-- Context: Label of the sound dropdown in an announcement and a help heading; also a comparison row
+--     label.
 [1331] = "声音",
 -- 410cc927 English: Structured settings
+-- Context: Placeholder shown in a comparison where a setting is a nested table rather than a simple
+--     value.
 [1332] = "结构化设置",
 -- 1ed6b5ea English: Unnamed rotation
+-- Context: Fallback name for a rotation that has no name.
 [1333] = "未命名循环",
 -- 62704b0c English: Use arrows or drag rows in the condition sidebar to reorder within the selected
 --     category. In Manage categories, the same controls order the categories themselves.
 [1334] = "使用箭头或拖动条件侧边栏中的行，以在所选分类内重新排序。在“管理分类”中，相同的控件用于排列分类本身的顺序。",
 -- 8e37953d English: Value
+-- Context: Label of the numeric value field in the Stagger and group state conditions (the value
+--     the operator compares to); noun.
 [1335] = "数值",
 -- 2d11fd64 English: Choose an action and complete the announcement before applying.
 [1336] = "应用前请先选择一个动作并完成通报设置。",
@@ -2867,30 +4529,44 @@ addon.translation = {
 --     destination before importing.
 [1340] = "选择创建一个新的命名副本，或替换所选的可编辑条目。导入前请检查目标。",
 -- 83b12c22 English: Clear
+-- Context: Button in the transfer dialog: clears the text box (verb).
 [1341] = "清除",
 -- e25a9c83 English: Confirm the Lua import, then review it before saving.
 [1342] = "确认 Lua 导入，然后在保存前进行检查。",
 -- 8aaf46c6 English: IMPORTED_CONDITION
+-- Context: Default placeholder name for an imported custom condition when its name cannot be read;
+--     written in capital letters with an underscore.
 [1343] = "IMPORTED_CONDITION",
 -- 8237a9a5 English: Import comparison
+-- Context: Title of the window comparing imported text with the existing entry; also a help
+--     heading.
 [1344] = "导入比较",
 -- 9d886886 English: Imported announcement
+-- Context: Default name given to an announcement created by importing text.
 [1345] = "已导入的通报",
 -- 456358c4 English: Imported category
+-- Context: Default name given to a condition category created by importing text.
 [1346] = "已导入的分类",
 -- a77b0984 English: Imported effect
+-- Context: Default name given to an effect created by importing text.
 [1347] = "已导入的效果",
 -- 2f91d1e1 English: Imported profile
+-- Context: Default name given to a profile created by importing text.
 [1348] = "已导入的配置文件",
 -- ec38d3c0 English: Invalid custom condition.
 [1349] = "无效的自定义条件。",
 -- a265e30c English: Name not supplied
+-- Context: Placeholder in the import dialog: the imported text did not contain a name.
 [1350] = "未提供名称",
 -- fb66a1af English: Original name
+-- Context: Label in the import dialog preceding the name found in the imported text, followed by a
+--     colon.
 [1351] = "原始名称",
 -- 327093d7 English: Ready to import. Choose replacement or a named copy.
 [1352] = "已准备好导入。请选择替换或创建命名副本。",
 -- 0d9a1fb4 English: Replace selected entry
+-- Context: Checkbox in the import dialog: overwrite the entry currently selected instead of
+--     creating a new one.
 [1353] = "替换所选条目",
 -- a84aab9e English: That condition identifier already exists.
 [1354] = "该条件标识符已存在。",
@@ -2902,10 +4578,16 @@ addon.translation = {
 -- ae820bc2 English: Use letters, numbers and underscores for the condition identifier.
 [1357] = "条件标识符请使用字母、数字和下划线。",
 -- 24c87ffc English: Check %s: %s
+-- %s #1: %s #1: the part of the custom condition that failed the check, e.g. "evaluate" or "Definition"
+-- %s #2: %s #2: the detail of the failure, e.g. "unexpected symbol near end"
 [1358] = "检查 %s：%s",
 -- 8e09cadd English: Check syntax
+-- Context: Button in the Lua editors: check the code for syntax errors without running it (verb
+--     phrase).
 [1359] = "检查语法",
 -- 1ae4fec7 English: Choose icon
+-- Context: Tooltip of the icon button in the custom condition editor: opens the icon picker;
+--     imperative.
 [1360] = "选择图标",
 -- 18156f45 English: Custom Lua has the same access as the addon. Only import code you trust. Syntax
 --     validation cannot establish that a callback is safe or correct. Existing custom widget
@@ -2916,34 +4598,54 @@ addon.translation = {
 --     data and never evaluated as Lua.
 [1362] = "声明命名字段、基本类型、嵌套记录和联合类型。示例：{ spell = { string, number }, unit = string, tests = condition[] }。结构文本会作为数据解析，从不作为 Lua 执行。",
 -- 9813fafb English: Definition
+-- Context: Label naming the whole definition of a custom condition (its callbacks and fields) in
+--     errors and comparison rows; noun.
 [1363] = "定义",
 -- 9b8e27c6 English: Editing code
+-- Context: Heading in help text for the code editor (Undo, Redo, Reset, Check syntax, Apply).
 [1364] = "编辑代码",
 -- 966591fe English: Evaluate
+-- Context: Name of the evaluate callback tab of a custom condition: the code that decides if the
+--     condition is true; noun.
 [1365] = "评估",
 -- 7b08f80e English: Field schema
+-- Context: Heading and label for the schema of a custom condition's fields (their names and types).
 [1366] = "字段结构",
 -- 1aab5f2f English: Fields UI
+-- Context: Name of the callback tab of a custom condition: the code that builds the condition's
+--     editing widgets; noun.
 [1367] = "字段界面",
 -- 43dab9e3 English: Function tabs edit separate callbacks. Changes stay in a draft. Check syntax
 --     compiles every callback without running it. Apply registers the callbacks and can run
 --     registration code. Cancel discards the draft. Undo and Redo work across function tabs.
 [1368] = "各函数标签页分别编辑不同的回调。更改会保存在草稿中。“检查语法”会编译每个回调但不运行它们。“应用”会注册这些回调，并可能运行注册代码。“取消”会放弃草稿。撤销和重做可跨函数标签页使用。",
 -- 6a696870 English: On register
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     registered.
 [1369] = "注册时",
 -- 06f9af14 English: On unregister
+-- Context: Name of the callback tab of a custom condition: code that runs when the condition is
+--     unregistered.
 [1370] = "注销时",
 -- 8e76a94a English: Summary
+-- Context: Name of the callback tab of a custom condition: code that builds the condition's text
+--     summary; noun.
 [1371] = "摘要",
 -- d9f668a3 English: Syntax checked. No custom code was executed.
 [1372] = "语法已检查。未执行任何自定义代码。",
 -- 39286cd6 English: The custom condition changed elsewhere. Reopen it before saving.
 [1373] = "此自定义条件已在别处更改。保存前请重新打开它。",
 -- 6e33a7dd English: Trusted code
+-- Context: Heading in help text warning that custom Lua code has full addon access and only trusted
+--     code should be imported.
 [1374] = "受信任的代码",
 -- 40611abb English: Validate
+-- Context: Name of the callback tab of a custom condition: code that validates the condition's
+--     fields; verb used as a tab name.
 [1375] = "验证",
 -- 7c39c16d English: All tags
+-- Context: Not referenced directly by the current code (legacy or built dynamically). Filter option
+--     'All tags' in the rotation browser tag filter.
 [1376] = "所有标签",
 -- 08c83906 English: Edit the description, tags, author, realm, email, website and version. Source
 --     citations remain separate from your attribution. Use changes updates the rotation draft;
@@ -2955,12 +4657,19 @@ addon.translation = {
 --     label is allowed.
 [1379] = "用逗号分隔标签。包含逗号的标签请使用引号。允许任何个人标签。",
 -- 1331275b English: Tags
+-- Context: Label of the rotation tags field and of the tag filter in the rotation browser; plural
+--     noun.
 [1380] = "标签",
 -- 1dd4ab9e English: Switch priority
+-- Context: Label of the rotation's priority for automatic switching in change summaries and
+--     comparisons; noun phrase.
 [1381] = "切换优先级",
 -- 1e51f6c3 English: Priority %d
+-- Context: Priority line in a rotation browser entry; %d is the priority number.
+-- %d #1: %d #1: the rotation's switch priority, e.g. 5
 [1382] = "优先级 %d",
 -- defa7982 English: Invalid priority
+-- Context: Text shown in place of a priority number when the stored priority is not valid.
 [1383] = "无效的优先级",
 -- 1501b340 English: Switch priority must be a whole number between -100000 and 100000.
 [1384] = "切换优先级必须是 -100000 到 100000 之间的整数。",
@@ -2974,77 +4683,167 @@ addon.translation = {
 --     use name, then identity. Blank means zero.
 [1386] = "数字越大越先尝试；你自己的循环和内置循环仅按优先级竞争。只有在没有其他循环匹配时才会使用后备循环。优先级相同时先按名称，再按标识。留空表示零。",
 -- 2040fdbd English: Invalid switch priority for %s:%s; explicit repair resets it to zero.
+-- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
+-- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 [1387] = "%s:%s 的切换优先级无效；显式修复会将其重置为零。",
 -- babdd022 English: %s (any rank)
+-- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
+--     (Classic ranked spells).
+-- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
 [1388] = "%s（任意等级）",
 -- a80c618c English: Unticked, any rank of the spell matches. Ticked, only the rank you chose
 --     matches.
 [1389] = "未勾选时，匹配该法术的任何等级。勾选后，只匹配你选择的等级。",
 -- 264ad9c0 English: Cast Progress
+-- Context: Name of the Cast Progress condition (how far the current cast has progressed, in
+--     percent).
 [1390] = "施法进度",
 -- 02ad1e66 English: Channel Progress
+-- Context: Name of the Channel Progress condition (how far the current channel has progressed, in
+--     percent).
 [1391] = "引导进度",
 -- b19c05d2 English: Talent Tree Points
+-- Context: Name of the Talent Tree Points condition (points spent in a talent tree; Classic).
 [1392] = "天赋树点数",
 -- ef4ebbe8 English: points spent in %s
+-- Context: Not referenced directly by the current code (legacy or built dynamically).
+--     Condition-text fragment 'points spent in %s'; %s is a talent tree.
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1393] = "%s中投入的点数",
 -- 4fd19fe4 English: Primary Talent Tree
+-- Context: Name of the Primary Talent Tree condition (the tree in which you have the most points;
+--     Classic).
 [1394] = "主天赋树",
 -- cffd0628 English: your primary talent tree is %s
+-- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
 [1395] = "你的主天赋树为%s",
 -- f831a06b English: Arms
+-- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1396] = "武器",
 -- 8d6b26d9 English: Fury
+-- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
 [1397] = "狂怒",
 -- 0e97ad02 English: Protection
+-- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
+--     Tree dropdown of talent conditions.
 [1398] = "防护",
 -- 56eee6a5 English: Holy
+-- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
+--     talent conditions; not the magic school.
 [1399] = "神圣",
 -- 1d79fa22 English: Retribution
+-- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
+--     of talent conditions.
 [1400] = "惩戒",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
+--     dropdown of talent conditions.
 [1401] = "野兽控制",
 -- 03f000fc English: Marksmanship
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1402] = "射击",
 -- 8302496d English: Survival
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1403] = "生存",
 -- 727eeac8 English: Assassination
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1404] = "刺杀",
 -- 49fcf2c7 English: Combat
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1405] = "战斗",
 -- fca36d62 English: Subtlety
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1406] = "敏锐",
 -- a1b14db9 English: Discipline
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1407] = "戒律",
 -- 4c764cb6 English: Shadow
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1408] = "暗影",
 -- 8a7961ab English: Blood
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1409] = "鲜血",
 -- 17636dd6 English: Frost
+-- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
+--     and rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1410] = "冰霜",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1411] = "邪恶",
 -- 4309e83a English: Elemental
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1412] = "元素",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1413] = "增强",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
 [1414] = "恢复",
 -- 93006d61 English: Arcane
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1415] = "奥术",
 -- c141faa8 English: Fire
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1416] = "火焰",
 -- ed64274f English: Affliction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1417] = "痛苦",
 -- c0e4afa6 English: Demonology
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1418] = "恶魔学识",
 -- e848f2c5 English: Destruction
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1419] = "毁灭",
 -- d05e07b7 English: Balance
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1420] = "平衡",
 -- 454d4a9c English: Feral Combat
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
 [1421] = "野性战斗",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Frost).
 [1422] = "冰霜",
 -- 35223466 English: Frost from level 1 to 70, and the Mage default before talents. Frostbolt
 --     (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or
@@ -3054,6 +4853,10 @@ addon.translation = {
 --     Block, kiting and target choice stay with you.
 [1423] = "冰霜，适用于 1 至 70 级，也是法师在获得天赋前的默认循环。寒冰箭（4 级前为火球术），有敌人攻击你时使用冰霜新星，与三个或更多敌人交战时使用冰锥术配合暴风雪或魔爆术，对冻结的目标以及移动时使用冰枪术，法力耗尽时使用魔杖。提醒：护甲、奥术智慧、法力宝石、唤醒、法术反制、法术偷取、寒冰护体、冰冷血脉、急速冷却和水元素。闪现术、寒冰屏障、放风筝和目标选择由你自己掌控。",
 -- 7c2241f3 English: Fire (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireIcyVeins). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1424] = "火焰（Icy Veins）",
 -- 1e584220 English: Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast
 --     opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball
@@ -3062,6 +4865,10 @@ addon.translation = {
 --     gem, Evocation and the shared Mage utilities.
 [1425] = "依据 Icy Veins 的火焰，在火焰是你的主天赋树时选用。学会炎爆术后用它开怪，强化灼烧保持五层火焰易伤，火球术作为填充，火焰冲击用于移动时；三个或更多敌人时使用冲击波、龙息术和烈焰风暴。提醒：熔岩护甲、法师护甲或冰甲术，目标生命值低于 20% 时使用燃烧，法力宝石、唤醒以及共用的法师辅助技能。",
 -- c3a8c4ee English: Fire (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: FireWowhead). Names in parentheses (guide or tool such
+--     as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are
+--     proper names and stay unchanged.
 [1426] = "火焰（Wowhead）",
 -- a335455e English: Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves
 --     Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with
@@ -3069,6 +4876,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1427] = "依据 Wowhead 和 wowsims 的火焰。与 Icy Veins 火焰内置循环相同，但只要你站立不动，火焰冲击一就绪就会穿插施放（伤害更高，耗蓝更多），并以火球术而非炎爆术开怪。它是推荐的 Icy Veins 火焰内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
+--     Burning Crusade Classic (variant key: Arcane).
 [1428] = "奥术",
 -- d64a2c81 English: Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane
 --     Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane
@@ -3077,14 +4886,24 @@ addon.translation = {
 --     Reminders include Arcane Power, Presence of Mind, mana gem and Evocation.
 [1429] = "奥术，在奥术是你的主天赋树时选用。64 级前：奥术飞弹，法力值不足时使用寒冰箭。64 级起：爆发期间（奥术强化、嗜血或法力值高于 35%）使用奥术冲击，否则叠加三层奥术冲击，然后使用寒冰箭直到层数即将消失。三个或更多敌人时使用魔爆术和冰锥术。提醒包括奥术强化、气定神闲、法力宝石和唤醒。",
 -- 31e9be18 English: Diagram view
+-- Context: Rotation editor: label of the view-mode toggle button while the list layout is active
+--     (clicking switches to the diagram), and the "Diagram" option in the General settings "Default
+--     rotation view" dropdown. Names a way of viewing a rotation, not an action.
 [1430] = "图表视图",
 -- 5d8c3e1b English: List view
+-- Context: "List" option of the rotation view: the compact tree list. Shown on the rotation
+--     editor's view-mode toggle button and as an entry in the General settings "Default rotation
+--     view" dropdown.
 [1431] = "列表视图",
 -- 0dca2dc5 English: Switch between the diagram and compact tree list. This changes only the view.
 [1432] = "在图表和紧凑的树形列表之间切换。这只会改变视图。",
 -- bc7b631a English: Zoom out
+-- Context: Tooltip of the minus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram smaller (verb).
 [1433] = "缩小",
 -- 0e47f09a English: Zoom in
+-- Context: Tooltip of the plus icon button in the zoom bar at the bottom right of the rotation
+--     diagram: makes the diagram larger (verb).
 [1434] = "放大",
 -- ed28d6c9 English: Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is
 --     unchanged.
@@ -3098,6 +4917,9 @@ addon.translation = {
 --     preserved.
 [1436] = "“图表 / 列表”只改变循环视图；默认视图在常规设置中选择。图表视图右下角有浮动的减号、百分比和加号控件。滚动滚轮可在 25% 到 200% 之间缩放；点击百分比或按鼠标中键可重置为 100%。拖动图表空白处可平移。列表视图使用普通滚动条，卡片紧密相连，分支以方框显示，“假”在“真”之前。冷却使用单独的可滚动网格。在任意视图中拖动卡片都可重新排序。每个工作区当前最多显示 200 张卡片；其余已保存的卡片会被保留。",
 -- b1fd3756 English: Custom emote
+-- Context: Announcement output channel: sends the message as a custom emote. Entry in the channel
+--     dropdown of an announcement output (shown only for emote outputs) and a topic title in the
+--     Announces help.
 [1437] = "自定义表情",
 -- 6dd86cd7 English: Use spell recipient ({{target}})
 [1438] = "使用法术对象（{{target}}）",
@@ -3109,6 +4931,8 @@ addon.translation = {
 --     click and filter as you type. Section headings collapse or expand their contents.
 [1440] = "按 Enter 或离开文本字段即可暂存其值；“应用”会保存草稿。无效文本会保持红色，并在更正前阻止页面切换。可搜索的选择器在点击时打开，并随输入进行筛选。分节标题可折叠或展开其内容。",
 -- c546b857 English: Default rotation view
+-- Context: General settings: label of the dropdown that chooses whether rotations open as a diagram
+--     or a list by default; also a help topic title and a row label in the profile comparison.
 [1441] = "默认循环视图",
 -- d11b9246 English: Choose Diagram or List as the starting rotation view. This profile preference
 --     applies when opening a rotation; changing the view inside the editor does not change this
@@ -3122,53 +4946,94 @@ addon.translation = {
 -- ffcd3171 English: Drag one entry; Ctrl-drag moves it and all following siblings.
 [1445] = "拖动一个条目；按住 Ctrl 拖动会移动它及其后所有同级条目。",
 -- 773001f9 English: %d cards
+-- Context: Small count label on the stacked hover card of the rotation view, e.g. "3 cards"; %d is
+--     the number of cards stacked together.
+-- %d #1: %d #1: the number of cards being dragged, e.g. 3
 [1446] = "%d 张卡片",
 -- 454b5fb4 English:  (%d hidden)
+-- Context: Suffix on a True/False branch button in the rotation diagram when part of that branch is
+--     folded away; %d is the number of hidden steps. Keeps its leading space, appended right after
+--     "True" or "False".
+-- %d #1: %d #1: the number of cards hidden inside the folded branch, e.g. 4 (the text starts with a space and follows "True" or "False")
 [1447] = "（已隐藏 %d 个）",
 -- 9db3d1ae English: Click to fold or unfold this branch arm. Other cards and conditions are
 --     unchanged.
 [1448] = "点击以折叠或展开此分支。其他卡片和条件不受影响。",
 -- a7c224a3 English: %s {{!are|are not}} PVP flagged
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1449] = "%s{{!已|未}}开启 PvP 状态",
 -- a2e6fde9 English: %s {{!are|are not}} a %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1450] = "%s{{!是|不是}}%s",
 -- a9c26592 English: %s {{!are|are not}} currently casting %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1451] = "%s{{!正在|没有在}}施放%s",
 -- c0e4c355 English: %s {{!are|are not}} currently channeling %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
 [1452] = "%s{{!正在|没有在}}引导%s",
 -- df4ccc9d English: %s {{!are|are not}} in combat
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1453] = "%s{{!正在|不在}}战斗中",
 -- afbc6f6d English: %s {{!has|does not have}} %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1454] = "%s{{!拥有|没有}}%s",
 -- 450074be English: %s {{!has|does not have}} a %s debuff
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1455] = "%s{{!拥有|没有}}%s类减益效果",
 -- e7bdefdc English: %s {{!have|do not have}} %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
 [1456] = "%s{{!拥有|没有}}%s",
 -- 4d5d691c English: %s {{!have|do not have}} %s where %s
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
+-- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1457] = "%s{{!拥有|没有}}%s，且%s",
 -- abf6cfd4 English: %s {{!have|do not have}} a %s debuff
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
+-- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
 [1458] = "%s{{!拥有|没有}}%s类减益效果",
 -- 79e495d3 English: %s {{!is|is not}} PVP flagged
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1459] = "%s{{!已|未}}开启 PvP 状态",
 -- 491c7ee4 English: %s {{!is|is not}} a %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
 [1460] = "%s{{!是|不是}}%s",
 -- 09b32050 English: %s {{!is|is not}} active with %s
+-- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1461] = "%s{{!正在|没有}}生效，且%s",
 -- c58e76ae English: %s {{!is|is not}} an enemy
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1462] = "%s{{!是|不是}}敌人",
 -- 2c1ba7dc English: %s {{!is|is not}} attackable
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1463] = "%s{{!可以|不可}}被攻击",
 -- 742f7cb6 English: %s {{!is|is not}} currently casting %s
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
+-- %s #2: %s #2: the spell being cast, e.g. "Fireball"
 [1464] = "%s{{!正在|没有在}}施放%s",
 -- ae551afe English: %s {{!is|is not}} in a %s role
+-- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
+-- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
 [1465] = "%s{{!担任|未担任}}%s职责",
 -- f6ca7ce9 English: %s {{!is|is not}} in combat
+-- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 [1466] = "%s{{!正在|不在}}战斗中",
 -- 0af84407 English: %s's channeled spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1467] = "%s的引导法术{{!可以|不可}}被打断",
 -- 7240fa38 English: %s's spell {{!is|is not}} interruptable
+-- %s #1: %s #1: the unit, e.g. "your target"
 [1468] = "%s的法术{{!可以|不可}}被打断",
 -- 8c1704ad English: Your talent {{!is|is not}} a %s role
+-- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
 [1469] = "你的天赋{{!属于|不属于}}%s职责",
 -- c66f7ad7 English: is not evenly divisible by
 [1470] = "不能被整除于",
@@ -3181,24 +5046,36 @@ addon.translation = {
 -- 92bbf51d English: is not less than or equal to
 [1474] = "不小于或等于",
 -- 970de09b English: not (%s)
+-- Context: Wrapper used when describing a negated condition group in text: the %s is the
+--     description of the conditions, so it reads like "not (<conditions>)".
+-- %s #1: %s #1: the full text of the condition that is being negated, e.g. "you are in combat"
 [1475] = "非（%s）",
 -- d4c2a5ad English: you {{!are|are not}} in %s form
+-- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
 [1476] = "你{{!处于|不处于}}%s形态",
 -- 330c2126 English: you {{!are|are not}} in a %s instance
+-- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
 [1477] = "你{{!在|不在}}%s副本中",
 -- 0f79bc56 English: you {{!are|are not}} in a outdoors
 [1478] = "你{{!在|不在}}户外",
 -- 25ce1dd9 English: you {{!have|do not have}} %s equipped
+-- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
 [1479] = "你{{!已|未}}装备%s",
 -- f5b5e754 English: you {{!have|do not have}} %s glyph
+-- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
 [1480] = "你{{!拥有|没有}}雕文%s",
 -- 7c1be9a0 English: you {{!have|do not have}} a %s totem active with %s
+-- %s #1: %s #1: the totem element, e.g. "Fire"
+-- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
 [1481] = "你{{!有|没有}}一个%s图腾正在生效，且%s",
 -- 6691324c English: you {{!have|do not have}} a pet named %s
+-- %s #1: %s #1: the pet name, e.g. "Rex"
 [1482] = "你{{!拥有|没有}}名为%s的宠物",
 -- 8fbf9338 English: zone {{!is|is not}} a %s zone
+-- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
 [1483] = "所在区域{{!为|不为}}%s区域",
 -- 07e00292 English: {{!in|not in}} %s
+-- %s #1: %s #1: the zone name, e.g. "Stormwind City"
 [1484] = "{{!在|不在}}%s",
 -- f9337f4a English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; right-click to choose its color.
@@ -3207,16 +5084,27 @@ addon.translation = {
 --     remove it; right-click to choose its color.
 [1486] = "搜索已有标签并选择任意数量。点击已选的标签可将其移除；右键点击可选择其颜色。",
 -- 90f64b52 English: Decrease priority
+-- Context: Tooltip of the minus icon button beside the Priority box in the rotation editor header:
+--     lowers the rotation's priority number (verb phrase).
 [1487] = "降低优先级",
 -- c31a4a7d English: Increase priority
+-- Context: Tooltip of the plus icon button beside the Priority box in the rotation editor header:
+--     raises the rotation's priority number (verb phrase).
 [1488] = "提高优先级",
 -- 0abba441 English: Horizontal
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (laid out in a row); the other choice is "Vertical". Also a help topic title.
 [1489] = "水平",
 -- 727cd3a6 English: Vertical
+-- Context: General settings: one of two choices for how the preview window lays out its spell icons
+--     (stacked in a column); the other choice is "Horizontal". Also a row label in the profile
+--     comparison.
 [1490] = "垂直",
 -- 6e9ad9af English: Lock preview position and size
 [1491] = "锁定预览位置和大小",
 -- fc3dbf19 English: Preview window opacity
+-- Context: General settings: label of the slider that sets the transparency of the preview window;
+--     also a help topic title and a profile comparison row.
 [1492] = "预览窗口不透明度",
 -- a625f9d4 English: Choose a whole number of upcoming recommendations, from zero (hidden) to five.
 --     The preview shows the current priority results, not a full simulation of future cooldowns or
@@ -3232,30 +5120,51 @@ addon.translation = {
 -- 10d580ca English: Lock position and size
 [1496] = "锁定位置和大小",
 -- 0e556ee1 English: Open General settings
+-- Context: Entry in the preview window's right-click menu: opens the General settings page.
 [1497] = "打开常规设置",
 -- f65ed2ec English: View Changes
+-- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
+--     differs between the saved and unsaved version.
 [1498] = "查看更改",
 -- b5c120b3 English: Saved
+-- Context: Left column heading of the View Changes dialog: the version currently stored, before the
+--     pending edits.
 [1499] = "已保存",
 -- 6250d572 English: Unsaved
+-- Context: Right column heading of the View Changes dialog: the draft with pending edits that have
+--     not been applied yet.
 [1500] = "未保存",
 -- bc6e0973 English: Pending input
+-- Context: Row label prefix in the View Changes dialog, shown as "Pending input: <field>": text
+--     typed into a field that has not been committed yet.
 [1501] = "待处理的输入",
 -- 4b96e273 English: Not inspected
+-- Context: Value shown in the "Saved" column of View Changes for a custom widget whose content
+--     cannot be compared; indicates the saved side was not examined.
 [1502] = "未检查",
 -- 12be1b12 English: Custom widget has pending input.
 [1503] = "自定义控件有待处理的输入。",
 -- 70e5c0fd English: Selected entry
+-- Context: Default left column heading in the comparison dialog when the first item has no name:
+--     the entry currently selected in the list. Also used when comparing an import.
 [1504] = "所选条目",
 -- f6cf1462 English: Compared entry
+-- Context: Default right column heading in the comparison dialog when the second item has no name:
+--     the entry it is compared with.
 [1505] = "比较的条目",
 -- 002a5d77 English: Use step name
+-- Context: Name of a rotation-step option (checkbox) that makes the step use its own custom name;
+--     shown as a row label when two profiles are compared.
 [1506] = "使用步骤名称",
 -- 6dd777d2 English: Preview icon size
+-- Context: General settings: label of the slider for the size of the icons in the preview window;
+--     also a row label in the profile comparison.
 [1507] = "预览图标大小",
 -- 9710bd5e English: Add or search tags
 [1508] = "添加或搜索标签",
 -- 93bc41f4 English: Search tags
+-- Context: Placeholder text in the search box of the tag picker (when new tags cannot be created):
+--     invites the user to type to filter existing tags.
 [1509] = "搜索标签",
 -- bdb18f62 English: Click to remove this tag. Right-click to choose its color.
 [1510] = "点击以移除此标签。右键点击以选择其颜色。",
@@ -3266,50 +5175,77 @@ addon.translation = {
 --     rotation to save it. Cancel or Escape restores this dialog’s opening values.
 [1512] = "编辑描述、标签、作者、服务器、电子邮件、网站和版本。来源引用与你的署名分开保存。“应用”会更新循环草稿；还需应用该循环才能保存。“取消”或 Esc 会恢复此对话框打开时的值。",
 -- 616f48c1 English: Fields
+-- Context: Fallback row label in View Changes for unsaved edits whose individual field name is not
+--     known; stands for "form fields".
 [1513] = "字段",
 -- 7f553822 English: Search...
 [1514] = "搜索……",
 -- 9fd728c6 English: Add
+-- Context: Button in the Conditions settings roster header that adds a new custom condition (verb).
 [1515] = "添加",
 -- b5a66eb6 English: Comparison limit
+-- Context: Row label in View Changes shown when the comparison was cut short, followed by the note
+--     that only the first 512 conditions per side are shown; a noun.
 [1516] = "比较上限",
 -- 2dc363a7 English: Showing the first 512 conditions per side.
 [1517] = "每侧仅显示前 512 个条件。",
 -- 1710782c English: Weapon
+-- Context: Weapon-related icons: an icon name in the icon picker's group list, and a category
+--     filter chip in the picker.
 [1518] = "武器",
 -- 15b61974 English: Location
+-- Context: Icon name in the icon picker: a map/location marker (noun).
 [1519] = "地点",
 -- 909cb811 English: Book
+-- Context: Icon name in the icon picker: a book (noun, the object).
 [1520] = "书籍",
 -- 289aff12 English: Question
+-- Context: Icon name in the icon picker: a question mark (noun).
 [1521] = "问号",
 -- 5919dcd4 English: Swords
+-- Context: Icon name in the icon picker: crossed swords (plural noun).
 [1522] = "剑",
 -- 480d4be7 English: Shield
+-- Context: Icon name in the icon picker: a shield (noun, the item). Also used as an equipment
+--     category in the equipped-item condition.
 [1523] = "盾牌",
 -- 44bc3799 English: Healing
+-- Context: Icon name in the icon picker: healing (a heart/cross style icon).
 [1524] = "治疗",
 -- 41e68f2c English: Lightning
+-- Context: Icon name in the icon picker: a lightning bolt (noun).
 [1525] = "闪电",
 -- b5e0cd8a English: Potions
+-- Context: Icon name in the icon picker: potions (plural noun).
 [1526] = "药水",
 -- e4eb1806 English: Food
+-- Context: Icon name in the icon picker: food (noun).
 [1527] = "食物",
 -- a592855d English: Armor
+-- Context: Icon name in the icon picker: armor (noun, the item type).
 [1528] = "护甲",
 -- 39bbb719 English: Groups
+-- Context: Icon name in the icon picker: several people (plural; a group icon).
 [1529] = "组",
 -- 34ca0e76 English: Group
+-- Context: Icon name in the icon picker: a group of people (singular noun; a group icon).
 [1530] = "组",
 -- d461a493 English: Automatic
+-- Context: Option in the Lua editor syntax-highlighting dropdown: the editor picks highlighting by
+--     itself.
 [1531] = "自动",
 -- b8715031 English: Built In syntax highlighting
 [1532] = "内置语法高亮",
 -- cf416625 English: Plain text
+-- Context: Option in the Lua editor syntax-highlighting dropdown: no highlighting, just plain text.
 [1533] = "纯文本",
 -- 090512d9 English: Integrations
+-- Context: Top-level tab of the settings window (next to General, Conditions, Functions ...):
+--     integrations with other addons.
 [1534] = "集成",
 -- 90c92d4c English: Lua editor
+-- Context: Title of the Lua editor help window, and the name of a Lua editor settings row in the
+--     profile comparison.
 [1535] = "Lua 编辑器",
 -- d8cfde4d English: Choose optional addon integrations.
 [1536] = "选择可选的插件集成。",
@@ -3331,30 +5267,44 @@ addon.translation = {
 --     integration availability.
 [1541] = "选择自定义 Lua 条件所用的编辑器。“内置语法高亮”和“纯文本”无需其他插件即可使用。“自动”会在可用时使用已注册的可选提供者，并安全地回退。“应用”会保存选择；已打开的编辑器在重新打开前会保持当前的提供者。LuaWorkbench 和 WowLua 的加载状态与集成可用性分开显示。",
 -- dfab6835 English: Invalid condition: %s
+-- %s #1: %s #1: why the custom condition is invalid, a short reason, e.g. "unexpected symbol near end"
 [1542] = "无效条件：%s",
 -- a3d021a9 English: Unavailable condition: %s
+-- %s #1: %s #1: the description of the condition, e.g. "In Combat"
 [1543] = "不可用条件：%s",
 -- ffb313cc English: This condition definition is disabled. Rotations using it are unavailable.
 [1544] = "此条件定义已禁用。使用它的循环不可用。",
 -- 12f67f85 English: Availability
 [1545] = "可用性",
 -- ef8f927d English: Edit fields
+-- Context: Row text and tooltip in the custom condition source preview when a condition has no
+--     named field yet: invites editing the condition's input fields (verb phrase).
 [1546] = "编辑字段",
 -- 9f088dbe English: Advanced
+-- Context: Checkbox at the top right of the schema editor of a custom condition: switches to the
+--     raw schema editor (equivalent text form) instead of the graphical field editor.
 [1547] = "高级",
 -- bd82cf16 English: Number
+-- Context: Value type in the condition field type dropdown: a numeric value.
 [1548] = "数字",
 -- a066ff92 English: Boolean
+-- Context: Value type in the condition field type dropdown: true/false.
 [1549] = "布尔值",
 -- 5f3107cf English: Condition list
+-- Context: Value type in the condition field type dropdown: a list of conditions.
 [1550] = "条件列表",
 -- c5025e68 English: Record / map
+-- Context: Value type in the condition field type dropdown: a record, i.e. a table of named values
+--     (key/value map).
 [1551] = "记录 / 映射",
 -- 58e1de5e English: Allowed types / list alternatives
 [1552] = "允许的类型 / 列表备选项",
 -- a9b310ef English: Invalid field schema: %s
+-- %s #1: %s #1: what is wrong with the field schema, a short code or the field key, e.g. "invalid-required-fields" (shown as-is)
 [1553] = "无效的字段结构：%s",
 -- 76900f1b English: Back
+-- Context: Label of the back-navigation control in the embedded Lua editor's API knowledge window
+--     (go to the previous page).
 [1554] = "返回",
 -- 02dbfe6e English: Named fields. Choose a type, then edit its children for nested data.
 [1555] = "命名字段。选择一个类型，然后编辑其子项以处理嵌套数据。",
@@ -3363,8 +5313,11 @@ addon.translation = {
 -- 130a1408 English: Showing the first 200 fields. Use Advanced schema for larger definitions.
 [1557] = "仅显示前 200 个字段。较大的定义请使用“高级结构”。",
 -- 5f42d901 English: Add field
+-- Context: Button in the field schema editor: adds a new input field to the custom condition (verb
+--     phrase).
 [1558] = "添加字段",
 -- cb4190b5 English: Tag color
+-- Context: Tooltip of the colored swatch in a tag entry in a selector list: the tag's color.
 [1559] = "标签颜色",
 -- 08b91fc6 English: Type a tag and press Enter, or choose an existing tag. Click a tag to remove
 --     it; use the search results to change tag colors.
@@ -3383,14 +5336,21 @@ addon.translation = {
 -- 047aff36 English: No native Lua editor has been opened this session.
 [1564] = "本次会话尚未打开过原生 Lua 编辑器。",
 -- 5472dd28 English: Lua input diagnostics
+-- Context: Title of the report window that shows Lua editor input diagnostics, for testers to copy.
 [1565] = "Lua 输入诊断",
 -- 5c126363 English: Native input test
+-- Context: Title of a test dialog (Lua editor input probe): checks the game's native text input.
 [1566] = "原生输入测试",
 -- 6043d2ec English: Input test
+-- Context: Subtitle in the header of the native input test dialog (short noun phrase).
 [1567] = "输入测试",
 -- 5a832570 English: Stock font
+-- Context: Button in the native input test dialog, and the status text that follows it: use the
+--     game's default font in the sample box.
 [1568] = "原版字体",
 -- d92ba9ef English: RM font
+-- Context: Button in the native input test dialog, and the status text that follows it: use
+--     Rotation Master's own font in the sample box. "RM" is short for Rotation Master.
 [1569] = "RM 字体",
 -- c7b373e3 English: Click the sample, then try Up/Down and look for the caret. Compare Stock font
 --     and RM font. This temporary text is not saved.
@@ -3406,6 +5366,8 @@ addon.translation = {
 -- 9ee41d20 English: Show input diagnostics for this open Lua editor.
 [1575] = "显示此已打开 Lua 编辑器的输入诊断。",
 -- 6ecc3df6 English: Move
+-- Context: Small label in the custom condition source pane, in front of the category dropdown that
+--     moves the condition into another category (verb, imperative).
 [1576] = "移动",
 -- 9e3bd238 English: Edit fields opens a graphical schema draft. Add, name, reorder or remove
 --     fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and
@@ -3453,8 +5415,12 @@ addon.translation = {
 -- 95a1b634 English: Release resources when the condition is removed or replaced.
 [1597] = "在条件被移除或替换时释放资源。",
 -- 7f816072 English: Arguments
+-- Context: Heading for a function's argument list: in the generated function documentation and in
+--     the function source pane.
 [1598] = "参数",
 -- 16dcaa92 English: Returns
+-- Context: Heading for a function's return values: in the generated function documentation and in
+--     the function source pane.
 [1599] = "返回值",
 -- b92993e1 English: Field names are Lua identifiers. Choose a field type from its dropdown. Records
 --     contain named fields; allowed types contain alternatives, including nested records.
@@ -3468,34 +5434,46 @@ addon.translation = {
 --     condition unchanged. Red borders mark invalid names or incomplete types.
 [1602] = "箭头可隐藏或显示嵌套字段。“添加字段”会追加到该容器。撤销 / 重做影响草稿。“应用”会验证并暂存结构；“取消”会让条件保持不变。红色边框标示无效的名称或不完整的类型。",
 -- 521fc51f English: Packaged helper from %s.
+-- %s #1: %s #1: the file path of the packaged helper, e.g. "Functions/text.lua"
 [1603] = "来自 %s 的内置辅助函数。",
 -- 75e942e5 English: Functions
+-- Context: Top-level settings tab listing the user-written Lua functions; also the fallback title
+--     in the function bundle import/export dialog.
 [1604] = "函数",
 -- 786697a7 English: Browse packaged helpers and edit reusable custom Lua functions.
 [1605] = "浏览内置辅助函数，并编辑可复用的自定义 Lua 函数。",
 -- fc6e1f0d English: Function unavailable: %s
+-- %s #1: %s #1: why the function cannot be used, a short code, e.g. "disabled-function" (shown as-is)
 [1606] = "函数不可用：%s",
 -- 2abb9d73 English: Argument name
+-- Context: Tooltip of the name box of an argument row in the function source pane (noun phrase).
 [1607] = "参数名称",
 -- 6956b2bc English: Add argument
 [1608] = "添加参数",
 -- b38d87b4 English: Add return
 [1609] = "添加返回值",
 -- 355cc18a English: Built-in function
+-- Context: Heading of the function source pane for a function that ships with Rotation Master
+--     (read-only).
 [1610] = "内置函数",
 -- 0d1f23b5 English: Custom function
+-- Context: Heading of the function source pane for a function written by the user (editable).
 [1611] = "自定义函数",
 -- 4dcab896 English: Delete this function? Existing dependents will become unavailable.
 [1612] = "删除此函数？现有的依赖项将变为不可用。",
 -- 3ac00ae7 English: Deletion staged. Apply to remove this function.
 [1613] = "删除已暂存。点击“应用”以移除此函数。",
 -- f2dc99c6 English: Function bindings
+-- Context: Row label in the comparison of two custom functions: the function's list of bindings
+--     (aliases to other helper functions).
 [1614] = "函数绑定",
 -- b19e02e9 English: Alias
 [1615] = "别名",
 -- e64bbf11 English: This alias is already in use.
 [1616] = "此别名已被使用。",
 -- c8037103 English: Function
+-- Context: Word before the name in the function bundle review list: marks the entry as a function
+--     (the alternative is Condition); followed by ": name".
 [1617] = "函数",
 -- a94fd0ee English: Add binding
 [1618] = "添加绑定",
@@ -3520,33 +5498,53 @@ addon.translation = {
 -- e3b56b53 English: Review the dependency bundle before applying it.
 [1626] = "应用前请检查依赖包。",
 -- e0ad4daf English: Function bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1627] = "函数绑定（%d）",
 -- 1f10215d English: Aliases are local names in your Lua body. Changing an alias does not rewrite
 --     the body.
 [1628] = "别名是你 Lua 函数体中的本地名称。更改别名不会重写函数体。",
 -- f81e71de English: Reuse existing
+-- Context: Conflict action in the function bundle import: keep the function already present and
+--     discard the imported one (dropdown entry).
 [1629] = "复用现有项",
 -- c72a3c56 English: Replace existing
+-- Context: Conflict action in the function bundle import: overwrite the function already present
+--     with the imported one (dropdown entry).
 [1630] = "替换现有项",
 -- 548fcd9a English: Import with new identifier
 [1631] = "使用新标识符导入",
 -- 4759498a English: Create
+-- Context: Conflict action in the function bundle import: add the imported entry as a new item
+--     (dropdown entry).
 [1632] = "创建",
 -- 41d342bd English: Review source
+-- Context: Subtitle and heading of the dialog that shows the source code of a bundle entry so it
+--     can be inspected before the import is applied.
 [1633] = "检查源码",
 -- 195aae02 English: Original identifier
+-- Context: Label in the function bundle review: the identifier the entry has in the bundle, shown
+--     as "<label>: <id>".
 [1634] = "原始标识符",
 -- 8bec02bf English: Destination identifier
+-- Context: Label and edit-box title in the function bundle review: the identifier the entry will
+--     get after import.
 [1635] = "目标标识符",
 -- 32e8d276 English: Callback
+-- Context: Label of the dropdown in the function-source review dialog that selects which callback
+--     (a part of the code) to view.
 [1636] = "回调",
 -- 222b67d3 English: Include custom function dependencies
 [1637] = "包含自定义函数依赖项",
 -- df750ab9 English: Review import
+-- Context: Button in the function bundle import dialog: checks the pasted bundle and lists what
+--     would change, without applying it.
 [1638] = "检查导入",
 -- 454d876b English: Apply import
+-- Context: Button in the function bundle review dialog: carries out the import (verb).
 [1639] = "应用导入",
 -- b7143073 English: Function dependency bundle
+-- Context: Title of the dialog for exporting/importing a bundle of functions together with the
+--     functions they depend on.
 [1640] = "函数依赖包",
 -- 44fc47f3 English: Review the complete bundle before applying an import. Imported Lua can execute
 --     when registered; only apply code you trust.
@@ -3555,14 +5553,21 @@ addon.translation = {
 --     the complete reviewed bundle.
 [1642] = "检查下方每个原始名称、目标和依赖项。“应用导入”会保存经过检查的完整依赖包。",
 -- 0f2dd42f English: Conflict action
+-- Context: Label of the dropdown in the function bundle review that chooses what to do when an
+--     identifier already exists (Reuse, Replace, ...).
 [1643] = "冲突处理方式",
 -- 4e81098c English: Imported name
+-- Context: Label of the edit box in the function bundle review holding the display name the
+--     imported entry will have.
 [1644] = "导入的名称",
 -- 8e818b1f English: Existing dependents
+-- Context: Label in the function bundle review, followed by a list: the existing functions or
+--     conditions that already use the one being replaced.
 [1645] = "现有的依赖方",
 -- 75c417a1 English: This imported definition is disabled. Its dependents remain unavailable.
 [1646] = "此导入的定义已禁用。依赖它的项目仍不可用。",
 -- 2643e762 English: Required functions
+-- Context: Heading in the function bundle review for the functions the import depends on.
 [1647] = "所需函数",
 -- 103c8bbb English: Paste a bundle above, then review its original names, destinations and required
 --     functions.
@@ -3579,8 +5584,12 @@ addon.translation = {
 -- 9d60841e English: Check
 [1651] = "检查",
 -- b64ac05f English: Live
+-- Context: Checkbox in the condition test dialog: keeps re-running the test repeatedly while the
+--     dialog stays open (live updating).
 [1652] = "实时",
 -- 324b134f English: Preview
+-- Context: Title of a help topic: the preview of an effect in the effect editor, and the preview
+--     window's sample in General settings help. A noun.
 [1653] = "预览",
 -- a31ec5d7 English: The preview failed. Use /rm errors for details.
 [1654] = "预览失败。详情请使用 /rm errors。",
@@ -3589,8 +5598,12 @@ addon.translation = {
 -- c1ab4306 English: Condition check
 [1656] = "条件检查",
 -- 0fa00491 English: Fields UI preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's fields user interface.
 [1657] = "字段界面预览",
 -- 367bba74 English: Help preview
+-- Context: Title of the condition test dialog when it is opened from the developer debug tools to
+--     preview a condition's help page.
 [1658] = "帮助预览",
 -- 59e490f3 English: Edit detached test values below. Check validates them before evaluating. Live
 --     is opt-in; test values are saved separately from the condition source.
@@ -3606,10 +5619,13 @@ addon.translation = {
 -- 6a255986 English: Skipped: invalid test values
 [1663] = "已跳过：测试值无效",
 -- 4607aa3d English: Validation: %s
+-- %s #1: %s #1: the validation result, one of "Passed", "Failed" or "Unavailable" (translated), e.g. "Passed"
 [1664] = "验证：%s",
 -- 436fe71b English: Passed
+-- Context: Result word in the condition test dialog: the test passed.
 [1665] = "通过",
 -- 4c852a7e English: Evaluation: %s
+-- %s #1: %s #1: the result of the test evaluation, a short phrase such as "True", "False" or "Skipped: invalid test values" (translated), e.g. "True"
 [1666] = "评估：%s",
 -- 55a7b6a1 English: Fields UI and Help offer an explicit Preview of the current callback. Preview
 --     uses detached sample values and the normal field or help renderer. It does not save,
@@ -3624,6 +5640,8 @@ addon.translation = {
 --     Live.
 [1668] = "“评估”和“验证”提供“检查”，使用相同的字段界面和独立的示例值。“检查”会先进行验证，然后只评估有效的值。结果显示为真、假或不可用的原因。“实时”需手动开启，在此面板显示期间每秒最多检查两次；关闭面板即停止。测试值单独保存，永远不会进入条件导出或循环编辑。除非你再次检查或启用“实时”，否则源码更改不会运行任何回调。",
 -- 5d331ffe English: Functions reference
+-- Context: Title of a section in the custom condition editor's help: the page that documents public
+--     helper functions (noun phrase).
 [1669] = "函数参考",
 -- 64334745 English: The Functions page documents public helpers and their typed arguments, return
 --     values and source. Context completion and hover use that reference; Ctrl-click a known helper
@@ -3636,10 +5654,16 @@ addon.translation = {
 -- 4087dcf1 English: Complete the highlighted test inputs before checking.
 [1673] = "检查前请先完成高亮标出的测试输入。",
 -- 532eaabd English: Test
+-- Context: Button in the custom condition editor, and the dialog subtitle: runs the condition once
+--     with sample input (verb).
 [1674] = "测试",
 -- e031e0df English: Run test
+-- Context: Button and tooltip in the Lua workbench query panel: runs the entered code once with the
+--     test arguments (verb phrase).
 [1675] = "运行测试",
 -- 312acdf1 English: Test condition
+-- Context: Title of the dialog that tries a custom condition with sample values (verb phrase used
+--     as a title).
 [1676] = "测试条件",
 -- 34fb96f5 English: Debugger output
 [1677] = "调试器输出",
@@ -3657,14 +5681,20 @@ addon.translation = {
 --     separate from source, exports and rotation edits. Check syntax never runs a callback.
 [1681] = "“测试”会从任一回调标签页打开一个条件级对话框。它会结合独立的测试值同时渲染字段界面和帮助。选择字段并点击“运行测试”进行验证，然后只评估有效的值。打开对话框不会评估默认值。“实时”需手动开启，并在对话框关闭时停止。已提交的测试值可供调试器使用，并与源码、导出内容和循环编辑相互独立。“检查语法”从不运行回调。",
 -- deba1c35 English: Nullable
+-- Context: Checkbox in the argument/return type editor of the function source pane: the value may
+--     also be nil (empty).
 [1682] = "可为空",
 -- fbf338e4 English: Add return value
 [1683] = "添加返回值",
 -- c75ed23e English: Lua returns multiple values in order. Each row documents one result.
 [1684] = "Lua 会按顺序返回多个值。每一行记录一个结果。",
 -- f968686c English: Expand code editor
+-- Context: Tooltip of the button on the code editor corner in the function source pane: enlarges
+--     the editor to fill the pane (verb phrase).
 [1685] = "展开代码编辑器",
 -- cc81db61 English: Restore code editor
+-- Context: Tooltip of the same button after the editor is enlarged: shrinks it back to its normal
+--     size (verb phrase).
 [1686] = "还原代码编辑器",
 -- cb050073 English: Choose a source helper and the local name used to call it in this Lua body.
 --     Renaming the local name does not rewrite code. Source modules distinguish helpers with the
@@ -3673,6 +5703,8 @@ addon.translation = {
 -- cfaec007 English: Local name in code
 [1688] = "代码中的本地名称",
 -- d076565e English: Source helper
+-- Context: Column caption in the function bindings table: the existing function the alias points
+--     to.
 [1689] = "源辅助函数",
 -- b49f05b5 English: Function names use letters, numbers and underscores, beginning with a letter or
 --     underscore. Names suggest the local binding used to call them; registry identifiers stay
@@ -3683,6 +5715,7 @@ addon.translation = {
 -- f07f87d9 English: Delete this announcement?
 [1692] = "删除此通报？",
 -- da985348 English: Type: %s
+-- %s #1: %s #1: the Lua type name of the symbol, e.g. "number" or "string"
 [1693] = "类型：%s",
 -- 78a0b485 English: Supported unit-token to localized unit-name lookup. Use value.unit as a key;
 --     for example addon.units[value.unit]. Available tokens vary by client.
@@ -3705,6 +5738,9 @@ addon.translation = {
 -- 902c5c44 English: Rotation Master built-in function
 [1700] = "Rotation Master 内置函数",
 -- 0443c4a6 English: Rotation Master value
+-- Context: Heading in the Lua editor's hover text for a symbol that is a plain value provided by
+--     Rotation Master (not a function); the alternatives are 'Rotation Master custom function' and
+--     'Rotation Master built-in function'.
 [1701] = "Rotation Master 值",
 -- 1a845fe0 English: Global function (documentation unavailable on this client)
 [1702] = "全局函数（此客户端上没有文档）",
@@ -3718,6 +5754,8 @@ addon.translation = {
 --     binding under Function bindings. Built In examples show dot or colon explicitly.
 [1705] = "函数在应用后会在所有配置文件间共享。以 functions.name(...) 调用自定义工具函数；接受自动补全会添加依赖绑定。带类型的调用需要在“函数绑定”下有一个绑定。内置示例会显式使用点号或冒号。",
 -- d03262ba English: Show line numbers
+-- Context: Checkbox in Integrations settings (Lua editor section): shows line numbers in the Lua
+--     code editors; also a help topic title.
 [1706] = "显示行号",
 -- f12fff00 English: Line-number visibility applies to every condition and function code editor.
 [1707] = "行号显示设置适用于每个条件和函数的代码编辑器。",
@@ -3734,6 +5772,8 @@ addon.translation = {
 --     LuaWorkbench and WowLua loading status is shown separately from integration availability.
 [1709] = "选择自定义 Lua 条件和函数所用的编辑器。“显示行号”适用于所有代码编辑器。“内置语法高亮”和“纯文本”无需其他插件即可使用。“自动”会选择一个已连接的提供者，或安全地回退。“应用”会保存设置；编辑器的更改在重新打开时生效，行号显示会更新已打开的编辑器。LuaWorkbench 和 WowLua 的加载状态与集成可用性分开显示。",
 -- 50c3cb6e English: All namespaces
+-- Context: First entry of the namespace filter dropdown on the Functions page: show functions from
+--     every namespace.
 [1710] = "所有命名空间",
 -- 5605815a English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3750,8 +5790,12 @@ addon.translation = {
 -- 5226404c English: Existing API
 [1713] = "现有 API",
 -- e572edc2 English: Name in code
+-- Context: Column caption in the function bindings table and tooltip of the alias field: the name a
+--     binding is called inside the Lua code.
 [1714] = "代码中的名称",
 -- c4e4e7ab English: Namespace
+-- Context: Label of the namespace box in the function source pane and a help section title: the
+--     dotted group name under which a function is listed.
 [1715] = "命名空间",
 -- c6d86222 English: Namespaces group functions; they do not supply a receiver. Accept a completion
 --     to bind the shown dotted call. For a typed call, add the same qualified name under Function
@@ -3762,8 +5806,11 @@ addon.translation = {
 --     callback.
 [1717] = "私有的工具函数命名空间。它只包含此回调的显式绑定。",
 -- 481da3a7 English: Argument
+-- Context: Row title and add-button text in the function source pane: one function argument (noun).
+--     The same place has "Return".
 [1718] = "参数",
 -- e0836fce English: Bindings (%d)
+-- %d #1: %d #1: the number of function bindings, e.g. 3
 [1719] = "绑定（%d）",
 -- 6ecb5a70 English: Call a utility as namespace.name(...). Built In namespaces follow source files;
 --     custom functions choose their Namespace. Accepting a completion attaches its stable
@@ -3785,6 +5832,8 @@ addon.translation = {
 --     need changes; RM does not rewrite call sites.
 [1722] = "点击“参数”或“返回值”标题可将其折叠或展开。“+ 参数”和“+ 返回值”在点击时追加到末尾，拖动时则插入到高亮显示的空隙。拖动某一行或使用“上移 / 下移”来重新排序；按住 Ctrl 拖动会带上后续的行。垃圾桶会移除一行。“类型”和“可为空”记录可接受的值；“描述”说明每个输入或结果。Lua 可以按顺序返回多个结果。对已保存的函数重新排序时会发出警告，因为按位置调用的调用方可能需要修改；RM 不会重写调用处。",
 -- 6b0143d0 English: Return
+-- Context: Row title and add-button text in the function source pane: one function return value
+--     (noun). The same place has "Argument".
 [1723] = "返回值",
 -- 2584fdfb English: Changing argument order can break existing callers. Rotation Master will not
 --     rewrite their Lua code. Continue?
@@ -3793,6 +5842,8 @@ addon.translation = {
 --     existing callers. Review the Lua body and callers for the new order. Continue?
 [1725] = "更改返回值文档的顺序不会重写 return 语句或现有的调用方。请按新的顺序检查 Lua 函数体和调用方。是否继续？",
 -- 2266dd0b English: Card controls
+-- Context: Heading of a section in the argument editor help: explains the controls on an argument's
+--     card.
 [1726] = "卡片控件",
 -- 1f03f52f English: Describe this value for function documentation, completion and hover help.
 --     Changes remain in the draft until Apply.
@@ -3819,18 +5870,27 @@ addon.translation = {
 --     They document the contract; they do not rewrite or validate values in the Lua body.
 [1733] = "“类型”和“可为空”描述此函数接受或返回的值。它们记录的是约定；不会重写或验证 Lua 函数体中的值。",
 -- 42e8bcf1 English: Debuffs
+-- Context: Condition category in the icon picker's category list: debuff-related icons (plural
+--     noun).
 [1734] = "减益效果",
 -- e89b30aa English: Resources
+-- Context: Condition category in the icon picker's category list: resources such as mana and rage.
 [1735] = "资源",
 -- 8f0d1b30 English: Pet
+-- Context: Condition category in the icon picker's category list: pet-related icons.
 [1736] = "宠物",
 -- 7c400199 English: Logic
+-- Context: Condition category in the icon picker's category list: logical operators (and/or/not).
 [1737] = "逻辑",
 -- 9e471951 English: Environment
+-- Context: Condition category in the icon picker's category list: environment (weather, zone ...).
 [1738] = "环境",
 -- 33b93476 English: Time
+-- Context: Condition category in the icon picker's category list: time-related icons.
 [1739] = "时间",
 -- 66f9cfa2 English: Spell Auto-Repeat Active
+-- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
+--     Also an icon name in the icon picker.
 [1740] = "法术自动重复中",
 -- 35f743e1 English: Retribution (Wowhead & wowsims)
 [1741] = "惩戒（Wowhead & wowsims）",
@@ -3844,6 +5904,10 @@ addon.translation = {
 --     separate premade.
 [1742] = "惩戒近战，适用于 1 至 70 级，也是没有其他内置循环适用时所有圣骑士的默认循环。对每个目标以智慧审判（法力值低时）或十字军审判开场，保持你最好的圣印（鲜血圣印或殉难圣印、命令圣印，其次是正义圣印），使用十字军打击，只审判正义圣印、鲜血圣印或殉难圣印（对昏迷的目标则审判命令圣印），对亡灵和恶魔使用驱邪术，三个或更多敌人且法力充足时使用奉献。愤怒之锤由你决定（Wowhead 仅对逃跑的目标使用）。提醒：圣洁光环、惩罚光环或虔诚光环、对自己施放祝福、战斗后治疗、复仇之怒。圣印轮换是单独的内置循环。",
 -- 89f00a09 English: Retribution (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / IcyVeins). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [1743] = "惩戒（Icy Veins）",
 -- c68e9ea0 English: Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3853,6 +5917,8 @@ addon.translation = {
 --     levelers. Same reminders as the Wowhead variant.
 [1744] = "Icy Veins 的惩戒，是推荐的 Wowhead 惩戒内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。每个目标施放一次十字军审判，正义圣印（仅在使用慢速武器时用命令圣印，学会后用鲜血圣印或殉难圣印），十字军打击、愤怒之锤和审判冷却完毕即用，两个或更多敌人时使用奉献，对亡灵和恶魔使用驱邪术，神圣系升级者使用神圣震击。提醒与 Wowhead 版本相同。",
 -- 85d846bd English: Retribution seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Retribution / Twist).
 [1745] = "惩戒圣印轮换",
 -- 34a6a34f English: Off by default; enable it if you twist seals (level 64+, Seal of Command and
 --     Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of
@@ -3872,6 +5938,10 @@ addon.translation = {
 --     Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you.
 [1748] = "防护天赋树或任何开启正义之怒的圣骑士的坦克循环。以神圣之盾、复仇者之盾和审判拉怪；面对碾压目标（世界首领或比你高三级及以上）时先上神圣之盾；然后是奉献、对亡灵和恶魔使用驱邪术、审判、神圣之盾、对亡灵怪群使用神圣愤怒，除碾压目标外使用复仇者之盾。法力值不足时对怪群使用智慧圣印，否则使用正义圣印。提醒：正义之怒、虔诚光环、庇护祝福（或王者祝福、智慧祝福）、复仇之怒、圣疗术。嘲讽和切换目标由你自己掌控。",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1749] = "防护（Icy Veins）",
 -- 3ae9045e English: Icy Veins' tanking, an alternative to the recommended Wowhead Protection
 --     premade, off by default: enable it and disable that one, or raise its priority. Judgement of
@@ -3896,6 +5966,10 @@ addon.translation = {
 --     the same emergencies, cleansing, Judgement and reminders as the blended Holy premade.
 [1754] = "Wowhead 的团队坦克治疗，是推荐的神圣内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。只要目标损失十分之一的生命值就使用圣光术，仅在缺口较小时使用圣光闪现；紧急处理、驱散、审判和提醒与综合版神圣内置循环相同。",
 -- 4396ff42 English: Ranged DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowsims). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1755] = "远程 DPS（wowsims）",
 -- 2b43c4a1 English: Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot,
 --     keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot
@@ -3908,6 +5982,10 @@ addon.translation = {
 --     with you.
 [1756] = "1–70 级，所有专精。以猎人印记、瞄准射击和自动射击拉怪，保持自动射击，目标贴近时使用近战攻击。学会稳固射击之前，保持毒蛇钉刺，仅在法力充足时才把法力花在瞄准射击、多重射击和奥术射击上。62 级起：多重射击就绪即用，每次自动射击后立即使用稳固射击，用奥术射击填补空隙，单刷时使用毒蛇钉刺。有三个或更多敌人与你交战时，多重射击就绪即用。会提醒你守护（法力值不足时用蝰蛇守护，法力恢复到一半时换回雄鹰守护）、宠物照料、杀戮命令、对精英和首领使用主要冷却技能，以及沉默射击。宠物指令、误导、陷阱、乱射、近战穿插和假死由你自己掌控。",
 -- 825c84d1 English: Ranged DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     The Burning Crusade Classic (variant key: Ranged / Wowhead). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1757] = "远程 DPS（Wowhead）",
 -- fb9ad1ee English: Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee,
 --     leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady
@@ -3918,6 +5996,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1758] = "1–70 级，所有专精，遵循 Wowhead 的团队建议。拉怪、近战、升级阶段的射击、多目标多重射击和提醒都与 wowsims 版本相同，但学会稳固射击后，每次自动射击后只提供多重射击和稳固射击：不用奥术射击填充（移动时除外），不用毒蛇钉刺，也没有蝰蛇守护提醒。宠物指令、误导、陷阱、乱射、近战穿插和假死由你自己掌控。它是推荐的 wowsims 远程内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1759] = "近战 DPS（wowsims）",
 -- a600e4ad English: Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or
 --     Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte,
@@ -3929,6 +6011,10 @@ addon.translation = {
 --     Feint, Vanish and positioning stay with you.
 [1760] = "1–70 级，所有专精。潜行时：预谋，然后单刷时偷袭、组队时锁喉，否则伏击（主手持匕首时）。战斗中：还击，两个连击点起使用切割（在最后两秒内续上），对即将死亡的目标使用刺骨，五个连击点时若割裂能持续足够久则使用割裂（剑刃乱舞顺劈期间除外），否则使用刺骨。目标没有攻击你时用毁伤或背刺（匕首）攒连击点，否则用出血或影袭。会提醒你缺少的毒药、脚踢、剑刃乱舞和冲动、冷血以及闪避。破甲、肾击、佯攻、消失和站位由你自己掌控。",
 -- 5f9b3940 English: Melee DPS (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, The
+--     Burning Crusade Classic (variant key: DPS / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1761] = "近战 DPS（Wowhead）",
 -- 19e52877 English: Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and
 --     reminders as the wowsims version, but Slice and Dice starts from one combo point and every
@@ -3937,6 +6023,8 @@ addon.translation = {
 --     by default: enable it and disable that one, or raise its priority.
 [1762] = "1–70 级，所有专精，遵循 Wowhead。潜行起手、攒点技能和提醒与 wowsims 版本相同，但切割从一个连击点起就使用，每个五连击点终结技都是刺骨：不使用割裂。破甲、肾击、佯攻、消失和站位由你自己掌控。它是推荐的 wowsims 近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Balance).
 [1763] = "平衡",
 -- 8177cc43 English: Caster Balance from level 1 to 70, and the default for any Druid no other
 --     premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving,
@@ -3958,6 +6046,10 @@ addon.translation = {
 --     optional step that starts off (it needs a powershift macro).
 [1766] = "野性天赋树的猎豹和熊，跟随你当前的形态。猎豹：潜行起手（突袭、毁灭或撕碎），精灵之火（野性），对能存活的目标在四个连击点时使用撕扯，两次撕扯之间没有节能施法时使用凶猛撕咬，保持裂伤，在目标背后使用撕碎，目标正在攻击你时使用裂伤/爪击。熊：精灵之火，在割伤消失前续上，除非已有战士的挫志怒吼否则使用挫志咆哮，怪群使用横扫，然后裂伤、叠满五层割伤、横扫。人形态下会建议猎豹（或熊）形态。提醒：野性印记、荆棘术、清晰预兆、怒气有余时的重殴、拉怪前的猛虎之怒、狂暴回复。变身回能（powershifting）是默认关闭的可选步骤（需要一个变身回能宏）。",
 -- 4c55a525 English: Feral (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Feral / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1767] = "野性（Wowhead）",
 -- 9092413a English: Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off
 --     by default: enable it and disable that one, or raise its priority. Rip whenever it is down at
@@ -3966,6 +6058,8 @@ addon.translation = {
 --     Otherwise the same as the Icy Veins variant.
 [1768] = "Wowhead 的野性，是推荐的 Icy Veins 野性内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。撕扯不在时于四个连击点补上，凶猛撕咬仅用于即将死亡的目标（不穿插撕咬）；熊形态把空闲的公共冷却用在割伤上，再使用横扫。猎豹法力不足时使用激活。其余与 Icy Veins 版本相同。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, The
+--     Burning Crusade Classic (variant key: Restoration).
 [1769] = "恢复",
 -- da5557c1 English: Healing for the Restoration tree on your friendly target (or yourself): Healing
 --     Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or
@@ -3975,6 +6069,10 @@ addon.translation = {
 --     Innervate and Rebirth. Choosing whom to heal and downranking stay with you.
 [1770] = "恢复天赋树的治疗，作用于你的友方目标（或你自己）：自然迅捷后使用治疗之触，对带有你的回春术或愈合的濒死目标使用迅捷治愈，战斗中保持三层生命绽放滚动，缺少时补上回春术和愈合，然后在生命之树形态下使用愈合，不在该形态时使用治疗之触。目标为敌对时使用月火术和愤怒进行单刷。提醒：野性印记、清晰预兆、生命之树、自然迅捷、宁静、激活和复生。治疗谁以及降级施法由你自己掌控。",
 -- 469b61e4 English: Melee DPS (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: DPS / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1771] = "近战 DPS（wowsims）",
 -- e30bf8c3 English: Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept,
 --     Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is
@@ -3994,6 +6092,10 @@ addon.translation = {
 --     disable that one, or raise its priority.
 [1774] = "1–70 级，武器或狂怒，遵循 Icy Veins。拉怪、提醒和升级步骤与 wowsims 版本相同，但有致死打击时斩杀排在最前，有嗜血时斩杀紧随其后，旋风斩接着使用且不保留怒气，断筋仅在怒气接近满时使用。猛击时机、姿态切换和狂暴之怒由你自己掌控。它是推荐的 wowsims 近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 871d5911 English: Tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1775] = "坦克（Wowhead）",
 -- 91dfa1ce English: Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge,
 --     Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder
@@ -4003,6 +6105,10 @@ addon.translation = {
 --     utility stay with you.
 [1776] = "10–70 级，处于防御姿态时选用。盾牌猛击、复仇，对精英和首领保持雷霆一击和挫志怒吼，然后是毁灭打击或破甲攻击。怪群时：先雷霆一击和挫志怒吼。会提醒你对首领和高等级敌人使用盾牌格挡（需装备盾牌）、英勇打击或顺劈斩、战斗怒吼、血性狂暴、盾击，以及紧急时的破釜沉舟和盾墙。嘲讽和其他辅助技能由你自己掌控。",
 -- ea76d926 English: Tank (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     The Burning Crusade Classic (variant key: Protection / IcyVeins). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1777] = "坦克（Icy Veins）",
 -- aa141592 English: Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins.
 --     Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until
@@ -4012,6 +6118,10 @@ addon.translation = {
 --     default: enable it and disable that one, or raise its priority.
 [1778] = "10–70 级，处于防御姿态时选用，遵循 Icy Veins。盾牌猛击、复仇，然后是毁灭打击或破甲攻击，学会盾牌猛击之前在战斗开始时使用撕裂。怪群时：雷霆一击，对精英使用挫志怒吼。只要目标正在攻击你且你装备了盾牌，就会提醒盾牌格挡。嘲讽和其他辅助技能由你自己掌控。它是推荐的 Wowhead 坦克内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 3adec7ba English: Damage (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsIcyVeins). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1779] = "伤害（Icy Veins）",
 -- 9b0711bb English: Damage from level 1 to 70, used whenever the healer premade does not apply.
 --     Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric
@@ -4022,6 +6132,10 @@ addon.translation = {
 --     healing stay with you.
 [1780] = "1 至 70 级的伤害输出，只要治疗内置循环不适用就会使用。前期使用惩击和魔杖，然后随着学会依次加入心灵震爆、暗言术：痛、精神鞭笞、暗影形态、吸血鬼之触和暗言术：灭；心灵震爆之前先上持续伤害效果；单刷时对濒死目标使用魔杖。神圣和戒律的任务玩家使用神圣之火和惩击。提醒：心灵之火、真言术：韧、种族增益、心灵专注、暗影恶魔。精神鞭笞在第一跳之后，会为已就绪的心灵震爆而被提前打断，或在生命值高于一半时为暗言术：灭而被提前打断。护盾和治疗由你自己掌控。",
 -- ce79d246 English: Damage (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1781] = "伤害（Wowhead）",
 -- fe006eaa English: Damage after Wowhead's guides, an alternative to the recommended Icy Veins
 --     damage premade, off by default: enable it and disable that one, or raise its priority. Mind
@@ -4030,6 +6144,10 @@ addon.translation = {
 --     premade.
 [1782] = "依据 Wowhead 指南的伤害输出，是推荐的 Icy Veins 伤害内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。以心灵震爆开怪，并优先于刷新持续伤害效果，仅在生命值下降时使用吸血鬼的拥抱，对濒死目标使用法术而非魔杖。其余与推荐的内置循环相同。",
 -- d0f0e9e6 English: Healer (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1783] = "治疗（Wowhead）",
 -- d31781e0 English: Healing in a group when Holy or Discipline is your main talent tree. It advises
 --     on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and
@@ -4038,6 +6156,10 @@ addon.translation = {
 --     as a cheap top-up. With an enemy targeted it offers light damage.
 [1784] = "神圣或戒律是你的主天赋树时的队伍治疗。它针对你选中的友方单位提供建议；治疗谁由你决定。拉怪前以及就绪时使用愈合祷言，恢复，紧急时使用真言术：盾，驱散，队伍受伤时使用治疗之环或治疗祷言，联结治疗、快速治疗和强效治疗术，并以 1 级强效治疗术作为低耗补血。选中敌人时会提供少量伤害技能。",
 -- 45321807 English: Healer (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     The Burning Crusade Classic (variant key: HealerIcyVeins). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [1785] = "治疗（Icy Veins）",
 -- e31d4277 English: Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash
 --     Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to
@@ -4054,6 +6176,10 @@ addon.translation = {
 --     Soulshatter. Fears and other curses stay with you.
 [1788] = "1 至 70 级的所有天赋树。诅咒，然后随着学会依次加入痛苦无常、献祭、腐蚀术和生命虹吸，暗影箭或烧尽；夜幕和反冲触发优先；三个或更多敌人时使用腐蚀之种、地狱烈焰和暗影之怒。单刷时受伤会吸取生命，会使用生命分流和魔杖，并对濒死目标使用吸取灵魂或收尾法术。提醒：邪甲术、魔甲术或恶魔皮肤、你的恶魔、恶魔牺牲、灵魂链接、诅咒增幅和灵魂碎裂。恐惧和其他诅咒由你自己掌控。",
 -- e3790b25 English: Drain-tank (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     The Burning Crusade Classic (variant key: DpsWowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [1789] = "吸血坦（Wowhead）",
 -- 522ed69f English: Warlock after Wowhead's guides, an alternative to the recommended Icy Veins
 --     Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo
@@ -4069,10 +6195,13 @@ addon.translation = {
 -- 550c388b English: The item list changed elsewhere. Close and reopen it before applying.
 [1793] = "物品列表已在别处更改。请关闭并重新打开后再应用。",
 -- 67559dc7 English: Native settings page unavailable: %s
+-- %s #1: %s #1: the internal key of the settings page, e.g. "profiles" (shown as-is)
 [1794] = "原生设置页面不可用：%s",
 -- 0f6314b0 English: The native rotation editor is unavailable.
 [1795] = "原生循环编辑器不可用。",
 -- 4850b174 English: Required
+-- Context: Checkbox on a field card in the schema editor (and its help title): the field must be
+--     filled in before the condition can run.
 [1796] = "必填",
 -- 9bcec068 English: Required field references need review. Apply keeps the displayed root
 --     requirements.
@@ -4082,18 +6211,27 @@ addon.translation = {
 --     into a nested structure makes it optional. Undo restores both. Callback code is unchanged.
 [1798] = "根级必填字段必须有值，此条件才能运行。重命名、重新排序和复制都会保留此标记；移除字段会移除其必填要求。将其移入嵌套结构会使其变为可选。撤销会同时恢复两者。回调代码保持不变。",
 -- 8b8cd45b English: Copy condition description
+-- Context: Button in the condition editor: copies the plain-language description of the condition
+--     to the clipboard (verb phrase).
 [1799] = "复制条件描述",
 -- b5739be0 English: This condition exceeds the supported editor limits.
 [1800] = "此条件超出了编辑器支持的上限。",
 -- df58aeb6 English: Proc Glow
+-- Context: Effect type in the effect editor dropdown and Effects help: a glow in the style of the
+--     game's spell-proc highlight.
 [1801] = "触发发光",
 -- dce1c179 English: Loop duration
+-- Context: Help topic title and setting for the proc glow effect: how long one loop of the glow
+--     animation lasts.
 [1802] = "循环时长",
 -- a4f0db33 English: Start burst
+-- Context: Checkbox in the effect editor for the proc glow effect (and its help title): plays the
+--     start burst animation when the glow begins.
 [1803] = "开场爆发",
 -- b89fd7fd English: Proc Glow is unavailable on this client; Pixel glow will be used.
 [1804] = "此客户端不支持触发发光；将改用像素发光。",
 -- 34ae0a26 English: Rotation data requires recovery: %s
+-- %s #1: %s #1: why the data cannot be used, a short code or reason, e.g. "unsupported-version" (shown as-is)
 [1805] = "循环数据需要恢复：%s",
 -- 8b4e37b9 English: Copies belong to your Class unless This character is selected. Replacement
 --     keeps its original owner.
@@ -4101,32 +6239,50 @@ addon.translation = {
 -- 0faa3bd8 English: Archive report truncated; saved data is unchanged.
 [1807] = "存档报告已截断；已保存的数据未更改。",
 -- 414c7fd3 English: Recover unassigned rotations
+-- Context: Button in the banner that appears when older rotations lack an owner, and title of a
+--     help section/window: opens the unassigned rotation archive so they can be adopted.
 [1808] = "恢复未分配的循环",
 -- 291f821c English: Ownership required
+-- Context: Subtitle of the unassigned rotation recovery window: tells the user these rotations need
+--     an owner (class or character) before they can be used.
 [1809] = "需要指定所有者",
 -- cd16196a English: These records have no assigned owner. Choose Class or This character
 --     explicitly. No ownership is inferred from names, spells or profile history.
 [1810] = "这些记录没有分配所有者。请明确选择“职业”或“此角色”。不会根据名称、法术或配置文件历史推断所有权。",
 -- ce112847 English: Recovery unavailable: %s
+-- %s #1: %s #1: why the recovery list cannot be shown, a short code, e.g. "rotation-store-unavailable" (shown as-is)
 [1811] = "无法恢复：%s",
 -- af7356f1 English: Unassigned rotation archive
+-- Context: Title of the report window with the contents of the unassigned rotation archive.
 [1812] = "未分配循环存档",
 -- d17af82d English: Character archive
+-- Context: Label in the recover window: the archive that belongs to a single character (see
+--     "Profile archive").
 [1813] = "角色存档",
 -- 8ce8b3ed English: Profile archive
+-- Context: Label in the recover window: the archive that belongs to the whole profile (see
+--     "Character archive").
 [1814] = "配置文件存档",
 -- 4064b908 English: No unassigned rotations.
 [1815] = "没有未分配的循环。",
 -- 46bb2f53 English: Archive: %s; specialization: %s; identifier: %s
+-- %s #1: %s #1: the kind of archive, "Character archive" or "Profile archive" (translated), e.g. "Profile archive"
+-- %s #2: %s #2: the specialization number the record belongs to, e.g. 64
+-- %s #3: %s #3: the record's identifier, e.g. "a1b2c3d4"
 [1816] = "存档：%s；专精：%s；标识符：%s",
 -- a7232fd4 English: Export archive
+-- Context: Button in the recover window: exports the archive's contents as text (verb phrase).
 [1817] = "导出存档",
 -- b650b12a English: Adopt rotation
+-- Context: Button in the recover window: assigns the selected unowned rotation to a class or
+--     character (verb phrase).
 [1818] = "认领循环",
 -- 2b1bc965 English: Could not adopt this record: %s
+-- %s #1: %s #1: why the record cannot be adopted, a short code, e.g. "missing-archival-body" (shown as-is)
 [1819] = "无法认领此记录：%s",
 -- 041c7071 English: More than one rotation is named %s. Select its Class or This character entry in
 --     the rotation browser.
+-- %s #1: %s #1: the rotation name the player typed, e.g. "Frost AoE"
 [1820] = "有多个循环名为 %s。请在循环浏览器中选择其“职业”或“此角色”条目。",
 -- 71ddae9f English: The fallback rotation is unavailable. Open Rotations to complete or recover it.
 [1821] = "后备循环不可用。请打开“循环”以完成或恢复它。",
@@ -4143,6 +6299,7 @@ addon.translation = {
 -- d5cade7e English: Stock
 [1826] = "原版",
 -- 9286002a English: Questie
+-- Context: Name of the addon "Questie" shown in the Integrations settings list; stays unchanged.
 [1827] = "Questie",
 -- 6dff3b3c English: Waiting for Questie.
 [1828] = "正在等待 Questie。",
@@ -4157,10 +6314,16 @@ addon.translation = {
 -- a414f778 English: Questie adapter unavailable.
 [1833] = "Questie 适配器不可用。",
 -- a0b302b0 English: Questie version: %s (%s)
+-- %s #1: %s #1: the Questie version, e.g. "9.7.1"
+-- %s #2: %s #2: how well it is tested, "source-tested" or "unverified" (translated), e.g. "unverified"
 [1834] = "Questie 版本：%s（%s）",
 -- 97b7e2db English: unverified
+-- Context: Qualifier in the Questie version line, shown in parentheses after the version: the
+--     version has not been checked against Rotation Master's tests (lowercase).
 [1835] = "未验证",
 -- 0d6aeafd English: Client family: %s (%s)
+-- %s #1: %s #1: the game client family, e.g. "Classic Era"
+-- %s #2: %s #2: the compatibility status, "declared; unverified" or "unsupported" (translated), e.g. "unsupported"
 [1836] = "客户端系列：%s（%s）",
 -- ff3a37e2 English: declared; unverified
 [1837] = "已声明；未验证",
@@ -4173,61 +6336,110 @@ addon.translation = {
 --     preference. No background polling is used.
 [1840] = "Questie 是可选的，默认禁用。“应用”会保存此配置文件偏好。不会使用后台轮询。",
 -- f0486ac1 English: Refresh Questie status
+-- Context: Button in the Questie integration part of Integrations settings: checks again whether
+--     Questie is loaded and connected (verb phrase).
 [1841] = "刷新 Questie 状态",
 -- ee7e05e5 English: Supported addons
+-- Context: Heading above the list of supported addons in Integrations settings.
 [1842] = "受支持的插件",
 -- 2fc99337 English: Loaded; integration not connected.
 [1843] = "已加载；集成未连接。",
 -- 5b205b7f English: %s (version %s)
+-- Context: Addon name followed by its version in the Integrations list; first %s is the addon name,
+--     second %s its version.
+-- %s #1: %s #1: the name of the add-on integration, e.g. "Questie"
+-- %s #2: %s #2: its version, e.g. "9.7.1"
 [1844] = "%s（版本 %s）",
 -- bad4af6a English: Supported addons are listed even when missing. Loaded addons are only marked
 --     connected when their integration is available.
 [1845] = "受支持的插件即使未安装也会列出。已加载的插件只有在其集成可用时才会标记为已连接。",
 -- 11b28c68 English: ExtendedCharacterStats
+-- Context: Name of the addon "ExtendedCharacterStats" shown in the Integrations settings list;
+--     stays unchanged.
 [1846] = "ExtendedCharacterStats",
 -- cbc21d63 English: LuaWorkbench
+-- Context: Name of the addon "LuaWorkbench" (an external Lua editor) shown in the Integrations
+--     settings list; stays unchanged.
 [1847] = "LuaWorkbench",
 -- 696b160a English: ElvUI
+-- Context: Name of the action bar addon "ElvUI" shown in the Integrations settings list; stays
+--     unchanged.
 [1848] = "ElvUI",
 -- fc95169b English: Bartender4
+-- Context: Name of the action bar addon "Bartender4" shown in the Integrations settings list; stays
+--     unchanged.
 [1849] = "Bartender4",
 -- 73198132 English: ButtonForge
+-- Context: Name of the action bar addon "ButtonForge" shown in the Integrations settings list;
+--     stays unchanged.
 [1850] = "ButtonForge",
 -- 42fa5fc0 English: LUI
+-- Context: Name of the addon "LUI" (interface suite with action bars) shown in the Integrations
+--     settings list; stays unchanged.
 [1851] = "LUI",
 -- efc3965e English: Dominos
+-- Context: Name of the action bar addon "Dominos" shown in the Integrations settings list; stays
+--     unchanged.
 [1852] = "Dominos",
 -- 14548eff English: AzeriteUI
+-- Context: Name of the addon "AzeriteUI" (interface suite with action bars) shown in the
+--     Integrations settings list; stays unchanged.
 [1853] = "AzeriteUI",
 -- 7c811de6 English: FarmingBar
+-- Context: Name of the addon "FarmingBar" shown in the Integrations settings list; stays unchanged.
 [1854] = "FarmingBar",
 -- e866b4e8 English: TotemTimers
+-- Context: Name of the addon "TotemTimers" shown in the Integrations settings list; stays
+--     unchanged.
 [1855] = "TotemTimers",
 -- 06c879f3 English: AzeriteUI6
+-- Context: Name of the addon "AzeriteUI6" shown in the Integrations settings list; stays unchanged.
 [1856] = "AzeriteUI6",
 -- 5bd55adb English: BigWigs
+-- Context: Name of the boss-mod addon "BigWigs" shown in the Integrations settings list; stays
+--     unchanged.
 [1857] = "BigWigs",
 -- 1c91d8be English: Boss mods
+-- Context: Group heading in Integrations settings for boss-mod addons (BigWigs, DBM) that supply
+--     encounter timers; also a help topic title.
 [1858] = "首领模块",
 -- c5eddceb English: Top panels
+-- Context: Group heading in Integrations settings for addons that show panels at the top of the
+--     screen (Titan Panel); also a help topic title.
 [1859] = "顶部面板",
 -- 22965568 English: Connected
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded and connected
+--     to Rotation Master.
 [1860] = "已连接",
 -- 8777e3a9 English: Incompatible
+-- Context: Status text of an addon row in the Integrations list: the addon is loaded but its
+--     version cannot be used with Rotation Master.
 [1861] = "不兼容",
 -- 56178c4b English: Loaded; connection not confirmed.
 [1862] = "已加载；连接未确认。",
 -- 3c586673 English: Capture casts (30s)
+-- Context: Button text in General settings that starts a 30-second spell cast recording; also a
+--     help topic title.
 [1863] = "采集施法（30秒）",
 -- b90c2cce English: Cast report
+-- Context: Label of the button/report in General settings that shows the finished cast recording;
+--     also a help topic title.
 [1864] = "施法报告",
 -- 548d9c5c English: Stop CPU capture
+-- Context: Button text in General settings, shown while the CPU recording is running: stops it
+--     (verb phrase).
 [1865] = "停止 CPU 采集",
 -- 5ba35474 English: Stop runtime capture
+-- Context: Button text in General settings, shown while the runtime recording is running: stops it
+--     (verb phrase).
 [1866] = "停止运行时采集",
 -- 0f122dcf English: Stop cast capture
+-- Context: Button text in General settings, shown while the cast recording is running: stops it
+--     (verb phrase).
 [1867] = "停止施法采集",
 -- ba691ba0 English: unavailable
+-- Context: Status word in the performance and analytics reports where a value could not be read
+--     (lowercase, fits in running text).
 [1868] = "不可用",
 -- a43f31c1 English: Apply changes the editor used the next time a source editor opens. Enable an
 --     editor before selecting it.
@@ -4240,22 +6452,29 @@ addon.translation = {
 -- 78a6a8fe English: Built in
 [1872] = "内置",
 -- f85577f0 English: Description / status
+-- Context: Column heading in the Integrations table: what the integration does and its state.
 [1873] = "描述 / 状态",
 -- d9494bd4 English: Editor options
 [1874] = "编辑器选项",
 -- b9c3bfb3 English: Enable / Select
+-- Context: Column heading in the Integrations table over the checkbox or button that turns an
+--     integration on or lets the user choose it.
 [1875] = "启用 / 选择",
 -- 1ce31af1 English: Lua editors
 [1876] = "Lua 编辑器",
 -- 4207e3fc English: None (plain editor)
+-- Context: Option in the Lua editor mode choice: no special editor, just the plain text box.
 [1877] = "无（纯文本编辑器）",
 -- c935b9fd English: Shared editor settings.
 [1878] = "共享编辑器设置。",
 -- bea3f386 English: Editor settings
+-- Context: Heading above the Lua editor options in Integrations settings.
 [1879] = "编辑器设置",
 -- 332b0b0a English: Enable built-in syntax highlighting
 [1880] = "启用内置语法高亮",
 -- a1aa075c English: Syntax highlighting
+-- Context: Checkbox in Integrations settings (Lua editor section): turn on color highlighting of
+--     Lua syntax; also a help topic title.
 [1881] = "语法高亮",
 -- dc3bae06 English: Addon release pages
 [1882] = "插件发布页面",
@@ -4263,18 +6482,24 @@ addon.translation = {
 --     client may be unverified.
 [1883] = "发布者的列表描述的是发布的可用情况；在此客户端上的集成行为可能未经验证。",
 -- 839b59a4 English: Copy %s
+-- %s #1: %s #1: what is copied, e.g. "Rotation"
 [1884] = "复制 %s",
 -- 6377056a English: Release links checked: 2026-10-20.
 [1885] = "发布链接检查日期：2026-10-20。",
 -- 06a1145d English: CurseForge — LUI Classic
 [1886] = "CurseForge — LUI Classic",
 -- 26330782 English: Copy link %d
+-- %d #1: %d #1: the number of the link, counting from 1, e.g. 2
 [1887] = "复制链接 %d",
 -- 382bc741 English: Preview appearance
+-- Context: Group heading in Integrations settings for the options that affect how the preview
+--     window looks (Masque skins).
 [1888] = "预览外观",
 -- 71e7edd7 English: Skin preview buttons with Masque
 [1889] = "使用 Masque 为预览按钮换肤",
 -- 0e769600 English: History
+-- Context: Heading in General settings above the three sliders that set how many seconds of spell,
+--     combat and damage history are remembered.
 [1890] = "历史",
 -- 46811e29 English: Bypass observation cache
 [1891] = "绕过观测缓存",
@@ -4283,64 +6508,101 @@ addon.translation = {
 -- 6b6e2380 English: Bypass observation cache (pending)
 [1893] = "绕过观测缓存（待生效）",
 -- 1fc91201 English: Skin
+-- Context: Label of the Masque skin dropdown in General settings for the preview buttons; also a
+--     help topic title.
 [1894] = "皮肤",
 -- f24d3294 English: Blizzard Classic
+-- Context: Name of the built-in default button skin choice in the Masque skin dropdown (no Masque
+--     skin applied).
 [1895] = "暴雪经典",
 -- a41fff13 English: Preview skin is unavailable.
 [1896] = "预览皮肤不可用。",
 -- 8f31d7c7 English: Sample icon
+-- Context: Tooltip of the example icon shown in the preview window.
 [1897] = "示例图标",
 -- a87bca24 English: Saved manual choice is unavailable in the current context.
 [1898] = "已保存的手动选择在当前上下文中不可用。",
 -- f51aa35f English: Edit announcement conditions
+-- Context: Tooltip of the button in an announcement output that opens the editor for the conditions
+--     deciding when it is announced (verb phrase).
 [1899] = "编辑通报条件",
 -- 90b95311 English: Announcement conditions
+-- Context: Title of the announcement conditions editor window and a help topic title; noun phrase.
 [1900] = "通报条件",
 -- b291861f English: Spell recipient
+-- Context: Unit choice in the condition editor when editing announcements: the person the spell is
+--     cast on.
 [1901] = "法术对象",
 -- 6edf74a9 English: {unit} {{!is|is not}} in a raid
 [1902] = "{unit}{{!在|不在}}团队中",
 -- 60f5f5ce English: Announcement target
+-- Context: Unit choice in the condition editor when editing announcement conditions: the target
+--     named in the announcement; also a label in condition summaries.
 [1903] = "通报目标",
 -- fe664929 English: Is Dead or Ghost
 [1904] = "已死亡或处于灵魂状态",
 -- b2bdc8d6 English: Is Friendly
+-- Context: Condition type title: the unit is friendly. Also an icon name in the icon picker.
 [1905] = "是友方",
 -- 12062b75 English: {unit} {{!is dead or a ghost|is alive}}
 [1906] = "{unit}{{!已死亡或处于灵魂状态|仍然存活}}",
 -- c1454135 English: Workbench Help
+-- Context: Fallback title of the help window opened without a topic.
 [1907] = "工作台帮助",
 -- 3db65f8c English: Navigation
+-- Context: Help section title in the workbench window help: how to move around the window.
 [1908] = "导航",
 -- 293d404a English: Destination
+-- Context: Help section title in the profile import/export dialog: where the imported profile will
+--     be placed.
 [1909] = "目标",
 -- e5f16b07 English: Via Macro
+-- Context: Event text substituted for {{event}} in macro-driven announcements: the announcement was
+--     triggered by a macro.
 [1910] = "通过宏",
 -- 79c3596b English: Via Script/Macro
+-- Context: Announcement type dropdown entry: the announcement is triggered from a macro or script
+--     call, not by casting; also a help topic title.
 [1911] = "通过脚本/宏",
 -- 73210659 English: Use a unique Via Script/Macro identifier.
 [1912] = "请使用唯一的“通过脚本/宏”标识符。",
 -- 41714d2c English: Whisper
+-- Context: Announcement channel dropdown entry: sends the message as a whisper to a player.
 [1913] = "密语",
 -- 02e363ed English: Use supplied macro target ({{target}})
 [1914] = "使用宏提供的目标（{{target}}）",
 -- 6ce2aa2e English: Macro call: %s
+-- %s #1: %s #1: the macro command that calls the announcement, e.g. "/run RM_Annouce("FOO","mouseover",nil)"
 [1915] = "宏调用：%s",
 -- 5a435552 English: Announcement Condition
+-- Context: Checkbox in the custom condition source pane (and its help title): offers this condition
+--     type when editing announcement conditions.
 [1916] = "通报条件",
 -- 028cd1c8 English: Announcement
+-- Context: Entry in the Conditions settings category filter that lists conditions available for
+--     announcements.
 [1917] = "通报",
 -- d763075f English: Show this condition in the announcement condition editor.
 [1918] = "在通报条件编辑器中显示此条件。",
 -- e7ce9976 English: Outputs
+-- Context: Heading for the list of outputs of an announcement (each output sends one message); also
+--     a help topic title and a comparison row.
 [1919] = "输出",
 -- 1a3f4334 English: Output %d
+-- Context: Name of one announcement output in the list, numbered; %d is the position (1, 2, ...).
+-- %d #1: %d #1: the number of the announcement output, counting from 1, e.g. 2
 [1920] = "输出 %d",
 -- cafb5358 English: Output state
+-- Context: Tooltip of the enable checkbox of an announcement output: tells whether the output is on
+--     or off.
 [1921] = "输出状态",
 -- 1674ce8b English: Add output
+-- Context: Button in the announcement editor: adds another output message to the announcement (verb
+--     phrase).
 [1922] = "添加输出",
 -- ce4683e7 English: Channel
+-- Context: Announcement output type dropdown entry: send to a numbered chat channel; also a help
+--     topic title and a comparison row.
 [1923] = "频道",
 -- 32c16791 English: Complete this output or choose a destination available for this action type.
 [1924] = "请完成此输出，或选择一个适用于此动作类型的目标。",
@@ -4351,8 +6613,10 @@ addon.translation = {
 -- 19489a96 English: {unit} {{!are dead or a ghost|are alive}}
 [1927] = "{unit}{{!已死亡或处于灵魂状态|仍然存活}}",
 -- bb52ff6b English: %s {{!are|are not}} an enemy
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1928] = "%s{{!是|不是}}敌人",
 -- 5a04bf0d English: %s {{!are|are not}} attackable
+-- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 [1929] = "%s{{!可以|不可}}被攻击",
 -- a551fec4 English: {unit} {{!are|are not}} in a raid
 [1930] = "{unit}{{!在|不在}}团队中",
@@ -4365,10 +6629,16 @@ addon.translation = {
 -- 64f6064c English: Group membership option is invalid.
 [1934] = "队伍成员身份选项无效。",
 -- e18851d3 English: For %s
+-- Context: Part of a condition description: appended after a dash and followed by the subject, e.g.
+--     "For Fireball"; %s is the subject name.
+-- %s #1: %s #1: the unit the condition applies to, e.g. "your target"
 [1935] = "针对 %s",
 -- 610c1d8d English: Saved settings
+-- Context: Label in a condition description, followed by a list of saved field values.
 [1936] = "已保存的设置",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue, WoW
+--     Forever (variant key: DPS).
 [1937] = "近战 DPS",
 -- f8f8f256 English: Melee damage for every Rogue specialization from level 1 to 60, built from Icy
 --     Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister
@@ -4405,6 +6675,8 @@ addon.translation = {
 --     one, or raise its priority.
 [1942] = "Wowhead 的敏锐：每次起手都用预谋和绞喉，并在循环中使用消失（随后伺机待发），在上一次绞喉结束后再次以绞喉起手。保持切割，组队时使用破甲，割裂作为五连击点终结技，出血是唯一的攒点技能。这会把你的逃生技能消失用于输出：请谨慎选择。它在以敏锐为主要天赋树、已点出卑鄙手段且已学会预谋时适用。毒药和冷却技能提醒与推荐的内置循环相同。它是推荐的潜行者 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Restoration).
 [1943] = "恢复",
 -- d54e5a0a English: Healing once Restoration is your main talent tree with 16 points (Mana Tide
 --     Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use
@@ -4417,6 +6689,8 @@ addon.translation = {
 --     group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf.
 [1944] = "当恢复是你的主要天赋树且已点出 16 点（法力之潮图腾所在层）后的治疗，依据 Icy Veins。友方目标时：使用自然迅捷后的瞬发治疗波，消毒术和祛病术，对没有激流的目标使用激流，组队时使用治疗链，治疗波。通过选中目标来决定治疗谁；在永久服上生命值和法力值对插件隐藏，因此何时使用自然迅捷和次级治疗波由你自己决定。目标为敌对且无人需要治疗时：怪群使用火焰新星和闪电链，若学会风暴打击则使用风暴打击和地震术，对精英和首领使用烈焰震击，闪电箭，然后近战。提醒：水之护盾、地震术打断、法力之潮图腾和队伍增益图腾。由你自己掌控：降级施法、其他图腾、净化术和幽魂之狼。",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Elemental).
 [1945] = "元素",
 -- 2fcd0801 English: Ranged Elemental once Elemental is your main talent tree with 21 points (Lava
 --     Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid
@@ -4429,6 +6703,10 @@ addon.translation = {
 --     Left to you: Earthbind kiting, Frost Shock, Purge and other totems.
 [1946] = "当元素是你的主要天赋树且已点出 21 点（熔岩爆裂所在层）后的远程元素，依据 Icy Veins（在此之前，由增强内置循环执行所有指南都推荐的近战混合打法）。以闪电箭拉怪（怪群时用闪电链），移动时只施放瞬发法术，三个或更多敌人时使用火焰新星和闪电链，保持烈焰震击，熔岩爆裂冷却完毕即用，若学会风暴打击则使用风暴打击和地震术，组队时节能施法触发则使用火焰新星，然后是闪电箭。提醒：护盾、武器灌注、灼热图腾或熔岩图腾、队伍图腾、元素掌握、打断。在永久服上生命值和法力值对插件隐藏，因此治疗自己和停下来回复法力值由你自己决定。由你自己掌控：地缚图腾放风筝、冰霜震击、净化术和其他图腾。",
 -- d580a703 English: Enhancement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1947] = "增强（Icy Veins）",
 -- 339ec7e4 English: Melee Enhancement from level 1 to 60, and the default for any Shaman before
 --     Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on
@@ -4443,6 +6721,10 @@ addon.translation = {
 --     totems.
 [1948] = "增强近战，适用于 1 至 60 级，也是学会熔岩爆裂或法力之潮图腾之前所有萨满祭司的默认循环。从远处用闪电箭拉怪，然后风暴打击冷却完毕即用，漩涡武器叠满五层时施放瞬发闪电箭，三个或更多敌人时使用火焰新星（需已放下火焰图腾）和烈焰震击，在风暴打击减益效果期间使用地震术，组队时使用烈焰震击，以及地震术冷却完毕即用；目标不在攻击范围内时用闪电箭填补空档。在永久服上生命值和法力值对插件隐藏，因此治疗自己和停下来回复法力值由你自己决定（Wowhead 内置循环则改为节省法力）。提醒：武器灌注（风怒武器，否则火舌武器，再否则石化武器）、水之护盾或闪电之盾、地震术打断、灼热图腾或熔岩图腾、队伍图腾、先知之怒、石爪图腾。由你自己掌控：图腾预设、冰霜震击、净化术和其他图腾。",
 -- eb2363b2 English: Enhancement, mana-efficient (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     WoW Forever (variant key: Enhancement / Wowhead). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1949] = "增强，节省法力（Wowhead）",
 -- abc72f43 English: Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work,
 --     Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in
@@ -4452,6 +6734,8 @@ addon.translation = {
 --     premade, off by default: enable it and disable that one, or raise its priority.
 [1950] = "Wowhead 和 Mobalytics 的节省法力增强：主要靠自动攻击输出，仅在强化风暴打击的法力回复效果不在时使用风暴打击，循环中不使用地震术（震击术用于拉怪和打断），组队或面对怪群时使用灼热图腾，并在冷却完毕时使用火焰新星。武器灌注、护盾和打断提醒与 Icy Veins 内置循环相同。如果你法力值不够用，请选择它而不是那个内置循环。它是推荐的增强内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 7e8fd1de English: All trees
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS).
 [1951] = "所有天赋树",
 -- 157e4fa1 English: Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead
 --     and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate
@@ -4480,6 +6764,10 @@ addon.translation = {
 --     raise its priority.
 [1954] = "Icy Veins 的术士升级打法：魔杖是单刷时的填充，虚空行者是默认恶魔，痛苦和毁灭会牺牲恶魔并在没有恶魔的情况下作战（分别从 41 级和 55 级起），恶魔学识保持恶魔印记，并且只把献祭作为填充，毁灭在学会烧尽后，会对怪群中最耐打的敌人施放浩劫灾祸，并在冷却完毕时使用燃烧。如果你遵循 Icy Veins，请选择它而不是推荐的术士内置循环。在永久服上生命值、法力值和死亡倒计时对插件隐藏，因此受伤时的吸取生命、生命分流以及哪些目标能存活足够久来吃持续伤害，都由你自己决定。它是推荐的术士 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- b9f016be English: All trees (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     WoW Forever (variant key: DPS / Wowhead). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1955] = "所有天赋树（Wowhead）",
 -- 02cc5c3e English: Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the
 --     Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight;
@@ -4492,6 +6780,10 @@ addon.translation = {
 --     that one, or raise its priority.
 [1956] = "Wowhead 的 30 级术士：痛苦和恶魔学识带着魅魔进行吸血坦打法（腐蚀术和痛苦灾祸，不用献祭，然后在剩余战斗中使用吸取生命；永久服中生命值和法力值是隐藏的，因此生命分流由你自己决定），恶魔学识保持恶魔印记，且只对高血量目标施放痛苦灾祸，毁灭对每个怪物施放痛苦灾祸、腐蚀术和献祭，在献祭结束前使用燃烧，把暗影灼烧留作最后一击，并带着虚空行者使用魔杖。诅咒增幅每次冷却完毕即用；元素诅咒和末日灾祸仅用于精英和首领；没有怪群部分。Wowhead 的指南只写到 30 级。它是推荐的术士 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 80b938a1 English: Protection (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1957] = "防护（Icy Veins）",
 -- 95bdeac5 English: Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to
 --     pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies
@@ -4539,6 +6831,8 @@ addon.translation = {
 --     enable it and disable that one, or raise its priority.
 [1964] = "Warcraft Tavern 用于小队和团队的始终倾泻怒气列表：先叠五层破甲攻击，目标低于 20% 时斩杀优先于一切，压制，学会嗜血前使用撕裂，致死打击，嗜血，旋风斩，穿刺打击冷却完毕即用，选了强化猛击后使用猛击；只要负担得起就使用英勇打击或顺劈斩（永久服中怒气是隐藏的，因此没有 60 怒气的阈值，也没有怒气有余时的断筋），鲁莽冷却完毕即用并同时使用死亡之愿。如果你在小队中游戏，不需要在两次拉怪之间保留怒气，请选择它而不是 Icy Veins 内置循环。它是推荐的近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Balance).
 [1965] = "平衡",
 -- fdac9d3d English: Balance from level 1 to 60, and the default for any Forever Druid no other
 --     premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while
@@ -4575,6 +6869,8 @@ addon.translation = {
 --     are your call. Taunts, interrupts and positioning stay with you.
 [1970] = "猎豹和熊合并为一个内置循环，按你的形态选择；当野性成为你的主要天赋树（或已点出 11 点），或你变为猎豹或熊形态时，就由它接管。猎豹：潜伏状态下使用毁灭或撕碎，精灵之火，四个连击点时使用撕扯，撕扯生效后使用凶猛撕咬，扫击，然后在目标未面对你时使用撕碎（否则使用爪击）。熊：远距离使用精灵之火和野性冲锋，组队或面对两个敌人时使用挫志咆哮，原始撕咬，三个或更多敌人时使用挥击，割伤，挥击。人形态下会建议猎豹形态（学会猎豹前为熊形态）。提醒：熊形态下负担得起时就使用槌击、狂怒、大规模拉怪或面对精英时的狂暴、单刷时的激活、野性印记、荆棘术。在永久服上生命值、能量、怒气和法力值对插件隐藏，因此能量转换、狂暴回复和治疗自己由你自己决定。嘲讽、打断和站位由你自己掌控。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid, WoW
+--     Forever (variant key: Restoration).
 [1971] = "恢复",
 -- 2bcf6375 English: Group healing after Warcraft Tavern, once Restoration is your main talent tree
 --     with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild
@@ -4595,6 +6891,10 @@ addon.translation = {
 --     and hostile-target list as the Restoration premade.
 [1974] = "Icy Veins 的持续治疗优先治疗法，是推荐的恢复内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。对你的友方目标：回春术，缺失时使用愈合，仅在两个持续治疗效果都生效时使用治疗之触，对带持续治疗的目标使用迅捷治愈，然后是野性成长（永久服中生命值是隐藏的，因此由你选中的目标决定治疗谁）。激活冷却完毕即用。其余提醒和敌对目标列表与恢复内置循环相同。",
 -- 8335d07b English: Ranged (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Ranged). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1975] = "远程（Wowhead）",
 -- 5c5cdd9b English: Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and
 --     Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper
@@ -4610,6 +6910,10 @@ addon.translation = {
 --     so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours.
 [1976] = "适用于 1 至 60 级的所有远程猎人（野兽控制、射击，以及学会陆行鸟踢击之前的生存），也是永久服猎人的默认循环。拉怪：猎人印记、疾速杀戮持续期间使用狙击、自动射击。然后是你自己的毒蛇钉刺，在共用冷却中两次召唤雄鹰和一次奥术射击（学会召唤雄鹰之前奥术射击冷却完毕即用），疾速杀戮期间或对精英使用狙击，瞄准射击。两个或更多敌人与你交战时：用多重射击代替瞄准射击，附近有三个敌人时使用爆炸陷阱，五个时使用乱射。移动时：只使用瞬发射击。近战范围内的怪物会吃到猛禽一击和猫鼬撕咬。提醒：雄鹰守护（学会前为灵猴守护）、强击光环、召唤和复活宠物、急速射击、对精英或在地下城中使用狂野怒火和血性狂暴、怪物贴身时使用胁迫。宠物指令、喂食、放风筝和假死由你自己掌控；如果你使用独来独往，请禁用宠物提醒。它从不读取你的法力值或任何人的生命值，因为永久服对插件隐藏这些数据，所以猎人印记和毒蛇钉刺会施加在每个目标上，治疗宠物由你自己掌控。",
 -- a82fce4f English: Ranged, mana-saving (Mobalytics)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: RangedMobalytics). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [1977] = "远程，节省法力（Mobalytics）",
 -- 530b5b4d English: Mobalytics' mana-saving leveling style, an alternative to the recommended
 --     Wowhead ranged premade, off by default: enable it and disable that one, or raise its
@@ -4619,6 +6923,10 @@ addon.translation = {
 --     as the Wowhead premade.
 [1978] = "Mobalytics 的节省法力升级打法，是推荐的 Wowhead 远程内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。保持你自己的毒蛇钉刺，保持一只召唤出的雄鹰，瞄准射击（两个或更多敌人时用多重射击），学会召唤雄鹰后不再使用奥术射击；对血量充足的目标召唤第二只雄鹰这一项被省略了，因为永久服隐藏目标生命值。拉怪、近战、移动和提醒与 Wowhead 内置循环相同。",
 -- 5f8e7ecc English: Survival melee (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     WoW Forever (variant key: Survival). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1979] = "生存近战（Wowhead）",
 -- 8da10e55 English: Dual-wield melee Survival once Survival is your main talent tree with 21
 --     points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise).
@@ -4639,6 +6947,8 @@ addon.translation = {
 --     moving; RM follows your range.
 [1982] = "Wowhead 针对双手武器生存猎人的进出穿插打法，是推荐的生存近战内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。近战时：猫鼬撕咬和猛禽一击；当猛禽一击还需 2.5 秒以上才就绪时，使用陆行鸟踢击并退出近战。不在近战时：毒蛇钉刺、奥术射击、瞄准射击和自动射击，直到猛禽一击即将就绪，然后回到近战。移动由你来做；RM 会跟随你的距离。",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Frost).
 [1983] = "冰霜",
 -- 115d3d5e English: Frost from level 1 to 60, and the Forever Mage default before talent spells
 --     (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of
@@ -4654,6 +6964,8 @@ addon.translation = {
 --     stay with you too.
 [1984] = "冰霜，适用于 1 至 60 级，也是永久服法师在学会天赋法术前的默认循环（4 级学会寒冰箭之前为火球术）。以寒冰箭拉怪；然后在寒冰指触发或目标被冻结时使用冰枪术（寒冰箭仍在施放时也可使用，以取消或合并施法），深冬之寒叠满五层时使用冰锥术，飞弹连射触发时使用奥术飞弹，寒冰箭，单刷且负担不起寒冰箭时使用魔杖。移动时：冰枪术，否则火焰冲击。三个或更多敌人与你交战时：冰锥术；五个或更多时：暴风雪，或在有怪物贴身时使用魔爆术。包含 Warcraft Tavern 的烈焰风暴和魔爆术范围伤害打法，但默认关闭。提醒：奥术智慧、护甲（单刷用冰甲术或霜甲术，组队用魔甲术，绝不替换你已选择的护甲）、寒冰护体、法术反制、解除次级诅咒、怪物贴身时的冰霜新星、急速冷却。在永久服上生命值和法力值对插件隐藏，因此用火焰冲击收掉低血量目标、唤醒和寒冰屏障由你自己决定；闪现术、放风筝、变形术和法力宝石也由你自己掌控。",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Fire).
 [1985] = "火焰",
 -- 0f5f59f3 English: Fire once Fire is your main talent tree with 11 points (Pyroblast's tier).
 --     Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three
@@ -4675,6 +6987,8 @@ addon.translation = {
 --     premade, without Combustion and Presence of Mind.
 [1988] = "Icy Veins 不点强化灼烧的火焰升级天赋配置，是推荐的火焰内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。以炎爆术拉怪，用火焰冲击消耗火焰余波，怪物靠近时使用灼烧（永久服隐藏目标生命值，因此对低血量目标的收尾由你自己决定），然后是霜火之箭（40 级起）或火球术。范围伤害、移动、魔杖和提醒与火焰内置循环相同，但不含燃烧和气定神闲。",
 -- 93006d61 English: Arcane
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, WoW
+--     Forever (variant key: Arcane).
 [1989] = "奥术",
 -- c17e7c93 English: Arcane once Arcane is your main talent tree with 11 points and you know Arcane
 --     Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile
@@ -4687,6 +7001,8 @@ addon.translation = {
 --     longer waits for half your mana), plus the Mage upkeep reminders.
 [1990] = "当奥术是你的主要天赋树且已点出 11 点并学会奥术冲击后的奥术。单刷时以寒冰箭拉怪，组队时以奥术冲击拉怪；然后飞弹连射触发时使用奥术飞弹，节能施法时使用奥术冲击，奥术冲击叠满三层时使用奥术愤怒，在负担得起时（永久服中法力值是隐藏的）对精英叠加奥术冲击至四层、对其他目标叠加至两层，然后用霜火之箭、寒冰箭或火球术来触发飞弹连射，单刷且负担不起法术时使用魔杖。没有奥术愤怒时（较早的测试版设计）由火焰冲击消耗层数。移动时：火焰冲击。三个或更多敌人与你交战时：魔爆术。提醒：对精英使用气定神闲和奥术强化（奥术强化不再等待你的法力值降到一半），以及法师的常规维护提醒。",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Retribution).
 [1991] = "惩戒",
 -- 4d5c0907 English: Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin
 --     default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged
@@ -4701,6 +7017,10 @@ addon.translation = {
 --     from level-30 beta guides.
 [1992] = "适用于 1 至 60 级的惩戒及所有近战圣骑士，也是永久服圣骑士的默认循环。保持一个伤害圣印，仅在即将消失时刷新：对精英目标审判一次十字军圣印，然后使用慢速（3.0 秒）武器时用命令圣印，否则用正义圣印。然后神圣打击冷却完毕即用，震击骑（Shockadin）使用神圣震击和圣光守望，对亡灵和恶魔使用驱邪术，三个或更多敌人时使用奉献，可施放时使用愤怒之锤，以及近战。审判不受公共冷却影响，因此只要有圣印，它就作为提醒出现。其他提醒：你的光环和祝福（学会后为惩罚光环和王者祝福；会保留你自己选择的）。默认关闭的可选步骤：命令圣印审判前使用制裁之锤。在永久服上法力值、生命值和挥击计时对插件隐藏，因此节省法力、治疗自己、圣疗术和圣光扭转圣印切换由你自己决定。基于 30 级测试版指南制作。",
 -- 2ba64aad English: Protection (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Protection). Names in parentheses (guide or tool such as Icy Veins,
+--     Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and
+--     stay unchanged.
 [1993] = "防护（Wowhead）",
 -- 65aad40e English: Tanking, once Protection is your main talent tree or you turn on Righteous
 --     Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt),
@@ -4720,6 +7040,8 @@ addon.translation = {
 --     Undead and Demons. Same tank reminders otherwise.
 [1996] = "Icy Veins 的坦克打法，是推荐的 Wowhead 防护内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。只要负担得起就优先奉献，单个敌人时也一样；审判留作嘲讽使用（没有冷却完毕即用的提醒），用迅捷审判重置它；然后是神圣打击，对亡灵和恶魔使用驱邪术。其余坦克提醒相同。",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     WoW Forever (variant key: Holy).
 [1997] = "神圣",
 -- 23d8ec27 English: Group healing once Holy is your main talent tree with 21 points (Holy Shock's
 --     tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current
@@ -4777,6 +7099,9 @@ addon.translation = {
 --     Discipline healer before Penance (20–29) selects it by hand.
 [2006] = "当戒律或神圣是你的主要天赋树且你未学会暗影形态后的团队治疗。治疗你当前的友方目标：拉怪前使用真言术：盾、愈合祷言和恢复；驱散魔法以及驱除疾病或祛病术；愈合祷言；神圣意志触发时使用神圣新星；苦修；缺失时使用恢复；治疗术（之前为次级治疗术）。目标为敌人时：暗言术：痛、神圣之火、苦修、惩击、魔杖。提醒：心灵之火、真言术：韧、神圣之灵、对其他玩家使用能量灌注、战斗中的心灵专注和种族法术。在永久服上生命值和法力值对插件隐藏，因此你选中的目标是判断谁需要治疗的唯一依据；紧急治疗、治疗祷言、联结治疗、强效治疗术和快速治疗、绝望祷言以及黑暗献祭由你自己决定。治疗谁和法术等级由你决定；学会苦修前的戒律治疗者（20–29 级）需要手动选择它。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Blood). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2007] = "暴雪战斗辅助",
 -- d2ca4d91 English: Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4801,6 +7126,10 @@ addon.translation = {
 --     Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders.
 [2010] = "仅供参考，默认关闭：指南中的鲜血优先级。在至暗之夜的战斗中，你的增益效果和目标的减益效果对插件隐藏，因此读取它们的步骤在战斗中会等待；可以阅读它，或复制后自行试验。生命值和符文能量在正式服中是隐藏的，因此只要负担得起就会使用灵界打击。以死神的抚摩拉怪。灵界打击；白骨之盾缺失、少于五层、即将结束或破灭生效时使用精髓分裂（不在近战范围时改用死神的抚摩）；萨莱因之赐期间，灵界打击，使用一次血液沸腾，赤色天灾触发时使用枯萎凋零，以及心脏打击；赤色天灾触发或面对四个敌人时使用枯萎凋零；吸血鬼打击；吞噬；沸点触发、血之疫病缺失或充能已满时使用血液沸腾；心脏打击。提醒：亡者复生、吸血鬼之血、死神印记、在死神印记之后使用符文刃舞，以及战斗辅助内置循环中的功能性提醒。",
 -- 2b5ecbd1 English: Deathbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: BloodSimc). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2011] = "死亡使者参考（SimulationCraft）",
 -- 8ed0754d English: Reference only, off by default: SimulationCraft's Deathbringer list, which
 --     spends runic power on Death Strike for damage. Hidden combat data keeps it from running in
@@ -4811,6 +7140,9 @@ addon.translation = {
 --     and the utility reminders.
 [2012] = "仅供参考，默认关闭：SimulationCraft 的死亡使者列表，会把符文能量花在灵界打击上来造成伤害。战斗数据被隐藏，因此它无法在至暗之夜的战斗中运行，而且符文能量在正式服中是隐藏的，所以没有溢出上限时的消耗。枯萎凋零未生效时随时使用，死神印记，破灭生效时使用精髓分裂，符文不足时用死神的抚摩维持白骨之盾（否则使用精髓分裂），灵界打击，血液沸腾，符文刃舞之外使用吞噬，心脏打击。提醒：亡者复生、符文刃舞、吸血鬼之血以及功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2013] = "暴雪战斗辅助",
 -- 9750dd93 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4832,6 +7164,11 @@ addon.translation = {
 --     Dead, Empower Rune Weapon at two charges, plus the utility reminders.
 [2016] = "仅供参考，默认关闭：指南中的冰霜优先级。杀戮机器、白霜和锋锐之霜在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；符文能量在正式服中是隐藏的，所以没有溢出上限检查。拥有两层杀戮机器，或一层杀戮机器且有三个符文时使用湮灭，有破碎之刃时在锋锐之霜叠满五层时使用冰霜打击，白霜触发时使用凛风冲击，杀戮机器触发时使用湮灭，冰霜打击，湮灭；三个或更多敌人时换用冰霜之镰和冰川突进；不在近战范围时使用凛风冲击。提醒：冷酷严冬、冰霜之柱、在冰霜之柱期间使用冰龙吐息和冰霜巨龙之怒、死神印记、亡者复生、在两层充能时使用符文武器增效，以及功能性提醒。",
 -- 0d4e8b80 English: Reference (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: FrostWowhead). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2017] = "参考（Wowhead）",
 -- 6899840b English: Reference only, off by default: Wowhead's Frost order, which puts its cooldowns
 --     in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is
@@ -4842,6 +7179,9 @@ addon.translation = {
 --     enemies swap in Frostscythe and Glacial Advance.
 [2018] = "仅供参考，默认关闭：Wowhead 的冰霜施放顺序，把冷却技能也排进了循环。战斗数据被隐藏，因此它无法在至暗之夜的战斗中运行；符文能量在正式服中是隐藏的，所以没有溢出上限检查。两层充能时使用符文武器增效，死神印记，冰霜之柱，冰龙吐息，冰霜巨龙之怒；然后拥有两层杀戮机器，或一层杀戮机器且破灭生效时使用湮灭，白霜触发时使用凛风冲击，杀戮机器触发时使用湮灭，使用符文武器增效获得新的杀戮机器，冰霜打击，湮灭，凛风冲击。三个或更多敌人时换用冰霜之镰和冰川突进。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Unholy). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2019] = "暴雪战斗辅助",
 -- c11d2249 English: Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -4863,6 +7203,11 @@ addon.translation = {
 --     your plagues are missing, plus the utility reminders.
 [2022] = "仅供参考，默认关闭：指南中的邪恶优先级。触发效果和疫病在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；符文能量和目标的生命值在正式服中是隐藏的，所以斩杀阶段和萨莱因的符文能量消耗被省略了。没有食尸鬼时使用亡者复生；使用脓疮毒镰保持其疫病带来的急速；割魂索命触发时使用灵魂收割；黑暗突变期间使用腐化；末日突降或禁断知识触发时使用凋零缠绕（四个或更多敌人时改用扩散）；没有次级食尸鬼充能时使用脓疮打击，有充能时使用天灾打击；凋零缠绕。提醒：亡者大军、黑暗突变、疫病缺失时使用爆发，以及功能性提醒。",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: UnholySimc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2023] = "参考（SimulationCraft）",
 -- 100d5361 English: Reference only, off by default: SimulationCraft's Unholy list, which spends
 --     Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic
@@ -4875,6 +7220,9 @@ addon.translation = {
 --     Transformation.
 [2024] = "仅供参考，默认关闭：SimulationCraft 的邪恶列表，使用凋零缠绕的频率要高得多。战斗数据被隐藏，因此它无法在至暗之夜的战斗中运行；符文能量和目标生命值在正式服中是隐藏的，所以上限检查和斩杀检查被省略了。维持脓疮毒镰，黑暗突变期间使用灵魂收割，末日突降触发时使用凋零缠绕，黑暗突变期间使用腐化，黑暗突变或禁断知识期间，以及亡者大军还有 5 秒以上才就绪时使用凋零缠绕，有次级食尸鬼充能时使用天灾打击，脓疮打击。三个或更多敌人时：用扩散代替凋零缠绕，次级食尸鬼充能少于三层时使用脓疮打击。提醒：爆发、对成群敌人使用枯萎凋零、亡者大军、黑暗突变。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2025] = "暴雪战斗辅助",
 -- 16bdde1a English: Recommended before you choose a specialization (while the game reports the
 --     Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4884,6 +7232,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2026] = "推荐在你选择专精之前使用（此时游戏报告的是死亡骑士的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有死亡骑士内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Havoc). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2027] = "暴雪战斗辅助",
 -- c4a310af English: Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -4907,6 +7258,9 @@ addon.translation = {
 --     Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur.
 [2030] = "仅供参考，默认关闭：指南中的浩劫优先级。在至暗之夜的战斗中，你的触发效果、恶魔变形和精华破碎对插件隐藏，因此这个列表无法在战斗中运行；可以阅读它，或复制后自行试验。怒气在正式服中是隐藏的，所以邪能之刃不会等待怒气空间。奥达奇收割者：撕裂猛击和战刃乱舞都未生效时使用收割者战刃，撕裂猛击生效时使用混乱打击。邪痕枭雄：恶魔变形期间使用精华破碎、刃舞和混乱打击。然后在精华破碎期间使用刃舞和混乱打击，两层充能时使用献祭光环，眼棱，使用邪能之刃触发冲撞惯性，眼棱还有 4 秒以上才就绪时使用精华破碎，刃舞，面对两个敌人时使用献祭光环，混乱打击，邪能之刃，献祭光环，投掷利刃，邪能冲撞。提醒：眼棱和刃舞都用完后使用恶魔变形、恶魔追击、复仇回避，以及瓦解和疾影。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Vengeance). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2031] = "暴雪战斗辅助",
 -- ad54981d English: Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4930,6 +7284,11 @@ addon.translation = {
 --     Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur.
 [2034] = "仅供参考，默认关闭：Wowhead 的复仇施放顺序，并采用 Icy Veins 的英雄天赋目标。你的增益效果在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；怒气在正式服中是隐藏的，所以消耗技能只等待自身的消耗，攒怒气的技能也不会避免溢出。奥达奇收割者：收割者战刃，撕裂猛击生效时使用破裂，战刃乱舞生效时使用灵魂裂劈。然后充能已满时使用破裂，三个或更多敌人时使用幽魂炸弹，献祭光环，烈焰咒符，单体时使用灵魂裂劈，邪能毁灭，灵魂裂劈，破裂，邪能之刃，投掷利刃。Rotation Master 无法计算灵魂残片的数量，因此幽魂炸弹按敌人数量判断。提醒：恶魔尖刺未生效时使用恶魔尖刺、恶魔变形、烈火烙印、怨念咒符、灵魂切削（两层充能时的地狱火撞击提醒为关闭状态），以及瓦解和疾影。",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: VengeanceSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2035] = "参考（SimulationCraft）",
 -- d4f52cf1 English: Reference only, off by default: SimulationCraft's Vengeance lists. Hidden
 --     combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its
@@ -4942,6 +7301,9 @@ addon.translation = {
 --     Demon Spikes, Disrupt, Blur.
 [2036] = "仅供参考，默认关闭：SimulationCraft 的复仇列表。战斗数据被隐藏，因此它无法在至暗之夜的战斗中运行；怒气在正式服中是隐藏的，所以其怒气阈值被省略了。奥达奇收割者：先使用烈焰咒符和献祭光环，恶魔变形，配合邪能之刃的收割者战刃循环，烈火烙印，怨念咒符，对成群敌人使用幽魂炸弹，猛烈的死亡期间使用灵魂切削，然后是破裂、灵魂裂劈、邪能之刃、邪能毁灭。歼灭者：虚落就绪时用幽魂炸弹或灵魂裂劈消耗它，虚落达到两层时使用破裂，恶魔变形，幽魂炸弹，怨念咒符，充能已满时使用破裂，献祭光环，烈焰咒符，破裂，灵魂裂劈，邪能之刃，投掷利刃。提醒：恶魔尖刺、瓦解、疾影。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Devourer). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2037] = "暴雪战斗辅助",
 -- ca03d1af English: Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -4952,6 +7314,11 @@ addon.translation = {
 --     Retail, so when to use Blur is your call.
 [2038] = "推荐噬灭专精使用。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导虚空射线时它会等待。同时提醒战斗辅助留给你处理的部分：战斗中一旦就绪就使用的虚空变形、恶魔追击和虚空之刃、对可打断的施法使用瓦解，以及战斗中一就绪就使用的疾影。敌人的施法在战斗中是隐藏的，因此瓦解只在游戏显示它们的场合亮起；生命值在正式服中是隐藏的，因此何时使用疾影由你自己决定。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerGuide). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2039] = "参考（Icy Veins）",
 -- 5da6da74 English: Reference only, off by default: Icy Veins' Annihilator priority. Most of your
 --     buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so
@@ -4963,6 +7330,11 @@ addon.translation = {
 --     cooldown. Reminders: Disrupt and Blur.
 [2040] = "仅供参考，默认关闭：Icy Veins 的歼灭者优先级。你的大部分增益效果在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；怒气在正式服中是隐藏的，所以虚空射线只等待自身的消耗。虚空变形之外：灵魂爆发触发时使用吞噬，收割，灵魂献祭未在燃烧时使用灵魂献祭，虚空变形就绪后使用虚空之刃和恶魔追击，虚空变形，饥渴斩击，虚空射线，吞噬。虚空变形期间：灵魂爆发触发时使用吞噬，虚空射线，如果你有虚痕枭雄的打击技能就使用它们，坍缩之星，剔除，吞噬，灵魂献祭。Rotation Master 无法计算灵魂残片的数量，因此收割和剔除冷却好就用。提醒：瓦解和疾影。",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: DevourerSimc). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2041] = "参考（SimulationCraft）",
 -- 0228846e English: Reference only, off by default: SimulationCraft's Annihilator list, which
 --     enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in
@@ -4973,6 +7345,9 @@ addon.translation = {
 --     Devour. Reminders: Disrupt and Blur.
 [2042] = "仅供参考，默认关闭：SimulationCraft 的歼灭者列表，虚空变形一就绪就进入。战斗数据被隐藏，因此它无法在至暗之夜的战斗中运行。变形之外：敌人不超过三个且虚空变形已蓄满时，配合吞噬者之咬使用虚空之刃，虚空变形，灵魂爆发触发时使用吞噬，收割，虚空射线，对成群敌人使用灵魂献祭，吞噬。变形期间：单体时灵魂爆发触发则使用吞噬，配合吞噬者之咬使用恶魔追击和虚空之刃，对成群敌人使用虚空射线，坍缩之星，剔除，虚空射线，灵魂献祭，吞噬。提醒：瓦解和疾影。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Demon
+--     Hunter, Retail (current expansion) (variant key: Initial). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2043] = "暴雪战斗辅助",
 -- a6d0d810 English: Recommended before you choose a specialization (while the game reports the
 --     Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat
@@ -4982,6 +7357,9 @@ addon.translation = {
 --     specialization's premades take over.
 [2044] = "推荐在你选择专精之前使用（此时游戏报告的是恶魔猎手的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有恶魔猎手内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Balance). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2045] = "暴雪战斗辅助",
 -- 3941b2ad English: Recommended for Balance. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5006,6 +7384,9 @@ addon.translation = {
 --     Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders.
 [2048] = "仅供参考，默认关闭：指南中的平衡优先级。在至暗之夜的战斗中，你的持续伤害效果、日蚀和触发效果对插件隐藏，因此它无法在战斗中运行；可以阅读它，或复制后自行试验。星界能量在正式服中是隐藏的，所以星涌术按其消耗施放，而不是在溢出之前施放。以枭兽形态和愤怒拉怪。阳炎术和月火术缺失或即将消失时补上；两种日蚀都未生效时触发日蚀（三个或更多敌人时触发月蚀，否则触发日蚀）；织星者的经纱、浩瀚之触触发或面对成群敌人时使用星辰坠落；织星者的纬纱或浩瀚之触触发时使用星涌术；新月、半月和满月；日蚀期间使用野性蘑菇；只要负担得起就使用星涌术；月蚀期间或面对成群敌人时使用星火术，否则使用愤怒。提醒：超凡之盟或化身、在日蚀之前使用艾露恩之怒和自然之力、超凡之盟期间使用万灵之召、日光术，以及功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Feral). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2049] = "暴雪战斗辅助",
 -- e3e320b6 English: Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5029,6 +7410,9 @@ addon.translation = {
 --     Instincts, plus the utility reminders. Snapshotting is left to you.
 [2052] = "仅供参考，默认关闭：指南中的野性优先级。流血效果和触发效果在至暗之夜的战斗中是隐藏的（连击点数不是），因此它无法在战斗中运行；能量在正式服中是隐藏的。以猎豹形态、潜行和斜掠开场。啃噬；顶级捕食者的渴望触发时使用凶猛撕咬；五个连击点数时：两个或更多敌人使用原始之怒，割裂缺失或只剩最后几秒时使用割裂，否则使用凶猛撕咬，宁可等待能量也不要攒超过五点；不足五点时：斜掠缺失或即将消失时使用斜掠，月之灵的月火术，三个或更多敌人时使用横扫，撕碎。提醒：猛虎之怒战斗中一就绪就使用、猛虎之怒期间使用狂暴或化身以及野性狂乱或怒意狂乱（连击点数不超过两点时）、猛虎之怒和狂暴期间且割裂生效时使用万灵之召、迎头痛击、生存本能，以及功能性提醒。流血效果的快照时机仍由你自己掌控。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Guardian). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2053] = "暴雪战斗辅助",
 -- 2a16fe9b English: Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5051,6 +7435,10 @@ addon.translation = {
 --     Bash, plus the utility reminders.
 [2056] = "仅供参考，默认关闭：指南中的守护优先级。减益效果和触发效果在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；怒气和生命值在正式服中是隐藏的，所以怒气达到 80 时的摧折和重殴消耗由你自己掌控。痛击和裂伤冷却好就用，单体时使用赤红之月，月火术缺失或星河守护者触发时使用月火术，横扫。战斗中一就绪就使用的提醒：铁鬃、狂暴回复、生存本能；拉怪间隙的熊形态；狂暴或化身、明月普照、万灵之召、野性之心、迎头痛击，以及功能性提醒。",
 -- beb78fe5 English: Defensive reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: GuardianSimc). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2057] = "防御型参考（SimulationCraft）",
 -- f0f6bfc8 English: Reference only, off by default: SimulationCraft's Guardian list, which spends
 --     rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage
@@ -5073,6 +7461,9 @@ addon.translation = {
 --     racial cooldown whenever they are ready in combat, Mark of the Wild between pulls.
 [2060] = "推荐恢复专精使用。选中敌人时，它会高亮暴雪战斗辅助的建议，也就是暴雪为恢复专精设计的猎豹形态或人形态伤害列表。否则，它会对你的友方目标（或你自己）建议 Icy Veins 的维持性施法：生命绽放、战斗中使用百花齐放、对带有回春术的目标使用迅捷治愈、组队战斗中使用野性成长、节能施法触发或丰饶达到五层时使用愈合、缺失时使用回春术。生命值和法力值在正式服中是隐藏的，因此这些建议依据你选中的目标，而不是依据谁受伤有多重；在至暗之夜的战斗中，你的持续治疗效果是隐藏的，因此读取它们的步骤在战斗中会等待。治疗谁以及所有治疗冷却技能都由你决定。提醒：战斗中一就绪就使用的激活、树皮术和你的种族冷却技能，拉怪间隙的野性印记。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2061] = "暴雪战斗辅助",
 -- 65160bfe English: Recommended before you choose a specialization (while the game reports the
 --     Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5082,6 +7473,9 @@ addon.translation = {
 --     premades take over.
 [2062] = "推荐在你选择专精之前使用（此时游戏报告的是德鲁伊的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有德鲁伊内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Devastation). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2063] = "暴雪战斗辅助",
 -- 4950c9f2 English: Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5107,6 +7501,9 @@ addon.translation = {
 --     Breath ready, Deep Breath for Scalecommander, plus the utility reminders.
 [2066] = "仅供参考，默认关闭：最优的湮灭优先级。触发效果、冷却和目标身上的燃烧效果在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；可以阅读它，或复制后自行试验。以活化烈焰拉怪。鳞长（已学会群体裂解）：永恒之涌，火焰吐息，两个或更多敌人时使用深呼吸，有群体裂解充能时使用裂解，五个或更多敌人时使用葬火，裂解，有飞扑烈焰时在燃尽触发时使用活化烈焰，精华迸发少于两层时使用释缚烈焰，碧蓝横扫。塑焰者：永恒之涌，火焰吐息的燃烧效果缺失或即将结束时使用火焰吐息，五个或更多敌人时使用葬火，裂解，四个或更多敌人时使用深呼吸，释缚烈焰，有飞扑烈焰时在燃尽触发时使用活化烈焰，碧蓝横扫。然后移动中使用碧蓝打击，活化烈焰，碧蓝打击。单体时蓄力法术使用 1 级（Icy Veins）。提醒：狂龙之怒、在狂龙之怒期间或火焰吐息就绪时使用扭转天平、鳞长使用深呼吸，以及功能性提醒。",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Augmentation). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2067] = "Icy Veins",
 -- 02c50a1b English: Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one
 --     of the few buffs the game still shows addons in Midnight combat, so its upkeep works there.
@@ -5120,6 +7517,9 @@ addon.translation = {
 --     is up to you.
 [2068] = "推荐增辉专精使用：Icy Veins 的黑檀之力优先级。黑檀之力是至暗之夜战斗中游戏仍向插件显示的少数增益效果之一，因此在战斗中也能维持它。脱战时：对没有炽火龙鳞的友方队伍目标施放炽火龙鳞，对敌人使用活化烈焰。然后黑檀之力缺失或剩余不足 4 秒时使用黑檀之力，除非亘古吐息已就绪，否则冷却好就用；先知先觉；火焰吐息；地壳激变；黑檀之力期间或有两层精华迸发时使用喷发；碧蓝打击；活化烈焰。被隐藏的增益效果在战斗中只会跳过它们各自的步骤。提醒：亘古吐息和深呼吸（由你瞄准）、火焰吐息就绪时使用扭转天平、火焰吐息和地壳激变都在冷却时使用时间跳跃，以及功能性提醒。先知先觉和炽火龙鳞会施放在你的目标上：选择哪位盟友以及蓄力等级都由你决定。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: AugmentationAssisted). This one follows Blizzard's
+--     Assisted Combat suggestion.
 [2069] = "暴雪战斗辅助",
 -- 9442cdce English: Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the
 --     recommended Icy Veins Augmentation premade, off by default: enable it and disable that one,
@@ -5129,6 +7529,11 @@ addon.translation = {
 --     Magic as in the other Evoker premades.
 [2070] = "暴雪战斗辅助对增辉的建议，是推荐的 Icy Veins 增辉内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。它只会在黑檀之力消失后才重新施放，并在你施法或按住蓄力法术时等待。战斗中提醒亘古吐息、深呼吸、扭转天平和时间跳跃，以及与其他唤魔师内置循环相同的镇压、黑曜鳞片、青铜龙的祝福和魔力之源。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Preservation). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2071] = "参考（Icy Veins）",
 -- 21ab41c4 English: Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and
 --     every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom
@@ -5139,6 +7544,9 @@ addon.translation = {
 --     premades. Healing stays with you.
 [2072] = "仅供参考，默认关闭。在至暗之夜的战斗中，盟友的生命值、回响、逆转、精华迸发和所有冷却都对插件隐藏，Rotation Master 无法决定治疗谁，而暴雪也没有为治疗者提供战斗辅助循环，因此这个内置循环不会进行治疗。它会在脱战时提醒你青铜龙的祝福和魔力之源；当你的目标是敌人时，它会建议伤害技能：火焰吐息、裂解、活化烈焰，以及移动中使用碧蓝打击。镇压和黑曜鳞片的提醒与其他唤魔师内置循环相同。治疗仍由你自己掌控。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Evoker,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2073] = "暴雪战斗辅助",
 -- 63133e23 English: Recommended before you choose a specialization (while the game reports the
 --     Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5148,6 +7556,9 @@ addon.translation = {
 --     premades take over.
 [2074] = "推荐在你选择专精之前使用（此时游戏报告的是唤魔师的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有唤魔师内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: BeastMastery). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2075] = "暴雪战斗辅助",
 -- c71902c5 English: Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5172,6 +7583,9 @@ addon.translation = {
 --     reminders.
 [2078] = "仅供参考，默认关闭：优化后的野兽控制优先级。在至暗之夜的战斗中，充能、冷却和触发效果对插件隐藏，因此它无法在战斗中运行；可以阅读它，或复制后自行试验。正式服上集中值是隐藏的。拉怪前召唤宠物并用猎人印记标记目标。狂野怒火即将就绪前或倒刺射击充能将满前使用倒刺射击；狂野怒火；猎群领袖之嚎或自然之友触发时使用杀戮命令，狂野怒火离就绪还早时也可随意使用；眼镜蛇利牙触发时使用眼镜蛇射击；眼镜蛇射击；集中值不足以施放眼镜蛇射击时使用倒刺射击。黑暗游侠：凋零射击期间使用黑蚀箭，凋零射击结束时使用哀恸箭。三个或更多敌人（有野兽顺劈时为两个）：使用狂野鞭笞触发野兽顺劈，然后在其持续期间使用杀戮命令、倒刺射击和眼镜蛇射击。提醒：血溅十方以及战斗辅助内置循环中的功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Marksmanship). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2079] = "暴雪战斗辅助",
 -- 494a0bb6 English: Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5196,6 +7610,9 @@ addon.translation = {
 --     Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you.
 [2082] = "仅供参考，默认关闭：优化后的射击优先级，会在下一次瞄准射击前用掉弹无虚发。触发效果和充能在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；正式服上集中值是隐藏的，因此省略了面对成群敌人时 70 集中值的多重射击。标记目标并以瞄准射击开场。哨兵：爆炸射击，乱射，百发百中，在窗口期结束前使用月光战轮，百发百中期间没有弹无虚发时使用瞄准射击，急速射击，夺命射击，弹无虚发触发时使用多重射击（有多头蛇守护时两个敌人即可）或奥术射击，瞄准射击，月光战轮，稳固射击。黑暗游侠：弹无虚发触发时优先使用黑蚀箭，荷枪实弹期间不使用爆炸射击，瞄准射击充能溢出前使用瞄准射击，哀恸箭。三个或更多敌人且有技巧射击时：爆炸射击，乱射，使用多重射击触发技巧射击，百发百中，然后在其持续期间使用急速射击和瞄准射击。为了叠满 30 层正中靶心或面对未标记的目标而使用百发百中的时机仍由你自己掌控。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Survival). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2083] = "暴雪战斗辅助",
 -- fc59d6b9 English: Recommended for Survival. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5207,6 +7624,11 @@ addon.translation = {
 --     included) is your call.
 [2084] = "推荐生存专精使用。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议（它会自行召唤宠物）；你施法或引导时它会等待。同时提醒战斗辅助留给你处理的部分：战斗中的狩魂一击和你的种族冷却技能、对可打断的施法使用压制，以及战斗中一就绪就使用的优胜劣汰。敌人的施法在战斗中是隐藏的，因此打断提醒只在游戏显示它们的场合亮起；生命值在正式服中是隐藏的，因此何时使用你的防御技能（包括意气风发和灵龟守护）由你自己决定。",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: SurvivalGuide). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2085] = "参考（SimulationCraft）",
 -- 1b766914 English: Reference only, off by default: SimulationCraft's Survival priority, where Kill
 --     Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike
@@ -5220,6 +7642,9 @@ addon.translation = {
 --     the utility reminders.
 [2086] = "仅供参考，默认关闭：SimulationCraft 的生存优先级：杀戮命令积累利矛之刃，狩魂一击、爆裂火铳、野火炸弹和猛禽一击消耗它。利矛之刃和充能在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行。召唤宠物，用猎人印记标记目标，并以野火炸弹开场。哨兵：没有利矛之刃时使用杀戮命令，爆裂火铳，哨兵印记触发时使用野火炸弹，狩魂一击就绪前先使用杀戮命令，狩魂一击，月光战轮，猛禽一击，然后是杀戮命令、野火炸弹和狩魂一击。猎群领袖：猎群领袖之嚎触发时使用杀戮命令，然后在有利矛之刃时使用狩魂一击、野火炸弹、爆裂火铳和猛禽一击。三个或更多敌人时：在狩魂一击之前使用爆裂火铳和野火炸弹，猛禽横扫。提醒：不在近战范围时使用雄鹰守护以及功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2087] = "暴雪战斗辅助",
 -- ea9140e9 English: Recommended before you choose a specialization (while the game reports the
 --     Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5229,6 +7654,9 @@ addon.translation = {
 --     premades take over.
 [2088] = "推荐在你选择专精之前使用（此时游戏报告的是猎人的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有猎人内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Arcane). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2089] = "暴雪战斗辅助",
 -- 074da909 English: Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat;
@@ -5256,6 +7684,9 @@ addon.translation = {
 --     the Assisted premade's reminders.
 [2092] = "仅供参考，默认关闭：指南中的奥术优先级。在至暗之夜的战斗中，奥术齐射和节能施法对插件隐藏（只有奥术充能仍然可见），因此它无法在战斗中运行；法力值在正式服中是隐藏的，所以低法力时的唤醒由你自己决定；可以阅读它，或复制后自行试验。以奥术冲击拉怪。日怒：奥术齐射低于 12 层且节能施法触发时使用奥术飞弹，奥术之魂之外使用棱彩飞弹，四层奥术充能且奥术齐射达到 12 层并有节能施法或奥术齐射达到 25 层时，或奥术之魂期间无论充能多少，使用奥术弹幕，棱彩飞弹，奥术充能少于三层时使用奥术宝珠，面对三个敌人或没有奥术充能时使用奥术脉冲，奥术冲击。疾咒师（已学会裂解巫术）：棱彩飞弹，面对成群敌人时使用奥术宝珠，奥术齐射达到 20 层时使用奥术弹幕（面对两个或更多敌人时仅在四层奥术充能时使用），奥术齐射低于 15 层且节能施法触发时使用奥术飞弹，奥术充能少于三层时使用奥术宝珠和奥术脉冲（奥术涌动期间不用奥术脉冲），奥术冲击。无法施放奥术冲击时使用奥术弹幕。提醒：奥术涌动、在奥术涌动期间或离奥术涌动还早时，于奥术弹幕或棱彩飞弹之后使用大法师之触、没有奥术充能时在奥术弹幕之后使用气定神闲，以及战斗辅助内置循环中的提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Fire). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2093] = "暴雪战斗辅助",
 -- 42f4c6c3 English: Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5277,6 +7708,9 @@ addon.translation = {
 --     Waiting for Firestarter and timing Meteor into Combustion stay with you.
 [2096] = "仅供参考，默认关闭：指南中的火焰优先级。炽热连击、热力迸发、火焰冲撞和火焰冲击的充能在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行。在施法即将完成时使用火焰冲击，把热力迸发转为炽热连击；以炎爆术拉怪。过热高温触发时使用炎爆术（四个或更多敌人时改用烈焰风暴），流星，炽热连击触发时使用炎爆术，燃烧期间热力迸发触发时使用火焰冲击，火焰冲撞触发时使用炎爆术，热能闪光触发或移动中使用灼烧，热力迸发触发时使用火焰冲击，然后是霜火之箭或火球术。提醒：读条法术即将完成时使用燃烧、烈焰护体以及功能性提醒。等待纵火者阶段结束，以及让流星落在燃烧期间的时机仍由你自己掌控。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Frost). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2097] = "暴雪战斗辅助",
 -- 4d8c78c6 English: Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests
 --     next, the one rotation advice the game still lets an addon read in Midnight combat; it waits
@@ -5303,6 +7737,9 @@ addon.translation = {
 --     utility reminders.
 [2100] = "仅供参考，默认关闭：指南中针对各英雄天赋的冰霜优先级。触发效果、冻结层数和冷却在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行。以霜火之箭或寒冰箭拉怪。霜火（已学会霜火之箭）：冰川尖刺就绪即用，一到两个敌人时使用彗星风暴，冰冷智慧触发且没有热能真空时使用冰风暴，两层寒冰指时使用冰枪术，冰霜射线，寒冰宝珠，三个敌人且冰冻之雨触发时使用暴风雪，有热能真空时寒冰指触发或冻结达到十二层时使用冰枪术，冰风暴，五个敌人时使用寒冰新星或冰锥术，然后是冰川尖刺或霜火之箭。疾咒师：彗星风暴，冰冷智慧触发时使用冰风暴，两层寒冰指时使用冰枪术，寒冰宝珠，冰川尖刺就绪即用，冰冻之雨触发时使用暴风雪，寒冰指触发或冻结达到六层时使用冰枪术，冰霜射线，冰风暴，四个敌人时使用寒冰新星或冰锥术，七个敌人时使用暴风雪，然后是冰川尖刺或寒冰箭。移动中使用冰枪术。提醒：召唤水元素、寒冰护体以及功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2101] = "暴雪战斗辅助",
 -- f9d1d4a4 English: Recommended before you choose a specialization (while the game reports the
 --     Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5325,6 +7762,11 @@ addon.translation = {
 --     Brew is your call.
 [2104] = "推荐酒仙专精使用。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。战斗辅助不会使用任何酒类技能，因此按照 Icy Veins 的建议，酒类技能以提醒的形式显示在它旁边：玄牛酒、玄牛下凡、活血酒、天神酒或天神灌注以及轮回之触会在战斗中一旦就绪就亮起（Rotation Master 目前还无法读取醉拳，因此醉拳有多重仍由你判断）。另外还有对可打断的施法使用切喉手，以及战斗中一就绪就使用的壮胆酒和你的种族冷却技能；敌人的施法在战斗中是隐藏的，因此打断提醒只在游戏显示它们的场合亮起，生命值在正式服中是隐藏的，因此何时使用壮胆酒由你自己决定。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: BrewmasterGuide). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2105] = "参考（Icy Veins）",
 -- a07ba74a English: Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft
 --     agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so
@@ -5336,6 +7778,9 @@ addon.translation = {
 --     Brew or Infusion, Touch of Death, plus the utility reminders.
 [2106] = "仅供参考，默认关闭：Icy Veins 的酒仙优先级（SimulationCraft 的思路大体一致）。幻灭连击、空酒桶和充能在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行。以醉酿投拉怪。幻灭踢；真气爆裂（祥和宗师）；幻灭连击触发时使用猛虎掌；充能已满或有空酒桶时使用醉酿投；火焰之息；在爆炸酒桶之前使用碧玉疾风；真气爆裂（影踪派）；醉酿投；三个或更多敌人时使用碧玉疾风和神鹤引项踢；猛虎掌；移花接木。提醒：活血酒和天神酒都用完后使用玄牛酒、玄牛下凡、活血酒、天神酒或天神灌注、轮回之触以及功能性提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Windwalker). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2107] = "暴雪战斗辅助",
 -- ac8fdaae English: Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat
 --     suggests next, the one rotation advice the game still lets an addon read in Midnight combat
@@ -5361,6 +7806,11 @@ addon.translation = {
 --     fillers. Reminder: Touch of Karma, plus the utility reminders.
 [2110] = "仅供参考，默认关闭：Icy Veins 的天神御师优先级。每一步都会维持精通：组合拳（从不重复上一个施放的法术）；真气和你自己的施法仍可读取，但青龙之心、乾元之巅、幻灭踢！和赤精之舞在至暗之夜的战斗中是隐藏的，因此它无法在战斗中运行；能量在正式服中是隐藏的，所以能量溢出前的猛虎掌被省略了。白虎下凡还有 10 秒以上才就绪时使用升龙霸；真气不足或乾元之巅即将结束时使用乾元镇踏；没有青龙之心时使用天神御身；青龙之心即将结束时使用怒雷破；天神御身、白虎下凡、怒雷破、升龙霸、风领主之击；真气不够施放怒雷破时使用幻灭踢；疾风呼啸踢、旭日东升踢；有两层幻灭踢！充能或在乾元之巅期间使用幻灭踢；乾元之巅期间或赤精之舞触发时使用神鹤引项踢；轮回之触；猛虎掌、幻灭踢、切削之风作为填充。提醒：业报之触以及功能性提醒。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Mistweaver). A reference-only rotation built from
+--     the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2111] = "参考（Icy Veins）",
 -- 671bd99c English: Reference only, off by default. Blizzard offers no Assisted Combat list for
 --     healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks
@@ -5370,6 +7820,9 @@ addon.translation = {
 --     Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat.
 [2112] = "仅供参考，默认关闭。暴雪没有为治疗者提供战斗辅助列表，而且在至暗之夜的战斗中，盟友的生命值、复苏之雾的充能、法力茶的层数和触发效果都对插件隐藏，因此无法给出治疗建议；请自行选择治疗技能。对敌对目标时，它会建议踢疗的填充技能：旭日东升踢、幻灭踢和猛虎掌；对友方目标或没有目标时不建议任何技能。提醒：切喉手，以及战斗中一就绪就使用的壮胆酒和你的种族冷却技能。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2113] = "暴雪战斗辅助",
 -- 7799708b English: Recommended before you choose a specialization (while the game reports the
 --     Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5379,6 +7832,9 @@ addon.translation = {
 --     premades take over.
 [2114] = "推荐在你选择专精之前使用（此时游戏报告的是武僧的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有武僧内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2115] = "暴雪战斗辅助",
 -- d3e8f0e2 English: Recommended for Retribution in Midnight. In combat the game now hides buffs,
 --     debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5389,6 +7845,11 @@ addon.translation = {
 --     Trinkets and racials stay with you.
 [2116] = "推荐至暗之夜的惩戒专精使用。在战斗中，游戏现在会对插件隐藏增益效果、减益效果、冷却时间和生命值，因此它会在你的动作条上显示暴雪自己的战斗辅助建议（一键循环），并在你施法或没有选中敌人时停止。它还会提醒你那些建议从不涵盖的内容：拉怪间隙的光环、对可打断的施法使用责难，以及战斗中一就绪就使用的圣佑术。生命值在正式服中是隐藏的，因此何时使用圣佑术和圣疗术由你自己决定。饰品和种族技能仍由你自己掌控。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Retribution / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2117] = "参考（Icy Veins）",
 -- 66c84fb8 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably
@@ -5401,6 +7862,9 @@ addon.translation = {
 --     defensives.
 [2118] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序需要读取增益效果、充能和敌人数量，而至暗之夜会在战斗中隐藏这些信息，因此它无法在战斗中可靠运行。圣光之锤；神圣意志触发的免费神圣能量消耗技能；灰烬觉醒冷却期间神圣能量达到 5 点时使用消耗技能；灰烬觉醒；圣洁鸣钟；战争艺术触发时使用公正之剑；愤怒之锤充能溢出前使用愤怒之锤；神圣能量达到 3 点或以上时，两个或更多敌人（或有苍穹之力）时使用神圣风暴，否则使用最终审判；愤怒之锤；公正之剑；审判；圣殿骑士打击或十字军打击。神圣能量在战斗中仍然可见，因此这些消耗时机在战斗中有效。提醒：复仇之怒、灰烬觉醒就绪时使用处决宣判、光环、责难、防御技能。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2119] = "暴雪战斗辅助",
 -- 3e1487eb English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and
@@ -5410,6 +7874,11 @@ addon.translation = {
 --     Lay on Hands, is your call. Taunting and positioning stay with you.
 [2120] = "推荐至暗之夜的防护专精使用。显示暴雪的战斗辅助建议（已包含正义盾击、复仇之怒和戒卫），并在你施法或没有选中敌人时停止。提醒它未包含的内容：拉怪间隙的光环、对可打断的施法使用责难，以及战斗中一就绪就使用的炽热防御者和远古列王守卫。生命值在正式服中是隐藏的，因此何时使用它们以及圣疗术由你自己决定。嘲讽和站位仍由你自己掌控。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2121] = "参考（Icy Veins）",
 -- f169797b English: Reference only, off by default: the Icy Veins and SimulationCraft order needs
 --     the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat.
@@ -5427,6 +7896,9 @@ addon.translation = {
 --     Word of Glory below half health is left to you. Same reminders as the Icy Veins reference.
 [2124] = "仅供参考，默认关闭：Wowhead 的坦克施放顺序。审判冷却好就用，正义盾击，复仇者之盾，神圣能量为 0 时使用圣洁鸣钟，祝福之锤或正义之锤，奉献仅作为填充。生命值在正式服中是隐藏的，因此生命值低于一半时的荣耀圣令由你自己决定。提醒与 Icy Veins 参考循环相同。",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2125] = "Icy Veins",
 -- ce9bbe93 English: Holy in Midnight, for reference: Rotation Master picks a spell, not a target,
 --     and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns
@@ -5441,6 +7913,9 @@ addon.translation = {
 --     to you. Avenging Wrath and Aura Mastery are left to you.
 [2126] = "至暗之夜的神圣专精，仅供参考：Rotation Master 选择的是法术而不是目标，而且游戏在战斗中会隐藏所有人的生命值，因此它会针对你当前的目标让神圣能量和冷却技能持续运转，决定谁需要治疗则交给你。神圣能量在战斗中仍然可见，因此会优先在 5 点时消耗，并在你的其他治疗之后于 3 点或以上时消耗。友方目标：神圣能量达到 5 点时使用永恒之火或荣耀圣令，圣光灌注触发时使用圣光闪现，神圣震击，3 点或以上时使用永恒之火或荣耀圣令，圣光术，圣光闪现；黎明之光由你自己掌控。敌人：神圣能量达到 5 点时使用正义盾击，神圣震击，3 点或以上时使用正义盾击，审判，十字军打击，奉献。战斗中的提醒：圣洁鸣钟、神圣棱镜、神圣壁垒或圣洁武器、对友方目标使用美德道标、圣佑术；拉怪间隙的光环；责难。圣疗术由你自己掌控。复仇之怒和光环掌握由你自己掌控。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2127] = "暴雪战斗辅助",
 -- 4c581641 English: Recommended before you choose a specialization (while the game reports the
 --     Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5450,6 +7925,9 @@ addon.translation = {
 --     premades take over.
 [2128] = "推荐在你选择专精之前使用（此时游戏报告的是圣骑士的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有圣骑士内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2129] = "暴雪战斗辅助",
 -- e88d5282 English: Recommended for Shadow in Midnight. In combat the game now hides your DoTs,
 --     buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5461,6 +7939,11 @@ addon.translation = {
 --     call.
 [2130] = "推荐至暗之夜的暗影专精使用。在战斗中，游戏现在会对插件隐藏你的持续伤害效果、增益效果、冷却时间和生命值，因此它会显示暴雪自己的战斗辅助建议（一键循环，它会维持你的持续伤害效果、暗影形态和虚空形态，并让精神鞭笞引导完成），并在你施法或没有选中敌人时停止。提醒它未包含的内容：施放虚空形态后的 20 秒内使用能量灌注、拉怪间隙的暗影形态和真言术：韧、对可打断的施法使用沉默（只在游戏允许读取该施法的场合亮起）。生命值在正式服中是隐藏的，因此绝望祷言由你自己决定。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Shadow / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2131] = "参考（Icy Veins）",
 -- 1cbf9308 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are
@@ -5473,6 +7956,10 @@ addon.translation = {
 --     Voidform with both DoTs up, Power Infusion in Voidform.
 [2132] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序需要读取持续伤害效果的计时、疯狂和虚空形态，而至暗之夜会在战斗中隐藏它们；狂乱值和生命值在正式服中是隐藏的，所以狂乱值溢出前的暗言术：癫、暗言术：灭斩杀和绝望祷言由你自己决定。拉怪前使用吸血鬼之触；用触须猛击施加吸血鬼之触；吸血鬼之触和暗言术：痛在剩余最后 30% 时刷新；暗言术：癫即将结束或在虚空形态期间时使用暗言术：癫；疯狂期间使用虚空冲击；两层充能时使用触须猛击；虚空洪流；心灵震爆；触须猛击；疯狂期间使用精神鞭笞：狂；虚空齐射；移动中使用暗言术：灭和暗言术：痛；精神鞭笞，心灵震爆就绪时中断引导。提醒：光晕、两个持续伤害效果都生效时使用虚空形态、虚空形态期间使用能量灌注。",
 -- 6a76d2e3 English: Atonement (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Discipline). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2133] = "救赎（Icy Veins）",
 -- c8fa3896 English: Discipline in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5491,6 +7978,9 @@ addon.translation = {
 --     target. Same reminders as the Icy Veins premade.
 [2136] = "仅供参考，默认关闭：Wowhead 的第 1 赛季神谕者施放顺序，通过读取减益效果来维持暗言术：痛，而至暗之夜会在战斗中隐藏该减益效果。暗言术：痛，暗言术：灭冷却好就用，苦修，心灵震爆，惩击；友方目标时优先使用苦修。提醒与 Icy Veins 内置循环相同。",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Holy). The English is the guide site Icy Veins, a
+--     proper name that stays unchanged.
 [2137] = "Icy Veins",
 -- d7f52f6f English: Holy in Midnight, for reference: the game hides everyone's health in combat and
 --     Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending
@@ -5503,6 +7993,9 @@ addon.translation = {
 --     it is about to die is your call), Fortitude. Desperate Prayer is yours.
 [2138] = "至暗之夜的神圣专精，仅供参考：游戏在战斗中会隐藏所有人的生命值，而 Rotation Master 选择的是法术而不是目标，因此它会针对你当前的目标让圣言术、愈合祷言和触发效果持续运转，治疗分配则交给你。友方目标：圣言术：灵，圣言术：静，愈合祷言，圣光涌动触发时使用治疗祷言，祈福，织光者触发时使用治疗祷言，圣光涌动触发时使用快速治疗，在队伍中使用治疗祷言，移动中使用神圣新星，快速治疗。敌人：圣言术：罚，神圣之火，移动中使用神圣新星，惩击。提醒：战斗中的神圣化身、神圣赞美诗和光晕、对友方目标使用守护之魂（生命值在正式服中是隐藏的，因此目标是否即将死亡由你自己判断）、真言术：韧。绝望祷言由你自己决定。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2139] = "暴雪战斗辅助",
 -- 4b29903d English: Recommended before you choose a specialization (while the game reports the
 --     Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5512,6 +8005,9 @@ addon.translation = {
 --     premades take over.
 [2140] = "推荐在你选择专精之前使用（此时游戏报告的是牧师的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有牧师内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2141] = "暴雪战斗辅助",
 -- ea331596 English: Recommended for Assassination in Midnight. In combat the game now hides your
 --     bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own
@@ -5523,6 +8019,11 @@ addon.translation = {
 --     Crimson Vial is your call.
 [2142] = "推荐至暗之夜的奇袭专精使用。在战斗中，游戏现在会对插件隐藏你的流血效果、增益效果、能量、冷却时间和生命值，因此它会显示暴雪自己的战斗辅助建议（一键循环，它会处理潜行起手、锁喉、割裂、毒伤、死亡印记和君王之灾），并在你施法或没有选中敌人时停止。提醒它未包含的内容：拉怪间隙的一种致命药膏、一种非致命药膏和潜行、战斗中不在潜行状态时使用消失、对可打断的施法使用脚踢（只在游戏允许读取该施法的场合亮起）。生命值在正式服中是隐藏的，因此猩红之瓶由你自己决定。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Assassination / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2143] = "参考（Icy Veins）",
 -- 04026a9b English: Reference only, off by default: the Icy Veins and SimulationCraft order keeps
 --     bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its
@@ -5534,6 +8035,9 @@ addon.translation = {
 --     whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders.
 [2144] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序按计时维持流血效果，而至暗之夜会在战斗中隐藏这些信息；能量在正式服中是隐藏的，所以积攒能量被省略了。潜行中先使用锁喉，然后使用伏击。连击点数未满时在锁喉剩余最后 30% 时刷新锁喉，5 点以上连击点数时在割裂剩余最后 30% 时刷新割裂；5 点以上连击点数时使用致命一击或毒伤；不足 5 点时：三个或更多敌人使用猩红风暴，近处有两个或更多敌人时使用刀扇，伏击，毁伤。提醒：两种流血效果都生效时使用死亡印记、同时使用君王之灾、死亡印记就绪时使用消失、对带有死亡猎手标记的目标使用毒刃、战斗中蓟叶茶一就绪就使用，以及通用的毒药、潜行和脚踢提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2145] = "暴雪战斗辅助",
 -- bb9cc61b English: Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the
@@ -5543,6 +8047,11 @@ addon.translation = {
 --     with you: the game hides how many Roll the Bones buffs you have.
 [2146] = "推荐至暗之夜的狂徒专精使用。显示暴雪的战斗辅助建议（它会处理潜行起手、命运骨骰、剑刃乱舞、冲动、正中眉心和终结技），并在你施法或没有选中敌人时停止。提醒它未包含的内容：拉怪间隙的毒药和潜行、战斗中不在潜行状态时使用消失、脚踢。生命值在正式服中是隐藏的，因此猩红之瓶由你自己决定。时运继延仍由你自己掌控：游戏会隐藏你拥有几个命运骨骰增益效果。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Outlaw / IcyVeins). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2147] = "参考（Icy Veins）",
 -- 3a3eecef English: Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead
 --     order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in
@@ -5554,6 +8063,9 @@ addon.translation = {
 --     Blade Rush are all cooling. Keep It Rolling stays manual.
 [2148] = "仅供参考，默认关闭：Icy Veins、SimulationCraft 和 Wowhead 的施放顺序需要读取命运骨骰增益效果、可乘之机层数和能量，而至暗之夜会在战斗中隐藏它们。潜行中使用伏击。连击点数距离满值只差一点或已满时：正中眉心，影舞步，致命一击，斩击。否则胆大妄为触发时使用伏击，可乘之机达到六层时使用手枪射击（连击点数低时三层即可），伏击，影袭。提醒：没有骰子增益时使用命运骨骰、连击点数不超过两点时使用冲动、两个或更多敌人时保持剑刃乱舞、刀锋冲刺、冲动、正中眉心和刀锋冲刺都在冷却时使用伺机待发。时运继延需要手动使用。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2149] = "暴雪战斗辅助",
 -- 96f6f8ea English: Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance,
@@ -5562,6 +8074,11 @@ addon.translation = {
 --     cast. Health is hidden on Retail, so Crimson Vial is your call.
 [2150] = "推荐至暗之夜的敏锐专精使用。显示暴雪的战斗辅助建议（它会处理潜行起手、暗影之刃、赤喉之咬、暗影之舞、影分身和终结技），并在你施法或没有选中敌人时停止。提醒它未包含的内容：拉怪间隙的毒药和潜行、对可打断的施法使用脚踢。生命值在正式服中是隐藏的，因此猩红之瓶由你自己决定。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Subtlety / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2151] = "参考（Icy Veins）",
 -- 5fff6443 English: Reference only, off by default: the Icy Veins and SimulationCraft order holds
 --     Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which
@@ -5574,6 +8091,9 @@ addon.translation = {
 --     points.
 [2152] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序会为影分身保留暗影之舞，并需要读取暗影之舞、至黑之夜和能量，而至暗之夜会在战斗中隐藏它们。拉怪前处于潜行状态：暗影打击。连击点数距离满值只差一点或已满时：有至黑之夜时使用刺骨，暗影之舞期间使用影分身，致命一击，三个或更多敌人时使用黑火药，刺骨。否则使用暗影打击，两个或更多敌人时使用袖剑风暴，幽暗之刃或背刺。提醒：暗影之舞期间使用赤喉之咬、暗影之舞就绪时使用暗影之刃、影分身就绪或暗影之刃生效时，在连击点数不超过两点（或达到六点以上）时使用暗影之舞、不在潜行状态且连击点数不超过两点时使用消失。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2153] = "暴雪战斗辅助",
 -- 797e018d English: Recommended before you choose a specialization (while the game reports the
 --     Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5583,6 +8103,9 @@ addon.translation = {
 --     premades take over.
 [2154] = "推荐在你选择专精之前使用（此时游戏报告的是潜行者的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有潜行者内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2155] = "暴雪战斗辅助",
 -- 14b1a04b English: Recommended for Elemental in Midnight. In combat the game now hides Flame
 --     Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's
@@ -5594,6 +8117,11 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2156] = "推荐至暗之夜的元素专精使用。在战斗中，游戏现在会对插件隐藏烈焰震击、你的增益效果、漩涡、冷却时间和生命值，因此它会显示暴雪自己的战斗辅助建议（一键循环），并在你施法或没有选中敌人时停止。提醒它未包含的内容：战斗中的升腾、火元素或风暴元素以及自然迅捷、移动中使用灵魂行者的恩赐、拉怪间隙的闪电之盾和天怒（暴雪的建议会维持你的武器和护盾灌注）、对可打断的施法使用风剪（只在游戏允许读取该施法的场合亮起）、战斗中一就绪就使用的星界转移（生命值在正式服中是隐藏的，因此何时使用由你自己决定）。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Elemental / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2157] = "参考（Icy Veins）",
 -- 8fc57d38 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat;
@@ -5609,6 +8137,9 @@ addon.translation = {
 --     shared ones.
 [2158] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序需要读取烈焰震击、元素宗师和风暴守护者，而至暗之夜会在战斗中隐藏它们；漩涡在正式服中是隐藏的，所以消耗技能按其消耗施放，而不是在漩涡接近满值时施放。拉怪前使用风暴守护者和熔岩爆裂。面对三个或更多交战中的敌人时：风暴守护者，先祖迅捷，烈焰震击，风暴守护者生效时使用闪电链，元素冲击，地震术，熔岩奔腾触发时使用熔岩爆裂，狂风怒号，闪电链。否则：风暴守护者，先祖迅捷，元素宗师之外在剩余最后 30% 时刷新烈焰震击和流电炽焰，使用熔岩爆裂触发元素宗师，元素宗师期间使用狂风怒号和风暴守护者强化的闪电箭，元素宗师期间使用元素冲击或大地震击，流电炽焰，狂风怒号，移动中使用烈焰震击或冰霜震击，只要负担得起就使用元素冲击或大地震击，闪电箭。提醒：风暴守护者用掉后使用升腾、火元素或风暴元素、灵魂行者的恩赐，以及通用提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2159] = "暴雪战斗辅助",
 -- 2b518620 English: Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and
@@ -5617,6 +8148,10 @@ addon.translation = {
 --     pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift.
 [2160] = "推荐至暗之夜的增强专精使用。显示暴雪的战斗辅助建议（它会消耗漩涡武器、维持烈焰震击，并处理涌动图腾和裂地术），并在你施法或没有选中敌人时停止。提醒它未包含的内容：战斗中的升腾、毁灭之风和野性狼魂、拉怪间隙的闪电之盾和天怒（暴雪的建议会维持风怒武器）、风剪、星界转移。",
 -- 5c90fed4 English: Stormbringer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Stormbringer). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2161] = "风暴使者参考（SimulationCraft）",
 -- 4890c5e6 English: Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins
 --     and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers,
@@ -5630,6 +8165,10 @@ addon.translation = {
 --     and the shared ones.
 [2162] = "仅供参考，默认关闭：SimulationCraft 的风暴使者列表（Icy Veins 和 Wowhead 的看法一致）需要读取烈焰震击、毁灭闪电、鞭笞烈焰和冷却计时，而至暗之夜会在战斗中隐藏它们。面对三个或更多交战中的敌人时：为获得增益效果使用毁灭闪电，漩涡武器达到 10 层时使用狂风怒号，达到 9 层时使用闪电链，毁灭闪电，熔岩猛击，裂地术。然后漩涡武器达到 9 层时使用始源风暴，烈焰震击缺失时使用流电炽焰或烈焰震击，裂地术，为获得增益效果使用毁灭闪电，为鞭笞烈焰使用熔岩猛击，风切，达到 10 层时使用狂风怒号或闪电箭（流电炽焰或毁灭闪电即将就绪时为 8 层），两层充能时使用风暴打击，熔岩猛击，风暴打击，流电炽焰，毁灭闪电，达到 5 层时使用闪电箭，烈焰震击。提醒：毁灭之风、毁灭之风之外使用升腾、野性狼魂，以及通用提醒。",
 -- 33731fb7 English: Totemic reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Enhancement / Totemic). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2163] = "图腾祭司参考（SimulationCraft）",
 -- 4485ad39 English: Reference only, off by default: SimulationCraft's Totemic list reads Flame
 --     Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in
@@ -5641,6 +8180,9 @@ addon.translation = {
 --     Stormbringer reference.
 [2164] = "仅供参考，默认关闭：SimulationCraft 的图腾祭司列表需要读取烈焰震击、灼热之手、飞旋之火、毁灭闪电和毁灭之风，而至暗之夜会在战斗中隐藏它们。面对三个或更多交战中的敌人时：毁灭闪电，漩涡武器达到 5 层时使用闪电链。然后烈焰震击缺失时使用流电炽焰或烈焰震击，涌动图腾，裂地术，有灼热之手或飞旋之火时使用熔岩猛击，为获得增益效果使用毁灭闪电，达到 10 层时使用始源风暴，风切，毁灭之风期间使用毁灭闪电和风暴打击，达到 5 层时使用闪电箭，毁灭闪电，熔岩猛击，风暴打击，流电炽焰，烈焰震击。提醒与风暴使者参考循环相同。",
 -- bf31f812 English: Icy Veins
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Restoration). The English is the guide site Icy
+--     Veins, a proper name that stays unchanged.
 [2165] = "Icy Veins",
 -- 6bac9c2a English: Restoration in Midnight, for reference: Blizzard's Assisted Combat does not
 --     cover healers, the game hides everyone's health in combat and Rotation Master picks a spell,
@@ -5652,6 +8194,9 @@ addon.translation = {
 --     Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift.
 [2166] = "至暗之夜的恢复专精，仅供参考：暴雪的战斗辅助不涵盖治疗者，游戏在战斗中会隐藏所有人的生命值，而 Rotation Master 选择的是法术而不是目标，因此它会针对你当前的目标按就绪情况排列你的治疗技能，决定治疗谁则交给你。友方目标：治疗之泉图腾，生命释放，在队伍中使用治疗之雨，涌动图腾，激流，在队伍中使用治疗链，治疗波。敌人：烈焰震击缺失时使用烈焰震击，熔岩爆裂，闪电箭。提醒：拉怪间隙的水之护盾、对友方目标使用大地之盾和天怒；战斗中的自然迅捷；组队战斗中的治疗之潮图腾和灵魂链接图腾；风剪；星界转移。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2167] = "暴雪战斗辅助",
 -- 75442137 English: Recommended before you choose a specialization (while the game reports the
 --     Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5661,6 +8206,9 @@ addon.translation = {
 --     premades take over.
 [2168] = "推荐在你选择专精之前使用（此时游戏报告的是萨满祭司的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有萨满祭司内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2169] = "暴雪战斗辅助",
 -- be7ca540 English: Recommended for Affliction in Midnight. In combat the game now hides your DoTs,
 --     procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat
@@ -5673,6 +8221,11 @@ addon.translation = {
 --     call).
 [2170] = "推荐至暗之夜的痛苦专精使用。在战斗中，游戏现在会对插件隐藏你的持续伤害效果、触发效果、冷却时间和生命值，因此它会显示暴雪自己的战斗辅助建议（一键循环，它会维持痛楚和腐蚀术、把灵魂碎片花在痛苦无常上，并处理牺牲魔典），并在你施法、引导或没有选中敌人时停止。提醒它未包含的内容：战斗中的召唤黑眼、拉怪间隙召唤地狱猎犬（除非你已牺牲了恶魔）、对可打断的施法使用恶魔掌控（只在游戏允许读取该施法的场合亮起）、战斗中一就绪就使用的黑暗契约和不灭决心（生命值在正式服中是隐藏的，因此何时使用由你自己决定）。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Affliction / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2171] = "参考（Icy Veins）",
 -- d01f383a English: Reference only, off by default: the Icy Veins and SimulationCraft (Soul
 --     Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in
@@ -5684,6 +8237,9 @@ addon.translation = {
 --     the shared ones.
 [2172] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft（灵魂收割者）的施放顺序需要读取持续伤害效果的计时、夜幕和碎片动荡，而至暗之夜会在战斗中隐藏它们。拉怪前使用鬼影缠身；面对三个或更多交战中的敌人且没有你的腐蚀术时使用腐蚀之种；鬼影缠身；痛楚以及腐蚀术或枯萎剩余不足 3 秒时刷新；灵魂碎片不超过两个时使用幽冥收割；5 个灵魂碎片时使用痛苦无常；两层夜幕时使用灾难之握，否则使用暗影箭；碎片动荡触发或 4 个灵魂碎片时使用痛苦无常；吸取灵魂；暗影箭。提醒：幽冥收割进入冷却后使用召唤黑眼、怨毒、召唤地狱猎犬，以及通用提醒。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2173] = "暴雪战斗辅助",
 -- c6249f11 English: Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and
@@ -5693,6 +8249,11 @@ addon.translation = {
 --     pulls, Command Demon, Dark Pact, Unending Resolve.
 [2174] = "推荐至暗之夜的恶魔学识专精使用。显示暴雪的战斗辅助建议（召唤恐惧猎犬、古尔丹之手、恶魔之箭、能量虹吸和恶魔暴君），并在你施法、引导或没有选中敌人时停止。提醒它未包含的内容：你在最近 12 秒内召唤的恐惧猎犬仍在场时使用召唤恶魔暴君、战斗中的魔典：小鬼领主、魔典：邪能破坏者和召唤末日守卫、拉怪间隙召唤恶魔卫士、恶魔掌控、黑暗契约、不灭决心。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Demonology / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2175] = "参考（Icy Veins）",
 -- 631224a9 English: Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist)
 --     order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat.
@@ -5703,6 +8264,9 @@ addon.translation = {
 --     Core below 4, Shadow Bolt.
 [2176] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft（恶魔使徒）的施放顺序需要读取恶魔之核、小鬼数量和冷却计时，而至暗之夜会在战斗中隐藏它们。拉怪前使用能量虹吸、恶魔之箭和暗影箭；然后恶魔之核不超过一层时使用能量虹吸，魔典：小鬼领主，魔典：邪能破坏者，召唤末日守卫，召唤恐惧猎犬，5 个灵魂碎片时使用召唤恶魔暴君，面对三个或更多交战中的敌人时使用内爆，陨灭，3 个或更多灵魂碎片时使用古尔丹之手，少于 3 个时使用狱火箭，恶魔之核触发且灵魂碎片少于 4 个时使用恶魔之箭，暗影箭。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2177] = "暴雪战斗辅助",
 -- e652e84a English: Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire,
@@ -5711,6 +8275,11 @@ addon.translation = {
 --     demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you.
 [2178] = "推荐至暗之夜的毁灭专精使用。显示暴雪的战斗辅助建议（献祭或枯萎、燃烧、混乱之箭、火焰之雨、灵魂之火、怨毒），并在你施法、引导或没有选中敌人时停止。提醒它未包含的内容：战斗中的召唤地狱火、拉怪间隙召唤小鬼（除非你已牺牲了恶魔）、恶魔掌控、黑暗契约、不灭决心。对第二个目标使用浩劫仍由你自己掌控。",
 -- df190019 English: Reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Destruction / Simc). A reference-only rotation built
+--     from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2179] = "参考（SimulationCraft）",
 -- ad764c7b English: Reference only, off by default: SimulationCraft's order reads Immolate,
 --     Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and
@@ -5728,6 +8297,9 @@ addon.translation = {
 --     Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate.
 [2182] = "仅供参考，默认关闭：Icy Veins 的地狱召唤者施放顺序，会在灵魂碎片溢出前把它们花在混乱之箭上，并在冷却好时就使用暗影灼烧和引导恶魔之火。面对三个或更多交战中的敌人时使用火焰之雨；保持枯萎或献祭；召唤地狱火；怨毒；暗影灼烧；灵魂碎片少于 4 个时使用灵魂之火；4 个或更多时使用混乱之箭；大灾变；少于 4 个时使用狱火箭；引导恶魔之火；燃烧；烧尽。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2183] = "暴雪战斗辅助",
 -- 9f1e219f English: Recommended before you choose a specialization (while the game reports the
 --     Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5737,6 +8309,9 @@ addon.translation = {
 --     premades take over.
 [2184] = "推荐在你选择专精之前使用（此时游戏报告的是术士的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有术士内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2185] = "暴雪战斗辅助",
 -- 182c0efa English: Recommended for Arms in Midnight. In combat the game now hides rage, Rend,
 --     Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own
@@ -5747,6 +8322,10 @@ addon.translation = {
 --     whenever it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2186] = "推荐至暗之夜的武器专精使用。在战斗中，游戏现在会对插件隐藏怒气、撕裂、巨人打击、触发效果、冷却时间和生命值，因此它会显示暴雪自己的战斗辅助建议（一键循环），并在你施法或没有选中敌人时停止。提醒它未包含的内容：英勇打击（建议从不使用的核心按键）、战斗中的天神下凡和勇士之矛、拉怪间隙的战斗怒吼、对可打断的施法使用拳击（只在游戏允许读取该施法的场合亮起）、战斗中一就绪就使用的剑在人在（生命值在正式服中是隐藏的，因此何时使用由你自己决定）。",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2187] = "屠戮者参考（SimulationCraft）",
 -- 4c91f0b4 English: Reference only, off by default: the Slayer order from SimulationCraft, Icy
 --     Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which
@@ -5758,6 +8337,10 @@ addon.translation = {
 --     Pummel.
 [2188] = "仅供参考，默认关闭：来自 SimulationCraft、Icy Veins 和 Wowhead 的屠戮者施放顺序需要读取怒气、撕裂、巨人打击、猝死和趁虚而入，而至暗之夜会在战斗中隐藏它们。以冲锋开场；面对两个或更多交战中的敌人时使用横扫攻击；撕裂即将结束时在巨人打击之前使用撕裂；在巨人打击之前使用破坏者；两层猝死时使用斩杀；巨人打击；巨人打击或天神下凡期间使用剑刃风暴；英勇打击；两层趁虚而入时使用压制；致死打击；斩杀；压制；撕裂剩余不足 5 秒时使用撕裂；猛击。提醒：巨人打击就绪时使用天神下凡、剑在人在、战斗怒吼、拳击。",
 -- 8a86f34e English: Colossus reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Arms / Colossus). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2189] = "巨神兵参考（SimulationCraft）",
 -- 5b252489 English: Reference only, off by default: the Colossus order from SimulationCraft and Icy
 --     Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat.
@@ -5768,6 +8351,9 @@ addon.translation = {
 --     the Sword, Battle Shout, Pummel.
 [2190] = "仅供参考，默认关闭：来自 SimulationCraft 和 Icy Veins 的巨神兵施放顺序用致死打击积累巨人神力，并需要读取至暗之夜在战斗中隐藏的增益效果。以冲锋开场；两个或更多敌人时使用横扫攻击；巨人神力少于五层时使用致死打击；在巨人打击之前使用撕裂；破坏者；两层猝死时使用斩杀；巨人打击；勇士之矛；巨人打击期间且有巨人神力时使用崩摧；英勇打击；致死打击；斩杀；压制；撕裂剩余不足 5 秒时使用撕裂；两个或更多敌人时使用剑刃风暴；猛击。提醒：天神下凡、剑在人在、战斗怒吼、拳击。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury). This one follows Blizzard's Assisted Combat
+--     suggestion.
 [2191] = "暴雪战斗辅助",
 -- b7ca5a34 English: Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion
 --     (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you
@@ -5776,6 +8362,10 @@ addon.translation = {
 --     it is ready in combat (health is hidden on Retail, so when to use it is your call).
 [2192] = "推荐至暗之夜的狂怒专精使用。显示暴雪的战斗辅助建议（暴怒、嗜血、怒击、斩杀、奥丁之怒和剑刃风暴），并在你施法或没有选中敌人时停止。提醒它未包含的内容：战斗中的鲁莽、天神下凡和勇士之矛、拉怪间隙的战斗怒吼、拳击、战斗中一就绪就使用的狂怒回复（生命值在正式服中是隐藏的，因此何时使用由你自己决定）。",
 -- b82b4f60 English: Slayer reference (SimulationCraft)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Fury / Slayer). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2193] = "屠戮者参考（SimulationCraft）",
 -- 082fcea6 English: Reference only, off by default: SimulationCraft's Slayer order reads Enrage,
 --     Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so
@@ -5796,6 +8386,9 @@ addon.translation = {
 --     Whirlwind. Same reminders as the Slayer reference.
 [2196] = "仅供参考，默认关闭：来自 SimulationCraft 和 Icy Veins 的山丘领主施放顺序会穿插雷霆轰击，并需要读取至暗之夜在战斗中隐藏的增益效果。以冲锋开场；两个或更多敌人时为获得增益效果使用旋风斩；激怒缺失或即将结束时使用暴怒（怒气在正式服中是隐藏的，所以没有怒气达到 100 的暴怒）；鲁莽期间使用浴血奋战；两层时使用雷霆轰击；碎甲猛击；浴血奋战；鲁莽期间使用暴怒；天神下凡期间使用雷霆轰击；怒击；雷霆轰击；暴怒；嗜血；斩杀；奥丁之怒；雷霆一击；旋风斩。提醒与屠戮者参考循环相同。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2197] = "暴雪战斗辅助",
 -- c6991b2c English: Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat
 --     suggestion for your damage and threat, and stops while you cast or have no enemy targeted.
@@ -5807,6 +8400,11 @@ addon.translation = {
 --     else, Battle Shout between pulls, Pummel.
 [2198] = "推荐至暗之夜的防护专精使用。显示暴雪针对伤害和仇恨的战斗辅助建议，并在你施法或没有选中敌人时停止。该建议从不施放盾牌格挡或无视苦痛，因此只要它们可用且你的目标正在攻击你，两者都会作为提醒亮起；游戏会隐藏怒气，因此无视苦痛亮起的次数会比你实际需要的更多。其他提醒：战斗中的天神下凡、挫志怒吼和勇士之矛、战斗中一就绪就使用的盾墙和破釜沉舟（生命值在正式服中是隐藏的，因此何时使用由你自己决定）、在队伍中你的目标攻击其他人时使用嘲讽、拉怪间隙的战斗怒吼、拳击。",
 -- 6befdd35 English: Reference (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Protection / IcyVeins). A reference-only rotation
+--     built from the named source. Names in parentheses (guide or tool such as Icy Veins, Wowhead,
+--     SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper names and stay
+--     unchanged.
 [2199] = "参考（Icy Veins）",
 -- b8b51708 English: Reference only, off by default: the Icy Veins and SimulationCraft order reads
 --     Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and
@@ -5817,6 +8415,9 @@ addon.translation = {
 --     are ready in combat, Battle Shout, Pummel.
 [2200] = "仅供参考，默认关闭：Icy Veins 和 SimulationCraft 的施放顺序需要读取盾牌格挡、雷霆轰击和巨人神力，而至暗之夜会在战斗中隐藏它们；怒气和生命值在正式服中是隐藏的。以冲锋开场；破坏者；两层时使用雷霆轰击；巨人神力达到五层时使用崩摧；盾牌冲锋；雷霆轰击；盾牌猛击；雷霆一击；斩杀；复仇；毁灭打击。提醒：盾牌格挡增益效果消失且你正在坦克时使用盾牌格挡、无视苦痛、天神下凡、挫志怒吼、勇士之矛、战斗中一就绪就使用的盾墙和破釜沉舟、战斗怒吼、拳击。",
 -- 00b5eb13 English: Blizzard Assisted
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Retail (current expansion) (variant key: Initial). This one follows Blizzard's Assisted
+--     Combat suggestion.
 [2201] = "暴雪战斗辅助",
 -- 2e97cda9 English: Recommended before you choose a specialization (while the game reports the
 --     Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests
@@ -5826,6 +8427,8 @@ addon.translation = {
 --     premades take over.
 [2202] = "推荐在你选择专精之前使用（此时游戏报告的是战士的初始专精）。高亮暴雪战斗辅助建议的下一个法术，这是在至暗之夜的战斗中游戏仍允许插件读取的唯一循环建议；你施法或引导时它会等待。同时包含所有战士内置循环共用的提醒，每一项在你学会对应法术后生效。当你在 10 级选择专精后，该专精的内置循环会接管。",
 -- d05e07b7 English: Balance
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance).
 [2203] = "平衡",
 -- df418098 English: Balance from level 1 to 60, and the Druid default before talents or when no
 --     other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on
@@ -5837,6 +8440,10 @@ addon.translation = {
 --     stay with you.
 [2204] = "平衡，适用于 1 至 60 级，也是德鲁伊在获得天赋前或没有其他内置循环适用时的默认循环。学会星火术后以它作为填充（学会前为愤怒，自然之赐触发时优先星火术），法力值高于 30% 时对能存活较久的目标保持月火术和虫群，三个或更多敌人攻击你时使用飓风，组队时使用精灵之火，移动时使用瞬发法术，法力耗尽时近战。猎豹或熊形态下改为提供野性战斗的建议。提醒：野性印记、单刷时的荆棘术、清晰预兆、没有任何形态时的枭兽形态、激活、自然之握。星火术降级施法、定身和目标选择由你自己掌控。",
 -- 3c5a26cc English: Balance (Icy Veins)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Balance / IcyVeins). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2205] = "平衡（Icy Veins）",
 -- 72e2ae3e English: Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the
 --     recommended Balance premade, off by default: enable it and disable that one, or raise its
@@ -5845,6 +8452,8 @@ addon.translation = {
 --     recommended premade.
 [2206] = "Icy Veins 针对有 16 个减益效果上限的服务器的团队副本列表，是推荐的平衡内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。只用星火术，不用月火术或虫群，三个或更多敌人攻击你时使用飓风，仅在学会星火术之前使用愤怒。提醒与推荐的内置循环相同。",
 -- 24983899 English: Feral
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Feral).
 [2207] = "野性战斗",
 -- 46898c22 English: Feral cat and bear from level 10 when Feral is your main talent tree; your form
 --     decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred,
@@ -5880,6 +8489,8 @@ addon.translation = {
 --     Feral premade, off by default: enable it and disable that one, or raise its priority.
 [2214] = "推荐的野性内置循环中的猎豹，配合 Wowhead 的装备成型团队熊：每次挥击都用槌击（对怪群切换目标施放槌击由你自己操作），仅在多出 60 点怒气时使用挥击，否则使用精灵之火（野性），战斗中不使用挫志咆哮和狂怒。它是推荐的野性内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration).
 [2215] = "恢复",
 -- 877af0fd English: Restoration from level 10 when Restoration is your main talent tree. Heals your
 --     current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your
@@ -5890,6 +8501,10 @@ addon.translation = {
 --     Rebirth, poison and curse removal. Choosing whom to heal stays with you.
 [2216] = "恢复是你的主天赋树时，10 级起的恢复。治疗你当前的友方目标：自然迅捷后使用治疗之触，目标带有你的持续治疗效果且低于 40% 时使用迅捷治愈，保持回春术和愈合滚动，拥有强化愈合时以愈合作为主要治疗，低于 45% 或自然之赐触发时使用最高等级治疗之触，否则使用 4 级治疗之触。敌对目标时：月火术、虫群和愤怒。猎豹或熊形态下不提供建议。提醒：野性印记、清晰预兆、自然迅捷、宁静、激活、复生、驱除中毒和诅咒。治疗谁由你自己掌控。",
 -- b765b6c7 English: Restoration (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Classic Era (variant key: Restoration / WarcraftTavern). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2217] = "恢复（Warcraft Tavern）",
 -- 8cdc97b9 English: Warcraft Tavern's damage tiers, an alternative to the recommended Restoration
 --     premade, off by default: enable it and disable that one, or raise its priority. On your
@@ -5898,6 +8513,10 @@ addon.translation = {
 --     proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade.
 [2218] = "Warcraft Tavern 的伤害分级治疗，是推荐的恢复内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。针对你的友方目标，伤害较低时不维持持续治疗效果：低于 40% 时使用迅捷治愈，低于 50% 时使用 5 级愈合，低于 75% 时使用回春术和 3 级愈合，自然之赐触发时使用最高等级治疗之触，低于 90% 时使用 3 级治疗之触。提醒与推荐的内置循环相同。",
 -- d6247adc English: Balance (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2219] = "平衡（探索赛季）",
 -- 5bcfabec English: Season of Discovery Balance from level 1 to 60, and the default for any Druid
 --     no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and
@@ -5917,6 +8536,10 @@ addon.translation = {
 --     filler. Reminders as the recommended premade.
 [2222] = "Icy Veins 的探索赛季列表，是推荐的探索赛季平衡内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。星涌术冷却完毕即用，四个或更多敌人时使用飓风（为了烈风），星涌术强化时使用星火术，同时保持月火术、阳炎术和虫群，愤怒作为填充。提醒与推荐的内置循环相同。",
 -- c4d16f19 English: Balance (SoD, Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Balance / Wowhead). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2223] = "平衡（探索赛季，Wowhead）",
 -- 75dabca6 English: Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery
 --     Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath
@@ -5926,6 +8549,10 @@ addon.translation = {
 --     recommended premade.
 [2224] = "Wowhead 的第 8 阶段列表，是推荐的探索赛季平衡内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。以愤怒开场，星涌术冷却完毕即用，六个或更多敌人时使用飓风，仅在移动时使用虫群，保持阳炎术和月火术，铭刻了艾露恩之火来延长阳炎术时，在你的阳炎术剩余不到 5 秒时使用愤怒，月蚀时使用星火术，否则使用愤怒。提醒与推荐的内置循环相同。",
 -- 3e1ff241 English: Feral cat (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Feral). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2225] = "野性战斗猎豹（探索赛季）",
 -- e7b0a6ca English: Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your
 --     main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe
@@ -5936,6 +8563,10 @@ addon.translation = {
 --     Innervate. Positioning stays with you.
 [2226] = "探索赛季的猎豹，铭刻了野蛮咆哮时选用（或野性战斗是你的主天赋树且没有铭刻其他腿部符文时）。没有精灵之火时使用精灵之火（野性），野蛮咆哮，四个或更多敌人时使用横扫（猎豹），保持割碎减益效果，节能施法用于撕碎，五个连击点且野蛮咆哮还剩 8 秒时使用撕扯，扫击，在目标背后使用撕碎，在正面时使用割碎，激怒 5/5 时变身回能，最后刷新精灵之火。熊形态下改为提供坦克建议。提醒：能量不高于 60 时使用猛虎之怒、配合猛虎之怒使用狂暴、槌击、激活。站位由你自己掌控。",
 -- 3c52079f English: Bear tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2227] = "熊坦（探索赛季）",
 -- 6ae09c71 English: Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire
 --     (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown,
@@ -5952,6 +8583,10 @@ addon.translation = {
 --     as the recommended tank premade.
 [2230] = "默认关闭；适合装备同样提供野蛮咆哮的高手。wowsims 第 7 阶段的猎豹穿插：你的扫击消失时从熊形态切换到猎豹形态，保持野蛮咆哮和扫击（用猛虎之怒和割碎攒点），然后回到巨熊形态并执行坦克列表。提醒与推荐的坦克内置循环相同。",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2231] = "恢复（探索赛季）",
 -- ba307284 English: Season of Discovery Restoration, chosen when Lifebloom is engraved (or
 --     Restoration is your main tree without another legs rune). Heals your current friendly target:
@@ -5963,6 +8598,8 @@ addon.translation = {
 --     dispels. Choosing whom to heal stays with you.
 [2232] = "探索赛季的恢复，铭刻了生命绽放时选用（或恢复是你的主天赋树且没有铭刻其他腿部符文时）。治疗你当前的友方目标：自然迅捷或怒风之怒后使用瞬发治疗之触，附近有两人或更多受伤时使用野性成长，对带有你的持续治疗效果的目标使用迅捷治愈以触发百花齐放或在低于 40% 时使用，保持三层生命绽放并在剩余一秒时刷新，回春术，低于 60% 时使用愈合，滋养，4 级治疗之触。敌对目标时：阳炎术、月火术、愤怒。提醒：压力大时使用生命之树和生存本能、自然迅捷、宁静、激活、复生、起死回生、驱散。治疗谁由你自己掌控。",
 -- 3f0b51a2 English: Ranged
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Classic Era (variant key: Ranged).
 [2233] = "远程",
 -- 9b31e6a0 English: Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark,
 --     Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot,
@@ -5989,6 +8626,10 @@ addon.translation = {
 --     used.
 [2238] = "默认关闭；如果团队的减益效果栏位还能容下你的钉刺，请启用它。与“猎人：远程”相同，但组队时在任何地方都保持毒蛇钉刺，包括团队副本，在瞄准射击和多重射击都在冷却时于剩余不到 5 秒时刷新，并且从不使用奥术射击。",
 -- 1fa5802f English: Ranged (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Ranged). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2239] = "远程（探索赛季）",
 -- 09b14a5d English: Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are
 --     used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot
@@ -6004,6 +8645,10 @@ addon.translation = {
 --     weaving and positioning stay with you.
 [2240] = "探索赛季服务器上的所有远程猎人，1 至 60 级；符文铭刻后即会使用。始终保持毒蛇钉刺，并由奇美拉射击刷新。铭刻了夺命射击腿部符文时：技巧射击达到四层时使用多重射击，急速射击期间以及对处于斩杀阶段的目标使用夺命射击，奇美拉射击，然后在多重射击冷却期间使用爆炸陷阱和奥术射击。未铭刻时：奇美拉射击，狙击训练达到两层时（若没有该符文，则紧接自动射击之后）使用瞄准射击，在奇美拉射击即将就绪前放置陷阱（冰霜陷阱仅用于触发荷枪实弹），爆炸射击，稳固射击，多重射击，奥术射击。敌人贴得太近时使用近战技能，移动时使用瞬发技能，三个或更多敌人时使用陷阱、多重射击和乱射。提醒：雄鹰守护、法力值低于 10% 时使用蝰蛇守护、雄狮之心、强击光环、宠物照料（铭刻了独来独往时不提醒）、狂乱达到五层时使用集中火力，对精英和在副本中使用急速射击、种族技能和狂野怒火。铭刻了荷枪实弹时，拉怪前会使用冰霜陷阱。近战穿插和站位由你自己掌控。",
 -- fb035172 English: Melee (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Season of Discovery (variant key: Melee). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2241] = "近战（探索赛季）",
 -- 4c275cc2 English: Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern
 --     Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff
@@ -6016,6 +8661,8 @@ addon.translation = {
 --     stay with you.
 [2242] = "在探索赛季服务器上，当你铭刻了侧翼打击、翼龙打击或削凿，且既没有铭刻奇美拉射击也没有铭刻爆炸射击时选用。保持侧翼打击的增益效果，猛禽之怒达到四层时使用猫鼬撕咬，巧思打击触发时使用翼龙打击，每次重置时使用猛禽一击，然后是猫鼬撕咬、翼龙打击、侧翼打击和削凿；献祭陷阱和摔绊仅在空闲时使用。三个或更多敌人时使用削凿和爆炸陷阱；无法接近目标时使用毒蛇钉刺和射击。提醒：猎鹰守护（60 级前为雄鹰守护）、法力值低于 5% 时使用蝰蛇守护、宠物照料（铭刻了独来独往时不提醒）、侧翼打击叠起后使用急速射击和种族技能、狂野怒火。站位和宠物指令由你自己掌控。",
 -- 17636dd6 English: Frost
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Frost).
 [2243] = "冰霜",
 -- c7006e3e English: Frost from level 1 to 60, also for Arcane builds and the Mage default before
 --     talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on
@@ -6037,6 +8684,8 @@ addon.translation = {
 --     and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you.
 [2246] = "依据 Icy Veins 的 AoE 刷怪指南进行暴风雪升级，单刷且拥有强化暴风雪时自动选择。与两个或更多敌人交战时：对怪群使用冰霜新星，冰霜新星冷却期间使用冰锥术，身边没有敌人后使用暴风雪，敌人在身边时使用魔爆术；单个目标使用寒冰箭，用火焰冲击和魔杖收尾。每次拉怪前施放法力护盾和寒冰护体。聚怪、闪现术和放风筝由你自己掌控。",
 -- c141faa8 English: Fire
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire).
 [2247] = "火焰",
 -- 2a7f1272 English: Fire from level 10 to 60, chosen when you have Fire points and none in Frost,
 --     or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind;
@@ -6048,6 +8697,10 @@ addon.translation = {
 --     default: weaving Fire Blast whenever it is ready.
 [2248] = "火焰，适用于 10 至 60 级，在你有火焰天赋点而冰霜没有点数，或火焰是你的主天赋树时选用。以炎爆术开场（否则火球术）；气定神闲后使用炎爆术；拥有强化灼烧时，对能存活较久的目标用灼烧保持五层火焰易伤；用火焰冲击和灼烧收尾；火球术作为填充。与三个或更多敌人交战时：冲击波、烈焰风暴、魔爆术、冰锥术、暴风雪。提醒：对精英和长时间战斗在灼烧叠满五层时使用燃烧、护甲、奥术智慧、法力宝石、寒冰护体、法力护盾、唤醒、法术反制、解除次级诅咒、寒冰屏障、气定神闲。默认关闭：火焰冲击一就绪就穿插施放。",
 -- 76354bcf English: Fire (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Classic Era (variant key: Fire / WarcraftTavern). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2249] = "火焰（Warcraft Tavern）",
 -- 83ffa7ee English: Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off
 --     by default: enable it and disable that one, or raise its priority. Combustion is spent at the
@@ -6057,6 +8710,10 @@ addon.translation = {
 --     range. Same reminders as the Fire premade.
 [2250] = "依据 Warcraft Tavern 的火焰，是推荐的火焰内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。对精英和首领在拉怪时就使用燃烧，而不是等待灼烧叠层；以炎爆术开场；拥有强化灼烧时用灼烧保持五层；火球术作为填充；仅在移动时使用火焰冲击。怪群：先烈焰风暴，然后近身时使用魔爆术、冰锥术和冲击波，远距离时使用暴风雪。提醒与火焰内置循环相同。",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2251] = "火焰（探索赛季）",
 -- 67a08e15 English: Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses
 --     the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets
@@ -6070,6 +8727,10 @@ addon.translation = {
 --     Bomb across targets stays with you.
 [2252] = "探索赛季的火焰，适用于 1 至 60 级，也是该赛季法师的默认循环。使用你已铭刻的符文：法术连击触发时立即使用炎爆术；对能存活较久的目标保持活动炸弹；拥有强化灼烧时，在火焰易伤低于两层或即将消失时使用灼烧；活体烈焰冷却完毕即用；火焰易伤达到五层时使用怨火之箭，但怨火层数达到四层或以上时绝不使用（第五层会杀死你）；霜火之箭，否则火球术。移动时使用活动炸弹、活体烈焰和火焰冲击；对怪群使用活体烈焰、活动炸弹、冲击波、冰锥术、烈焰风暴和暴风雪。提醒：过热时使用火焰冲击、燃烧、冰冷血脉和急速冷却、熔岩护甲或其他护甲、奥术智慧、法力宝石、寒冰护体、法力护盾、唤醒、法术反制、解除诅咒、寒冰屏障。把活动炸弹扩散到多个目标由你自己掌控。",
 -- 0f6cec9f English: Frost (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Frost). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2253] = "冰霜（探索赛季）",
 -- b6fc82b9 English: Season of Discovery Frost from level 10, chosen when Frost is your main tree.
 --     Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into
@@ -6091,6 +8752,10 @@ addon.translation = {
 --     Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders.
 [2256] = "Warcraft Tavern 第 4 阶段使用火焰符文的冰霜天赋，是推荐的探索赛季冰霜内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。以炎爆术开场；法术连击触发时使用炎爆术；保持活动炸弹；拥有强化灼烧时用灼烧叠到五层；怨火之箭仅在冰冷智慧触发时使用，且怨火层数达到四层或以上时绝不使用；霜火之箭作为填充。移动时使用活动炸弹和火焰冲击；对怪群使用活动炸弹、冰锥术和暴风雪。提醒：过热时使用火焰冲击、冰冷血脉期间使用寒冰宝珠、冰冷血脉、急速冷却以及其他法师提醒。",
 -- 3a7614c3 English: Arcane (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Arcane). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2257] = "奥术（探索赛季）",
 -- a0acdff9 English: Season of Discovery Arcane damage, chosen when Arcane is your main tree and
 --     Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane
@@ -6100,6 +8765,10 @@ addon.translation = {
 --     Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders.
 [2258] = "探索赛季的奥术伤害，在奥术是你的主天赋树且铭刻了奥术冲击时选用。飞弹连射触发时使用奥术飞弹；奥术冲击叠满四层时使用奥术弹幕；安全时使用怨火之箭，但怨火层数达到四层或以上时绝不使用；活体烈焰冷却完毕即用；奥术冲击作为填充。移动时使用奥术弹幕和火焰冲击；对怪群使用活体烈焰和魔爆术。提醒：对精英和长时间战斗使用奥术强化、配合奥术强化或在移动时使用气定神闲、冰冷血脉、急速冷却以及其他法师提醒。",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2259] = "治疗（探索赛季）",
 -- 83b2fb47 English: Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration
 --     is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half
@@ -6113,6 +8782,8 @@ addon.translation = {
 --     direct healing is small). Choosing whom to heal stays with you.
 [2260] = "探索赛季的法师治疗，铭刻了再生或群体再生时选用。友方目标时：生命值低于一半时使用时光倒转和凝时恩护，你的时光道标缺失时使用再生，群体再生，时空畸体。敌对目标时，使用能治疗你的道标目标的伤害法术：冰霜治疗者使用法术冰霜箭，否则飞弹连射触发时使用奥术飞弹，奥术冲击达到两层时使用奥术弹幕，安全时使用怨火之箭（怨火层数达到四层或以上时绝不使用）以及奥术冲击。提醒：奥术强化、气定神闲、寒冰宝珠以及其他法师提醒。默认关闭：对怪群使用魔爆术，以及冰霜治疗者的冰枪术和深度冻结。引导群体再生时，下一个法术已经显示，因此你可以立即取消它（它的直接治疗量很小）。治疗谁由你自己掌控。",
 -- 1d79fa22 English: Retribution
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution).
 [2261] = "惩戒",
 -- 623b26cb English: Melee Retribution from level 1 to 60, and the default for any Paladin no other
 --     premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and
@@ -6124,6 +8795,8 @@ addon.translation = {
 --     Seal twisting is a separate premade; target choice and positioning stay with you.
 [2262] = "惩戒近战，适用于 1 至 60 级，也是没有其他内置循环适用时所有圣骑士的默认循环。在团队副本之外面对精英和长时间战斗时，施放十字军圣印并审判一次；否则保持一个圣印（武器速度为 3.5 秒或更慢时用命令圣印，否则用正义圣印），对亡灵和恶魔使用驱邪术和神圣愤怒，愤怒之锤，审判冷却完毕即用，复仇生效时或有两个或更多近身敌人时使用奉献。提醒：圣洁光环、惩罚光环或虔诚光环，单刷时用智慧祝福、组队时用力量祝福，战斗间隙的治疗，即将死亡时使用圣盾术、圣佑术或圣疗术。圣印轮换是单独的内置循环；目标选择和站位由你自己掌控。",
 -- a2754c34 English: Retribution, seal twisting
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Retribution / Twist).
 [2263] = "惩戒，圣印轮换",
 -- 34017594 English: Off by default; enable it if you twist seals. For a Retribution Paladin with
 --     Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last
@@ -6132,6 +8805,8 @@ addon.translation = {
 --     and good timing. Same reminders as the Retribution premade.
 [2264] = "默认关闭；如果你会进行圣印轮换，请启用它。适用于拥有命令圣印的惩戒圣骑士：保持正义圣印，在挥击前的最后 0.4 秒切换为 1 级命令圣印，然后再切换回来，审判一就绪就使用，对亡灵和恶魔使用驱邪术和神圣愤怒，愤怒之锤，复仇生效时使用奉献。需要大量法力值和良好的时机掌握。提醒与惩戒内置循环相同。",
 -- 0e97ad02 English: Protection
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Protection).
 [2265] = "防护",
 -- 8b566adc English: Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree.
 --     Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement
@@ -6151,6 +8826,8 @@ addon.translation = {
 --     raid. Same reminders as the recommended premade.
 [2268] = "Icy Veins 的团队坦克循环，搭配 Wowhead 的智慧轮换，是推荐的防护内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。保持智慧圣印，目标没有智慧审判时就审判它，否则只用审判拉怪；神圣之盾，奉献冷却完毕即用，对亡灵和恶魔怪群使用神圣愤怒，驱邪术，团队中以强效王者祝福作为仇恨填充。提醒与推荐的内置循环相同。",
 -- 56eee6a5 English: Holy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Classic Era (variant key: Holy).
 [2269] = "神圣",
 -- 9d4ec18a English: Healing in a group with the Holy tree, from level 10. Acts on your friendly
 --     target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move,
@@ -6161,6 +8838,10 @@ addon.translation = {
 --     you; soloing Holy Paladins get the Retribution premade.
 [2270] = "使用神圣天赋树在队伍中治疗，10 级起。作用于你的友方目标，并按损失的生命值选择治疗法术：清洁术或纯净术，移动时使用神圣震击，低于 40% 时使用最高等级圣光术，低于 65% 时使用 6 级圣光术，低于 85% 时使用最高等级圣光闪现，低于 95% 时使用 4 级圣光闪现。近战范围内有敌人时：智慧圣印，团队副本之外还会使用审判。提醒：专注光环或虔诚光环、智慧祝福，目标生命值极低时使用神恩术和圣疗术。治疗谁由你自己掌控；单刷的神圣圣骑士会改用惩戒内置循环。",
 -- 8094efdd English: Retribution (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Retribution). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2271] = "惩戒（探索赛季）",
 -- 0cc623b4 English: Season of Discovery melee from level 1 to 60, and the default for any Paladin
 --     there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism,
@@ -6199,6 +8880,10 @@ addon.translation = {
 --     Judgement while both seals are up.
 [2278] = "默认关闭；拥有承印者之魂符文或能让圣印残留的六件套装时请启用它（Rotation Master 无法看到两者中的任何一个）。同时保持命令圣印和殉道圣印，神圣能量达到三点时使用神圣风暴，十字军打击，驱邪术，对亡灵和恶魔使用神圣愤怒（铭刻了净化之力时对任何目标使用），奉献，以及在两个圣印都存在时审判。",
 -- 68461fe5 English: Shockadin (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Shockadin). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2279] = "震击骑（探索赛季，wowsims）",
 -- 9a1756b6 English: Off by default; enable it if you deal damage with the Holy tree. It applies
 --     with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else
@@ -6206,6 +8891,10 @@ addon.translation = {
 --     Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade.
 [2280] = "默认关闭；如果你使用神圣天赋树输出伤害，请启用它。它在以神圣为主要天赋树且铭刻了震惊与敬畏时适用。殉道圣印（否则正义圣印），在圣印即将结束时审判，用神圣震击保持日光或在神圣能量达到三点时使用，驱邪术和十字军打击。提醒与探索赛季惩戒内置循环相同。",
 -- 924f353b English: Protection (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2281] = "防护（探索赛季）",
 -- 58619700 English: Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of
 --     the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull
@@ -6217,6 +8906,10 @@ addon.translation = {
 --     40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else.
 [2282] = "探索赛季的坦克循环，开启正义之怒、铭刻了正义之锤或正义盾击，或使用防护天赋树时选用。殉道圣印，以神圣之盾、复仇者之盾和驱邪术拉怪，保持神圣之盾；单个目标时正义之锤、正义盾击、驱邪术、复仇者之盾、审判、神圣风暴、奉献；有三个或更多敌人攻击你时正义之锤、复仇者之盾、奉献、正义盾击、驱邪术。提醒：正义之怒、拉怪前的神圣之盾、虔诚光环、庇护祝福或王者祝福、复仇之怒、低于 40% 时使用圣佑术、圣疗术，组队时你的目标攻击其他人时使用清算之手。",
 -- 29a17682 English: Protection (SoD, wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Protection / Wowsims). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2283] = "防护（探索赛季，wowsims）",
 -- f2677084 English: The wowsims tank list, an alternative to the recommended Season of Discovery
 --     Protection premade, off by default: enable it and disable that one, or raise its priority.
@@ -6225,6 +8918,10 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2284] = "wowsims 的坦克列表，是推荐的探索赛季防护内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。只要有圣印就审判，在圣印即将结束前续上，神圣之盾，复仇者之盾，正义之锤，驱邪术，最后是正义盾击。提醒与推荐的内置循环相同。",
 -- e757b87a English: Holy (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Season of Discovery (variant key: Holy). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2285] = "神圣（探索赛季）",
 -- 45b566d4 English: Season of Discovery healing in a group, chosen by an engraved Beacon of Light,
 --     Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your
@@ -6244,6 +8941,8 @@ addon.translation = {
 --     premade.
 [2288] = "Wowhead 针对高暴击装备的第 4 阶段治疗顺序，是推荐的探索赛季神圣内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。低于 75% 时使用神圣之光或圣光术，然后是清洁术，缺口较小或移动时使用神圣震击，低于 95% 时使用圣光闪现。提醒与推荐的内置循环相同。",
 -- 0c874f58 English: Damage
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Dps).
 [2289] = "伤害",
 -- 3af8cf40 English: Damage from level 1 to 60, and the Priest default whenever the healer premade
 --     does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a
@@ -6273,6 +8972,8 @@ addon.translation = {
 --     one, or raise its priority.
 [2294] = "推荐的伤害优先级，搭配 wowsims 为亡灵牧师做出的团队选择：心灵专注用于噬灵瘟疫而不是心灵震爆，并且在团队副本中也施放噬灵瘟疫，因此仅在你的团队还有空余减益效果栏位时使用它。不使用吸血鬼的拥抱。它是推荐的伤害内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。",
 -- a491a33c English: Healer
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Classic Era (variant key: Healer).
 [2295] = "治疗",
 -- dae36c27 English: Chosen in a group when Holy or Discipline is your main talent tree. Heals the
 --     friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer
@@ -6284,6 +8985,10 @@ addon.translation = {
 --     stay with you.
 [2296] = "组队且神圣或戒律是你的主天赋树时选用。治疗你选中的友方单位：低于 30% 时使用真言术：盾，低于 40% 时使用快速治疗，驱散，队伍中有三人受伤时使用治疗祷言，生命值低于一半时使用强效治疗术（学会前为治疗术或次级治疗术），移动时或伤害较轻时使用恢复，然后以 3 级治疗术作为高效补血。脱战时会建议对你的目标施放真言术：韧。选中敌人时提供暗言术：痛和惩击。提醒：心灵之火、真言术：韧、神圣之灵、心灵专注、绝望祷言；能量灌注默认关闭。治疗谁以及降级施法由你自己掌控。",
 -- 999e9eba English: Damage (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Dps). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2297] = "伤害（探索赛季）",
 -- 63f3ee22 English: Damage on Season of Discovery realms, from level 1 to 60, using the runes you
 --     have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite
@@ -6304,6 +9009,10 @@ addon.translation = {
 --     Mind Spike as the filler. Everything else matches the recommended premade.
 [2300] = "Wowhead 和 Warcraft Tavern 的探索赛季打法，是推荐的探索赛季伤害内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。心灵震爆会等到目标身上有你的三层心灵尖刺（铭刻心灵尖刺之前正常施放），精神鞭笞仅在熔化面容时使用，心灵尖刺作为填充。其余与推荐的内置循环相同。",
 -- a23552e6 English: Healer (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Season of Discovery (variant key: Healer). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2301] = "治疗（探索赛季）",
 -- 37b39f3b English: Chosen on Season of Discovery realms in a group when Holy or Discipline is your
 --     main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending
@@ -6325,6 +9034,8 @@ addon.translation = {
 --     stacks (with Serendipity engraved; else below 30%).
 [2304] = "Warcraft Tavern 的妙手回春循环，专为妙手回春和灵魂守护设计，是推荐的探索赛季治疗内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。愈合祷言冷却完毕即用，只要你的目标能承受就对其施放真言术：盾（铭刻了灵魂守护时；否则在生命值低于一半时），伤害较重时使用苦修，三人受伤时使用治疗之环，妙手回春达到三层时使用强效治疗术或治疗祷言，伤害较轻时使用恢复，轻伤时使用快速治疗来叠层（铭刻了妙手回春时；否则在低于 30% 时）。",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Classic Era (variant key: DPS).
 [2305] = "近战 DPS",
 -- b5cd3c00 English: Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from
 --     wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the
@@ -6360,6 +9071,10 @@ addon.translation = {
 --     recommended premade.
 [2310] = "wowsims 针对剑类武器专精的“极限”战斗顺序，是推荐的近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。邪恶攻击仅在主手挥击之后立即使用（距下次挥击 2.0 秒或以上，按 2.6–2.8 速度的剑设置；可在复制的循环中修改），除非能量接近满值或目标即将死亡，这样额外的剑类攻击不会推迟你的挥击。五个连击点的刺骨也会等待切割、满能量或濒死目标。其余与推荐的内置循环相同。",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2311] = "近战 DPS（探索赛季）",
 -- d3dc0f9a English: Season of Discovery, levels 1–60 with runes as you engrave them; built from
 --     wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a
@@ -6392,6 +9107,10 @@ addon.translation = {
 --     the glove-rune builder. The Vanish and Cold Blood burst stays with you.
 [2316] = "Zockify 精简的探索赛季列表，是推荐的探索赛季近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。不用流血效果，也不用破甲。毒药达到四层时使用剧毒之刃，缺失时使用切割（从两个连击点起，有军刀猛刺时从四点起），五个连击点时使用毒伤，然后是手套符文的攒点技能。消失和冷血的爆发由你自己掌控。",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2317] = "坦克（探索赛季）",
 -- d50349d8 English: Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built
 --     from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on
@@ -6404,6 +9123,8 @@ addon.translation = {
 --     Shadowstep and Sebacious Poison duty stay with you.
 [2318] = "探索赛季的坦克，铭刻了只是皮肉伤时选用；综合 wowsims 第 6 阶段、Icy Veins、Zockify 和 Warcraft Tavern。还击，左右开弓冷却完毕即用，从一个连击点起使用刃舞（从三点起续上），从三点起使用切割（从四点起续上），三个或更多敌人时使用刀扇、猩红风暴和短枪射击，刃舞生效期间使用短枪射击，两个增益效果都存在时在五个连击点使用刺骨，能量较低时使用剧毒之刃，然后是军刀猛刺、毁伤或邪恶攻击。提醒：组队时你的目标攻击其他人时使用挑逗、脚踢、生命值低于一半时使用闪避、剑刃乱舞、冲动、菊花茶和武器毒药（副手毒药仅在持有副手武器时使用）。暗影步和解离毒药由你自己掌控。",
 -- b12b36cf English: Enhancement
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Enhancement).
 [2319] = "增强",
 -- 5faeab70 English: Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a
 --     talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range;
@@ -6425,6 +9146,8 @@ addon.translation = {
 --     Lightning on packs. Same totems and reminders as the recommended premade.
 [2322] = "Warcraft Tavern 的增强，是推荐的增强内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。一学会就使用风怒武器，风暴打击，在任何直接伤害的震击之前先上烈焰震击，然后在你的仇恨较低时使用地震术，组队时仇恨升高后改用冰霜震击；对怪群使用熔岩图腾和闪电链。图腾和提醒与推荐的内置循环相同。",
 -- 4309e83a English: Elemental
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Elemental).
 [2323] = "元素",
 -- 5ee9955c English: Elemental from level 10 (most points in Elemental); built from Icy Veins and
 --     Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame
@@ -6444,6 +9167,8 @@ addon.translation = {
 --     same interrupt, totems and reminders.
 [2326] = "wowsims 的元素列表，是推荐的元素内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。即使只有一个目标，闪电链也冷却完毕即用，元素掌握生效时使用地震术，否则使用闪电箭。比推荐的内置循环更快，但耗蓝多得多；打断、图腾和提醒相同。",
 -- 6a3c6c77 English: Restoration
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Classic Era (variant key: Restoration).
 [2327] = "恢复",
 -- 5119f4dc English: Restoration from level 10 (most points in Restoration); built from Icy Veins
 --     and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's
@@ -6463,6 +9188,10 @@ addon.translation = {
 --     enemies and totem reminders as the recommended premade.
 [2330] = "Warcraft Tavern 的恢复，是推荐的恢复内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。任何人低于 90% 时都用治疗链治疗，即将死亡的人用次级治疗波；治疗波仅用于拥有治疗之道、被指派治疗坦克的治疗者（列为关闭状态）。驱除、对敌人的伤害和图腾提醒与推荐的内置循环相同。",
 -- 37e5b161 English: Enhancement (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Enhancement). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2331] = "增强（探索赛季）",
 -- 929796a6 English: Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or
 --     two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins
@@ -6476,6 +9205,10 @@ addon.translation = {
 --     Ancestral Guidance. Totemic Projection, dispels and purges stay with you.
 [2332] = "探索赛季，1–60 级，符文在你铭刻后即会使用，双持或双手武器皆可，也是没有其他内置循环适用时所有探索赛季萨满祭司的默认循环；综合 wowsims 第 6 阶段、Icy Veins 和 Wowhead。以烈焰震击拉怪；用地震术打断。三个或更多敌人时：熔岩图腾，在火焰图腾旁使用火焰新星，漩涡武器达到四层时使用闪电链，烈焰震击。然后漩涡武器达到五层时使用熔岩爆裂，风暴打击，熔岩猛击，五层时使用闪电箭，烈焰震击能持续时使用烈焰震击，地震术，熔火爆裂，目标不在攻击范围内时使用闪电箭。提醒：风怒武器（学会前为石化武器），有熔岩猛击时副手武器使用火舌武器（否则风怒武器；绝不用于盾牌；Icy Veins 的双手都用风怒武器的步骤列为关闭状态），水之护盾或闪电之盾，头狼之魂，野性狼魂，法力值低于 65% 时使用萨满之怒，图腾，先祖指引。图腾投射、驱散和净化术由你自己掌控。",
 -- 0fb65642 English: Elemental (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Elemental). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2333] = "元素（探索赛季）",
 -- f9d25821 English: Season of Discovery Elemental from level 10 (most points in Elemental); built
 --     from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame
@@ -6488,6 +9221,10 @@ addon.translation = {
 --     Trinkets, Totemic Projection, dispels and purges stay with you.
 [2334] = "探索赛季的元素，10 级起（大部分天赋点在元素）；综合 wowsims 第 6 阶段、Wowhead 和 Icy Veins。用地震术打断。移动时：烈焰震击，闪电之盾达到八层充能时使用地震术，能量涌动触发时使用熔岩爆裂或闪电链。三个或更多敌人时：烈焰震击、闪电链、火焰新星、熔岩爆裂、八层充能时使用地震术、熔岩图腾。然后能量涌动触发时使用熔岩爆裂，保持烈焰震击，你的烈焰震击持续期间使用熔岩爆裂，八层充能时使用地震术，两个敌人时使用闪电链，闪电箭。提醒：为燃烧使用火舌武器、闪电之盾、对自己施放大地之盾、头狼之魂、野性狼魂、萨满之怒、元素掌握、图腾。饰品、图腾投射、驱散和净化术由你自己掌控。",
 -- 24f21f83 English: Restoration (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Season of Discovery (variant key: Restoration). Names in parentheses (guide or tool such as
+--     Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2335] = "恢复（探索赛季）",
 -- ff16512c English: Season of Discovery Restoration from level 10 (most points in Restoration);
 --     built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave
@@ -6510,6 +9247,8 @@ addon.translation = {
 --     Shamanistic Rage, Searing or Magma, and group totems.
 [2338] = "探索赛季的坦克，铭刻了土之道后选用；综合 Icy Veins、Wowhead、wowsims 和 Warcraft Tavern。以烈焰震击拉怪。地震术用于嘲讽近战范围内没有攻击你的目标，以及打断。两个或更多敌人时：熔火爆裂，烈焰震击，漩涡武器达到五层或能量涌动触发时使用闪电链，五层时使用火焰新星。然后保持烈焰震击，能量涌动触发时或烈焰震击持续期间使用熔岩爆裂，风暴打击，地震术，五层时使用闪电箭，熔火爆裂，冰霜震击。提醒：石化武器、闪电之盾、对自己施放头狼之魂、野性狼魂、萨满之怒、灼热图腾或熔岩图腾，以及队伍图腾。",
 -- 2628a00c English: Every tree
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Classic Era (variant key: DPS).
 [2339] = "所有天赋树",
 -- 67b0af4c English: Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built
 --     from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and
@@ -6545,6 +9284,10 @@ addon.translation = {
 --     Siphon Life. Leveling and dungeons play as the recommended premade.
 [2344] = "Icy Veins 针对有 16 个减益效果上限的服务器的列表，是推荐的术士内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。团队副本中只用你的诅咒和腐蚀术，然后是暗影箭，不用献祭也不用生命虹吸。升级和地下城与推荐的内置循环相同。",
 -- 4f0bc39e English: Tank (SoD, Metamorphosis)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2345] = "坦克（探索赛季，恶魔变形）",
 -- 1e24cbef English: Season of Discovery tank, chosen once Metamorphosis is engraved; built from
 --     wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is
@@ -6558,6 +9301,10 @@ addon.translation = {
 --     Infernal Armor stays with you.
 [2346] = "探索赛季的坦克，铭刻了恶魔变形后选用；综合 wowsims、Icy Veins、Wowhead 和 Warcraft Tavern。防御者的决心缺失或即将结束时使用暗影顺劈，灵魂之火！触发，用烧尽保持其火焰增益；三个或更多敌人时使用暗影顺劈、火焰之湖、暗影烈焰和地狱烈焰。然后是一个诅咒（痛苦诅咒，没人施放时改用鲁莽诅咒），暗影烈焰（铭刻前为献祭），引导大师的吸取生命，腐蚀术，生命虹吸，为爆燃使用燃烧，低于 35% 时在灭杀期间使用灵魂之火，并以灼热之痛作为仇恨填充。提醒：恶魔变形、邪甲术、你的宠物、献祭光环、恶魔优雅、生命值低时使用复仇、目标攻击其他人时使用威吓、对怪群使用恶魔嚎叫、诅咒增幅、宠物法力不足时使用生命分流。地狱火护甲由你自己掌控。",
 -- 91d3c82e English: Fire (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Season of Discovery (variant key: Fire). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2347] = "火焰（探索赛季）",
 -- b3afd0ce English: Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is
 --     engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish;
@@ -6601,6 +9348,8 @@ addon.translation = {
 --     proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade.
 [2354] = "wowsims 第 6 阶段针对灵魂虹吸天赋的痛苦列表，是推荐的探索赛季暗影内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。无论目标生命值如何，都以吸取灵魂作为填充，下一个步骤一到时机就会显示，你可以为它截断引导；其他任何引导则会让它完成。痛苦无常和暗影烈焰剩余 7.5 秒时续上，痛苦诅咒和腐蚀术剩余 6 秒时续上，引导大师的吸取生命，鬼影缠身，暗影箭仅在暗影冥思触发时使用，生命虹吸，法力值低于 10% 时使用生命分流。提醒与推荐的内置循环相同。",
 -- e5b321d7 English: Melee DPS
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: DPS).
 [2355] = "近战 DPS",
 -- c080d284 English: Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on
 --     Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull,
@@ -6615,6 +9364,8 @@ addon.translation = {
 --     Retaliation are listed off for Hardcore emergencies; stance dancing stays with you.
 [2356] = "1–60 级，武器和狂怒，以及所有不在防御姿态的战士，也适用于专家模式和自给自足服务器；综合 wowsims、Icy Veins 和 Wowhead。冲锋拉怪，对远处的目标使用拦截，有三个或更多敌人与你交战时使用旋风斩（学会前为雷霆一击），然后低于 20% 时斩杀优先，对没有破甲的首领叠满五层破甲攻击，嗜血，致死打击，拥有强化猛击时在挥击后立即使用猛击（按双手武器设置；可在复制的循环中修改），保留主要打击所需怒气的同时使用旋风斩，压制，学会主要打击之前使用撕裂，对生命值充足的目标使用破甲攻击，怒气接近上限时使用断筋。提醒：战斗怒吼、40 点怒气起使用英勇打击（升级期间 20 点）、对怪群使用顺劈斩、血性狂暴、横扫攻击、死亡之愿（首领：最后 30 秒）、配合死亡之愿使用鲁莽、拳击或盾击。破胆怒吼和反击风暴列为关闭状态，供专家模式紧急情况使用；姿态切换由你自己掌控。",
 -- c0b21fb1 English: Tank
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Classic Era (variant key: Protection).
 [2357] = "坦克",
 -- 6949294b English: Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a
 --     two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing
@@ -6635,6 +9386,10 @@ addon.translation = {
 --     tank; go back to Sunder when focusing one target in a crowd.
 [2360] = "Icy Veins 的“不破甲”坦克循环，适用于有四名或更多玩家能受到你怒吼影响的队伍（第 5 阶段战斗怒吼起），是推荐的坦克内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。保持挫志怒吼，复仇，盾牌猛击或嗜血，然后以战斗怒吼代替破甲攻击作为仇恨填充；盾牌猛击和盾牌格挡仅在装备盾牌时使用。提醒与推荐的坦克循环相同；在一群敌人中专注单个目标时请换回破甲攻击。",
 -- b33d1254 English: Melee DPS (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: DPS). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2361] = "近战 DPS（探索赛季）",
 -- dbdfa29c English: Season of Discovery, levels 1–60 with runes as you engrave them: two-hander,
 --     dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built
@@ -6667,6 +9422,10 @@ addon.translation = {
 --     the recommended premade.
 [2366] = "Icy Veins 的探索赛季狂怒和武器页面，是推荐的探索赛季近战 DPS 内置循环的替代方案，默认关闭：启用它并禁用那个，或提高它的优先级。低于 20% 或猝死触发时斩杀排在最前，血涌触发时使用猛击，嗜血或致死打击，旋风斩，压制，怒击，然后仅在怒气高于 60 时使用迅捷打击和断筋；不使用撕裂；仅在怒气高于 80 时使用英勇打击。提醒与推荐的内置循环相同。",
 -- ebb8b9e3 English: Tank (SoD)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Season of Discovery (variant key: Tank). Names in parentheses (guide or tool such as Icy
+--     Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern) are proper
+--     names and stay unchanged.
 [2367] = "坦克（探索赛季）",
 -- 93f460da English: Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase
 --     8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge,
@@ -6679,6 +9438,9 @@ addon.translation = {
 --     are listed off; the Gladiator swap for Execute stays with you.
 [2368] = "探索赛季的坦克，处于防御姿态时选用；综合 Wowhead 第 8 阶段和 wowsims。冲锋；两个或更多敌人时使用雷霆一击、震荡波、盾牌猛击、复仇、旋风斩和毁灭打击；然后防御者的决心缺失或即将结束时使用盾牌猛击，复仇，盾牌猛击，震荡波，斩杀，角斗士的狡诈达到五层时使用旋风斩，毁灭打击（铭刻前为破甲攻击），对精英使用挫志怒吼和雷霆一击，在盾牌猛击之前使用撕裂；盾牌猛击和盾牌格挡仅在装备盾牌时使用。提醒：战斗怒吼和命令怒吼、盾牌格挡、50 点怒气起使用英勇打击、55 点起使用顺劈斩、血性狂暴、暴怒、破釜沉舟、打断。嘲讽、盾墙、死亡之愿、鲁莽和反击风暴列为关闭状态；为斩杀切换角斗姿态由你自己掌控。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood). The standard recommended rotation for
+--     the specialization.
 [2369] = "推荐",
 -- 235cf9c7 English: Recommended for Blood tanks, chosen in the Blood specialization. Pulls from
 --     range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood
@@ -6695,6 +9457,10 @@ addon.translation = {
 --     Anti-Magic Shell (off) and big defensives are yours.
 [2370] = "推荐鲜血坦克使用，在鲜血专精中选用。从远处用爆发、冰冷触摸或死亡之握拉怪。生命值低于一半时、鲜血护盾缺失时（80 级起）以及四个冰霜和邪恶符文全部充满之前使用灵界打击；符文能量接近 90 时使用符文打击（学会前为 80 时使用凋零缠绕）；用爆发（否则冰冷触摸和暗影打击）施加疾病，68 级起用血液沸腾刷新疾病；低于 35% 时使用灵魂收割；两个鲜血符文时使用心脏打击（60 级前为鲜血打击）；疾病持续期间赤色天灾触发时使用枯萎凋零，否则使用血液沸腾；活力分流达到十一层时使用它；然后是灵界打击、心脏打击、符文打击和寒冬号角。三个敌人攻击你时：枯萎凋零，扩散疾病（有动荡之血时用血液沸腾，否则用传染）和血液沸腾。提醒：没有灵气时使用鲜血灵气、白骨之盾、寒冬号角、心灵冰冻，根据你的生命值使用符文分流、吸血鬼之血、冰封之韧、符文武器增效和天灾契约，对精英使用符文刃舞，组队首领战前使用亡者大军。它无法看到即将到来的伤害，因此反魔法护罩（关闭）和大型防御技能由你掌控。",
 -- a7eb3532 English: Health-reactive (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Blood / Wowsims). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2371] = "按生命值反应（wowsims）",
 -- a92e9e2e English: An alternative to the recommended Blood premade for raid tanks with healers,
 --     off by default: enable it and disable that one, or raise its priority. Death Strike only
@@ -6704,6 +9470,8 @@ addon.translation = {
 --     same reminders as the recommended one.
 [2372] = "作为推荐鲜血内置循环的替代，适合有治疗者配合的团队坦克，默认关闭：启用它并禁用那个，或提高它的优先级。灵界打击仅在生命值低于 70%、鲜血护盾缺失或即将消失，或冰霜和邪恶符文即将溢出前使用，而不是每有符文就用；冰霜和邪恶符文还要一秒以上才就绪时，单独的鲜血符文用于心脏打击。它没有范围伤害部分，提醒与推荐的循环相同。",
 -- 747fb182 English: Two weapons
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: FrostDualWield).
 [2373] = "双持",
 -- 0c806576 English: Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the
 --     Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast
@@ -6718,6 +9486,8 @@ addon.translation = {
 --     Death Pact when low, Army of the Dead before a group boss.
 [2374] = "推荐使用两把单手武器的冰霜（精通冰流派，Masterfrost）使用；在冰霜专精中，当你的副手持有武器时选用。以爆发或凛风冲击拉怪（单刷时用死亡之握）。黑暗援助触发或生命值低于 35% 时使用灵界打击，活力分流达到十一层时使用它，施加疾病（邪恶虫群、爆发、凛风冲击、暗影打击），低于 35% 时使用灵魂收割，杀戮机器触发或符文能量高于 89 时使用冰霜打击，白霜触发或两个冰霜符文或两个死亡符文都就绪时使用凛风冲击，符文能量低于 77 时用两个邪恶符文施放湮没，符文能量高于 76 时使用冰霜打击，湮没，凛风冲击，爆发就绪时在疾病消失前使用吸血瘟疫，40 点时使用冰霜打击，寒冬号角。三个敌人攻击你时：扩散疾病、枯萎凋零和凛风冲击。提醒：冰霜灵气、冰霜之柱、亡者复生、所有符文都用完时使用符文武器增效、寒冬号角、心灵冰冻、生命值低时使用冰封之韧和天灾契约、组队首领战前使用亡者大军。",
 -- 9562e8af English: Two-hander
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Frost).
 [2375] = "双手武器",
 -- d33a6f74 English: Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost
 --     specialization whenever the two-weapon premade does not apply. Same opening, diseases,
@@ -6728,6 +9498,8 @@ addon.translation = {
 --     premade.
 [2376] = "使用双手武器的冰霜，这是常见的升级配置；在冰霜专精中，只要双持内置循环不适用就会选用。开场、疾病、生存和范围伤害与双持内置循环相同，然后杀戮机器触发时使用湮没，符文能量高于 76 时使用冰霜打击，白霜触发时使用凛风冲击，任意一对符文充满时使用湮没，湮没，凛风冲击，吸血瘟疫，40 点时使用冰霜打击，以及寒冬号角。学会湮没（58 级）之前，用灵界打击消耗你的邪恶符文。提醒与双持内置循环相同。",
 -- 4de5fe95 English: Unholy
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Death
+--     Knight, Mists of Pandaria Classic (variant key: Unholy).
 [2377] = "邪恶",
 -- 5c6efba1 English: Recommended for Unholy, and the premade for any Death Knight Blood and Frost do
 --     not claim, including one without a specialization. Pulls from range with Outbreak or Icy
@@ -6752,6 +9524,9 @@ addon.translation = {
 --     AoE and reminders as the recommended one.
 [2380] = "作为推荐邪恶内置循环的替代，按照模拟器、wowtbc.gg、Method 和 MaxDps 的打法；默认关闭：启用它并禁用那个，或提高它的优先级。黑暗突变未生效时，凋零缠绕用于重新叠加暗影灌注；两个邪恶符文或两个死亡符文都就绪时，天灾打击优先；两个鲜血符文和两个冰霜符文都就绪时，脓疮打击优先；其余开场、疾病、范围伤害和提醒与推荐的循环相同。",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2381] = "选择专精前",
 -- 3efc9d82 English: For levels 1 to 9, or any druid who has not chosen a specialization yet; the
 --     specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends
@@ -6762,6 +9537,9 @@ addon.translation = {
 --     targeted.
 [2382] = "适用于 1 至 9 级，或尚未选择专精的德鲁伊；选择专精后由专精内置循环接管。猎豹形态下保持斜掠，在五个连击点（对濒死目标为两个）时使用凶猛撕咬，并用裂伤攒点；熊形态下使用裂伤和重殴。其他情况下以愤怒拉怪，对能存活较久的目标保持月火术，施放愤怒（移动时用月火术），独自一人且生命值低于一半时建议对自己施放回春术。你施法、旅行或没有选中敌人时它会暂停。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Balance). The standard recommended rotation for the
+--     specialization.
 [2383] = "推荐",
 -- 625c32c1 English: Recommended for Balance from level 10, after Wowhead's Phase 5 list and
 --     wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts
@@ -6776,6 +9554,9 @@ addon.translation = {
 --     or Bear Form, or have no enemy targeted.
 [2384] = "推荐平衡专精从 10 级起使用，依据 Wowhead 的第 5 阶段列表和 wowsims。保持月火术和阳炎术，并在对应的日月之蚀期间刷新它们，月蚀期间施放星辰坠落，坠星触发时以及冷却完毕时使用星涌术，五个敌人时在日蚀中使用飓风、在月蚀中使用星界风暴，月蚀期间及之后使用星火术，日蚀期间及之后使用愤怒。Rotation Master 无法读取蚀能，因此在两次日月之蚀之间，如果你最近三次施法中有星火术就继续施放星火术，否则施放愤怒。提醒：野性印记、枭兽形态、日月之蚀开始时使用化身、结束时使用超凡之盟（对精英或长时间战斗）、自然的守护、自然之力、为塞纳留斯的梦境使用自然迅捷、激活、日光术、生命值低时使用树皮术和甘霖。野性蘑菇的放置由你手动处理；野性蘑菇：引爆的提醒默认关闭。你施法、旅行、处于猎豹或熊形态，或没有选中敌人时它会暂停。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Feral). The standard recommended rotation for the
+--     specialization.
 [2385] = "推荐",
 -- 008c4d0b English: Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list.
 --     Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up,
@@ -6799,6 +9580,9 @@ addon.translation = {
 --     Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away.
 [2388] = "Icy Veins 的野性顺序（Wowhead 的撕咬规则与之一致），作为推荐野性内置循环的替代：启用它并禁用那个，或提高它的优先级。开场、野蛮咆哮、治疗之触和范围伤害相同，但目标生命值高于 25% 时连击点只用于割裂和野蛮咆哮：凶猛撕咬仅在斩杀阶段用于刷新割裂（或在学会割裂之前消耗五个连击点）。斜掠在剩余两秒时刷新，痛击仅在节能施法触发时使用，狂暴会等到 90 点能量且猛虎之怒至少还有 15 秒才就绪时使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Guardian). The standard recommended rotation for the
+--     specialization.
 [2389] = "推荐",
 -- b19b167d English: Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase
 --     5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened
@@ -6812,6 +9596,9 @@ addon.translation = {
 --     Might of Ursoc stay manual (both reminders are off by default).
 [2390] = "推荐守护坦克从 10 级起使用，依据 wowsims 和 Wowhead 的第 5 阶段列表。让你进入熊形态，从远处用精灵之火或用裂伤拉怪，对精英用痛击保持虚弱打击、用精灵之火保持破甲，受伤时使用塞纳留斯的梦境触发的治疗之触，裂伤冷却完毕即用，三个敌人时使用痛击和横扫，然后是割伤、痛击和精灵之火。猎豹形态下（野性之心）提供一个简短的伤害列表。提醒：野蛮防御未生效时使用、用激怒获取怒气、生命值低或怒气溢出时使用狂暴回复、怒气高于 90 或尖牙与利爪触发时使用重殴、目标攻击你时使用树皮术、生命值低时使用生存本能、两个敌人或首领时使用狂暴和化身、自然之力、自然的守护、塞纳里奥结界、迎头痛击、野性印记。嘲讽和乌索克之力由你手动处理（两者的提醒默认关闭）。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2391] = "推荐",
 -- de6705ed English: Recommended for Restoration from level 10, after Wowhead's Phase 5 group
 --     healing. Heals your current friendly target, or you with no target; choosing whom to heal is
@@ -6825,6 +9612,10 @@ addon.translation = {
 --     Mushroom placement, Tranquility and Genesis reminders are off by default.
 [2392] = "推荐恢复专精从 10 级起使用，依据 Wowhead 的第 5 阶段队伍治疗。治疗你当前的友方目标，没有目标时治疗你自己；治疗谁由你决定。目标带有你的持续治疗效果且生命值较低、相生已消失，或拥有丛林之魂时为接野性成长，使用迅捷治愈；附近有三人受伤时使用野性成长；自然迅捷后使用瞬发治疗之触；节能施法触发或目标濒死时使用愈合；回春术；然后站立不动时使用治疗之触和滋养。可攻击的目标会获得月火术和愤怒。提醒：对你的焦点目标保持生命绽放层数和铁木树皮（请将坦克设为焦点目标）、队伍受到伤害时使用野性蘑菇：绽放、自然之力、化身、自然的守护、自然迅捷、激活、自然之愈、塞纳里奥结界、树皮术、野性印记。野性蘑菇放置、宁静和源生的提醒默认关闭。",
 -- f3d02e30 English: Tank healing (Wowhead)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Druid,
+--     Mists of Pandaria Classic (variant key: Restoration / Wowhead). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2393] = "坦克治疗（Wowhead）",
 -- 28164e24 English: Wowhead's single-target tank-healing order, an alternative to the recommended
 --     Restoration premade for when you are assigned to the tank: enable it and disable that one, or
@@ -6834,6 +9625,9 @@ addon.translation = {
 --     reminders as the recommended premade.
 [2394] = "Wowhead 的单目标坦克治疗顺序，在你被指派治疗坦克时作为推荐恢复内置循环的替代：启用它并禁用那个，或提高它的优先级。保持选中坦克：它会在坦克身上保持三层生命绽放和回春术，伤害较重时使用愈合，伤害较轻时使用滋养，生命绽放和回春术都在滚动且坦克低于一半时使用治疗之触，并用迅捷治愈让坦克保持满血。提醒与推荐的内置循环相同。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: BeastMastery). The standard recommended rotation for
+--     the specialization.
 [2395] = "推荐",
 -- 74d539a0 English: Chosen automatically in the Beast Mastery specialization. Opens with Hunter's
 --     Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is
@@ -6849,6 +9643,9 @@ addon.translation = {
 --     Exhilaration and Deterrence reminders are off by default.
 [2396] = "在野兽控制专精中自动选择。以猎人印记和杀戮命令开场，然后：杀戮射击，杀戮命令（狂野怒火即将就绪时稍作保留），点了相应天赋时使用夺命黑鸦、山猫冲锋、凶暴野兽和你的第六层天赋射击，狂乱达到五层（或四层且即将消失）时使用集中火力，但狂野怒火期间不用，对能存活较久的目标使用毒蛇钉刺，用眼镜蛇射击刷新它，集中值达到 80 或狂野怒火期间使用奥术射击，然后是眼镜蛇射击（81 级前为稳固射击）。有两个或更多敌人与你交战时，用多重射击保持野兽顺劈斩，面对大群怪时只在集中值有余时使用杀戮命令，三个起建议使用爆炸陷阱。提醒：召出宠物、复活和治疗宠物、雄鹰守护或铁鹰守护、反制射击、热情，以及在值得的战斗中（精英、地下城或团队副本，或能存活较久的目标）使用狂野怒火、急速射击、群兽奔腾和种族技能。陷阱放置、误导、假死和防御技能由你自己掌控；意气风发和威慑的提醒默认关闭。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Marksmanship). The standard recommended rotation for
+--     the specialization.
 [2397] = "推荐",
 -- a1f9c291 English: Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot,
 --     then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on
@@ -6868,6 +9665,9 @@ addon.translation = {
 --     disable the Marksmanship premade, or raise its priority.
 [2400] = "作为射击内置循环的替代，按照 Icy Veins、Method、wowtbc.gg 和 Hekili 的打法：瞄准射击仅在目标生命值高于 80% 或急速射击、嗜血期间读条施放，多余的集中值改为在 60 点时用于奥术射击。稳固集中在剩余不到 4 秒时刷新；四个或更多敌人时多重射击优先。默认关闭：启用它并禁用射击内置循环，或提高它的优先级。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Survival). The standard recommended rotation for the
+--     specialization.
 [2401] = "推荐",
 -- 1d1f9ae1 English: Chosen automatically in the Survival specialization. Opens with Hunter's Mark,
 --     Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load,
@@ -6879,6 +9679,9 @@ addon.translation = {
 --     traps for Lock and Load procs stay with you.
 [2402] = "在生存专精中自动选择。以猎人印记、黑箭和爆炸射击开场，然后：爆炸射击冷却完毕即用，每次荷枪实弹触发时也使用，杀戮射击，对能存活较久的目标使用黑箭，你的天赋技能，用眼镜蛇射击保持毒蛇钉刺，集中值达到 75、狩猎刺激触发，或黑箭不会很快就绪时于 55 点使用奥术射击，然后是眼镜蛇射击（81 级前为稳固射击）。两个或更多敌人时：荷枪实弹触发且集中值满时优先多重射击，爆炸射击（最多五个目标），杀戮射击，黑箭，三个起使用爆炸陷阱，用多重射击消耗集中值。提醒与其他猎人内置循环相同；为触发荷枪实弹而放置陷阱由你自己掌控。",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Hunter,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2403] = "选择专精前",
 -- d00315ae English: For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast
 --     Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization.
@@ -6887,6 +9690,9 @@ addon.translation = {
 --     call, revive and mend your pet and to keep Aspect of the Hawk up.
 [2404] = "适用于 1 至 9 级以及尚未选择专精的猎人；一旦你选择专精，野兽控制、射击和生存的内置循环就会接管。以猎人印记和奥术射击拉怪，然后对能存活较久的目标使用毒蛇钉刺，三个或更多敌人时使用多重射击，奥术射击、稳固射击和自动射击。会提醒你召唤、复活和治疗宠物，并保持雄鹰守护。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Arcane). The standard recommended rotation for the
+--     specialization.
 [2405] = "推荐",
 -- 4f5292d5 English: Recommended for Arcane, from level 10 to 90 (selected in the Arcane
 --     specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc
@@ -6910,6 +9716,9 @@ addon.translation = {
 --     disable the recommended Arcane premade, or raise its priority.
 [2408] = "指南的奥术规则（Icy Veins、Wowhead、Method、wowtbc.gg），作为推荐奥术内置循环的替代：四层奥术充能时，有触发就用奥术飞弹，否则无论法力值多少都用奥术弹幕；奥术飞弹仅在四层充能时使用。其余所有内容（操控时间、炸弹、范围伤害、移动、提醒）与推荐的循环相同，只是奥术强化会在四层充能时建议使用，而不等待触发。默认关闭：启用它并禁用推荐的奥术内置循环，或提高它的优先级。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Fire). The standard recommended rotation for the
+--     specialization.
 [2409] = "推荐",
 -- 82cfe9d2 English: Recommended for Fire, from level 10 to 90 (selected in the Fire
 --     specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns
@@ -6932,6 +9741,9 @@ addon.translation = {
 --     premade, or raise its priority.
 [2412] = "Icy Veins、Method 和 wowtbc.gg 的火焰打法，作为推荐火焰内置循环的替代：炎爆术！触发会一直保留，直到热力迸发也出现，然后与你的火球术一起施放，只有在即将过期时才单独使用。其余与推荐的循环相同。默认关闭：启用它并禁用推荐的火焰内置循环，或提高它的优先级。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Frost). The standard recommended rotation for the
+--     specialization.
 [2413] = "推荐",
 -- a656a280 English: Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at
 --     two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice
@@ -6945,6 +9757,9 @@ addon.translation = {
 --     Warp and Spellsteal are off.
 [2414] = "冰霜，适用于 10 至 90 级（在冰霜专精中选用）。两层寒冰指时使用冰枪术，冰冷智慧触发时使用霜火之箭，你的天赋炸弹，寒冰宝珠，一层寒冰指时使用冰枪术，寒冰箭；87 级起，操控时间还有不到 10 秒就绪时会保留触发留给它。两个或更多敌人时：寒冰宝珠，敌人靠近时使用冰锥术和魔爆术，四个敌人站着不动时使用暴风雪。没有浮冰时移动中使用冰枪术和火焰冲击。提醒：水元素、对首领以外的目标使用冰冻术（自行放置）、与操控时间配合使用冰冷血脉、冰冷血脉期间两层寒冰指时使用操控时间、霜甲术（54 级前为熔岩护甲）、法力宝石、奥术光辉、法术反制、镜像、寒冰护体、浮冰、祈愿或能量符文。急速冷却、气定神闲、时间扭曲和法术吸取为关闭状态。",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2415] = "选择专精前",
 -- aa9bffd1 English: For levels 1 to 9, and any Mage who has not chosen a specialization yet.
 --     Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once
@@ -6953,6 +9768,9 @@ addon.translation = {
 --     reach them. Choosing a specialization at 10 switches to that specialization's premade.
 [2416] = "适用于 1 至 9 级，以及尚未选择专精的法师。霜火之箭，用火焰冲击收尾或在移动时使用，学会后在移动时使用冰枪术，三个或更多敌人处于近战范围时使用魔爆术。提醒：怪物接近你时使用冰霜新星、法术反制，以及达到相应等级后的熔岩护甲和奥术光辉。10 级选择专精后会切换到该专精的内置循环。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster). The standard recommended rotation for
+--     the specialization.
 [2417] = "推荐",
 -- 94fb9e53 English: Picked automatically in the Brewmaster specialization. Keeps Shuffle up with
 --     Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once
@@ -6966,6 +9784,10 @@ addon.translation = {
 --     Harm, Zen Meditation and Provoke stay with you.
 [2418] = "在酒仙专精中自动选择。用幻灭踢保持酒醒入定，真气容得下时就使用醉酿投，受伤时使用移花接木（低于 35% 时立即使用），用贯日击消耗能量，猛虎掌用于猛虎之力以及作为免费填充（34 级前由贯日击攒真气），轮回之触可用时使用。脱战时从远处：真气波、迷醉酒雾、对冲或醉酿投。三个或更多敌人时：碧玉疾风、火焰之息，神鹤引项踢仅在酒醒入定还有剩余时间时使用。提醒：磐牛式、帝王传承、重度醉拳时使用活血酒（酒醒入定时间充裕时中度醉拳也用）、飘渺酒六层起使用、有强力金钟罩时使用金钟罩、真气酒、白虎下凡、生命值低时使用壮胆酒、躯不坏或散魔功、切喉手。玄牛雕像的提醒为关闭状态；慈悲庇护、禅悟冥想和嚎镇八方由你自己掌控。",
 -- fbb1d180 English: Damage first (wowsims)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Brewmaster / Offensive). Names in parentheses (guide
+--     or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2419] = "伤害优先（wowsims）",
 -- e83b14c9 English: An alternative to the Brewmaster premade, off by default: enable it and disable
 --     that one, or raise its priority. Follows the simulator's damage-first list for a tank who
@@ -6974,6 +9796,9 @@ addon.translation = {
 --     Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders.
 [2420] = "作为酒仙内置循环的替代，默认关闭：启用它并禁用那个，或提高它的优先级。遵循模拟器为装备远超当前内容的坦克提供的伤害优先列表：碧玉疾风先于醉酿投，真气用于幻灭踢造成伤害，不再常规使用活血酒或金钟罩（活血酒只在 T15 的活血化瘀触发时亮起）。飘渺酒、真气酒、白虎下凡和壮胆酒仍会提醒。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Windwalker). The standard recommended rotation for
+--     the specialization.
 [2421] = "推荐",
 -- d0726f89 English: Picked automatically in the Windwalker specialization. Touch of Death when
 --     usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker
@@ -6997,6 +9822,9 @@ addon.translation = {
 --     Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60.
 [2424] = "作为踏风内置循环的替代，默认关闭：启用它并禁用那个，或提高它的优先级。Hekili 和 MaxDps 插件自带的原版 SimulationCraft 列表：猛虎之力在剩余三秒时刷新，旭日东升踢的减益效果缺失时优先使用，怒雷破留给虎眼酒（生效中或达到 15 层），虎眼酒在 20 层时，或 15 层且有真气、两个增益效果都生效时使用。三个或更多敌人时把资源花在神鹤引项踢上，仅在真气满时使用旭日东升踢，能量低于 60 时攒能量。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Mistweaver). The standard recommended rotation for
+--     the specialization.
 [2425] = "推荐",
 -- 2d084655 English: Picked automatically in the Mistweaver specialization. With a friendly target
 --     it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are
@@ -7011,12 +9839,18 @@ addon.translation = {
 --     Revival (reminder off) and Healing Sphere stay with you.
 [2426] = "在织雾专精中自动选择。选中友方目标时治疗该目标：复苏之雾冷却完毕即用，附近有三名或更多盟友受伤时使用振魂引，用移花接木和你的真气天赋获取真气，队伍受伤时使用碧玉疾风或神鹤引项踢，活力之雾达到五层时使用升腾之雾，目标低于 80% 时使用抚慰之雾，然后在引导期间使用氤氲之雾和升腾之雾。选中敌对目标时进行拳疗：熟能生巧触发时使用猛虎掌和幻灭踢以保持猛虎之力和青龙之忱，真气满时使用幻灭踢，活力之雾达到五层时使用升腾之雾，用复苏之雾和移花接木获取真气，贯日击。提醒：灵龙式、帝王传承、组队时的青龙雕像、空闲时使用法力茶、雷光聚神茶、真气酒、对低于 35% 的友方使用作茧缚命、白虎下凡、化瘀术、防御技能、切喉手。治疗谁由你选择；还魂术（提醒为关闭状态）和疗伤珠由你自己掌控。",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Monk,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2427] = "选择专精前",
 -- e00ba6b1 English: For levels 1 to 9, or any monk who has not chosen a specialization; a
 --     specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power
 --     up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise.
 [2428] = "适用于 1 至 9 级，或尚未选择专精的武僧；选择专精后由专精内置循环接管。保持猛虎式和猛虎之力，消耗两点真气施放幻灭踢，受伤时使用移花接木，否则使用贯日击。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Retribution). The standard recommended rotation for
+--     the specialization.
 [2429] = "推荐",
 -- a115bc01 English: Recommended for Retribution, from level 10 in the Retribution specialization.
 --     Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends
@@ -7043,6 +9877,9 @@ addon.translation = {
 --     is left to you.
 [2432] = "作为推荐惩戒内置循环的替代，默认关闭：启用它并禁用那个，或提高它的优先级。每次冷却完毕和战争艺术重置时的驱邪术优先；异端裁决缺失时无论神圣能量多少都施放，并在最后 20 秒内于 3 点时刷新；然后是十字军打击、审判、圣殿骑士的裁决和愤怒之锤（拥有圣洁怒火时在复仇之怒期间优先）。两个或更多敌人时使用十字军打击、圣光之锤、审判、神圣风暴和愤怒之锤。复仇之怒和远古列王守卫仅对精英建议使用。指南中遇到任何顺劈情况就用正义圣印的做法交给你自己。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2433] = "推荐",
 -- 0c1b3a03 English: Recommended for Protection, from level 10 in the Protection specialization.
 --     Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's
@@ -7069,6 +9906,9 @@ addon.translation = {
 --     with the same three-enemy AoE order. Boss-timed defensives are yours.
 [2436] = "作为推荐防护内置循环的替代，默认关闭：启用它并禁用那个，或提高它的优先级。遵循模拟器的坦克列表：正义盾击会等到神圣能量满，除非你的生命值低于 40% 或神圣意志让它免费；荣耀堡垒超过两层时，在永恒之火即将消失前施放；保持圣洁护盾；神圣复仇者和复仇之怒冷却完毕即用。能量生成技能依次为十字军打击、审判，然后是复仇者之盾、神圣愤怒、90 级天赋和愤怒之锤，三个敌人时的范围伤害顺序相同。配合首领时机的防御技能由你掌控。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2437] = "推荐",
 -- ba77c874 English: For Holy, from level 10 in the Holy specialization. With a friend targeted it
 --     heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt,
@@ -7084,6 +9924,9 @@ addon.translation = {
 --     healing stay with you.
 [2438] = "适用于神圣专精，10 级起在神圣专精中选用。选中友方时进行治疗：3 点神圣能量（或神圣意志）时，你附近有三人受伤则使用黎明圣光，否则对没有永恒之火的目标施放永恒之火，再否则使用荣耀圣令；神圣震击冷却完毕即用；圣光灌注用于圣光普照或神圣之光，三层无私治愈用于圣光普照或圣光闪现；低于 35% 时使用圣光闪现；队伍受伤时使用圣光普照；神圣之光，然后用圣光术补满。选中敌人时造成伤害：神圣震击、审判、十字军打击、神圣棱镜、处决宣判、愤怒之锤、谴责。提醒：另一个圣印（正义圣印除外）生效或没有圣印时使用洞察圣印、祝福、责难、对你的焦点目标施放圣光道标和圣洁护盾（请将坦克设为焦点目标）、法力值低于 60% 时使用神圣恳求、三人低于 70% 时使用圣光之锤和你的治疗冷却技能、对濒死目标使用圣疗术。治疗谁、驱散和鼠标悬停治疗由你自己掌控。",
 -- 5ea8498f English: Before a specialization
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Paladin,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2439] = "选择专精前",
 -- fce883af English: For levels 1 to 9, and any paladin who has not chosen a specialization yet; a
 --     specialization's premade takes over as soon as you pick one. Pulls from range with Judgment,
@@ -7093,6 +9936,9 @@ addon.translation = {
 --     hurt.
 [2440] = "适用于 1 至 9 级，以及尚未选择专精的圣骑士；选择专精后由该专精的内置循环接管。从远处用审判拉怪，然后是十字军打击和审判，单刷且生命值低于一半时使用制裁之锤，低于 40% 时使用荣耀圣令。提醒：不在命令圣印时施放命令圣印（24 级起为真理圣印）、王者祝福、责难，以及脱战后受伤时使用圣光闪现。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Discipline). The standard recommended rotation for
+--     the specialization.
 [2441] = "推荐",
 -- 360a55ef English: Discipline healing from level 10 to 90, chosen in the Discipline
 --     specialization. Target a friend to heal them: Power Word: Shield when they are low, before
@@ -7108,6 +9954,9 @@ addon.translation = {
 --     on the tank.
 [2442] = "戒律治疗，适用于 10 至 90 级，在戒律专精中选用。选中友方即可治疗：目标生命值较低时、拉怪前以及为了全神贯注大约每 12 秒使用真言术：盾；光明涌动触发时使用快速治疗；苦修；目标生命值很低时使用快速治疗；你们两人都受伤时使用联结治疗；愈合祷言；三名盟友受伤时使用治疗祷言和你的第六层天赋；强效治疗术；移动时使用恢复；用治疗术补满。灵魂护壳期间建议使用治疗祷言或强效治疗术。选中敌人即可通过救赎进行治疗：苦修、真言术：慰或神圣之火、对怪群使用你的第六层天赋、单刷时使用暗言术：痛、惩击。提醒：心灵之火、真言术：韧、福音传播达到五层时使用天使长、心灵专注、对濒死目标使用痛苦压制、为法力使用暗影魔或摧心魔、能量灌注、绝望祷言。由你自己掌控：治疗谁、灵魂护壳的时机（可开启的提醒）、真言术：障、虚空转移以及坦克身上的恩赐层数。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Holy). The standard recommended rotation for the
+--     specialization.
 [2443] = "推荐",
 -- 1d7fb6cd English: Holy healing from level 10 to 90, chosen in the Holy specialization. Target a
 --     friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when
@@ -7133,6 +9982,9 @@ addon.translation = {
 --     one to use it.
 [2446] = "默认关闭。Icy Veins 的神圣顺序，按你的脉轮选择。脉轮：佑状态下：三名盟友受伤时使用圣言术：佑，恢复，治疗之环，愈合祷言，治疗祷言，然后仅在紧急时使用联结治疗和快速治疗。其他情况：恢复，圣言术：静，愈合祷言，强效治疗术，治疗术，联结治疗，快速治疗，最后是真言术：盾，学会治疗术之前以快速治疗作为填充。切换、提醒和伤害列表与推荐的神圣内置循环相同；启用它并禁用那个即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Shadow). The standard recommended rotation for the
+--     specialization.
 [2447] = "推荐",
 -- 6c0c75e0 English: Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens
 --     with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind
@@ -7157,6 +10009,9 @@ addon.translation = {
 --     recommended one to use it.
 [2450] = "默认关闭。Warcraft Tavern 的暗影顺序：三颗暗影宝珠时使用噬灵疫病，低于 20% 时使用暗言术：灭，心灵震爆，吸血鬼之触，暗言术：痛，黑暗涌动触发时使用心灵尖刺，你的第六层天赋，精神鞭笞。与推荐的暗影内置循环不同，它绝不会在噬灵疫病期间提前精神鞭笞，也不会为心灵震爆保留噬灵疫病。开场、移动、怪群和提醒步骤相同；启用它并禁用推荐的循环即可使用。",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Priest,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2451] = "无专精",
 -- 31c78194 English: For levels 1 to 9, or any priest who has not chosen a specialization yet. On an
 --     enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal
@@ -7165,6 +10020,9 @@ addon.translation = {
 --     premade.
 [2452] = "适用于 1 至 9 级，或尚未选择专精的牧师。敌人：目标能存活足够久时使用暗言术：痛，然后是惩击。友方：目标生命值低时使用快速治疗，否则使用真言术：盾。提醒：心灵之火，以及单刷受伤时对自己施放护盾。10 级选择专精后会切换到该专精自己的内置循环。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Assassination). The standard recommended rotation for
+--     the specialization.
 [2453] = "推荐",
 -- be1774f6 English: Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for
 --     Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo,
@@ -7189,6 +10047,9 @@ addon.translation = {
 --     this one, enable it and disable the recommended one.
 [2456] = "默认关闭。Icy Veins 和 Method 的顺序：消失冷却完毕即用，以便在潜行状态下使用毁伤，战斗时间足够长时仇杀冷却完毕即用，毒伤仅在五个连击点时使用，保持割裂，低于 35% 或盲点触发时使用斩击，毁伤。四到八个敌人：刀扇，三个连击点或以上时使用割裂；九个或更多：只用刀扇和毒伤。推荐的奇袭内置循环遵循较新的第 5 阶段建议；要使用这个，请启用它并禁用推荐的循环。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat). The standard recommended rotation for the
+--     specialization.
 [2457] = "推荐",
 -- 43003559 English: Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5).
 --     Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is
@@ -7213,6 +10074,10 @@ addon.translation = {
 --     one.
 [2460] = "默认关闭，在第 5 阶段已被取代。Icy Veins、Warcraft Tavern、Method 和 wowtbc.gg 在决战奥格瑞玛版本之前的顺序：切割，保持要害打击，长时间单体战斗中使用五连击点割裂以及刺骨，以影袭作为攒点技能。提醒和怪群打法与推荐的战斗内置循环相同。仅在你遵循这些指南时选择它；启用它并禁用推荐的循环。",
 -- 972be132 English: Anticipation (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Combat / Hekili). Names in parentheses (guide or tool
+--     such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft Tavern)
+--     are proper names and stay unchanged.
 [2461] = "预感（Hekili）",
 -- a677df00 English: Off by default. The Hekili MoP order for Combat with Anticipation: Revealing
 --     Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four
@@ -7222,6 +10087,9 @@ addon.translation = {
 --     with Anticipation talented. Enable it and disable the recommended Combat premade to use it.
 [2462] = "默认关闭。Hekili 针对带预感天赋的战斗专精的熊猫人之谜顺序：要害打击是唯一的攒点技能，嗜血期间也是如此；终结技会等待深度洞悉、四层预感充能或暗影之刃即将就绪，然后是切割、对一两个能存活较久的目标使用割裂、七个敌人时使用猩红风暴以及刺骨；盗匪之诈达到 11 层时提前刷新切割；四个敌人起使用刀扇。仅在点了预感天赋时适用。启用它并禁用推荐的战斗内置循环即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety). The standard recommended rotation for the
+--     specialization.
 [2463] = "推荐",
 -- 53ec1c4b English: Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and
 --     Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the
@@ -7236,6 +10104,10 @@ addon.translation = {
 --     Expose Armor (listed but off).
 [2464] = "推荐使用暗影集中的敏锐专精使用，适用于 10 至 90 级（第 5 阶段依据 wowsims 和 Wowhead）。潜行或暗影之舞期间：预谋、拉怪前的切割、五个连击点的终结技、伏击、锁喉。其他时候：切割；五个连击点时，切割和割裂即将消失就续上，两者都在时使用刺骨；死亡标记；用出血保持其流血效果；目标没有攻击你时使用背刺（持匕首时），否则使用出血。三个或更多敌人时：切割、猩红风暴、刺骨和刀扇。单刷时会加入复原和肾击。提醒：毒药、脚踢、75 点能量且切割和割裂都生效时使用暗影之舞、洞悉弱点即将结束时使用消失、伺机待发、暗影之舞和潜行之外使用暗影之刃、暗影步、单刷时使用闪避。由你自己掌控：站到目标背后（RM 无法看到朝向）、嫁祸诀窍和破甲（已列出但关闭）。",
 -- a7cbb172 English: Subterfuge (Warcraft Tavern)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Subtlety / WarcraftTavern). Names in parentheses
+--     (guide or tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics,
+--     Warcraft Tavern) are proper names and stay unchanged.
 [2465] = "诡诈（Warcraft Tavern）",
 -- 01394d1f English: Chosen automatically instead of the Shadow Focus premade when your tier-1
 --     talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the
@@ -7247,6 +10119,9 @@ addon.translation = {
 --     them to trinket procs, as Tavern suggests, is up to you.
 [2466] = "当你的第一层天赋为诡诈时（Warcraft Tavern 的天赋构建），会代替暗影集中内置循环自动选择。拉怪前使用预谋和切割；潜行、暗影之舞或诡诈的延续期间，在五个连击点使用终结技，然后尽可能多地使用伏击。两到三个敌人：保持割裂，五个连击点用于猩红风暴而不是刺骨；四个或更多时加入刀扇。单个目标：切割、割裂、刺骨、用出血保持其流血效果、持匕首时在背后使用背刺，否则使用出血。暗影之舞和消失在 60 点能量且切割生效时作为提醒；按 Tavern 的建议配合饰品触发使用它们由你决定。",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Rogue,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2467] = "无专精",
 -- 60f6bea5 English: For levels 1 to 9, or a rogue who has not chosen a specialization yet; each
 --     specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot
@@ -7256,6 +10131,9 @@ addon.translation = {
 --     solo.
 [2468] = "适用于 1 至 9 级，或尚未选择专精的潜行者；选择专精后由各专精的内置循环接管。潜行时单刷以偷袭开场，否则用伏击或影袭；脱战时建议潜行；从两个连击点起使用切割，单刷受伤时使用复原和肾击，四个连击点时使用刺骨（目标即将死亡时两个），影袭。提醒：学会后的毒药、脚踢、单刷时使用闪避。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Elemental). The standard recommended rotation for the
+--     specialization.
 [2469] = "推荐",
 -- 013214a9 English: Recommended for Elemental from level 10, chosen in the Elemental
 --     specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury),
@@ -7271,6 +10149,9 @@ addon.translation = {
 --     Spiritwalker's Grace, Flame Shock on extra targets and where to stand.
 [2470] = "推荐元素专精从 10 级起使用，在元素专精中选用。Wowhead 的顺序：以闪电箭开场（有怒火释放时用熔岩爆裂），有怒火释放时使用元素释放，对能存活较久的目标在烈焰震击缺失或即将结束时施放烈焰震击，在烈焰震击上使用熔岩爆裂（每次熔岩奔腾触发时也使用），元素冲击，闪电之盾达到六层充能且烈焰震击还剩 6 秒时使用大地震击，两个敌人时使用闪电链，闪电箭。四个或更多敌人攻击你时：近战时使用熔岩图腾、免费的熔岩爆裂、升腾期间使用熔岩弹射、闪电链。移动时只显示瞬发法术。提醒：闪电之盾、火舌武器、灼热图腾、对精英和首领使用火元素图腾、元素掌握、熔岩爆裂后使用升腾、先祖迅捷、组队时使用风暴之鞭图腾和嗜血、风剪、为法力使用雷霆风暴、生命值低时使用萨满之怒和星界转移。地震术和土元素图腾已列出但关闭。由你自己掌控：灵魂行者的恩赐、对额外目标施放烈焰震击以及站位。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Enhancement). The standard recommended rotation for
+--     the specialization.
 [2471] = "推荐",
 -- 30126acf English: Recommended for Enhancement from level 10, chosen in the Enhancement
 --     specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements
@@ -7304,6 +10185,9 @@ addon.translation = {
 --     recommended premade.
 [2476] = "默认关闭；切换条件与推荐的增强内置循环相同，因此要使用它请启用它并禁用那个。Icy Veins 的顺序：风暴打击，然后在消耗漩涡武器之前使用熔岩猛击，五层时，或从三层起能在下次挥击前完成时使用闪电箭，元素释放然后烈焰震击，大地震击。四个或更多敌人时用熔岩猛击扩散烈焰震击并使用火焰新星；对怪群用闪电链代替闪电箭。战斗中萨满之怒冷却完毕即建议使用；其他提醒与推荐的内置循环相同。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration). The standard recommended rotation for
+--     the specialization.
 [2477] = "推荐",
 -- 786ac591 English: Recommended for Restoration from level 10, chosen in the Restoration
 --     specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater
@@ -7318,6 +10202,10 @@ addon.translation = {
 --     them when your raid assigns them.
 [2478] = "推荐恢复专精从 10 级起使用，在恢复专精中选用。治疗你的友方目标（Rotation Master 无法选择治疗谁）：先祖迅捷期间使用强效治疗波，低于 35% 时使用治疗之涌，有魔法或诅咒效果时使用净化灵魂，附近有三名盟友受伤时先元素释放再治疗之雨，激流，队伍受到伤害时使用治疗链，低于 60% 时使用强效治疗波，低于 90% 时使用治疗波。目标可攻击时改为造成伤害（烈焰震击、熔岩爆裂、元素冲击、闪电箭）。提醒：水之护盾、大地生命武器、对你的焦点目标施放大地之盾、有人受伤时使用治疗之泉图腾、法力之潮图腾、队伍受到重创时使用治疗之潮图腾、元素掌握或先祖指引、对生命值低的目标使用先祖迅捷、移动时使用灵魂行者的恩赐、嗜血、风剪。升腾和灵魂链接图腾已列出但关闭：在你的团队分配时使用它们。",
 -- 98ae06d3 English: Health ladder (Hekili)
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Restoration / Hekili). Names in parentheses (guide or
+--     tool such as Icy Veins, Wowhead, SimulationCraft, wowsims, Hekili, Mobalytics, Warcraft
+--     Tavern) are proper names and stay unchanged.
 [2479] = "生命值阶梯（Hekili）",
 -- db083550 English: Off by default; same switch as the recommended Restoration premade, so enable
 --     it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your
@@ -7328,6 +10216,9 @@ addon.translation = {
 --     Earth Shock.
 [2480] = "默认关闭；切换条件与推荐的恢复内置循环相同，因此要使用它请启用它并禁用那个。Hekili 的列表会在你的目标身上保持大地之盾和激流，治疗之泉图腾和治疗之雨一消失就补上，然后按 40 码内队伍的平均生命值进行治疗：低于 80% 时使用治疗链，目标低于 70% 时使用治疗波，低于 60% 时使用强效治疗波，低于 40% 时使用治疗之涌，治疗之潮图腾、先祖指引和法力之潮图腾也在同一阶梯上。可攻击的目标会获得伤害技能以及大地震击。",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Shaman,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2481] = "无专精",
 -- 8c70a307 English: For levels 1 to 9, and any Shaman who has not chosen a specialization yet;
 --     every specialization premade takes over once you pick one. Lightning Bolt to pull from range,
@@ -7335,6 +10226,9 @@ addon.translation = {
 --     while out of melee range. Keeps Lightning Shield up.
 [2482] = "适用于 1 至 9 级，以及尚未选择专精的萨满祭司；选择专精后由各专精内置循环接管。从远处用闪电箭拉怪，独自一人且生命值低时使用治疗之涌，根源打击，大地震击，不在近战范围时使用闪电箭。保持闪电之盾。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Affliction). The standard recommended rotation for
+--     the specialization.
 [2483] = "推荐",
 -- e15e8094 English: Recommended for Affliction from level 10 to 90 (chosen in the Affliction
 --     specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn
@@ -7355,6 +10249,9 @@ addon.translation = {
 --     shard. Enable it and disable the recommended Affliction premade to use it.
 [2486] = "默认关闭。Warcraft Tavern 和 Method 的灵魂碎片策略：持续伤害效果的维持与推荐的痛苦内置循环相同，但鬼影缠身会留到四块灵魂碎片或黑暗灵魂：哀难时，低于 20% 时只要有一块灵魂碎片就用灵魂燃烧和灵魂交换刷新所有持续伤害效果。启用它并禁用推荐的痛苦内置循环即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Demonology). The standard recommended rotation for
+--     the specialization.
 [2487] = "推荐",
 -- daf1315b English: Recommended for Demonology from level 10 to 90 (chosen in the Demonology
 --     specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of
@@ -7376,6 +10273,9 @@ addon.translation = {
 --     premade to use it.
 [2490] = "默认关闭。指南的共识（Method、wowtbc.gg、Warcraft Tavern、Wowhead）：与推荐的恶魔学识内置循环相同，只是施法者形态下恶魔变形会等到 900 点恶魔之怒或黑暗灵魂，灵魂之火只在熔火之心达到八层或低于 25% 时施放，因此层数会在恶魔形态下消耗。启用它并禁用推荐的恶魔学识内置循环即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Destruction). The standard recommended rotation for
+--     the specialization.
 [2491] = "推荐",
 -- b2f67ea8 English: For Destruction from level 10 to 90 (chosen in the Destruction specialization).
 --     Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers
@@ -7388,12 +10288,18 @@ addon.translation = {
 --     yourself), Doomguard or Infernal, Ember Tap and defensives.
 [2492] = "适用于毁灭专精，10 至 90 级（在毁灭专精中选用）。预读烧尽，保持献祭，绝不让燃烧积压两层充能，在 3.5 块爆燃灰烬时或黑暗灵魂：易爆期间把爆燃灰烬花在混乱之箭上（低于 20% 时用暗影灼烧），爆燃用于烧尽，并以烧尽作为填充；濒死的目标使用暗影灼烧。三个或更多敌人时：火焰之雨，四个时使用硫磺烈火，然后是献祭、燃烧和烧尽，并在你的爆燃灰烬耗尽时提示关闭硫磺烈火。移动时：暗影灼烧、燃烧、邪焰。提醒：你的宠物或魔典：恶魔牺牲、克索诺斯之焰、黑暗意图、黑暗灵魂、两个或更多敌人时使用浩劫（请自行对第二个目标施放）、末日守卫或地狱火、灰烬转换和防御技能。",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warlock,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2493] = "无专精",
 -- a4d9e0da English: For a Warlock without a specialization (levels 1 to 9, or later before you
 --     choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt.
 --     Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls.
 [2494] = "适用于没有专精的术士（1 至 9 级，或之后选择专精之前）。用腐蚀术拉怪并保持它，生命值低于一半时使用吸取生命，暗影箭。提醒：单刷时召唤虚空行者（组队时召唤小鬼），以及拉怪间隙的治疗石。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Arms). The standard recommended rotation for the
+--     specialization.
 [2495] = "推荐",
 -- 6b5ddd88 English: Recommended for Arms from level 10 to 90, picked in the Arms specialization.
 --     Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing
@@ -7419,6 +10325,9 @@ addon.translation = {
 --     that one to use it.
 [2498] = "默认关闭。Icy Veins 和 Wowhead 的武器顺序：巨人打击窗口之外使用压制，仅在怒气高于 80 时使用猛击，把怒气留到窗口内，而不是用猛击作为填充。窗口内：致死打击、猛击、压制、英勇投掷。目标生命值低于 20% 时：巨人打击、致死打击、斩杀、压制、巨龙怒吼。两个敌人时使用横扫攻击，三个或更多时使用雷霆一击怪群列表。英勇打击或顺劈斩仅在怒气接近上限时使用。提醒与推荐的武器内置循环相同。启用它并禁用那个即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Fury). The standard recommended rotation for the
+--     specialization.
 [2499] = "推荐",
 -- 32c50d3a English: Recommended for Fury from level 10 to 90, picked in the Fury specialization.
 --     Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one
@@ -7443,6 +10352,9 @@ addon.translation = {
 --     reminders as the recommended Fury premade. Enable it and disable that one to use it.
 [2502] = "默认关闭。Icy Veins 的狂怒顺序在巨人打击窗口内优先使用剑刃风暴或巨龙怒吼，并在目标生命值低于 20% 时把斩杀排在嗜血之前。窗口之外：巨人打击、嗜血、怒击仅在两层充能时使用、血脉贲张触发时使用狂风打击、怒吼、狂风打击。四个或更多敌人时：为激怒使用嗜血、用旋风斩叠到三层绞肉机、怒击。英勇打击或顺劈斩仅在怒气接近上限时使用。提醒与推荐的狂怒内置循环相同。启用它并禁用那个即可使用。",
 -- d70604e8 English: Recommended
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Protection). The standard recommended rotation for
+--     the specialization.
 [2503] = "推荐",
 -- f3fe2f00 English: Tanking from level 10 to 90, picked in the Protection specialization. Charge or
 --     Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon
@@ -7457,45 +10369,70 @@ addon.translation = {
 --     Left to you: whom to taunt, and Block versus Barrier against magic.
 [2504] = "坦克循环，适用于 10 至 90 级，在防护专精中选用。用冲锋或英勇投掷拉怪。对精英和首领用毁灭打击保持三层破甲，巨龙怒吼，剑刃风暴，三个敌人时使用震荡波，三个或更多时雷霆一击冷却完毕即用。然后用复仇消耗盾牌格挡剩下的最后怒气，盾牌猛击，坚守阵地触发时使用复仇，为重伤使用毁灭打击，生命值低于 60% 时使用乘胜追击，复仇，为虚弱打击使用雷霆一击，斩杀，风暴之锤，为获取怒气使用怒吼，以及毁灭打击（26 级前为破甲攻击）。提醒：防御姿态、没有怒吼时施放怒吼、盾牌格挡未生效时使用、受伤且怒气有余时使用盾牌屏障、最后通牒、激动触发或怒气接近上限时使用英勇打击或顺劈斩、挫志怒吼、狂暴之怒、狂怒回复、生命值低时使用破釜沉舟和盾墙、你的进攻冷却技能、拳击。嘲讽和英勇飞跃已列出但关闭。由你自己掌控：嘲讽谁，以及面对魔法伤害时选择盾牌格挡还是盾牌屏障。",
 -- 442034ab English: Unspecialized
+-- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Warrior,
+--     Mists of Pandaria Classic (variant key: Unspecialized). For characters that have not chosen a
+--     specialization yet.
 [2505] = "无专精",
 -- 9e4fdb28 English: For levels 1 to 9, or until you choose a specialization. Charge to pull,
 --     Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle
 --     Stance if you are in no stance.
 [2506] = "适用于 1 至 9 级，或选择专精之前。以冲锋拉怪，乘胜追击，斩杀，30 点怒气时使用英勇打击；没有处于任何姿态时提醒你进入战斗姿态。",
 -- ddbcf067 English: Silent
+-- Context: Entry in the General settings log level dropdown: no messages at all.
 [2507] = "静默",
 -- 35eb2a7f English: Set Pieces
+-- Context: Condition type title: equipped set pieces count. Also an icon name in the icon picker.
 [2508] = "套装件数",
 -- 64cd5df4 English: Weapon Imbue
+-- Context: Condition type title: temporary weapon enchants (poison, imbue). Also an icon name in
+--     the icon picker.
 [2509] = "武器灌注",
 -- 754e76f8 English: Assisted Combat Suggestion
+-- Context: Condition type title: the spell currently recommended by Blizzard's Assisted Combat.
+--     Also an icon name in the icon picker.
 [2510] = "战斗辅助建议",
 -- 3fa562a1 English: Blizzard's suggestion
+-- Context: Step description of a rotation step that follows the game's built-in rotation helper
+--     suggestion; also shown in the rotation help.
 [2511] = "暴雪的建议",
 -- 90dc6c00 English: Recommends the spell Blizzard's Assisted Combat suggests
 [2512] = "推荐暴雪战斗辅助所建议的法术",
 -- 423a9284 English: Assisted Combat Rotation Spell
 [2513] = "战斗辅助循环法术",
 -- 70a4e33d English: Assisted Combat Available
+-- Context: Condition type title: whether Blizzard's Assisted Combat is available. Also an icon name
+--     in the icon picker.
 [2514] = "战斗辅助可用",
 -- 4de7b468 English: Blizzard's suggestion highlight
+-- Context: General settings: label of the dropdown for how the suggested spell of Blizzard's
+--     Assisted Combat is highlighted; also a help topic title.
 [2515] = "暴雪建议高亮",
 -- 019a5647 English: Rotation Master's glow
+-- Context: Choice in that dropdown: only Rotation Master's own glow is shown.
 [2516] = "Rotation Master 的发光",
 -- e24abd9f English: Blizzard's Assisted Highlight
+-- Context: Choice in that dropdown: only the game's native highlight is shown.
 [2517] = "暴雪的辅助高亮",
 -- b6c1d862 English: Both
+-- Context: Choice in that dropdown: both highlights are shown.
 [2518] = "两者",
 -- cd3a1b13 English: Assisted Combat is not available for your current specialization, so Blizzard's
 --     highlight stays off.
 [2519] = "战斗辅助不适用于你当前的专精，因此暴雪的高亮保持关闭。",
 -- 9aab05d6 English: Engraved Rune
+-- Context: Condition type title: whether a given Season of Discovery rune is engraved. Also an icon
+--     name in the icon picker.
 [2520] = "已雕刻符文",
 -- ea43639d English: ranks in %s
+-- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
 [2521] = "%s 中的等级",
 -- 1dd73b64 English: Show talent tree
+-- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
+--     from.
 [2522] = "显示天赋树",
 -- 3e590ed8 English: Hero Talents
+-- Context: Heading label in the talent window and a source name in the talent condition editor for
+--     the hero talent trees.
 [2523] = "英雄天赋",
 -- 8107299a English: The talent tree cannot be shown during combat.
 [2524] = "战斗中无法显示天赋树。",
@@ -7506,8 +10443,10 @@ addon.translation = {
 -- 80ea0eae English: Click a talent to choose it for this condition.
 [2527] = "点击一个天赋，即可为此条件选择它。",
 -- 6f1df5fc English: Selected: %s
+-- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
 [2528] = "已选择：%s",
 -- 7a5e089f English: Ranks: %d
+-- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
 [2529] = "等级：%d",
 -- 26722619 English: Choose one of the talents on this node.
 [2530] = "请选择此节点上的其中一个天赋。",
@@ -7518,58 +10457,92 @@ addon.translation = {
 -- 8a667e66 English: Close the build shown in your own talent window first.
 [2533] = "请先关闭你自己天赋窗口中显示的配置。",
 -- f831a06b English: Arms
+-- Context: Specialization name (Warrior, first tree). Used in the specialization condition and
+--     rotation scope; follows the game's naming.
 [2534] = "武器",
 -- 8d6b26d9 English: Fury
+-- Context: Specialization name (Warrior, second tree).
 [2535] = "狂怒",
 -- 0e97ad02 English: Protection
+-- Context: Specialization name (Warrior or Paladin tank tree).
 [2536] = "防护",
 -- 1d79fa22 English: Retribution
+-- Context: Specialization name (Paladin damage tree).
 [2537] = "惩戒",
 -- 5d6f7884 English: Beast Mastery
+-- Context: Specialization name (Hunter, first tree).
 [2538] = "野兽控制",
 -- 03f000fc English: Marksmanship
+-- Context: Specialization name (Hunter, second tree).
 [2539] = "射击",
 -- 8302496d English: Survival
+-- Context: Specialization name (Hunter, third tree).
 [2540] = "生存",
 -- 727eeac8 English: Assassination
+-- Context: Specialization name (Rogue, first tree).
 [2541] = "奇袭",
 -- fca36d62 English: Subtlety
+-- Context: Specialization name (Rogue, third tree).
 [2542] = "敏锐",
 -- a1b14db9 English: Discipline
+-- Context: Specialization name (Priest, first tree).
 [2543] = "戒律",
 -- b12b36cf English: Enhancement
+-- Context: Specialization name (Shaman, second tree).
 [2544] = "增强",
 -- 6a3c6c77 English: Restoration
+-- Context: Specialization name (Shaman or Druid healer tree).
 [2545] = "恢复",
 -- ed64274f English: Affliction
+-- Context: Specialization name (Warlock, first tree).
 [2546] = "痛苦",
 -- c0e4afa6 English: Demonology
+-- Context: Specialization name (Warlock, second tree).
 [2547] = "恶魔学识",
 -- e848f2c5 English: Destruction
+-- Context: Specialization name (Warlock, third tree).
 [2548] = "毁灭",
 -- d05e07b7 English: Balance
+-- Context: Specialization name (Druid, first tree).
 [2549] = "平衡",
 -- 1f397413 English: Initial
+-- Context: Specialization name for a character of level 1 to 9 that has not chosen a specialization
+--     yet.
 [2550] = "初始",
 -- 7214aeb1 English: Specialization
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     specialization.
 [2551] = "专精",
 -- 20356d41 English: specialization %d
+-- Context: Fallback text for a specialization that has no known name; %d is the numeric
+--     specialization ID.
+-- %d #1: %d #1: the specialization number, used when the game gives no name, e.g. 64
 [2552] = "专精 %d",
 -- d22bb30c English: Weapon Type
+-- Context: Condition type title and dropdown label in the condition editor: the kind of weapon
+--     equipped.
 [2553] = "武器类型",
 -- ed3897f1 English: Main Hand
+-- Context: Equipment slot option in the equipped-item condition: the main-hand weapon slot.
 [2554] = "主手",
 -- 3f0b51a2 English: Ranged
+-- Context: Equipment slot option in the equipped-item condition and a checkbox label in the weapon
+--     condition: the ranged weapon slot.
 [2555] = "远程",
 -- 9e9c1c72 English: Nothing equipped
+-- Context: Category option in the equipped-item condition: the slot is empty.
 [2556] = "未装备任何物品",
 -- d1c5d83c English: Any weapon
+-- Context: Category option in the equipped-item condition: any weapon.
 [2557] = "任意武器",
 -- 723e86de English: One-handed weapon
+-- Context: Category option in the equipped-item condition: a one-handed weapon.
 [2558] = "单手武器",
 -- 432f6b17 English: Two-handed weapon
+-- Context: Category option in the equipped-item condition: a two-handed weapon.
 [2559] = "双手武器",
 -- e55ba453 English: Ranged weapon
+-- Context: Category option in the equipped-item condition: a ranged weapon.
 [2560] = "远程武器",
 -- ef734bb6 English: Held in off hand
 [2561] = "持于副手",
@@ -7580,10 +10553,16 @@ addon.translation = {
 [2563] = "暴雪可能建议的法术中有 1 个不在你的动作条上，因此该卡片会跳过它。",
 -- cc735c50 English: %d of the spells Blizzard can suggest aren't on your action bars, so the card
 --     skips them.
+-- %d #1: %d #1: how many suggested spells are missing from the action bars, e.g. 3
 [2564] = "暴雪可能建议的法术中有 %d 个不在你的动作条上，因此该卡片会跳过它们。",
 -- 29258402 English: %s, and %d more
+-- Context: End of a spell list in a tooltip: %s is the first few spell names (comma-separated) not
+--     on the action bars, %d is how many more are not shown, giving 'A, B, C, and 4 more'.
+-- %s #1: %s #1: the names of the first missing spells, separated by commas, e.g. "Fireball, Frostbolt, Ice Lance"
+-- %d #2: %d #2: how many more are not listed, e.g. 4
 [2565] = "%s 以及另外 %d 个",
 -- f657f763 English: Not on your action bars: %s.
+-- %s #1: %s #1: the names of the spells that are not on the action bars, separated by commas, e.g. "Fireball, Frostbolt"
 [2566] = "不在你的动作条上：%s。",
 -- d60bbc94 English: Rotation Master highlights a step by lighting the action button that holds it.
 --     No action bar button holds this action right now, so this step is skipped and the next step
@@ -7601,22 +10580,33 @@ addon.translation = {
 --     action bar to use them.
 [2569] = "Rotation Master 通过点亮持有该动作的按钮来高亮动作，因此无法高亮这些法术。对于动作条上有的建议，该卡片仍然有效：只有当建议的是这些法术时才会跳过，并改用下一步。把它们放到动作条上即可使用。",
 -- c6fa3ead English: Skipped, not on your action bars (they cannot be highlighted): %s.
+-- %s #1: %s #1: the skipped steps, separated by semicolons, each with its name and place, e.g. "Fireball (step 3); Frostbolt (cooldown)"
 [2570] = "已跳过，不在你的动作条上（无法高亮）：%s。",
 -- 435eac3e English: step %s
+-- Context: Location in a report line about an unbound rotation step (a step whose spell is not on
+--     the action bars): %s is the step's position number, e.g. 'step 3'.
+-- %s #1: %s #1: the number of the step in the rotation, counting from 1 (a "?" when unknown), e.g. 3
 [2571] = "步骤 %s",
 -- 09182dd8 English: cooldown
+-- Context: Location in a report line about an unbound rotation step: the step sits in the cooldowns
+--     section rather than the numbered list (lowercase).
 [2572] = "冷却",
 -- c9e1a473 English: Currently Matches
+-- Context: Headline on a rotation card when the condition is true right now.
 [2573] = "当前符合",
 -- 6fafaf30 English: Does Not Currently Match
 [2574] = "当前不符合",
 -- f70be4d8 English: Unavailable: %s
+-- %s #1: %s #1: why the live status cannot be read, a short reason (translated), e.g. "unreadable right now"
 [2575] = "不可用：%s",
 -- a463bcd3 English: unreadable right now
+-- Context: Reason shown in a card headline or tooltip when a condition's value cannot be read in
+--     the current situation (lowercase).
 [2576] = "目前无法读取",
 -- 8a0dcf23 English: the condition could not be evaluated
 [2577] = "无法评估该条件",
 -- 01e62ea3 English: Checked %d seconds ago.
+-- %d #1: %d #1: how many seconds ago the condition was last checked, e.g. 2
 [2578] = "%d 秒前检查。",
 -- 37822fb8 English: Rotation Master is advising this step now.
 [2579] = "Rotation Master 当前正在建议这个步骤。",
@@ -7625,46 +10615,79 @@ addon.translation = {
 -- 42ee3bdd English: This rotation is advising now.
 [2581] = "此循环当前正在给出建议。",
 -- 81f39eb5 English: Mounted
+-- Context: Option in the player state condition: the player is on a mount.
 [2582] = "骑乘中",
 -- 54230802 English: Swimming
+-- Context: Option in the player state condition: the player is swimming.
 [2583] = "游泳中",
 -- 6192f184 English: Falling
+-- Context: Option in the player state condition: the player is falling.
 [2584] = "坠落中",
 -- 75a4c2fe English: Flying
+-- Context: Option in the player state condition: the player is flying.
 [2585] = "飞行中",
 -- 4ae9e2a1 English: In a Rested Area
 [2586] = "在休息区域",
 -- 5cc337a5 English: Boss Encounter
+-- Context: Condition type title: a boss fight is in progress. Also an icon name in the icon picker.
 [2587] = "首领战",
 -- 87a6b205 English: Instance Difficulty
+-- Context: Label of the dropdown in the instance condition: the difficulty of the dungeon or raid.
 [2588] = "副本难度",
 -- fce1b615 English: Mythic+ Keystone Level
+-- Context: Condition type title: the level of the Mythic+ keystone of the current dungeon. Also the
+--     title of its help page.
 [2589] = "史诗钥石等级",
 -- 26566745 English: Hero Talent Tree
+-- Context: Condition type title and dropdown label in the condition editor: the player's active
+--     hero talent tree. Also an icon name in the icon picker.
 [2590] = "英雄天赋树",
 -- 6115798c English: Spell Proc Glow
+-- Context: Condition type title: the spell currently has the proc glow on its action button. Also
+--     an icon name in the icon picker.
 [2591] = "法术触发高亮",
 -- c563bae9 English: Trinket 1
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the first
+--     trinket slot instead of a named item.
 [2592] = "饰品 1",
 -- 4595f2ac English: Trinket 2
+-- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the second
+--     trinket slot instead of a named item.
 [2593] = "饰品 2",
 -- a91c3e5e English: Pet Happiness
+-- Context: Condition type title and dropdown label in the condition editor: a Hunter pet's mood.
+--     Also an icon name in the icon picker.
 [2594] = "宠物快乐值",
 -- 37108f8a English: Unhappy
+-- Context: Option in the Pet Happiness dropdown: the lowest of the three moods (the pet is
+--     unhappy).
 [2595] = "不开心",
 -- 47bd2907 English: Content
+-- Context: Option in the Pet Happiness dropdown: the middle mood (the pet is content, neither happy
+--     nor unhappy).
 [2596] = "满意",
 -- 725accb5 English: Happy
+-- Context: Option in the Pet Happiness dropdown: the highest mood (the pet is happy).
 [2597] = "快乐",
 -- b575a12f English: Stagger
+-- Context: Condition type title: the Brewmaster's Stagger pool. Also the label of its comparison
+--     and its help page title.
 [2598] = "Stagger",
 -- fbfcff79 English: Eclipse Direction
+-- Context: Label of the dropdown in the Eclipse condition: which Eclipse direction the bar is
+--     heading toward.
 [2599] = "日月蚀方向",
 -- cc23ba6c English: a Solar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Solar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Solar Eclipse'.
 [2600] = "日蚀",
 -- 1dc3e526 English: a Lunar Eclipse
+-- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Lunar (Druid
+--     Balance); lowercase, reads as 'the bar is heading for a Lunar Eclipse'.
 [2601] = "月蚀",
 -- f2fcd3f7 English: Energy
+-- Context: Label of the comparison in the Eclipse condition: the Eclipse bar's energy value; the
+--     other measure is Direction.
 [2602] = "能量",
 -- d8877585 English: only Retail has this
 [2603] = "仅正式服有此功能",
@@ -7682,26 +10705,46 @@ addon.translation = {
 -- aca68a8a English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned
 --     rotations.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2609] = "有 %d 个第 2 版之前的循环正存放在存档中，在你认领之前不会运行。请打开 Rotation Master，选择“循环”，然后选择“恢复未分配的循环”。",
 -- a64b8edb English: %d rotations from before version 2 are waiting in an archive and do not run
 --     until you adopt them.
+-- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
 [2610] = "有 %d 个第 2 版之前的循环正存放在存档中，在你认领之前不会运行。",
 -- 48845bff English: Dismiss
+-- Context: Button in the banner about unassigned rotations: closes the banner without opening the
+--     archive (verb).
 [2611] = "忽略",
 -- e11a6591 English: Adopt all %d for %s
+-- Context: Button in the recovery window that adopts every listed rotation at once: %d is how many
+--     rotations, %s is the destination (a class name or 'This character').
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2612] = "将全部 %d 个认领给%s",
 -- c727dc7d English: Adopt all %d from specialization %d for %s
+-- %d #1: %d #1: how many rotations of this specialization will be adopted, e.g. 3
+-- %d #2: %d #2: the specialization number, e.g. 64
+-- %s #3: %s #3: who will own them, e.g. "your Mage class"
 [2613] = "将全部 %d 个（专精 %d）认领给%s",
 -- dcf0a82d English: Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation
 --     that cannot be adopted stays in the archive.
+-- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
+-- %s #2: %s #2: who will own them, e.g. "your Mage class"
 [2614] = "要把 %d 个未分配的循环认领给%s吗？每个循环都保留其标识符。无法认领的循环会留在存档中。",
 -- bf328c9e English: Adopted %d of %d. These stay in the archive: %s
+-- %d #1: %d #1: how many rotations were adopted, e.g. 4
+-- %d #2: %d #2: how many were attempted, e.g. 5
+-- %s #3: %s #3: the names of those that were not adopted, separated by commas, e.g. "Old Fire"
 [2615] = "已认领 %d / %d。以下仍留在存档中：%s",
 -- 23bfc44f English: Player State
+-- Context: Condition type title: groups simple player states (mounted, swimming, flying ...). Also
+--     an icon name in the icon picker.
 [2616] = "玩家状态",
 -- 68a2f69b English: Group Count
+-- Context: Condition type title: the number of players in the group. Also its help page title.
 [2617] = "队伍计数",
 -- de24e677 English: Eclipse
+-- Context: Condition type title: the Druid Eclipse bar. Also its help page title.
 [2618] = "日月蚀",
 -- 5baf9a05 English: your group's main tank
 [2619] = "你队伍的主坦克",
@@ -7720,8 +10763,12 @@ addon.translation = {
 -- 1f321239 English: your group's assigned healer's
 [2626] = "你队伍中被指定的治疗者的",
 -- 343dc906 English: your group's leader
+-- Context: Phrase for the unit choice 'group leader' in condition summaries, e.g. '<this> {{!is|is
+--     not}} your group's leader'; the next string is its possessive form.
 [2627] = "你队伍的队长",
 -- 1d3180fa English: your group's leader's
+-- Context: Possessive form of 'your group's leader' used in condition summaries before a noun, e.g.
+--     'your group's leader's health'.
 [2628] = "你队伍的队长的",
 -- fad43537 English: Absolute health target (negative means deficit) or percentage fraction.
 [2629] = "绝对生命值目标（负数表示缺口）或百分比小数。",
@@ -8178,6 +11225,7 @@ addon.translation = {
 -- d27c5ef2 English: Lookup key.
 [2780] = "查找键。",
 -- d746509f English: Lua pattern character-class separator, default %s for whitespace.
+-- %s #1: %s #1: not a placeholder; it is the literal Lua pattern class for whitespace, shown to the user as text, e.g. "default %s for whitespace". Keep %s exactly as written.
 [2781] = "Lua 模式的字符类分隔符，默认为 %s，表示空白字符。",
 -- 3aeb0664 English: Mark the positive wording as the primary named alternative.
 [2782] = "将肯定措辞标记为主要的命名备选项。",
@@ -8986,6 +12034,8 @@ addon.translation = {
 --     select both.
 [3041] = "noheals 只选择伤害；nodmg 只选择治疗；其他可读的值会同时选择两者。",
 -- 02586670 English: Translation (%s): %s
+-- %s #1: %s #1: the name of the game language, e.g. "German"
+-- %s #2: %s #2: the translators' names, separated by commas, e.g. "Anna, Boris"
 [4043] = "翻译（%s）：%s",
 -- 7e412986 English: the %s-marked unit
 -- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries
