@@ -21,7 +21,9 @@ local function tuple(...)
     return { n = select('#', ...), ... }
 end
 
--- True when value is neither a secret nor inaccessible; a throwing check counts as unreadable.
+-- Tells whether a game value may be read: it is neither a secret nor inaccessible.
+-- @param value any  The value to test.
+-- @return boolean  True when the value is readable; false when it is secret or inaccessible, or when the check throws.
 local function readable(value)
     local secret = rawget(_G, 'issecretvalue')
 
@@ -58,8 +60,9 @@ local function field(t, k)
     end
 end
 
--- Returns a byte counter as a whole non-negative number up to 2^53 - 1 (a string of at most 16 digits is converted),
--- or nil when it is anything else.
+-- Converts a byte counter to a whole non-negative number up to 2^53 - 1.
+-- @param v any  The counter; a string of at most 16 digits is converted.
+-- @return number|nil  The whole number; nil when the value is anything else.
 local function bytes(v)
     if not readable(v) then
         return
@@ -78,7 +81,9 @@ local function bytes(v)
     end
 end
 
--- Reads the run's clock under pcall; returns a finite number or nil.
+-- Reads the run's clock under pcall.
+-- @param run table  The capture state; its clock function is called.
+-- @return number|nil  The finite time; nil when the clock fails or returns something else.
 local function now(run)
     local ok, v = pcall(run.clock)
 
@@ -107,7 +112,9 @@ end
 local decisionSetter, decisionBound, decisionOwner
 
 -- One-shot handoff from main.lua of the function that installs or clears the evaluator's decision counter sink.
--- Returns true on the first valid call; later calls do nothing.
+-- @param setter function  Called with a sink function(scope, event) to install it, or with nil to clear it.
+-- @return boolean|nil  True on the first valid call; nil (and nothing changes) on later calls, for another owner or for
+--   a non-function.
 function addon:BindCPURuntimeDecisionCounts(setter)
     if self ~= addon or decisionBound or type(setter) ~= 'function' then
         return
@@ -118,8 +125,11 @@ function addon:BindCPURuntimeDecisionCounts(setter)
     return true
 end
 
--- Sets up the run's decision tables (rotation and cooldown rows, nine counters each) and the sink the evaluator calls
--- with (scope, event) for each reached decision. The sink only counts while a measured dispatch is executing.
+-- Sets up the run's decision tables (rotation and cooldown rows, nine counters each) and the sink the evaluator calls.
+-- @param run table  The capture state; the decision* fields are created.
+--
+-- The sink is called with (scope, event) for each reached decision, and only counts while a measured dispatch is
+-- executing.
 local function decisionPrepare(run)
     run.decisionComplete = 0
     run.decisionAvailable = type(decisionSetter) == 'function'
@@ -160,6 +170,7 @@ local function decisionPrepare(run)
 end
 
 -- Gives the run's sink to the evaluator, when the handoff happened.
+-- @param run table  The capture state.
 local function decisionInstall(run)
     if run.decisionAvailable then
         decisionOwner = run
@@ -168,6 +179,7 @@ local function decisionInstall(run)
 end
 
 -- Removes the sink, but only if this run is the one that installed it.
+-- @param run table  The capture state.
 local function decisionRestore(run)
     if decisionOwner == run then
         decisionOwner = nil
@@ -176,6 +188,7 @@ local function decisionRestore(run)
 end
 
 -- Adds one dispatch's scratch counts to the totals, only when the whole dispatch was counted cleanly.
+-- @param run table  The capture state.
 local function decisionAccumulate(run)
     if not run.decisionSampleOK or not run.decisionScratch or decisionOwner ~= run then
         return
@@ -190,7 +203,9 @@ local function decisionAccumulate(run)
     end
 end
 
--- Appends the decision section of the report (counts, caveats about what was reached) to lines.
+-- Appends the decision section of the report (counts, caveats about what was reached).
+-- @param lines string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
 local function decisionReport(lines, run)
     lines[#lines + 1] = 'Decisions: complete='
         .. (run.decisionComplete or 0)
@@ -243,8 +258,10 @@ local phaseNames = {
     'publication+tail',
 }
 
--- True while the evaluation profile root, its child lookup wrapper and the native marker function are still the ones
+-- Tells whether the evaluation profile root, its child lookup wrapper and the native marker function are still the ones
 -- the run captured.
+-- @param run table  The capture state.
+-- @return boolean|nil  True while all three are unchanged; false or nil otherwise.
 local function phaseCurrent(run)
     return run.phaseRoot
         and rawequal(rawget(addon, 'evaluationProfile'), run.phaseRoot)
@@ -253,7 +270,10 @@ local function phaseCurrent(run)
 end
 
 -- Prepares the phase rows and builds the child lookup wrapper that drops a native marker at each of the six expected
--- lookups, in order. If the profile shape is not recognized, phases are simply left unavailable for the run.
+-- lookups, in order.
+-- @param run table  The capture state; the phase* fields and childWrapper are created.
+--
+-- If the profile shape is not recognized, phases are simply left unavailable for the run.
 local function phasePrepare(run)
     decisionPrepare(run)
     run.phaseComplete = 0
@@ -295,6 +315,7 @@ local function phasePrepare(run)
 end
 
 -- Swaps in the child lookup wrapper, only if nothing else changed the profile since phasePrepare.
+-- @param run table  The capture state.
 local function phaseInstall(run)
     if
         run.phaseRoot
@@ -319,8 +340,15 @@ local function invalidSnapshotCounter(value)
 end
 
 -- Splits one dispatch's native event list into seven consecutive phase intervals (time and byte differences) and adds
--- them to the run. A dispatch whose markers are missing, out of order or not monotonic is dropped whole, so phase rows
--- only ever hold complete samples.
+-- them to the run.
+-- @param run table  The capture state.
+-- @param metrics table|nil  The native measurement result of the dispatch (its events list holds the six markers).
+-- @param elapsed number  The dispatch's total elapsed milliseconds.
+-- @param allocated number|nil  The dispatch's gross allocated bytes; nil when unavailable.
+-- @param deallocated number|nil  The dispatch's gross deallocated bytes; nil when unavailable.
+--
+-- A dispatch whose markers are missing, out of order or not monotonic is dropped whole, so phase rows only ever hold
+-- complete samples.
 local function phaseAccumulate(run, metrics, elapsed, allocated, deallocated)
     if not run.samplePhaseOK or run.phasePosition ~= 6 or not phaseCurrent(run) then
         return
@@ -412,9 +440,12 @@ local function poll()
     return finite(value) and tostring(value) or 'unavailable'
 end
 
--- Timer ticks the idle gate let through or skipped; skipped ticks never reach
--- EvaluateNextAction, so they are not dispatches in this capture.
--- Returns a flat copy of the idle gate and lean plan counters (scalars only), read at a capture boundary.
+-- Copies the idle gate and lean plan counters (scalars only) at a capture boundary.
+-- @return table  {interval=string, evaluated, skipped, built, polls, key, generation, context, age}; interval is the
+--   idle_poll setting as text or "unavailable", the rest are numbers or nil.
+--
+-- Timer ticks the idle gate let through or skipped; skipped ticks never reach EvaluateNextAction, so they are not
+-- dispatches in this capture.
 local function idleGate()
     local gate = rawget(addon, 'idleGate')
     local value = field(field(rawget(addon, 'db'), 'profile'), 'idle_poll')
@@ -438,7 +469,8 @@ end
 -- here, and report reads/normal evaluator dispatches never re-observe selection.
 local selectionSub = string.sub
 
--- Returns "none", "scoped", "raw" or "unavailable" for the current rotation selection, without exposing the identifier.
+-- Classifies the current rotation selection without exposing the identifier.
+-- @return string  "none", "scoped", "raw" or "unavailable".
 local function selectedKey()
     local value = rawget(addon, 'currentRotation')
 
@@ -487,8 +519,10 @@ local diagnosticSpecs = {
 
 local diagnosticRoutes = { idle = true, managed = true, unavailable = true, fallback = true, retired = true }
 
--- Returns "cached", "direct" or "unavailable" from the cache mode provider, trusting it only while addon still holds
--- that very function.
+-- Reads the observation cache mode from the cache mode provider, trusting it only while addon still holds that very
+-- function.
+-- @param provider function|nil  The GetCacheDiagnosticMode function captured at the boundary.
+-- @return string  "cached", "direct" or "unavailable".
 local function observationMode(provider)
     if type(provider) ~= 'function' or not rawequal(rawget(addon, 'GetCacheDiagnosticMode'), provider) then
         return 'unavailable'
@@ -506,8 +540,11 @@ local function observationMode(provider)
     return 'unavailable'
 end
 
--- Copies one runtime diagnostic provider's state and counters into a table of scalars; { state = "unavailable" } when
--- the provider is missing, throws or was replaced during the call.
+-- Copies one runtime diagnostic provider's state and counters into a table of scalars.
+-- @param spec table  The entry of diagnosticSpecs (method, label, state, fields).
+-- @param provider function|nil  The provider function captured at the boundary.
+-- @return table  {state=string, <field>=number|nil, ...}; {state="unavailable"} when the provider is missing, throws or
+--   was replaced during the call.
 local function diagnosticSnapshot(spec, provider)
     local snapshot = { state = 'unavailable' }
 
@@ -543,6 +580,7 @@ local function diagnosticSnapshot(spec, provider)
 end
 
 -- Records the cache mode and the first snapshot of every diagnostic provider at capture start.
+-- @param run table  The capture state.
 local function diagnosticStart(run)
     run.cacheModeProvider = rawget(addon, 'GetCacheDiagnosticMode')
     run.cacheModeStart = observationMode(run.cacheModeProvider)
@@ -555,6 +593,7 @@ local function diagnosticStart(run)
 end
 
 -- Records the cache mode and the closing snapshot of every diagnostic provider at capture end.
+-- @param run table  The capture state.
 local function diagnosticEnd(run)
     run.cacheModeEnd = observationMode(run.cacheModeProvider)
 
@@ -567,7 +606,9 @@ local function diagnosticEnd(run)
     end
 end
 
--- Appends the cache mode and the capture deltas of each diagnostic provider's counters to lines.
+-- Appends the cache mode and the capture deltas of each diagnostic provider's counters.
+-- @param lines string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
 local function diagnosticReport(lines, run)
     lines[#lines + 1] = 'Observation cache: start='
         .. (run.cacheModeStart or 'unavailable')
@@ -598,8 +639,13 @@ end
 -- Report and dispatch
 -- ============================================================================
 
--- Renders the finished run as report text. status is "complete", "stopped", "cancelled" or "invalid", and reason says
--- why a run was invalidated. Gross allocation is reported as such: it is not retained heap or evidence of a leak.
+-- Renders the finished run as report text.
+-- @param run table  The capture state.
+-- @param status string  "complete", "stopped", "cancelled" or "invalid".
+-- @param reason string|nil  Why a run was invalidated.
+-- @return string  The report lines joined by newlines.
+--
+-- Gross allocation is reported as such: it is not retained heap or evidence of a leak.
 local function report(run, status, reason)
     local lines = {
         'Rotation Master native runtime capture: ' .. status .. (reason and ' (' .. reason .. ')' or ''),
@@ -699,8 +745,12 @@ local function report(run, status, reason)
 end
 
 -- Ends the run exactly once: takes the closing snapshots, restores EvaluateNextAction, the child lookup and the
--- decision sink, cancels the timer, stores the report and calls the optional OnCPURuntimeCaptureFinished hook. The
--- original dispatch function is restored only if the wrapper is still the installed one.
+-- decision sink, cancels the timer, stores the report and calls the optional OnCPURuntimeCaptureFinished hook.
+-- @param run table  The capture state; nothing happens if it is not the active run or is already finishing.
+-- @param status string  "complete", "stopped", "cancelled" or "invalid".
+-- @param reason string|nil  Why a run was invalidated.
+--
+-- The original dispatch function is restored only if the wrapper is still the installed one.
 local function finish(run, status, reason)
     if active ~= run or run.phase == 'finishing' then
         return
@@ -741,6 +791,9 @@ local function finish(run, status, reason)
 end
 
 -- Returns the original function's results from a packed pcall, rethrowing its error with the original error value.
+-- @param result table  The packed pcall result: result[1] is the success flag, the rest are the results or the error,
+--   result.n is the count.
+-- @return any  The original function's results, unchanged (any number of values).
 local function originalResult(result)
     if not result[1] then
         error(result[2], 0)
@@ -750,9 +803,15 @@ local function originalResult(result)
 end
 
 -- The wrapper installed over addon.EvaluateNextAction. Measures an outer dispatch through the native profiler, running
--- the original exactly once inside it, and returns the original's results unchanged. Nested dispatches are only
--- counted. Any surprise (a replaced API, an unusable clock, a callback that did not run once with the same arguments)
--- ends the capture as invalid and falls through to the original, so evaluation is never altered or lost.
+-- the original exactly once inside it.
+-- @param run table  The capture state.
+-- @param self table  The addon, as passed to EvaluateNextAction; any other value is passed straight to the original.
+-- @param ... any  The remaining arguments of EvaluateNextAction.
+-- @return any  The original's results unchanged (any number of values).
+--
+-- Nested dispatches are only counted. Any surprise (a replaced API, an unusable clock, a callback that did not run once
+-- with the same arguments) ends the capture as invalid and falls through to the original, so evaluation is never
+-- altered or lost.
 local function dispatch(run, self, ...)
     if not rawequal(self, addon) or not current(run) then
         return run.original(self, ...)
@@ -792,6 +851,10 @@ local function dispatch(run, self, ...)
     local exact = true
 
     -- The callback the native profiler measures: runs the original once, and only with the arguments it was given.
+    -- @param ... any  The arguments the profiler hands over; they must equal the dispatch's own arguments to count as
+    --   exact.
+    -- @return string|nil  The marker "RM:runtime" when the original ran; nil when the callback was closed or entered
+    --   again.
     local function once(...)
         if not open then
             return
@@ -910,9 +973,11 @@ end
 -- Public API
 -- ============================================================================
 
--- Starts a capture of duration seconds (default 10, 1 to 60). Returns true, or false and a reason code (for example
--- "already-running", "cumulative-capture-running" or "native-profiler-unavailable"). Refuses to run beside the
--- cumulative CPU profile.
+-- Starts a native runtime capture. Refuses to run beside the cumulative CPU profile.
+-- @param duration number|nil  Seconds to capture, 1 to 60; nil means 10.
+-- @return boolean  True when the capture started.
+-- @return string|nil  The reason code when false (for example "already-running", "cumulative-capture-running" or
+--   "native-profiler-unavailable"); nil when true.
 function addon:StartCPURuntimeCapture(duration)
     if not rawequal(self, addon) then
         return false, 'invalid-owner'
@@ -962,6 +1027,9 @@ function addon:StartCPURuntimeCapture(duration)
     active = run
 
     -- Retires the starting run and returns the failure for the caller.
+    -- @param reason string  The reason code to report.
+    -- @return boolean  Always false.
+    -- @return string  The reason code passed in.
     local function reject(reason)
         if active == run then
             active = nil
@@ -1063,7 +1131,9 @@ function addon:StartCPURuntimeCapture(duration)
     return true
 end
 
--- Ends the running capture as "stopped", keeping its report. Returns true, or false and a reason code.
+-- Ends the running capture as "stopped", keeping its report.
+-- @return boolean  True when a capture was stopped.
+-- @return string|nil  The reason code when false ("invalid-owner" or "not-running"); nil when true.
 function addon:StopCPURuntimeCapture()
     if not rawequal(self, addon) then
         return false, 'invalid-owner'
@@ -1076,8 +1146,11 @@ function addon:StopCPURuntimeCapture()
     return true
 end
 
--- Ends the running capture as "cancelled" (the report says so). Returns true, or false and a reason code. Called by
--- addon:OnDisable (Diagnostics/cpu.lua) and by the cancel action of the performance window.
+-- Ends the running capture as "cancelled" (the report says so).
+-- @return boolean  True when a capture was cancelled.
+-- @return string|nil  The reason code when false ("invalid-owner" or "not-running"); nil when true.
+--
+-- Called by addon:OnDisable (Diagnostics/cpu.lua) and by the cancel action of the performance window.
 function addon:CancelCPURuntimeCapture()
     if not rawequal(self, addon) then
         return false, 'invalid-owner'
@@ -1095,7 +1168,9 @@ function addon:IsCPURuntimeCaptureRunning()
     return active ~= nil
 end
 
--- Returns a one-line status while a capture runs, else the last report, or nil and "not-captured".
+-- Returns the status or the report of the native runtime capture.
+-- @return string|nil  A one-line status while a capture runs, else the last report; nil when none was captured.
+-- @return string|nil  "not-captured" when the first value is nil; nil otherwise.
 function addon:GetCPURuntimeCaptureReport()
     if active then
         return string.format(

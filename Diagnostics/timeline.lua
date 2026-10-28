@@ -65,7 +65,10 @@ local function readable(value)
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
--- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
+-- Formats a value for the report.
+-- @param value any  The value to show.
+-- @return string  "secret" for an unreadable value, "nil", a number to three decimals when it has a fraction, otherwise
+--   tostring.
 local function show(value)
     if not readable(value) then
         return 'secret'
@@ -80,7 +83,11 @@ local function show(value)
     return tostring(value)
 end
 
--- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
+-- pcall that tolerates a missing function.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return boolean  The pcall success flag; false when fn is not callable.
+-- @return any  The function's results (any number), the error value, or "missing" when fn is not callable.
 local function protect(fn, ...)
     if type(fn) ~= 'function' then
         return false, 'missing'
@@ -95,8 +102,8 @@ local function timeline(name)
     return type(space) == 'table' and space[name] or nil
 end
 
--- Returns the saved list of timeline reports (RotationMasterDB.diagnostics.timeline), creating it, or nil when the
--- saved variables are not loaded.
+-- Returns the saved list of timeline reports (RotationMasterDB.diagnostics.timeline), creating it.
+-- @return table|nil  The list; nil when the saved variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
 
@@ -121,8 +128,9 @@ local function store()
     return reports
 end
 
--- Appends a report (time stamp and lines table) to the store and drops the oldest beyond MAX_REPORTS. Returns the
--- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
+-- Appends a report to the store and drops the oldest beyond MAX_REPORTS.
+-- @param lines string[]  The report lines; kept by reference, so the watch can keep appending.
+-- @return table|nil  The stored entry {at, lines}; nil when nothing can be stored.
 local function save(lines)
     local reports = store()
 
@@ -144,7 +152,9 @@ end
 -- Report
 -- ============================================================================
 
--- One event's fields: readable ones with their value, secret ones as such.
+-- Describes one event's fields: readable ones with their value, secret ones as such.
+-- @param info any  The event info record from C_EncounterTimeline.GetEventInfo.
+-- @return string  The fields as "name=value" separated by spaces, or a note that the record is secret or not a table.
 local function describeInfo(info)
     if not readable(info) then
         return 'record is secret'
@@ -167,7 +177,9 @@ local function describeInfo(info)
     return table.concat(parts, ' ')
 end
 
--- Adds the report lines for one timeline event id: its state, time remaining, track and blocked flag, then its info.
+-- Adds the report lines for one timeline event ID: its state, time remaining, track and blocked flag, then its info.
+-- @param add function  The report's add(text, ...) function.
+-- @param id any  The event ID from the timeline's event list.
 local function eventLines(add, id)
     local okState, state = protect(timeline('GetEventState'), id)
     local okLeft, left = protect(timeline('GetEventTimeRemaining'), id)
@@ -189,6 +201,7 @@ end
 
 -- Adds the one-shot report to add(): client and secret-restriction state, which timeline functions exist, their
 -- answers, the event list (first MAX_EVENTS events in detail) and the sorted event list.
+-- @param add function  Appends one formatted line to the report.
 local function snapshot(add)
     add('== Encounter timeline probe')
     local client = addon.Platform and addon.Platform.GetClientInfo and addon.Platform:GetClientInfo() or {}
@@ -270,8 +283,10 @@ end
 
 local watcher
 
--- Ends the running watch: cancels its timer, unregisters its events and prints where to read the result. A no-op when
--- no watch is running.
+-- Ends the running watch: cancels its timer, unregisters its events and prints where to read the result.
+-- @param self table  The addon (for CancelTimer and print).
+--
+-- A no-op when no watch is running.
 local function finish(self)
     if not watcher then
         return
@@ -290,12 +305,15 @@ local function finish(self)
     self:print(L['Timeline watch finished. Run /rm debug timeline show to view it.'])
 end
 
--- Builds the one-shot report and returns its lines (at most MAX_LINES). A failure inside the probe becomes a line of
--- the report instead of an error.
+-- Builds the one-shot report.
+-- @return string[]  The report lines (at most MAX_LINES). A failure inside the probe becomes a line of the report
+--   instead of an error.
 function addon:BuildTimelineDiagnostic()
     local lines = {}
 
     -- Appends one formatted line, ignoring everything past MAX_LINES.
+    -- @param text string  The line, or a format string when arguments follow.
+    -- @param ... any  Values for the format string.
     local function add(text, ...)
         if #lines >= MAX_LINES then
             return
@@ -313,9 +331,12 @@ function addon:BuildTimelineDiagnostic()
     return lines
 end
 
--- Handler of /rm debug timeline. argument is "", "show", "stop" or a number of seconds (1 to MAX_WATCH): without
--- seconds it saves the report and opens it; with seconds it also watches, adding a line per second and one per event
--- as it arrives, then finishes by itself. Returns the report lines.
+-- Handler of /rm debug timeline: saves the report and opens it, or watches.
+-- @param argument string|nil  "", "show", "stop" or a number of seconds (1 to MAX_WATCH).
+-- @return string[]|nil  The report lines; nil for "show", "stop" and a bad argument.
+--
+-- Without seconds it saves the report and opens it; with seconds it also watches, adding a line per second and one per
+-- event as it arrives, then finishes by itself.
 function addon:RunTimelineDiagnostic(argument)
     argument = (argument or ''):match('^%s*(.-)%s*$')
 

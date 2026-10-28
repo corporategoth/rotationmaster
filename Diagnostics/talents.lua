@@ -27,7 +27,10 @@ local function readable(value)
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
--- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
+-- Formats a value for the report.
+-- @param value any  The value to show.
+-- @return string  "secret" for an unreadable value, "nil", a number to three decimals when it has a fraction, otherwise
+--   tostring.
 local function show(value)
     if not readable(value) then
         return 'secret'
@@ -42,8 +45,11 @@ local function show(value)
     return tostring(value)
 end
 
--- A short, flat description of a value: scalars as is, a list by its first
--- members, a record by its first fields (sorted), never deeper than that.
+-- Describes a value in a short, flat form: scalars as is, a list by its first members, a record by its first fields
+-- (sorted), never deeper than that.
+-- @param value any  The value to describe.
+-- @param keys string[]|nil  The fields to print of a record, in this order; nil prints the first sorted keys.
+-- @return string  The description.
 local function describe(value, keys)
     if not readable(value) then
         return 'secret'
@@ -111,7 +117,11 @@ local function describe(value, keys)
     return '{' .. table.concat(parts, ' ') .. (#names > 16 and ' ...' or '') .. '}'
 end
 
--- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
+-- pcall that tolerates a missing function.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return boolean  The pcall success flag; false when fn is not callable.
+-- @return any  The function's results (any number), the error value, or "missing" when fn is not callable.
 ---@return boolean ok
 ---@return any ...
 local function call(fn, ...)
@@ -122,7 +132,10 @@ local function call(fn, ...)
     return pcall(fn, ...)
 end
 
--- Returns "present" when namespace.name (or the global name when namespace is nil) is a function, else "missing".
+-- Tells whether an API function exists.
+-- @param namespace string|nil  The global table the function lives in; nil means the global name itself.
+-- @param name string  The function name.
+-- @return string  "present" when namespace.name (or the global name) is a function, else "missing".
 local function presence(namespace, name)
     local space = namespace and rawget(_G, namespace)
 
@@ -133,8 +146,8 @@ local function presence(namespace, name)
     return type(rawget(_G, name)) == 'function' and 'present' or 'missing'
 end
 
--- Returns the saved list of talent reports (RotationMasterDB.diagnostics.talents), creating it, or nil when the saved
--- variables are not loaded.
+-- Returns the saved list of talent reports (RotationMasterDB.diagnostics.talents), creating it.
+-- @return table|nil  The list; nil when the saved variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
 
@@ -164,8 +177,10 @@ local NODE_KEYS = {
     'maxRanks'
 }
 
--- Returns a new line list and an add(text, ...) function that appends to it, formatting arguments through show and
--- stopping with a note at MAX_LINES.
+-- Creates a new line list with a function that appends to it.
+-- @return string[]  The line list.
+-- @return function  add(text, ...): appends a line, formatting its arguments through show and stopping with a note at
+--   MAX_LINES.
 local function newReport()
     local lines = {}
 
@@ -196,7 +211,11 @@ end
 -- Report and slash command
 -- ============================================================================
 
--- The groups the editor lists, in one line each.
+-- Writes the groups the editor lists for a specialization, one line each.
+-- @param add function  The report's add(text, ...) function.
+-- @param platform table  The platform adapter (its GetTraitTalents is called).
+-- @param spec number|nil  The specialization ID to list; nil means the played specialization.
+-- @param label string  The prefix of the summary line.
 local function listing(add, platform, spec, label)
     local ok, groups, meta = pcall(platform.GetTraitTalents, platform, spec)
 
@@ -238,9 +257,11 @@ local function listing(add, platform, spec, label)
     end
 end
 
--- Builds the talent report and returns its lines: client and class, which trait APIs exist, the active config, the
--- tree's node counts with sample nodes and entries, hero talent data, and what the editor lists. options.views also
--- lists every other specialization of the class, which loads Blizzard's view loadout as a side effect.
+-- Builds the talent report.
+-- @param options table|nil  options.views also lists every other specialization of the class, which loads Blizzard's
+--   view loadout as a side effect.
+-- @return string[]  The report lines: client and class, which trait APIs exist, the active config, the tree's node
+--   counts with sample nodes and entries, hero talent data, and what the editor lists.
 function addon:BuildTalentDiagnostic(options)
     local platform = self.Platform
     local lines, add = newReport()
@@ -544,8 +565,10 @@ function addon:BuildTalentDiagnostic(options)
     return lines
 end
 
--- Handler of /rm debug talents. argument "views" adds the other specializations. Builds the report (a failure becomes
--- one line), stores it, and opens it in the copyable window. Returns the report lines.
+-- Handler of /rm debug talents: builds the report (a failure becomes one line), stores it, and opens it in the copyable
+-- window.
+-- @param argument string|nil  "views" adds the other specializations.
+-- @return string[]  The report lines.
 function addon:RunTalentDiagnostic(argument)
     local ok, built = pcall(self.BuildTalentDiagnostic, self, { views = argument == 'views' })
     ---@type string[]

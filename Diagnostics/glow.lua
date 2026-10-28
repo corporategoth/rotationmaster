@@ -31,7 +31,10 @@ local function readable(value)
     return not platform or type(platform.CanReadValue) ~= 'function' or platform:CanReadValue(value)
 end
 
--- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
+-- Formats a value for the report.
+-- @param value any  The value to show.
+-- @return string  "secret" for an unreadable value, "nil", a number to three decimals when it has a fraction, otherwise
+--   tostring.
 local function show(value)
     if not readable(value) then
         return 'secret'
@@ -46,7 +49,11 @@ local function show(value)
     return tostring(value)
 end
 
--- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
+-- Calls fn under pcall, tolerating a missing function.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return boolean  The pcall success flag; false when fn is not callable.
+-- @return any  The function's results (any number), the error value, or "missing" when fn is not callable.
 local function protect(fn, ...)
     if type(fn) ~= 'function' then
         return false, 'missing'
@@ -55,7 +62,10 @@ local function protect(fn, ...)
     return pcall(fn, ...)
 end
 
--- Returns "present" when namespace.name (or the global name when namespace is nil) is a function, else "missing".
+-- Tells whether an API function exists.
+-- @param name string  The function name.
+-- @param namespace string|nil  The global table the function lives in; nil means the global name itself.
+-- @return string  "present" when namespace.name (or the global name) is a function, else "missing".
 local function apiPresence(name, namespace)
     if namespace then
         local space = rawget(_G, namespace)
@@ -72,8 +82,8 @@ local function cvar(name)
     return ok and show(value) or 'unreadable'
 end
 
--- Returns the saved list of glow reports (RotationMasterDB.diagnostics.glow), creating it, or nil when the saved
--- variables are not loaded.
+-- Returns the saved list of glow reports (RotationMasterDB.diagnostics.glow), creating it.
+-- @return table|nil  The list; nil when the saved variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
 
@@ -98,13 +108,16 @@ local function store()
     return reports
 end
 
--- Returns a report object { lines, add } where add(text, ...) appends a line, formatting its arguments through show
--- and stopping with a note at MAX_LINES.
+-- Creates a report object.
+-- @return table  {lines=string[], add=function}; add(text, ...) appends a line, formatting its arguments through show
+--   and stopping with a note at MAX_LINES.
 local function newReport()
     local lines = {}
     local report = { lines = lines }
 
     -- Appends one line (formatted when arguments follow); ignores everything past MAX_LINES.
+    -- @param text string  The line, or a format string when arguments follow.
+    -- @param ... any  Values for the format string, each shown through show.
     function report.add(text, ...)
         if #lines >= MAX_LINES then
             if #lines == MAX_LINES then
@@ -134,8 +147,14 @@ end
 -- Walking the rotation
 -- ============================================================================
 
--- Readiness piece by piece, the way Core/action_policy.lua decides it.
--- Returns the pieces as one text, whether the engine's own readiness check says ready, and an error text ("" if none).
+-- Evaluates readiness piece by piece, the way Core/action_policy.lua decides it.
+-- @param kind string  The step type ("item", "spell", "pet" or "any"; anything else is treated as "spell").
+-- @param id number  The spell ID (or item ID when kind is "item" and itemId is nil).
+-- @param itemId number|nil  The item ID for an item step.
+-- @param now number  The time the readiness checks use.
+-- @return string  The pieces as one text.
+-- @return boolean  Whether the engine's own readiness check says ready.
+-- @return string  An error text; "" if none.
 local function readinessParts(kind, id, itemId, now)
     local platform = addon.Platform
     local parts = {}
@@ -193,7 +212,12 @@ local function readinessParts(kind, id, itemId, now)
     return table.concat(parts, ' '), ok and final == true, ok and '' or ('error: ' .. tostring(final))
 end
 
--- Returns a spell's base spell, its override and the action slots the client lists for it (as text), for the report.
+-- Looks up a spell's base spell, its override and the action slots the client lists for it, for the report.
+-- @param id number  The spell ID.
+-- @return any  The base spell (nil when unavailable).
+-- @return any  The override spell (nil when unavailable).
+-- @return string|nil  The slots as comma separated text (at most 12), "error" or "unreadable"; nil when the client has
+--   no such API.
 local function spellRelations(id)
     local base, override
 
@@ -241,8 +265,14 @@ end
 -- makes for that step type, and what that lookup said.
 local SPELL_STEP = { spell = true, pet = true, any = true }
 
--- Returns one line explaining why a step produced no spell ids, by repeating the lookup GetSpellIds makes for that
--- step type (assisted suggestion, spell book type, item set contents) and reporting what it said.
+-- Explains why a step produced no spell IDs, by repeating the lookup GetSpellIds makes for that step type (assisted
+-- suggestion, spell book type, item set contents) and reporting what it said.
+-- @param self table  The addon.
+-- @param step table  The rotation step.
+-- @return string  One line of explanation.
+--
+-- Why GetSpellIds (main.lua) returned nothing for a step: the lookup it makes for that step type, and what that lookup
+-- said.
 local function explainNoSpellIds(self, step)
     local kind, action = step.type, step.action
     local platform = self.Platform
@@ -342,8 +372,11 @@ local function explainNoSpellIds(self, step)
     return 'step type ' .. show(kind) .. ' has no spell IDs'
 end
 
--- Returns the active rotation's top-level steps as indexed rows, nil and a reason when there is no readable active
--- rotation, and the rotation body as the third value.
+-- Lists the active rotation's top-level steps as indexed rows.
+-- @param self table  The addon.
+-- @return table[]|nil  The rows; nil when there is no readable active rotation.
+-- @return string|nil  The reason when the rows are nil; nil otherwise.
+-- @return table|nil  The rotation body; nil when the rows are nil.
 local function rotationRows(self)
     local spec, id = self.currentSpec, self.currentRotation
 
@@ -383,7 +416,11 @@ local function rotationRows(self)
     return rows, nil, rotation
 end
 
--- Evaluates a step's conditions the way the engine would now; returns the status and reason as text.
+-- Evaluates a step's conditions the way the engine would now.
+-- @param self table  The addon.
+-- @param step table  The rotation step.
+-- @return string  The status and reason as text ("match", "unknown", "error: ...", or the evaluated status with its
+--   reason).
 local function conditionStatus(self, step)
     if step.conditions == nil then
         return 'match'
@@ -404,9 +441,16 @@ local function conditionStatus(self, step)
     return show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or '')
 end
 
--- One step: its outcome as the engine would see it now. Returns the verdict
--- ('selected', 'notmatched', 'unmapped', 'notready', 'noaction', 'disabled',
--- 'branch', 'stop'), the chosen spell, and the reason text.
+-- Works out one step's outcome as the engine would see it now.
+-- @param self table  The addon.
+-- @param report table  The report object; lines are added to it when verbose.
+-- @param row table  An indexed row of the rotation ({step, ordinal, unreachable, ...}).
+-- @param now number  The time the readiness checks use.
+-- @param verbose boolean  True to add the step's details to the report.
+-- @return string  The verdict: 'selected', 'notmatched', 'unmapped', 'notready', 'noaction', 'disabled', 'branch' or
+--   'stop'.
+-- @return any  The chosen spell ID (the first one on an action bar); nil unless the verdict is 'selected'.
+-- @return string|nil  The reason text.
 local function walkStep(self, report, row, now, verbose)
     local step = row.step
     local label = string.format('#%s %s', show(row.ordinal), show(step.type))
@@ -545,7 +589,11 @@ local function section(report, title)
 end
 
 -- Reports the button index and every standard action bar frame (type, slot, action, visibility), then the
--- LibActionButton buttons. Returns the index summary and the first read error seen, for the verdict.
+-- LibActionButton buttons.
+-- @param self table  The addon.
+-- @param report table  The report object.
+-- @return table|nil  The index summary from GetButtonIndexDiagnostic; nil when buttons.lua has no diagnostic support.
+-- @return string|nil  The first read error seen, for the verdict; nil when there was none.
 local function scanSection(self, report)
     local index = self.GetButtonIndexDiagnostic and self:GetButtonIndexDiagnostic()
 
@@ -654,6 +702,8 @@ local function scanSection(self, report)
 end
 
 -- Joins a list of values, formatted through show, with commas.
+-- @param list table|nil  The values; nil is treated as empty.
+-- @return string  The joined text.
 local function listIds(list)
     local out = {}
 
@@ -664,11 +714,13 @@ local function listIds(list)
     return table.concat(out, ',')
 end
 
--- Every step the editor would warn "not on your action bars" for, in the
--- rotation open in the editor and in the active one, with the spell IDs the
--- step names, the IDs the client relates to each, whether the scan holds it
--- (directly, or through which alias) and the slots the client reports. This
--- is the text to paste when a warning looks wrong.
+-- Reports every step the editor would warn "not on your action bars" for, in the rotation open in the editor and in the
+-- active one.
+-- @param self table  The addon.
+-- @param report table  The report object.
+--
+-- Shows the spell IDs the step names, the IDs the client relates to each, whether the scan holds it (directly, or
+-- through which alias) and the slots the client reports. This is the text to paste when a warning looks wrong.
 local function bindingSection(self, report)
     local index = self.GetIndexedSpellsDiagnostic and self:GetIndexedSpellsDiagnostic(120)
 
@@ -766,8 +818,10 @@ local function bindingSection(self, report)
     end
 end
 
--- Builds the full report and returns its lines and the verdict text naming the first link of the chain (client,
--- rotation, button scan, step, suggestion, glow request, visible frame) that drops the recommendation.
+-- Builds the full glow report.
+-- @return string[]  The report lines.
+-- @return string  The verdict text naming the first link of the chain (client, rotation, button scan, step, suggestion,
+--   glow request, visible frame) that drops the recommendation.
 function addon:BuildGlowDiagnostic()
     local report = newReport()
     local add = report.add
@@ -1063,6 +1117,12 @@ for i = 1, RECENT do
 end
 
 -- Message handler: stores one recommendation change in the next ring slot, reusing the slot table (no allocation).
+-- @param _ string  The message name; not used.
+-- @param rotation any  The rotation the change belongs to.
+-- @param index any  The step ordinal.
+-- @param id any  The step id.
+-- @param kind any  The step type.
+-- @param spell any  The spell; nil when the glow is cleared.
 local function noteUpdate(_, rotation, index, id, kind, spell)
     local slot = recent[recentNext]
     slot.at = type(GetTime) == 'function' and GetTime() or nil
@@ -1078,7 +1138,8 @@ do
     end
 end
 
--- Returns the stored recommendation changes, oldest first. The entries are the live ring slots; do not modify them.
+-- Returns the stored recommendation changes, oldest first.
+-- @return table[]  The live ring slots ({at, rotation, index, id, kind, spell}); do not modify them.
 function addon:GetRecentRecommendations()
     local list = {}
 
@@ -1095,8 +1156,9 @@ end
 
 local watcher
 
--- Appends a report (time stamp and lines table) to the store and drops the oldest beyond MAX_REPORTS. Returns the
--- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
+-- Appends a report to the store and drops the oldest beyond MAX_REPORTS.
+-- @param lines string[]  The report lines; kept by reference, so the watch can keep appending.
+-- @return table|nil  The stored entry {at, lines}; nil when nothing can be stored.
 local function save(lines)
     local reports = store()
 
@@ -1114,7 +1176,9 @@ local function save(lines)
     return entry
 end
 
--- One compact line: what the engine shows now and how the first steps fare.
+-- Builds one compact line of what the engine shows now and how the first steps fare.
+-- @param self table  The addon.
+-- @return string  The line.
 local function watchLine(self)
     local now = type(GetTime) == 'function' and GetTime() or 0
     local okCombat, combat = protect(rawget(_G, 'InCombatLockdown'))
@@ -1153,9 +1217,12 @@ local function watchLine(self)
     return table.concat(parts, ' ')
 end
 
--- Handler of /rm debug glow [seconds]. Builds and saves the report, prints where it stops, and opens it in the
--- copyable window; with seconds (1 to MAX_WATCH) it instead keeps appending a line per second to the saved report
--- and leaves the window to "/rm debug glow show". Returns the report lines and the verdict.
+-- Handler of /rm debug glow [seconds]: builds and saves the report, prints where it stops, and opens it in the copyable
+-- window.
+-- @param seconds number|string|nil  With a value of 1 to MAX_WATCH it instead keeps appending a line per second to the
+--   saved report and leaves the window to "/rm debug glow show".
+-- @return string[]  The report lines.
+-- @return string  The verdict.
 function addon:RunGlowDiagnostic(seconds)
     local lines, stop = self:BuildGlowDiagnostic()
     local entry = save(lines)
@@ -1218,10 +1285,13 @@ function addon:ShowGlowDiagnostic()
     end
 end
 
--- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
--- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua);
--- /rm debug timeline probes Blizzard's encounter timeline (Diagnostics/timeline.lua).
 -- Routes the arguments of /rm debug to the matching report; prints the usage line for anything else.
+-- @param args string|nil  The text after "debug" ("glow [seconds|show]", "editor", "talents ..." or "timeline ...").
+-- @return any  Whatever the routed report function returns (nothing for the usage line).
+--
+-- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua); /rm debug talents reports the
+-- trait talent reads (Diagnostics/talents.lua); /rm debug timeline probes Blizzard's encounter timeline
+-- (Diagnostics/timeline.lua).
 function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
 
