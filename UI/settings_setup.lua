@@ -6,14 +6,17 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Compatibility name for the settings page: opens (or reopens) the native preview window (UI/preview.lua).
+-- Opens (or reopens) the native preview window (UI/preview.lua); the compatibility name for the settings page.
+-- @return any  What CreateNativePreviewWindow returns.
 function addon:CreatePreviewWindow()
     return self:CreateNativePreviewWindow()
 end
 
--- Returns the specialization entries ({ id, name, ... }) the rotation editor and Core/rotation_selection.lua list for a
--- class (default: the player's). Always returns at least the id-0 "Rotations" entry when the client has no spec model;
--- entries are named here ("No specialization" for a Retail initial spec, else the saved label or the id).
+-- Returns the specialization entries the rotation editor and Core/rotation_selection.lua list for a class. Always
+-- returns at least the id-0 "Rotations" entry when the client has no spec model; entries are named here ("No
+-- specialization" for a Retail initial spec, else the saved label or the id).
+-- @param classID number|nil  The class id; nil means the player's class.
+-- @return table[]  The entries, each { id, name, ... }.
 function addon:GetRotationEditorSpecs(classID)
     if classID == nil and type(UnitClass) == "function" then
         local ok, _, _, id = pcall(UnitClass, "player")

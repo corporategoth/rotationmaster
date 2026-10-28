@@ -15,9 +15,17 @@ local switchColor = { 1, .82, .25 }
 -- Flag row layout
 -- ============================================================================
 
--- Hidden, Switch Condition and Announcement Condition share one row in
--- thirds; a row too narrow for their captions wraps instead of clipping.
--- Lays the three flag checkboxes out starting at `y` across `width`, records and returns the row height.
+-- Lays the three flag checkboxes out starting at `y` across `width`, and records the row height on the Hidden checkbox
+-- (rmFlagRowsHeight).
+-- @param hidden table  The Hidden checkbox.
+-- @param switch table  The Switch Condition checkbox.
+-- @param announcement table  The Announcement Condition checkbox.
+-- @param y number  The row's top offset.
+-- @param width number  The width available.
+-- @return number  The row height.
+--
+-- Hidden, Switch Condition and Announcement Condition share one row in thirds; a row too narrow for their captions
+-- wraps instead of clipping.
 function addon:LayoutConditionFlags(hidden, switch, announcement, y, width)
     local widest = 0
 
@@ -38,11 +46,14 @@ end
 -- Condition roster
 -- ============================================================================
 
--- Builds the Conditions page into the settings form `p`. Merges the registered definitions with the draft's custom
+-- Builds the Conditions page into the settings form. Merges the registered definitions with the draft's custom
 -- conditions, filters by category and source (all, built in, custom), marks invalid or disabled custom entries in the
--- roster, then draws the selected condition's flags, category and Move To controls, or hands over to the inline
--- custom condition editor. Switches to the category page when p.mode is 'categories'. Selection state lives on `p`
--- (category, conditionSource, condition) and is corrected here when it no longer exists.
+-- roster, then draws the selected condition's flags, category and Move To controls, or hands over to the inline custom
+-- condition editor. Switches to the category page when p.mode is 'categories'. Selection state lives on `p` (category,
+-- conditionSource, condition) and is corrected here when it no longer exists.
+-- @param p table  The settings form pane.
+-- @return any  What the category page or the inline custom condition editor builder returns when it takes over; nothing
+-- otherwise.
 function addon:BuildConditionSettings(p)
     local store = p:SettingsData()
 
@@ -175,6 +186,7 @@ function addon:BuildConditionSettings(p)
     end
 
     -- Stores a reordered list in the place that backs the current category (switch, announcement, other or a group).
+    -- @param list string[]  The condition tags in their new order.
     local function orderChanged(list)
         if p.category == 'SWITCH' then
             profile.switch_conditions = list
@@ -189,6 +201,7 @@ function addon:BuildConditionSettings(p)
 
     -- Runs a navigation change, first asking the inline custom condition editor (when present) whether leaving would
     -- discard its unsaved edits.
+    -- @param fn function  The navigation change, called with no arguments.
     local function navigate(fn)
         if self.BuildInlineCustomCondition then
             p:RequestLeave(fn)
@@ -270,6 +283,8 @@ function addon:BuildConditionSettings(p)
             icon = 'copy',
             enabled = custom[p.condition] ~= nil
                 or self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(p.condition) ~= nil,
+            -- Duplicates the selected condition (through the inline editor when present, otherwise by copying the
+            -- custom definition under a new key), registers it and selects it.
             action = function()
                 if self.DuplicateInlineCustomCondition then
                     self:DuplicateInlineCustomCondition(p)
@@ -465,6 +480,8 @@ function addon:BuildConditionSettings(p)
             move:Disable()
         end
 
+        -- Moves the condition to the chosen category: removes it from every group, adds it to the destination group (or
+        -- the Other order) and redraws.
         local apply = p:Button('apply_move', L['Apply'], function()
             local destination = p.pendingMove and p.pendingMove.tag == tag and p.pendingMove.destination
 
@@ -502,6 +519,10 @@ function addon:BuildConditionSettings(p)
             local source = custom[tag]
             local enabledY = p.y
 
+            -- Enables or disables the custom condition definition. Enabling first validates the source (a failure is
+            -- shown and the toggle reverts); the install runs as a queued effect and restores the saved definition if
+            -- it fails.
+            -- @param value boolean  True to enable the definition.
             local toggle = p:Toggle(
                 'definition_enabled',
                 nil,
@@ -590,9 +611,10 @@ end
 -- Category management
 -- ============================================================================
 
--- Builds the category management mode of the Conditions page into form `p`: roster of categories (plus the built-in
+-- Builds the category management mode of the Conditions page into the form: roster of categories (plus the built-in
 -- Switch and Other), a creation form, name and icon editing, the member condition grid, import/export through
 -- p.categoryTransfer and delete. Deleting a category leaves its conditions available under Other.
+-- @param p table  The settings form pane.
 function addon:BuildConditionCategorySettings(p)
     local store = p:SettingsData()
     local profile = store.profile
@@ -670,6 +692,8 @@ function addon:BuildConditionCategorySettings(p)
             p.newGroupName = text
         end)
 
+        -- Creation form handlers: Apply adds a category with the typed name (after checking it is not blank) and
+        -- selects it; Cancel closes the form.
         p:CreationActions(function()
             if not self:SettingsNonempty(p.newGroupName) then
                 p:Message(L['Enter a name first.'])
@@ -736,6 +760,7 @@ function addon:BuildConditionCategorySettings(p)
         icon.image:SetTexture(self:GetConditionCategoryIcon(group))
         p.fields.category_icon = icon
 
+        -- Opens the icon picker for the category and stores the chosen texture; the picker is closed with the page.
         self:SetUIScript(icon, 'OnClick', p:Guard(function()
             if not p:FlushEdits() then
                 return
@@ -812,6 +837,9 @@ function addon:BuildConditionCategorySettings(p)
 
     p.y = top + math.ceil(#tags / cols) * 32 + 8
 
+    -- Opens the import/export dialog for the selected category, encoded as an 'RM-ConditionCategory' wrapper. The
+    -- import callback replaces the conditions of the Switch list, the Other order or a category (or creates a new
+    -- category), moving the imported conditions out of the other lists.
     p.categoryTransfer = function()
         local codec = self:NewRotationCodec()
 
@@ -945,9 +973,15 @@ end
 -- Custom condition editor
 -- ============================================================================
 
--- Opens the custom code editor for condition `key` (nil for a new one) over settings form `p`. Refuses while the
--- settings draft has unapplied changes, because the editor saves straight to the database and the draft is resynced
--- afterward. Returns the editor dialog and its owner, or nothing; the dialog is closed through the form's cleanups.
+-- Opens the custom code editor for a condition over the settings form. Refuses while the settings draft has unapplied
+-- changes, because the editor saves straight to the database and the draft is resynced afterward.
+-- @param p table  The settings form pane.
+-- @param key string|nil  The condition key; nil for a new one.
+-- @param condition table|nil  The saved custom condition definition to edit (copied before editing).
+-- @return table|nil  The editor dialog; nil when refused or when it could not open.
+-- @return table|nil  The dialog's owner; nil when the dialog is nil.
+--
+-- The dialog is closed through the form's cleanups.
 function addon:OpenSettingsCustomCondition(p, key, condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then
         p:Message(L['Apply or discard current settings before opening the custom code editor.'])

@@ -10,7 +10,9 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Creates a small left-aligned, vertically centered caption font string on parent.
+-- Creates a small left-aligned, vertically centered caption font string.
+-- @param parent table  The frame that owns the font string.
+-- @return table  The font string.
 local function label(parent)
     local t = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     t:SetJustifyH('LEFT')
@@ -19,12 +21,16 @@ local function label(parent)
 end
 
 -- Default parse function for an Edit field: the text is the value.
+-- @param text string  The typed text.
+-- @return string  The same text.
 local function identity(text)
     return text
 end
 
--- A private, pooled native form. Existing addon setting shapes stay outside
+-- Creates a private, pooled native form that a settings page draws into. Existing addon setting shapes stay outside
 -- this view; every callback belongs to one drawing and one database identity.
+-- @param parent table  The frame the form fills.
+-- @return table  The form (called `p` throughout the settings pages).
 function addon:CreateSettingsForm(parent)
     local p = {
         frame = addon:TrackWorkbenchSize(CreateFrame('Frame', nil, parent)),
@@ -52,8 +58,11 @@ function addon:CreateSettingsForm(parent)
     -- Validity, help and guards
     -- ============================================================================
 
-    -- True while the form is open for generation token and the profile, global and character tables are the ones it was
-    -- opened against. Every deferred callback checks this; a redraw or a profile switch makes older callbacks inert.
+    -- Tells whether the form is open for the generation token and the profile, global and character tables are the ones
+    -- it was opened against. Every deferred callback checks this; a redraw or a profile switch makes older callbacks
+    -- inert.
+    -- @param token number  The generation the caller was created under.
+    -- @return boolean  True while the caller may act.
     function p:Valid(token)
         return self.active
             and token == self.generation
@@ -62,11 +71,14 @@ function addon:CreateSettingsForm(parent)
             and self.char == addon.db.char
     end
 
-    -- Wraps callback so it runs only while this drawing is current (through GuardWorkbenchHelp when available).
+    -- Wraps a callback so it runs only while this drawing is current (through GuardWorkbenchHelp when available).
+    -- @param callback function  The function to guard.
+    -- @return function  The guarded function.
     function p:HelpGuard(callback)
         local token = self.generation
 
-        -- True while the drawing this guard was made for is still current.
+        -- Tells whether the drawing this guard was made for is still current.
+        -- @return boolean  True while the guarded callback may run.
         local function valid()
             return self:Valid(token)
         end
@@ -82,7 +94,7 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
-    -- After a draw, gives every field a help brief: the first sentence of the page's authored help for that field key,
+    -- Gives every field a help brief after a draw: the first sentence of the page's authored help for that field key,
     -- else the control's tooltip, else a generic brief for its kind. The bindings are released by the next draw's
     -- cleanups.
     function p:BindHelpBriefs()
@@ -126,8 +138,10 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
-    -- Wraps callback for this drawing: it runs only while Valid, inside one settings-history step when history is
+    -- Wraps a callback for this drawing: it runs only while Valid, inside one settings-history step when history is
     -- installed, and afterwards re-enables or disables Apply from the draft's dirty state.
+    -- @param callback function  The function to guard.
+    -- @return function  The guarded function; it returns what the callback returns (nothing when stale).
     function p:Guard(callback)
         local token = self.generation
 
@@ -154,8 +168,11 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
-    -- Returns the next pooled control of the given kind for this drawing, building it with build() on first use,
-    -- reparenting it to the current surface and showing it. Draw resets the counts, so controls are reused in order.
+    -- Returns the next pooled control of the given kind for this drawing, building it on first use, reparenting it to
+    -- the current surface and showing it. Draw resets the counts, so controls are reused in order.
+    -- @param kind string  The pool name (e.g. 'labels', 'edits', 'choices').
+    -- @param build function  Creates a control when the pool has none at that position.
+    -- @return table  The control.
     function p:Acquire(kind, build)
         self.counts[kind] = (self.counts[kind] or 0) + 1
         local i = self.counts[kind]
@@ -177,6 +194,8 @@ function addon:CreateSettingsForm(parent)
     end
 
     -- Shows a status line at the bottom of the form, in green when success, otherwise orange.
+    -- @param text string|nil  The message; nil or '' clears the line.
+    -- @param success boolean|nil  True colors the message green.
     function p:Message(text, success)
         self.message:SetText(text or '')
         self.message:SetTextColor(success and .35 or 1, success and .85 or .5, success and .45 or .3)
@@ -186,8 +205,11 @@ function addon:CreateSettingsForm(parent)
     -- Rows and label columns
     -- ============================================================================
 
-    -- Reserves a row of height (default 30) at the current y and returns its top; a non-empty caption gets a label in
-    -- the label column and registers it with the open label scope.
+    -- Reserves a row at the current y; a non-empty caption gets a label in the label column and registers it with the
+    -- open label scope.
+    -- @param caption string|nil  The row caption.
+    -- @param height number|nil  The row height; nil means 30.
+    -- @return number  The top of the row.
     function p:Row(caption, height)
         local y = self.y
         self.y = y + (height or 30)
@@ -211,12 +233,16 @@ function addon:CreateSettingsForm(parent)
         return y
     end
 
-    -- Label column. Builders place values at x=220 as before and register
-    -- them; when a scope (the page, a column or a card) ends, its column is
-    -- narrowed to its longest caption and the registered values move left and
-    -- grow by the same amount. A scope with a caption row whose control the
-    -- page placed itself, or with a value the page re-anchored, keeps 220 so
-    -- its rows stay aligned.
+    -- Reads the first anchor of a control.
+    -- @param control table  The control.
+    -- @return string|nil  The anchor point.
+    -- @return number|nil  The x offset.
+    -- @return number|nil  The y offset.
+    --
+    -- Label column. Builders place values at x=220 as before and register them; when a scope (the page, a column or a
+    -- card) ends, its column is narrowed to its longest caption and the registered values move left and grow by the
+    -- same amount. A scope with a caption row whose control the page placed itself, or with a value the page
+    -- re-anchored, keeps 220 so its rows stay aligned.
     local function anchorOf(control)
         if not control.GetPoint or (control.GetNumPoints and control:GetNumPoints() < 1) then
             return
@@ -239,9 +265,12 @@ function addon:CreateSettingsForm(parent)
         self.labelRow = nil
     end
 
-    -- Registers a value control placed by a row so EndLabelScope can shift it left by dx times the saved column delta
-    -- and widen it by dw times the delta. A control anchored anywhere but TOPLEFT marks the scope as custom, which
-    -- keeps column 220.
+    -- Registers a value control placed by a row so EndLabelScope can shift it left and widen it. A control anchored
+    -- anywhere but TOPLEFT marks the scope as custom, which keeps column 220.
+    -- @param control table|nil  The control to register.
+    -- @param dx number|nil  The multiple of the saved column delta to shift it left by; nil means 1.
+    -- @param dw number|nil  The multiple of the delta to widen it by; nil means 0.
+    -- @return table|nil  The control.
     function p:LabelControl(control, dx, dw)
         local scope, row = self.labelScope, self.labelRow
 
@@ -275,7 +304,8 @@ function addon:CreateSettingsForm(parent)
 
     -- Closes the innermost scope: narrows the label column to the longest caption (at most 220) and moves its
     -- registered controls to match. Does nothing, leaving the standard column, if any row has no registered control or
-    -- the page moved a control itself. Returns the new column width, if changed.
+    -- the page moved a control itself.
+    -- @return number|nil  The new column width; nil when nothing changed.
     function p:EndLabelScope()
         local scope = self.labelScope
         self.labelScope = self.labelScopes and table.remove(self.labelScopes) or nil
@@ -332,7 +362,9 @@ function addon:CreateSettingsForm(parent)
     -- Text, buttons and actions
     -- ============================================================================
 
-    -- Adds wrapped body text across the page width and returns it; advances y by its height.
+    -- Adds wrapped body text across the page width and advances y by its height.
+    -- @param text string|nil  The text.
+    -- @return table  The font string.
     function p:Text(text)
         local t = self:Acquire('text', function() return label(self.child) end)
         t:ClearAllPoints()
@@ -347,7 +379,9 @@ function addon:CreateSettingsForm(parent)
         return t
     end
 
-    -- Adds a header-styled text line; returns it.
+    -- Adds a header-styled text line.
+    -- @param text string  The heading text.
+    -- @return table  The font string.
     function p:Heading(text)
         local y = self.y
         local t = self:Text(text)
@@ -358,8 +392,13 @@ function addon:CreateSettingsForm(parent)
         return t
     end
 
-    -- Adds a full-row button (optionally with icon) registered as field key. The click flushes pending edits and then
+    -- Adds a full-row button (optionally with icon) registered as a field. The click flushes pending edits and then
     -- calls action(), so an invalid input blocks it.
+    -- @param key string  The field key.
+    -- @param text string  The button text.
+    -- @param action function  Called with no arguments on click.
+    -- @param icon string|nil  The icon name; nil makes a plain button.
+    -- @return table  The button.
     function p:Button(key, text, action, icon)
         local y = self:Row(nil, 28)
 
@@ -395,6 +434,9 @@ function addon:CreateSettingsForm(parent)
     -- Adds the Apply and Cancel (Discard when pageDraft) buttons at the bottom right. Without pageDraft this is a
     -- creation form: the baseline state is captured for the unsaved check and Apply goes through ApplyCreation. With
     -- pageDraft Apply calls apply() after flushing, and Discard drops the settings draft and redraws.
+    -- @param apply function  Called with no arguments when Apply is clicked.
+    -- @param cancel function  Called with no arguments when Cancel (or Discard) is clicked.
+    -- @param pageDraft boolean|nil  True for a page-level draft (Apply and Discard) instead of a creation form.
     function p:CreationActions(apply, cancel, pageDraft)
         self.creationUsed = true
         self.creationUsedForNew = not pageDraft
@@ -442,8 +484,9 @@ function addon:CreateSettingsForm(parent)
         self:Layout()
     end
 
-    -- Adds a row of small buttons from entries { key, text, icon, action, enabled }; icon entries are 20 px icon
-    -- buttons, and the row wraps when it would pass the pane edge.
+    -- Adds a row of small buttons; icon entries are 20 px icon buttons, and the row wraps when it would pass the pane
+    -- edge.
+    -- @param entries table[]  The actions, each { key, text, icon, action, enabled }.
     function p:Actions(entries)
         local y = self:Row(nil, 28)
         local x = 0
@@ -494,8 +537,11 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
-    -- Adds a collapsible section header; build() draws the section body unless the player collapsed it (state is kept
-    -- on the form across redraws).
+    -- Adds a collapsible section header; the section body is drawn unless the player collapsed it (state is kept on the
+    -- form across redraws).
+    -- @param key string  The section key.
+    -- @param title string  The header text.
+    -- @param build function  Draws the section body; called with no arguments.
     function p:Section(key, title, build)
         self.closedSections = self.closedSections or {}
         local y = self:Row(nil, 28)
@@ -529,7 +575,13 @@ function addon:CreateSettingsForm(parent)
     -- Value fields
     -- ============================================================================
 
-    -- Adds a check box registered as key. A click flushes edits, toggles and calls changed(newValue). Returns it.
+    -- Adds a check box registered as a field. A click flushes edits, toggles and calls changed(newValue).
+    -- @param key string  The field key.
+    -- @param caption string  The check box text.
+    -- @param value boolean|nil  The current state.
+    -- @param changed function  Called with the new state.
+    -- @param tooltip string|nil  The tooltip text.
+    -- @return table  The check box.
     function p:Check(key, caption, value, changed, tooltip)
         local y = self:Row(nil)
         local c = self:Acquire('checks', function() return addon:CreateWorkbenchCheckBox(self.child, '', 420) end)
@@ -554,8 +606,16 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
-    -- Adds a check box on the same row as the existing field fieldKey when it fits beside it, otherwise on a row below.
-    -- Both controls stay registered with the label scope.
+    -- Adds a check box on the same row as an existing field when it fits beside it, otherwise on a row below. Both
+    -- controls stay registered with the label scope.
+    -- @param fieldKey string  The key of the existing field to sit beside.
+    -- @param key string  The check box key.
+    -- @param caption string  The check box text.
+    -- @param value boolean|nil  The current state.
+    -- @param changed function  Called with the new state.
+    -- @param minimum number|nil  The smallest width the field may be narrowed to.
+    -- @param tooltip string|nil  The tooltip text.
+    -- @return table  The check box.
     function p:InlineCheck(fieldKey, key, caption, value, changed, minimum, tooltip)
         local rowY = self.y - 30
         local option = self:Check(key, caption, value, changed, tooltip)
@@ -576,10 +636,17 @@ function addon:CreateSettingsForm(parent)
         return option
     end
 
-    -- Adds a text field registered as key. Typing marks it dirty and colors it red while parse(text) returns nil. The
-    -- value is committed only by FlushEdits (Enter, focus loss, or any other control): parse(text) -> value or nil,
+    -- Adds a text field registered as a field. Typing marks it dirty and colors it red while parse(text) returns nil.
+    -- The value is committed only by FlushEdits (Enter, focus loss, or any other control): parse(text) -> value or nil,
     -- then changed(value). Escape restores the text from the last commit. Reused pooled boxes have their reference and
-    -- texture decorations and scripts cleared first. Returns the edit box.
+    -- texture decorations and scripts cleared first.
+    -- @param key string  The field key.
+    -- @param caption string|nil  The row caption.
+    -- @param value any  The current value, shown as text.
+    -- @param parse function|nil  Called with the text; returns the value, or nil when invalid. Nil means the text is
+    --   the value.
+    -- @param changed function  Called with the parsed value when it is committed.
+    -- @return table  The edit box.
     function p:Edit(key, caption, value, parse, changed)
         local y = self:Row(caption)
         local c = self:Acquire('edits', function() return addon:CreateWorkbenchEditBox(self.child) end)
@@ -658,8 +725,13 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
-    -- Adds an Edit for a texture path or id with a preview and a catalog button (the shipped overlay textures);
-    -- options.preview = false hides the preview.
+    -- Adds an Edit for a texture path or id with a preview and a catalog button (the shipped overlay textures).
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param value string|number|nil  The current texture.
+    -- @param changed function  Called with the texture (a number when numeric) when it is committed.
+    -- @param options table|nil  { preview = false } hides the preview.
+    -- @return table  The edit box.
     function p:Texture(key, caption, value, changed, options)
         options = options or {}
         local c
@@ -715,6 +787,14 @@ function addon:CreateSettingsForm(parent)
 
     -- Adds a slider with a linked number box, both registered (key and key_value). Slider moves commit at once; a typed
     -- number is range- and step-checked and committed through FlushEdits. Integer-step sliders round to the step.
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param value number|nil  The current value; nil means the minimum.
+    -- @param lo number  The minimum.
+    -- @param hi number  The maximum.
+    -- @param step number  The step.
+    -- @param changed function  Called with the new number.
+    -- @return table  The slider.
     function p:Slider(key, caption, value, lo, hi, step, changed)
         local y = self:Row(caption)
 
@@ -795,6 +875,9 @@ function addon:CreateSettingsForm(parent)
             self:Message('')
         end))
 
+        -- Commits a slider move: rounds to the step for integer sliders, flushes pending edits, then updates the number
+        -- box and calls changed.
+        -- @param n number  The slider's new value.
         addon:SetUIScript(c, 'OnValueChanged', self:Guard(function(_, n)
             if c.setting then
                 return
@@ -825,10 +908,17 @@ function addon:CreateSettingsForm(parent)
     -- Spell, item and sound fields
     -- ============================================================================
 
-    -- Adds a spell or item field. kind names the reference provider ('Spell_EditBox' or 'Item_EditBox'); settings can
-    -- carry accept(id) to veto ids, spec and norank. The player can type a name or id, pick from the suggestion menu,
-    -- drag from the spellbook or bags, or right-click for what the game offers now (target cast, recent casts,
-    -- trinkets). changed(id) gets the resolved numeric id ('' when allowEmpty and cleared). Returns the edit box.
+    -- Adds a spell or item field. The player can type a name or id, pick from the suggestion menu, drag from the
+    -- spellbook or bags, or right-click for what the game offers now (target cast, recent casts, trinkets).
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param value any  The current id or text.
+    -- @param kind string  The reference provider: 'Spell_EditBox' or 'Item_EditBox'.
+    -- @param settings table|nil  { accept = function(id) to veto ids, spec, norank }; modified (limit and inventory are
+    --   set).
+    -- @param changed function  Called with the resolved numeric id ('' when allowEmpty and cleared).
+    -- @param allowEmpty boolean|nil  True lets the field be cleared.
+    -- @return table  The edit box.
     function p:Reference(key, caption, value, kind, settings, changed, allowEmpty)
         local provider = addon:GetReferenceProvider(kind)
         settings = settings or {}
@@ -836,7 +926,9 @@ function addon:CreateSettingsForm(parent)
         settings.inventory = provider.inventory
         local selected = value and (tonumber(value) or provider.resolve(value)) or nil
 
-        -- True when the page's accept callback (if any) allows id; an erroring callback counts as a veto.
+        -- Tells whether the page's accept callback (if any) allows an id; an erroring callback counts as a veto.
+        -- @param id number  The reference id.
+        -- @return boolean  True when the id is allowed.
         local function accepted(id)
             if not settings.accept then
                 return true
@@ -846,7 +938,9 @@ function addon:CreateSettingsForm(parent)
             return ok and result and true or false
         end
 
-        -- Display name for id, or the provider's missing text; empty for no id.
+        -- Returns the display name for an id, or the provider's missing text.
+        -- @param id number|string|nil  The reference id.
+        -- @return string  The name; empty for no id.
         local function display(id)
             return id and (provider.name(id, settings.norank) or provider.missing) or ''
         end
@@ -918,7 +1012,8 @@ function addon:CreateSettingsForm(parent)
         local textChanged = c:GetScript('OnTextChanged')
         local escape = c:GetScript('OnEscapePressed')
 
-        -- Takes id from the suggestion menu or the context menu as if it had been typed and committed.
+        -- Takes an id from the suggestion menu or the context menu as if it had been typed and committed.
+        -- @param id number  The chosen reference id.
         local function choose(id)
             if not self:Valid(self.generation) or not accepted(id) then
                 return
@@ -964,8 +1059,8 @@ function addon:CreateSettingsForm(parent)
             self:ShowChoices(c, rows, choose, true)
         end
 
-        -- Right-click: what the game offers right now (target or focus cast,
-        -- recent casts, equipped trinkets), chosen like a suggestion.
+        -- Opens the right-click menu of what the game offers right now (target or focus cast, recent casts, equipped
+        -- trinkets), chosen like a suggestion; shows a message when there is nothing to insert.
         local function insertMenu()
             local rows = {}
 
@@ -1027,6 +1122,8 @@ function addon:CreateSettingsForm(parent)
             escape(c)
         end))
 
+        -- Shows the tooltip of the selected spell or item (with a hint on how to insert one), or the field's drop hint
+        -- when nothing is selected.
         addon:SetUIScript(c, 'OnEnter', self:HelpGuard(function()
             if selected and GameTooltip then
                 GameTooltip:SetOwner(c, 'ANCHOR_RIGHT')
@@ -1062,7 +1159,8 @@ function addon:CreateSettingsForm(parent)
         end)
 
         -- Takes the spell or item currently on the mouse cursor, if it fits this field and is accepted, and clears the
-        -- cursor.
+        -- cursor. Cursor contents are read through pcall and CanReadValue: on restricted clients they can be secret
+        -- values that must not be compared or used.
         local function drop()
             if type(GetCursorInfo) ~= 'function' then
                 return
@@ -1132,19 +1230,33 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
-    -- Reference field for a spell of spec (or the pet book); ranks are kept.
+    -- Adds a reference field for a spell of a specialization (or the pet book); ranks are kept.
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param id number|string|nil  The current spell.
+    -- @param spec number|string  The specialization (or pet book) the spell is looked up in.
+    -- @param changed function  Called with the resolved spell id.
+    -- @return table  The edit box.
     function p:Spell(key, caption, id, spec, changed)
         return self:Reference(key, caption, id, 'Spell_EditBox', { spec = spec, norank = false }, changed)
     end
 
-    -- Reference field for an item.
+    -- Adds a reference field for an item.
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param id number|string|nil  The current item.
+    -- @param changed function  Called with the resolved item id ('' when cleared).
+    -- @param allowEmpty boolean|nil  True lets the field be cleared.
+    -- @return table  The edit box.
     function p:Item(key, caption, id, changed, allowEmpty)
         return self:Reference(key, caption, id, 'Item_EditBox', {}, changed, allowEmpty)
     end
 
     -- Adds the controls for an item action's target: a choice between a named item set and a custom list, and for a
-    -- custom list one Item field per entry with delete buttons plus an add field. changed receives the set id or the
-    -- new array.
+    -- custom list one Item field per entry with delete buttons plus an add field.
+    -- @param key string  The field key prefix.
+    -- @param value string|table|number|nil  The current target: an item set id, a list of items, or a single item id.
+    -- @param changed function  Called with the item set id, or with the new item array.
     function p:ItemSequence(key, value, changed)
         local entries = { { value = '', text = L['Custom'] } }
         local sets = {}
@@ -1179,6 +1291,7 @@ function addon:CreateSettingsForm(parent)
         local items = type(value) == 'table' and value or type(value) == 'number' and { value } or {}
 
         -- Stores a new copy of the custom list and reports it.
+        -- @param copy table  The new item list.
         local function replace(copy)
             items = copy
             changed(copy)
@@ -1223,7 +1336,12 @@ function addon:CreateSettingsForm(parent)
     end
 
     -- Adds a choice of the LibSharedMedia sound names (plus the saved name if it is not registered) with a preview
-    -- button. changed gets the name, or nil for None.
+    -- button.
+    -- @param key string  The field key prefix.
+    -- @param caption string  The row caption.
+    -- @param value string|nil  The current sound name.
+    -- @param changed function  Called with the name, or nil for None.
+    -- @return table  The choice button.
     function p:Sound(key, caption, value, changed)
         local ok, media = pcall(LibStub, 'LibSharedMedia-3.0', true)
         local sounds = {}
@@ -1293,8 +1411,12 @@ function addon:CreateSettingsForm(parent)
     -- Position, toggle, choice and color fields
     -- ============================================================================
 
-    -- Adds a position pad with horizontal and vertical offset fields beside it. changed(x, y, centered) runs on every
-    -- pad step or committed offset. With anchor set the caller owns the caption column, so the scope is marked custom.
+    -- Adds a position pad with horizontal and vertical offset fields beside it. With an anchor the caller owns the
+    -- caption column, so the scope is marked custom.
+    -- @param xvalue number|nil  The horizontal offset; nil means 0.
+    -- @param yvalue number|nil  The vertical offset; nil means 0.
+    -- @param changed function  Called as changed(x, y, centered) on every pad step or committed offset.
+    -- @param anchor boolean|nil  True when the caller owns the caption column.
     function p:Position(xvalue, yvalue, changed, anchor)
         local caption
 
@@ -1347,7 +1469,9 @@ function addon:CreateSettingsForm(parent)
         self.fields.positionPad = pad
         local after = self.y
 
-        -- Parses a finite number or returns nil.
+        -- Parses a finite number.
+        -- @param text string  The text.
+        -- @return number|nil  The number; nil when the text is not a finite number.
         local function numeric(text)
             local n = tonumber(text)
 
@@ -1402,7 +1526,14 @@ function addon:CreateSettingsForm(parent)
         self.y = after
     end
 
-    -- Adds a two-state pill that shows trueLabel or falseLabel; a click flips it and calls changed(newValue).
+    -- Adds a two-state pill that shows one of two labels; a click flips it and calls changed.
+    -- @param key string  The field key.
+    -- @param caption string|nil  The row caption.
+    -- @param value boolean|nil  The current state.
+    -- @param falseLabel string  The text shown when false.
+    -- @param trueLabel string  The text shown when true.
+    -- @param changed function  Called with the new state.
+    -- @return table  The pill.
     function p:Toggle(key, caption, value, falseLabel, trueLabel, changed)
         local y = self:Row(caption)
         local c = self:Acquire('togglePills', function() return addon:CreateWorkbenchPill(self.child, '', 94) end)
@@ -1425,8 +1556,13 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
-    -- Adds a dropdown button over entries { value, text, icon, ... } showing the entry whose value is value. Choosing a
-    -- different value calls changed(value). Returns the button so callers can resize it or replace its click handler.
+    -- Adds a dropdown button showing the entry whose value matches. Choosing a different value calls changed.
+    -- @param key string  The field key.
+    -- @param caption string|nil  The row caption.
+    -- @param value any  The current value.
+    -- @param entries table[]  The choices, each { value, text, icon, ... }.
+    -- @param changed function  Called with the newly chosen value.
+    -- @return table  The button, so callers can resize it or replace its click handler.
     function p:Choice(key, caption, value, entries, changed)
         local y = self:Row(caption)
 
@@ -1467,8 +1603,12 @@ function addon:CreateSettingsForm(parent)
         return c
     end
 
-    -- Opens the form's shared selector menu under anchor (created on first use). The pick runs through Guard, so a
-    -- stale menu does nothing. inline hides the menu's search box and leaves the anchor text alone.
+    -- Opens the form's shared selector menu under an anchor (created on first use). The pick runs through Guard, so a
+    -- stale menu does nothing.
+    -- @param anchor table  The frame the menu opens under.
+    -- @param entries table[]  The choices, each { value, text, icon, ... }.
+    -- @param changed function  Called with the chosen value.
+    -- @param inline boolean|nil  True hides the menu's search box and leaves the anchor text alone.
     function p:ShowChoices(anchor, entries, changed, inline)
         self.menu = self.menu or addon:CreateWorkbenchSelector()
         local token = self.generation
@@ -1494,8 +1634,8 @@ function addon:CreateSettingsForm(parent)
     -- ============================================================================
 
     -- Commits every dirty field in order: all must parse first or nothing is committed (the bad field turns red and a
-    -- message shows). Returns whether the form is current and clean. Run before any action that reads or changes the
-    -- data.
+    -- message shows). Run before any action that reads or changes the data.
+    -- @return boolean  True when the form is current and clean; false when it is stale or a field does not parse.
     function p:FlushEdits()
         if not self:Valid(self.generation) then
             return false
@@ -1536,8 +1676,10 @@ function addon:CreateSettingsForm(parent)
         return true
     end
 
-    -- Runs callback when it is safe to leave the page: at once when clean; otherwise opens the apply or discard prompt
-    -- and returns false, and callback runs after the draft is applied or discarded.
+    -- Runs a callback when it is safe to leave the page: at once when clean; otherwise opens the apply or discard
+    -- prompt, and the callback runs after the draft is applied or discarded.
+    -- @param callback function  Called with no arguments.
+    -- @return boolean  True when the callback ran at once; false when a prompt was opened or a field does not parse.
     function p:RequestLeave(callback)
         if not self:Valid(self.generation) then
             callback()
@@ -1573,7 +1715,9 @@ function addon:CreateSettingsForm(parent)
         return false
     end
 
-    -- Shows the shared confirmation prompt with message; callback runs on Confirm.
+    -- Shows the shared confirmation prompt.
+    -- @param message string  The prompt text.
+    -- @param callback function  Called with no arguments on Confirm (guarded against a stale drawing).
     function p:Confirm(message, callback)
         local prompt = self.prompt
 
@@ -1622,6 +1766,8 @@ function addon:CreateSettingsForm(parent)
     end
 
     -- Turns the confirmation prompt into the Apply, Discard, Cancel prompt for unsaved changes.
+    -- @param apply function  Called when Apply is clicked.
+    -- @param discard function  Called when Discard is clicked.
     function p:ConfirmPending(apply, discard)
         self:Confirm(L['Apply changes before leaving this page?'], apply)
         local d = self.prompt
@@ -1639,8 +1785,13 @@ function addon:CreateSettingsForm(parent)
         end))
     end
 
-    -- Adds a color swatch with four channel boxes (fields key_r, key_g, key_b, key_a) and a picker; changed({r,g,b,a})
-    -- runs when a channel is committed or the picker moves. A missing color shows opaque white.
+    -- Adds a color swatch with four channel boxes (fields key_r, key_g, key_b, key_a) and a picker. A missing color
+    -- shows opaque white.
+    -- @param key string  The field key.
+    -- @param caption string  The row caption.
+    -- @param color table|nil  The current color { r, g, b, a }.
+    -- @param changed function  Called with a new { r, g, b, a } when a channel is committed or the picker moves.
+    -- @return table  The swatch.
     function p:Color(key, caption, color, changed)
         color = color or { r = 1, g = 1, b = 1, a = 1 }
         local y = self:Row(caption, 56)
@@ -1739,6 +1890,8 @@ function addon:CreateSettingsForm(parent)
             swatch.art:SetColorTexture(values.r, values.g, values.b, values.a)
         end))
 
+        -- Opens the color picker on the current values; each pick updates the channel boxes and swatch and calls
+        -- changed.
         addon:SetUIScript(swatch, 'OnClick', self:Guard(function()
             if self:FlushEdits() then
                 swatch.picker:Open(
@@ -1774,8 +1927,8 @@ function addon:CreateSettingsForm(parent)
     -- Drawing and lifecycle
     -- ============================================================================
 
-    -- Every cleanup runs even if one fails; a failure part-way used to leave
-    -- the old page's controls on screen and the page unusable.
+    -- Runs every registered cleanup, even if one fails (a failure part-way used to leave the old page's controls on
+    -- screen and the page unusable); errors go to the error handler.
     function p:RunCleanups()
         local cleanups = self.cleanups
         self.cleanups = {}
@@ -1860,8 +2013,9 @@ function addon:CreateSettingsForm(parent)
         self.drawnColumnSingle = self.usedColumns and self.columnSingle or nil
     end
 
-    -- Opens the form with builder (called with the form on every Draw). Per-page selection state is cleared when the
-    -- profile, global or character table changed since the last open.
+    -- Opens the form with a builder. Per-page selection state is cleared when the profile, global or character table
+    -- changed since the last open.
+    -- @param builder function  Called with the form on every Draw.
     function p:Open(builder)
         if self.profile ~= addon.db.profile or self.global ~= addon.db.global or self.char ~= addon.db.char then
             self.selection = nil
@@ -1912,9 +2066,9 @@ function addon:CreateSettingsForm(parent)
         self.message:SetWidth(math.max(1, self.frame:GetWidth() - (self.creationUsed and 340 or 20)))
     end
 
-    -- Geometry alone changed: draw again at the new width, carrying every
-    -- pending input across as typed (invalid text included) without
-    -- committing it, so a resize never loses or silently applies an edit.
+    -- Draws again at the new width, carrying every pending input across as typed (invalid text included) without
+    -- committing it, so a resize never loses or silently applies an edit. When a box has keyboard focus the redraw
+    -- waits until it lets go.
     function p:Relayout()
         if not self.active then
             return
@@ -1979,14 +2133,15 @@ function addon:CreateSettingsForm(parent)
         end
     end
 
-    -- The widths a drawing depends on: the page and its detail viewport.
+    -- Returns the widths a drawing depends on: the page and its detail viewport.
+    -- @return string  The two widths joined with '/'.
     function p:ReflowKey()
         return tostring(self.frame:GetWidth()) .. '/' .. tostring(self.scroll:GetWidth())
     end
 
-    -- Geometry is laid out at once; drawing again waits for the shared
-    -- reflow driver (once per rendered frame at most, never while hidden)
-    -- and is skipped when the widths are those last drawn.
+    -- Requests a redraw after a geometry change: geometry is laid out at once; drawing again waits for the shared
+    -- reflow driver (once per rendered frame at most, never while hidden) and is skipped when the widths are those last
+    -- drawn.
     function p:RequestRelayout()
         if not self.active then
             return
@@ -2021,6 +2176,7 @@ function addon:CreateSettingsForm(parent)
     end
 
     -- Resizes the form; geometry updates now and the redraw follows through the shared reflow driver.
+    -- @param n number  The width in points.
     function p:SetWidth(n)
         self.frame:SetWidth(n)
         self:Layout()
@@ -2028,6 +2184,7 @@ function addon:CreateSettingsForm(parent)
     end
 
     -- Resizes the form's height and re-lays out without redrawing.
+    -- @param n number  The height in points.
     function p:SetHeight(n)
         self.frame:SetHeight(n)
         self:Layout()

@@ -7,8 +7,11 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Deep structural equality of two plain data values (no metatables, no cycles); decides whether an edit changed
+-- Compares two plain data values by deep structure (no metatables, no cycles); decides whether an edit changed
 -- anything.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when both have the same type and contents.
 local function equal(a, b)
     if type(a) ~= type(b) then
         return false
@@ -32,7 +35,9 @@ local function equal(a, b)
     return true
 end
 
--- Rough byte cost of a value (strings by length, tables recursively), used only to cap the undo stack's memory.
+-- Estimates the byte cost of a value (strings by length, tables recursively), used only to cap the undo stack's memory.
+-- @param value any  The value to measure.
+-- @return number  The estimated size in bytes.
 local function size(value)
     if type(value) == 'string' then
         return #value + 32
@@ -50,7 +55,8 @@ local function size(value)
     return n
 end
 
--- Adds the history methods to the settings form class `p`; called once when the form class is built.
+-- Adds the history methods to the settings form class; called once when the form class is built.
+-- @param p table  The settings form.
 function addon:InstallSettingsHistory(p)
     -- Drops both stacks and bumps the epoch, so an edit still in flight is not recorded against the old draft.
     function p:ClearSettingsHistory()
@@ -60,7 +66,8 @@ function addon:InstallSettingsHistory(p)
         self.historyBytes = 0
     end
 
-    -- Returns a deep copy of the undoable state (item-set drafts, effects, selection), or nil when history is off.
+    -- Returns a deep copy of the undoable state (item-set drafts, effects, selection).
+    -- @return table|nil  The snapshot; nil when history is off or there is no draft.
     function p:HistorySnapshot()
         if not self.historyEnabled or not self.draft then
             return
@@ -74,7 +81,7 @@ function addon:InstallSettingsHistory(p)
         })
     end
 
-    -- Enables each button only while its stack has an entry.
+    -- Enables each Undo and Redo button only while its stack has an entry.
     function p:UpdateHistoryActions()
         if self.fields.undo then
             if #(self.historyUndo or {}) > 0 then
@@ -93,10 +100,12 @@ function addon:InstallSettingsHistory(p)
         end
     end
 
-    -- Runs `callback(...)` and records a pre-edit snapshot when it changed the draft; returns the callback's result.
-    -- Nested calls run unrecorded (one user action is one undo step), and an epoch change during the call (draft
-    -- replaced or cleared) discards the snapshot instead of recording it. Errors are rethrown after the depth flag
-    -- clears.
+    -- Runs a callback and records a pre-edit snapshot when it changed the draft. Nested calls run unrecorded (one user
+    -- action is one undo step), and an epoch change during the call (draft replaced or cleared) discards the snapshot
+    -- instead of recording it. Errors are rethrown after the depth flag clears.
+    -- @param callback function  The edit to run.
+    -- @param ... any  The arguments passed to the callback.
+    -- @return any  The callback's result.
     function p:WithSettingsHistory(callback, ...)
         if not self.historyEnabled or self.historyDepth then
             return callback(...)
@@ -135,8 +144,9 @@ function addon:InstallSettingsHistory(p)
         return result
     end
 
-    -- Moves one step back (or forward when `redo`): pushes the current state on the opposite stack, restores the
-    -- popped snapshot into the draft and redraws. Pending field edits are flushed first; does nothing if that fails.
+    -- Moves one step back (or forward): pushes the current state on the opposite stack, restores the popped snapshot
+    -- into the draft and redraws. Pending field edits are flushed first; does nothing if that fails.
+    -- @param redo boolean|nil  True moves forward (redo); otherwise back (undo).
     function p:TravelSettingsHistory(redo)
         if not self:FlushEdits() then
             return

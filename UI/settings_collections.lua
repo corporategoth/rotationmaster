@@ -13,8 +13,10 @@ end
 
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Turns a collection keyed by id into a list of `{ value = id, text = name }` entries sorted by name (then id), for
--- rosters and selectors. Non-table values are skipped; an unnamed entry shows its id.
+-- Turns a collection keyed by id into a list of entries for rosters and selectors, sorted by name (then id). Non-table
+-- values are skipped; an unnamed entry shows its id.
+-- @param values table|nil  The collection (id to table with an optional name).
+-- @return table[]  The entries, each { value = id, text = name }.
 function addon:SettingsEntries(values)
     local entries = {}
 
@@ -35,14 +37,18 @@ function addon:SettingsEntries(values)
     return entries
 end
 
--- Returns `text` when it holds a non-blank string, otherwise nil.
+-- Returns the text when it holds a non-blank string.
+-- @param text any  The value to test.
+-- @return string|nil  The text; nil when it is not a string or is blank.
 function addon:SettingsNonempty(text)
     if type(text) == 'string' and text:find('%S') then
         return text
     end
 end
 
--- Parses a positive whole number from user text, or returns nil.
+-- Parses a positive whole number from user text.
+-- @param text any  The text (or number) to parse.
+-- @return number|nil  The number; nil when it is not a positive whole number.
 function addon:SettingsPositiveID(text)
     local n = tonumber(text)
 
@@ -51,7 +57,10 @@ function addon:SettingsPositiveID(text)
     end
 end
 
--- Makes `value` present exactly once (enabled) or absent (disabled) in an array, in place.
+-- Makes a value present exactly once (enabled) or absent (disabled) in an array, in place.
+-- @param list table  The array to edit.
+-- @param value any  The value to add or remove.
+-- @param enabled boolean|nil  True makes the value present (appended); otherwise it is removed.
 function addon:SettingsFlag(list, value, enabled)
     for i = #list, 1, -1 do
         if list[i] == value then
@@ -64,7 +73,10 @@ function addon:SettingsFlag(list, value, enabled)
     end
 end
 
--- True when the array holds `value`; a nil list counts as empty.
+-- Tells whether the array holds a value.
+-- @param list table|nil  The array; nil counts as empty.
+-- @param value any  The value to look for.
+-- @return boolean  True when the array holds the value.
 function addon:SettingsContains(list, value)
     for _, entry in ipairs(list or {}) do
         if entry == value then
@@ -75,10 +87,16 @@ function addon:SettingsContains(list, value)
     return false
 end
 
--- Adds the Move to Top/Up/Down/Bottom/Delete action row for entry `i` of the ordered array `list`. Each action edits
--- the array in place, calls `changed()` so the caller can mark the draft, and redraws the page `p`.
+-- Adds the Move to Top/Up/Down/Bottom/Delete action row for an entry of an ordered array. Each action edits the array
+-- in place, calls `changed()` so the caller can mark the draft, and redraws the page.
+-- @param p table  The settings form pane.
+-- @param prefix string  The prefix of the control keys.
+-- @param list table  The ordered array being edited.
+-- @param i number  The index of the entry in the array.
+-- @param changed function  Called with no arguments after each edit.
 function addon:SettingsOrderControls(p, prefix, list, i, changed)
-    -- Moves entry `i` to position `destination`, tells the caller the list changed and redraws.
+    -- Moves entry `i` to a new position, tells the caller the list changed and redraws.
+    -- @param destination number  The position to insert the entry at (after it has been removed).
     local function move(destination)
         local value = table.remove(list, i)
         table.insert(list, destination, value)
@@ -136,9 +154,14 @@ function addon:SettingsOrderControls(p, prefix, list, i, changed)
     })
 end
 
--- Opens (or reuses, via `cached`) the settings form for tab `key` inside `parent`, declares which saved keys its draft
--- covers and builds the page. Returns the form, or nil for an unknown tab. The key lists below are the transaction
--- boundary: Apply compares and copies back only the keys named for the tab, so a key a page edits must be listed.
+-- Opens (or reuses, via `cached`) the settings form for a tab inside `parent`, declares which saved keys its draft
+-- covers and builds the page. The key lists in the function are the transaction boundary: Apply compares and copies
+-- back only the keys named for the tab, so a key a page edits must be listed.
+-- @param parent table  The frame that holds the form.
+-- @param key string  The tab: 'General', 'Profiles', 'About', 'Announces', 'Effects', 'ItemSets', 'Conditions',
+-- 'Functions' or 'Integrations'.
+-- @param cached table|nil  A settings form to reuse instead of creating one.
+-- @return table|nil  The form; nil for an unknown tab.
 function addon:OpenNativeSettings(parent, key, cached)
     local builders = {
         General = self.BuildGeneralSettings,
@@ -213,7 +236,16 @@ function addon:OpenNativeSettings(parent, key, cached)
 end
 
 -- Fills the roster footer with New, the caller's Duplicate and Import/Export actions, and a Compare chooser listing
--- every other entry of `values`. `compare(a, b)` overrides the default comparison window for `kind`.
+-- every other entry.
+-- @param p table  The settings form pane.
+-- @param kind string  The kind of collection, passed to the comparison window.
+-- @param values table  The collection (id to entry).
+-- @param current any  The id of the selected entry; nil when none is selected.
+-- @param duplicate table  The Duplicate action definition ({ key, text, icon, enabled, action }).
+-- @param transfer table  The Import/Export action definition.
+-- @param compare function|nil  Called as compare(a, b) with two entries; overrides the default comparison window for
+--   the
+-- kind.
 function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, compare)
     local candidates = {}
 
@@ -249,8 +281,11 @@ function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, c
     })
 end
 
--- Places the red Delete icon at the top right of the detail pane; `action` runs guarded so it is ignored once the page
--- is stale. Returns the button.
+-- Places the red Delete icon at the top right of the detail pane; the action runs guarded so it is ignored once the
+-- page is stale.
+-- @param p table  The settings form pane.
+-- @param action function  Called with no arguments when the button is clicked.
+-- @return table  The button.
 function addon:SettingsTopDelete(p, action)
     local c = p:Acquire('rootDelete', function()
         return self:CreateWorkbenchIconButton(p.child, 'trash', L['Delete'])
@@ -265,8 +300,14 @@ function addon:SettingsTopDelete(p, action)
     return c
 end
 
--- Deletion is a separate confirmed operation. Resolve existing edits first,
--- then rebuild and read saved data so Apply/Discard cannot leave stale drafts.
+-- Runs a confirmed deletion as its own operation: after the editor's leave prompt, drops any draft, redraws, asks the
+-- player to confirm and then, if the saved data is unchanged since, calls `remove` and refreshes glows and buttons.
+-- Existing edits are resolved first, then saved data is rebuilt and read so Apply/Discard cannot leave stale drafts.
+-- The deletion is refused (with a message) in combat or when the saved data or the condition and function registries
+-- changed meanwhile.
+-- @param p table  The settings form pane.
+-- @param warning string  The confirmation text shown before 'This cannot be undone.'.
+-- @param remove function  Performs the deletion; returns true on success, or false and a reason.
 function addon:ConfirmSettingsDeletion(p, warning, remove)
     local profile, global, char = self.db.profile, self.db.global, self.db.char
 
@@ -332,9 +373,13 @@ function addon:ConfirmSettingsDeletion(p, warning, remove)
     end)
 end
 
--- Unregisters a custom condition and removes its saved source. Returns true, or false and a reason. If unregistering
--- fails the saved source and the previous registered definition are kept (and dependents invalidated when the registry
--- entry had changed), so a failed cleanup hook cannot leave a runtime without its source.
+-- Unregisters a custom condition and removes its saved source. If unregistering fails the saved source and the previous
+-- registered definition are kept (and dependents invalidated when the registry entry had changed), so a failed cleanup
+-- hook cannot leave a runtime without its source.
+-- @param key string  The custom condition key.
+-- @return boolean  True on success.
+-- @return string|nil  The reason when false ('definition-changed' when there is no saved source, or the unregister
+-- error).
 function addon:DeleteSavedCustomCondition(key)
     local source = (self.db.global.custom_conditions or {})[key]
 

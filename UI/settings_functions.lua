@@ -13,6 +13,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- ============================================================================
 
 -- Returns a fresh source for a new custom function (name, namespace, empty arguments and `return nil` code).
+-- @return table  The new function source.
 function addon:NewFunctionSource()
     return {
         name = 'newFunction',
@@ -27,11 +28,17 @@ end
 
 -- Restricts a function name edit box to identifier characters: typed text is stripped to letters, digits and
 -- underscores with no leading digit, and the cursor is kept at the same logical place. The box's previous change
--- handler still runs afterwards. `form` supplies the Guard that drops events from a stale drawing.
+-- handler still runs afterwards.
+-- @param form table  The settings form; supplies the Guard that drops events from a stale drawing.
+-- @param input table  The edit box.
 function addon:ConfigureFunctionNameInput(form, input)
     input:SetMaxLetters(128)
     local changed = input:GetScript('OnTextChanged')
 
+    -- Filters typed text to identifier characters (keeping the cursor at the same logical place), then runs the box's
+    -- previous change handler.
+    -- @param control table  The edit box.
+    -- @param user boolean  True when the change came from typing.
     self:SetUIScript(input, 'OnTextChanged', form:Guard(function(control, user)
         if user then
             local text = control:GetText()
@@ -51,8 +58,11 @@ function addon:ConfigureFunctionNameInput(form, input)
     end))
 end
 
--- Returns an unused name for a copy of function `id`: its editor name with `_copy` (shortened to leave room), then
+-- Returns an unused name for a copy of a function: its editor name with `_copy` (shortened to leave room), then
 -- `_copy2`, `_copy3` and so on until no existing function uses it.
+-- @param id string  The function id.
+-- @param source table  The function source.
+-- @return string  The unused name.
 function addon:DuplicateFunctionName(id, source)
     local base = self:FunctionEditorName(id, source):sub(1, 116) .. '_copy'
     local name = base
@@ -71,8 +81,11 @@ function addon:DuplicateFunctionName(id, source)
     return name
 end
 
--- Returns the source table for function `id` and whether it is read-only (a Built In), or nothing when `id` is unknown
--- or is a value binding.
+-- Returns the source table for a function and whether it is read-only (a Built In). A value binding is not a function
+-- to the user, so it counts as unknown.
+-- @param id string  The function id.
+-- @return table|nil  The source; nil when `id` is unknown or is a value binding.
+-- @return boolean|nil  True for a Built In (read-only), false for a custom function; nil when the first value is nil.
 function addon:FunctionSource(id)
     local custom = (self.db.global.custom_functions or {})[id]
 
@@ -87,8 +100,9 @@ function addon:FunctionSource(id)
     end
 end
 
--- Starts a new custom function in the pane `p` (a copy of `source`, or the blank template) under a new generated id,
--- after any unapplied edits have been resolved.
+-- Starts a new custom function in the pane under a new generated id, after any unapplied edits have been resolved.
+-- @param p table  The settings pane.
+-- @param source table|nil  A source to copy; nil uses the blank template.
 function addon:OpenNewFunction(p, source)
     p:RequestLeave(function()
         if not p.active then
@@ -104,9 +118,10 @@ function addon:OpenNewFunction(p, source)
     end)
 end
 
--- Opens the settings window on the Functions page with function `id` selected (used by the go-to-definition links).
--- Returns the settings window, or nil when `id` is unknown. With a pane open, the jump waits for navigation to be
--- approved, so a cancelled jump changes nothing.
+-- Opens the settings window on the Functions page with a function selected (used by the go-to-definition links). With a
+-- pane open, the jump waits for navigation to be approved, so a cancelled jump changes nothing.
+-- @param id string  The function id.
+-- @return table|nil  The settings window; nil when `id` is unknown.
 function addon:ShowFunctionSource(id)
     local source = self:FunctionSource(id)
 
@@ -132,7 +147,8 @@ function addon:ShowFunctionSource(id)
     return self:ShowConfig('Functions')
 end
 
--- Returns the sorted list of namespaces in use by Built In and custom functions as { value, text } entries.
+-- Returns the sorted list of namespaces in use by Built In and custom functions.
+-- @return table[]  The namespaces, each { value = name, text = name }.
 function addon:FunctionNamespaces()
     local names = {}
 
@@ -166,9 +182,11 @@ end
 -- The Functions page
 -- ============================================================================
 
--- Draws the Functions page into the settings pane `p`: the filtered, sorted roster, the roster actions and the inline
--- editor for the selected (or newly created) function. Runs on every redraw, so it reads the current registry and
--- saved functions each time and keeps the selection in pane fields (functionID, newFunctionSource and the filters).
+-- Draws the Functions page into the settings pane: the filtered, sorted roster, the roster actions and the inline
+-- editor for the selected (or newly created) function. Runs on every redraw, so it reads the current registry and saved
+-- functions each time and keeps the selection in pane fields (functionID, newFunctionSource and the filters).
+-- @param p table  The settings pane.
+-- @return any  What the inline function editor builder returns; nothing when no function is shown.
 function addon:BuildFunctionSettings(p)
     self:InstallInlineFunctionNavigation(p)
 
@@ -201,6 +219,9 @@ function addon:BuildFunctionSettings(p)
 
     -- Adds a roster entry for a function unless the source or namespace filter hides it; an entry whose function is
     -- unavailable is marked invalid with the reason.
+    -- @param id string  The function id.
+    -- @param source table  The function source.
+    -- @param builtin boolean  True for a Built In function.
     local function add(id, source, builtin)
         if p.functionSource == 'builtin' and not builtin or p.functionSource == 'custom' and builtin then
             return
@@ -350,6 +371,8 @@ function addon:BuildFunctionSettings(p)
             text = L['Compare'],
             icon = 'compare',
             enabled = source ~= nil and #comparisons > 0,
+            -- Opens a menu of the other functions to compare the selected one with and shows the comparison window for
+            -- the choice.
             action = function()
                 local selected = p.functionID
 

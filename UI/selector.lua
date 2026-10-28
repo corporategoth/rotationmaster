@@ -11,20 +11,19 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Popup menu
 -- ============================================================================
 
--- Popups are outside scroll children. Leases also protect rows recycled inside
--- one opening, and active color children retain their original anchor frame.
+-- Creates the bounded, searchable popup menu every native dropdown uses.
+-- @return table  The menu table, with its own frame (parented to UIParent, hidden).
 --
--- Returns a menu table with its own frame (parented to UIParent, hidden). Methods:
---   Open(anchor, entries, selected, changed, valid, inline) shows the menu under anchor. entries are
---     {value, text, icon, selected, disabled, header, color, chooseColor}; changed(value, text, icon) runs on a pick;
---     valid() revokes the menu (it closes on the next frame); inline hides the search box. Opening the same anchor
---     again closes the menu unless inline.
---   Hide, and Release (retire the menu for good; calls OnRelease if the owner set one).
---   Refilter and RefreshViewport rebuild the matching list and bind only the rows scrolled into view (rows are pooled).
---   Bind, Retire, IsValid, IsPinned and CloseColor manage one row's lease; a row whose color picker is open is pinned
---     and survives a refilter until the picker hides.
--- Every callback is guarded by the serial and revision counters so a click on a recycled row or a stale opening does
--- nothing. A left click outside the menu, its anchor and any open color child closes it.
+-- Popups are outside scroll children. Leases also protect rows recycled inside one opening, and active color children
+-- retain their original anchor frame. Methods: Open(anchor, entries, selected, changed, valid, inline) shows the menu
+-- under anchor. entries are {value, text, icon, selected, disabled, header, color, chooseColor}; changed(value, text,
+-- icon) runs on a pick; valid() revokes the menu (it closes on the next frame); inline hides the search box. Opening
+-- the same anchor again closes the menu unless inline. Hide, and Release (retire the menu for good; calls OnRelease if
+-- the owner set one). Refilter and RefreshViewport rebuild the matching list and bind only the rows scrolled into view
+-- (rows are pooled). Bind, Retire, IsValid, IsPinned and CloseColor manage one row's lease; a row whose color picker is
+-- open is pinned and survives a refilter until the picker hides. Every callback is guarded by the serial and revision
+-- counters so a click on a recycled row or a stale opening does nothing. A left click outside the menu, its anchor and
+-- any open color child closes it.
 function addon:CreateWorkbenchSelector()
     local menu = { frame = CreateFrame('Frame', nil, UIParent), rows = {}, serial = 0, revision = 0 }
     local frame = menu.frame
@@ -42,14 +41,21 @@ function addon:CreateWorkbenchSelector()
     menu.child:SetWidth(272)
     menu.scroll:SetScrollChild(menu.child)
 
+    -- Tells whether the menu is open and its owner has not revoked it.
+    -- @return boolean|nil  Truthy while the menu may act.
     function menu:IsValid()
         return self.active and self.valid and self.valid()
     end
 
+    -- Tells whether a row has its color picker open, which keeps it bound across a refilter.
+    -- @param row table  The row button.
+    -- @return boolean|nil  Truthy when the row is pinned.
     function menu:IsPinned(row)
         return row.colorOwner and row.colorOwner.frame and row.colorOwner.frame:IsShown()
     end
 
+    -- Unbinds a pooled row: drops its lease and color picker lease, clears its click scripts and hides it.
+    -- @param row table  The row button.
     function menu:Retire(row)
         if row.colorLease then
             row.colorLease.active = false
@@ -75,6 +81,7 @@ function addon:CreateWorkbenchSelector()
         row:Hide()
     end
 
+    -- Closes the color picker child opened from a row (if still open for its lease) and forgets it.
     function menu:CloseColor()
         local row = self.colorRow
         self.colorRow = nil
@@ -99,10 +106,16 @@ function addon:CreateWorkbenchSelector()
         end
     end
 
+    -- Hides the menu frame; its OnHide script retires the rows.
     function menu:Hide()
         frame:Hide()
     end
 
+    -- Binds a pooled row to a menu entry: text, icon, selection, heading and disabled state, the color swatch of a
+    -- taggable entry and the click handler. Every handler is guarded by a lease and the serial and revision counters.
+    -- @param row table  The pooled row button.
+    -- @param entry table  The entry ({ value, text, icon, selected, disabled, header, color, chooseColor }).
+    -- @param index number  The 1-based position of the entry in the filtered list.
     function menu:Bind(row, entry, index)
         local lease = {}
         local serial, revision = self.serial, self.revision
@@ -111,6 +124,9 @@ function addon:CreateWorkbenchSelector()
         row.menuIndex = index
         row.menuRevision = revision
 
+        -- Tells whether this binding of the row is still current: the menu is valid and shown and neither the opening
+        -- nor the filter changed.
+        -- @return boolean  True while the row's handlers may act.
         local function alive()
             return menu:IsValid()
                 and frame:IsShown()
@@ -151,12 +167,16 @@ function addon:CreateWorkbenchSelector()
             swatch:Show()
             row:GetFontString():SetWidth(width - (entry.icon and 48 or 26))
 
+            -- Opens the entry's color chooser from its swatch (closing any other), keeps the chooser's frame tied to
+            -- this row's lease so it closes with the row, and repaints the swatch when a color is picked.
             addon:SetUIScript(swatch, 'OnClick', function()
                 if alive() then
                     menu:CloseColor()
                     local colorLease = { active = true }
                     row.colorLease = colorLease
 
+                    -- Tells whether this color chooser session is still current.
+                    -- @return boolean  True while the chooser's callbacks may act.
                     local function colorValid()
                         return colorLease.active and menu:IsValid() and menu.serial == serial and row.menuLease == lease
                     end
@@ -239,6 +259,8 @@ function addon:CreateWorkbenchSelector()
         row:Show()
     end
 
+    -- Binds rows to the visible slice of the matching list (plus a margin) and retires the rest, except pinned rows
+    -- (hidden only). Re-entry is ignored; a failing bind retires the half-bound row before the error is re-raised.
     function menu:RefreshViewport()
         if not self:IsValid() or self.rebuilding or self.refreshing then
             return
@@ -307,6 +329,8 @@ function addon:CreateWorkbenchSelector()
         end
     end
 
+    -- Rebuilds the matching list from the search text and sizes the menu to it (up to 10 rows), then rebinds the rows.
+    -- Rows whose color picker is open stay.
     function menu:Refilter()
         if not self:IsValid() then
             return
@@ -342,6 +366,15 @@ function addon:CreateWorkbenchSelector()
         self:RefreshViewport()
     end
 
+    -- Shows the menu under an anchor. Opening the same anchor again closes the menu unless inline.
+    -- @param anchor table  The frame the menu opens under.
+    -- @param entries table[]  The entries, each { value, text, icon, selected, disabled, header, color, chooseColor }.
+    -- @param selected any  The value that is currently selected.
+    -- @param changed function  Called as changed(value, text, icon) when an entry is picked.
+    -- @param valid function|nil  Called to check the menu is still wanted; when it returns false the menu closes on the
+    --   next
+    -- frame.
+    -- @param inline boolean|nil  True hides the search box.
     function menu:Open(anchor, entries, selected, changed, valid, inline)
         if not inline and frame:IsShown() and self.anchor == anchor then
             self:Hide()
@@ -388,6 +421,8 @@ function addon:CreateWorkbenchSelector()
         self:Refilter()
         self.mouseDown = IsMouseButtonDown and IsMouseButtonDown('LeftButton')
 
+        -- Per-frame upkeep while the menu is open: closes it when it was revoked, closes an orphaned color child, and
+        -- closes the menu on a left click outside the menu, its anchor and any open color child.
         addon:SetUIScript(frame, 'OnUpdate', function()
             if menu.serial ~= serial then
                 return
@@ -428,6 +463,7 @@ function addon:CreateWorkbenchSelector()
         end
     end
 
+    -- Retires the menu for good: invalidates the opening, hides it and calls OnRelease if the owner set one.
     function menu:Release()
         self.serial = self.serial + 1
         self:Hide()
@@ -466,12 +502,14 @@ end
 -- Condition dropdown widget
 -- ============================================================================
 
--- Native field selector uses the shared bounded workbench menu.
+-- Creates the pooled 'RM-Selector' condition widget: a caption over a dropdown button. SetList(values, order) takes id
+-- -> text (or a record with text, icon, disabled, header) and an optional id order (sorted by text when omitted);
+-- SetValue and GetValue hold the selected id; the widget fires OnValueChanged only when the player picks a different
+-- value. Its popup is released with the widget.
+-- @return table  The registered widget.
 --
--- Pooled widget 'RM-Selector': a caption over a dropdown button. SetList(values, order) takes id -> text (or a record
--- with text, icon, disabled, header) and an optional id order (sorted by text when omitted); SetValue and GetValue
--- hold the selected id; the widget fires OnValueChanged only when the player picks a different value. Its popup is
--- released with the widget.
+-- Native field selector uses the shared bounded workbench menu. This is a frozen Built In helper: its body must not be
+-- touched.
 ---@class RMConditionSelector: RMConditionWidget
 ---@field SetList fun(self: RMConditionSelector, values: table, order?: table)
 ---@field SetValue fun(self: RMConditionSelector, value: any)
@@ -509,6 +547,7 @@ local function selectorWidget()
 end
 
 -- Acquires a pooled selector widget for a condition field; release it with addon:ReleaseConditionWidget.
+-- @return RMConditionSelector  The widget.
 ---@return RMConditionSelector
 function addon:CreateConditionDropdown()
     local w=addon:AcquireConditionWidget('RM-Selector',selectorWidget)
