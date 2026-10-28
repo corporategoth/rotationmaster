@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Feral Druid (Cat and Bear in one premade, by form), levels 10–60. Selected with 11 Feral
 -- Combat points or Feral as the main talent tree, or by being in Cat, Bear or Dire Bear Form, so an
 -- untalented Druid who shifts gets the form's list. Icy Veins' Feral leveling

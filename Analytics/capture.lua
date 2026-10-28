@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure trusted-receipt builder. No live producers, native proof or persistence.
 -- Publishes addon.Analytics.NewCapture(options), an in-memory recorder that accepts caller-normalized receipts, turns
 -- them into the version-1 trace Analytics/replay.lua expects and returns replay's report as a snapshot.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid bear tank: chosen when Lacerate is engraved. After Icy Veins, wowsims P6
 -- and Warcraft Tavern: Faerie Fire (Feral) or Sunfire (Bear) from range, Lacerate before it drops,
 -- Mangle (Bear) on cooldown, Lacerate, Swipe; on three or more, Mangle under Berserk and Swipe.

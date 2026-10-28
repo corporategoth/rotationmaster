@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Counting of tracked enemies by threat status, for the Built In threat count condition (Conditions/combat.lua).
 -- Owns the count over the unit snapshot (probe clients) and over live nameplate tokens (restricted clients, where an
 -- enemy GUID is secret); it must not cache, modify the snapshot or invent members. Every value read goes through

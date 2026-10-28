@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict test-only inverse; no runtime or saved-source rewrite uses this.
 local original = [=[    evaluate = function(value, _, evalStart)
         if addon.combatHistory[value.unit] ~= nil then

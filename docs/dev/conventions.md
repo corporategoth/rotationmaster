@@ -80,6 +80,37 @@ Standard library only, four spaces, single quotes, a module docstring that is th
 has a check mode that does not (`--check`, or no flag); a generator writes only with `--write`. Tools never download except
 `tools/setup_lint.py`, which verifies a pinned checksum.
 
+## Copyright notice and licence
+
+Rotation Master is released under a modified MIT license ("MIT + Attribution"); the only place the terms are written is
+`LICENSE`. Every original source file carries one line, the first line of the file (after a shebang, or after the XML
+declaration), in its own comment syntax:
+
+```
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+```
+
+- Lua `-- `; Python, shell, YAML, `.pkgmeta` and TOC `# ` (a TOC comment is a line that starts with a single `#`; it sits above
+  `## Interface:`); XML `<!-- ... -->` after the declaration. A Lua, Python, shell or YAML file has one blank line after it,
+  before the file's own header. Do not repeat the terms in a file.
+- Every TOC says `## X-License: MIT + Attribution` (the in-game About page shows the field).
+- `python3 tools/copyright.py --check` (part of `tools/check --static`, so the commit hook and CI) lists the files that lack the
+  notice, carry an older year or wording, or are of a kind nobody classified. `--write` adds or upgrades the notice and is
+  idempotent. The years and the wording are constants at the top of the tool and nowhere else; a new year is one edit and
+  `--write`.
+- The tool classifies every tracked file, by path then extension: `include` with a comment syntax, or `skip` with a reason.
+  Skipped: vendored code (`Libs/`, `LibsAugment/`, `tools/vendor/`, which keep their own licences), art, fonts, textures, JSON
+  and prose (no comment syntax or not source), and generated files whose generator owns the first line
+  (`Locales/*.lua`, the text bundles' locale tables, `Data/text_bundle_index.lua`, `Data/artwork.lua`, the generated client API
+  fixtures). A new kind of file (an extension or a name no rule covers) fails with "not classified": add a rule.
+- A generated file that is source-like and not skipped has its generator emit the notice (`tools/generate_builtin_sources.py`
+  for `Data/builtin_sources.lua`, `tools/generate_artwork_catalog.py` for `.pkgmeta`, `tools/locales.py` for the TOC of a new
+  text bundle); never hand-add the line to one.
+- The notice is a comment, so the compiled program is the same: `python3 tools/bytecode_equal.py` proves it. It does move every
+  line number down by two; `Data/builtin_sources.lua` records line numbers and module hashes, so regenerate it
+  (`python3 tools/generate_builtin_sources.py --write`) after adding the notice to a Built In module.
+- `tools/format_lua.py` keeps a leading notice as line 1 followed by one blank line.
+
 ## Git
 
 One topic per commit, explicit paths (`git add <file>`, never `-A` or `.`), a subject that says what changed for a reader,

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Mage Arcane, levels 10–70 when Arcane is the primary talent tree. Before Arcane Blast (64)
 -- it plays Arcane Missiles with a Frostbolt fallback; from 64 it burns with Arcane Blast and
 -- conserves with "Arcane Blast to three stacks, Frostbolt until they are about to drop", read

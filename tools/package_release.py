@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Build and verify the Rotation Master release package, offline.
 
 Reproduces what the BigWigs packager (`release.sh`, vendored under tools/vendor/bigwigs-packager)

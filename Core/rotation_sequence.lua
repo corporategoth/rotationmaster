@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Sequence executor: walks a rotation body's steps in order (actions, Branches, Stops), asks the caller's `evaluate`
 -- callback about each step's conditions, and reports which action step to visit, whether a Stop ended the walk, or
 -- that the walk was unavailable. It owns control flow only: observation policy, action availability and optional

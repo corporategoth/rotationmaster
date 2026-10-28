@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Fury Warrior, cooldowns inside Colossus Smash (Icy Veins; off by default). Same switch
 -- as the recommended Fury premade (Fury specialization), lower priority. Differs by spending Bladestorm or Dragon Roar
 -- first inside the Colossus Smash window and Execute ahead of Bloodthirst below 20%. In the window: tier-4 talent,

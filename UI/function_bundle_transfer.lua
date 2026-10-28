@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Import and export window for custom function and custom condition bundles: the bundle text, per-item conflict choices
 -- (reuse, replace, rename, create), the required-function list and a read-only source review window. Nothing is saved
 -- until the whole bundle has been reviewed and Apply import is pressed, and the plan comes from the bundle services in

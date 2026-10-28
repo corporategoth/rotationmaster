@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Warrior melee DPS, levels 1–60: two-hander, dual wield, Gladiator and
 -- leveling (the SoD catch-all outside Defensive Stance). wowsims/sod Phase 6 with Wowhead Phase
 -- 7/8: Charge; Victory Rush; Intercept; Whirlwind (Thunder Clap before it) on two engaged enemies;

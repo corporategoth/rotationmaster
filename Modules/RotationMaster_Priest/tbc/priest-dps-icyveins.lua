@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Priest damage, levels 1–70; the default Priest premade whenever the healer premade does
 -- not apply (solo, Shadow, or no talents yet). Smite and wand early, Mind Flay once learned,
 -- Shadowform, Vampiric Touch and Shadow Word: Death as they arrive; Holy and Discipline

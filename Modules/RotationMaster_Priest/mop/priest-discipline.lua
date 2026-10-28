@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Discipline Priest, levels 10-90: Icy Veins' single-target and Atonement lists joined
 -- by your target, with Warcraft Tavern's shield triggers and Hekili's health thresholds. Selected in the Discipline
 -- specialization (256). A friendly target is healed: under Spirit Shell Prayer of Healing (three hurt

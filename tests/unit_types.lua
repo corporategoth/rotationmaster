@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Unit types: focus where the client has a focus system (probed, not a project
 -- id), and the group unit types (main tank, main assist, assigned tank,
 -- assigned healer, group leader) that resolve to a real token when a

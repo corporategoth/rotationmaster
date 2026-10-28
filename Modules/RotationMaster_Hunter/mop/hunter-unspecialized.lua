@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Hunter before a specialization: levels 1–9, and any Hunter with no
 -- specialization chosen (Warcraft Tavern's leveling list). The lowest priority, so the Beast
 -- Mastery, Marksmanship and Survival premades take over as soon as a specialization is

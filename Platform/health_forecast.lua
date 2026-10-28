@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the inputs of the health forecast conditions: UnitHealth, UnitHealthMax, UnitGUID, GetTime
 -- and the optional RealMobHealth provider.
 -- Owns the four `value or nil, reason` readers the forecast reads (identity, current or maximum value, provider

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Specialization and level can change mid-session (a level-up, a respec), so a shipped premade's
 -- applicability holds only what cannot: edition, class, expansion, build and ruleset. Level is a
 -- visible switch condition and specialization the premade's own body.specs, both re-read live, so

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Load-on-demand text: wraps the AceLocale table `L` so a key the main catalog lacks is answered from the text bundle
 -- add-on that owns it (Locales/bundles.json, hash index in Data/text_bundle_index.lua). Owns the lookup, the one-time
 -- load of each bundle and its failed/loaded state; it must not read bundle text while the game is loading and must not

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared TBC Mage blocks (Built In composition; authoring-time only).
 -- Consumers: rm.tbc.mage.frost, rm.tbc.mage.fire.icyveins, rm.tbc.mage.fire.wowhead and
 -- rm.tbc.mage.arcane. A content change needs a block revision bump, every consumer's pin

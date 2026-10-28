@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Debuff conditions: DEBUFF (present), DEBUFF_REMAIN (time left), DEBUFF_STACKS (application count) and DISPELLABLE (a
 -- debuff of a given type, optionally only a dispellable one). Each is a thin wrapper that hands its saved value to
 -- addon:EvaluateAuraCondition (Core/aura_conditions.lua) with the "HARMFUL" filter and a mode; that function scans the

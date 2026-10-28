@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Subtlety Rogue, Wowhead's Garrote build (player-chosen variant).
 -- Applies with Subtlety as the main tree at Hemorrhage's tier (21 points), Dirty Deeds talented
 -- (trait node 105745) and Premeditation known, ranks below the other Rogue premades and ships off

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Protection Warrior, Icy Veins "sunderless" Battle Shout tanking (alternative tank
 -- premade; same switch, lower priority). For groups where four or more players (pets count) hear
 -- the shout, from Phase 5's Battle Shout rank: Revenge, Shield Slam (Bloodthirst for Fury-Prot),

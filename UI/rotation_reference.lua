@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Read-only rendering of a rotation: a reference view (switch, cooldown and sequential sections, implicit auto-attack
 -- fallback) and the step cards, breadcrumbs and condition text it is built from. It works on snapshots and registers no
 -- callback that can change a rotation; UI/rotation_comparison.lua reuses the cards, UI/defaults.lua the whole view.

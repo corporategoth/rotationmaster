@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Holy Priest, Icy Veins raid order. Holy "has no set rotation": who needs
 -- healing decides, health is hidden in Midnight combat and RM picks a spell, not a target, so this
 -- keeps the Holy Words, Prayer of Mending and procs moving on whatever you target. Friendly

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Function dependencies ("bindings") for the custom condition editor and the custom function editor: the alias-to-
 -- function-id map a source saves in `source.bindings`, the toolbar button and rows that edit it, and the undo entries a
 -- code-completion binding leaves in the editor history. Validation and storage are in Core/functions.lua; this file

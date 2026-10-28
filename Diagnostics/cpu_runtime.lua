@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Native runtime capture: measures normal outer EvaluateNextAction dispatches with Blizzard's C_AddOnProfiler
 -- (MeasureCall) for a bounded run (default 10 s, at most 60 s or 512 dispatches) and renders a text report with time,
 -- gross allocation, per-phase rows, decision counts and runtime diagnostic deltas.

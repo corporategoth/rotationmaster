@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Item-set binding: drag or click Bind puts the set's first item on the
 -- cursor; placing it binds the slot. Placing an item onto a slot that already
 -- holds that item is a client no-op with no slot-change event, so button post

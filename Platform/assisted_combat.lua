@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for C_AssistedCombat, C_Spell override relations and the assisted highlight CVar.
 -- Owns the `value or nil, reason` readers for Blizzard's suggested spell, its rotation set and availability, the
 -- spell-matching rules between a chosen spell and the suggestion, and the one writer in this file, the highlight CVar

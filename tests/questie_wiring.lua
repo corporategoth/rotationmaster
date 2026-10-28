@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- main.lua's Questie wiring against the production startup fixture: the service is created once, the late-load event
 -- owner exists only while the preference is on, and every profile change (replace, switch, copy, reset, import)
 -- re-synchronizes the same service. Native frames and provider calls are recorded; tests/questie_integration.lua

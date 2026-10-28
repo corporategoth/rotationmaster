@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A rotation's specializations are its own property, body.specs (the user,
 -- 2026-10-24): the minimap list, /rm set and the Rotations list read it, the
 -- switch condition never decides whether a rotation is listed or can be chosen

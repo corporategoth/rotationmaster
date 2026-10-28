@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition-editor text and numeric input widgets ('RM-ConditionEditBox' and 'RM-ConditionSlider'): a caption, a
 -- workbench edit box and, for the numeric kind, a slider that shares the value. Owns the pending-input protocol: typed
 -- text is only "pending" until Enter or focus loss commits it, and IsPending/CommitPending let a window block closing

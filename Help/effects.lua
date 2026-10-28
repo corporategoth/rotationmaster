@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help document for the Effects settings page: the effect types (texture, pixel, auto cast, glow, proc glow, dazzle,
 -- animate, pulse, rotate, custom), each type's tuning fields, the sequence settings, Apply/Cancel, Delete and the
 -- collection buttons, plus the renderer that lays them out in a help frame. Paragraphs live in the locale tables under

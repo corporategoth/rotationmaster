@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Unholy Death Knight, rune-cap and Shadow Infusion pooling (wowsims
 -- default APL as far as RM can read it; wowtbc.gg, Method and MaxDps agree). Off by default, same
 -- switch as rm.mop.deathknight.unholy: Death Coil rebuilds Shadow Infusion while Dark Transformation

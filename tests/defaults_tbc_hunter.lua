@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Hunter premades: ranged DPS (wowsims recommended, Wowhead). Real predicates, catalog,
 -- composition, sequence and publisher; WoW observations are modeled in
 -- tests/fixtures/tbc_physical_premades.lua.

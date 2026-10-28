@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Numeric and comparison helpers (compare, isin, round, isint) used by conditions and saved custom code.
 -- This file owns the canonical bodies; utils.lua re-exports them as addon.compare, addon.isin, addon.round and
 -- addon.isint so saved custom source that binds to those names keeps working.

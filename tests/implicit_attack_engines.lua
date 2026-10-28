@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The implicit auto-attack (Attack or Shoot) through both engines, on the real
 -- addon (whole-poll fixture, real buttons.lua): the lean and standard engines
 -- must recommend the same thing and publish the same outputs, and a Stop's

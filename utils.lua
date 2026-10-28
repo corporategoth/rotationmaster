@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- General helpers hung on the addon table: leveled chat output, popups and tooltips, small encoders, spell-spec
 -- lookups, the item-name/icon widget updaters, and the legacy addon.* names that saved custom source still calls (each
 -- one is a plain alias of a function owned by Functions/*.lua, never a second copy). Loaded from RotationMaster.toc

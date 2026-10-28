@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict inverse of only the copyable CPU mode context added after efad377.
 local block = [=[ -- BEGIN CACHE MODE CONTEXT
  local mode=field(owner,'GetCacheDiagnosticMode')

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact Switch followup stage. Current deployed UI bytes and older2a bytes
 -- are qualified explicitly; all existing downstream whole-file proofs remain.
 local function digest(s)

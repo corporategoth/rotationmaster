@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Fire Warlock, Icy Veins order (alternative premade; same switch, lower
 -- priority). Differs where Icy Veins and Warcraft Tavern differ: Conflagrate on cooldown (not only
 -- for Backdraft); Chaos Bolt on cooldown even below 35%; the damage curse only while moving (in a

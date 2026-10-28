@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Scene model for the field schema canvas (the card editor for a custom condition's field schema). It indexes a schema
 -- model, lays its nodes out as rows and insertion gaps in canvas coordinates, and picks the rows that intersect a
 -- viewport; it creates no widgets and never edits the model. Loaded after Core/schema_authoring.lua; drawn by

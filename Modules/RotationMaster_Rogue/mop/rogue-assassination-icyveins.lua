@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Assassination Rogue, Icy Veins and Method variant (Phase 2 text; off by default): Vanish on
 -- cooldown for a stealthed Mutilate, Vendetta on cooldown when a fight is long enough, Envenom only at five points.
 -- Four to eight engaged enemies: Fan of Knives with Rupture at three or more on each target; nine or more: Fan of Knives

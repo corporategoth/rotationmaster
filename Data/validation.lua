@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation validation: pure, data-only checks of a rotation envelope or bare body (ValidateEnvelope, ValidateBody)
 -- that return a result with valid, supported and resolved flags and a bounded diagnostic list, plus the small value
 -- rules they share (class tokens, action contexts, identifiers, specializations, priority).

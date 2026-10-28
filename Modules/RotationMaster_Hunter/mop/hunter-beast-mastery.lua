@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Beast Mastery Hunter, levels 10–90, in the Beast Mastery
 -- specialization (253). Wowhead's Phase 5 order, which the wowsims APL matches, with
 -- wowsims' Beast Cleave and pack Kill Command gates and Hekili's Bestial Wrath focus floor: Kill

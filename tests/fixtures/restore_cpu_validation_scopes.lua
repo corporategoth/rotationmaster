@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict original-module accessor; implementation patches are filled after RED.
 local records = {
     ["Core/rotation_references.lua"] = [====[local _,addon=...

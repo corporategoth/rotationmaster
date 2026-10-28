@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about which bar you act through and what you are wearing: ACTION_CONTEXT (your own bar, a
 -- vehicle, a possessed unit, an override bar or a pet battle), SET_PIECES (compares the number of equipped pieces of an
 -- item set) and WEAPON_IMBUE (the temporary enchant ID on the main or off hand). ACTION_CONTEXT reads

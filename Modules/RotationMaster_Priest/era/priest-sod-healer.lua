@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Priest healer, levels 10–60 (Phase 8 runes), selected in a group when Holy or
 -- Discipline is the primary talent tree; follows Icy Veins' Discipline and Holy order. RM advises
 -- on the friendly unit you target: choosing whom to heal stays with you. Prayer of Mending before

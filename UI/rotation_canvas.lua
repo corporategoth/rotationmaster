@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The scene surface of the rotation editor: the scrolling, zooming canvas that draws a rotation as cards, branch
 -- groups, connector lines and True/False arm buttons, in diagram, list or cooldown-grid form. It turns the scene model
 -- built by the editor into frames, recycles card controls so only nearby cards exist, and runs pointer gestures (pan,

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Balance, levels 1-60, and the default for every Druid no other premade fits
 -- (no talent points, a tie, below level 10). After Wowhead (2025), Warcraft Tavern and wowsims:
 -- Moonfire and Insect Swarm on targets that live, Starfire filler (Wrath before it is learned),

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Restoration (Icy Veins order, Wowhead upkeep): emergency Nature's Swiftness and
 -- Lesser Healing Wave, cures, Earth Shield on the focus, Chain Heal for group damage,
 -- Healing Wave for single-target damage. Heals act on your friendly target (or none);

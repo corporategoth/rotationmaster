@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Preview, Compare and Check helpers for the direct-import transfer windows (item sets, effects, announcements,
 -- profiles, condition categories, custom conditions). It is read-only: it parses the pasted text with each kind's own
 -- parser and shows or reports the result, never saving or touching the destination. Loaded from RotationMaster.toc

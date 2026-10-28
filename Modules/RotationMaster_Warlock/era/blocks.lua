@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era Warlock blocks, vanilla and Season of Discovery (Built In composition;
 -- authoring-time only). Consumers: rm.era.warlock.dps, .dps.warcrafttavern, .dps.icyveins and
 -- rm.sod.warlock.tank, .fire, .fire.icyveins, .shadow, .shadow.wowsims. A content change needs a

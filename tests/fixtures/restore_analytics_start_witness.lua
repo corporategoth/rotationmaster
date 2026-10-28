@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict additive START-witness inverse; every original whole-source proof stays unchanged.
 local rows = {
     ['Platform/analytics_casts.lua'] = {

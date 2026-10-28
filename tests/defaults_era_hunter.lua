@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era and Season of Discovery Hunter premades: switches, priorities, boundaries and
 -- reminders through the real catalog, predicates, composition, build context and sequence executor
 -- on a modeled 1.15 client (tests/fixtures/era_premade_model_a.lua).

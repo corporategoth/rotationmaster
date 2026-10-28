@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Shadow Warlock, wowsims Phase 6 "Drain Soul filler" (alternative premade;
 -- same switch, lower priority). For a Soul Siphon build: Drain Soul is the filler at every health
 -- and is not protected as a channel, so the next step shows as soon as it is due (clip the channel

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for shapeshift forms and stances: GetShapeshiftForm, GetShapeshiftFormInfo and GetShapeshiftFormID.
 -- Owns the `value or nil, reason` readers for the player's form index and form spell, plus the table of form spells
 -- the editor offers per class and client family; it must not label forms (the condition and its Fields UI do).

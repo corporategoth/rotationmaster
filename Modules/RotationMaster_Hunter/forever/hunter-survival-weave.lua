@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Survival Hunter, two-hander in-and-out weave (Wowhead's alternative), levels 10–60:
 -- a player-chosen alternative to rm.forever.hunter.survival (same switch, lower priority, off by
 -- default; RM cannot

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Arcane Mage after the guides (Icy Veins, Wowhead, Method, wowtbc.gg),
 -- levels 10–90: the same Arcane Blast build, but at four charges Missiles on a proc and otherwise
 -- Arcane Barrage, whatever the mana. Off by default; the recommended Arcane premade is

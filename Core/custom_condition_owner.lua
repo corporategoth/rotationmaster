@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Lifetime owner for the custom condition editor dialog and the child dialogs opened from it (transfer, source pane,
 -- function bundle). One owner record is shared by the whole tree: it says whether the editor is still live, and closing
 -- or releasing the root hides every child and releases the root. Draws nothing and stores nothing; the dialogs and

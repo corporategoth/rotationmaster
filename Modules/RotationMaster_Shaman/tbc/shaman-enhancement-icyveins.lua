@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Enhancement, Icy Veins order: Stormstrike, Earth Shock on its debuff, Flame Shock
 -- only on a target that lives (NextActionTBC's 12 s gate), Earth Shock on cooldown.
 -- Catch-all Shaman premade (lowest priority): every level, no talents, ties.

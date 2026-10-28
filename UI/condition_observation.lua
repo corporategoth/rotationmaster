@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Small helpers around the condition widget registry (UI/condition_widgets.lua): run a callback while every widget it
 -- creates is observed, and clear keyboard focus. Owns no widgets and no saved data. Callers are the Test and debugger
 -- paths (Integrations/lua_workbench.lua) and the config and browser windows. Loaded from RotationMaster.toc right after

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The native widget set every RM window is built from: flat buttons, icon buttons, pills, check boxes, edit boxes,
 -- sliders, scroll frames and bars, the drag card and drop-zone helpers, the deferred reflow scheduler, the shared
 -- layout constants (addon.WorkbenchLayout) and the splitter, position pad and edit-suggestion helpers. Pure

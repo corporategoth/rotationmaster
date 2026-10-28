@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Item condition runtime: validates an item reference (one item set name, or a list of item ids/names), resolves a
 -- reference to its item list, and evaluates the EQUIPPED, CARRYING, ITEM, ITEM_RANGE and ITEM_COOLDOWN conditions that
 -- Conditions/item.lua declares. Owns no saved data (item sets live in db.profile.itemsets and db.global.itemsets) and

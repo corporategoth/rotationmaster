@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warrior tank, levels 10–70, Wowhead/wowsims order (the recommended tank variant).
 -- Selected by Defensive Stance (read by spell, 71), ahead of the DPS premades by priority; a Battle or
 -- Berserker Stance pull shows the DPS premade instead. Shield Slam > Revenge > Thunder Clap and

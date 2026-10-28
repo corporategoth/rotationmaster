@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
     local f=F.new();f.load('Core/custom_authoring.lua');local h=io.open('Core/function_data.lua');if h then h:close();f.load('Core/function_data.lua') end

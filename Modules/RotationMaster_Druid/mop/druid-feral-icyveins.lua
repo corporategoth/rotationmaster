@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Feral Druid after Icy Veins (and Wowhead's Ferocious Bite rule): the same
 -- upkeep and opener as rm.mop.druid.feral, but combo points above 25% target health go only to Rip
 -- and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends before Rip is learned),

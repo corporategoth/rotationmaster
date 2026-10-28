@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Locale tooling: export enUS strings, build locale files from translations, move strings between the main
 catalog and the load-on-demand text bundles, and check that every translation keeps the original's placeholders.
 
@@ -29,6 +31,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+from copyright import TOC_LICENSE_FIELD, notice_line
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCALES = ['deDE', 'esES', 'esMX', 'frFR', 'itIT', 'koKR', 'ptBR', 'ruRU', 'zhCN', 'zhTW']
@@ -324,11 +328,11 @@ def ensure_bundle_toc(catalog):
     toc = toc_path(catalog)
     files = bundle_files(catalog)
     if not toc.exists():
-        header = [f'## Interface: {BUNDLE_INTERFACE}',
+        header = [notice_line('toc'), f'## Interface: {BUNDLE_INTERFACE}',
                   f'## Title: Rotation Master - {catalog.title or catalog.name}',
                   f'## Notes: {catalog.notes or "Text Rotation Master shows on one screen."} Rotation Master loads this itself, the first time that text is needed; it holds only translations.',
                   '## Author: PreZ', '## Version: @project-version@', '## Dependencies: RotationMaster', '## LoadOnDemand: 1',
-                  '## Group: RotationMaster', '## X-Category: Action Bars', '## X-License: MIT', '']
+                  '## Group: RotationMaster', '## X-Category: Action Bars', TOC_LICENSE_FIELD, '']
         toc.write_text('\n'.join(header + files) + '\n', encoding='utf-8')
         return
     lines = toc.read_text(encoding='utf-8').splitlines()

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Beast Mastery Hunter after SimulationCraft and Icy Veins (optimal
 -- reference): Barbed Shot pooled around Bestial Wrath, Kill Command banked for it, Cobra Shot on
 -- Cobra Fang, and Beast Cleave started with Wild Thrash on three or more enemies (two with Beast

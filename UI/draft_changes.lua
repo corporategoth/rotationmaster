@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Draft changes: the "View Changes" comparison between a saved document and its unsaved draft (a rotation, a condition
 -- or a whole profile-shaped table), plus the button that opens it and the collection of half-typed input that has not
 -- been committed to the draft yet. It builds comparison rows and hands them to UI/collection_compare.lua; it never

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Fire Warlock, levels 1–60 (Chaos Bolt or Incinerate engraved).
 -- wowsims/sod Phase 6 and Wowhead Phase 6: Shadowburn and Searing Pain to finish; instants while
 -- moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (group Recklessness when

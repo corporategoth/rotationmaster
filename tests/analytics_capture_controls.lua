@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local function prefix(path,name)return assert(loadstring(assert(read(path):match('^(.-)\ntest%('))..'\nreturn '..name,'@controls-fixture:'..path))()end

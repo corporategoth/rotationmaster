@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local families={cast={'CASTING','CASTING_SPELL','CASTING_REMAIN','CAST_INTERRUPTABLE'},channel={'CHANNELING','CHANNELING_SPELL','CHANNELING_REMAIN','CHANNEL_INTERRUPTABLE'}}
 local tags={};for _,kind in ipairs({'cast','channel'}) do for _,tag in ipairs(families[kind]) do tags[#tags+1]=tag end end

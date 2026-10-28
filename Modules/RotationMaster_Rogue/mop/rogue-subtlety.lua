@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Subtlety Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 order with Shadow
 -- Focus, which Wowhead's Phase 5 page agrees with. Selected in the Subtlety specialization (261) from
 -- level 10. In Stealth or Shadow Dance: Premeditation, Slice and Dice before

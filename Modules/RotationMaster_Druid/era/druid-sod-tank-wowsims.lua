@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid bear tank, wowsims P7 "cat weave": off by default (expert, needs Savage
 -- Roar from gear as well as Lacerate). Leaves Bear for Cat to keep Rake and Savage Roar up, then
 -- returns to Dire Bear and plays the tank list. Same switch as rm.sod.druid.tank at a lower priority.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Hunter ranged DPS, levels 1–60 (Phase 8 runes), and the SoD Hunter default.
 -- Runes join as they are engraved. With the Kill Shot legs rune: Trick Shots
 -- Multi-Shot, Kill Shot in Rapid Fire and in execute, Chimera Shot, traps and Arcane Shot as

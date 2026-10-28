@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Demonology Warlock, Icy Veins and SimulationCraft's default (Diabolist) list:
 -- the optimal reference, disabled by default because Demonic Core, imp counts and cooldown
 -- timings are hidden in Midnight combat (soul shards stay readable). Before the pull Power

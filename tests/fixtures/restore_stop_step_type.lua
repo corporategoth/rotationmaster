@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Inverse of the Stop step rename (3943b4fa: a Stop step is type 'stop', it was 'none') for the module the
 -- persisted-runtime fixtures pin whole: the current Core/rotation_sequence.lua becomes the text restore_active_runtime_plan.lua
 -- records. Applied before every older layer; a text that is already undone passes through.

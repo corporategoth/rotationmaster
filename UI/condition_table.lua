@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rich AceGUI-style Table layout (column weights and widths, row and column spans, per-cell alignment, spacing) for the
 -- native condition groups. addon:PrepareNativeConditionTable wraps a group's DoLayout; groups whose Table settings are
 -- plain keep the older compact layout, and anything malformed or oversized raises an error before any frame is moved.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Detached-draft transaction for the settings workbench pages: while a page declares `transactionKeys`, edits go to a
 -- deep copy of the affected saved-variable keys and reach `addon.db` only when Apply passes validation; Cancel discards
 -- them. Owns the draft, its baseline (to detect dirtiness and a concurrent change) and the queued runtime effects. It

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Feral with Wowhead's geared raid bear: the recommended cat, but the bear Mauls
 -- every swing and tab-Mauls packs, Swipes only with 60 rage to spare, uses no Demoralizing Roar and
 -- no Enrage in combat. Same switch as rm.era.druid.feral at a lower priority.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- QA-only complete series inverse to actual Git deb7090. Closed historical shapes
 -- come from the unchanged final-composition and Switch fixtures; no code strips.
 local records = {

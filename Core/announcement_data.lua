@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Validators for announcement configuration: a single announcement, a series (an announcement that owns a list of
 -- output cards), one output card, and the macro identifiers and item references they carry. Pure checks over saved or
 -- imported data; they build nothing, store nothing and read no game API. Every validator is strict: an unknown key, a

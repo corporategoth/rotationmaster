@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for unit health (UnitExists, UnitHealth, UnitHealthMax). Returns a record or `nil, reason`; game
 -- values pass platform:CanReadValue and canaccessvalue before any comparison, because Retail and Forever make health
 -- secret in combat (docs/restricted-clients.md) and a secret value is unavailable, never a number. Only the probe and

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Shockadin (wowsims Phase 8): a Holy-tree damage build. Seal of Martyrdom (else
 -- Righteousness) judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power,
 -- Exorcism, Crusader Strike. Disabled by default (opt-in); it applies with Holy as the main tree and

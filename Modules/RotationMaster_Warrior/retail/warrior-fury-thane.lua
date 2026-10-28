@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Fury Warrior, Mountain Thane (SimulationCraft's thane list, Icy Veins): the
 -- optimal reference, disabled by default because Enrage, Recklessness, Avatar and Thunder Blast
 -- stacks are hidden in Midnight combat (rage is secret on Retail, so there is no 100-rage Rampage).

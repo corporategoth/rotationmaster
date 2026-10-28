@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Holy after Wowhead's Phase 4 healing guide: Holy Light is the main heal (Divine
 -- Light when mana allows) for moderate and heavy damage, then Cleanse, Holy Shock for light damage or
 -- while moving, Flash of Light for light damage. Same switch as the recommended SoD Holy premade,

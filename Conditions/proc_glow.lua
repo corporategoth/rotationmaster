@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition SPELL_GLOW: whether a spell shows the game's activation (proc) glow. The glow is read through
 -- addon.Platform:IsSpellGlowing (Platform/world_state.lua), which applies platform:CanReadValue; the answer is a plain
 -- Boolean, so it is readable on Retail and Forever in combat. Related spell IDs come from addon:GetSpellIdRelatives and

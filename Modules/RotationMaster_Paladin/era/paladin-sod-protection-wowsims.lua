@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Protection after wowsims' Phase 5 tank list: Judgement whenever a seal is up,
 -- the seal renewed below 1.5 s, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism,
 -- Shield of Righteousness last. Same switch as the recommended SoD Protection premade, lower priority,

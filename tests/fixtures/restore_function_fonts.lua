@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- QA-only exact inverse of the "Font not set" repair (LuaWorkbench measuring and
 -- overlay strings that were created without a font, the editor release that
 -- emptied them, the reflow driver's stack report, and the runner entry for its

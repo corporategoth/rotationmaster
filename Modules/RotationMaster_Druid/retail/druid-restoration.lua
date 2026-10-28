@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Restoration Druid (recommended): on an enemy, Blizzard's Assisted Combat
 -- suggestion (Blizzard's Restoration list is a damage list, cat or caster by form); otherwise Icy
 -- Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence,

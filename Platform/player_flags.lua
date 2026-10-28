@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for three zero-argument player predicates: IsStealthed, HasFullControl and IsOutdoors.
 -- Owns platform:GetPlayerFlagObservation (the `value or nil, reason` reader); it must not combine the flags or
 -- infer anything from them. Runs under the probe and restricted policies. The reader is a Built In helper whose body

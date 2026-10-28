@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about the encounter around you, from the game itself rather than a boss mod: ENCOUNTER (a boss
 -- encounter is in progress) and KEYSTONE_LEVEL (compares the active Mythic+ keystone level, 0 outside one). They read
 -- Platform:GetEncounterObservation and GetKeystoneObservation (Platform/world_state.lua) through the per-poll cache.

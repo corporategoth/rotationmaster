@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Decide what a release of a tag does, and say it before anything is uploaded.
 
   python3 tools/release_plan.py --tag 2.0.0-beta.1 [--dry-run] [--wowi-beta] [--allow-missing-tokens]

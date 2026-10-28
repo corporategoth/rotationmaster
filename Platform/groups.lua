@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for group membership: IsInGroup, IsInRaid, UnitInParty and UnitInRaid.
 -- Owns the `value or nil, reason` readers for "is the player (or a named unit) in my party or raid"; it must not
 -- decide what a rotation does with the answer. Roster membership is public state, so these readers do not depend on

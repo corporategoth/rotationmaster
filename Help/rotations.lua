@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help layouts for the cooldown and rotation step pages: layout_cooldown_help and layout_rotation_help, built from
 -- shared sections (name and list-order buttons, highlight effect, action requirements, announce, conditions) that are
 -- parameterized by the singular and plural noun ("cooldown", "rotation").

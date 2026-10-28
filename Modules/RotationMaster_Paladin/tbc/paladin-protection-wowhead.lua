@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Protection, Wowhead with wowsims: a pre-pull of Holy Shield, Avenger's Shield and
 -- Judgement; against a crushing target (world boss, or three or more levels above you)
 -- Holy Shield comes first; otherwise Consecration, Exorcism on Undead and Demons,

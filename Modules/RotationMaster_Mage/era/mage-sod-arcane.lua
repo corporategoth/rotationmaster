@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Mage Arcane damage (Icy Veins, with the current five-stack Balefire rule),
 -- levels 10–60 with Arcane as the main tree and the Arcane Blast rune engraved. Arcane Missiles on Missile
 -- Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe (never at four of its

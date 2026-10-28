@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Rotations page of the settings window: a searchable, filterable roster of rotations on the left (specialization,
 -- Built In or custom, tags, a recovery button for unassigned records) and the rotation editor pane on the right, with a
 -- splitter between. It owns the list state and row recycling and never edits a rotation itself; selection, new,

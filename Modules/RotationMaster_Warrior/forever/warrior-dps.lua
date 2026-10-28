@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Warrior melee DPS, levels 1–60, Arms and Fury, Icy Veins order (the recommended
 -- DPS premade and the catch-all for any warrior outside Defensive Stance).
 -- Forever rage is scarce, so this pools; rage and health are secret on Forever, so pooling keeps

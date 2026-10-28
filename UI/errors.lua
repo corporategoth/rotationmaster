@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The standalone "Rotation Master errors" window: a read-only, copyable view of the captured diagnostics reports
 -- (addon.Diagnostics), one per page with previous/next, a redacted or original-text toggle and a clear button. Built
 -- from raw frames on purpose, with none of the editor widgets, so it still opens when the main editor is what failed.

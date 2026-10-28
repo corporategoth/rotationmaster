@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Warrior melee DPS, levels 1–60, Arms and Fury (the recommended vanilla DPS premade and
 -- the catch-all for any warrior outside Defensive Stance; also Hardcore and Self-Found). wowsims
 -- order with Icy Veins' three-target area threshold and Wowhead's leveling gates: Charge to pull;

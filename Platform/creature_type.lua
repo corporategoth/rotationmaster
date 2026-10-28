@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for UnitCreatureType: the numeric creature type of a unit.
 -- Owns platform:GetUnitCreatureTypeID (the `value or nil, reason` reader); it must not translate the id to a name,
 -- because the localized caption is a different return of the same native call. Runs under the probe and restricted

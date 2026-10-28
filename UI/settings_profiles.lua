@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Profiles and About pages of the settings window. Profiles lists the AceDB profiles in a sidebar and offers
 -- activate, new, duplicate, copy, reset, delete, compare and import/export. Unlike the other settings pages these
 -- changes apply immediately rather than through the draft Apply flow, and every profile switch disables the rotation,

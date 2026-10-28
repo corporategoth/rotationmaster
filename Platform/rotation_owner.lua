@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter that reads the player's own class token (UnitClass) for rotation ownership checks. Returns
 -- `class, nil` or `nil, reason`; the value passes platform:CanReadValue first. Must not cache: ownership needs a fresh
 -- read. Loaded from RotationMaster.toc right after Platform/client.lua.

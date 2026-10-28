@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Holy, Icy Veins and Wowhead blended by damage taken (the research recommendation):
 -- emergencies and cleansing first, Holy Shock while moving, Holy Light for heavy damage,
 -- rank-5 Holy Light to keep Light's Grace up, Flash of Light for everything else.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Owned parsers capture standard match/sub at load; later native method
 -- mutations no longer define their grammar or invalidate their index.
 local pass, fail = 0, 0

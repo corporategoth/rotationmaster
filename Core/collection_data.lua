@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Item set import parsing: validates pasted text for the item set importer and returns a candidate set. It only
 -- parses and validates; it never writes the saved item sets (the item set settings page does that after the user
 -- confirms). Loaded after Core/profile_data.lua; the codec is passed in by the caller, so this file has no codec load

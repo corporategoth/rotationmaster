@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Shadow Priest, Warcraft Tavern order (a player-chosen variant, off by default):
 -- Devouring Plague at three Shadow Orbs, Shadow Word: Death below 20%, Mind Blast, Vampiric Touch, Shadow Word:
 -- Pain, Mind Spike on Surge of Darkness, the tier-6 talent, Mind Flay. No Mind Flay: Insanity priority and no

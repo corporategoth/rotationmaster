@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for "are these two unit tokens the same unit" (UnitExists on the first, then UnitIsUnit). Returns
 -- `boolean, nil` or `nil, reason`; game values pass platform:CanReadValue first. Only the probe and restricted
 -- combat-data policies read. Loaded from RotationMaster.toc after Platform/runes.lua; consumed by the unit-identity

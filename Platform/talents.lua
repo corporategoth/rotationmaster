@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for talents on every client family. Three layouts (platform:GetTalentLayout): "tree" (Era, TBC,
 -- Wrath and Cataclysm Classic talent tabs), "grid" (Mists of Pandaria Classic tiers and columns) and "traits" (Retail
 -- and Forever trait nodes, C_Traits and C_ClassTalents). Readers return `value, nil` or `nil, reason`, never throw,

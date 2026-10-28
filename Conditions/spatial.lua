@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about where units are: PROXIMITY (allies within a distance of a unit), DISTANCE (a unit is
 -- closer than N yards), DISTANCE_COUNT (observed units within N yards) and ZONE. It also publishes the scan
 -- addon.proximity_eval and its editor widgets addon.proximity_widgets, which Conditions/spatial_stats.lua reuses.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery rune engraving (RUNE_ENGRAVED, Platform/engraving.lua)
 -- and trait talents on Retail and Forever (TALENT layout "traits", Forever's
 -- trees for TALENT_TREE_POINTS / PRIMARY_TALENT_TREE, Platform/talents.lua).

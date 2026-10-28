@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Warlock premades: Affliction (recommended; Warcraft Tavern Haunt pooling off by
 -- default), Demonology (recommended; guide Molten Core pooling off by default), Destruction and the
 -- Unspecialized catch-all. Real predicates, catalog, composition, sequence and publisher on a modeled MoP

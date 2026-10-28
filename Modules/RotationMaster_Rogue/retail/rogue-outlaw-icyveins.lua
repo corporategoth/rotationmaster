@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Outlaw Rogue, Icy Veins, SimulationCraft and Wowhead: the optimal reference,
 -- disabled by default because Roll the Bones buffs, Opportunity stacks and energy are hidden in
 -- Midnight combat. From stealth Ambush. One combo point short of full: Between the Eyes, Killing

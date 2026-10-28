@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Brewmaster Monk after Icy Veins (optimal reference; SimulationCraft
 -- agrees in shape): Blackout Kick, Chi Burst (Master of Harmony), Tiger Palm on Blackout Combo, Keg
 -- Smash at full charges or with Empty Barrel, Breath of Fire, Rushing Jade Wind before Exploding

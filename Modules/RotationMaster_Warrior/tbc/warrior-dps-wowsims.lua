@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warrior melee DPS, levels 1–70, wowsims/Wowhead order (the recommended DPS variant).
 -- Arms and Fury share one priority: talents decide Mortal Strike vs Bloodthirst by spell known.
 -- Execute is a filler after Bloodthirst/Mortal Strike/Whirlwind, as wowsims measured and Wowhead

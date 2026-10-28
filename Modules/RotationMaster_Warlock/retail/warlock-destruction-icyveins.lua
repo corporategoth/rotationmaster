@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Destruction Warlock, Icy Veins (Hellcaller): a reference, disabled by default
 -- because Immolate and charges are hidden in Midnight combat (soul shards stay readable). Rain of
 -- Fire on three or more engaged enemies; Wither or Immolate kept up; Summon Infernal;

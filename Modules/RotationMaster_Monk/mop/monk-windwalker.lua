@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Windwalker Monk, levels 10–90, in the Windwalker specialization
 -- (269). wowsims' Phase 5 order, which Wowhead's Phase 5 list mirrors: Touch of
 -- Death, Tiger Power, Rising Sun Kick, Chi Wave, Combo Breaker procs, Fists of Fury when the

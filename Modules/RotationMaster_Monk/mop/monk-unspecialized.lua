@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Monk before a specialization (levels 1–9, or a monk who has not picked
 -- one): the catch-all, lowest priority, switch always true. Fierce Tiger, Tiger Power from Tiger
 -- Palm, Blackout Kick at two Chi, Expel Harm when hurt, Jab. Jab is the opener (no ranged spell yet).

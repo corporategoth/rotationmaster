@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local make=dofile('tests/fixtures/rotation_data.lua')
 local function body(name) return {name=name,switch={},rotation={{id='step',type='spell',action=403,conditions={}}},cooldowns={}} end

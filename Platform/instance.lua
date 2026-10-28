@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for IsInInstance: whether the player is inside an instance, and of which type.
 -- Owns the `value or nil, reason` reader platform:GetInstanceObservation; it must not interpret the type (party, raid,
 -- pvp) for a rotation. Supported on every known client family; "unknown" is refused. GetInstanceObservation is a Built

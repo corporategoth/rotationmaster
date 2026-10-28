@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Checked health-history forecast: forecast.calculate turns damage and heal history into a signed rate per second
 -- for the health-forecast conditions (Core/health_forecast_conditions.lua), returning nil plus a reason instead of a
 -- guess when anything cannot be read, is not finite or exceeds the work budget (docs/health-forecasting.md).

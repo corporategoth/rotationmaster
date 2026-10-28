@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Animated glow effects run as native stepped AnimationGroups: one texture per
 -- step, shown by alpha keyframes, no Lua timer. Without the animation API, or
 -- for malformed sequences, the Lua timer path is unchanged.

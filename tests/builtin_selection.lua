@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built Ins are selectable whenever /rm why calls them ready: in the minimap menu, by
 -- automatic switching (before the fallback, which is the last resort), and their on/off
 -- switch is the player's choice alone.

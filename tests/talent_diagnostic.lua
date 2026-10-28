@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- /rm debug talents (Diagnostics/talents.lua): the report that says why the
 -- Retail/Forever talent lists are short or empty. It must show what each call
 -- answered (including a failing call's own error text), never throw on an

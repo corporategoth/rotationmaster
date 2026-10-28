@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for unit and talent-group roles: GetInspectSpecialization (C_SpecializationInfo first, global as
 -- fallback), GetSpecializationInfoByID and the legacy GetTalentGroupRole. Readers return `value, nil` or
 -- `nil, reason`, never issue an inspection request and never infer a role; every game value passes

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- "Show talent tree": the provider registry, the loadout string Blizzard's talent
 -- window is driven with, the two providers (Blizzard's window in view mode and
 -- the drawn tree), the button beside the Talent list and its sync with the

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The custom (and read-only Built In) condition source editor: metadata fields, one code buffer per callback, test and
 -- transfer buttons, and the staged Apply/Cancel flow (docs/custom-conditions.md,
 -- docs/architecture/condition-authoring.md). addon:condition_edit_box builds it either as a stand-alone window or

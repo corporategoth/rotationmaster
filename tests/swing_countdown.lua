@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Zero means the selected-hand timer estimate elapsed, not that a swing will fire.
 -- Default/generated-current requires actual generated source. authored-copy is pre-integration only.
 local F = dofile('tests/fixtures/addon.lua')

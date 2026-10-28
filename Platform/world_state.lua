@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for player, encounter, instance, Mythic+, hero talent, spell glow and group state. Readers return
 -- `value, nil` or `nil, reason` (or a record carrying per-field reasons), never throw, and pass every game value
 -- through platform:CanReadValue first. Must not cache anything except hero tree names, which cannot change in a

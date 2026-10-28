@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Destruction Warlock, levels 10-90: the guide consensus order (Warcraft Tavern,
 -- Method, wowtbc.gg, Wowhead; Hekili's single-target list matches) with wowsims' Backdraft and Immolate
 -- refinements. Selected in the Destruction specialization (267)

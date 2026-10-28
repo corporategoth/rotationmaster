@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Offline-only retention of one actual historical lexical value. This is not
 -- a public helper declaration, executable replacement, or hash compatibility map.
 return {

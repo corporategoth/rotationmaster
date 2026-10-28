@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local file=assert(io.open('tests/announcement_macros.lua'));local source=file:read('*a');file:close();local make=assert(loadstring(assert(source:match('^(.-)\ntest%('))..'\nreturn fixture'))()
 local function card(i,mode,value)return{id=string.format('%08d-1111-1111-1111-111111111111',i),announce=mode or'local',value=value or tostring(i)}end

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The condition card: one reusable frame (header summary, type and name buttons, toggle pills, move/remove/help
 -- buttons, expand chevron and a field area) that the condition canvas places for each visible condition or group.
 -- Cards are pooled by UI/condition_canvas.lua: this file builds a card once, Place() restyles it from a layout model,

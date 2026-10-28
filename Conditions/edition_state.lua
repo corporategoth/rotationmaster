@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions for mechanics that exist only in some game editions: PET_HAPPINESS (hunter pet mood), STAGGER
 -- (Brewmaster Stagger pool) and ECLIPSE (Balance Druid Eclipse direction or energy). Each reads one Platform
 -- observation (Platform/edition_state.lua) through the per-poll cache; this file reads no game value itself. A reader

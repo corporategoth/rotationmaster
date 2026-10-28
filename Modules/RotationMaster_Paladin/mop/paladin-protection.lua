@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Protection Paladin, levels 10–90, in the Protection specialization (66).
 -- Icy Veins' order with Hekili's thresholds. Shield of the Righteous, Eternal Flame and Word of Glory
 -- are off the global cooldown, so they are reminders beside the rotation: Shield of the Righteous

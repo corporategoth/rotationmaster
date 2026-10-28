@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The import window's first button follows its destination: replacing an entry COMPARES the import with it, a new
 -- copy PREVIEWS the import in full, in the rotation editor's own read-only view. The second button checks the
 -- import for problems. Nothing here may save anything or touch the candidate.

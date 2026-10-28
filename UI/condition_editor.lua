@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition editor window: the native window that edits one condition tree (a rotation step's conditions, a rotation's
 -- switch condition, or an announcement's condition) as cards on a canvas, with undo/redo, Apply and Cancel.
 -- It owns the shell (window, toolbar, status line), the working copy of the tree and the guards that keep it from

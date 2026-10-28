@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Shadow Priest, Icy Veins and SimulationCraft's default list: the optimal
 -- reference, disabled by default because its DoT, Madness and Voidform timings are hidden in
 -- Midnight combat. Vampiric Touch before the pull. Tentacle Slam to apply Vampiric Touch, both DoTs

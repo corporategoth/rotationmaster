@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Item conditions: EQUIPPED, CARRYING, ITEM (available to use), ITEM_RANGE and ITEM_COOLDOWN. Each names an item
 -- reference: one item set (a string key into db.profile.itemsets or db.global.itemsets) or a list of item ids and
 -- names, and an optional trinket slot for ITEM_COOLDOWN. The conditions only declare fields, editors and text;

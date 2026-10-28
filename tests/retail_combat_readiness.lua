@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (and Forever) combat readiness: while addon restrictions are in
 -- effect C_Spell.GetSpellCooldown hides startTime/duration/modRate
 -- (SecretWhenCooldownsRestricted) but never isEnabled/isActive/isOnGCD

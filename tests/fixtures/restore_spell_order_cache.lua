@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Restore the exact pre-order-cache source before older whole-file proofs.
 -- Every replacement is unique; historical retained-activity pins stay unchanged.
 local replacements = {

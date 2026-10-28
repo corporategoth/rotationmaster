@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Guardian Druid after Icy Veins and Wowhead (optimal reference): Thrash and
 -- Mangle on cooldown, Red Moon on a single target or Moonfire when missing, Moonfire on Galactic
 -- Guardian, Swipe. Ironfur and the defensives are reminders whenever they are ready in combat. Rage and

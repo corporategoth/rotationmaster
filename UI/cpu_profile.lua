@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Cold command surface for performance capture: the /rm perf commands, the General page's CPU, Runtime and Memory
 -- buttons (UI/settings_general.lua) and the "native profiler probe". It only starts, stops and reports captures owned
 -- by Diagnostics/ (cpu.lua, cpu_runtime.lua, memory.lua) and prints their status; it never changes WoW's scriptProfile

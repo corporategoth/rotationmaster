@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact inverse of only the authorized STAT evaluator; unrelated ECS stays pinned.
 local original = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end

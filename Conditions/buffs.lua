@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Buff conditions: BUFF (present), BUFF_REMAIN (time left), BUFF_STACKS (application count) and STEALABLE (the unit has
 -- a buff that can be stolen). Each is a thin wrapper that hands its saved value to addon:EvaluateAuraCondition
 -- (Core/aura_conditions.lua) with the "HELPFUL" filter and a mode; that function scans the unit's auras through

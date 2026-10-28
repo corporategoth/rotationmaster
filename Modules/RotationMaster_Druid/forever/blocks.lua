@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared WoW Forever Druid blocks (Built In composition; authoring-time only).
 -- Consumers: rm.forever.druid.balance, rm.forever.druid.balance.tavern, rm.forever.druid.feral,
 -- rm.forever.druid.restoration and rm.forever.druid.restoration.icyveins. A content change needs a

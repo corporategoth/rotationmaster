@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition type picker: the combobox the condition editor shows on a card to choose or replace a condition type, with
 -- a search box, a category list from the profile's condition groups and a capped list of matching types.
 -- It owns its popup frames and rows (reused through the `reuse` table) and reports a choice only through the callback;

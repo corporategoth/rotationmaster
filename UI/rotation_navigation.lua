@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation editor navigation guards, installed onto the editor pane: new-rotation bookkeeping, the dirty-field reset,
 -- delete confirmation and the unsaved-changes prompt shown before the editor leaves a rotation. It owns only the two
 -- prompt frames on the pane and decides nothing about saving; Apply and Discard go through the pane and workspace.

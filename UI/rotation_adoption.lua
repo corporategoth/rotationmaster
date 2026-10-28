@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The "Recover unassigned rotations" window. Older rotations saved without an owner sit in a profile or character
 -- archive; this window lists them, shows the archived record as text, and lets the player explicitly adopt one (or
 -- all) for the class or the current character. It must never infer an owner and never change the archive except

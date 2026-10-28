@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Protection Paladin, Wowhead: a reference, disabled by default. Judgment on
 -- cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll, Blessed Hammer or Hammer of the
 -- Righteous, and Consecration only as the filler. Health is secret on Retail, so Word of Glory below

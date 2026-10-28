@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- applicability.minExpansion/maxExpansion select packs by the client's
 -- expansion (LE_EXPANSION_LEVEL_CURRENT). Build numbers are shared across
 -- Blizzard products (2026-10-21/22: Era 70003, Titan Wrath 70522, Retail

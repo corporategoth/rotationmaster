@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Content revision counter of a saved rotation body: reads it, compares bodies ignoring it, and computes the next one
 -- when a rotation is created, imported or edited.
 -- It owns the rule that the counter moves only when content really changes; it never writes saved data itself, it

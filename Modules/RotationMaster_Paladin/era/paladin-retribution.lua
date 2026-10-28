@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Retribution, levels 1-60, and the default for any Paladin no other premade fits
 -- (lowest priority). Icy Veins and Wowhead with Warcraft Tavern: Judgement of the Crusader once on
 -- long fights, Seal of Command with a slow weapon else Righteousness, Exorcism and Holy Wrath on

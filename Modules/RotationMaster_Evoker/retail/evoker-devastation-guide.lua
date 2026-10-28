@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Devastation Evoker after SimulationCraft and Icy Veins (optimal
 -- reference), one list per hero tree (Mass Disintegrate known = Scalecommander, else Flameshaper):
 -- empowers on cooldown, Disintegrate to spend (Mass Disintegrate stacks first), Pyre on five or more,

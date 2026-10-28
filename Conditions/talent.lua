@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In talent conditions: TALENT (the rank of one talent, or whether a Mists talent is chosen),
 -- TALENT_TREE_POINTS (points spent in a Classic tree) and PRIMARY_TALENT_TREE (the Classic tree with the most points).
 -- Three client layouts exist (platform:GetTalentLayout): "tree" (Era, TBC, Wrath, Cataclysm), "grid" (Mists) and

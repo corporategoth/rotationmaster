@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The client raises "Font not set" from FontString:SetText() (and from an
 -- EditBox's) until the region has a font. The native_ui fixture enforces that
 -- now, so every suite that draws a page also proves its text regions are

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Live condition bars on rotation, cooldown, Branch/Stop and switch condition
 -- fields (UI/rotation_cards.lua, UI/rotation_editor.lua): a thin stripe on
 -- the field's left edge, from the real evaluator, at the General "Live Status

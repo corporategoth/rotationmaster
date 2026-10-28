@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Locale-safe identity for casts, channels and forms: CASTING_SPELL and
 -- CHANNELING_SPELL accept a spell ID (any rank unless `ranked`), FORM accepts
 -- a form spell ID (`form`). Saved name and slot conditions keep their meaning.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The rotation editor's "not on your action bars" warning (UI/rotation_cards.lua,
 -- UI/rotation_editor.lua): computed from the button index when the scene is
 -- built and when the index changes, amber and apart from red invalid data.

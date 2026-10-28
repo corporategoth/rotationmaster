@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Blood Death Knight after Icy Veins and Wowhead (optimal reference): Death
 -- Strike whenever it is affordable (health and runic power are secret on Retail), Bone Shield upkeep,
 -- the San'layn Gift window, Crimson Scourge, Blood Boil, Heart Strike. Disabled: own buffs and target

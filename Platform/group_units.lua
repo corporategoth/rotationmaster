@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for group-role unit types: main tank, main assist, assigned tank, assigned healer, group leader.
 -- Owns the `value or nil, reason` resolvers that turn one of those types into a unit token at evaluation time
 -- (GetNumGroupMembers, IsInRaid, GetRaidRosterInfo, UnitGroupRolesAssigned, UnitIsGroupLeader); it must not cache a

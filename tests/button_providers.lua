@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Run from repository root: lua5.1 tests/button_providers.lua (and luajit)
 -- Button discovery for third-party bar addons, with fake frames shaped like the
 -- ones each addon creates. No client is involved: the shapes come from the

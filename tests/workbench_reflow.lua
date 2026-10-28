@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Live reflow under client-faithful sizing. In the client a frame's rect
 -- resolves on the next layout pass, so code that reads a size it has just
 -- assigned (or a size set by anchors) gets the previous one and nothing

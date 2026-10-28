@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Protection Warrior tank, levels 10–60 (the recommended vanilla tank; chosen whenever
 -- you are in Defensive Stance, so Fury-Prot and two-hander tanks are covered). Icy Veins and
 -- MaxDps order: on four or more engaged enemies Demoralizing Shout and Battle Shout for threat;

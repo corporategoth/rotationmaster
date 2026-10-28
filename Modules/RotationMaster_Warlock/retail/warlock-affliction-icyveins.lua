@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Affliction Warlock, Icy Veins and SimulationCraft's default (Soul Harvester)
 -- list: the optimal reference, disabled by default because DoT timers, Nightfall and Shard
 -- Instability are hidden in Midnight combat (soul shards stay readable). Haunt before the pull.

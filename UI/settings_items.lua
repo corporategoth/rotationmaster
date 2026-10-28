@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Item Sets tab of the settings workbench: a roster of item sets (profile and global scope), a detail pane with the
 -- ordered item list, Global toggle, action bar Bind pill, duplicate, import/export, reset to the packaged set and
 -- delete. Edits go to the page draft (`p:SettingsData()`, UI/settings_draft.lua) and take effect on Apply; binding and

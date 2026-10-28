@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Subtlety Rogue, Warcraft Tavern's Ambush/Cutthroat build (player-chosen variant).
 -- Applies with Subtlety as the main tree at Hemorrhage's tier (21 points) and Cutthroat talented
 -- (trait node 105750), ranks below the recommended premade and ships off by default, so it runs

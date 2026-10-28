@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for auras: C_UnitAuras (with the UnitAura global and LibClassicDurations as fallbacks on Era).
 -- Owns the `value or nil, reason` readers that turn a native aura into one validated record and read fields and
 -- remaining time from it; every field is checked on its own, so a secret or malformed field is marked unavailable in

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Protection Warrior tank, levels 10–60, Icy Veins order (the recommended tank).
 -- Chosen whenever you are in Defensive Stance: Forever's Protection levels in it (Vanguard),
 -- and RM cannot read Forever talents. Charge to pull (usable in Defensive Stance once Vanguard

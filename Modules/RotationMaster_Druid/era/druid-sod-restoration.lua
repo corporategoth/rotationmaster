@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid Restoration: chosen when Lifebloom is engraved, or Restoration is the
 -- primary tree with no other legs rune. After Icy Veins (Warcraft Tavern for the procs): acts on the
 -- current friendly target. Instant Healing Touch on Nature's Swiftness or Fury of Stormrage, Wild

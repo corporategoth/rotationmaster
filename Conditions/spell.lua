@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In spell-state conditions for one spell ID: SPELL_AVAIL, SPELL_RANGE, SPELL_COOLDOWN, SPELL_REMAIN,
 -- SPELL_CHARGES, SPELL_HISTORY, SPELL_HISTORY_TIME, SPELL_ACTIVE and SPELL_AUTOREPEAT. Every read goes through
 -- addon.Platform (IsSpellReady, GetSpellCooldown, GetSpellCharges, GetSpellRangeState, IsCurrentSpell,

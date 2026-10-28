@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Assassination Rogue, Icy Veins and SimulationCraft's default list: the optimal
 -- reference, disabled by default because bleed timers and buffs are hidden in Midnight
 -- combat. Bleeds first in their last 30%: Garrote while not at full combo points, Rupture at 5+.

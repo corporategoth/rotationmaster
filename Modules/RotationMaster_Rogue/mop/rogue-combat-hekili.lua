@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Combat Rogue with Anticipation, Hekili MoP fork variant (off by default, low value): Revealing
 -- Strike is the only builder (no Sinister Strike, even under Bloodlust). Builders run below five points, or with up to
 -- four Anticipation charges while Revealing Strike is down: Fan of Knives at four engaged enemies, Marked for Death,

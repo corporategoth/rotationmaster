@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- QA-only inverse of the boss-mod/Titan integration change. Each current
 -- file that is exactly its reviewed current bytes maps back to its
 -- predecessor, so closed historical proofs that pin complete file bytes keep

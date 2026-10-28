@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Observes what a rotation's validity depends on (the condition registry and its version, item sets, effects, the
 -- profile and global tables) and hands the validator copies of those maps plus a stamp that changes whenever any of
 -- them does. Owns the observation state, the validation stamp and the check that a body references no disabled

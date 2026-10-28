@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retribution seal twisting (Wowhead, Icy Veins and wowsims agree): open with Judgement of
 -- the Crusader, then every swing prepare Seal of Command (rank 1) early and replace it with
 -- Seal of Blood or the Martyr in the last 0.4 s, Crusader Strike as the anchor, judge only

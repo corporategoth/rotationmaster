@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Unit level reader for the LEVEL condition (Conditions/character.lua). Owns addon:GetConditionUnitLevel, which returns
 -- a unit's level, false when the unit does not exist, or nil and a reason; it draws nothing and holds no saved data.
 -- Loaded from the Core condition-service group of RotationMaster.toc, after Core/condition_runtime.lua, whose

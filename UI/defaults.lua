@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The read-only page for a Built In (premade) rotation: name, applicability, availability, an Enable toggle, Clone and
 -- Export buttons and the rotation reference (UI/rotation_reference.lua). addon:CreateDefaultRotationOptions fills any
 -- legacy option container; addon:ShowDefaultRotation opens it in its own window. Writes nothing itself: enabling goes

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Vengeance Demon Hunter after Wowhead's order and Icy Veins' hero-tree goals
 -- (optimal reference): Aldrachi Reaver's Glaive cycle, Fracture at full charges, Spirit Bomb on
 -- packs, Immolation Aura, Sigil of Flame, Soul Cleave, Fel Devastation, Fracture, Felblade, Throw

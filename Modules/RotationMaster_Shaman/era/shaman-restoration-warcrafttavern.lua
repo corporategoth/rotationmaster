@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Restoration Shaman, Warcraft Tavern order (alternative premade; same switch, lower
 -- priority). Chain Heal is the rotation: Lesser Healing Wave when the target is about to die,
 -- otherwise Chain Heal on anyone below 90% (rank 1 at least half the time is yours to pick).

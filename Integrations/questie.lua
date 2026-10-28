@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Original consumer of Questie's public callback API. A receipt says only that
 -- RM received an update; it does not describe current quest progress.
 -- Owns addon.Integrations.NewQuestie, a service that registers once with Questie's API (RegisterOnReady and

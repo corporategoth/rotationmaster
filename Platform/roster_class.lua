@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the class of a player, party or raid roster member (UnitExists and UnitClass). Returns
 -- `class, nil`, `false` for a known-absent unit, or `nil, reason`; game values pass platform:CanReadValue first. Only
 -- the helper-owned roster tokens (player, party1-4, raid1-40) are accepted, so it never reads enemies or arbitrary

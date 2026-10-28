@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation draft: an in-memory editable copy of one rotation body with a command interface (Insert, Remove, Move,
 -- MoveTail, MoveMany, Duplicate, UpdateStep, PatchStep, UnsetStepField, SetCondition, SetDetails, SetBodyField, Batch)
 -- that the rotation editor calls. Each command validates against a detached candidate and replaces the draft only when

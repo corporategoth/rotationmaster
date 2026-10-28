@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Assassination Rogue, levels 10-90 (the recommended variant): wowsims' Phase 5 APL, which
 -- Hekili mirrors and Wowhead's Phase 5 page describes, with Icy Veins' levelling additions. Selected in the Assassination
 -- specialization (259) from level 10 (RM stores MoP rotations per talent group). Stealth opens with Cheap Shot

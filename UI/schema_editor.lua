@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The field schema editor window for custom conditions: a 760x540 popup holding the Undo, Redo, Apply and Cancel
 -- buttons, Add field, and the settings form that draws the schema cards (UI/schema_cards.lua). It edits a detached
 -- draft (`addon:NewFieldSchemaDraft`) and hands the finished schema to the caller's `changed` callback only on Apply;

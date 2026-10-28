@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Visual markers for editor controls: a red border for invalid data and an amber left rail for unsaved changes, plus
 -- the rotation pane's unsaved-state refresh. The two markers are separate on purpose so validation and unsaved state
 -- never share a meaning. It only draws and reads the draft; the comparison itself is addon:RotationUnsavedState in

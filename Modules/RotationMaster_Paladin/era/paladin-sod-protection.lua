@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Protection after Wowhead's Phase 8 tank guide: chosen by Righteous Fury, an
 -- engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of
 -- Martyrdom, Holy Shield first; one target: Hammer of the Righteous, Shield of Righteousness,

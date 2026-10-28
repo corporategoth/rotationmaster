@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions DEAD (unit is dead or a ghost) and FRIENDLY (unit is friendly to the player). Both read one
 -- Boolean through addon.Platform:GetUnitStateObservation (Platform/unit_states.lua), which applies
 -- platform:CanReadValue, so on Retail and Forever a secret or missing value makes the condition unavailable instead of

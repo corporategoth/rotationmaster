@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Retribution seal twisting (Warcraft Tavern, wowsims): keep Seal of Righteousness up,
 -- swap to rank-1 Seal of Command in the last 0.4 s before a swing and back again, Judgement whenever
 -- it is ready, Consecration with Vengeance, Hammer of Wrath, Exorcism on Undead and Demons.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Run from the repository root: lua5.1 tests/startup.lua
 -- WoW is external to this harness; only its API surface is substituted.
 local failures, passed = 0, 0

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function body() return {name='Mine',switch={},rotation={{id='branch',type='branch',conditions={},onTrue={{id='yes',type='stop',conditions={}}},onFalse={{id='no',type='stop',conditions={}}}}},cooldowns={{id='optional',type='spell',action=324,conditions={}}}} end

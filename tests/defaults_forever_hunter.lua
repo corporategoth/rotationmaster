@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Hunter premades: switches, priorities, boundaries and reminders through the real
 -- catalog, predicates, composition and sequence executor on a modeled Forever client (probe policy;
 -- the last test keeps the real restricted policy).

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The structural reader for a rotation body. data.IndexRotationSteps walks the "rotation" and "cooldowns" priority lists
 -- (including nested Branch arms), checks the structure (dense lists, step ids, Branch fields and modes, depth and row
 -- limits) and returns the steps as ordered rows plus an id lookup, or nil and a diagnostic. data.ReserveRotationIdentities

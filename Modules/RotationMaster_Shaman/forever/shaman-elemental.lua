@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Elemental Shaman, from Lava Burst (21-point talent, level 30) to 60, Icy Veins
 -- leveling order. Chosen with Elemental as the main tree and 21 points in it (Lava Burst's tier):
 -- before that every source plays Elemental as a melee hybrid, which the Enhancement default covers. Lightning Bolt (or Chain Lightning on a pack) from range; instants while

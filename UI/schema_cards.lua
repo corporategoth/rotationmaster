@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Card view of a custom condition's field schema inside the schema editor (UI/schema_editor.lua): one card per field
 -- with name, type, Required flag and move, duplicate, delete and fold controls, plus drag-and-drop to reorder or
 -- re-nest. It draws the scene computed by Core/schema_canvas.lua and routes every change through the draft model

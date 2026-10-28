@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict test-only inverse of exactly two canonical trend consumer expressions.
 -- Full module mode restores both entire evaluator blocks once; callback mode
 -- requires the exact evaluator body and its tag. No general alias rewriting.

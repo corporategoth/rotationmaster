@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Restoration Shaman, levels 10–60 (primary tree 3). Icy Veins order on the current
 -- friendly target: Healing Wave under Nature's Swiftness, Nature's Swiftness below 30%, Lesser
 -- Healing Wave below 40%, Cure Poison / Cure Disease, Chain Heal when three nearby group members

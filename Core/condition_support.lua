@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Declares which Built In conditions can ever work on the running client. A condition lists the capabilities it needs
 -- (combat data policy, client family, native APIs, edition rules, value-dependent gates) and addon:GetConditionSupport
 -- answers `nil` when it can work or a permanent reason code; a rotation using an unsupported condition is incomplete,

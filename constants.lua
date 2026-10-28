@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Static lookup tables the condition definitions and the UI share: translated labels for operators, units, creature
 -- types and so on, plus class/spell id lists (forms, glyphs) and power types, all hung on the addon table.
 -- Loaded from RotationMaster.toc after the locales and the Platform adapters (it asks Platform/focus_unit.lua and the

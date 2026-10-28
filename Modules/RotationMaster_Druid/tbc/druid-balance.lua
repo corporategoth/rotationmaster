@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Balance (Icy Veins, Wowhead, Warcraft Tavern, wowsims agree): Faerie Fire when a group
 -- benefits, Moonfire never clipped and dropped first when mana runs short, Force of Nature
 -- when the treants will live, Starfire filler (Wrath before Starfire and in melee while

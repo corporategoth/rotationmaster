@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Structural rotation diff: DiffRotations lists field edits and ordered step additions, removals and moves between two
 -- rotation envelopes, and CompareClone builds the three-way view (baseline to source, baseline to custom, source to
 -- custom) of a cloned Built In with overlapping field edits flagged for review.

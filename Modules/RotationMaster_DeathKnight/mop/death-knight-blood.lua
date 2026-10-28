@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Blood Death Knight (tank), levels 55–90, after Icy Veins' rotation and
 -- leveling pages with wowsims' readable guards: Death Strike below 50% health, to restore a missing
 -- Blood Shield (from 80) and before all four Frost and Unholy runes cap; Rune Strike at 90 runic

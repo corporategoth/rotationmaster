@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Integrations page of the settings window: Lua editor choices (Native, LuaWorkbench, registered providers) and the
 -- read-only or toggleable inventory of supported addons (Questie, boss mods, Masque, action bars, ...).
 -- addon:BuildIntegrationSettings(p) draws it into the page object `p`; the page registry in UI/settings_collections.lua

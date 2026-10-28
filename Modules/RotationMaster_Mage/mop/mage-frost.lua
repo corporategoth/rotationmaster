@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Frost Mage, levels 10–90, in the Frost specialization
 -- (64). wowsims' order, which Method and wowtbc.gg share: Ice Lance at two Fingers of
 -- Frost, Frostfire Bolt on Brain Freeze, the bomb, Frozen Orb, Ice Lance on one Fingers of Frost,

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Detail fields for a cooldown (optional highlight) step's visual and audible effect: effect choice, magnification,
 -- RGBA color, glow offsets, announce channel and sound. It only builds controls on a rotation card and stages edits
 -- through the owner (StageField, patch); it never writes the draft or the saved effects itself. Called once per

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Demonology Warlock, levels 10-90 (the recommended variant): wowsims' structure.
 -- Selected in the Demonology specialization (266)
 -- from level 10 (RM stores MoP rotations per talent group). Pre-cast Soul Fire or Shadow Bolt. In Metamorphosis: leave it

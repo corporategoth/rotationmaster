@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Enhancement Shaman, wowsims "weave everything" variant (player-chosen, off by
 -- default): the simulator's P3 Default list. Same switch as the recommended premade (Enhancement specialization). Spends any
 -- Maelstrom Weapon stack on Lightning Bolt, Elemental Blast or Chain Lightning whenever the cast finishes before

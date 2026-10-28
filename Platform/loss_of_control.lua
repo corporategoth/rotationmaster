@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for C_LossOfControl: the crowd-control effects currently on the player.
 -- Owns two `value or nil, reason` readers, the number of active effects and one field of one effect; it must not
 -- decide which effects matter to a rotation. Both run under the probe and restricted policies and refuse more than

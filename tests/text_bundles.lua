@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Load-on-demand text (Locales/bundles.json, Core/text_bundles.lua, Data/text_bundle_index.lua).
 --
 -- A bundle is an add-on under Modules/ holding the English and the ten translations of text that nothing reads while

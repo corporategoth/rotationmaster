@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Tests for the development tools: package builder and checker, release notes, translation tools,
 repository guards, fast-test selection. Standard library only; seconds.
 
@@ -19,6 +21,7 @@ ROOT = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 
 import check_all  # noqa: E402
+import copyright as C  # noqa: E402
 import fast_tests  # noqa: E402
 import gitea_release  # noqa: E402
 import lint_workflows  # noqa: E402
@@ -428,6 +431,137 @@ class Guards(unittest.TestCase):
         names = ['tools/test_devtools.py']
         self.assertEqual(H.check_endings(names), [])
         self.assertEqual(H.check_lua([]), [])
+
+
+class Copyright(unittest.TestCase):
+    """tools/copyright.py: the notice on line one of every original source file, and the TOC licence field."""
+
+    SAMPLES = {
+        'lua': ('x.lua', 'local x = 1\n'),
+        'python': ('x.py', '"""Doc."""\n'),
+        'shell': ('x.sh', 'echo hi\n'),
+        'yaml': ('x.yml', 'name: x\n'),
+        'toc': ('x.toc', '## Interface: 11509\n## X-License: MIT + Attribution\nmain.lua\n'),
+        'xml': ('x.xml', '<Ui/>\n'),
+    }
+
+    def repo(self, files):
+        root = temp_dir(self)
+        git(root, 'init', '-q')
+        for name, text in files.items():
+            (root / name).parent.mkdir(parents=True, exist_ok=True)
+            (root / name).write_text(text)
+        git(root, 'add', '-A')
+        return root
+
+    def test_the_repository_carries_the_notice(self):
+        self.assertEqual(C.check(), [])
+
+    def test_the_notice_is_one_line_built_from_the_constants(self):
+        self.assertNotIn('\n', C.NOTICE)
+        self.assertNotIn('--', C.NOTICE, 'an XML comment cannot hold two hyphens in a row')
+        self.assertTrue(C.NOTICE.startswith(f'Copyright {C.FIRST_YEAR}-{C.LAST_YEAR} Preston A. Elder <prez@neuromancy.net>.'))
+        self.assertTrue(C.NOTICE.endswith('see the LICENSE file for details.'))
+        self.assertEqual(C.TOC_LICENSE_FIELD, '## X-License: MIT + Attribution')
+        # The terms live only in LICENSE.
+        self.assertIn('modified MIT license', (ROOT / 'LICENSE').read_text())
+
+    def test_every_comment_syntax(self):
+        for kind, (name, text) in self.SAMPLES.items():
+            done = C.fixed(kind, text)
+            first = done.split('\n')[0]
+            self.assertEqual(first, C.notice_line(kind), kind)
+            self.assertEqual(C.problem(kind, done), None, kind)
+            self.assertEqual(C.fixed(kind, done), done, f'{kind}: --write is idempotent')
+        self.assertEqual(C.notice_line('lua'), '-- ' + C.NOTICE)
+        self.assertEqual(C.notice_line('python'), '# ' + C.NOTICE)
+        self.assertEqual(C.notice_line('toc'), '# ' + C.NOTICE)
+        self.assertEqual(C.notice_line('xml'), '<!-- ' + C.NOTICE + ' -->')
+
+    def test_a_shebang_and_an_xml_declaration_stay_first(self):
+        script = C.fixed('shell', '#!/bin/sh\necho hi\n')
+        self.assertEqual(script.split('\n')[:2], ['#!/bin/sh', C.notice_line('shell')])
+        tool = C.fixed('python', '#!/usr/bin/env python3\n"""Doc."""\n')
+        self.assertEqual(tool.split('\n')[:2], ['#!/usr/bin/env python3', C.notice_line('python')])
+        xml = C.fixed('xml', '<?xml version="1.0" encoding="utf-8"?>\n<Ui/>\n')
+        self.assertEqual(xml.split('\n')[:3], ['<?xml version="1.0" encoding="utf-8"?>', C.notice_line('xml'), '<Ui/>'])
+        self.assertIsNone(C.problem('xml', xml))
+        self.assertEqual(C.problem('xml', '<?xml version="1.0"?>\n<Ui/>\n' + C.notice_line('xml') + '\n'), 'misplaced notice',
+                         'the notice goes straight after the declaration')
+
+    def test_a_lua_file_gets_a_blank_line_before_its_own_header(self):
+        self.assertEqual(C.fixed('lua', '-- header\nlocal x = 1\n'), C.notice_line('lua') + '\n\n-- header\nlocal x = 1\n')
+        self.assertEqual(C.fixed('lua', ''), C.notice_line('lua') + '\n')
+
+    def test_removing_the_notice_fails_the_check(self):
+        for kind, (name, text) in self.SAMPLES.items():
+            root = self.repo({name: C.fixed(kind, text)})
+            self.assertEqual(C.check(root), [], kind)
+            (root / name).write_text(text)
+            self.assertEqual(C.check(root), [(name, 'missing notice')], kind)
+
+    def test_a_stale_year_or_wording_fails_and_write_upgrades_it(self):
+        for kind, (name, text) in self.SAMPLES.items():
+            line = C.notice_line(kind)
+            for stale in (line.replace(f'-{C.LAST_YEAR}', f'-{C.LAST_YEAR - 1}'),
+                          line.replace('modified MIT license (MIT + Attribution)', 'MIT license'),
+                          line.replace(f'{C.FIRST_YEAR}-{C.LAST_YEAR}', str(C.FIRST_YEAR))):
+                self.assertNotEqual(stale, line)
+                root = self.repo({name: stale + '\n' + text})
+                self.assertEqual(C.check(root), [(name, 'stale notice')], (kind, stale))
+                changed, stuck = C.write(root)
+                self.assertEqual((changed, stuck), ([name], []))
+                self.assertEqual((root / name).read_text(), line + '\n' + text, kind)
+                self.assertEqual(C.check(root), [])
+                self.assertEqual(C.write(root), ([], []), 'idempotent')
+
+    def test_a_notice_below_the_first_line_is_not_the_notice(self):
+        root = self.repo({'x.lua': '-- other\n' + C.notice_line('lua') + '\n'})
+        self.assertEqual(C.check(root), [('x.lua', 'misplaced notice')])
+        self.assertEqual(C.write(root)[1][0][0], 'x.lua')
+
+    def test_a_new_kind_of_file_must_be_classified(self):
+        root = self.repo({'new.zzz': 'data\n', 'sub/no_extension': 'data\n', 'ok.png': 'x', 'ok.lua': C.fixed('lua', '')})
+        problems = dict(C.check(root))
+        self.assertTrue(problems['new.zzz'].startswith('not classified'))
+        self.assertTrue(problems['sub/no_extension'].startswith('not classified'))
+        self.assertEqual(sorted(problems), ['new.zzz', 'sub/no_extension'])
+        self.assertEqual(C.write(root), ([], []), 'write never invents a classification')
+
+    def test_vendored_and_generated_files_are_skipped_with_a_reason(self):
+        for name in ('Libs/Ace/a.lua', 'LibsAugment/FAIAP.lua', 'tools/vendor/x/release.sh', 'Locales/deDE.lua',
+                     'Modules/RotationMaster_HelpText/frFR.lua', 'Data/text_bundle_index.lua', 'Data/artwork.lua',
+                     'tests/fixtures/client_api_era.lua', 'Assets/Controls/a.svg', 'Fonts/a.ttf', 'x/data.json', 'docs/a.md'):
+            action = C.classify(name)
+            self.assertEqual(action[0], 'skip', name)
+            self.assertTrue(action[1], name)
+        for name in ('main.lua', 'Modules/RotationMaster_Mage/era/frost.lua', 'tests/a.lua', 'tools/check', 'tools/x.py', '.pkgmeta',
+                     'Assets/Conditions/export_icons.py', 'Modules/RotationMaster_HelpText/RotationMaster_HelpText.toc'):
+            self.assertEqual(C.classify(name)[0], 'include', name)
+
+    def test_every_toc_names_the_attribution_licence(self):
+        old = 'Hello\n## X-License: MIT\n'
+        self.assertIn('X-License', C.toc_problem(old))
+        self.assertIn('X-License', C.toc_problem('## Interface: 1\n'))
+        self.assertIsNone(C.toc_problem('## X-License: MIT + Attribution\n'))
+        root = self.repo({'x.toc': C.notice_line('toc') + '\n## X-License: MIT\n'})
+        self.assertEqual([name for name, _ in C.check(root)], ['x.toc'])
+
+    def test_frozen_entries_must_exist(self):
+        original = dict(C.FROZEN)
+        self.addCleanup(lambda: (C.FROZEN.clear(), C.FROZEN.update(original)))
+        C.FROZEN['no/such/file.lua'] = 'test entry'
+        self.assertIn(('no/such/file.lua', 'FROZEN entry names a file that is not tracked'), C.check())
+
+    def test_the_static_gate_runs_the_check(self):
+        listing = (TOOLS / 'check').read_text()
+        self.assertIn("'tools/copyright.py', '--check'", listing.split('if not args.static')[0])
+
+    def test_the_generators_emit_the_notice(self):
+        import generate_artwork_catalog
+        self.assertEqual(generate_artwork_catalog.release_metadata().split('\n')[0], C.notice_line('yaml'))
+        self.assertEqual((ROOT / 'Data/builtin_sources.lua').read_text().split('\n')[0], C.notice_line('lua'))
+        self.assertIn(C.notice_line('toc') + '\n', (ROOT / 'Modules/RotationMaster_HelpText/RotationMaster_HelpText.toc').read_text())
 
 
 class Fast(unittest.TestCase):

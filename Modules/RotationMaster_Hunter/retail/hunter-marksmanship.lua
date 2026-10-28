@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Marksmanship Hunter, Blizzard Assisted (recommended): the rotation is
 -- Blizzard's Assisted Combat suggestion. Around it, highlights for what Assisted Combat leaves to
 -- you: Trueshot, Counter Shot, the defensives and racial cooldowns.

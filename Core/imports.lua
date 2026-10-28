@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation import and export services: validates and stores an imported rotation (with its manifest and step origins),
 -- applies a prepared import to a new or an existing custom rotation and refreshes the engine afterwards, and builds the
 -- envelope that export serializes. It does not parse or encode text (Data/codec.lua and UI/transfer.lua do),

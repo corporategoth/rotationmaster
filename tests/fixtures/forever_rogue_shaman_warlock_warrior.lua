@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared world model for the WoW Forever Rogue, Shaman, Warlock and Warrior premade scenario tests.
 -- Forever is classed restricted, so packaged rotations never auto-select there; these scenarios run
 -- the packs under a synthetic Forever context whose combat-data policy is 'probe' (options.restricted

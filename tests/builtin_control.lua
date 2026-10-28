@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The user's control over Built Ins and over selection order, on the whole addon
 -- (tests/fixtures/toc_addon.lua): per-profile Built In overrides (Enabled, priority) that
 -- never copy the rotation; one header line with Priority left of Enabled; a read-only

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The native rotation card: the frame, controls and text of one step (action, Branch, Stop, Blizzard suggestion) or
 -- cooldown in the rotation editor, plus the live-status stripe and tooltip shared with the switch field. A card only
 -- draws what a layout model tells it (`card:Place(model)`; the model comes from the pure layout in

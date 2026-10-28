@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Rogue melee DPS, Icy Veins Phase 8 order (alternative premade).
 -- Same switch and shared blocks as the recommended SoD premade (era/blocks.lua). Differs where
 -- Icy Veins differs: Garrote opener in a group; Poisoned Knife only at five poison stacks; every

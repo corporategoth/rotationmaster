@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The view controls of the rotation editor pane: the Rotation / Cooldowns tabs, Expand all and Collapse all, the
 -- Diagram / List switch, the Add action, branch and cooldown palette and the zoom bar. They change only what is shown
 -- (section, layout, zoom, card fold state) and must never edit rotation data except through the pane's Insert command.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help documents for item sets: the item-list controls (move, delete), the Item Sets settings page (name, global,
 -- priority order, binding, history, Apply/Cancel, collections, legacy macros) and the native item-list editor popup,
 -- each with a renderer that lays it out in a help frame. Paragraphs live in the locale tables under Help.ItemSets.*.

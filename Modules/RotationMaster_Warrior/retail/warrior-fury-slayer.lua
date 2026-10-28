@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Fury Warrior, Slayer (SimulationCraft's slayer and slayer_aoe lists): the
 -- optimal reference, disabled by default because Enrage, Recklessness and Sudden Death are hidden
 -- in Midnight combat. Charge to open. Whirlwind for its buff on two or more engaged enemies;

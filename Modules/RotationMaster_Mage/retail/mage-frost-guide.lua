@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Frost Mage after SimulationCraft and Icy Veins (optimal reference), one
 -- order per hero tree. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one
 -- or two enemies, Flurry on Brain Freeze, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen

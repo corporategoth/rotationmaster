@@ -29,6 +29,9 @@ what it does. `docs/dev/conventions.md` has the naming and error-handling rules;
   with no `else` whose body is one plain statement) that do the same thing: consecutive `if ... then return end`
   guards, or consecutive `if ... then x = ... end` defaults, stand together with no blank line between them.
 
+A copyright notice comment as the first line of a file (`tools/copyright.py`, `docs/dev/conventions.md`) is not formatted: it stays
+line 1, followed by exactly one blank line, then the file's header comment.
+
 `python3 tools/format_lua.py FILE` prints the diff the formatter would make, `--write` applies it. It never changes what
 the program compiles to: it compiles the original and the result with `luac5.1` (listing without line numbers) and refuses
 the file if they differ, if a comment would be lost or if a second pass would change the text again. The formatter is a

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The TALENT picker on every client that has one: the talent's icon is the left
 -- column of a block and spans its two rows, the upper list (specialization,
 -- talent tree or Mists tier) and the talent list sit to the icon's right, and

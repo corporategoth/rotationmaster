@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Missing subscriptions exercise actual enable and AceEvent/CallbackHandler dispatch.
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()

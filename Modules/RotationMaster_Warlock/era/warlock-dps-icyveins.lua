@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Warlock, Icy Veins order (alternative premade; same switch, lower priority). Built
 -- for 16-debuff realms: in raids only the curse and Corruption, then Shadow Bolt (no Immolate and
 -- no Siphon Life even when slots allow). Leveling and five-man play as the recommended premade

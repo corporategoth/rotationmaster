@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- One ordered card list for every settings list. Its header row carries an
 -- optional section title (the shared header style) and the Add action
 -- right-aligned to the cards' right edge. A click appends through the page's

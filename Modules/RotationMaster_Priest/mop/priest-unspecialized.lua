@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Priest before a specialization (levels 1-9, or a priest who has not chosen one yet):
 -- the catch-all, lowest priority, so it applies only when no specialization switch
 -- matches. A friendly target gets Flash Heal when low or a Power Word: Shield; an enemy gets Shadow Word: Pain when

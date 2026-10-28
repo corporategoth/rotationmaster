@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the player's bags: C_Container (or the legacy GetContainer* globals) item counts and slots.
 -- Owns the `value or nil, reason` readers for a bag-only item count map and a snapshot with slot positions; it must
 -- not include bank slots or decide which item matters. Reads are bounded (at most 17 bags of 256 slots) because they

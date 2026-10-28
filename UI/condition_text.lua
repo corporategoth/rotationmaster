@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Read-only text window for a full condition expression or a copyable report. It owns one lazily created dialog
 -- (addon.conditionTextWindow) and never edits the text it shows: edits are reverted so the box stays selectable and
 -- copyable only. Loaded from RotationMaster.toc after UI/condition_editor.lua; depends on the workbench chrome, button

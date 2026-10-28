@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Group unit resolution: turns the group unit kinds (main tank, assigned healer, leader, ...) in a condition value into
 -- real unit tokens for one evaluation. It reads who holds an assignment through platform:ResolveGroupUnit and must not
 -- cache across evaluations. Loaded from the TOC before rotation_lifecycle.lua; called by Core/conditions.lua for every

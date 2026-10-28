@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The fixed inventory of optional addons Rotation Master consumes or detects (docs/architecture/integrations.md), with
 -- each addon's publisher links and advertised edition scope. Read by the Integrations settings page
 -- (UI/settings_integrations.lua) through ListIntegrationStatus, GetIntegrationProjectLinks and

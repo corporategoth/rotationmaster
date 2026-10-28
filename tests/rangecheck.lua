@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exercise the vendored library's load-time event registration with TBC APIs.
 -- Run from repository root: lua5.1 tests/rangecheck.lua [library-path]
 local path = arg[1] or 'Libs/LibRangeCheck-3.0/LibRangeCheck-3.0.lua'

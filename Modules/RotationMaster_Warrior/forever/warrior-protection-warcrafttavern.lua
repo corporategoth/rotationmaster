@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Protection Warrior, Warcraft Tavern's debuff-upkeep list (player-chosen variant).
 -- Same switch as the recommended tank (Defensive Stance), lower priority, off by default. Keeps
 -- Thunder Clap, Demoralizing Shout (on casters too) and five Sunder Armors on every target first,

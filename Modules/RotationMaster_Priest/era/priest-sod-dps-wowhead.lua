@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Priest damage after Wowhead (Phase 7) and Warcraft Tavern (Phase 4), levels
 -- 1–60; same switch as rm.sod.priest.dps at a lower priority, for players who pick it. Differs by
 -- holding Mind Blast for three of your Mind Spike stacks (cast normally until Mind Spike is

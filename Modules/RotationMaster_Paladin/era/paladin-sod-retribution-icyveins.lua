@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Retribution after Icy Veins' Phase 4 list (Warcraft Tavern agrees): Judgement
 -- of the Crusader once on targets that live 20 s, Seal of Martyrdom, Exorcism, Crusader Strike,
 -- Divine Storm and Judgement on cooldown, Consecration with mana or three enemies, Hammer of Wrath.

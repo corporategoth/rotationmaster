@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever ranged Hunter, mana-saving (Mobalytics; also the form of Icy Veins' advice that RM
 -- can express without reading mana), levels 1–60: a player-chosen alternative to
 -- rm.forever.hunter.ranged (same switch, lower priority, off by default). Keeps one Hawk up, Aimed

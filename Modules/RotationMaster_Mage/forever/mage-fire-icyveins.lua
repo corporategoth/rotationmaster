@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Fire Mage after Icy Veins' leveling build (no Improved Scorch), levels 10–60: a
 -- player-chosen alternative to rm.forever.mage.fire (same switch, lower priority, off by default).
 -- Pyroblast opens; Fire Blast spends Wake of Fire; Scorch as the mob closes (target health is secret

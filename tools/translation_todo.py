@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Write the work file for one locale: every string that still needs a translation, with context.
 
   python3 tools/translation_todo.py deDE --out /tmp/deDE-todo.json        missing + stale + untranslated

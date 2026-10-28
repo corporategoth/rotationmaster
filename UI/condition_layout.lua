@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition layout container: the native group widget (RM-ConditionGroup) that the condition editor and the help
 -- cards use to stack, tabulate and wrap child widgets, with the List, Table, RM-SpellField and RM-IconRows layouts.
 -- It owns child parenting, ownership checks and width/height propagation; it must not know what the children are.

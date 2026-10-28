@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for "does this unit token exist" (UnitExists). Returns `boolean, nil` or `nil, reason`; the value
 -- passes platform:CanReadValue first. Works on any identified client family rather than only the probe and restricted
 -- policies, and reads no other unit fact. Loaded from RotationMaster.toc after Platform/creature_type.lua.

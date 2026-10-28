@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Mage Frost (Phase 8 runes, Phase 7 sources), levels 10–60 with Frost as the
 -- main tree. Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, else Deep
 -- Freeze; Balefire Bolt on a Brain Freeze proc and otherwise when safe (never at four of its stacks);

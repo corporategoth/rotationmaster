@@ -65,4 +65,6 @@ release: `docs/release/RELEASING.md`.
 
 ## License
 
-By contributing you agree your contribution is released under the project's [MIT license](LICENSE).
+By contributing you agree your contribution is released under the project's modified MIT license, "MIT + Attribution"
+([LICENSE](LICENSE)). A new source file starts with the copyright notice line; `python3 tools/copyright.py --write` adds it
+(`docs/dev/conventions.md`).

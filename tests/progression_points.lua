@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Era and progression POINT: a resource the client's expansion, the class and
 -- (Mists of Pandaria) the player's specialization really have, else
 -- unavailable, never the Combo Points fallback that answers a confident 0.

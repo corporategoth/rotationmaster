@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Reorderable list control for settings pages: p:OrderedCollection draws a list of cards (or compact rows) with move up
 -- and down, delete, optional Help, Duplicate and Enabled controls, an optional header row with an Add button, and drag-
 -- and-drop between numbered gaps (including dragging Add itself to insert). It edits the caller's items table in place

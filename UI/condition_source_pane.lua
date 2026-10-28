@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Inline custom condition pane: the right-hand editor in the settings window's Conditions page that opens, duplicates
 -- and saves a custom (or read-only Built In) condition source next to the roster list. It adapts the stand-alone custom
 -- condition editor (UI/custom_condition_editor.lua) to the settings pane `p` and its settings draft; it must not save

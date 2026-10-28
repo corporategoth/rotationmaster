@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure validation and wire conversion of whole profile tables for profile export, import and copy. It owns what a valid
 -- transferred profile looks like and the saved-to-wire spec key conversion; it must not read or write the live
 -- database, and it reports failure as false or nil without a reason. The rotation store check is delegated to

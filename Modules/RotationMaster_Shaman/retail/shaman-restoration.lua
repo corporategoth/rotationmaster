@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Restoration Shaman, Icy Veins. Blizzard's Assisted Combat does not cover
 -- healers, health is hidden in Midnight combat and RM picks a spell, not a target, so this orders
 -- your healing tools by readiness on whatever you target and leaves triage to you. Friendly

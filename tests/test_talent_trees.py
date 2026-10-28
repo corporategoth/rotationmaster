@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """The website's copy of the talent tree names (Data/talent_trees.json) is the addon's table."""
 import json
 import subprocess

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Popup editor for one item list (an item set or an item condition's list): a settings form of ordered item cards with
 -- its own draft, undo history and Apply. The popup edits a copy and writes into the caller's table only on Apply, after
 -- re-validating every item; the caller learns of the change through its update callback. Loaded from RotationMaster.toc

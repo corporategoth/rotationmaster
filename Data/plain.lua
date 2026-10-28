@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Plain-data checks for saved, imported and packaged records. data.CheckPortable decides whether a value is acyclic
 -- plain data inside fixed size limits (no metatables, functions or non-finite numbers) and otherwise returns a
 -- diagnostic with a code and a path; data.CopyData deep-copies such a value. This file creates the addon.RotationData

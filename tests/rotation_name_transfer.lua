@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A Built In names itself by a locale key (nameKey, "Default.<Edition>.<Class>.<Variant>.Name"). The key is
 -- never a name: an export carries the display name in the exporting client's language, an import of an older
 -- export that holds only the key shows the display name (or, with no translation, a readable form), and no

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The condition editor's image widget: a button holding one texture and an optional caption, used for spell, item and
 -- talent icons in condition editors and help pages (UI/spell_icon.lua, Conditions/talent.lua, Help/common.lua).
 -- Owns the widget definition only; callers get an instance from addon:CreateConditionIcon and never build one directly.

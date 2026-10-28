@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about who a unit is: ISSAME, CLASS, CLASS_GROUP, ROLE, GLYPH, CREATURE, CLASSIFICATION, LEVEL and
 -- GROUP, plus the MobInfo2-backed RUNNER, RESIST and IMMUNE, which exist only when the MobInfo2 addon is loaded.
 -- Values come from addon.Platform observations (GetUnitIdentityObservation, GetUnitMetadataObservation,

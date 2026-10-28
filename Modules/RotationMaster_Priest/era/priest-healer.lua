@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Priest healer, levels 10–60, selected in a group when Holy or Discipline is the
 -- primary talent tree. RM advises on the friendly unit you target: choosing whom to heal, and
 -- downranking, stay with you. Emergency Shield and Flash Heal, dispels, Prayer of Healing when

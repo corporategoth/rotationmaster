@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era and Season of Discovery Shaman premades. Real predicates, build context (season
 -- rulesets, talents, weapon enchants), catalog, composition, sequence and publisher; WoW
 -- observations are modeled in tests/fixtures/era_rogue_shaman_warlock_warrior.lua.

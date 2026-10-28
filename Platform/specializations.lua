@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for specializations and talent groups (C_SpecializationInfo with legacy globals as fallback:
 -- GetSpecialization, GetSpecializationInfo, GetActiveTalentGroup, GetNumTalentGroups, GetSpecializationInfoForClassID,
 -- GetSpecializationInfoByID). Owns the rotation storage key (GetRotationSpecialization) and what that key means on each

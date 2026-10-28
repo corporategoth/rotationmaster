@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Warlock before a specialization (levels 1-9, or later with none chosen): the
 -- class catch-all, lowest priority, so every specialization premade beats it from level 10. Corruption to
 -- pull, Drain Life below half health, Corruption kept up, Shadow Bolt. Reminders: the Voidwalker solo (the

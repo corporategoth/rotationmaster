@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Restoration (Icy Veins, Wowhead, Warcraft Tavern agree): Tree of Life, Nature's
 -- Swiftness and Healing Touch in emergencies, Swiftmend a dying target that carries a
 -- HoT, three rolling Lifeblooms in combat, Rejuvenation and Regrowth HoTs, then Regrowth

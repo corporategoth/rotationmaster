@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The unit dropdown widget that Built In condition editors share (Conditions/*.lua call addon:Widget_UnitWidget).
 -- Owns only the dropdown that edits one unit field of a condition's saved table; it does not read game state.
 -- Loaded from the UI section of RotationMaster.toc after UI/condition_inputs.lua, before any Conditions/ file runs.

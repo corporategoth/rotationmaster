@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Priest premades: Shadow (recommended) and Shadow Warcraft Tavern (off), Discipline,
 -- Holy (recommended) and Holy Icy Veins (off), and the unspecialized catch-all. Real predicates, catalog,
 -- composition, sequence executor and publisher on a modeled MoP Classic client

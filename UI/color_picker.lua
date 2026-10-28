@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Workbench color picker: a small popup with a saturation/value square, hue and alpha sliders and exact 0 to 1 entry
 -- boxes. It edits one color at a time through the callbacks given to picker:Open and never stores the color itself;
 -- cancel, close and a hidden window all restore the original color through the change callback.

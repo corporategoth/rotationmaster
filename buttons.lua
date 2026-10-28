@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)

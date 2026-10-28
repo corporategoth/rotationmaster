@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Spell search and selection for the reference catalog: turns what the user typed or pasted (a spell ID, a spell
 -- link, a name or "Name (Rank 2)") into a spell ID, and lists matching indexed spells for pickers. It reads only the
 -- spell index of addon.SpellCatalog and the spellbook status that Core/spell_catalog.lua records; it never writes

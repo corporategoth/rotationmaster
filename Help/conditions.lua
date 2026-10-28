@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help document for the Conditions settings page: condition categories, ordering, switch and announcement
 -- availability, hiding, and the Import/Export and Move To controls, as title and sentence pairs, with the renderer that
 -- lays them out in a help frame.

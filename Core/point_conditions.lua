@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Resolution of the power type that the Built In POINT condition reads (combo points, holy power, chi, soul shards and
 -- so on) for a unit: which Enum.PowerType value applies to the unit's class on this client edition, or `nil, reason`
 -- when it is unknown or unreadable. Owns that lookup only; the value itself is read by Platform/points.lua. Every game

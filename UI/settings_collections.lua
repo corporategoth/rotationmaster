@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared helpers for the settings tabs that manage collections (Effects, Item Sets, Announces, Conditions, Functions)
 -- and the entry point that opens any native settings tab. Owns the map from each tab to the saved-variable keys its
 -- draft covers (`transactionKeys`, see UI/settings_draft.lua), the roster footer, the confirmed-deletion flow and

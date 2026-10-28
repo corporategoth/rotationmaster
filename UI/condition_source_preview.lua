@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Test window for a custom condition being authored: it renders the condition's own Fields UI and Help callbacks in a
 -- guarded scroll area, collects test values, compiles the pending source and runs its valid and evaluate callbacks once
 -- (or live, twice a second, when the player opts in). The same window serves as the debug surface that shows widget

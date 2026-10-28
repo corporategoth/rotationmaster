@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Memory capture: records how Lua heap use and the addon's attributed memory change over a bounded run (default 10
 -- minutes, at most 30) and renders a text report. Owns the capture run state and the StartMemoryCapture,
 -- CompleteMemoryCapture, StopMemoryCapture, IsMemoryCaptureRunning and GetMemoryCaptureReport entry points, which the

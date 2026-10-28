@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Shaman catch-all, levels 1-9 or any Shaman without a specialization (lowest priority;
 -- every specialization premade outranks it once a specialization is chosen). RM policy built from the 1-9 kit in the
 -- Enhancement-leveling shape (Wowhead): Lightning Bolt to pull from range, Healing Surge when low and solo,

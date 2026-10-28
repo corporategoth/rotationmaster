@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era and Season of Discovery Paladin blocks (Built In composition; authoring-time only).
 -- Consumers: rm.era.paladin.* (era.paladin.*) and rm.sod.paladin.* (era.paladin.* and sod.paladin.*).
 -- A content change needs a revision bump, every consumer's `blocks` pin and revision bumped,

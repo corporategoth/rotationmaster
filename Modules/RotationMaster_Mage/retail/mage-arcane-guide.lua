@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Arcane Mage after SimulationCraft and Icy Veins (optimal reference): Arcane
 -- Missiles on Clearcasting while Arcane Salvo is low, Arcane Barrage at four Arcane Charges with a
 -- high Salvo or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three

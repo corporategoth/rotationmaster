@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict inverses of the TIME evaluators from8d6efc0, including completed COUNT fixes.
 local old = {
     SPELL_HISTORY_TIME = ' -- Cooldown until the spell is available\n'

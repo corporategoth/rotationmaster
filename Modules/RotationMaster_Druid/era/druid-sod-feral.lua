@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid Feral cat: chosen when Savage Roar is engraved, or Feral is the primary
 -- tree with no other legs rune. After Wowhead's SoD decision tree with wowsims P5 and Icy Veins:
 -- Faerie Fire (Feral), Savage Roar, Swipe (Cat) on four or more, the Mangle debuff, Clearcasting on

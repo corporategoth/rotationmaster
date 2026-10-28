@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Renders every registered condition's wording, for you and for a target,
 -- positive and under NOT, on every
 -- client family, and fails on the text defects the website's condition

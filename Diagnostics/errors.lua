@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Error boundary and report store: addon.Diagnostics. Callbacks run through service:Call or service:Wrap, a failure is
 -- recorded with its (redacted) message, stack and context, deduplicated by fingerprint, and handed on to the game's
 -- own error handler so other collectors still see it. Also observes protected-action blocks and errors reported to

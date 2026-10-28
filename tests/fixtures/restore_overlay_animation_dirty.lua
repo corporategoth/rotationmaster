@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact overlay animation successor to complete a6 buttons source.
 local before = ([[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.

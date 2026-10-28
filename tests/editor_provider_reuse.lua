@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Real pinned providers; native frame creation is the external boundary.
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()

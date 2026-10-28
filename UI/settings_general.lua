@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Settings > General page: recommendation, polling, history, preview window, effect, tooltip and debugging options,
 -- and the diagnostic capture buttons, laid out in two columns on a pooled settings form `p`.
 -- Every field edits the page's settings draft (p:SettingsData()) and applies its side effect through

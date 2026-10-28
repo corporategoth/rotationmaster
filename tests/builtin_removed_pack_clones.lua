@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Profiles saved before the TBC Warrior/Rogue/Hunter rewrite keep working: clones of removed
 -- Built In packs are independent copies, so they load, edit, export, run and auto-select as
 -- before; their origins and enable preferences for removed IDs are inert, never errors.

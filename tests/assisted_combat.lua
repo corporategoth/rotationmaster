@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Blizzard Assisted Combat: the Platform reader contract, the
 -- ASSISTED_SUGGESTION condition and the "Blizzard's suggestion" rotation step
 -- on the real addon (TOC-order whole-poll fixture, TBC Shaman bars 403, 8042,

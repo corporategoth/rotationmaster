@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition and Help editor adapter for the arrow-block position pad: wraps the workbench pad
 -- (`addon:CreateWorkbenchPositionPad`) as a pooled condition widget that fires `OnOffsetChanged(dx, dy, center,
 -- amount)`. Owns only the widget shell; the pad drawing and the offset math live in the workbench, and the widget never

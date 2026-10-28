@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the optional MobInfo-2 addon: recorded runner, resist and immunity data about a unit.
 -- Owns the `value or nil, reason` reader platform:GetMobInfo2Observation and the guarded reads of the provider's
 -- MI2_GetMobData table; it must not trust the provider's shapes, which are foreign data. Runs under the probe and

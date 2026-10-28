@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Special action contexts on the real addon (TOC-order whole-poll fixture):
 -- possession, vehicle, override bar and pet battle each select an applicable
 -- rotation or suspend advice, and leaving restores the player's rotation.

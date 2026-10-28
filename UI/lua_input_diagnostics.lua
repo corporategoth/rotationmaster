@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Input diagnostics for the Lua code editor control: a rolling trace of edit box events (cursor, text, focus, mouse)
 -- and a plain-text report of the control's frames, focus owners, line-number gutter and LuaWorkbench overlay state,
 -- shown through `/rm debug editor` (Diagnostics/glow.lua). It must never include source text: reports carry counts and

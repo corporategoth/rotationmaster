@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Rogue tank, levels 1–60, chosen when the Just a Flesh Wound rune (which teaches
 -- Tease) is engraved.
 -- wowsims/sod Phase 6 Main Gauche order with Icy Veins, Zockify and Warcraft Tavern: Riposte, Main

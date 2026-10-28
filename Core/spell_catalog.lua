@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The spell metadata index (name, rank, icon, link per spell id) and the spellbook snapshot of which spells each
 -- specialization can use. It owns addon.SpellCatalog and addon.specSpells; it never decides what to cast. Every game
 -- value comes from addon.Platform (GetSpellInfo, GetSpellLink, GetSpellBookSnapshot), which applies the

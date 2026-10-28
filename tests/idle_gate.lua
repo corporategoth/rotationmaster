@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Idle gate: out of combat with no target/focus, timer ticks evaluate only after
 -- a watched notification or once per idle_poll; otherwise every tick evaluates.
 local pass, fail = 0, 0

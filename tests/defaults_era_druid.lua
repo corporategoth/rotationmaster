@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era and Season of Discovery Druid premades: the shipped packs on the real catalog,
 -- predicates, composition, build context (season rulesets), readiness and sequence executor on a
 -- modeled 1.15 client (tests/fixtures/era_premade_model_a.lua). Forms are stances read by spell (FORM form):

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Settings entry points that are not a window of their own: opening the preview window from the General page, the
 -- specialization list the rotation editor and selection code offer, and the one-time options setup (launcher panel
 -- registered with the game's Settings UI). Owns no saved data. Loaded from RotationMaster.toc after the settings pages

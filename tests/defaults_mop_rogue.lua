@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Rogue premades: Assassination, Combat and Subtlety (recommended), the Subterfuge Subtlety
 -- premade (auto-selected on tier-1 talent 2), the disabled source variants (Assassination Icy Veins, Combat Sinister
 -- Strike builder, Combat Hekili) and the Unspecialized catch-all. Real predicates, catalog, composition, sequence

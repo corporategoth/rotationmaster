@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions that aggregate or count health and mana over the group members near a unit: PROXIMITY_HEALTH,
 -- PROXIMITY_HEALTH_COUNT, PROXIMITY_HEALTHPCT, PROXIMITY_HEALTHPCT_COUNT and the four PROXIMITY_MANA* twins. Which
 -- members are near the unit comes from addon.proximity_eval and addon.proximity_widgets (Conditions/spatial.lua,

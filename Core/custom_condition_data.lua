@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure validation of custom condition data: legal tags, field schemas and the import envelope.
 -- It owns the rules about what a stored or imported custom condition may contain; it must not compile or run the code
 -- text a condition carries, and it saves nothing. Loaded from RotationMaster.toc after Core/collection_data.lua. The

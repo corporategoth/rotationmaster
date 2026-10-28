@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The desired-stock feature is retired. A saved profile stockTargets map from
 -- it must stay inert: never read, never stripped, never a reason to refuse a
 -- profile copy, import, export or repair.

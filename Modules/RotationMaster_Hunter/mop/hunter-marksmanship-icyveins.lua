@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Marksmanship Hunter, "Arcane dump" family (Icy Veins, Method,
 -- wowtbc.gg, Hekili): Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or
 -- Bloodlust; spare focus goes to Arcane Shot at 60. Steady Focus refreshed under 4 s. Same switch

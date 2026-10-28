@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Enhancement Shaman, levels 1–60, Icy Veins order (the recommended Shaman
 -- default, and every Shaman before a deep Elemental or Restoration talent).
 -- Rank-1-style Lightning Bolt pull, Stormstrike on cooldown, a free Lightning Bolt at five

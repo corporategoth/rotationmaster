@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Joined fixture using existing explicit startup/service and native-frame hosts.
 -- Real AceDB, owned Platform/context/library, declarations and Shaman pack.
 -- This is neither a complete TOC/vendor boot nor native acceptance.

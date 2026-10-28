@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Window layering: a popup is never drawn beneath the window that opened it.
 -- The layering rules are in docs/architecture/window-layering.md. This file drives the registry in UI/window.lua
 -- with windows built like RM's (content at assorted levels above the window's own), over a model of the client's

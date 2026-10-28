@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict new preview blocks plus exact entire frozen d5a970f CPU source.
 local old = [====[local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are

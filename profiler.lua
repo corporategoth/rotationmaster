@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Evaluation timer: addon:ProfiledCode builds a profiler object (start/stop/child/report/reset) that main.lua wraps
 -- around each poll, and the policy half of this file decides whether that profiler measures or is a no-op.
 -- Loaded from RotationMaster.toc after utils.lua and before main.lua, which consumes the policy hooks once at its load

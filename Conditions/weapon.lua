@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Weapon conditions: WEAPON, WEAPON_REMAIN and WEAPON_STACKS (a temporary enchant such as a poison or imbue on the main
 -- or off hand) and SWING_TIME and SWING_TIME_REMAIN (the melee or ranged attack interval, and the time left in it).
 -- Enchant reads come from GetWeaponEnchantInfo, or on Retail from the tuple Platform/items.lua composes out of

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Offline guard for the documented condition declaration grammar. This checks
 -- declarations, not player data, and never executes custom-condition source.
 return function(fields)

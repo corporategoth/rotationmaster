@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Unholy Death Knight after SimulationCraft (reference): Death Coil spent far
 -- more often (Sudden Doom, in Dark Transformation or Forbidden Knowledge, and whenever Army of the
 -- Dead is more than 5 s away) above Scourge Strike; Soul Reaper in Dark Transformation. Runic power

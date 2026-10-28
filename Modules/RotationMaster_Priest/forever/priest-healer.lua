@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever healing Priest (Discipline and Holy) in a group, levels 10–60: selected without
 -- Shadowform when Discipline or Holy is the main talent tree. Heals your current friendly target (RM suggests the spell; you pick the target):
 -- shield, Prayer of Mending and Renew before the pull; dispels; Prayer of Mending, Holy Nova on Holy

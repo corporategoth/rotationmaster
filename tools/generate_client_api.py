@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Generate tests/fixtures/client_api_<client>.lua: what each real client provides.
 
 For every client global or C_* function the addon references (and every name a

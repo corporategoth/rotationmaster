@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A Retail (12.x) class talent tree, as the client's C_Traits / C_ClassTalents
 -- answer for it. NO REAL CLIENT WAS AVAILABLE: this models Blizzard's generated
 -- API documentation (Gethe/wow-ui-source live 12.1.5.70575,

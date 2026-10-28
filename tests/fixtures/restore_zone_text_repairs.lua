@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict single-evaluator inverse; complete authored baselinefe3d3a0.
 local old = "\n        local zoneName = value.subzone and Functions.cache.getCached(cache, GetSubZoneText) or Functions.cache.getCached(cache, GetZoneText)\n        return value.value == zoneName\n    "
 local repaired = "\n        local method\n        if value.subzone then method=GetSubZoneText else method=GetZoneText end\n        if type(method)~='function' then return nil,'missing-api' end\n        local ok,zoneName=pcall(Functions.cache.getCached,cache,method)\n        if not ok then return nil,'api-error' end\n        if not addon.Platform:CanReadValue(zoneName) then return nil,'restricted-value' end\n        if type(zoneName)~='string' then return nil,'zone-text-unavailable' end\n        return value.value == zoneName\n    "

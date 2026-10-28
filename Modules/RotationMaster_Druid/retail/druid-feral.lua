@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Feral Druid, Blizzard Assisted (recommended): the rotation is Blizzard's
 -- Assisted Combat suggestion. Around it, highlights for what Assisted Combat leaves to you: Berserk
 -- (or Incarnation), Skull Bash, Survival Instincts, Cat Form between pulls, Mark of the Wild, Barkskin and racial cooldowns.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Protection Paladin, levels 10–60: any Paladin with Protection as the main talent tree,
 -- or who has Righteous Fury on to tank. Wowhead's level-30 orders: taunt with a Seal of
 -- Fury Judgement (Swift Judgement to reset it) when the target turns away; on two or more enemies

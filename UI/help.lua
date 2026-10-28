@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Help window and its tooltips. Builds the help content for the settings pages, the rotation and condition
 -- editors and the window chrome (sections of title and text, localized through L), shows one shared Help window with an
 -- optional mounted document, and binds hover tooltips to controls. Every callback runs under Diagnostics so a faulty

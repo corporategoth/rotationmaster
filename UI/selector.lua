@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Workbench selector widgets: the bounded, searchable popup menu every native dropdown uses (CreateWorkbenchSelector)
 -- and the condition-field dropdown widget built on it (RM-Selector, CreateConditionDropdown). It owns the popup frame,
 -- its row pool and the leases that keep recycled rows and color pickers from firing stale callbacks; it never decides

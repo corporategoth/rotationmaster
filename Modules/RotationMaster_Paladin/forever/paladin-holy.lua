@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Holy Paladin in a group, levels 10–60, once Holy is the main tree with 21 points (Holy
 -- Shock's tier) and Righteous Fury is off; a grouped Shockadin lands here too, and the hostile-target list
 -- is its damage list. Icy Veins' healing order on your current friendly target: Holy Shock on your

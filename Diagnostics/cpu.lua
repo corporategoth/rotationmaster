@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Opt-in CPU profile capture (/rm perf cpu). Reads WoW's cumulative function and addon CPU counters at the start and
 -- end of a timed run (1 to 60 seconds, default 10) and renders the difference as a bounded text report: a ranked list
 -- of selected functions (poll and evaluation methods, Platform adapters, condition callbacks) followed by appendices

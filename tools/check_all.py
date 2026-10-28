@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Run every command `tools/check` runs, without stopping at the first failure.
 
 `tools/check` is fail-fast, which is right for a commit hook and wrong for CI: one red suite

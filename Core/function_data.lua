@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Transport of custom functions and conditions as "RM-FunctionBundle" values: building a bundle with its helper
 -- dependencies and the source hashes of the Built In helpers it needs, validating a pasted bundle (also the older
 -- RM-CustomCondition and RM-CustomFunction envelopes), planning an import with the user's per-item choices, and

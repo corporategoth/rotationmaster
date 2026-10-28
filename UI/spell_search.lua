@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Spell and item search box: the edit box used for every spell, item and totem field, with a suggestion list, exact
 -- selection by ID or link, drag and drop from the cursor, and a right-click menu of what the game offers right now.
 -- It decorates a pooled native text input lease (addon:CreateConditionEditBox) and restores its scripts and methods

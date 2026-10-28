@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Tag picker widget for rotations: a search box over the known tags, removable tag chips below it and an optional per-
 -- tag color chooser. It stores nothing itself; the owner supplies the tag source, colors and change callback through
 -- options and gets a normalized copy back. Used by the rotation browser filter and the rotation metadata window. Loaded

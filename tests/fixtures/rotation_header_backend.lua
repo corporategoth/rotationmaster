@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Legacy UI unit tests keep simple test identities. This fixture implements
 -- the projected service boundary; production UI must not inspect these maps.
 return function(a, DEFAULT, NEW)

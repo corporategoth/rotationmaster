@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Holy Paladin after Wowhead's level-30 guide, levels 10–60: a player-chosen
 -- alternative to rm.forever.paladin.holy (same switch, lower priority, off by default). Holy Shock
 -- as a routine heal on cooldown, then Flash of Light (health is secret on Forever, so Holy Light

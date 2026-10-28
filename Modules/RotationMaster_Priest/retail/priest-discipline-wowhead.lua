@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Discipline Priest, Wowhead's Oracle Mythic+ order: a reference, disabled by
 -- default (a Season 1 page; Shadow Word: Pain upkeep reads the hidden debuff). Shadow Word: Pain
 -- kept up, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; on a friendly target

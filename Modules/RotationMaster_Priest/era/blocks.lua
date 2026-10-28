@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era and Season of Discovery Priest blocks (Built In composition; authoring-time only).
 -- Consumers: rm.era.priest.dps, rm.era.priest.dps.warcrafttavern, rm.era.priest.dps.wowsims,
 -- rm.era.priest.healer, rm.sod.priest.dps, rm.sod.priest.dps.wowhead, rm.sod.priest.healer and

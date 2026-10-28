@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- External regression: real settings/layout/buttons; font width is fixture7px/character.
 -- This is reproducible offline geometry, not a native font/clipping certification.
 local function read(path)

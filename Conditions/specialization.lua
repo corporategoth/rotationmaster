@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- SPECIALIZATION: the condition that tests the player's talent specialization, plus the specialization tables and name
 -- lookups other modules use (addon:GetSpecializationName and addon:GetSpecializationClassToken, called by
 -- Core/rotation_selection.lua and Core/imports.lua), and the one-time seeding that adds SPECIALIZATION and WEAPON_TYPE

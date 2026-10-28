@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Whole-poll fixture: the real addon in TOC order with WoW API models and the
 -- Shaman starter clone selected. Adapted from the Codex whole-poll harness.
 local measurement, snapshotRoot, candidateEnabled, productRoot, direct = ...

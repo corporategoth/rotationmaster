@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Balance Druid after Icy Veins, SimulationCraft and Wowhead (optimal
 -- reference): Moonkin Form and two Wraths before the pull; Sunfire and Moonfire kept up; Eclipse
 -- entered when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Settings-side controls for the volatile cast-receipt capture (General > Debugging: Capture casts, Stop, Cast report,
 -- Clear). The capture itself is addon.Analytics.NativeCasts (Platform/analytics_casts.lua); this file only starts,
 -- stops, clears and reports it, independently of any pending settings draft, and owns no saved data.

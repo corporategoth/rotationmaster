@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Services for player-written custom conditions that do not depend on any window: the empty-condition template a new
 -- custom condition starts from, the callback signatures, the loadstring-based compiler used for the historical
 -- compatibility path, and registration of a saved custom condition into the condition registry. Must not draw; the

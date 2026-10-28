@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warrior tank, levels 10–70, Icy Veins order (alternative tank variant).
 -- Same switch as the Wowhead variant (Defensive Stance), lower priority. Differs where Icy Veins
 -- differs: Shield Block whenever the target is hitting you, no single-target Thunder Clap or

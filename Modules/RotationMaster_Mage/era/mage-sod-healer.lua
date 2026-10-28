@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Mage healer (Arcane or Frost, Temporal Beacon), levels 1–60, chosen when
 -- Regeneration or Mass Regeneration is engraved. On a friendly target: Rewind Time and Chronostatic
 -- Preservation below half health, Regeneration where your beacon is missing, Mass Regeneration,

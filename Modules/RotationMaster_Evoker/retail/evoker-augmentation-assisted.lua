@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Augmentation Evoker, Blizzard Assisted (alternative to the Icy Veins Ebon
 -- Might premade, lower priority, shipped disabled): the rotation is Blizzard's Assisted Combat
 -- suggestion, which recasts Ebon Might only after it falls off. Highlights for what simc's model of

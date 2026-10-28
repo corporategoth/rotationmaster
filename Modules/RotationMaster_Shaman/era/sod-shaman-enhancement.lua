@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Enhancement Shaman, levels 1–60, dual wield and two-hander (the SoD
 -- catch-all). wowsims/sod Phase 6 order with Icy Veins' five-stack Maelstrom test: Flame Shock to
 -- pull; Earth Shock interrupts; on three engaged enemies Magma, Fire Nova from a fire totem,

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Retribution seal stacking (Wowhead Phase 8, wowsims): keep both Seal of Command
 -- and Seal of Martyrdom up (each recast below 1 s), Divine Storm at three Holy Power (or freely
 -- without the set), Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (anything with the

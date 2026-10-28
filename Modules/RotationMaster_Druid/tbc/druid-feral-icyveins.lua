@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Feral cat and bear, Icy Veins with Warcraft Tavern and wowsims: Rip from four combo
 -- points on a target that lives, Ferocious Bite between Rips at moderate energy without
 -- Clearcasting (bite-weave), Mangle kept up, Shred from behind (Mangle or Claw when the

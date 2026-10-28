@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Inverse of the window layering change (docs/architecture/window-layering.md) for the modules whose complete
 -- predecessor contents other suites pin: the opens go back to registering for Escape, the window asks for its own
 -- click-raise again and the embedded editor's stand-alone panels are no longer laid out with the RM windows.

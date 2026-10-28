@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Saved-data validator behind `/rm check` (report only) and `/rm repair` (fix = true), and run once in report-only
 -- mode at startup. addon:validate walks RotationMasterDB, compares every record with a template of expected field
 -- names and types, warns about each deviation and, when fix is set, strips the offending data.

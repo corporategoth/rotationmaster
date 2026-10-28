@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The native settings form: one pooled page object (created by addon:CreateSettingsForm) that every settings page,
 -- popup and transfer dialog draws into. A page supplies a builder that calls row methods (Edit, Check, Choice, Slider,
 -- Color, Reference, Position, ...) in order; Draw replays the builder from scratch, so controls are pooled per kind and

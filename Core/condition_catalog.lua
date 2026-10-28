@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The live condition catalog: which condition tags exist, how pickers group, order and filter them, and how a tag is
 -- described to the editor. It reads the registry tables Core/conditions.lua owns (addon.conditionDefinitions and
 -- addon.conditionSpecials) and the active profile's grouping and disabled lists; it registers nothing and draws

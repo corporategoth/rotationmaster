@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Balance after Icy Veins: Starfire and nothing else, no Moonfire or Insect Swarm
 -- (the list for raids with the 16-debuff limit), Hurricane on packs. Same switch as the recommended
 -- rm.era.druid.balance at a lower priority, shipped disabled.

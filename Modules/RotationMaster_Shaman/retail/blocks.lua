@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Retail (Midnight) Shaman blocks (Built In composition; authoring-time only).
 -- Consumers: rm.retail.shaman.elemental, .elemental.icyveins, .enhancement,
 -- .enhancement.stormbringer, .enhancement.totemic and .restoration. A content change needs a

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Historical canonical-consumer regression. Current bounded forecast behavior
 -- is exercised by health_forecast_conditions.lua; restore only its two bodies.
 local F = dofile('tests/fixtures/addon.lua')

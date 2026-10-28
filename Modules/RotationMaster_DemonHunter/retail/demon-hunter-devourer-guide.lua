@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Devourer Demon Hunter after Icy Veins' Annihilator list (optimal reference).
 -- Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation, Voidblade and The Hunt
 -- once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray once affordable,

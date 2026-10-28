@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 -- Reuse the existing real-main/real-AceDB setup without executing its suite.
 -- Keep this boundary in one fixture rather than duplicating its client shims.

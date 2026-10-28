@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Via Macro announcements: the `RM_Announce(identifier, unit, spell)` global (and its historical misspelling
 -- `RM_Annouce`) that a player's macro calls to fire one saved announcement synchronously. Owns the lookup of the single
 -- enabled macro announcement by identifier, the target and spell checks, the direct Say/Yell/Whisper/channel send and

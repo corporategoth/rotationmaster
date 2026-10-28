@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Completion, hover and navigation for RM's reduced Lua editor. addon:InstallRMCodeCompletion attaches a limited
 -- LuaWorkbench engine ('RM-native', RM's own declared arguments, fields and functions only) to one native editor
 -- control `c` made by UI/lua_editor.lua; it never loads Blizzard API docs and holds no event frame of its own.

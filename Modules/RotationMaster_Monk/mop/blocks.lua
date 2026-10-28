@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Mists of Pandaria Classic Monk blocks (Built In composition; authoring-time only).
 -- Consumers: rm.mop.monk.brewmaster, .brewmaster.offensive, .windwalker, .windwalker.simc,
 -- .mistweaver and .unspecialized. A content change needs a block revision bump, every consumer's

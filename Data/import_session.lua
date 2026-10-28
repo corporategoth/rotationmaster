@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Staged import session: holds one decoded import candidate (with its validation) and answers snapshot, ready, compare
 -- and preview questions about it, so a transfer window can show what a paste contains before anything is applied.
 -- It must never touch saved data, register conditions, evaluate predicates or compile custom Lua; every value it hands

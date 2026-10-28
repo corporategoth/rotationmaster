@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Settings page layout: the two-column mode and the roster layout (a searchable, filterable, drag-orderable list on the
 -- left, the detail pane on the right) that a settings page can switch on. It is installed onto a pooled settings form
 -- `p` and replaces its Layout with one that falls back to the form's own simple layout when no roster is in use.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Subtlety Rogue, Icy Veins and SimulationCraft's default list: the optimal
 -- reference, disabled by default because Shadow Dance, Darkest Night and energy are hidden in
 -- Midnight combat. Stealthed before the pull: Shadowstrike. One combo point short of full:

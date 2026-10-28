@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Player-facing handling of the archive of rotations saved by a release before 2.0 (the upgrade in
 -- Core/rotation_migration.lua parks them unowned). Owns the one-time chat notice, the settings banner state and the
 -- bulk "adopt everything" action. It never decides an owner itself: adoption goes through addon:PlanRotationAdoption

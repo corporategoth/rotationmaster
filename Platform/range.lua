@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for distance questions: native spell range (C_Spell.IsSpellInRange / IsSpellInRange with the
 -- Attack spell), the nameplateMaxDistance CVar, and the optional LibRangeCheck-3.0 library as a fallback. Readers
 -- return `value, nil` or `nil, reason`; game values pass platform:CanReadValue first. Must not claim an exact

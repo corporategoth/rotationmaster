@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for edition-specific mechanics: pet happiness, Stagger, Balance Eclipse and the ranged swing speed.
 -- Owns the `value or nil, reason` readers over GetPetHappiness, UnitStagger, GetEclipseDirection, UnitPower and
 -- UnitRangedDamage; it must not decide what any of them mean for a rotation (the conditions named below do). Each

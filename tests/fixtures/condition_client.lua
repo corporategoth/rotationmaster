@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A real addon on one client family, every Conditions/*.lua file loaded and
 -- evaluable, with one sentinel standing in for every secret value (Lua cannot
 -- make a real secret; issecretvalue and canaccessvalue recognise the sentinel).

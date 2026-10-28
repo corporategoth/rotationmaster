@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Per-profile memory of which rotation the player chose for each specialization context. A preference is one row
 -- keyed by family, character, class, specialization and action context (player, pet, vehicle, ...) that holds a
 -- reference to a Built In rotation or a custom rotation address; db.profile.rotationChoicePreferences is the

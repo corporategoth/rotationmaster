@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Steps and cooldowns whose action is on no action bar are skipped: RM can
 -- only advise by lighting the button that holds an action, so the engine
 -- moves on to the next step (main.lua: "the first mapped and ready spell"),

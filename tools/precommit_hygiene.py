@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Small repository guards the pre-commit configuration calls. Check-only: nothing is rewritten.
 
   precommit_hygiene.py forbidden [FILES]   paths that must not be committed (planning documents, local settings, outputs)

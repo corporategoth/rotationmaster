@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Warrior melee DPS, Icy Veins order (alternative premade; same catch-all
 -- switch, lowest priority). Icy Veins' Fury (Phase 6) and Arms (Phase 4) pages: Execute near the
 -- top to dump rage below 20% or on a Sudden Death proc; Slam on Blood Surge; Bloodthirst or

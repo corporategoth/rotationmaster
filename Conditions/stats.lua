@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions on unit statistics: HEALTH, HEALTHPCT, MANA, MANAPCT, POWER, POWERPCT, POINT, RUNE,
 -- RUNE_COOLDOWN, TT_HEALTH and TT_HEALTHPCT. Values come from addon.Platform observation readers and the forecast and
 -- point services in Core/. A negative absolute value means "deficit from maximum"; percentage values are saved as

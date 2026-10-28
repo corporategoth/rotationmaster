@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Runtime services for item sets: whether a set is still referenced by a rotation or a button binding, the secure
 -- macro buttons that /use each set's items on a unit, and the name/value list the condition editor offers. Owns no
 -- saved data (item sets live in db.profile.itemsets and db.global.itemsets, bindings in db.char.bindings) and no

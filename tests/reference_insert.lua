@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Right-click insertion into spell and item fields: the target's or focus's
 -- current cast, recent casts and equipped trinkets, committed exactly like a
 -- chosen suggestion, in the condition and card editors' reference inputs and

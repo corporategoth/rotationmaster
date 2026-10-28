@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Feral, cat and bear, from level 10 when Feral is the primary talent tree. After
 -- Icy Veins, Wowhead, Warcraft Tavern and wowsims: the form decides cat or bear. Cat keeps Faerie
 -- Fire (Feral) up, spends Clearcasting on Shred, finishes from four combo points (Rip outside raids,

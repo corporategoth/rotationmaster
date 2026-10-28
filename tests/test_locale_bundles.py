@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Load-on-demand text bundles: every key complete in every language, one owner per key, a fresh index.
 
 The Lua side (tests/text_bundles.lua) proves the runtime; this proves the files. The main catalog may carry

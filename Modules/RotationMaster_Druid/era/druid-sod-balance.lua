@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid Balance, levels 1-60, and the SoD default for every Druid no other SoD
 -- premade fits. After wowsims P6 with Wowhead's Phase 8 thresholds: Starsurge whenever its buff is
 -- down, Hurricane on six or more (four with the Gale Winds rune), Insect Swarm only on the move, Sunfire and Moonfire on

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Windwalker Monk after the SimulationCraft 5.4.8 default list that Hekili's
 -- MoP fork and MaxDps ship. Same switch as rm.mop.monk.windwalker, lower priority and off by
 -- default. Differs from it: Tiger Power refreshed at 3 s, Rising Sun Kick first while its debuff is

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Unholy Death Knight, levels 55–90, after Icy Veins (rotation and leveling
 -- pages). Also the catch-all: every Death Knight knows Death Coil, so this owns an unspecialized
 -- knight (diseases, Blood Strike, Death Coil, Death Strike) and anyone Blood or Frost do not claim.

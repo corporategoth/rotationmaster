@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Frost Death Knight after Icy Veins and SimulationCraft (optimal reference):
 -- Obliterate on two Killing Machines (or one with runes to spare), Frost Strike into five Razorice
 -- with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike,

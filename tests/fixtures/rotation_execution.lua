@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Actual scoped main with TOC-order private handoffs and native raw globals.
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local function once(text,old,new)local a,b=text:find(old,1,true);assert(a,'fixture anchor missing '..old);assert(not text:find(old,b+1,true),'fixture anchor repeated');return text:sub(1,a-1)..new..text:sub(b+1)end

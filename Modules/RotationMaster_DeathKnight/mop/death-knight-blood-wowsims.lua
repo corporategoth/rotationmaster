@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Blood Death Knight, health-reactive (wowsims Iron Juggernaut and Sha
 -- APLs, readable parts only). Off by default, same switch as rm.mop.deathknight.blood: Death Strike
 -- below 70% health, to restore or refresh Blood Shield, or before the Frost and Unholy runes cap,

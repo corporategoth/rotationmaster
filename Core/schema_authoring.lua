@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure editing model for a custom condition's field schema: path keys, field order and required-field reconciliation,
 -- and the draft tree the schema editor works on with undo and redo. It owns the rules about what an editable schema may
 -- look like; it draws nothing and writes no saved data, so the UI applies a Snapshot only on an explicit Apply.

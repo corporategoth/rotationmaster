@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Elemental Shaman, levels 10-90: Wowhead's Phase 5 order (Icy Veins agrees once
 -- its talent steps are removed), with wowsims' Flame Shock gate on Earth Shock and its Flame Shock refresh
 -- before Ascendance. Selected in the Elemental specialization (262)

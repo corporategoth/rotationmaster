@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Rogue melee DPS, levels 1–60, every specialization (the recommended premade).
 -- Forever stores one slot per class and RM cannot read Forever talents, so the spec follows
 -- the talent-taught spell that is known: Mutilate/Venom (Assassination), Hemorrhage

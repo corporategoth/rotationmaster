@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact cold CLI diagnostics successor -> Git7552 predecessor.
 -- Construct the complete successor once; unknown bytes never normalize.
 local rows = {

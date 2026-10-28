@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Invert only reviewed Questie startup/profile wiring before historical proofs.
 local paths = {
     ["main.lua"] = {

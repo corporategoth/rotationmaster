@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for items: C_Item (with the legacy GetItemInfo family as fallback), C_Container item cooldowns and
 -- the equipped-weapon enchant tuple.
 -- Owns the `value or nil, reason` readers for item ids, use spells, display and gameplay metadata, counts, equipped

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F = dofile('tests/fixtures/addon.lua')
 local test, finish = F.suite()
 
@@ -162,6 +164,24 @@ test('normal load order retains native services without any retired Options rend
     }) do
         assert(entries[path], 'required native service missing: ' .. path)
     end
+end)
+
+test('the About page shows the TOC licence field, MIT + Attribution', function()
+    local f = fixture()
+    local a = f.addon
+    local handle = assert(io.open('RotationMaster.toc', 'r'))
+    local toc = handle:read('*a')
+    handle:close()
+    local license = assert(toc:match('\n## X%-License: ([^\n]+)'), 'RotationMaster.toc has no X-License field')
+    assert(license == 'MIT + Attribution', 'TOC licence field: ' .. license)
+
+    f.env.C_AddOns.GetAddOnMetadata = function(name, key)
+        assert(name == 'rotationmaster')
+        return ({ Title = 'Rotation Master', ['X-License'] = license })[key]
+    end
+
+    a:SetupOptions()
+    assert(a.settingsLauncher.credits.text:find('License: MIT + Attribution', 1, true), a.settingsLauncher.credits.text)
 end)
 
 finish()

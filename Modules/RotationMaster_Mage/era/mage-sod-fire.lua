@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Mage Fire (Phase 8 runes, Phase 7 sources), levels 1–60, and the SoD Mage
 -- default (lowest SoD priority; above every vanilla premade). Adapts by engraved runes: Hot Streak
 -- Pyroblast at once; Living Bomb kept up; Improved Scorch topped up below two stacks (Living Bomb

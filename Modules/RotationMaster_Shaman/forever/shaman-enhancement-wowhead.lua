@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Enhancement Shaman, mana-efficient (Wowhead, with Mobalytics' dungeon list):
 -- a player-chosen variant, off by default. Same switch as the recommended Enhancement premade,
 -- lower priority.

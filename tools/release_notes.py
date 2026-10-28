@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Concise release notes for a tag. No network, no model: git and the hand-written notes only.
 
   python3 tools/release_notes.py --tag 2.0.0-beta.1 --target gitea          the Gitea release body

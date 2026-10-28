@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The main Rotation Master window ("config window"): title bar with version and client, UI scale control, one tab per
 -- settings section, the page area that hosts the active pane, a footer with links, the page help, and the resize grip.
 -- Owns the window shell only; each page is built elsewhere (addon:CreateRotationBrowser for Rotations,

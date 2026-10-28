@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation metadata window opened from the rotation editor: description, tags, scope (class or this character) and the
 -- author, realm, email, website and version fields, plus a read-only list of source citations. It edits the pane's
 -- draft through pane fields (metadataDraft, tagsDirty, scopeDraft, ...) and never saves; Apply writes into the draft

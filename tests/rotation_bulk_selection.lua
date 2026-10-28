@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Bulk selection in the rotation editor: Ctrl/Shift-click and Shift-drag box
 -- selection, then move, duplicate, enable/disable and delete the selected
 -- cards together, each as one undo step. The draft commands behind them

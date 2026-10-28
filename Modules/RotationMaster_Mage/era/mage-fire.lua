@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Mage Fire, levels 10–60, chosen when you have Fire points and none in Frost, or Fire
 -- is your main tree. Pyroblast (else Fireball) opens; Presence of Mind goes into Pyroblast; Improved
 -- Scorch keeps five Fire Vulnerability stacks on targets that will live; Fire Blast and Scorch

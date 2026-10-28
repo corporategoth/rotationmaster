@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared WoW Forever Priest blocks (Built In composition; authoring-time only).
 -- Consumers: rm.forever.priest.dps, rm.forever.priest.dps.mobalytics and rm.forever.priest.healer.
 -- A content change needs a block revision bump, every consumer's pin and revision bumped, and both

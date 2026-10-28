@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Drag-to-bind flow for item sets: lets the player put an item of a set on an action slot so RM can find and light that
 -- button. Owns the pending-bind state (`addon.bindingItemSet`) and the per-character slot list under
 -- `db.char.bindings`; it must not touch secure attributes, replace scripts, or run any of this in combat. Callers are

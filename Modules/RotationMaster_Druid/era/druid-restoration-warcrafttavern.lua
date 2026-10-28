@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Restoration after Warcraft Tavern's damage tiers: no HoT upkeep at low damage.
 -- Nature's Swiftness Healing Touch, Swiftmend under 40%, rank 5 Regrowth under 50%, Rejuvenation and
 -- rank 3 Regrowth under 75%, full Healing Touch on a Nature's Grace proc, rank 3 Healing Touch under
