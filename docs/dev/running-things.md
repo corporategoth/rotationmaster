@@ -20,7 +20,7 @@ touch `core.hooksPath`).
 
 | Command | What it does | Time |
 | --- | --- | --- |
-| `python3 tools/check --static` | Lua 5.1 syntax of every source, the real TOC/XML load graph, vendor hashes, literal localization keys, `locales.py check`, the pinned WoW static analysis against its baseline, Built In names, the freshness of every generated file, the layout of every formatted Lua file (`format_lua.py --check --tree`) and the copyright notice on every source file (`copyright.py --check`) | about 45 s |
+| `python3 tools/check --static` | Lua 5.1 syntax of every source, the real TOC/XML load graph, vendor hashes, literal localization keys, `locales.py check`, the pinned WoW static analysis against its baseline, Built In names, the freshness of every generated file, the layout of every formatted Lua file (`format_lua.py --check --tree`) the copyright notice on every source file (`copyright.py --check`) and the header comment of every named function (`function_comments.py --check`) | about 45 s |
 | `python3 tools/check` | The above plus every behavior suite on Lua 5.1 and LuaJIT and the Python checks; stops at the first failure | minutes |
 | `python3 tools/check_all.py` | The same command list, never stopping at the first failure; prints one line per command and the output of failures | minutes |
 | `python3 tools/check_all.py --runtime lua5.1` (or `luajit`, `python`) | Only the commands that use that runtime (CI runs the three as a matrix) | |
@@ -126,7 +126,7 @@ python3 tools/locales.py check
 | `tools/fast_tests.py` | Suites named after changed Lua files |
 | `tools/format_lua.py`, `tools/bytecode_equal.py`, `tools/readability_report.py` | Reformat Lua without changing what it compiles to, prove a formatting-only commit, report long lines and uncommented functions (`docs/dev/formatting.md`) |
 | `tools/copyright.py` | The copyright notice line and the TOC licence field: `--check`, `--write`, `--list` (`docs/dev/conventions.md`) |
-| `tools/function_comments.py` | List the functions that lack the structured header comment (brief line, `@param` and `@return` lines) or have a malformed one; `--summary`, `--strict`, `--baseline FILE` and `--write-baseline FILE` (`docs/dev/formatting.md`, "Function headers") |
+| `tools/function_comments.py` | `--check` (part of `tools/check --static`; zero violations, no baseline) lists the functions that lack the structured header comment (brief line, `@param` and `@return` lines) or have a malformed one; `--summary`, `--strict`, `--baseline FILE` and `--write-baseline FILE` (`docs/dev/formatting.md`, "Function headers") |
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
 | `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |

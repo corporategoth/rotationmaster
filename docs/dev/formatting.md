@@ -95,7 +95,8 @@ function addon:IsSpellReady(spell, unit)
   `python3 tools/generate_builtin_sources.py --write` (the catalog's line numbers and module hashes move; nothing else
   may).
 
-`python3 tools/function_comments.py` checks all of it: every named function that is not trivial (six or more code lines,
+`python3 tools/function_comments.py --check` checks all of it (`tools/check --static` runs it, so the commit hook and CI
+fail on any violation; there is no baseline file, a new function is documented when it is written): every named function that is not trivial (six or more code lines,
 or parameters or a return value and more than three code lines) must carry a header whose tags match the code, and a
 header that is malformed (missing brief line, a tag without a type and a description, two tags on one line, a header
 behind a blank line, `@param` names that differ from the declaration, a missing or surplus `@return`) is reported. It

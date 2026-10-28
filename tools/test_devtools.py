@@ -1031,6 +1031,22 @@ class FunctionComments(unittest.TestCase):
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(FC.main([str(directory / 'x.lua')]), 2)
 
+    def test_check_runs_in_the_static_gate_without_a_baseline(self):
+        """tools/check --static (the commit hook and CI) runs `function_comments.py --check`, and nothing is baselined."""
+        commands = [command[1:] for command in check_all.collect(static=True)]
+        self.assertIn(['tools/function_comments.py', '--check'], commands)
+        self.assertFalse((TOOLS / 'function_comments-baseline.json').exists())
+
+    def test_check_fails_on_a_violation_and_passes_on_none(self):
+        from unittest import mock
+        violation = FC.Violation('x.lua', 3, 'addon:F', 'missing', 'no structured header comment')
+        with mock.patch.object(FC, 'tree_files', return_value=['x.lua']):
+            with mock.patch.object(FC, 'check_files', return_value=[violation]):
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(FC.main(['--check']), 1)
+            with mock.patch.object(FC, 'check_files', return_value=[]):
+                self.assertEqual(FC.main(['--check']), 0)
+
     def test_the_tree_is_the_formatters_without_the_tests(self):
         files = FC.tree_files()
         self.assertIn('main.lua', files)
