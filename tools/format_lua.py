@@ -4,12 +4,26 @@
   python3 tools/format_lua.py UI/foo.lua              print what would change (a unified diff), write nothing
   python3 tools/format_lua.py --write UI/foo.lua      rewrite the file, after proving it compiles identically
   python3 tools/format_lua.py --write --stdout F      print the formatted text instead of writing it
+  python3 tools/format_lua.py --check F...            list the files whose layout differs (exit 1), write nothing
 
-The layout it produces: one statement per line, four-space indentation, a blank line around every multi-line statement,
-lines wrapped at 120 columns at argument, field and and/or boundaries, a function that is the last argument of a call
-hugging that call (`foo(a, function()` ... `end)`), and single-line guard clauses (`if x then return end`) kept when the
-author wrote them on one line and they are short. Comments are kept in place; a comment inside an expression moves to the
-line above its statement. Strings, numbers and parentheses are never touched.
+The layout it produces: one statement per line, four-space indentation, lines wrapped at 120 columns at argument, field
+and and/or boundaries, and a function that is the last argument of a call hugging that call (`foo(a, function()` ...
+`end)`). Comments are kept in place; a comment inside an expression moves to the line above its statement. Strings,
+numbers and parentheses are never touched.
+
+Blocks are never written on one line. Every `if`, `elseif`, `else`, `for`, `while`, `repeat`, `do` and named `function`
+body goes on its own indented lines, so `if x then return end` becomes `if x then` / `return` / `end`; so does a body
+the author wrote after a `;` (`if x then a(); b() end`). The one exception is an anonymous function whose whole body is
+a single `return`, which the author wrote on one line and which fits: `function(a) return a.x end` stays inline wherever
+it appears (a call argument, a table field, the right side of an assignment). An empty body stays on the head's line
+(`function addon:Noop() end`). A comment the author put after a one-line statement (`if x then y end -- note`) moves to the
+statement's first line (`if x then -- note`).
+
+Blank lines. A blank line surrounds every statement that spans several lines (blocks, long calls and tables), the author's
+own blank lines are kept, and statements are never stacked more than one blank line apart. A guard clause is an `if` with
+one condition, no `else` and a body of one plain statement (`return`, `break`, a call, an assignment or a `local`); two
+guard clauses in a row whose bodies are the same kind of statement are written without a blank line between them, so a
+run of six `if ... then return end` guards is eighteen tight lines.
 
 Safety. Before a file is written, both the original and the result are compiled with `luac5.1 -s` (debug information,
 line numbers and comments stripped) and the two bytecode images must be identical, which means the result is the same
@@ -21,7 +35,8 @@ byte for byte. For a file that has such helpers the formatter reads their first 
 and prints those bodies verbatim; only the line around them is reformatted. The generated binding suffix at the end of a
 Conditions file is never touched either.
 
-Exit status: 0 formatted or already formatted, 1 a file was refused (it did not compile identically), 2 could not run.
+Exit status: 0 formatted or already formatted, 1 a file was refused (it did not compile identically) or, with --check, is
+not laid out as the formatter would, 2 could not run.
 """
 import argparse
 import difflib
@@ -263,6 +278,11 @@ class Parser:
         if self.is_op(';'):
             semicolon = self.advance()
             trail = trail + self.claim_trail(semicolon)
+        if trail and node.line == node.end_line and node.kind in ('if', 'while', 'numfor', 'genfor', 'do', 'repeat'):
+            # `if x then y end -- note` is split over lines: the note goes on the first one.
+            head = node.clauses[0] if node.kind == 'if' else node
+            head.head_trail = head.head_trail + trail
+            trail = []
         node.lead, node.blank_before, node.lead_gap, node.trail = lead, blank, lead_gap, trail
         node.start_index, node.stop_index = start, self.i
         # Comments nobody claimed (inside an expression, between an operator and its operand, ...) are moved above the
@@ -653,10 +673,11 @@ def suffix(s):
     return ('s', s)
 
 
-def gap(previous, following, forced):
+def gap(previous, following, forced, tight=False):
     """The separator between two statements: a line break, plus a blank line when `forced` or when either statement
-    prints on more than one line (decided by the renderer, which knows the real indentation)."""
-    return ('bg', previous, following, forced)
+    prints on more than one line (decided by the renderer, which knows the real indentation). `tight` (two guard clauses
+    of one kind) drops the second reason."""
+    return ('bg', previous, following, forced, tight)
 
 
 def ifbreak(broken, flat_text):
@@ -860,7 +881,7 @@ def render(doc, width=WIDTH, memo=None, gaps=True):
                 newline(ind)
             elif tag == 'bg':
                 newline(ind)
-                if gaps and (d[3] or spans_lines(d[1], width - ind, memo) or spans_lines(d[2], width - ind, memo)):
+                if gaps and (d[3] or (not d[4] and (spans_lines(d[1], width - ind, memo) or spans_lines(d[2], width - ind, memo)))):
                     newline(ind)
             elif tag == 'ib':
                 piece = d[1] if mode == BREAK else d[2]
@@ -1120,14 +1141,14 @@ class Printer:
         return cat(head, *trail, indent(cat(HARD, self.block(body))), HARD, text('end'))
 
     def single_line_body(self, node):
-        """The one statement of a function the author wrote on a single line, when it is a plain statement."""
+        """The `return` of an anonymous function the author wrote on a single line, when that is all it does."""
         body = node.body
         if node.line != node.end_line or len(body.statements) != 1 or body.closing:
             return None
         statement = body.statements[0]
         if statement.lead or statement.trail or statement.hoisted:
             return None
-        if statement.kind not in ('return', 'break', 'callstat', 'assign', 'local'):
+        if statement.kind != 'return':
             return None
         doc = self.statement(statement)
         if self.is_multiline(doc):
@@ -1144,7 +1165,9 @@ class Printer:
         for index, statement in enumerate(statements):
             doc = self.statement(statement)
             if previous is not None:
-                parts.append(gap(previous_doc, doc, statement.blank_before))
+                tight = guard_kind(previous) is not None and guard_kind(previous) == guard_kind(statement) \
+                    and not statement.lead and not statement.hoisted
+                parts.append(gap(previous_doc, doc, statement.blank_before and not tight, tight))
             for comment in statement.hoisted:
                 parts.append(text(comment.text))
                 parts.append(HARD)
@@ -1278,36 +1301,28 @@ class Printer:
             parts.append(self.body(node.else_clause.body))
         parts.append(HARD)
         parts.append(text('end'))
-        full = cat(*parts)
-        single = self.single_line_if(node)
-        if single is not None:
-            return Cond([single, full])
-        return full
-
-    def single_line_if(self, node):
-        """`if x then return end`: kept on one line when the author wrote it that way, it is short and has one plain
-        statement and no else branch."""
-        if node.else_clause is not None or len(node.clauses) != 1:
-            return None
-        clause = node.clauses[0]
-        if node.line != node.end_line or clause.head_trail:
-            return None
-        body = clause.body
-        if len(body.statements) != 1 or body.closing:
-            return None
-        statement = body.statements[0]
-        if statement.lead or statement.trail or statement.hoisted:
-            return None
-        if statement.kind not in ('return', 'break', 'callstat', 'assign', 'local'):
-            return None
-        inner = self.statement(statement)
-        cond = self.expr(clause.cond)
-        if self.is_multiline(inner) or self.is_multiline(cond):
-            return None
-        return cat(text('if '), cond, text(' then '), inner, text(' end'))
+        return cat(*parts)
 
     def chunk(self, block):
         return self.block(block)
+
+
+GUARD_BODIES = ('return', 'break', 'callstat', 'assign', 'local')
+
+
+def guard_kind(statement):
+    """The kind of the one statement a guard clause runs (`return`, `break`, ...), or None when `statement` is not a guard
+    clause: an `if` with a single condition, no `else`, no comment in or on its head and one plain statement inside."""
+    if statement.kind != 'if' or statement.else_clause is not None or len(statement.clauses) != 1:
+        return None
+    clause = statement.clauses[0]
+    body = clause.body
+    if clause.head_trail or len(body.statements) != 1 or body.closing:
+        return None
+    inner = body.statements[0]
+    if inner.lead or inner.trail or inner.hoisted or inner.kind not in GUARD_BODIES:
+        return None
+    return inner.kind
 
 
 def huggable(node):
@@ -1468,7 +1483,7 @@ def same_program(before, after):
     return True, ''
 
 
-def process(path, write, to_stdout, list_only, base=None):
+def process(path, write, to_stdout, list_only, base=None, check=False):
     file = Path(path)
     relative = str(file.resolve().relative_to(ROOT)) if file.resolve().is_relative_to(ROOT) else str(file)
     before = git_show(base, relative) if base else file.read_text(encoding='utf-8')
@@ -1493,9 +1508,12 @@ def process(path, write, to_stdout, list_only, base=None):
         print('REFUSED %s: %s' % (path, error), file=sys.stderr)
         return 1
     if after == (file.read_text(encoding='utf-8') if file.exists() else None):
-        if not list_only:
+        if not list_only and not check:
             print('unchanged %s' % path, file=sys.stderr)
         return 0
+    if check:
+        print('would reformat %s' % path, file=sys.stderr)
+        return 1
     if list_only:
         print(path)
         return 0
@@ -1515,12 +1533,13 @@ def main(argv=None):
     parser.add_argument('files', nargs='+')
     parser.add_argument('--write', action='store_true', help='rewrite the files')
     parser.add_argument('--stdout', action='store_true', help='print the formatted text')
+    parser.add_argument('--check', action='store_true', help='exit 1 when a file is not laid out as the formatter would')
     parser.add_argument('--list', action='store_true', help='only list the files that would change')
     parser.add_argument('--base', metavar='REV', help='read the input (and the helper catalog) from this revision instead of the working tree')
     args = parser.parse_args(argv)
     status = 0
     for path in args.files:
-        status = max(status, process(path, args.write, args.stdout, args.list, args.base))
+        status = max(status, process(path, args.write, args.stdout, args.list, args.base, args.check))
     return status
 
 
