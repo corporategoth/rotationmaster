@@ -5,6 +5,9 @@
   python3 tools/format_lua.py --write UI/foo.lua      rewrite the file, after proving it compiles identically
   python3 tools/format_lua.py --write --stdout F      print the formatted text instead of writing it
   python3 tools/format_lua.py --check F...            list the files whose layout differs (exit 1), write nothing
+  python3 tools/format_lua.py --tree [--write|--check]   every file the formatter owns: all tracked Lua except Libs/,
+                                                      LibsAugment/, Locales/, Assets/, Modules/, tools/vendor/, generated
+                                                      files and the test sources other tests read as text
 
 The layout it produces: one statement per line, four-space indentation, lines wrapped at 120 columns at argument, field
 and and/or boundaries, and a function that is the last argument of a call hugging that call (`foo(a, function()` ...
@@ -50,6 +53,72 @@ ROOT = Path(__file__).resolve().parents[1]
 WIDTH = 120
 INDENT = 4
 GENERATED_BEGIN = '-- BEGIN GENERATED RM SOURCE BINDINGS'
+
+# Files the formatter never touches when it walks the tree (--tree).
+EXEMPT_PREFIXES = ('Libs/', 'LibsAugment/', 'Locales/', 'Assets/', 'Modules/', 'tools/vendor/')
+EXEMPT_FILES = {
+    # Written by a generator.
+    'Data/artwork.lua', 'Data/builtin_sources.lua', 'Data/talent_trees.lua', 'Data/text_bundle_index.lua',
+    'tests/fixtures/client_api.lua', 'tests/fixtures/client_api_era.lua', 'tests/fixtures/client_api_forever.lua',
+    'tests/fixtures/client_api_mists.lua', 'tests/fixtures/client_api_retail.lua', 'tests/fixtures/client_api_tbc.lua',
+    # Golden files and snapshots of earlier source: their text is the point.
+    'tests/fixtures/legacy_rotation_exports.lua', 'tests/fixtures/premade_spec_switches.lua',
+    'tests/fixtures/restore_final_composition.lua', 'tests/fixtures/restore_runtime_plan_runner.lua',
+    'tests/fixtures/removed_builtin_clones.lua', 'tests/fixtures/retail_traits.lua',
+}
+# Test sources that other tests read as text and cut up with string patterns or fixed anchors (tests/startup.lua,
+# tests/fixtures/addon.lua, ...). They keep the dense layout their anchors were written against.
+READ_AS_TEXT_BY_TESTS = {
+    'tests/acquisition_proof_consolidation.lua',
+    'tests/active_runtime_main.lua',
+    'tests/active_runtime_plan.lua',
+    'tests/analytics_capture_controls.lua',
+    'tests/announcement_conditions_events.lua',
+    'tests/announcement_macros.lua',
+    'tests/announcement_series_runtime.lua',
+    'tests/announcement_series_ui.lua',
+    'tests/aura_namespaces.lua',
+    'tests/buttons_namespaces.lua',
+    'tests/cache_mode_lifecycle.lua',
+    'tests/casting_conditions.lua',
+    'tests/condition_editor_ui.lua',
+    'tests/condition_runtime.lua',
+    'tests/condition_subject_help.lua',
+    'tests/cpu.lua',
+    'tests/cpu_native_probe.lua',
+    'tests/cpu_runtime.lua',
+    'tests/custom_authoring_ui.lua',
+    'tests/fixtures/addon.lua',
+    'tests/fixtures/rotation_execution.lua',
+    'tests/fixtures/shaman_starter_pack.lua',
+    'tests/function_data.lua',
+    'tests/functions_ui.lua',
+    'tests/legacy_regressions.lua',
+    'tests/masque_preview.lua',
+    'tests/masque_skin_selection.lua',
+    'tests/memory_boundary_refresh.lua',
+    'tests/nameplate_lifecycle.lua',
+    'tests/platform_analytics_casts.lua',
+    'tests/point_tbc_transport.lua',
+    'tests/rotation_editor_ui.lua',
+    'tests/rotation_import.lua',
+    'tests/rotation_scope_browser_ui.lua',
+    'tests/rotation_scope_runtime.lua',
+    'tests/rotation_scope_transport.lua',
+    'tests/rotation_scope_workspace.lua',
+    'tests/rotation_store_reader.lua',
+    'tests/rotation_validation_adjacent.lua',
+    'tests/rotation_workspace.lua',
+    'tests/runtime_store_native_gate.lua',
+    'tests/schema_repair.lua',
+    'tests/settings_pages.lua',
+    'tests/spell_history_count.lua',
+    'tests/spell_search_ui.lua',
+    'tests/startup.lua',
+    'tests/transfer_subject_help.lua',
+    'tests/workbench_reflow.lua',
+    'tests/zone_text_conditions.lua',
+}
 
 KEYWORDS = {'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not',
             'or', 'repeat', 'return', 'then', 'true', 'until', 'while'}
@@ -1376,26 +1445,41 @@ def frozen_codes(path, revision=None):
             catalog.unlink()
 
 
+_FROZEN_CACHE = {}
+
+
 def read_frozen(catalog, path):
     if not catalog.exists():
         return set()
-    # Helper functions (module bindings) and the callbacks of every condition the module defines: the catalog stores
-    # their text, and saved copies and bundles are compared against it.
+    key = (str(catalog), catalog.stat().st_mtime_ns, catalog.stat().st_size)
+    if key not in _FROZEN_CACHE:
+        _FROZEN_CACHE.clear()
+        _FROZEN_CACHE[key] = read_all_frozen(catalog)
+    return _FROZEN_CACHE[key].get(path, set())
+
+
+def read_all_frozen(catalog):
+    """Per module path, the body texts the catalog records: helper functions (module bindings) and the callbacks of
+    every condition the module defines. Saved copies and bundles are compared against that text."""
     script = (
         "local addon={} local chunk=assert(loadfile(arg[1])) chunk('RotationMaster',addon)\n"
         "local catalog=addon.BuiltinSourceCatalog\n"
-        "local function show(code) if type(code)=='string' then\n"
-        "print((code:gsub('.',function(c) return string.format('%02x',c:byte()) end))) end end\n"
-        "local function callbacks(list) for _,cb in pairs(list or {}) do show(cb.code) end end\n"
-        "local module=catalog and catalog.modules[arg[2]]\n"
-        "if module then for _,b in pairs(module.bindings) do if b.kind=='function' then show(b.code) end end end\n"
-        "for _,c in pairs(catalog and catalog.conditions or {}) do if c.module==arg[2] then callbacks(c.callbacks)\n"
-        "for _,v in pairs(c.variants or {}) do callbacks(v.callbacks) end end end\n")
-    result = subprocess.run(['lua5.1', '-e', 'arg={[1]=%r,[2]=%r}' % (str(catalog), path) + ' ' + script],
-                            capture_output=True, text=True)
+        "local function hex(code) return (code:gsub('.',function(c) return string.format('%02x',c:byte()) end)) end\n"
+        "local function show(path,code) if type(code)=='string' then print(path..' '..hex(code)) end end\n"
+        "local function callbacks(path,list) for _,cb in pairs(list or {}) do show(path,cb.code) end end\n"
+        "for path,module in pairs(catalog and catalog.modules or {}) do\n"
+        "for _,b in pairs(module.bindings) do if b.kind=='function' then show(path,b.code) end end end\n"
+        "for _,c in pairs(catalog and catalog.conditions or {}) do callbacks(c.module,c.callbacks)\n"
+        "for _,v in pairs(c.variants or {}) do callbacks(c.module,v.callbacks) end end\n")
+    result = subprocess.run(['lua5.1', '-e', 'arg={[1]=%r} ' % str(catalog) + script], capture_output=True, text=True)
     if result.returncode != 0:
         raise FormatError('could not read the builtin source catalog: ' + result.stderr.strip())
-    return {bytes.fromhex(line).decode('utf-8') for line in result.stdout.split('\n') if line}
+    found = {}
+    for line in result.stdout.split('\n'):
+        if line:
+            module, code = line.split(' ')
+            found.setdefault(module, set()).add(bytes.fromhex(code).decode('utf-8'))
+    return found
 
 
 def split_generated(src):
@@ -1506,18 +1590,20 @@ def process(path, write, to_stdout, list_only, base=None, check=False):
         after = format_source(before, codes)
         # The layout of the first pass can depend on how the author wrapped things (a table written over several lines
         # stays expanded), so format until the text stops changing, as Prettier effectively does.
-        for _ in range(4):
+        for _ in range(0 if check else 4):
             again = format_source(after, codes)
             if again == after:
                 break
             after = again
         else:
-            raise FormatError('formatting does not settle')
-        if comment_list(before) != comment_list(after):
-            raise FormatError('comments differ after formatting')
-        ok, why = same_program(before, after)
-        if not ok:
-            raise FormatError(why)
+            if not check:
+                raise FormatError('formatting does not settle')
+        if not check:  # --check only compares layout; the proof is for writing
+            if comment_list(before) != comment_list(after):
+                raise FormatError('comments differ after formatting')
+            ok, why = same_program(before, after)
+            if not ok:
+                raise FormatError(why)
     except FormatError as error:
         print('REFUSED %s: %s' % (path, error), file=sys.stderr)
         return 1
@@ -1542,15 +1628,36 @@ def process(path, write, to_stdout, list_only, base=None, check=False):
     return 0
 
 
+def tree_files():
+    """Every Lua file the formatter owns: tracked, not vendored, not generated (listed above, or a first line that says
+    `-- Generated by`), not one of the sources other tests cut up as text."""
+    listing = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '*.lua'], capture_output=True, text=True, check=True)
+    found = []
+    for relative in listing.stdout.splitlines():
+        if relative.startswith(EXEMPT_PREFIXES) or relative in EXEMPT_FILES or relative in READ_AS_TEXT_BY_TESTS:
+            continue
+        with open(ROOT / relative, encoding='utf-8') as handle:
+            head = handle.readline()
+        if head.lower().startswith('-- generated by'):
+            continue
+        found.append(str(ROOT / relative))
+    return found
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('files', nargs='+')
+    parser.add_argument('files', nargs='*')
+    parser.add_argument('--tree', action='store_true', help='all the files the formatter owns (see tree_files)')
     parser.add_argument('--write', action='store_true', help='rewrite the files')
     parser.add_argument('--stdout', action='store_true', help='print the formatted text')
     parser.add_argument('--check', action='store_true', help='exit 1 when a file is not laid out as the formatter would')
     parser.add_argument('--list', action='store_true', help='only list the files that would change')
     parser.add_argument('--base', metavar='REV', help='read the input (and the helper catalog) from this revision instead of the working tree')
     args = parser.parse_args(argv)
+    if args.tree:
+        args.files = args.files + tree_files()
+    if not args.files:
+        parser.error('name files or pass --tree')
     status = 0
     for path in args.files:
         status = max(status, process(path, args.write, args.stdout, args.list, args.base, args.check))

@@ -184,6 +184,24 @@ class CheckMode(unittest.TestCase):
         self.assertEqual(self.run_check("if x then\n    return\nend\n"), 0)
 
 
+class Tree(unittest.TestCase):
+    def test_tree_mode_owns_authored_files_only(self):
+        owned = {str(Path(path).relative_to(ROOT)) for path in format_lua.tree_files()}
+        self.assertIn('main.lua', owned)
+        self.assertIn('Core/rotation_library.lua', owned)
+        self.assertIn('tools/builtin_modules.lua', owned)
+        for exempt in ('Data/builtin_sources.lua', 'tests/startup.lua', 'tests/fixtures/client_api.lua'):
+            self.assertNotIn(exempt, owned)
+        self.assertFalse([path for path in owned if path.startswith(format_lua.EXEMPT_PREFIXES)])
+
+    def test_every_exemption_names_a_tracked_file(self):
+        import subprocess
+        tracked = set(subprocess.run(['git', '-C', str(ROOT), 'ls-files'], capture_output=True, text=True,
+                                     check=True).stdout.splitlines())
+        missing = (format_lua.EXEMPT_FILES | format_lua.READ_AS_TEXT_BY_TESTS) - tracked
+        self.assertEqual(missing, set())
+
+
 class GeneratedRegions(unittest.TestCase):
     def test_a_generated_region_is_kept_byte_for_byte(self):
         region = "-- BEGIN GENERATED X\nlocal t={a=1,b=2}\n-- END GENERATED X"
