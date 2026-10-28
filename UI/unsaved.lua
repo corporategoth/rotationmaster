@@ -7,8 +7,11 @@
 -- UI/drag_presentation.lua.
 local _, addon = ...
 
--- Shows or hides a red border on `control` and records the validation message. Safe on nil; textures are created the
+-- Shows or hides a red border on a control and records the validation message. Safe on nil; textures are created the
 -- first time a control is marked invalid.
+-- @param control table|nil  The control.
+-- @param invalid boolean|nil  True shows the border.
+-- @param message string|nil  The validation message stored on the control while invalid.
 function addon:SetWorkbenchInvalid(control, invalid, message)
     if not control then
         return
@@ -50,8 +53,10 @@ function addon:SetWorkbenchInvalid(control, invalid, message)
     end
 end
 
--- A separate amber rail preserves the meaning of validation/negation borders.
--- Shows or hides the amber unsaved rail on `control` (safe on nil); the texture is created on first use.
+-- Shows or hides the amber unsaved rail on a control (safe on nil); the texture is created on first use. A separate
+-- amber rail preserves the meaning of validation/negation borders.
+-- @param control table|nil  The control.
+-- @param changed boolean|nil  True shows the rail.
 function addon:SetWorkbenchUnsaved(control, changed)
     if not control then
         return
@@ -74,8 +79,9 @@ function addon:SetWorkbenchUnsaved(control, changed)
     end
 end
 
--- Adds RefreshUnsaved to the rotation editor pane and extends its UpdateHistory so every history change also
--- refreshes the markers. Call once after the pane's own UpdateHistory exists.
+-- Adds RefreshUnsaved to the rotation editor pane and extends its UpdateHistory so every history change also refreshes
+-- the markers. Call once after the pane's own UpdateHistory exists.
+-- @param pane table  The rotation editor pane.
 function addon:InstallRotationUnsaved(pane)
     local history = pane.UpdateHistory
 
@@ -206,7 +212,7 @@ function addon:InstallRotationUnsaved(pane)
         end
     end
 
-    -- The pane's original history update followed by an unsaved-marker refresh.
+    -- Runs the pane's original history update followed by an unsaved-marker refresh.
     function pane:UpdateHistory()
         history(self)
         self:RefreshUnsaved()

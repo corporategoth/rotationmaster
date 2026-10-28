@@ -14,12 +14,19 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Helpers
 -- ============================================================================
 
--- Shorthand for a workbench button.
+-- Creates a workbench button; shorthand for addon:CreateWorkbenchButton.
+-- @param parent table  The frame the button is created on.
+-- @param text string  The button label.
+-- @param width number  The button width in points.
+-- @return table  The new button frame.
 local function button(parent, text, width)
     return addon:CreateWorkbenchButton(parent, text, width)
 end
 
--- Creates a left-aligned, non-wrapping font string (small highlight font unless `font` is given).
+-- Creates a left-aligned, non-wrapping font string.
+-- @param parent table  The frame that owns the font string.
+-- @param font string|nil  The font object name; nil means "GameFontHighlightSmall".
+-- @return table  The new font string.
 local function label(parent, font)
     local text = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
     text:SetJustifyH("LEFT")
@@ -30,8 +37,12 @@ end
 -- The smallest size a list row's status line is shrunk to when its kind and priority alone fill the column.
 local STATUS_MIN_SIZE = 8
 
--- True when two rotation references name the same rotation: the same Built In id, or the same stored address
+-- Tells whether two rotation references name the same rotation: the same Built In id, or the same stored address
 -- (scope, class, owner, specialization, id).
+-- @param a table|nil  The first reference ({ kind = 'builtin', id = ... } or { kind, address = {...} }); a non-table
+--   gives false.
+-- @param b table|nil  The second reference, same shape; a non-table gives false.
+-- @return boolean  True when both refer to the same rotation.
 local function sameReference(a, b)
     if type(a) ~= 'table' or type(b) ~= 'table' or a.kind ~= b.kind then
         return false
@@ -56,9 +67,10 @@ end
 -- Browser construction
 -- ============================================================================
 
--- Builds the browser inside `parent`: the frames, controls and click scripts, then the browser methods below. Returns
--- the browser record; call browser:Open(selection) to show it and browser:Release() to retire it. Created once per
--- parent and reused (see addon:CreateRotationBrowser).
+-- Builds the browser inside `parent`: the frames, controls and click scripts, then the browser methods below. Created
+-- once per parent and reused (see addon:CreateRotationBrowser).
+-- @param parent table  The frame that holds the browser.
+-- @return table  The browser record; call browser:Open(selection) to show it and browser:Release() to retire it.
 local function create(parent)
     local frame = addon:TrackWorkbenchSize(CreateFrame("Frame", nil, parent))
     frame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
@@ -192,8 +204,11 @@ local function create(parent)
     empty:SetText(L["No rotations match this search."])
     browser.empty = empty
 
+    -- Called by the scroll frame when its column width changes; resizes the empty-state text and rebinds the visible
+    -- rows.
+    -- @param width number  The new column width in points.
+    --
     -- Rows follow the list column; the scroll bar reserves space only when shown.
-    -- Called by the scroll frame when its column width changes; resizes the empty-state text and rebinds visible rows.
     function list:OnWorkbenchColumnResized(width)
         empty:SetWidth(math.max(40, width - 8))
         browser:RefreshViewport()
@@ -210,6 +225,9 @@ local function create(parent)
     local new = addon:CreateWorkbenchLabeledIconButton(left, "plus", L["New"], 112)
     browser.newButton = new
 
+    -- Starts a new rotation: after the editor's leave prompt, asks for a draft target in the current specialization,
+    -- resets the filters and search, and selects the pending draft. When no draft can be made the editor pane shows the
+    -- reason.
     addon:SetUIScript(new, "OnClick", function()
         if not browser.active then
             return
@@ -243,6 +261,9 @@ local function create(parent)
     local duplicate = addon:CreateWorkbenchLabeledIconButton(left, "copy", L["Duplicate"], 112)
     browser.duplicateButton = duplicate
 
+    -- Duplicates the selected rotation after the editor's leave prompt: through the editor pane's clone action when the
+    -- native editor is open, otherwise by cloning the Built In or duplicating the custom rotation as "Copy of <name>",
+    -- then selects the copy. Does nothing if the browser was closed or the editor was replaced meanwhile.
     addon:SetUIScript(duplicate, "OnClick", function()
         if not browser.active then
             return
@@ -318,7 +339,7 @@ local function create(parent)
     -- ============================================================================
 
     -- Shows the "Recover unassigned rotations" button when the archive has records, or when listing it failed (so the
-    -- player can still reach the diagnostic details).
+    -- player can still reach the diagnostic details); hides it otherwise.
     function browser:RefreshRecovery()
         local rows, why
 
@@ -335,9 +356,10 @@ local function create(parent)
         end
     end
 
-    -- Also the settings-window banner's way in (UI/legacy_archive_banner.lua).
     -- Opens the recovery window after the editor's leave prompt; when a record is adopted the list refreshes, selects
     -- it and refreshes automatic switching and the banner. Does nothing if the browser or profile changed meanwhile.
+    --
+    -- Also the settings-window banner's way in (UI/legacy_archive_banner.lua).
     function browser:OpenRecovery()
         if not browser.active or browser.profile ~= addon.db.profile then
             return
@@ -402,6 +424,7 @@ local function create(parent)
     end
 
     -- Unbinds a pooled row: drops its lease and entry, clears its click script and hides it.
+    -- @param control table  The pooled row button to retire.
     function browser:RetireRow(control)
         control.browserLease = nil
         control.browserEntry = nil
@@ -410,10 +433,15 @@ local function create(parent)
         control:Hide()
     end
 
-    -- Fills a pooled row control from roster `entry` at list position `index`: name, one status line (kind,
-    -- specialization, priority), color and alpha for the state, the tooltip, the "Turn on" button for a Built In the
-    -- player disabled, and the click handler. The handler is bound to a fresh lease and to the serial, revision, spec
-    -- and profile current now, so a click on a row from an earlier list does nothing.
+    -- Fills a pooled row control from a roster entry: name, one status line (kind, specialization, priority), color and
+    -- alpha for the state, the tooltip, the "Turn on" button for a Built In the player disabled, and the click handler.
+    -- @param control table  The pooled row button to fill.
+    -- @param entry table  The roster entry to show (key, name, kind flags, priority, specs, problem, builtinState,
+    --   ...).
+    -- @param index number  The 1-based position of the entry in self.rows; it sets the row's vertical offset.
+    --
+    -- The handler is bound to a fresh lease and to the serial, revision, spec and profile current now, so a click on a
+    -- row from an earlier list does nothing.
     function browser:BindRow(control, entry, index)
         local lease = {}
         local serial, revision, spec, profile = self.serial, self.resultRevision, self.spec, self.profile
@@ -457,7 +485,9 @@ local function create(parent)
             and (entry.priority and string.format(L['Priority %d'], entry.priority) or L['Invalid priority'])
             or nil
 
-        -- Joins kind, the given specialization text and the priority into the row's status line.
+        -- Joins the row's kind, the given specialization text and the priority into the status line.
+        -- @param specPart string|nil  The specialization text to include; nil leaves it out.
+        -- @return string  The parts joined with " · ".
         local function line(specPart)
             local parts = { kind }
 
@@ -634,8 +664,9 @@ local function create(parent)
 
         control.tooltip = #lines > 0 and table.concat(lines, '\n\n') or nil
 
-        -- True while this row's list is still the live one: same serial, profile, specialization and navigation
+        -- Tells whether this row's list is still the live one: same serial, profile, specialization and navigation
         -- state, and the row's key is still listed.
+        -- @return boolean  True when a click on the row may still act.
         local function requestValid()
             return browser.active
                 and browser.serial == serial
@@ -657,6 +688,8 @@ local function create(parent)
             local button = control.enableButton
             button.tooltip = L['Turn this Built In back on for this profile.']
 
+            -- Turns the disabled Built In back on for this profile and refreshes automatic switching and the list;
+            -- ignored when the row is stale.
             addon:SetUIScript(button, 'OnClick', function()
                 if not requestValid() or control.browserLease ~= lease then
                     return
@@ -689,9 +722,9 @@ local function create(parent)
         control:Show()
     end
 
-    -- Binds row controls to the visible slice of the list (plus a margin) and retires the rest, so only a screenful
-    -- of controls exists however many rotations there are. Re-entry and rebuilds in progress are ignored; a failing
-    -- bind retires the half-bound row before the error is re-raised.
+    -- Binds row controls to the visible slice of the list (plus a margin) and retires the rest, so only a screenful of
+    -- controls exists however many rotations there are. Re-entry and rebuilds in progress are ignored; a failing bind
+    -- retires the half-bound row before the error is re-raised.
     function browser:RefreshViewport()
         if
             not self.active or self.profile ~= addon.db.profile or self.rebuilding or self.refreshing or not self.rows
@@ -702,6 +735,8 @@ local function create(parent)
         self.refreshing = true
         local binding
 
+        -- Retires the rows outside the visible range, then binds a pooled (or new) row control for every unbound index
+        -- in it.
         local ok, why = pcall(function()
             local first, last = addon:GetWorkbenchVisibleRowRange(
                 #self.rows,
@@ -771,9 +806,11 @@ local function create(parent)
 
     -- Rebuilds the roster from the rotation library: reads headers (plus other specializations' Defaults under "All"
     -- and pending new rotations), sorts them in automatic-switching order, applies the kind, specialization, tag and
-    -- search filters, then restores the scroll position by anchor row. Bumps resultRevision (and navigationRevision
-    -- when the filter signature changes) so row handlers from the previous list go stale. Updates the counts and
-    -- the Duplicate and Compare buttons.
+    -- search filters, then restores the scroll position by anchor row. Updates the counts and the Duplicate and Compare
+    -- buttons.
+    --
+    -- Bumps resultRevision (and navigationRevision when the filter signature changes) so row handlers from the previous
+    -- list go stale. Ignored while the browser is inactive or the profile changed.
     function browser:RefreshRows()
         if not self.active or self.profile ~= addon.db.profile then
             return
@@ -869,9 +906,14 @@ local function create(parent)
 
         self.allByKey = byKey
 
-        -- The order automatic switching tries them in: by priority (higher
-        -- first), then name, your rotations and Built Ins alike; the fallback,
-        -- the last resort, comes last.
+        -- Orders roster entries the way automatic switching tries them: by priority (higher first), then name, your
+        -- rotations and Built Ins alike; the fallback, the last resort, comes last.
+        -- @param a table  The first roster entry.
+        -- @param b table  The second roster entry.
+        -- @return boolean  True when `a` sorts before `b`.
+        --
+        -- Defaults of different specializations tie-break on the order the specializations are played in, then on the
+        -- key.
         table.sort(all, function(a, b)
             if a.fallback ~= b.fallback then
                 return b.fallback == true
@@ -1020,8 +1062,10 @@ local function create(parent)
         end
     end
 
-    -- Whether a row shows under the specialization filter. The fallback is
-    -- the namespace's own; a pending new rotation always shows.
+    -- Tells whether a row shows under the specialization filter. The fallback is the namespace's own; a pending new
+    -- rotation always shows.
+    -- @param entry table  The roster entry (fallback, pending, specs).
+    -- @return boolean  True when the entry is visible under the current filter value.
     function browser:SpecMatches(entry)
         if self.specValue == 'all' or self.specValue == nil or entry.fallback or entry.pending then
             return true
@@ -1030,8 +1074,10 @@ local function create(parent)
         return addon.RotationData.RotationSpecsMatch(entry.specs, self.specValue)
     end
 
-    -- The namespace a filter value reads (fallback, new rotations): the value
-    -- itself where namespaces are specializations, else the current one.
+    -- Maps a filter value to the namespace that fallback and new rotations read: the value itself where namespaces are
+    -- specializations, else the current namespace (or the first known one).
+    -- @param value number|string|nil  The specialization filter value (a specialization id, 'all' or nil).
+    -- @return number|string|nil  The namespace key; nil when none is known.
     function browser:KeyForSpecValue(value)
         if
             type(value) == 'number'
@@ -1048,8 +1094,8 @@ local function create(parent)
         return addon.currentSpec ~= nil and addon.currentSpec or self.specKeys and self.specKeys[1]
     end
 
-    -- Shows the selected specialization (or "All specializations") on the filter button and the warning when it is
-    -- not the player's current one.
+    -- Shows the selected specialization (or "All specializations") on the filter button and the warning when it is not
+    -- the player's current one.
     function browser:PaintSpecFilter()
         local current = addon:GetCurrentRotationSpecValue()
         local text = L['All specializations']
@@ -1071,8 +1117,9 @@ local function create(parent)
         end
     end
 
-    -- Applies a specialization filter value (a specialization id or 'all'): selects that namespace's rotation when the
-    -- namespace changes, otherwise just refreshes the list.
+    -- Applies a specialization filter value: selects that namespace's rotation when the namespace changes, otherwise
+    -- just refreshes the list. Ignored while the browser is inactive.
+    -- @param value number|string  A specialization id, or 'all'.
     function browser:SetSpecValue(value)
         if not self.active then
             return
@@ -1093,6 +1140,8 @@ local function create(parent)
         list.workbenchBar:SetValue(0)
     end
 
+    -- Opens the specialization menu (every specialization plus "All specializations"); choosing one asks the editor to
+    -- leave and then applies the filter value.
     addon:SetUIScript(specFilter, 'OnClick', function()
         if not browser.active then
             return
@@ -1126,6 +1175,7 @@ local function create(parent)
     end)
 
     -- Sets the tag filter from a list of tags (normalized; ignored if invalid) and refreshes the list.
+    -- @param tags string[]|nil  The tags to filter by; nil means none.
     function browser:SetTags(tags)
         if not self.active then
             return
@@ -1144,13 +1194,15 @@ local function create(parent)
     end
 
     -- Single-tag convenience over SetTags: a string selects it, nil clears the filter.
+    -- @param value string|nil  The tag to select; nil clears the filter. Any other type is ignored.
     function browser:SetTag(value)
         if value == nil or type(value) == 'string' then
             self:SetTags(value and { value } or {})
         end
     end
 
-    -- Sets the kind filter ('all', 'builtin' or 'custom'); other values are ignored.
+    -- Sets the kind filter; other values are ignored.
+    -- @param value string  'all', 'builtin' or 'custom'.
     function browser:SetFilter(value)
         if value ~= "all" and value ~= "builtin" and value ~= "custom" then
             return
@@ -1166,7 +1218,9 @@ local function create(parent)
     -- ============================================================================
 
     -- Runs `callback` once the editor pane agrees to be left (it may prompt about unsaved changes); with no editor it
-    -- runs at once. Returns what the pane returns, or true.
+    -- runs at once.
+    -- @param callback function  Called with no arguments when leaving is approved.
+    -- @return any  What the pane's RequestLeave returns, or true when there is no editor pane.
     function browser:RequestLeave(callback)
         if self.nativeDetails and self.pane and self.pane.RequestLeave then
             return self.pane:RequestLeave(callback)
@@ -1176,9 +1230,9 @@ local function create(parent)
         return true
     end
 
-    -- An untouched new rotation has nothing to keep: leaving it (for another
-    -- rotation, or closing the window) removes it instead of leaving a
-    -- placeholder in the list. One with edits was handled by the leave prompt.
+    -- Discards an untouched new rotation when leaving it (for another rotation, or closing the window) instead of
+    -- leaving a placeholder in the list. One with edits was handled by the leave prompt.
+    -- @param nextKey any  The key about to be selected; a pending rotation with this id is kept.
     function browser:DropUntouchedNew(nextKey)
         local pane = self.pane
         local old = pane and self.nativeDetails and pane.workspace
@@ -1190,10 +1244,15 @@ local function create(parent)
         addon:DiscardPendingRotation(old)
     end
 
-    -- Selects rotation `id` in specialization namespace `spec` and opens it in the editor pane. Unless `approved`, the
-    -- editor's leave prompt runs first and the selection repeats once it agrees. `requestValid`, when given, is the
-    -- caller's staleness check. Falls back to the namespace's fallback rotation, then the first row, when `id` is
-    -- missing; an editor failure is shown in place of the pane. Always ends with a roster refresh.
+    -- Selects a rotation in a specialization namespace and opens it in the editor pane. Unless `approved`, the editor's
+    -- leave prompt runs first and the selection repeats once it agrees. Falls back to the namespace's fallback
+    -- rotation, then the first row, when the id is missing; an editor failure is shown in place of the pane. Always
+    -- ends with a roster refresh.
+    -- @param spec number|string  The specialization namespace key.
+    -- @param id string|table  The rotation id or reference to select.
+    -- @param approved boolean|nil  True when the leave prompt has already been passed.
+    -- @param requestValid function|nil  The caller's staleness check; the selection is dropped when it returns false.
+    -- @return any  The editor pane's RequestLeave result when the leave prompt was started; otherwise nothing.
     function browser:SelectRotation(spec, id, approved, requestValid)
         if not self.active or self.profile ~= addon.db.profile or requestValid and not requestValid() then
             return
@@ -1255,8 +1314,10 @@ local function create(parent)
         local owner = {}
         self.editorOwner = owner
 
-        -- Callback handed to the editor so it can ask the browser to select another rotation; ignored once this
-        -- editor has been replaced.
+        -- Callback handed to the editor so it can ask the browser to select another rotation; ignored once this editor
+        -- has been replaced.
+        -- @param nextSpec number|string  The specialization namespace to select in.
+        -- @param nextId string|table  The rotation id or reference to select.
         local function selected(nextSpec, nextId)
             if self.active and self.editorOwner == owner then
                 self:SelectRotation(nextSpec, nextId)
@@ -1392,11 +1453,14 @@ local function create(parent)
         self:RefreshViewport()
     end
 
-    -- Size setters used by the owning window's layout; the frame's OnSizeChanged runs Layout.
+    -- Sets the browser frame's width; used by the owning window's layout (the frame's OnSizeChanged runs Layout).
+    -- @param value number  The width in points.
     function browser:SetWidth(value)
         frame:SetWidth(value)
     end
 
+    -- Sets the browser frame's height; used by the owning window's layout (the frame's OnSizeChanged runs Layout).
+    -- @param value number  The height in points.
     function browser:SetHeight(value)
         frame:SetHeight(value)
     end
@@ -1426,9 +1490,13 @@ local function create(parent)
         frame:Hide()
     end
 
-    -- (Re)opens the page: resets the filters and search, works out which specialization namespaces the list can
-    -- read, then selects `selection` ({ spec, id }) or the current rotation. The browser is inactive until the
-    -- namespaces are known so no handler runs on half-built state. Returns the browser.
+    -- (Re)opens the page: resets the filters and search, works out which specialization namespaces the list can read,
+    -- then selects the given rotation or the current one.
+    -- @param selection table|nil  { spec = number|string, id = string|table } to select; nil selects the current
+    --   rotation.
+    -- @return table  The browser.
+    --
+    -- The browser is inactive until the namespaces are known so no handler runs on half-built state.
     function browser:Open(selection)
         self.active = false
         self.serial = (self.serial or 0) + 1
@@ -1532,7 +1600,10 @@ end
 -- Entry point
 -- ============================================================================
 
--- Returns the (cached) rotation browser for `parent`, sized to it and opened on `selection` ({ spec, id } or nil).
+-- Returns the (cached) rotation browser for `parent`, sized to it and opened on the given selection.
+-- @param parent table  The frame that holds the browser.
+-- @param selection table|nil  { spec = number|string, id = string|table } to select; nil selects the current rotation.
+-- @return table  The browser record.
 function addon:CreateRotationBrowser(parent, selection)
     local browser = parent.rmRotationBrowser
 

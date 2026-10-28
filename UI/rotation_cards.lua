@@ -27,8 +27,10 @@ local tones = {
 -- red of invalid data. A row on a normal card; an icon when compact or open.
 local SUGGESTION_LIST = 5
 
--- The spells off the bars, as many as read well in a tooltip: the first few
--- by name, then how many more.
+-- Lists the spells that are off the action bars, as many as read well in a tooltip: the first few by name, then how
+-- many more.
+-- @param missing number[]  The spell ids that sit on no action bar.
+-- @return string  The comma-separated names (or ids when a name is unknown), with "and N more" when the list is cut.
 local function suggestionNames(missing)
     local names = {}
 
@@ -50,8 +52,10 @@ local function suggestionNames(missing)
     return text
 end
 
--- The amber row on Blizzard's suggestion card: how many of the spells Blizzard
--- can suggest sit on no action bar (they are skipped when suggested).
+-- Returns the amber row text on Blizzard's suggestion card: how many of the spells Blizzard can suggest sit on no
+-- action bar (they are skipped when suggested).
+-- @param missing table  The spell ids that sit on no action bar; only its length is used.
+-- @return string  The localized sentence.
 function addon:DescribeSuggestionGap(missing)
     if #missing == 1 then
         return L["1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it."]
@@ -65,6 +69,9 @@ end
 
 -- Returns the tooltip for the card's not-on-your-bars warning: the missing-spell list for Blizzard's suggestion,
 -- otherwise the cooldown or step wording.
+-- @param model table  The card model; model.unbound must be set (with .missing for Blizzard's suggestion) and
+--   model.section tells a cooldown from a step.
+-- @return string  The localized tooltip text.
 local function unboundTooltip(model)
     local unbound = model.unbound
 
@@ -96,6 +103,7 @@ addon.StepArtwork = addon.StepArtwork or {
 
 -- Returns the icon of the Single-Button Assistant spell as the client reports it, or nil on a client without that
 -- spell, so the caller keeps its fallback icon.
+-- @return number|string|nil  The icon id or texture path; nil when the client has no such spell.
 function addon:GetAssistedStepIcon()
     local platform = self.Platform
 
@@ -111,8 +119,11 @@ function addon:GetAssistedStepIcon()
     end
 end
 
--- The icon a rotation card shows for a step; fallback is what it showed
--- before (the spell's icon, else its condition's).
+-- Returns the icon a rotation card shows for a step. A Stop step wears its shipped artwork, Blizzard's suggestion the
+-- assistant spell's icon; every other step (and any missing artwork) keeps the fallback.
+-- @param step table|nil  The rotation step ({ type = 'spell'|'pet'|'any'|'item'|'branch'|'stop'|'assisted', ... }).
+-- @param fallback number|string|nil  What the card showed before (the spell's icon, else its condition's).
+-- @return number|string|nil  The icon id or texture path to draw; the fallback when the step has no icon of its own.
 function addon:GetStepIcon(step, fallback)
     if type(step) ~= 'table' then
         return fallback
@@ -145,13 +156,18 @@ local LIVE_COLORS = {
     unavailable = { .55, .55, .55, .55 },
 }
 
--- Returns the stripe color `{r, g, b, a}` for a live status; an unknown status reads as unavailable.
+-- Returns the stripe color for a live status; an unknown status reads as unavailable.
+-- @param status string|nil  'satisfied', 'unsatisfied' or 'unavailable'.
+-- @return table  The color { r, g, b, a }.
 function addon:LiveStatusColor(status)
     return LIVE_COLORS[status] or LIVE_COLORS.unavailable
 end
 
--- The headline ("Currently Matches"...) and the details that follow the
--- field's own tooltip text.
+-- Builds the headline ("Currently Matches"...) and the details that follow the field's own tooltip text.
+-- @param state table  The live state ({ status = 'satisfied'|'unsatisfied'|..., reason, chosen, at }); it must be a
+--   table.
+-- @return string  The localized headline.
+-- @return string[]  The detail lines (what was chosen, how many seconds ago it was checked); may be empty.
 function addon:DescribeLiveStatus(state)
     local headline
 
@@ -177,8 +193,11 @@ function addon:DescribeLiveStatus(state)
     return headline, details
 end
 
--- A condition field's tooltip: the live headline on its own line, coloured
--- like the bar, then the field's text, then when it was checked.
+-- Shows a condition field's tooltip: the live headline on its own line, coloured like the bar, then the field's text,
+-- then when it was checked. Without a live state only the text is shown. Does nothing when GameTooltip is missing.
+-- @param owner table  The frame the tooltip anchors to.
+-- @param text string|nil  The field's own tooltip text.
+-- @param state table|nil  The live state (see DescribeLiveStatus); nil for a plain tooltip.
 function addon:ShowConditionFieldTooltip(owner, text, state)
     if not GameTooltip then
         return
@@ -208,6 +227,8 @@ end
 
 -- Creates the 3 pixel live stripe inside the left edge of `field`; `bar:SetState(state)` colors it or hides it when
 -- there is no state. The stripe takes no layout space.
+-- @param field table  The condition field frame the stripe sits in.
+-- @return table  The stripe texture, initially hidden.
 function addon:CreateLiveStatusBar(field)
     local bar = field:CreateTexture(nil, 'OVERLAY')
     bar:SetPoint('TOPLEFT', field, 'TOPLEFT', 0, 0)
@@ -215,6 +236,7 @@ function addon:CreateLiveStatusBar(field)
     bar:SetWidth(3)
 
     -- Colors and shows the stripe for a live state, or hides it when the state is nil.
+    -- @param state table|nil  The live state ({ status = ... }); anything but a table hides the stripe.
     function bar:SetState(state)
         self.state = state
 
@@ -238,6 +260,9 @@ end
 
 -- Builds one pooled rotation card frame on `parent` with all of its controls and returns the card object. Nothing is
 -- placed or filled here: `card:Place(model)` does that for each use and `card:Release()` undoes it.
+-- @param parent table  The frame the card is created on (also the anchor for Place).
+-- @return table  The card object ({ frame, controls, Place, SetSelected, PlaceUnbound, SetLive, SetValidation, Release
+--   }).
 function addon:CreateRotationCard(parent)
     local card = { frame = CreateFrame('Frame', nil, parent), controls = {} }
     local frame = card.frame
@@ -313,8 +338,10 @@ function addon:CreateRotationCard(parent)
     card.liveBar = self:CreateLiveStatusBar(card.condition)
 
     -- Positions and fills the card from a layout model: title, action and condition text, icon, pills, which controls
-    -- show in the normal, compact or expanded layout, and the glow preview on cooldown cards. `readOnly` disables every
-    -- control but Help. Safe to call again on a pooled card; it recomputes everything from the model.
+    -- show in the normal, compact or expanded layout, and the glow preview on cooldown cards. Safe to call again on a
+    -- pooled card; it recomputes everything from the model.
+    -- @param model table  The layout model (x, y, width, height, step, compact, expanded, unbound, live, ...).
+    -- @param readOnly boolean|nil  True disables every control but Help.
     function card:Place(model, readOnly)
         self.model = model
         frame:ClearAllPoints()
@@ -533,7 +560,9 @@ function addon:CreateRotationCard(parent)
         frame:Show()
     end
 
-    -- A selected card wears a gold outline over its border.
+    -- Draws or removes the gold outline a selected card wears over its border (the edge textures are created on first
+    -- use).
+    -- @param selected boolean|nil  True selects the card; anything else clears it.
     function card:SetSelected(selected)
         if selected and not self.selection then
             self.selection = {}
@@ -573,6 +602,10 @@ function addon:CreateRotationCard(parent)
     -- Shows the not-on-your-bars warning for the card, or hides it. A normal card gets a text row under the action; a
     -- compact or open card gets an icon beside the title (and the title is narrowed to make room), with the text in the
     -- tooltip.
+    -- @param model table  The layout model; unbound, step, section, width and compact are read.
+    -- @param row boolean  True for a normal card (text row), false for an icon beside the title.
+    -- @param pillWidth number  The width of the enable pill, which the icon is placed clear of.
+    -- @param branch boolean  True for a Branch card, which never shows the warning.
     function card:PlaceUnbound(model, row, pillWidth, branch)
         local warning = self.unbound
 
@@ -607,6 +640,7 @@ function addon:CreateRotationCard(parent)
     end
 
     -- Stores a new live state and repaints the stripe, without a full re-place of the card.
+    -- @param state table|nil  The live state; nil hides the stripe.
     function card:SetLive(state)
         if self.model then
             self.model.live = state
@@ -617,6 +651,7 @@ function addon:CreateRotationCard(parent)
 
     -- Colors the card border: red for invalid data, amber when no action button holds its action, else the model's own
     -- border tone.
+    -- @param invalid boolean|nil  True when the step has invalid data.
     function card:SetValidation(invalid)
         self.model.invalid = invalid
 

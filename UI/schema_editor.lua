@@ -9,10 +9,16 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Opens the schema editor for `owner` on a draft of `fields` (with `fieldOrder` and `requiredFields`). `changed(value,
--- order, required)` receives the schema on Apply; `ownerValid()` says the owner is still open, and the editor closes
--- itself when it is not. `resume` restores a captured draft (see `d:CaptureDraft`) so the window can be rebuilt without
--- losing edits. Returns the window, or nil when the draft cannot be built.
+-- Opens the schema editor for `owner` on a draft of `fields`. The editor closes itself when the owner is no longer
+-- open.
+-- @param owner table  The condition editor that owns the window (the window is cached as owner.schemaEditor).
+-- @param fields table  The field schema to edit.
+-- @param fieldOrder table  The order of the fields.
+-- @param changed function  Called as changed(value, order, required) with the schema on Apply.
+-- @param ownerValid function  Says the owner is still open.
+-- @param resume table|nil  A captured draft (see `d:CaptureDraft`) so the window can be rebuilt without losing edits.
+-- @param requiredFields table|nil  The required root fields.
+-- @return table|nil  The window; nil when the draft cannot be built.
 function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerValid, resume, requiredFields)
     local d = owner.schemaEditor
 
@@ -63,6 +69,7 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
 
     -- Captures everything needed to rebuild the window after a redraw: the draft model, path, baseline, folded cards,
     -- unsaved text by field, focused field with cursor, and scroll position.
+    -- @return table  The captured draft ({ model, path, baseline, raw, focus, scroll, requiresApply, folded }).
     function d:CaptureDraft()
         local raw, focus = {}, nil
 
@@ -93,7 +100,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         }
     end
 
-    -- True while this opening of the window is the live one and its owner is still open; every callback checks it.
+    -- Tells whether this opening of the window is the live one and its owner is still open; every callback checks it.
+    -- @return boolean  True while the callbacks may act.
     local function valid()
         return d.active and d.serial == serial and ownerValid()
     end
@@ -114,7 +122,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         end
     end
 
-    -- True when the draft differs from its baseline, needs Apply to correct required fields, or has unsaved text.
+    -- Tells whether the draft differs from its baseline, needs Apply to correct required fields, or has unsaved text.
+    -- @return boolean  True when there is something to apply.
     function d:IsDirty()
         local dirty = self.requiresApply or addon:GetFieldSchemaIndex(d.model, baseline).dirty
 
@@ -125,7 +134,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         return dirty
     end
 
-    -- Close request (the X button): closes at once when clean, otherwise asks whether to apply or discard first.
+    -- Handles the close request (the X button): closes at once when clean, otherwise asks whether to apply or discard
+    -- first.
     function d:Hide()
         local dirty = self:IsDirty()
 
@@ -168,8 +178,8 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         end
     end
 
-    -- Flushes pending text, validates the draft snapshot and passes it to `changed`; closes on success. Returns false
-    -- with a message when the schema is invalid.
+    -- Flushes pending text, validates the draft snapshot and passes it to `changed`; closes on success.
+    -- @return boolean  True when the schema was applied; false (with a message) when it is invalid or stale.
     function d:Apply()
         if not valid() or not p:FlushEdits() then
             return false

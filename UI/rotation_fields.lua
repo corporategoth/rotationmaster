@@ -28,18 +28,23 @@ function addon:HasAssistedCombatAPI()
     return ok and type(availability) == 'table' and availability.reason ~= 'missing-api'
 end
 
--- Parses pending text for a field key into a patch `{ set = {...}, unset = {...} }`, or returns nil when the text is
--- not valid for that key (a non-finite number, a magnification of 0 or less, a color that is not four 0..1 channels).
--- Empty text unsets the field. The nil result is what marks a field red and blocks Apply.
+-- Parses pending text for a field key into a patch. Empty text unsets the field. The nil result is what marks a field
+-- red and blocks Apply.
+-- @param key string  The field key ('name', 'items', 'sound', 'magnification', 'xoffs', 'yoffs' or 'color').
+-- @param value string  The pending text.
+-- @return table|nil  The patch { set = {...}, unset = {...} }; nil when the text is not valid for that key (a
+--   non-finite number, a magnification of 0 or less, a color that is not four 0..1 channels) or the key is unknown.
 local function parsedText(key, value)
     local patch = { set = {}, unset = {} }
 
     -- Queues a field name to be cleared by the patch.
+    -- @param field string  The step field to clear.
     local function unset(field)
         patch.unset[#patch.unset + 1] = field
     end
 
-    -- Parses the text as a finite number, or returns nil/false.
+    -- Parses the pending text as a finite number.
+    -- @return number|nil|boolean  The number; nil or false when the text is not a finite number.
     local function number()
         local n = tonumber(value)
         return n and n == n and n > -math.huge and n < math.huge and n
@@ -114,17 +119,28 @@ end
 -- Pending text on the editor pane
 -- ============================================================================
 
--- Adds the pending-field methods to the rotation editor pane `pane` (called once when the pane is built).
+-- Adds the pending-field methods to the rotation editor pane (called once when the pane is built).
+-- @param pane table  The rotation editor pane.
 function addon:InstallRotationFieldDrafts(pane)
-    -- Returns the pending text for a step field, or `fallback` as a string when nothing is pending.
+    -- Returns the pending text for a step field, or the fallback as a string when nothing is pending.
+    -- @param id string  The step id.
+    -- @param key string  The field key.
+    -- @param fallback any  The value shown when nothing is pending; nil gives ''.
+    -- @return string  The text.
     function pane:FieldText(id, key, fallback)
         local fields = self.view.pendingFields or {}
         local record = fields[id] and fields[id][key]
         return record and record.text or tostring(fallback or '')
     end
 
-    -- Records typed text for a step field, or forgets it when it equals the saved `baseline` again. Refreshes history
-    -- and validation, and returns whether the text currently parses. Ignored while the pane is closed or read-only.
+    -- Records typed text for a step field, or forgets it when it equals the saved baseline again. Refreshes history and
+    -- validation. Ignored while the pane is closed or read-only.
+    -- @param id string  The step id.
+    -- @param key string  The field key.
+    -- @param value string  The typed text.
+    -- @param baseline any  The saved value; text equal to it is not pending.
+    -- @param label string|nil  The name used when reporting the field as a problem; defaults to the key.
+    -- @return boolean|nil  True when the text currently parses; nil when ignored.
     function pane:StageField(id, key, value, baseline, label)
         if not self.active or self.workspace.readOnly then
             return
@@ -145,7 +161,9 @@ function addon:InstallRotationFieldDrafts(pane)
         return parsedText(key, value) ~= nil
     end
 
-    -- Returns the label of the first pending field of step `id` that does not parse, or nil.
+    -- Returns the label of the first pending field of a step that does not parse.
+    -- @param id string  The step id.
+    -- @return string|nil  The field label; nil when every pending field parses.
     function pane:PendingFieldProblem(id)
         local fields = self.view.pendingFields or {}
 
@@ -156,8 +174,9 @@ function addon:InstallRotationFieldDrafts(pane)
         end
     end
 
-    -- True when any step still in the rotation has pending text that does not parse (pending text of deleted steps is
-    -- ignored).
+    -- Tells whether any step still in the rotation has pending text that does not parse (pending text of deleted steps
+    -- is ignored).
+    -- @return boolean  True when there is invalid pending text.
     function pane:HasInvalidPendingFields()
         local tree = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
 
@@ -170,8 +189,10 @@ function addon:InstallRotationFieldDrafts(pane)
         return false
     end
 
-    -- Applies the parsable pending text to the review `snapshot` so the Apply review shows its effect, and appends an
+    -- Applies the parsable pending text to the review snapshot so the Apply review shows its effect, and appends an
     -- entry to `pending` for every field that does not parse.
+    -- @param snapshot table  The review copy of the rotation body; modified in place.
+    -- @param pending table  A list that receives { label, before, after } for each unparsable field.
     function pane:ReviewPendingFields(snapshot, pending)
         local tree = addon.RotationData.IndexRotationSteps(snapshot)
 
@@ -202,7 +223,8 @@ function addon:InstallRotationFieldDrafts(pane)
         end
     end
 
-    -- True when any step still in the rotation has staged text.
+    -- Tells whether any step still in the rotation has staged text.
+    -- @return boolean  True when there is staged text.
     function pane:HasPendingFields()
         local tree = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
 
@@ -220,9 +242,11 @@ function addon:InstallRotationFieldDrafts(pane)
         self.view.pendingFields = {}
     end
 
-    -- Commits all staged text as one `PatchStep` per step, in step id order so the result is deterministic. Returns
-    -- true, or nil and a reason: the first unparsable field, or the workspace's refusal. Steps already committed stay
-    -- committed.
+    -- Commits all staged text as one `PatchStep` per step, in step id order so the result is deterministic. Steps
+    -- already committed stay committed.
+    -- @return boolean|nil  True when everything was committed; nil when a field did not parse or the workspace refused.
+    -- @return string|nil  The first unparsable field's message, or the workspace's refusal, when the first value is
+    --   nil.
     function pane:FlushFieldEdits()
         local tree = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
         local edits = {}
@@ -273,11 +297,15 @@ end
 -- Card detail fields
 -- ============================================================================
 
--- Native leaf controls and reference inputs share RM ownership. Every callback
--- commits a detached atomic patch.
--- Builds the detail fields for `model.step` inside `card.fields`; `alive()` says the card is still the current one.
--- Records the needed height in `owner.view.detailsHeights` and installs `card.releaseFields`, which hides the controls
--- and releases the widgets this call created.
+-- Builds the detail fields for a card's step inside `card.fields`. Records the needed height in
+-- `owner.view.detailsHeights` and installs `card.releaseFields`, which hides the controls and releases the widgets this
+-- call created.
+-- @param owner table  The rotation editor pane.
+-- @param card table  The card control.
+-- @param model table  The card model (model.step, model.section and model.width are used).
+-- @param alive function  Says the card is still the current one.
+--
+-- Native leaf controls and reference inputs share RM ownership. Every callback commits a detached atomic patch.
 function addon:BuildRotationCardFields(owner, card, model, alive)
     local step = model.step
     local readOnly = owner.workspace.readOnly
@@ -292,6 +320,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
 
     -- Returns the next pooled control of `kind` for this card (building it on first use) and shows it. The pool
     -- survives redraws so a card does not create new frames every time it opens.
+    -- @param kind string  The pool name: 'labels', 'inputs', 'choices', 'flags' or 'extras'.
+    -- @param build function  Creates a control when the pool has none at that position.
+    -- @return table  The control.
     local function acquire(kind, build)
         counts[kind] = counts[kind] + 1
         local index = counts[kind]
@@ -309,13 +340,17 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     local valueX = 108
     local valueWidth = math.max(80, fieldWidth - valueX)
 
-    -- True while the card is still current and the workspace is editable; every callback checks it first.
+    -- Tells whether the card is still current and the workspace is editable; every callback checks it first.
+    -- @return boolean  True when a callback may change the rotation.
     local function active()
         return alive() and not readOnly
     end
 
-    -- Sends one `PatchStep` for this step: `set` fields to write and `unset` field names to clear. Does nothing when
-    -- stale or read-only.
+    -- Sends one `PatchStep` for this step. Does nothing when stale or read-only.
+    -- @param set table|nil  The fields to write.
+    -- @param unset string[]|nil  The field names to clear.
+    -- @return any  What owner:Command returns (true and its result, or nil and a reason); nothing when stale or
+    --   read-only.
     local function patch(set, unset)
         if active() then
             return owner:Command('PatchStep', model.id, { set = set or {}, unset = unset or {} })
@@ -323,6 +358,8 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     end
 
     -- Places a wrapped caption at the current row `y` and returns it so the control beside it can take the row height.
+    -- @param caption string  The caption text.
+    -- @return table  The font string.
     local function label(caption)
         local text = acquire('labels', function()
             return frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
@@ -342,7 +379,13 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     end
 
     -- Adds a labeled text box staged through `owner:StageField`; text that does not parse turns red. Enter flushes all
-    -- staged fields and redraws, Escape just drops focus. `commit` is not used here: staging goes through the owner.
+    -- staged fields and redraws, Escape just drops focus.
+    -- @param key string  The pending-field key (also the name the control is stored under).
+    -- @param caption string  The row label and the name reported when the text is invalid.
+    -- @param value any  The saved value, shown when nothing is pending.
+    -- @param commit any  Unused: staging goes through the owner.
+    -- @param hideLabel boolean|nil  True leaves the row label blank.
+    -- @return table  The edit box.
     local function input(key, caption, value, commit, hideLabel)
         local rowLabel = label(hideLabel and '' or caption)
         local control = acquire('inputs', function() return addon:CreateWorkbenchEditBox(frame) end)
@@ -361,6 +404,7 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         y = y + rowHeight + 4
 
         -- Colors the box red while its text does not parse for this key.
+        -- @param field table  The edit box.
         local function mark(field)
             local valid = parsedText(key, field:GetText()) ~= nil
             field:SetTextColor(1, valid and 1 or .35, valid and 1 or .35)
@@ -408,8 +452,14 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         return control
     end
 
-    -- Adds a button that opens the shared selector over `entries` (`{value, text}`) and calls `commit(value)` only when
-    -- the choice changed.
+    -- Adds a button that opens the shared selector over `entries` and calls `commit(value)` only when the choice
+    -- changed.
+    -- @param key string  The name the button is stored under.
+    -- @param caption string|nil  The row label; nil makes the button span the whole width.
+    -- @param entries table[]  The choices, each { value, text }.
+    -- @param selected any  The value that is currently chosen.
+    -- @param commit function  Called with the chosen value.
+    -- @return table  The button.
     local function choice(key, caption, entries, selected, commit)
         local rowLabel = caption and label(caption)
         local button = acquire('choices', function() return addon:CreateWorkbenchButton(frame, '', fieldWidth) end)
@@ -442,6 +492,8 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         wrapper:Hide()
         menus[#menus + 1] = wrapper
 
+        -- Opens (or closes) the selector menu over the entries; a pick that differs from the current value is passed to
+        -- commit.
         addon:SetUIScript(button, 'OnClick', function()
             if not active() then
                 return
@@ -474,6 +526,11 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     end
 
     -- Adds a checkbox that calls `commit(not value)` when clicked.
+    -- @param key string  The name the checkbox is stored under.
+    -- @param caption string  The checkbox text.
+    -- @param value boolean|nil  The current state.
+    -- @param commit function  Called with the new state.
+    -- @return table  The checkbox.
     local function flag(key, caption, value, commit)
         local control = acquire('flags', function() return addon:CreateWorkbenchCheckBox(frame, '', fieldWidth) end)
         control:ClearAllPoints()
@@ -715,6 +772,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
                 field:SetLabel('')
                 field:SetText(item or '')
 
+                -- Commits the edited item box: a valid item id replaces (or appends) that entry of the list, an empty
+                -- box removes it.
+                -- @param value string  The text entered.
                 field:SetCallback('OnEnterPressed', function(_, _, value)
                     if not active() then
                         return
@@ -789,6 +849,8 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
 
     owner.view.detailsHeights[model.id] = math.max(24, y + 8)
 
+    -- Hides the controls and releases the widgets this call created, and clears the scripts left on the pooled inputs
+    -- so a reused card cannot call back into the previous step.
     card.releaseFields = function()
         card.RefreshHighlightPreview = nil
 

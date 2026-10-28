@@ -20,6 +20,10 @@ local definitions = {
 }
 
 -- Creates a wrapped, left-aligned caption at the given y inside parent.
+-- @param parent table  The frame that owns the font string.
+-- @param value string  The caption text.
+-- @param y number  The distance below the top of the parent (positive down).
+-- @return table  The font string.
 local function label(parent, value, y)
     local text = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     text:SetPoint('TOPLEFT', 8, -y)
@@ -30,8 +34,11 @@ local function label(parent, value, y)
     return text
 end
 
--- Builds the window once for pane and stores it as pane.metadataWindow. The pane's description edit box and tags field
--- are re-parented into this window, so the pane keeps one set of controls and the window only decides where they show.
+-- Builds the metadata window once for a pane and stores it as pane.metadataWindow. The pane's description edit box and
+-- tags field are re-parented into this window, so the pane keeps one set of controls and the window only decides where
+-- they show.
+-- @param pane table  The rotation editor pane.
+--
 -- The dialog table follows the window interface (Valid, Open, Close, Hide) that addon:OpenPopup and HideOnEscape use.
 function addon:InstallRotationMetadata(pane)
     local dialog = { fields = {}, labels = {} }
@@ -99,6 +106,9 @@ function addon:InstallRotationMetadata(pane)
         descriptionScroll:UpdateWorkbenchScroll()
     end)
 
+    -- Keeps the text cursor in view: scrolls the description box so the line being typed stays visible.
+    -- @param y number  The cursor's y offset within the box (negative down).
+    -- @param height number  The cursor's line height.
     addon:SetUIScript(pane.description, 'OnCursorChanged', function(_, _, y, _, height)
         if not dialog:Valid() then
             return
@@ -123,7 +133,10 @@ function addon:InstallRotationMetadata(pane)
         bar:SetValue(bar:GetValue() - delta * 40)
     end)
 
-    -- Right-click anywhere in the window cancels it; a left click on the description area focuses the editable box.
+    -- Handles a mouse release in the window body: right-click anywhere cancels the window; a left click on the
+    -- description area focuses the editable box.
+    -- @param _ table|nil  Unused (the frame that received the click).
+    -- @param button string  The mouse button that was released.
     local function bodyMouseUp(_, button)
         if not dialog:Valid() then
             return
@@ -188,7 +201,8 @@ function addon:InstallRotationMetadata(pane)
     dialog.scope:SetPoint('TOPLEFT', 116, -140)
     dialog.scopeMenu = addon:CreateWorkbenchSelector()
 
-    -- True when the rotation can be re-scoped: it is editable and its workspace can name its stored target.
+    -- Tells whether the rotation can be re-scoped: it is editable and its workspace can name its stored target.
+    -- @return boolean  True when the scope row applies.
     function dialog:HasOwnership()
         return not pane.workspace.readOnly and type(pane.workspace.TargetReference) == 'function'
     end
@@ -237,6 +251,7 @@ function addon:InstallRotationMetadata(pane)
     dialog.help:SetSize(20, 20)
     dialog.help.icon:SetSize(16, 16)
 
+    -- Opens the metadata Help window (description and attribution, and what Applies to means).
     addon:SetUIScript(dialog.help, 'OnClick', function()
         if dialog:Valid() and addon.ShowWorkbenchHelp then
             addon:ShowWorkbenchHelp(
@@ -273,14 +288,18 @@ function addon:InstallRotationMetadata(pane)
     scroll:EnableMouse(true)
 
     -- Positions every row for the current state (the scope row exists only with ownership; the tag chips change
-    -- height), shows or hides the source list for sourceText and resizes the scroll area and window to fit.
+    -- height), shows or hides the source list for the given text and resizes the scroll area and window to fit.
+    -- @param sourceText string  The citation text to show; '' hides the Sources section.
     function dialog:Layout(sourceText)
         self.sourceText = sourceText
         local tagsY = self:HasOwnership() and 170 or 140
         local metadataY = tagsY + (self.tagPicker.height or 24) + 6
         local sourceY = metadataY + #definitions * 30 + 6
 
-        -- Anchors control at (x, y) below the top-left of the scroll content.
+        -- Anchors a control at (x, y) below the top-left of the scroll content.
+        -- @param control table  The control to place.
+        -- @param x number  The left offset.
+        -- @param y number  The distance below the top (positive down).
         local function place(control, x, y)
             control:ClearAllPoints()
             control:SetPoint('TOPLEFT', x, -y)
@@ -336,7 +355,8 @@ function addon:InstallRotationMetadata(pane)
         descriptionScroll:UpdateWorkbenchScroll()
     end
 
-    -- True only while the window is open for the pane's current workspace and generation; every callback checks it.
+    -- Tells whether the window is open for the pane's current workspace and generation; every callback checks it.
+    -- @return boolean  True while the window's callbacks may act.
     function dialog:Valid()
         return pane.active
             and self.workspace == pane.workspace
@@ -414,7 +434,8 @@ function addon:InstallRotationMetadata(pane)
         pane:UpdateHistory()
     end
 
-    -- Hides the window. keep true keeps the edits (Apply); otherwise the opening values are restored first.
+    -- Hides the window.
+    -- @param keep boolean|nil  True keeps the edits (Apply); otherwise the opening values are restored first.
     function dialog:Close(keep)
         if not keep then
             self:Restore()
@@ -460,6 +481,7 @@ function addon:InstallRotationMetadata(pane)
 
         -- Collects unique citation entries (title and URL) from a manifest into lines. Spell and item database links
         -- are left out; they are references to game data, not sources of the rotation.
+        -- @param manifest table|nil  The manifest ({ sources = { { title, url }, ... } }); anything else is ignored.
         local function sources(manifest)
             if type(manifest) ~= 'table' then
                 return
@@ -538,12 +560,15 @@ function addon:InstallRotationMetadata(pane)
         local token = self.openToken
         local owner = self.workspace
 
-        -- True only for this open of the window and this workspace; a reopen or workspace switch retires older
-        -- callbacks.
+        -- Tells whether this is still the current open of the window for this workspace; a reopen or workspace switch
+        -- retires older callbacks.
+        -- @return boolean  True while the callbacks of this open may act.
         local function valid()
             return self:Valid() and token == self.openToken and owner == self.workspace
         end
 
+        -- Opens the scope menu (Class or This character); choosing one stores it as the scope draft and marks it dirty
+        -- when it differs from the saved scope.
         addon:SetUIScript(self.scope, 'OnClick', function()
             if not valid() or not self:HasOwnership() then
                 return
@@ -641,7 +666,7 @@ function addon:InstallRotationMetadata(pane)
             end
         end)
 
-        -- Cancel and Close both discard the edits made since the window opened.
+        -- Discards the edits made since the window opened; used by both Cancel and Close.
         local function cancel()
             if not valid() then
                 return
@@ -675,7 +700,7 @@ function addon:InstallRotationMetadata(pane)
         end
     end)
 
-    -- Window-registry hook: hiding the window by Escape or the registry counts as Cancel.
+    -- Hides the window by Escape or the window registry, which counts as Cancel.
     function dialog:Hide()
         self:Close(false)
     end

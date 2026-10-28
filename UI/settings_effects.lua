@@ -58,8 +58,9 @@ local schemas = {
     rotate = { { 'frequency', 'Frequency', .25, .1, 5, .05 }, { 'steps', 'Steps', 4, 2, 36, 1 } },
 }
 
--- Fills missing or out-of-range numeric settings of `effect` with their defaults and gives sequence types an empty
+-- Fills missing or out-of-range numeric settings of an effect with their defaults and gives sequence types an empty
 -- list.
+-- @param effect table  The effect definition; modified in place.
 local function defaults(effect)
     for _, entry in ipairs(schemas[effect.type] or {}) do
         local v = effect[entry[1]]
@@ -74,8 +75,11 @@ local function defaults(effect)
     end
 end
 
--- True when `effect` is a well-formed definition: named, of a known type, numeric settings in range, and a sequence of
--- at most 256 entries in the shape its type needs. Used for new, imported and loaded effects, so it must stay strict.
+-- Tells whether an effect is a well-formed definition: named, of a known type, numeric settings in range, and a
+-- sequence of at most 256 entries in the shape its type needs. Used for new, imported and loaded effects, so it must
+-- stay strict.
+-- @param effect any  The value to test.
+-- @return boolean  True when the definition is valid.
 local function validEffect(effect)
     if type(effect) ~= 'table' or type(effect.name) ~= 'string' or not effect.name:find('%S') then
         return false
@@ -153,7 +157,10 @@ local function validEffect(effect)
     return true
 end
 
--- Public form of validEffect, for draft validation in UI/settings_draft.lua.
+-- Tells whether a value is a well-formed effect definition; the public form of validEffect, for draft validation in
+-- UI/settings_draft.lua.
+-- @param value any  The value to test.
+-- @return boolean  True when the definition is valid.
 function addon:IsValidEffectDefinition(value)
     return validEffect(value)
 end
@@ -162,8 +169,9 @@ end
 -- Page
 -- ============================================================================
 
--- Builds the Effects page into settings form `p`: the roster, then either the selected effect's editor or the creation
+-- Builds the Effects page into the settings form: the roster, then either the selected effect's editor or the creation
 -- form for a new one, with the collection footer. Runs on every redraw of the page.
+-- @param p table  The settings form pane.
 function addon:BuildEffectSettings(p)
     local store = p:SettingsData()
     local effects = store.global.effects or {}
@@ -253,6 +261,9 @@ function addon:BuildEffectSettings(p)
             })
         end)
 
+        -- Changes the effect type: stages a copy with the new type, an empty sequence and the new type's defaults (a
+        -- new sequence kind has different entry shapes), then previews and redraws.
+        -- @param value string  The chosen effect type.
         p:Choice('type', L['Type'], effect.type, types, function(value)
             if value == effect.type then
                 return
@@ -326,9 +337,9 @@ function addon:BuildEffectSettings(p)
             do
                 local sequence = effect.sequence or {}
 
-                -- Add step sits on the Sequence header row; a click appends and
-                -- a drag drops into a gap, both through this one insert.
-                -- Inserts a default step for the effect's type at position `gap` (clamped to the end).
+                -- Inserts a default step for the effect's type into the sequence. Add step sits on the Sequence header
+                -- row; a click appends and a drag drops into a gap, both through this one insert.
+                -- @param gap number  The position to insert at (clamped to the end).
                 local function insertStep(gap)
                     effect.sequence = effect.sequence or {}
 
@@ -342,6 +353,12 @@ function addon:BuildEffectSettings(p)
                     p:Draw()
                 end
 
+                -- Draws the Sequence list. The row renderer (the fourth argument) draws one step as the editor for its
+                -- effect type: a magnification slider (pulse), a texture (animate), a color (dazzle), or texture,
+                -- angle, magnification and color (custom).
+                -- @param p table  The settings form pane.
+                -- @param i number  The step's 1-based position in the sequence.
+                -- @param entry any  The step: a number, a texture, a color or a table, depending on the effect type.
                 p:OrderedCollection(
                     'sequence_' .. id,
                     sequence,
@@ -417,6 +434,9 @@ function addon:BuildEffectSettings(p)
                                 self:HideGlow(ghost.effectPreview, 'settings-drag')
                             end
                         end,
+                        -- Shows a glow preview of the dragged step on the drag ghost.
+                        -- @param ghost table  The drag ghost frame.
+                        -- @param i number  The dragged step's position in the sequence.
                         dragPreview = function(ghost, i)
                             ghost.effectPreview = ghost.effectPreview or CreateFrame('Frame', nil, ghost)
                             ghost.effectPreview:ClearAllPoints()
@@ -480,6 +500,9 @@ function addon:BuildEffectSettings(p)
                 key = 'transfer',
                 text = L['Import/Export'],
                 icon = 'transfer',
+                -- Opens the import/export dialog for the effect (an empty effect is not offered). The import callback
+                -- decodes and validates the pasted effect, refuses a name already in use, and stores it as a new effect
+                -- or replaces the current one.
                 action = function()
                     local codec = self:NewRotationCodec()
                     local text, why = codec:Encode(effect)
@@ -569,6 +592,8 @@ function addon:BuildEffectSettings(p)
                 key = 'delete',
                 text = L['Delete'],
                 icon = 'trash',
+                -- Asks for confirmation, then deletes the effect and invalidates the rotation dependencies that used
+                -- it.
                 action = function()
                     self:ConfirmSettingsDeletion(
                         p,
@@ -605,6 +630,8 @@ function addon:BuildEffectSettings(p)
         p.fields.new_name = p.fields.name
         p.fields.new_type = p.fields.type
 
+        -- Creation form handlers: Apply checks the new effect has a name that is not in use and is complete, then
+        -- stores it with a fresh id and selects it; Cancel closes the form.
         p:CreationActions(function()
             if not self:SettingsNonempty(p.newEffect.name) then
                 p:Message(L['Enter a name first.'])
@@ -649,6 +676,8 @@ function addon:BuildEffectSettings(p)
                 key = 'transfer',
                 text = L['Import/Export'],
                 icon = 'transfer',
+                -- Opens the import dialog when no effect exists yet: a valid pasted effect becomes the draft of a new
+                -- effect.
                 action = function()
                     local codec = self:NewRotationCodec()
 

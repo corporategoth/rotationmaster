@@ -13,14 +13,22 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Diagnostic text
 -- ============================================================================
 
--- Consumes trusted results from RotationData, never live observations or Lua.
--- Returns the comparison as plain text for the copy box. Every value is cut to a fixed length, the whole report stays
--- under 65,000 bytes, and "|" is doubled so no stored text can inject color or hyperlink escapes; a closing line says
--- when anything was truncated.
+-- Returns the comparison as plain text for the copy box. Consumes trusted results from RotationData, never live
+-- observations or Lua.
+-- @param result table  The comparison result ({ valid, complete, changes, diagnostics }, or with sourceChanges,
+--   customChanges, currentDifferences and conflicts for a clone of a Built In).
+-- @return string  The report lines joined with newlines.
+--
+-- Every value is cut to a fixed length, the whole report stays under 65,000 bytes, and "|" is doubled so no stored text
+-- can inject color or hyperlink escapes; a closing line says when anything was truncated.
 function addon:FormatRotationComparison(result)
     local lines, bytes, truncated = {}, 0, false
 
-    -- tostring(value) cut to `limit` characters, with "|" escaped; flags the report as truncated when it cuts.
+    -- Converts a value to a bounded, escaped string: tostring(value) cut to `limit` characters, with "|" escaped; flags
+    -- the report as truncated when it cuts.
+    -- @param value any  The value to show.
+    -- @param limit number  The maximum number of characters kept before "..." is added.
+    -- @return string  The escaped text.
     local function safe(value, limit)
         local text = tostring(value)
 
@@ -32,7 +40,9 @@ function addon:FormatRotationComparison(result)
         return (text:gsub("|", "||"))
     end
 
-    -- Adds one line unless it would pass the size cap (then flags truncation and returns false).
+    -- Adds one line to the report unless it would pass the size cap (then flags truncation and refuses).
+    -- @param text string  The line to add.
+    -- @return boolean  True when added; false when the size cap was reached.
     local function append(text)
         if bytes + #text + 1 > 65000 then
             truncated = true
@@ -45,10 +55,15 @@ function addon:FormatRotationComparison(result)
     end
 
     -- Renders a stored value as a bounded Lua-like literal (at most 100 nodes, depth 8 and 8 KiB), keys sorted.
+    -- @param v any  The value to render.
+    -- @return string  The literal.
     local function value(v)
         local count = 0
 
-        -- Recursive step; numbers sort before strings so the key order is stable.
+        -- Renders one node of the value; numbers sort before strings so the key order is stable.
+        -- @param current any  The node to render.
+        -- @param depth number  The nesting depth of the node (0 for the root).
+        -- @return string  The rendered node, or "..." once a limit is hit.
         local function render(current, depth)
             count = count + 1
 
@@ -109,6 +124,8 @@ function addon:FormatRotationComparison(result)
     end
 
     -- Writes one titled block: its status line, then each change and diagnostic of `part`.
+    -- @param title string  The block heading.
+    -- @param part table  The comparison part ({ valid, complete, changes, diagnostics }).
     local function section(title, part)
         append(title)
 
@@ -190,7 +207,11 @@ end
 -- Side-by-side view
 -- ============================================================================
 
--- Adds a full-width text label to `parent`; kind 'Heading' uses the workbench header font and color. Returns it.
+-- Adds a full-width text label to `parent`; kind 'Heading' uses the workbench header font and color.
+-- @param parent table  The condition group the label is added to.
+-- @param text string  The label text.
+-- @param kind string|nil  'Heading' for a heading; nil for plain text.
+-- @return table  The label widget.
 local function label(parent, text, kind)
     local widget = addon:CreateConditionLabel()
 
@@ -212,8 +233,13 @@ local directionNames = {
     custom = L["Your edits since cloning"],
 }
 
--- Fills `parent` with the cards of one comparison `view`: notices, a "show unchanged" toggle and, for each changed
--- part (names, tags, priority, switch, cooldown and rotation steps), left and right columns with status tags.
+-- Fills `parent` with the cards of one comparison view: notices, a "show unchanged" toggle and, for each changed part
+-- (names, tags, priority, switch, cooldown and rotation steps), left and right columns with status tags.
+-- @param self table  The addon.
+-- @param parent table  The condition group to fill; its children are released first.
+-- @param view table  One entry of a comparison result's views ({ key = 'current'|'source'|'custom'|'import', ... }).
+-- @param spec number|string  The specialization namespace the conditions are described in.
+-- @param showUnchanged boolean|nil  True also lists the steps that did not change.
 local function renderComparison(self, parent, view, spec, showUnchanged)
     parent:ReleaseChildren()
     local model = self.RotationData.BuildVisualComparison(view)
@@ -276,6 +302,9 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
     end
 
     -- Adds a two-column row, titled with the side names, and calls render(column, entry) for each side that has one.
+    -- @param left table|nil  The left entry; nil shows "No corresponding step".
+    -- @param right table|nil  The right entry; nil shows "No corresponding step".
+    -- @param render function  Called as render(column, entry) to draw one side into its column.
     local function pair(left, right, render)
         local row = addon:CreateConditionGroup()
         row:SetFullWidth(true)
@@ -382,8 +411,14 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
     end
 end
 
--- Public wrapper for renderComparison: pauses the parent's layout while it rebuilds and always resumes it, even if the
--- build errors (the error is rethrown afterward).
+-- Draws a comparison view into `parent`, pausing the parent's layout while it rebuilds and always resuming it, even if
+-- the build errors (the error is rethrown afterward).
+-- @param parent table  The condition group to fill.
+-- @param view table  One entry of a comparison result's views.
+-- @param spec number|string  The specialization namespace the conditions are described in.
+-- @param showUnchanged boolean|nil  True also lists the steps that did not change.
+--
+-- Public wrapper for renderComparison; also used by the transfer window.
 function addon:RenderRotationComparison(parent, view, spec, showUnchanged)
     local paused = type(parent.PauseLayout) == 'function' and type(parent.ResumeLayout) == 'function'
 
@@ -405,7 +440,9 @@ end
 -- Windows
 -- ============================================================================
 
--- Shows the copyable diagnostic text in the shared report window (created on first use) and returns it.
+-- Shows the copyable diagnostic text in the shared report window (created on first use).
+-- @param report string  The report text from FormatRotationComparison.
+-- @return table  The report window.
 function addon:ShowComparisonReport(report)
     local d = self.rotationComparisonReport
 
@@ -418,9 +455,13 @@ function addon:ShowComparisonReport(report)
     return d
 end
 
--- Opens the Compare rotations window for rotation `id` of `spec`: the open rotation against a chosen other one, with a
--- view selector and a diagnostics button. Returns the window, or nil and a reason (unknown rotation, no snapshot). The
--- window closes itself when the profile, owner or any rotation token it was built on goes stale (see valid()).
+-- Opens the Compare rotations window for a rotation: the open rotation against a chosen other one, with a view selector
+-- and a diagnostics button. The window closes itself when the profile, owner or any rotation token it was built on goes
+-- stale (see valid()).
+-- @param spec number|string  The specialization namespace of the rotation.
+-- @param id string|table  The rotation id or reference to compare.
+-- @return table|nil  The comparison window; nil when the rotation is unknown or its snapshot cannot be read.
+-- @return string|nil  The reason when the first value is nil.
 function addon:ShowRotationComparison(spec, id)
     local reference, reason = self:ResolveRotationReference(spec, id)
 
@@ -497,7 +538,9 @@ function addon:ShowRotationComparison(spec, id)
     local serial = d.serial
     local profile = self.db.profile
 
-    -- True only while this showing is current: same profile, ready coordinator, same owner and unchanged record tokens.
+    -- Tells whether this showing is still current: same profile, ready coordinator, same owner and unchanged record
+    -- tokens.
+    -- @return boolean|nil  Truthy while the window may keep acting.
     local function valid()
         if
             not d.active
@@ -522,6 +565,11 @@ function addon:ShowRotationComparison(spec, id)
     end
 
     -- Places a condition widget on the window frame at (x, y) and tracks it for release.
+    -- @param widget table  The condition widget.
+    -- @param x number  The left offset from the window's top left.
+    -- @param y number  The (negative) top offset from the window's top left.
+    -- @param width number  The widget width.
+    -- @return table  The widget.
     local function control(widget, x, y, width)
         widget.frame:SetParent(d.frame)
         widget.frame:ClearAllPoints()
@@ -604,6 +652,7 @@ function addon:ShowRotationComparison(spec, id)
     local result, report
 
     -- Draws view number `index` of the current comparison result.
+    -- @param index number  The 1-based view index; an unknown index shows "could not be completed".
     local function show(index)
         if not valid() then
             return
@@ -622,6 +671,7 @@ function addon:ShowRotationComparison(spec, id)
     end
 
     -- Compares against target number `index`: builds the result and report text and repopulates the view selector.
+    -- @param index number  The 1-based index into the list of comparison targets.
     local function refresh(index)
         if not valid() then
             return

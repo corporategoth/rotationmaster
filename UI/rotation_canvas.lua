@@ -22,17 +22,23 @@ local colors = {
 -- Helpers
 -- ============================================================================
 
--- True for a real, finite number (not NaN, not infinite).
+-- Tells whether a value is a real, finite number (not NaN, not infinite).
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value) == 'number' and value == value and value > -math.huge and value < math.huge
 end
 
 -- Clamps a zoom factor to 25% to 200%; anything that is not a finite number becomes 1.
+-- @param value any  The requested zoom factor.
+-- @return number  The clamped zoom factor, between 0.25 and 2.
 local function zoom(value)
     return finite(value) and math.max(.25, math.min(2, value)) or 1
 end
 
--- A step's path (list of keys and indexes) as one comparable string.
+-- Joins a step's path (list of keys and indexes) into one comparable string.
+-- @param path table  The step path, e.g. { 'steps', 3, 'children', 1 }.
+-- @return string  The path elements joined with '/'.
 local function location(path)
     return table.concat(path, '/')
 end
@@ -43,9 +49,11 @@ end
 -- 8 px per nested branch, and grid columns share the row. Nothing narrows.
 local listIndent, gridGap, gridCardMaximum = 24, 24, 600
 
--- Widens the scene's cards, groups and drop targets to fill a viewport of `viewport` pixels for the list and grid
--- layouts (the diagram is left alone) and updates scene.width. Mutates and returns `scene`; an invalid scene or
--- viewport is returned unchanged.
+-- Widens the scene's cards, groups and drop targets to fill a viewport of the given width for the list and grid layouts
+-- (the diagram is left alone) and updates scene.width.
+-- @param scene table  The scene model ({ layout, cards, groups, dropTargets, width }); mutated in place.
+-- @param viewport number  The viewport width in pixels; a non-finite value leaves the scene unchanged.
+-- @return table  The same scene (unchanged when it is invalid, the viewport is invalid or the layout is the diagram).
 function addon:FitRotationSceneWidth(scene, viewport)
     if type(scene) ~= 'table' or not finite(viewport) then
         return scene
@@ -55,6 +63,9 @@ function addon:FitRotationSceneWidth(scene, viewport)
     local widest = 0
 
     -- Stretches one item to the right edge, less 8 px for each level of nesting derived from its indent.
+    -- @param item table  The card, group or drop target ({ x, width }); its width is widened, never narrowed.
+    -- @param inset number  Extra pixels kept clear of the right edge.
+    -- @param base number  The x position that counts as nesting depth zero.
     local function stretch(item, inset, base)
         local depth = math.max(0, math.floor((item.x - base) / listIndent + .5))
         item.width = math.max(item.width, right - depth * 8 - inset - item.x)
@@ -92,6 +103,7 @@ function addon:FitRotationSceneWidth(scene, viewport)
         local each = math.max(design, math.min(gridCardMaximum, (right - (columns - 1) * gridGap) / columns))
 
         -- Moves an item to its column at the stretched card width.
+        -- @param item table  The card or drop target ({ x, width }); both fields are rewritten.
         local function place(item)
             local column = math.floor(item.x / pitch + .5)
             item.x = column * (each + gridGap)
@@ -133,8 +145,11 @@ end
 -- ============================================================================
 
 -- Builds the canvas inside `parent` for the editor pane `owner` (which supplies view, workspace, BuildScene, Command,
--- UpdateHistory and the other callbacks used below). Returns the canvas; the editor calls Render when the document or
--- layout changes and Release when it closes.
+-- UpdateHistory and the other callbacks used below). The editor calls Render when the document or layout changes and
+-- Release when it closes.
+-- @param parent table  The frame that holds the canvas.
+-- @param owner table  The editor pane that owns the canvas.
+-- @return table  The canvas.
 function addon:CreateRotationCanvas(parent, owner)
     local canvas = {
         frame = addon:CreateWorkbenchScrollFrame(parent),
@@ -167,8 +182,8 @@ function addon:CreateRotationCanvas(parent, owner)
     -- ============================================================================
 
     -- Ends any drag, pan or box selection: hides the ghost, markers and selection box, stops the per-frame update and
-    -- restores the lifted cards. Safe to call at any time. If a measurement was deferred while dragging, the
-    -- canvas reflows now; otherwise it refreshes the visible cards.
+    -- restores the lifted cards. Safe to call at any time. If a measurement was deferred while dragging, the canvas
+    -- reflows now; otherwise it refreshes the visible cards.
     function canvas:CancelDrag()
         local moving = self.drag or self.pan
         self.drag = nil
@@ -197,25 +212,28 @@ function addon:CreateRotationCanvas(parent, owner)
         end
     end
 
-    -- True when the rotation section is shown as the pannable, zoomable diagram (not the list or cooldown grid).
+    -- Tells whether the rotation section is shown as the pannable, zoomable diagram (not the list or cooldown grid).
+    -- @return boolean  True for the diagram.
     function canvas:IsDiagram()
         return owner.view.section ~= 'cooldowns' and owner.view.layout ~= 'list'
     end
 
-    -- Key naming the current section and layout; viewport positions are remembered per key.
+    -- Names the current section and layout; viewport positions are remembered per key.
+    -- @return string  'cooldowns', 'rotation:diagram' or 'rotation:list'.
     function canvas:ModeKey()
         return owner.view.section == 'cooldowns' and 'cooldowns'
             or self:IsDiagram() and 'rotation:diagram'
             or 'rotation:list'
     end
 
-    -- Current zoom factor; always 1 outside the diagram.
+    -- Returns the current zoom factor; always 1 outside the diagram.
+    -- @return number  The zoom factor.
     function canvas:GetZoom()
         return self:IsDiagram() and zoom(owner.view.zoom) or 1
     end
 
-    -- Saves the scroll position (relative to the diagram padding) in the view under the current mode key, so
-    -- switching tabs or layouts and back returns to the same spot.
+    -- Saves the scroll position (relative to the diagram padding) in the view under the current mode key, so switching
+    -- tabs or layouts and back returns to the same spot.
     function canvas:RememberViewport()
         local view = self.viewportView
 
@@ -231,8 +249,10 @@ function addon:CreateRotationCanvas(parent, owner)
         }
     end
 
-    -- Sets the diagram zoom (clamped), keeping the viewport center fixed, and reflows. Returns true, or nil when the
-    -- editor is closed, the canvas is not the diagram or the value is not finite.
+    -- Sets the diagram zoom (clamped), keeping the viewport center fixed, and reflows.
+    -- @param value number  The requested zoom factor.
+    -- @return boolean|nil  True when applied; nil when the editor is closed, the canvas is not the diagram or the value
+    --   is not finite.
     function canvas:SetZoom(value)
         if not owner.active or not self:IsDiagram() or not finite(value) then
             return nil
@@ -261,6 +281,9 @@ function addon:CreateRotationCanvas(parent, owner)
     local updateScroll = canvas.frame.UpdateWorkbenchScroll
 
     -- Runs the stock scroll update, then hides the vertical bar in diagram mode where scrolling is the camera.
+    --
+    -- ScrollFrame still clips content, but its scrollbars are private camera coordinates in diagram mode. They never
+    -- participate in pointer gestures.
     function canvas.frame:UpdateWorkbenchScroll()
         updateScroll(self)
 
@@ -273,27 +296,30 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Selection
     -- ============================================================================
 
-    -- Several cards can be selected: Ctrl-click toggles a card, Shift-click
-    -- selects the sibling range from the last clicked card, a plain click on
-    -- a card's body selects only it, and a plain click on empty canvas clears
-    -- the selection. Shift-drag on empty canvas draws a box that selects the
-    -- cards it touches (Ctrl+Shift adds to the selection). The selection is
-    -- view state: it survives renders and drops cards that no longer exist.
-    -- The selected step ids as a set, kept in owner.view (created on first use).
+    -- Returns the selected step ids as a set, kept in owner.view (created on first use).
+    -- @return table  A set of step id to true.
+    --
+    -- Several cards can be selected: Ctrl-click toggles a card, Shift-click selects the sibling range from the last
+    -- clicked card, a plain click on a card's body selects only it, and a plain click on empty canvas clears the
+    -- selection. Shift-drag on empty canvas draws a box that selects the cards it touches (Ctrl+Shift adds to the
+    -- selection). The selection is view state: it survives renders and drops cards that no longer exist.
     function canvas:SelectionSet()
         owner.view.selection = owner.view.selection or {}
         return owner.view.selection
     end
 
-    -- Selection drives copy, delete and enable, which a Built In (read-only)
-    -- has none of: clicking its cards never selects them, so they never draw
-    -- the gold outline and the selection bar never appears.
+    -- Tells whether cards can be selected. Selection drives copy, delete and enable, which a Built In (read-only) has
+    -- none of: clicking its cards never selects them, so they never draw the gold outline and the selection bar never
+    -- appears.
+    -- @return boolean  True when the editor is open and the rotation is editable.
     function canvas:CanSelect()
         return owner.active and not owner.workspace.readOnly
     end
 
-    -- Selected ids in document order; with topLevel, a card inside another
-    -- selected card is left out (it travels with its parent).
+    -- Returns the selected step ids in document order.
+    -- @param topLevel boolean|nil  When true, a card inside another selected card is left out (it travels with its
+    --   parent).
+    -- @return string[]  The selected step ids; empty when nothing is selected or the rotation cannot be indexed.
     function canvas:SelectedIds(topLevel)
         local selection = self:SelectionSet()
         local result = {}
@@ -373,8 +399,13 @@ function addon:CreateRotationCanvas(parent, owner)
         self:PaintSelection()
     end
 
-    -- Applies a click on card `id`: `toggle` (Ctrl) adds or removes it, `range` (Shift) selects the siblings between
-    -- the anchor card and it, neither selects only it. A range only works between siblings of the same parent.
+    -- Applies a click on a card. A range only works between siblings of the same parent.
+    -- @param id string  The step id of the clicked card.
+    -- @param toggle boolean|nil  Ctrl: adds or removes the card instead of replacing the selection.
+    -- @param range boolean|nil  Shift: selects the siblings between the anchor card and this one.
+    --
+    -- With neither flag only this card is selected and it becomes the range anchor. Does nothing when selection is
+    -- unavailable or the id is not in the scene.
     function canvas:Select(id, toggle, range)
         if not self:CanSelect() or not self.scene then
             return
@@ -440,6 +471,11 @@ function addon:CreateRotationCanvas(parent, owner)
     end
 
     -- Selects the cards touching a box given in canvas (child) coordinates.
+    -- @param left number  The box's left edge.
+    -- @param top number  The box's top edge.
+    -- @param right number  The box's right edge.
+    -- @param bottom number  The box's bottom edge.
+    -- @param additive boolean|nil  True keeps the current selection and adds to it.
     function canvas:SelectBox(left, top, right, bottom, additive)
         if not self:CanSelect() or not self.scene then
             return
@@ -466,9 +502,9 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Pointer gestures
     -- ============================================================================
 
-    -- Starts a rubber-band selection at the pointer (Ctrl makes it additive). An OnUpdate follows the pointer and
-    -- ends the gesture on mouse release, on a render (generation change) or when the editor closes. Returns false
-    -- when selection is unavailable or the pointer is not over the canvas.
+    -- Starts a rubber-band selection at the pointer (Ctrl makes it additive). An OnUpdate follows the pointer and ends
+    -- the gesture on mouse release, on a render (generation change) or when the editor closes.
+    -- @return boolean  False when selection is unavailable or the pointer is not over the canvas; otherwise true.
     function canvas:BeginBoxSelect()
         if not self:CanSelect() or self.drag then
             return false
@@ -493,6 +529,8 @@ function addon:CreateRotationCanvas(parent, owner)
         self.boxFrame = self.boxFrame or addon:CreateWorkbenchSelectionBox(self.child)
         self.boxFrame:Place(x, y, x, y)
 
+        -- Per-frame follower for the rubber band: stretches the box to the pointer and ends the selection on mouse
+        -- release; cancels it when the editor closed or a render invalidated the gesture.
         addon:SetUIScript(self.frame, 'OnUpdate', function()
             if self.box ~= box then
                 return
@@ -533,7 +571,8 @@ function addon:CreateRotationCanvas(parent, owner)
 
     -- Starts dragging the diagram camera from empty space. Refused over the zoom bar or any card. The pointer is read
     -- with GetCursorPosition under pcall and validated, because the pan scrolls by the raw difference scaled by the
-    -- frame's effective scale; any bad reading ends the pan. Returns true when a pan started.
+    -- frame's effective scale; any bad reading ends the pan.
+    -- @return boolean  True when a pan started.
     function canvas:BeginPan()
         if not owner.active or not self:IsDiagram() or self.drag or type(GetCursorPosition) ~= 'function' then
             return false
@@ -571,6 +610,8 @@ function addon:CreateRotationCanvas(parent, owner)
 
         self.pan = request
 
+        -- Per-frame follower for the pan: scrolls the camera by the pointer movement (marking the pan as moved past 3
+        -- pixels) and ends the pan on mouse release, on a render or on a bad pointer reading.
         addon:SetUIScript(self.frame, 'OnUpdate', function()
             if self.pan ~= request then
                 return
@@ -604,8 +645,11 @@ function addon:CreateRotationCanvas(parent, owner)
     end
 
     -- Wires mouse wheel (zoom in the diagram, scroll elsewhere), middle click (reset zoom) and left click and drag
-    -- gestures onto `control`. With `pan`, dragging on it pans or box-selects; `click` is the plain-click handler
-    -- (skipped after a drag); `alive` is the caller's staleness check.
+    -- gestures onto a control.
+    -- @param control table  The frame that receives the input.
+    -- @param pan boolean|nil  True lets dragging on the control pan or box-select.
+    -- @param alive function|nil  The caller's staleness check; input is ignored when it returns false.
+    -- @param click function|nil  The plain-click handler (skipped after a drag).
     function canvas:BindViewportInput(control, pan, alive, click)
         control:EnableMouse(true)
         control:EnableMouseWheel(true)
@@ -622,6 +666,10 @@ function addon:CreateRotationCanvas(parent, owner)
             end
         end)
 
+        -- Handles a mouse release on the control: middle click resets the zoom, left click ends a box selection, or
+        -- finishes a pan and, when nothing was dragged, runs the click handler (or clears the selection on empty
+        -- canvas).
+        -- @param button string  The mouse button that was released.
         addon:SetUIScript(control, 'OnMouseUp', function(_, button)
             if not owner.active or alive and not alive() then
                 return
@@ -654,7 +702,7 @@ function addon:CreateRotationCanvas(parent, owner)
         if pan then
             control:RegisterForDrag('LeftButton')
 
-            -- Shift-drag on empty canvas selects by box; a plain drag pans.
+            -- Starts a box selection when Shift is held and selection is allowed, otherwise a pan.
             local function begin()
                 if IsShiftKeyDown and IsShiftKeyDown() and self:CanSelect() then
                     self:BeginBoxSelect()
@@ -697,14 +745,18 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Drag and drop
     -- ============================================================================
 
-    -- The editor command a drop performs: Insert (palette), MoveMany (a selection), MoveTail (Ctrl-drag) or Move.
+    -- Names the editor command a drop performs.
+    -- @param drag table  The drag record ({ insert, ids, tail, ... }).
+    -- @return string  'Insert' (palette), 'MoveMany' (a selection), 'MoveTail' (Ctrl-drag) or 'Move'.
     local function dragCommand(drag)
         return drag.insert and 'Insert' or drag.ids and 'MoveMany' or (drag.tail and 'MoveTail' or 'Move')
     end
 
-    -- True when dropping the current drag into `target` (a gap) would change the rotation. Tries the command on a
+    -- Tells whether dropping the current drag into `target` (a gap) would change the rotation. Tries the command on a
     -- scratch draft and rejects drops that leave every carried card where it was; results are cached per gap for the
     -- life of the drag.
+    -- @param target table  The drop target ({ destination = { path, index, parentId } }).
+    -- @return boolean  True when the drop is allowed and moves something.
     function canvas:CanDrop(target)
         local drag = self.drag
 
@@ -750,7 +802,8 @@ function addon:CreateRotationCanvas(parent, owner)
         return ok == true
     end
 
-    -- Finds the gap under the pointer that accepts the drag, shows only its marker, and returns that zone (or nil).
+    -- Finds the gap under the pointer that accepts the drag and shows only its marker.
+    -- @return table|nil  The drop zone under the pointer, or nil.
     function canvas:HoverTarget()
         local selected
 
@@ -775,6 +828,8 @@ function addon:CreateRotationCanvas(parent, owner)
     end
 
     -- Ends the drag and, if the drop is valid and still current, sends the move or insert command to the editor.
+    -- @param target table  The drop target ({ destination = ... }).
+    -- @return any  What owner:Command returns for the drop; nil when the drop was not valid.
     function canvas:Drop(target)
         local drag = self.drag
         local valid = self:CanDrop(target)
@@ -791,7 +846,8 @@ function addon:CreateRotationCanvas(parent, owner)
         )
     end
 
-    -- Mouse released: drop on the hovered gap if there is one, else cancel.
+    -- Handles the mouse release of a drag: drops on the hovered gap if there is one, else cancels.
+    -- @return any  What Drop returns when a drop happened; nil otherwise.
     function canvas:EndDrag()
         if not self.drag then
             return
@@ -807,9 +863,12 @@ function addon:CreateRotationCanvas(parent, owner)
     end
 
     -- Starts a drag of card `id` (with Ctrl, that card and the siblings after it; if it is selected, the whole
-    -- selection), or of a new step `insert` from the palette (`insertSource` is its button). Shows the ghost with the
-    -- dragged cards lifted onto it, reveals the drop gaps and starts an OnUpdate that follows the pointer and drops on
-    -- release. Does nothing for a read-only rotation.
+    -- selection), or of a new step from the palette. Shows the ghost with the dragged cards lifted onto it, reveals the
+    -- drop gaps and starts an OnUpdate that follows the pointer and drops on release. Does nothing for a read-only
+    -- rotation.
+    -- @param id string|nil  The step id of the card being dragged; nil when dragging a new step.
+    -- @param insert table|nil  The new step to insert from the palette; nil when moving an existing card.
+    -- @param insertSource table|nil  The palette button the new step is dragged from.
     function canvas:BeginDrag(id, insert, insertSource)
         self:CancelDrag()
 
@@ -946,7 +1005,10 @@ function addon:CreateRotationCanvas(parent, owner)
                 end
             end
 
-            -- True when a connector belongs to the dragged cards (its owner, or both of its ends, are being carried).
+            -- Tells whether a connector belongs to the dragged cards (its owner, or both of its ends, are being
+            -- carried).
+            -- @param edge table|nil  The scene connector ({ owner, from, to, ... }).
+            -- @return boolean|string|nil  Truthy when the connector travels with the drag.
             local function owns(edge)
                 return edge
                     and (edge.owner and selected[edge.owner]
@@ -1007,7 +1069,8 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Rebuilds the scene from the editor and redraws everything that is not a card control: scroll extents and zoom,
     -- group frames, connector lines, True/False labels and arm buttons, drop gaps; already bound cards are only
     -- re-placed. Restores the remembered viewport for the mode, then refreshes which cards exist. Frames and textures
-    -- are pooled and reused. A failure inside is re-raised after the reflowing flag is cleared.
+    -- are pooled and reused. A failure inside is re-raised after the reflowing flag is cleared. Does nothing while the
+    -- editor is closed.
     function canvas:Reflow()
         if not owner.active then
             return
@@ -1024,6 +1087,8 @@ function addon:CreateRotationCanvas(parent, owner)
         self.reflowedWidth, self.reflowedHeight = self.frame:GetWidth(), self.frame:GetHeight()
         self.reflowing = true
 
+        -- Does the drawing work of Reflow under pcall: viewport and zoom, scroll extents, group frames, connector
+        -- lines, labels, arm buttons and drop gaps; cards that left the scene also leave the selection.
         local ok, problem = pcall(function()
             local key = self:ModeKey()
             self:RememberViewport()
@@ -1257,10 +1322,13 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Cards
     -- ============================================================================
 
-    -- Binds a pooled card to scene model `model` and wires all of its controls (title, name edit, action, condition,
-    -- remove, duplicate, enable, move, help, fold, selection and drag). Every handler is guarded by a token that is
-    -- invalidated on render or release. Returns true when the card's measured summary or details height changed, which
-    -- means the scene must reflow.
+    -- Binds a pooled card to a scene model and wires all of its controls (title, name edit, action, condition, remove,
+    -- duplicate, enable, move, help, fold, selection and drag). Every handler is guarded by a token that is invalidated
+    -- on render or release.
+    -- @param card table  The pooled card control from addon:CreateRotationCard.
+    -- @param model table  The scene card model (id, step, path, parentId, x, y, width, height, compact, expanded, ...).
+    -- @return boolean  True when the card's measured summary or details height changed, which means the scene must
+    --   reflow.
     function canvas:BindCard(card, model)
         local priorSummary = math.max(0, ((owner.view.summaryHeights or {})[model.id] or 0) - 28)
         local priorDetails = (owner.view.detailsHeights or {})[model.id]
@@ -1268,12 +1336,14 @@ function addon:CreateRotationCanvas(parent, owner)
         card.token = token
         card.spec = owner.workspace.spec
 
-        -- True while the editor is open and this card is still bound by this render.
+        -- Tells whether the editor is open and this card is still bound by this render.
+        -- @return boolean  True while handlers of this card may act.
         local function alive()
             return owner.active and token.generation == self.generation and card.token == token
         end
 
-        -- alive() and the rotation is editable (not a Built In).
+        -- Tells whether the card is alive and the rotation is editable (not a Built In).
+        -- @return boolean  True when a handler may change the rotation.
         local function writable()
             return alive() and not owner.workspace.readOnly
         end
@@ -1372,7 +1442,8 @@ function addon:CreateRotationCanvas(parent, owner)
             end
         end)
 
-        -- The spell hyperlink for a spell, pet or any step, or nil (items and other kinds have none).
+        -- Returns the spell hyperlink for a spell, pet or any step.
+        -- @return string|nil  'spell:<id>' for the step's action; nil for items and other kinds, or an unknown spell.
         local function actionLink()
             if step.type ~= 'spell' and step.type ~= 'pet' and step.type ~= 'any' then
                 return
@@ -1497,12 +1568,14 @@ function addon:CreateRotationCanvas(parent, owner)
             end
         end)
 
-        -- Current Ctrl and Shift key states, tolerating clients without those functions.
+        -- Reads the current Ctrl and Shift key states, tolerating clients without those functions.
+        -- @return boolean  True while Ctrl is held.
+        -- @return boolean  True while Shift is held.
         local function modifiers()
             return IsControlKeyDown and IsControlKeyDown() or false, IsShiftKeyDown and IsShiftKeyDown() or false
         end
 
-        -- A plain click on the card's body selects it (with Ctrl or Shift for toggle and range).
+        -- Handles a plain click on the card's body: selects it (with Ctrl or Shift for toggle and range).
         local function clickBody()
             if not alive() then
                 return
@@ -1536,6 +1609,13 @@ function addon:CreateRotationCanvas(parent, owner)
         for _, source in ipairs({ card.title, card.action, card.condition }) do
             local original = source:GetScript('OnClick')
 
+            -- Wraps the control's own click handler: Ctrl-click (and Shift-click, except on the action) selects the
+            -- card instead of running the handler, unless the click ends a drag.
+            -- @param ... any  The click arguments, passed on to the original handler.
+            -- @return any  Whatever the original handler returns, when it ran.
+            --
+            -- Ctrl-click anywhere on a card toggles it; Shift-click on its title or condition extends the range
+            -- (Shift-click on the action still links the spell). Other clicks keep their own meaning.
             addon:SetUIScript(source, 'OnClick', function(...)
                 local ctrl, shift = modifiers()
 
@@ -1565,8 +1645,10 @@ function addon:CreateRotationCanvas(parent, owner)
             or priorDetails ~= (owner.view.detailsHeights or {})[model.id]
     end
 
-    -- True when the card's name box or one of its field inputs has keyboard focus; such a card is never released,
+    -- Tells whether the card's name box or one of its field inputs has keyboard focus; such a card is never released,
     -- so typing is not interrupted by a refresh.
+    -- @param card table  The card control.
+    -- @return boolean  True when the card has keyboard focus.
     local function focused(card)
         if card.name:HasFocus() then
             return true
@@ -1581,9 +1663,10 @@ function addon:CreateRotationCanvas(parent, owner)
         return false
     end
 
-    -- Expanded cards lay their fields out for the card width when bound. A
-    -- width change releases them (unless one holds focus) so the next reflow
-    -- binds them at the new width; every other card is only re-placed.
+    -- Releases the expanded cards (unless one holds focus or is being dragged) so the next reflow binds them at the new
+    -- width; every other card is only re-placed.
+    --
+    -- Expanded cards lay their fields out for the card width when bound.
     function canvas:ReleaseExpandedCards()
         for _, card in ipairs(self.cards) do
             if
@@ -1600,9 +1683,9 @@ function addon:CreateRotationCanvas(parent, owner)
     end
 
     -- Makes sure exactly the cards near the viewport have controls: releases cards that scrolled away (never one that
-    -- is focused or being dragged) and binds pooled cards to the models that came into range. Scenes of up to 200
-    -- cards bind them all. If binding changed a measured height the scene reflows (deferred while a drag runs); a
-    -- failure while binding releases the half-bound card before the error is re-raised.
+    -- is focused or being dragged) and binds pooled cards to the models that came into range. Scenes of up to 200 cards
+    -- bind them all. If binding changed a measured height the scene reflows (deferred while a drag runs); a failure
+    -- while binding releases the half-bound card before the error is re-raised.
     function canvas:RefreshVisibleCards()
         if not owner.active or not self.scene or self.refreshing then
             return
@@ -1612,6 +1695,8 @@ function addon:CreateRotationCanvas(parent, owner)
         local measured, created = false, false
         local constructing
 
+        -- Works out the models within 340 by 180 pixels of the viewport, releases bound cards outside it and binds
+        -- pooled (or new) cards for the rest.
         local ok, problem = pcall(function()
             local factor = self:GetZoom()
             local left = ((self.scrollX or 0) - (self.paddingX or 0)) / factor
@@ -1695,7 +1780,7 @@ function addon:CreateRotationCanvas(parent, owner)
         end
     end
 
-    -- Full redraw: invalidates every card handler (new generation), releases all cards and reflows the scene.
+    -- Redraws everything: invalidates every card handler (new generation), releases all cards and reflows the scene.
     function canvas:Render()
         self:CancelDrag()
         self.generation = self.generation + 1

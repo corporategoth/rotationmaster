@@ -7,7 +7,11 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Adds a full-width condition label to parent and returns it; kind 'Heading' uses the workbench header font and color.
+-- Adds a full-width condition label to `parent`; kind 'Heading' uses the workbench header font and color.
+-- @param parent table  The condition group the label is added to.
+-- @param text string  The label text.
+-- @param kind string|nil  'Heading' for a heading; nil for plain text.
+-- @return table  The label widget.
 local function label(parent, text, kind)
     local widget = addon:CreateConditionLabel()
 
@@ -22,8 +26,10 @@ local function label(parent, text, kind)
     return widget
 end
 
--- Returns a display name for an item id or name, falling back to 'Item <id>' when the item is not cached or its name
--- is a restricted value that must not be read.
+-- Returns a display name for an item id or name, falling back to 'Item <id>' when the item is not cached or its name is
+-- a restricted value that must not be read.
+-- @param item number|string|any  The item id or name; any other type gives "Unknown item".
+-- @return string  The display name.
 local function itemName(item)
     if type(item) ~= "number" and type(item) ~= "string" then
         return L["Unknown item"]
@@ -42,18 +48,29 @@ local function itemName(item)
     return string.format(L["Item %s"], item)
 end
 
--- Adds the prose description of condition (for spec) as a label, with spell hyperlinks wired up; returns the label.
+-- Adds the prose description of a condition as a label, with spell hyperlinks wired up.
+-- @param parent table  The condition group the label is added to.
+-- @param condition table  The condition to describe.
+-- @param spec number|string  The specialization namespace the condition is described in.
+-- @return table  The label widget.
 function addon:CreateConditionReference(parent, condition, spec)
     local widget = label(parent, self:DescribeCondition(condition, spec))
     self:InstallSpellHyperlinks(widget.frame)
     return widget
 end
 
--- The same read-only cards are used for reference and comparison. They receive
--- snapshots and register no callbacks that can change a rotation.
--- Adds one read-only card for step to parent and returns it. kind is 'cooldowns' or 'rotation' and picks the title;
--- status, when given, prefixes the title (used by comparisons). The pooled card's OnRelease is wrapped so the rounded
--- decoration is hidden again when the card returns to the widget pool.
+-- Adds one read-only card for a step to `parent`. The pooled card's OnRelease is wrapped so the rounded decoration is
+-- hidden again when the card returns to the widget pool.
+-- @param parent table  The condition group the card is added to.
+-- @param step table  The rotation step to show.
+-- @param spec number|string  The specialization namespace the conditions are described in.
+-- @param position number  The step's position, shown as its priority.
+-- @param kind string  'cooldowns' or 'rotation'; picks the title.
+-- @param status string|nil  When given, prefixes the title (used by comparisons).
+-- @return table  The card group.
+--
+-- The same read-only cards are used for reference and comparison. They receive snapshots and register no callbacks that
+-- can change a rotation.
 function addon:CreateRotationStepCard(parent, step, spec, position, kind, status)
     local card = addon:CreateConditionGroup()
     card:SetFullWidth(true)
@@ -166,8 +183,10 @@ function addon:CreateRotationStepCard(parent, step, spec, position, kind, status
     return card
 end
 
--- Adds a 'name → arm' trail for a step nested inside Branches; path is a list of { name, arm }. Returns the label, or
--- nil when the path is empty.
+-- Adds a 'name → arm' trail for a step nested inside Branches.
+-- @param parent table  The condition group the label is added to.
+-- @param path table[]|nil  The Branches above the step, each { name, arm = 'true'|'false' }.
+-- @return table|nil  The label; nil when the path is empty.
 function addon:CreateRotationBranchBreadcrumb(parent, path)
     local parts = {}
 
@@ -181,8 +200,12 @@ function addon:CreateRotationBranchBreadcrumb(parent, path)
     end
 end
 
--- Builds the whole reference view for a rotation body into parent: switch, optional highlights, the priority list and
+-- Builds the whole reference view for a rotation body into `parent`: switch, optional highlights, the priority list and
 -- the fixed auto-attack fallback note. A tree that cannot be indexed shows its problem code instead of the sections.
+-- @param self table  The addon.
+-- @param parent table  The condition group to fill.
+-- @param body table  The rotation body (switch, cooldowns, rotation).
+-- @param spec number|string  The specialization namespace the conditions are described in.
 local function renderReference(self, parent, body, spec)
     label(
         parent,
@@ -199,6 +222,9 @@ local function renderReference(self, parent, body, spec)
     end
 
     -- Renders one step section, putting a breadcrumb of its parent Branches before each step's card.
+    -- @param kind string  'cooldowns' or 'rotation'.
+    -- @param title string  The section heading.
+    -- @param explanation string  The text under the heading.
     local function section(kind, title, explanation)
         label(parent, title, "Heading")
         label(parent, explanation)
@@ -252,8 +278,11 @@ local function renderReference(self, parent, body, spec)
     )
 end
 
--- Public entry: renders the reference with layout paused for speed. The pause is always resumed, then any render error
--- is rethrown unchanged so callers see the original failure.
+-- Renders the reference view into `parent` with layout paused for speed. The pause is always resumed, then any render
+-- error is rethrown unchanged so callers see the original failure.
+-- @param parent table  The condition group to fill.
+-- @param body table  The rotation body.
+-- @param spec number|string  The specialization namespace the conditions are described in.
 function addon:CreateRotationReference(parent, body, spec)
     local paused = type(parent.PauseLayout) == 'function' and type(parent.ResumeLayout) == 'function'
 

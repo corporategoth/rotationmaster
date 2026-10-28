@@ -14,12 +14,16 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Helpers
 -- ============================================================================
 
--- The id of an order entry, which may be a bare id or a table with an `id` field.
+-- Returns the id of an order entry, which may be a bare id or a table with an `id` field.
+-- @param value any  The order entry.
+-- @return any  The id.
 local function identity(value)
     return type(value) == 'table' and value.id or value
 end
 
 -- Maps each entry id of an order list to its first index; later duplicates are ignored.
+-- @param items table|nil  The order list.
+-- @return table  The map of id to index.
 local function indices(items)
     local result = {}
 
@@ -38,11 +42,15 @@ end
 -- Row binding
 -- ============================================================================
 
--- Adds the roster-order methods to the settings form class `p`; called once when the form class is built.
+-- Adds the roster-order methods to the settings form class; called once when the form class is built.
+-- @param p table  The settings form.
 function addon:InstallSettingsRosterOrder(p)
     -- Wires one roster row after it is drawn: ordered entries get Move Up/Down buttons and drag-to-reorder; unordered
     -- rows may drag out of the page (options.dragOut). Handlers capture the row lease and `revision`, so a reused row
     -- or a rebuilt roster ignores late clicks.
+    -- @param row table  The roster row.
+    -- @param entry table  The roster entry the row shows.
+    -- @param revision number  The roster revision the row was bound under.
     function p:BindRosterOrderRow(row, entry, revision)
         local r = self.roster
         local items = r.options.order
@@ -63,7 +71,8 @@ function addon:InstallSettingsRosterOrder(p)
         -- An unordered roster may let its rows be dragged out of the page
         -- (Item Sets: drag a set onto an action bar slot).
         if not index and r.options.dragOut then
-            -- Drag-out variant of valid(): the row must still show this entry in this roster build.
+            -- Drag-out variant of valid(): tells whether the row still shows this entry in this roster build.
+            -- @return boolean  True while the row's handlers may act.
             local function current()
                 return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
             end
@@ -121,7 +130,8 @@ function addon:InstallSettingsRosterOrder(p)
             row.down:Enable()
         end
 
-        -- True while the row still belongs to this roster build and entry.
+        -- Tells whether the row still belongs to this roster build and entry.
+        -- @return boolean  True while the row's handlers may act.
         local function valid()
             return r.active and r.revision == revision and row.rosterLease == lease and p:Valid(r.generation)
         end
@@ -178,6 +188,7 @@ function addon:InstallSettingsRosterOrder(p)
     -- Builds the per-roster order view (`r.orderView`: ghost, zones, drag state) and the table of gap positions between
     -- ordered rows; clears the view when the roster has no order. Called on every roster rebuild, so it first cancels
     -- any drag still in flight.
+    -- @param revision number  The roster revision the view belongs to.
     function p:PrepareRosterOrder(revision)
         local r = self.roster
 
@@ -214,12 +225,14 @@ function addon:InstallSettingsRosterOrder(p)
             r.logicalGaps[#r.logicalGaps + 1] = last
         end
 
-        -- True while this view still belongs to the live roster build.
+        -- Tells whether this view still belongs to the live roster build.
+        -- @return boolean  True while the view's callbacks may act.
         local function valid()
             return r.active and p:Valid(token) and r.revision == revision
         end
 
-        -- The current index of the dragged entry in the order list.
+        -- Returns the current index of the dragged entry in the order list.
+        -- @return number|nil  The index; nil when nothing is dragged.
         function view:Index()
             return r.orderIndex[self.drag]
         end
@@ -247,7 +260,9 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
 
-        -- True when `entry` moves with the current drag (itself, or it and every later entry in tail mode).
+        -- Tells whether an entry moves with the current drag (itself, or it and every later entry in tail mode).
+        -- @param entry table  The roster entry.
+        -- @return boolean|nil  Truthy when the entry is carried.
         function view:Carries(entry)
             local index = r.orderIndex[entry.value]
 
@@ -256,14 +271,17 @@ function addon:InstallSettingsRosterOrder(p)
                 and (self.tail and index >= self.from or not self.tail and entry.value == self.drag)
         end
 
-        -- True when the dragged range may be dropped before order index `gap`.
+        -- Tells whether the dragged range may be dropped before an order index.
+        -- @param gap number  The order index to drop before.
+        -- @return boolean  True when the drop would move something.
         function view:CanDrop(gap)
             return valid() and addon:CanReorderWorkbenchRange(items, self:Index(), gap, self.tail)
         end
 
-        -- Moves the dragged range before order index `gap` and redraws. Returns true when the order changed. Pending
-        -- field edits are flushed first, and identities are resolved again afterward because that flush can rebuild
-        -- the roster.
+        -- Moves the dragged range before an order index and redraws. Pending field edits are flushed first, and
+        -- identities are resolved again afterward because that flush can rebuild the roster.
+        -- @param gap number  The order index to drop before.
+        -- @return boolean  True when the order changed.
         function view:Drop(gap)
             local id, tail = self.drag, self.tail
             local before = items[gap] and identity(items[gap])
@@ -292,7 +310,8 @@ function addon:InstallSettingsRosterOrder(p)
             return true
         end
 
-        -- Highlights the valid drop zone under the pointer and returns it, or nil.
+        -- Highlights the valid drop zone under the pointer.
+        -- @return table|nil  The zone; nil when there is none.
         function view:Hover()
             local selected
 
@@ -319,7 +338,7 @@ function addon:InstallSettingsRosterOrder(p)
             return selected
         end
 
-        -- Mouse released: drops on the hovered zone, else cancels.
+        -- Handles the mouse release: drops on the hovered zone, else cancels.
         function view:EndDrag()
             local zone = self:Hover()
 
@@ -330,8 +349,11 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
 
-        -- Starts dragging entry `id` (with every later entry when `tail`, which defaults to the Ctrl key). Shows the
-        -- ghost and the zones that would be legal drops, and polls the pointer until the button is released.
+        -- Starts dragging an entry (with every later entry when `tail`). Shows the ghost and the zones that would be
+        -- legal drops, and polls the pointer until the button is released.
+        -- @param id any  The id of the entry to drag.
+        -- @param title string  The ghost card's title.
+        -- @param tail boolean|nil  True carries every later entry too; nil defaults to the Ctrl key state.
         function view:Begin(id, title, tail)
             if tail == nil then
                 tail = IsControlKeyDown and IsControlKeyDown() or false

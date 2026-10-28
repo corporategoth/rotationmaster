@@ -9,8 +9,13 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- A new-item field placed at the left of a list's header row (its Add sits
--- at the right). Returns the width it used.
+-- Places a new-item field at the left of a list's header row (its Add sits at the right).
+-- @param form table  The settings form pane; its y is set to the row.
+-- @param field table  The edit box.
+-- @param y number  The row's top offset.
+-- @param width number  The width available (at least 60 is used).
+-- @return number  How far the heading is moved right to make room for the field; always 0, because the field sits on
+--   its own row start and the list has no heading beside it.
 function addon:LayoutNewItemField(form, field, y, width)
     form.y = y
     field:ClearAllPoints()
@@ -19,16 +24,22 @@ function addon:LayoutNewItemField(form, field, y, width)
     return 0
 end
 
--- Adds OrderedCollection to the settings pane p.
+-- Adds OrderedCollection to the settings pane.
+-- @param p table  The settings form pane.
 function addon:InstallSettingsOrdered(p)
-    -- Draws the ordered list at the pane's current y and returns its view (also stored as p.ordered[key]). items is the
-    -- live array, title(i) names row i for drag previews, build(form, i, item, row) fills row i's body and changed()
-    -- runs after a reorder or insert. options (all optional): readOnly, compact, prefix (field-name prefix),
-    -- unsavedKey, current() (the page revokes the list by returning anything but true), heading and add (header row,
-    -- see below), help, duplicate, canDuplicate, enabled ({get,toggle,width,tooltip}), removeItem(i, item),
-    -- confirmReorder(apply, from, gap, tail), confirmInsert(apply, gap), dragIcon, dragSummary and endPreview. Gaps are
-    -- numbered 1 to #items + 1 (gap g is before item g). Cards are pooled on the pane and every callback re-checks the
-    -- pane's generation token, so a redraw while a drag is in flight cancels it.
+    -- Draws a reorderable list at the pane's current y. Gaps are numbered 1 to #items + 1 (gap g is before item g).
+    -- Cards are pooled on the pane and every callback re-checks the pane's generation token, so a redraw while a drag
+    -- is in flight cancels it.
+    -- @param key string  The list's key (the view is stored as p.ordered[key]).
+    -- @param items table  The live array being edited in place.
+    -- @param title function  title(i) names row i for drag previews.
+    -- @param build function  build(form, i, item, row) fills row i's body.
+    -- @param changed function  Runs after a reorder or insert.
+    -- @param options table|nil  Optional settings: readOnly, compact, prefix (field-name prefix), unsavedKey, current()
+    --   (the page revokes the list by returning anything but true), heading and add (header row), help, duplicate,
+    --   canDuplicate, enabled ({get,toggle,width,tooltip}), removeItem(i, item), confirmReorder(apply, from, gap, tail),
+    --   confirmInsert(apply, gap), dragIcon, dragSummary and endPreview.
+    -- @return table  The list's view.
     function p:OrderedCollection(key, items, title, build, changed, options)
         options = options or {}
         self.ordered = self.ordered or {}
@@ -49,7 +60,9 @@ function addon:InstallSettingsOrdered(p)
 
         self.ordered[key] = view
 
-        -- True while the pane is still the one that built this list and the page has not revoked it (options.current).
+        -- Tells whether the pane is still the one that built this list and the page has not revoked it
+        -- (options.current).
+        -- @return boolean  True while the list's callbacks may act.
         local function valid()
             if not p:Valid(token) then
                 return false
@@ -86,8 +99,10 @@ function addon:InstallSettingsOrdered(p)
             end
         end
 
-        -- Whether dropping at gap would change the list: always for an insert in range, otherwise only where a reorder
-        -- of the carried range would actually move it.
+        -- Tells whether dropping at a gap would change the list: always for an insert in range, otherwise only where a
+        -- reorder of the carried range would actually move it.
+        -- @param gap number  The gap, 1 to #items + 1.
+        -- @return boolean  True when the drop is allowed.
         function view:CanDrop(gap)
             if not valid() or options.readOnly then
                 return false
@@ -99,9 +114,12 @@ function addon:InstallSettingsOrdered(p)
             return addon:CanReorderWorkbenchRange(items, self.drag, gap, self.tail)
         end
 
-        -- Ends the drag and applies it at gap: runs an add action, inserts a new item or reorders the carried range,
+        -- Ends the drag and applies it at a gap: runs an add action, inserts a new item or reorders the carried range,
         -- inside one settings-history step. Edits still pending in fields are flushed first; the change is skipped when
-        -- the list changed under the drag or a confirm callback declines. Returns whether the drop was accepted.
+        -- the list changed under the drag or a confirm callback declines.
+        -- @param gap number  The gap to drop at.
+        -- @return boolean|nil  Whether the drop was accepted; for a confirm callback, true when the confirmation was
+        --   started; for a reorder or insert, what applying returns.
         function view:Drop(gap)
             local from, tail, factory, action = self.drag, self.tail, self.insertFactory, self.insertAction
             local allowed = self:CanDrop(gap)
@@ -114,7 +132,7 @@ function addon:InstallSettingsOrdered(p)
             -- A dropped add action inserts through the page's own add path, so
             -- a drop at the end leaves exactly what a click on Add leaves.
             if action then
-                -- Wrapper so the add action can run either bare or inside a settings-history step.
+                -- Wraps the add action so it can run either bare or inside a settings-history step.
                 local function insert()
                     action(gap)
                 end
@@ -135,6 +153,7 @@ function addon:InstallSettingsOrdered(p)
             end
 
             -- Performs the confirmed change, but only if the list is still exactly what it was when the drop started.
+            -- @return boolean  True when the change was made.
             local function apply()
                 if not valid() or #items ~= #original then
                     return false
@@ -173,7 +192,8 @@ function addon:InstallSettingsOrdered(p)
             return apply()
         end
 
-        -- Highlights the drop zone under the pointer (only a gap that CanDrop accepts) and returns its index, or nil.
+        -- Highlights the drop zone under the pointer (only a gap that CanDrop accepts).
+        -- @return number|nil  The zone's gap index; nil when there is none.
         function view:Hover()
             local selected
 
@@ -195,7 +215,7 @@ function addon:InstallSettingsOrdered(p)
             return selected
         end
 
-        -- Mouse released: drops at the hovered gap, or cancels when there is none.
+        -- Handles the mouse release: drops at the hovered gap, or cancels when there is none.
         function view:EndDrag()
             local gap = self:Hover()
 
@@ -206,9 +226,10 @@ function addon:InstallSettingsOrdered(p)
             end
         end
 
-        -- Starts carrying row index (and every following row when Ctrl is held): shows the ghost card, reveals the
-        -- legal drop zones and polls the pointer until the button is released. Does nothing for a read-only list or
+        -- Starts carrying a row (and every following row when Ctrl is held): shows the ghost card, reveals the legal
+        -- drop zones and polls the pointer until the button is released. Does nothing for a read-only list or
         -- unflushable edits.
+        -- @param index number  The 1-based row to carry.
         function view:BeginDrag(index)
             if self.drag == index then
                 return
@@ -293,7 +314,11 @@ function addon:InstallSettingsOrdered(p)
         end
 
         -- Starts dragging a new entry from the Add button. A drop calls action(gap) when given, otherwise inserts
-        -- factory()'s result. Returns false when the list is read-only or a pending edit cannot be flushed.
+        -- factory()'s result.
+        -- @param factory function|nil  Creates the item to insert.
+        -- @param label string  The ghost card's title.
+        -- @param action function|nil  Called with the gap on drop, instead of inserting.
+        -- @return boolean  False when the list is read-only or a pending edit cannot be flushed; otherwise true.
         function view:BeginInsert(factory, label, action)
             self:CancelDrag()
 
@@ -503,6 +528,8 @@ function addon:InstallSettingsOrdered(p)
             local y = self.y
             local outerSurface, outerWidth = self.surface, self.width
 
+            -- Acquires the pooled row for an item (created on first use): a frame with the header button, body, Move
+            -- Up, Move Down and Delete buttons and, for cards, the rounded decoration.
             local row = self:Acquire(options.compact and 'orderedTableRows' or 'orderedCards', function()
                 local frame = CreateFrame('Frame', nil, parent)
                 frame.header = addon:CreateWorkbenchButton(frame, '', width - 56)
@@ -571,7 +598,8 @@ function addon:InstallSettingsOrdered(p)
 
             local rail = 0
 
-            -- Places control in the card's right-hand rail, one slot below the previous one, and shows it.
+            -- Places a control in the card's right-hand rail, one slot below the previous one, and shows it.
+            -- @param control table  The control to place.
             local function railSlot(control)
                 control:ClearAllPoints()
                 control:SetPoint('TOPRIGHT', -4, -3 - rail * 22)
@@ -680,12 +708,12 @@ function addon:InstallSettingsOrdered(p)
             local bodyX = options.compact and 4 or 26
             row.body:SetWidth(options.compact and width - bodyX - 28 or width - 62)
 
-            -- Mouse down or drag start on a card or its body begins carrying that row.
+            -- Begins carrying this row on mouse down or drag start on a card or its body.
             local function startDrag()
                 view:BeginDrag(i)
             end
 
-            -- Mouse up or drag stop drops the carried row.
+            -- Drops the carried row on mouse up or drag stop.
             local function stopDrag()
                 if valid() then
                     view:EndDrag()

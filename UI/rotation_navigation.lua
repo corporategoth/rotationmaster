@@ -7,17 +7,20 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Adds the navigation methods to pane. Every prompt callback re-checks that the pane, generation and workspace are
--- still the ones the prompt was opened for, because the editor can switch rotation while a prompt is up.
+-- Adds the navigation methods to the editor pane. Every prompt callback re-checks that the pane, generation and
+-- workspace are still the ones the prompt was opened for, because the editor can switch rotation while a prompt is up.
+-- @param pane table  The rotation editor pane.
 function addon:InstallRotationNavigation(pane)
-    -- Whether this is a new rotation that was never saved (not the fallback).
+    -- Tells whether this is a new rotation that was never saved (not the fallback).
+    -- @return boolean  True for a pending, editable, non-fallback rotation.
     function pane:IsNewRotation()
         local workspace = self.workspace
         return workspace.pending == true and not workspace.fallback and not workspace.readOnly
     end
 
-    -- A new rotation nobody has typed into. Its identifier is filled in from
-    -- its name on its own, which is not an edit.
+    -- Tells whether this is a new rotation nobody has typed into. Its identifier is filled in from its name on its own,
+    -- which is not an edit.
+    -- @return boolean  True when it is new and has no edits or pending fields.
     function pane:IsUntouchedNew()
         if not self:IsNewRotation() or self.workspace:IsDirty() then
             return false
@@ -48,8 +51,10 @@ function addon:InstallRotationNavigation(pane)
         self:ClearPendingFields()
     end
 
-    -- Throws away a new, never saved rotation: it leaves the list, and the
-    -- editor moves on to the fallback. No confirmation: nothing was saved.
+    -- Throws away a new, never saved rotation: it leaves the list, and the editor moves on to the fallback. No
+    -- confirmation: nothing was saved.
+    -- @return boolean|nil  True when discarded; nil when the pane is not showing a new rotation or the discard failed.
+    -- @return string|nil  The reason when the first value is nil.
     function pane:DiscardNew()
         if not self.active or not self:IsNewRotation() then
             return nil, 'not-a-new-rotation'
@@ -73,6 +78,8 @@ function addon:InstallRotationNavigation(pane)
 
     -- Deletes the current custom rotation after a confirmation prompt (none for a never-saved one, which is just
     -- discarded). Built In, read-only and fallback rotations are refused. The prompt frame is created once and reused.
+    -- @return boolean|nil  For a never-saved rotation, what DiscardNew returns; otherwise nothing.
+    -- @return string|nil  The reason when DiscardNew fails.
     function pane:ConfirmDelete()
         local workspace = self.workspace
 
@@ -124,7 +131,8 @@ function addon:InstallRotationNavigation(pane)
         local prompt = self.deletePrompt
         local token = self.generation
 
-        -- True while the delete prompt still belongs to this pane, generation and workspace.
+        -- Tells whether the delete prompt still belongs to this pane, generation and workspace.
+        -- @return boolean  True while the prompt's buttons may act.
         local function valid()
             return pane.active
                 and pane.generation == token
@@ -160,10 +168,13 @@ function addon:InstallRotationNavigation(pane)
         addon:OpenPopup(prompt, self)
     end
 
-    -- Runs callback when it is safe to leave the current rotation. Returns true when it ran at once; otherwise opens
-    -- the Apply / Discard / Cancel prompt and returns false, 'rotation-navigation-pending', and callback runs only
-    -- after the draft is applied or discarded. Returns nil and a reason when the pane is released or callback is not a
-    -- function.
+    -- Runs a callback when it is safe to leave the current rotation. When there are unsaved changes the Apply / Discard
+    -- / Cancel prompt opens instead, and the callback runs only after the draft is applied or discarded.
+    -- @param callback function  Called with no arguments once leaving is safe.
+    -- @return boolean|nil  True when the callback ran at once; false when a prompt was opened (or the metadata flush
+    --   failed); nil when the pane is released or callback is not a function.
+    -- @return string|nil  'rotation-navigation-pending' when a prompt is open; 'invalid-metadata' or
+    --   'rotation-pane-released' for the failures; nil when the callback ran.
     function pane:RequestLeave(callback)
         if not self.active or type(callback) ~= 'function' then
             return nil, 'rotation-pane-released'
@@ -229,7 +240,8 @@ function addon:InstallRotationNavigation(pane)
         local request = { callback = callback, generation = self.generation, workspace = self.workspace }
         self.pendingLeave = request
 
-        -- True while this leave request is still the pending one for the same generation and workspace.
+        -- Tells whether this leave request is still the pending one for the same generation and workspace.
+        -- @return boolean  True while the prompt's buttons may act.
         local function valid()
             return pane.active
                 and pane.pendingLeave == request
@@ -237,6 +249,8 @@ function addon:InstallRotationNavigation(pane)
                 and pane.workspace == request.workspace
         end
 
+        -- Applies the draft and, if that worked, closes the prompt and runs the callback; a failure is shown in the
+        -- prompt.
         addon:SetUIScript(prompt.apply, 'OnClick', function()
             if not valid() then
                 return
@@ -258,6 +272,8 @@ function addon:InstallRotationNavigation(pane)
             callback()
         end)
 
+        -- Discards the draft (a never-saved rotation is removed from the list), clears the dirty flags, closes the
+        -- prompt and runs the callback.
         addon:SetUIScript(prompt.discard, 'OnClick', function()
             if not valid() then
                 return

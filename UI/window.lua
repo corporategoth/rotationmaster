@@ -14,6 +14,8 @@ local scaledWindows = setmetatable({}, { __mode = 'k' })
 -- ============================================================================
 
 -- Clamps a saved scale to the allowed 0.7 to 1.3 range (anything else reads as 1) and rounds it to two decimals.
+-- @param value any  The saved scale.
+-- @return number  The scale to use.
 local function scaleValue(value)
     if type(value) ~= 'number' or value ~= value or value < .7 or value > 1.3 then
         return 1
@@ -22,11 +24,14 @@ local function scaleValue(value)
     return math.floor(value * 100 + .5) / 100
 end
 
--- The largest scale at which `frame` still fits the screen: a window has a fixed size in its own units and is drawn
--- scale times larger, and a frame cannot be shrunk by SetClampedToScreen. Returns `wanted` unchanged when the frame
--- sizes itself to the screen (`rmFitsOwnSize`, the resizable main window) or when a size is not known yet; otherwise
--- the smaller of `wanted` and the scale at which the frame's width and height equal the screen's, to two decimals and
--- never below 0.5.
+-- Returns the largest scale at which a frame still fits the screen: a window has a fixed size in its own units and is
+-- drawn scale times larger, and a frame cannot be shrunk by SetClampedToScreen. The wanted scale is returned unchanged
+-- when the frame sizes itself to the screen (`rmFitsOwnSize`, the resizable main window) or when a size is not known
+-- yet; otherwise the smaller of the wanted scale and the scale at which the frame's width and height equal the
+-- screen's, to two decimals and never below 0.5.
+-- @param frame table  The window frame.
+-- @param wanted number  The scale the player asked for.
+-- @return number  The scale to apply.
 local function fittedScale(frame, wanted)
     if frame.rmFitsOwnSize or not UIParent then
         return wanted
@@ -53,8 +58,9 @@ local function fittedScale(frame, wanted)
 end
 
 -- Applies the saved window scale (`db.global.uiScale`) to a frame parented to UIParent and remembers it so a later
--- scale change reaches it. The scale is reduced when the frame, at its current size, would not fit the screen (a
--- 650 pixel window at 130 percent on a 768 pixel screen). Frames nested in another window keep their parent's scale.
+-- scale change reaches it. The scale is reduced when the frame, at its current size, would not fit the screen (a 650
+-- pixel window at 130 percent on a 768 pixel screen). Frames nested in another window keep their parent's scale.
+-- @param frame table|nil  The window frame.
 function addon:ApplyWorkbenchScale(frame)
     if frame and frame.GetParent and frame:GetParent() == UIParent and frame.SetScale then
         scaledWindows[frame] = true
@@ -64,14 +70,16 @@ end
 
 -- Rescales every window that was registered for scaling (each still limited to what fits the screen); called when the
 -- scale setting changes.
+-- @param value number  The new scale setting.
 function addon:ScaleWorkbenchWindows(value)
     for frame in pairs(scaledWindows) do
         frame:SetScale(fittedScale(frame, scaleValue(value)))
     end
 end
 
--- Apply only to RM-owned dialogs. An opaque layer beneath their native art
--- keeps overlapping configuration windows readable.
+-- Puts an opaque layer beneath a dialog's native art, so overlapping configuration windows stay readable. Apply only to
+-- RM-owned dialogs.
+-- @param widget table|nil  The dialog's widget table, or a bare frame.
 function addon:MakeWindowOpaque(widget)
     local frame = widget and (widget.frame or widget)
 
@@ -93,6 +101,11 @@ function addon:MakeWindowOpaque(widget)
         local previousScale = frame.GetScale and frame:GetScale() or 1
         widget.rmOpaqueActive = true
 
+        -- Undoes the opaque treatment when the widget is released: hides the background, restores alpha and scale,
+        -- restores the original OnRelease and runs it.
+        -- @param control table  The widget being released.
+        -- @param ... any  The arguments passed on to the original release.
+        -- @return any  What the original release returns.
         widget.OnRelease = function(control, ...)
             frame.rmOpaqueBackground:Hide()
 
@@ -166,7 +179,9 @@ local escapeProxy
 local settling, compacting, needCompact, lastFront = false, false, false, nil
 local serial = 0
 
--- Returns the frame for a widget table (its `.frame`) or for a bare frame, or nil for anything else.
+-- Returns the frame for a widget table (its `.frame`) or for a bare frame.
+-- @param value any  The widget or frame.
+-- @return table|nil  The frame; nil for anything else.
 local function frameOf(value)
     if type(value) ~= 'table' then
         return nil
@@ -180,22 +195,30 @@ local function frameOf(value)
 end
 
 -- Returns the frame level, or 0 for an object without one.
+-- @param frame table  The frame.
+-- @return number  The level.
 local function levelOf(frame)
     return type(frame.GetFrameLevel) == 'function' and frame:GetFrameLevel() or 0
 end
 
 -- Returns the frame strata name, or MEDIUM for an object without one.
+-- @param frame table  The frame.
+-- @return string  The strata name.
 local function strataOf(frame)
     return type(frame.GetFrameStrata) == 'function' and frame:GetFrameStrata() or 'MEDIUM'
 end
 
 -- Returns the numeric order of a strata name (0 for an unknown one) so strata can be compared.
+-- @param strata string  The strata name.
+-- @return number  The order, 1 (BACKGROUND) to 8 (TOOLTIP).
 local function rank(strata)
     return STRATA_RANK[strata] or 0
 end
 
 -- Finds the registry entry for a widget or frame, walking up to 200 parents so any frame inside a registered window
 -- resolves to that window.
+-- @param value any  The widget or frame.
+-- @return table|nil  The registry entry; nil when none is found.
 local function entryFor(value)
     local frame = frameOf(value)
 
@@ -214,12 +237,17 @@ local function entryFor(value)
     end
 end
 
--- True when the entry's own frame is shown, whether or not its ancestors are.
+-- Tells whether the entry's own frame is shown, whether or not its ancestors are.
+-- @param entry table  The registry entry.
+-- @return boolean  True when the frame is shown.
 local function isShown(entry)
     return entry.frame:IsShown()
 end
 
--- Drawn right now (the frame and every ancestor shown). Windows that only look shown, inside a hidden pane, do not take part.
+-- Tells whether an entry is drawn right now (the frame and every ancestor shown). Windows that only look shown, inside
+-- a hidden pane, do not take part.
+-- @param entry table  The registry entry.
+-- @return boolean  True when drawn.
 local function isVisible(entry)
     local frame = entry.frame
 
@@ -230,7 +258,9 @@ local function isVisible(entry)
     return frame:IsShown()
 end
 
--- Never move a protected Blizzard frame in combat; RM's own frames are not protected.
+-- Tells whether a frame may be moved: never a protected Blizzard frame in combat; RM's own frames are not protected.
+-- @param frame table  The frame.
+-- @return boolean  True when it may be changed now.
 local function touchable(frame)
     local locked = rawget(_G, 'InCombatLockdown')
 
@@ -244,6 +274,8 @@ end
 
 -- Sets a frame level, clamped to `LEVEL_CEILING` (which flags a compaction), only when it differs and the frame may be
 -- touched.
+-- @param entry table  The registry entry.
+-- @param level number  The wanted level.
 local function setLevel(entry, level)
     local frame = entry.frame
 
@@ -258,6 +290,8 @@ local function setLevel(entry, level)
 end
 
 -- Sets the frame strata only when it differs and the frame may be touched.
+-- @param entry table  The registry entry.
+-- @param strata string  The wanted strata.
 local function setStrata(entry, strata)
     local frame = entry.frame
 
@@ -266,13 +300,19 @@ local function setStrata(entry, strata)
     end
 end
 
--- Highest level among a frame and its descendants in one strata. A nested
--- window (a registered frame inside this one) places itself and is skipped.
+-- Returns the highest level among a frame and its descendants in one strata. A nested window (a registered frame inside
+-- this one) places itself and is skipped when pruned.
+-- @param frame table  The frame.
+-- @param strata string  The strata to look at.
+-- @param pruned boolean  True skips nested registered windows.
+-- @return number  The highest level.
 local function topOf(frame, strata, pruned)
     local top = levelOf(frame)
 
-    -- Visits the descendants of `node` (depth limited to 64) and raises `top` to the highest level found in the strata,
+    -- Visits the descendants of a node (depth limited to 64) and raises `top` to the highest level found in the strata,
     -- skipping nested registered windows when `pruned`.
+    -- @param node table  The frame to visit.
+    -- @param depth number  The current depth.
     local function walk(node, depth)
         if depth > 64 or type(node.GetChildren) ~= 'function' then
             return
@@ -297,12 +337,17 @@ local function topOf(frame, strata, pruned)
     return top
 end
 
--- Highest level used by a window's own content, ignoring nested registered windows, which place themselves.
+-- Returns the highest level used by a window's own content, ignoring nested registered windows, which place themselves.
+-- @param entry table  The registry entry.
+-- @return number  The highest level.
 local function extentOf(entry)
     return topOf(entry.frame, strataOf(entry.frame), true)
 end
 
--- True when `other` is opened by `entry` (directly or through a chain) or sits inside its frame.
+-- Tells whether `other` is opened by `entry` (directly or through a chain) or sits inside its frame.
+-- @param other table  The candidate entry.
+-- @param entry table  The owning entry.
+-- @return boolean  True when it belongs to the entry.
 local function belongsTo(other, entry)
     local current, hops = other.opener, 0
 
@@ -330,8 +375,10 @@ local function belongsTo(other, entry)
     return false
 end
 
--- The nearest opener in the chain that is still open: closing a menu or a
--- hidden-for-child owner hands its popups to the window beneath it.
+-- Returns the nearest opener in the chain that is still open: closing a menu or a hidden-for-child owner hands its
+-- popups to the window beneath it.
+-- @param entry table  The registry entry.
+-- @return table|nil  The opener's entry; nil when none is open.
 local function liveOpener(entry)
     local current, hops = entry.opener, 0
 
@@ -345,6 +392,9 @@ local function liveOpener(entry)
 end
 
 -- Returns the strata an entry needs: its own, raised to the strata of its opener or of any foreign frame it must clear.
+-- @param entry table  The registry entry.
+-- @param opener table|nil  The entry's live opener.
+-- @return string  The strata name.
 local function wantedStrata(entry, opener)
     local want = entry.strata
 
@@ -363,9 +413,8 @@ end
 
 local updateEscapeTarget
 
--- Every shown popup above its opener's content; relative order of what had to
--- move is kept. Cheap when nothing is out of order, so it also runs whenever
--- the frontmost window changes (a click raised one natively).
+-- Compacts the level stack: assigns the shown windows' levels again from the floor upward in their current order, each
+-- separated from the next by the extent of its content plus a gap. Used when a level reached the ceiling.
 local function compact()
     needCompact = false
     local order = {}
@@ -399,7 +448,8 @@ end
 
 -- Restores the order: every shown popup ends up above its opener's content and above the foreign frames it must clear,
 -- lifting only what is out of order and keeping the relative order of what moved. Re-entrant calls return at once; when
--- a level hit the ceiling it compacts the stack and settles again.
+-- a level hit the ceiling it compacts the stack and settles again. Cheap when nothing is out of order, so it also runs
+-- whenever the frontmost window changes (a click raised one natively).
 local function settle()
     if settling then
         return
@@ -427,6 +477,8 @@ local function settle()
     local done, lifted = {}, 0
 
     -- Places one entry above its opener (placed first, recursively) and above the foreign frames it must clear.
+    -- @param entry table  The registry entry.
+    -- @param depth number  The recursion depth (the opener chain is followed at most 24 deep).
     local function fix(entry, depth)
         if done[entry] then
             return
@@ -480,9 +532,10 @@ local function settle()
     end
 end
 
--- The highest level occupied by any other open window's content (and by any
--- foreign frame this one must clear). Windows this one opened, or that sit
--- inside it, move with it and do not count.
+-- Returns the highest level occupied by any other open window's content (and by any foreign frame this one must clear).
+-- Windows this one opened, or that sit inside it, move with it and do not count.
+-- @param entry table  The registry entry.
+-- @return number  The highest level.
 local function frontLevel(entry)
     local top = 0
 
@@ -510,12 +563,12 @@ local function frontLevel(entry)
     return top
 end
 
--- Who opened this window: an explicit opener, the window it is nested in, or
--- (only when it is first shown, and never for a peer window) the frontmost
--- window that was open. The first two are firm. The last is a guess (the
--- window the user was in), so it holds only until that window is itself opened
--- again: showing a window again brings it in front of the popups guessed
--- to belong to it. Peers never constrain each other.
+-- Works out who opened this window: an explicit opener, the window it is nested in, or (only when it is first shown,
+-- and never for a peer window) the frontmost window that was open. The first two are firm. The last is a guess (the
+-- window the user was in), so it holds only until that window is itself opened again: showing a window again brings it
+-- in front of the popups guessed to belong to it. Peers never constrain each other.
+-- @param entry table  The registry entry; its opener and guessed fields are set.
+-- @param opening boolean  True when the window is being opened (a guess is allowed).
 local function resolveOpener(entry, opening)
     local opener = entry.hint and entryFor(entry.hint)
 
@@ -555,7 +608,8 @@ local function resolveOpener(entry, opening)
     end
 end
 
--- Opening a window again releases the popups that were only guessed to belong to it.
+-- Releases the popups that were only guessed to belong to a window, when the window is opened again.
+-- @param entry table  The window's registry entry.
 local function releaseGuessed(entry)
     for _, other in ipairs(dialogs) do
         if other.guessed and other.opener == entry then
@@ -565,8 +619,9 @@ local function releaseGuessed(entry)
     end
 end
 
--- Bring one window to the front of everything open and keep its own popups,
--- and its opener's chain, in order.
+-- Brings one window to the front of everything open and keeps its own popups, and its opener's chain, in order.
+-- @param entry table  The registry entry.
+-- @param opening boolean  True when the window is being opened.
 local function present(entry, opening)
     local frame = entry.frame
 
@@ -595,8 +650,11 @@ local function present(entry, opening)
     updateEscapeTarget(true)
 end
 
--- One pass over the registry: returns the Escape target (the highest shown Escape window) and its entry, the frontmost
--- layered entry, and whether a foreign panel it must clear was raised above it by a click.
+-- Makes one pass over the registry.
+-- @return table|nil  The Escape target frame (the highest shown Escape window).
+-- @return table|nil  The Escape target's entry.
+-- @return table|nil  The frontmost layered entry.
+-- @return boolean|nil  True when a foreign panel it must clear was raised above it by a click.
 local function scan()
     local target, level, selected, front, frontValue, foreignRaised
 
@@ -626,6 +684,7 @@ end
 -- Recomputes the Escape target and publishes it (`RotationMasterFrontmostDialog`, the proxy frame, and the watcher's
 -- visibility). Unless `settled`, a change of frontmost window or a raised foreign panel triggers `settle()` first, so a
 -- native click-raise is undone before the frame is drawn.
+-- @param settled boolean|nil  True when the order was just restored by the caller.
 function updateEscapeTarget(settled)
     local target, selected, front, foreignRaised = scan()
 
@@ -661,6 +720,7 @@ function updateEscapeTarget(settled)
 end
 
 -- Drops an entry from the registry list.
+-- @param entry table  The registry entry.
 local function remove(entry)
     for index, current in ipairs(dialogs) do
         if current == entry then
@@ -670,8 +730,8 @@ local function remove(entry)
     end
 end
 
--- Creates, once, the proxy frame registered in UISpecialFrames and the OnUpdate watcher. Returns false on a client
--- without UISpecialFrames.
+-- Creates, once, the proxy frame registered in UISpecialFrames and the OnUpdate watcher.
+-- @return boolean  False on a client without UISpecialFrames; otherwise true.
 local function ensureEscape()
     if type(UISpecialFrames) ~= "table" then
         return false
@@ -700,6 +760,8 @@ local function ensureEscape()
         escapeProxy:Hide()
         escapeProxy.syncing = false
 
+        -- Hides the Escape target through its owner's guarded Hide method when the game's special-frame close hides the
+        -- proxy (CloseSpecialWindows hides its registered Frame directly; the proxy routes that request to the owner).
         escapeProxy:SetScript('OnHide', function()
             if escapeProxy.syncing or escapeProxy.closing then
                 return
@@ -734,8 +796,12 @@ local function ensureEscape()
     return true
 end
 
--- Registers a window with the layer registry (and optionally the Escape
--- target). Idempotent: returns the existing entry. Does not place it.
+-- Registers a window with the layer registry (and optionally the Escape target). Idempotent: returns the existing
+-- entry. Does not place it.
+-- @param widget table  The widget table, or a bare frame.
+-- @param options table  escape (false for a window that is not an Escape target), layer (false opts out of ordering),
+--   strata and kind.
+-- @return table|nil  The registry entry; nil when the value is not a frame.
 local function register(widget, options)
     local frame = widget and (widget.frame or widget)
 
@@ -801,6 +867,9 @@ local function register(widget, options)
 
     local onShow, onHide = frame:GetScript("OnShow"), frame:GetScript("OnHide")
 
+    -- Wraps the window's OnShow: applies the scale, runs the original script and places the window.
+    -- @param self table  The frame being shown.
+    -- @param ... any  The arguments passed on to the original script.
     local show = function(self, ...)
         addon:ApplyWorkbenchScale(self)
 
@@ -814,6 +883,10 @@ local function register(widget, options)
         end
     end
 
+    -- Wraps the window's OnHide: runs the original script, forgets the opener hint and foreign frames, and updates the
+    -- Escape target.
+    -- @param self table  The frame being hidden.
+    -- @param ... any  The arguments passed on to the original script.
     local hide = function(self, ...)
         if onHide then
             onHide(self, ...)
@@ -829,6 +902,11 @@ local function register(widget, options)
     frame:SetScript("OnHide", hide)
     local release = widget.OnRelease
 
+    -- Unregisters the window when the widget is released: removes the entry, restores the scripts, level and strata,
+    -- hands its popups to its opener and then runs the original release.
+    -- @param control table  The widget being released.
+    -- @param ... any  The arguments passed on to the original release.
+    -- @return any  What the original release returns.
     widget.OnRelease = function(control, ...)
         remove(entry)
         entryOf[frame] = nil
@@ -869,12 +947,13 @@ end
 -- Public API
 -- ============================================================================
 
--- Open (or re-open) a window: register it once, then place it above everything
--- open and above `opener` (a frame or widget inside the window that opened it;
--- optional). Call after every Show, including one that re-shows a window that
--- is already visible. options.over: foreign frames it must clear (Blizzard
--- panels it was opened over); options.kind='window' for a peer window;
--- options.escape=false for a window that is not an Escape target.
+-- Opens (or re-opens) a window: registers it once, then places it above everything open and above its opener. Call
+-- after every Show, including one that re-shows a window that is already visible.
+-- @param widget table  The window widget or frame.
+-- @param opener table|nil  A frame or widget inside the window that opened it.
+-- @param options table|nil  over (foreign frames it must clear, e.g. Blizzard panels it was opened over), kind
+--   ('window' for a peer window) and escape (false for a window that is not an Escape target).
+-- @return boolean  False when the value cannot be registered; otherwise true.
 function addon:OpenPopup(widget, opener, options)
     options = options or {}
     local entry = register(widget, options)
@@ -906,8 +985,10 @@ function addon:OpenPopup(widget, opener, options)
     return true
 end
 
--- The user (or a command) wants this window in front: it and the whole chain
--- of windows that opened it come forward, their popups staying above them.
+-- Brings a window to the front when the user (or a command) wants it: it and the whole chain of windows that opened it
+-- come forward, their popups staying above them.
+-- @param widget table  The window widget or frame.
+-- @return boolean  True when it was raised; false when it is not a shown registered window.
 function addon:RaiseWindow(widget)
     local entry = entryFor(widget)
 
@@ -931,8 +1012,11 @@ function addon:RaiseWindow(widget)
     return true
 end
 
--- Put a foreign frame (a Blizzard panel this addon opened) in front of every
--- RM window except `except` (the popup that must stay above it).
+-- Puts a foreign frame (a Blizzard panel this addon opened) in front of every RM window except one (the popup that must
+-- stay above it).
+-- @param frame table  The foreign frame.
+-- @param except any  The popup (widget or frame) that must stay above it.
+-- @return boolean  False when it may not be moved (not a frame, or protected in combat); otherwise true.
 function addon:RaiseForeignWindow(frame, except)
     if type(frame) ~= 'table' or not touchable(frame) then
         return false
@@ -963,7 +1047,8 @@ function addon:RaiseForeignWindow(frame, except)
     return true
 end
 
--- Test and diagnostics hook: the layer registry in registration order.
+-- Returns the layer registry in registration order (a test and diagnostics hook).
+-- @return table[]  The windows, each { frame, widget, kind, escape, opener, shown }.
 function addon:GetWindowLayers()
     local result = {}
 
@@ -981,13 +1066,15 @@ function addon:GetWindowLayers()
     return result
 end
 
--- One frame of the sync the Escape watcher performs (tests drive it directly).
+-- Performs one frame of the sync the Escape watcher performs (tests drive it directly).
 function addon:SyncWindowLayers()
     updateEscapeTarget()
 end
 
 -- Registers a window as an Escape target only (the compatibility entry used by `addon.HideOnEscape`) and places it if
--- it is already shown. Returns whether it is an Escape target.
+-- it is already shown.
+-- @param widget table  The window widget or frame.
+-- @return boolean  True when it is an Escape target.
 function addon:RegisterWindowForEscape(widget)
     local frame = widget and (widget.frame or widget)
 
@@ -1012,10 +1099,12 @@ end
 -- Dialog chrome
 -- ============================================================================
 
--- Child editors share the main workbench chrome without navigation tabs.
 -- Closes the window on a right click inside it, when it is the frontmost registered window; also closes it when its
 -- owner-bound Help has gone away. A click whose pointer is over a control flagged `rmOwnsRightClick` (reference fields,
 -- the spell icon) is left to that control. Installs a polling watcher (one per frame, idempotent).
+-- @param frame table  The dialog frame.
+--
+-- Child editors share the main workbench chrome without navigation tabs.
 function addon:EnableWorkbenchRightClickClose(frame)
     if frame.rmRightClickWatcher then
         return
@@ -1035,6 +1124,8 @@ function addon:EnableWorkbenchRightClickClose(frame)
         end
     end)
 
+    -- Per-frame check: retires the window when its owner-bound Help is gone, and closes it on a new right click inside
+    -- it (through its owner's Hide when it has one).
     addon:SetUIScript(watcher, 'OnUpdate', function()
         -- The existing visible-dialog observer also retires owner-bound Help.
         local current = frame.rmHelpCurrent
@@ -1095,8 +1186,10 @@ function addon:EnableWorkbenchRightClickClose(frame)
     end)
 end
 
--- Only the header receives movement gestures. Body EditBoxes and controls keep
--- their native mouse selection, dragging and right-click behavior.
+-- Makes the header the only part of the frame that moves it. Body EditBoxes and controls keep their native mouse
+-- selection, dragging and right-click behavior.
+-- @param frame table  The dialog frame.
+-- @return table  The drag handle frame (cached on the frame).
 function addon:EnableWorkbenchTitleDrag(frame)
     if frame.rmWorkbenchTitleDrag then
         return frame.rmWorkbenchTitleDrag
@@ -1140,15 +1233,24 @@ function addon:EnableWorkbenchTitleDrag(frame)
 end
 
 -- Paints the standard dialog frame (background, header, footer, border, logo, title, version and edition, creator and
--- right-click hints) and enables title drag and right-click close. `title` is a font string the caller owns; returns a
--- chrome object with `SetContext(heading, kind, rotationName)`, plus a Help button when `help` is given.
+-- right-click hints) and enables title drag and right-click close.
+-- @param frame table  The dialog frame.
+-- @param title table  A font string the caller owns.
+-- @param help table|nil  When given, a Help button is added (the argument of addon:OpenWorkbenchHelp, with an optional
+--   valid function).
+-- @return table  The chrome object, with `SetContext(heading, kind, rotationName)` and `LayoutTitle()`.
 function addon:CreateWorkbenchDialogChrome(frame, title, help)
     local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
     local chrome = {}
     self:EnableWorkbenchRightClickClose(frame)
     chrome.drag = self:EnableWorkbenchTitleDrag(frame)
 
-    -- Covers `parent` with a solid color texture and returns it.
+    -- Covers a parent with a solid color texture.
+    -- @param parent table  The frame to cover.
+    -- @param r number  Red, 0 to 1.
+    -- @param g number  Green, 0 to 1.
+    -- @param b number  Blue, 0 to 1.
+    -- @return table  The texture.
     local function fill(parent, r, g, b)
         local art = parent:CreateTexture(nil, 'BACKGROUND')
         art:SetAllPoints(parent)
@@ -1186,7 +1288,13 @@ function addon:CreateWorkbenchDialogChrome(frame, title, help)
         end
     end
 
-    -- Creates a small label anchored at `point` with the given offsets and text.
+    -- Creates a small label anchored at a point with the given offsets and text.
+    -- @param parent table  The frame that owns the font string.
+    -- @param point string  The anchor point.
+    -- @param x number  The horizontal offset.
+    -- @param y number  The vertical offset.
+    -- @param value string  The text.
+    -- @return table  The font string.
     local function text(parent, point, x, y, value)
         local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
         label:SetPoint(point, x, y)
@@ -1251,6 +1359,9 @@ function addon:CreateWorkbenchDialogChrome(frame, title, help)
     end
 
     -- Sets the title ("Rotation Master: heading"), the kind label at the top right and the rotation name in the footer.
+    -- @param heading string|nil  The heading shown after the addon name.
+    -- @param kind string|nil  The kind label at the top right; nil means "Condition".
+    -- @param rotationName string|nil  The name shown in the footer.
     function chrome:SetContext(heading, kind, rotationName)
         title:SetText(string.format(L['%s: %s'], addon.pretty_name or L['Rotation Master'], addon:PlainWorkbenchName(
             heading or ''

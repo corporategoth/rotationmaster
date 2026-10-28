@@ -11,6 +11,7 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Builds the serializer/compressor codec used for every rotation export and import (AceSerializer plus LibCompress).
+-- @return table  The codec (Encode and Decode).
 function addon:NewRotationCodec()
     local serializer, compressor = LibStub("AceSerializer-3.0"), LibStub("LibCompress")
 
@@ -26,9 +27,13 @@ end
 -- Read-only import previews
 -- ============================================================================
 
--- Shows the comparison between an incoming rotation and the one it would replace, as read-only cards in a popup
--- owned by the transfer form `p`. Returns the popup. It closes itself when the form, the staged candidate (`view`) or
--- its own drawing changes, and its widgets are released on hide.
+-- Shows the comparison between an incoming rotation and the one it would replace, as read-only cards in a popup owned
+-- by the transfer form. It closes itself when the form, the staged candidate or its own drawing changes, and its
+-- widgets are released on hide.
+-- @param p table  The transfer form that owns the popup.
+-- @param view table  The comparison view of the staged candidate.
+-- @param spec number|string  The specialization namespace the conditions are described in.
+-- @return table  The popup.
 function addon:ShowNativeImportPreview(p, view, spec)
     local d = p.importPreview
 
@@ -119,12 +124,15 @@ function addon:ShowNativeImportPreview(p, view, spec)
     return d
 end
 
--- The full content of an incoming rotation, read-only, in the rotation editor
--- itself: header, specializations, switch condition, steps and cooldowns, as
--- they are shown for a Built In. The editor works on a detached copy of the
--- staged candidate (NewRotationPreviewWorkspace): nothing here can reach the
--- candidate, the live profile or the rotation in the transfer window.
--- Returns the popup, or nil and a reason when the preview workspace or editor cannot be created.
+-- Shows the full content of an incoming rotation, read-only, in the rotation editor itself: header, specializations,
+-- switch condition, steps and cooldowns, as they are shown for a Built In. The editor works on a detached copy of the
+-- staged candidate (NewRotationPreviewWorkspace): nothing here can reach the candidate, the live profile or the
+-- rotation in the transfer window.
+-- @param p table  The transfer form that owns the popup.
+-- @param preview table  The incoming rotation body to show.
+-- @param spec number|string  The specialization namespace of the rotation.
+-- @return table|nil  The popup; nil when the preview workspace or editor cannot be created.
+-- @return string|nil  The reason when the first value is nil.
 function addon:ShowNativeImportContent(p, preview, spec)
     local d = p.importContent
 
@@ -231,10 +239,17 @@ end
 -- The Import/Export Rotation window
 -- ============================================================================
 
--- Opens the Import/Export window for rotation `id` of `spec` and returns the dialog. The export text is the current
--- rotation as a Rotation Master export; an import is staged, previewed (a comparison when replacing, the full content
--- for a copy) and applied through ApplyRotationImport with the owner, profile and record token captured here, so a
--- profile switch, a character change or an edit of the saved rotation elsewhere invalidates the window (`valid`).
+-- Opens the Import/Export window for a rotation. The export text is the current rotation as a Rotation Master export;
+-- an import is staged, previewed (a comparison when replacing, the full content for a copy) and applied through
+-- ApplyRotationImport with the owner, profile and record token captured here, so a profile switch, a character change
+-- or an edit of the saved rotation elsewhere invalidates the window (`valid`).
+-- @param spec number|string  The specialization namespace of the rotation.
+-- @param id string|table  The rotation id or reference to export.
+-- @return table  The dialog.
+--
+-- The Import button's callback (the function passed to ShowSettingsTextTransfer) applies the staged candidate as a
+-- replacement or a named copy in the chosen scope (Class or This character), then opens the Rotations page on the
+-- result.
 function addon:ShowRotationTransfer(spec, id)
     local codec = self:NewRotationCodec()
     local source, exportError = self:GetRotationExportData(spec, id)
@@ -280,8 +295,9 @@ function addon:ShowRotationTransfer(spec, id)
     local active = true
     local generation = p.generation
 
-    -- True while the window still belongs to the state it opened for: same form drawing, profile and scoped
+    -- Tells whether the window still belongs to the state it opened for: same form drawing, profile and scoped
     -- coordinator, same owner (class and character), and the replaced record's token is still current.
+    -- @return boolean  True while the window's callbacks may act.
     local function valid()
         if
             not active
@@ -329,7 +345,9 @@ function addon:ShowRotationTransfer(spec, id)
         },
     }
 
-    -- Name of the rotation inside pasted text, used to suggest a name for the copy; nil when the text does not decode.
+    -- Returns the name of the rotation inside pasted text, used to suggest a name for the copy.
+    -- @param text string  The pasted text.
+    -- @return string|nil  The name; nil when the text does not decode.
     options.originalName = function(text)
         local decoded = codec:Decode(text)
         local value = decoded and decoded.value
@@ -339,8 +357,9 @@ function addon:ShowRotationTransfer(spec, id)
         end
     end
 
-    -- The pasted text changed: drops the staged candidate, disables Apply and Inspect and closes both previews, so
-    -- what is applied is always what was previewed.
+    -- Handles the pasted text changing: drops the staged candidate, disables Apply and Inspect and closes both
+    -- previews, so what is applied is always what was previewed.
+    -- @param d table  The transfer dialog.
     options.invalidate = function(d)
         if not valid() or dialog and (d ~= dialog or d.options ~= options) then
             return
@@ -366,6 +385,7 @@ function addon:ShowRotationTransfer(spec, id)
 
     -- Stages the pasted text and opens the matching preview: a comparison when replacing, the full content for a copy.
     -- Apply is enabled only when the session reports the candidate ready.
+    -- @param d table  The transfer dialog.
     options.preview = function(d)
         if not valid() then
             return
@@ -438,6 +458,7 @@ function addon:ShowRotationTransfer(spec, id)
     end
 
     -- Opens the check-import report: the diagnostics and diff of the staged candidate.
+    -- @return any  What ShowComparisonReport returns; nothing when the window is stale or nothing is staged.
     options.inspect = function()
         if not valid() or not candidate then
             return
@@ -453,7 +474,7 @@ function addon:ShowRotationTransfer(spec, id)
         return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
 
-    -- Window closed: marks it inactive and releases the import session and the form.
+    -- Handles the window closing: marks it inactive and releases the import session and the form.
     options.onClose = function()
         active = false
         session:Clear()
@@ -538,6 +559,9 @@ function addon:ShowRotationTransfer(spec, id)
 
     local destination = dialog.destination:GetScript('OnClick')
 
+    -- Runs the dialog's own destination toggle (replace or new copy), then resets the scope boxes to match, closes any
+    -- open preview and syncs the Class and This character boxes.
+    -- @param ... any  The click arguments, passed on to the original handler.
     self:SetUIScript(dialog.destination, 'OnClick', function(...)
         if dialog.options == options then
             destination(...)

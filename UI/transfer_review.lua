@@ -8,7 +8,8 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Hides the import comparison window if it is the one this review opened (fromImport), leaving any other comparison
--- open. p is the settings pane that owns the comparison.
+-- open.
+-- @param p table|nil  The settings pane that owns the comparison.
 function addon:CloseTransferReview(p)
     local d = p and p.comparison
 
@@ -17,31 +18,27 @@ function addon:CloseTransferReview(p)
     end
 end
 
--- Preview / Compare / Check for the transfer windows that import directly (item
--- sets, effects, announcements, profiles, condition categories, custom
--- conditions). The rotation has its own, which also gates Import; these only
--- let you look, so no flow gets stricter. Nothing here saves anything: it
--- parses the text with the kind's own import parser, shows the result and
--- never touches the candidate's destination.
+-- Builds the Preview and Check helpers for a transfer window. Every review callback is wrapped in pcall so a bad import
+-- text reports an error instead of raising. The rotation has its own review, which also gates Import; these only let
+-- you look, so no flow gets stricter.
+-- @param p table  The settings pane that owns the transfer window.
+-- @param review table  The review definition: kind (collection kind for the rows), parse(text) -> candidate or nil and
+--   a reason, record(candidate) -> the record shown (default: the candidate), current() -> the record of the entry being
+--   replaced, rows (custom rows function), problems(candidate, dialog) and notes(candidate, dialog) -> lists of texts,
+--   and maxRows (cap on rows drawn).
+-- @return function  preview(dialog): opens a comparison (or a single-record view).
+-- @return function  inspect(dialog): shows a problems and notes report.
 --
--- review = {
---   kind     collection kind for the rows (CollectionComparisonRows)
---   parse    function(text) -> candidate | nil,reason          (pure)
---   record   function(candidate) -> record shown (default: the candidate)
---   current  function() -> record of the entry being replaced (nil: none)
---   rows     optional custom rows function, as ShowCollectionComparison's
---   problems function(candidate,dialog) -> {text,...}          blocking problems
---   notes    function(candidate,dialog) -> {text,...}          things worth knowing
---   maxRows  cap on rows drawn (the rest is counted, not drawn)
--- }
---
--- Returns two closures, preview(dialog) and inspect(dialog), bound to review for the transfer dialog's buttons. preview
--- opens a comparison (or a single-record view); inspect shows a problems and notes report. Every review callback is
--- wrapped in pcall so a bad import text reports an error instead of raising.
+-- Preview / Compare / Check for the transfer windows that import directly (item sets, effects, announcements, profiles,
+-- condition categories, custom conditions). Nothing here saves anything: it parses the text with the kind's own import
+-- parser, shows the result and never touches the candidate's destination.
 function addon:BuildTransferReview(p, review)
     local owner = self
 
-    -- Runs review.parse on the dialog's input text; returns the candidate, or nil and a reason string.
+    -- Runs review.parse on the dialog's input text.
+    -- @param d table  The transfer dialog.
+    -- @return any  The candidate; nil when the text does not parse.
+    -- @return string|nil  The reason when the first value is nil.
     local function parse(d)
         local ok, candidate, why = pcall(review.parse, d.input:GetText())
 
@@ -57,6 +54,7 @@ function addon:BuildTransferReview(p, review)
 
     -- Opens a comparison against the selected entry in replace mode, otherwise a single-record preview; failures are
     -- shown in the dialog status line.
+    -- @param d table  The transfer dialog.
     local function preview(d)
         local candidate, why = parse(d)
         owner:CloseTransferReview(p)
@@ -70,6 +68,8 @@ function addon:BuildTransferReview(p, review)
         local current = d.mode == 'replace' and d.options.canReplace and review.current and review.current() or nil
         local shown, problem
 
+        -- Opens the comparison window under pcall: against the selected entry when replacing, or a single-record
+        -- preview of the incoming entry.
         local ok, err = pcall(function()
             if current then
                 shown = owner:ShowCollectionComparison(p, review.kind, current, record, {
@@ -105,7 +105,9 @@ function addon:BuildTransferReview(p, review)
     end
 
     -- Builds the Check import report: the first blocking problem as the verdict, then the problems and notes lists, in
-    -- a reused text report window. Returns whatever the report's SetReport returns.
+    -- a reused text report window.
+    -- @param d table  The transfer dialog.
+    -- @return any  Whatever the report's SetReport returns.
     local function inspect(d)
         local candidate, why = parse(d)
         local problems, notes = {}, {}

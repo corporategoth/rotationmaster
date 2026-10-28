@@ -20,7 +20,10 @@ local data = addon.RotationData
 -- Helpers
 -- ============================================================================
 
--- Creates a left-aligned, non-wrapping label on `parent` in the given font object (small highlight by default).
+-- Creates a left-aligned, non-wrapping label.
+-- @param parent table  The frame that owns the font string.
+-- @param font string|nil  The font object name; nil means 'GameFontHighlightSmall'.
+-- @return table  The new font string.
 local function text(parent, font)
     local label = parent:CreateFontString(nil, 'OVERLAY', font or 'GameFontHighlightSmall')
     label:SetJustifyH('LEFT')
@@ -28,8 +31,10 @@ local function text(parent, font)
     return label
 end
 
--- A Built In's on/off switch, live from the library when it is loaded,
--- else the workspace's copy of the source (its enabled flag).
+-- Returns a Built In's on/off switch, live from the library when it is loaded, else the workspace's copy of the source
+-- (its enabled flag). An import preview shows the switch the incoming rotation carries; it is nobody's setting.
+-- @param workspace table  The rotation edit workspace (preview, builtin, source, Snapshot).
+-- @return boolean|nil  True when the Built In is switched on; nil when no switch can be read.
 local function builtinSwitch(workspace)
     -- An import preview shows the switch the incoming rotation carries; it is nobody's setting.
     if workspace.preview then
@@ -54,6 +59,9 @@ local SPEC_CAPTION_INSET = 30
 
 -- Returns the profile's overrides of a Built In (effective and shipped priority, Enabled) for a read-only Built In
 -- workspace, or nil for anything else, including an import preview.
+-- @param workspace table  The rotation edit workspace.
+-- @return table|nil  The override record (priority, effectivePriority, shippedPriority, enabled, shippedEnabled,
+--   overridden); nil when the workspace is not a read-only Built In.
 local function builtinOverrides(workspace)
     return workspace.readOnly
         and not workspace.preview
@@ -66,12 +74,19 @@ end
 -- Editor pane and its state
 -- ============================================================================
 
--- `detached` is a workspace made by NewRotationPreviewWorkspace: the pane then
--- shows an incoming rotation read-only and writes nothing anywhere.
--- Builds the editor pane on `parent` for rotation `id` of `spec` (or reuses the pane already on `parent`) and opens it.
--- `onSelect(spec, id)` is called when the editor wants the roster to move to another rotation. Returns the pane, or nil
--- and a reason when no workspace can be made. The closures below share `workspace`, `spec`, `id` and `onSelect` as
--- upvalues and `pane:Open` reassigns them, so they always describe the rotation currently shown.
+-- Builds the editor pane on `parent` for a rotation (or reuses the pane already on `parent`) and opens it.
+-- @param parent table  The frame that holds the pane; the pane is cached on it as rmRotationEditor.
+-- @param spec number|string  The specialization namespace of the rotation.
+-- @param id string|table  The rotation id or reference to edit.
+-- @param onSelect function|nil  Called as onSelect(spec, id) when the editor wants the roster to move to another
+--   rotation.
+-- @param detached table|nil  A workspace made by NewRotationPreviewWorkspace: the pane then shows an incoming rotation
+--   read-only and writes nothing anywhere.
+-- @return table|nil  The pane; nil when no workspace can be made.
+-- @return string|nil  The reason when the first value is nil.
+--
+-- The closures below share `workspace`, `spec`, `id` and `onSelect` as upvalues and `pane:Open` reassigns them, so they
+-- always describe the rotation currently shown.
 function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     if parent.rmRotationEditor then
         return parent.rmRotationEditor:Open(spec, id, onSelect, detached)
@@ -131,7 +146,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     pane.status = text(pane.frame)
     pane.status:SetPoint('BOTTOMLEFT', 8, 12)
 
-    -- Shows `message` (or clears the line) in the footer status text.
+    -- Shows a message (or clears the line) in the footer status text.
+    -- @param message string|nil  The text to show; nil clears the line.
     function pane:Message(message)
         self.status:SetText(message or '')
     end
@@ -181,7 +197,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Builds the canvas scene for the current snapshot and decorates each card model with what only the editor knows:
     -- invalid marks from `data.ValidateBody`, pending-input problems, the typed name, expansion, not-on-bars warnings
-    -- and live state. Returns the scene, or nil after showing the layout problem in the status line.
+    -- and live state.
+    -- @return table|nil  The scene; nil after showing the layout problem in the status line.
     function pane:BuildScene()
         local snapshot = self.workspace:Snapshot()
 
@@ -245,11 +262,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return scene
     end
 
-    -- Steps and cooldowns whose action no action button holds right now, so
-    -- the engine skips them (addon:GetStepBinding, from the button index):
-    -- stepId -> {missing=} (the missing spells of Blizzard's suggestion).
-    -- Computed when the scene is built and when the index changes, never per
-    -- frame. Stop and Branch have no action and are never listed.
+    -- Finds the steps and cooldowns whose action no action button holds right now, so the engine skips them
+    -- (addon:GetStepBinding, from the button index). Computed when the scene is built and when the index changes, never
+    -- per frame. Stop and Branch have no action and are never listed.
+    -- @param snapshot table  The rotation body snapshot.
+    -- @return table  Map of step id to { missing = number[]|nil } (the missing spells of Blizzard's suggestion).
+    -- @return string  A signature of the unbound set, so a caller can tell when it changed.
     function pane:CollectBindings(snapshot)
         local unbound, signature = {}, {}
 
@@ -276,9 +294,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return unbound, table.concat(signature, '|')
     end
 
-    -- The bars were rescanned (a slot changed, a page, a macro...): repaint
-    -- only when a card's warning changes, and not under a focused input (the
-    -- next render picks it up).
+    -- Reacts to the action bars being rescanned (a slot changed, a page, a macro...): repaints only when a card's
+    -- warning changes, and not under a focused input (the next render picks it up).
     function pane:RefreshBindings()
         if not self.active then
             return
@@ -299,9 +316,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self:Render()
     end
 
-    -- The first issue under each section header, from the validation this
-    -- scene already ran (and any invalid staged input): the Rotation and
-    -- Cooldowns tabs are marked even when the other section is in view.
+    -- Stores the first issue under each section header, from the validation this scene already ran (and any invalid
+    -- staged input), so the Rotation and Cooldowns tabs are marked even when the other section is in view.
+    -- @param snapshot table  The rotation body snapshot.
+    -- @param validation table  The ValidateBody result ({ diagnostics = { { path, code }, ... } }).
     function pane:CollectSectionProblems(snapshot, validation)
         local problems = {}
 
@@ -390,8 +408,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.canvas.frame:UpdateWorkbenchScroll()
     end
 
-    -- Runs a workspace command and re-renders. Returns the command's results, or nil and a reason (also shown in the
-    -- status line) when it was refused or the pane was already released.
+    -- Runs a workspace command and re-renders.
+    -- @param name string  The workspace command name (e.g. 'Move', 'UpdateStep', 'Batch').
+    -- @param ... any  The command's arguments.
+    -- @return boolean|nil  True when the command ran; nil when it was refused or the pane was already released.
+    -- @return any  The command's result; the reason when the first value is nil (also shown in the status line).
     function pane:Command(name, ...)
         if not self.active then
             return nil, 'rotation-pane-released'
@@ -495,7 +516,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self:RenderPriority(snapshot)
     end
 
-    -- The priority box and, for a Built In, which of its settings are yours.
+    -- Fills the identifier box: locked and grey on a Built In, a preview and the fallback (which is always 'default'),
+    -- otherwise the saved identifier or one made from the name (unless it is being edited).
+    -- @param snapshot table  The rotation body snapshot.
     function pane:RenderIdentifier(snapshot)
         local locked = self.workspace.readOnly or workspace.fallback
 
@@ -541,7 +564,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Validates the identifier box against the profile (unused, well formed); colors it and shows the reason on
-    -- failure. Returns true when there is no problem or nothing to check (read-only, fallback).
+    -- failure.
+    -- @return boolean  True when there is no problem or nothing to check (read-only, fallback).
     function pane:CheckIdentifier()
         if self.workspace.readOnly or workspace.fallback or not addon.CheckRotationIdentifier then
             self.identifierProblem = nil
@@ -561,15 +585,16 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return problem == nil
     end
 
-    -- True on clients that have specializations (or talent groups) to choose.
+    -- Tells whether the client has specializations (or talent groups) to choose.
+    -- @return boolean  True when the specialization picker applies.
     function pane:ShowsSpecs()
         return addon.GetRotationSpecKind and addon:GetRotationSpecKind() ~= nil
     end
 
-    -- What the fallback applies to, worded as the Rotations list's
-    -- specialization dropdown words it: the specialization (or talent group,
-    -- or "No specialization") whose Default it is where the client keeps one
-    -- Default per specialization, else every specialization.
+    -- Returns what the fallback applies to, worded as the Rotations list's specialization dropdown words it: the
+    -- specialization (or talent group, or "No specialization") whose Default it is where the client keeps one Default
+    -- per specialization, else every specialization.
+    -- @return string  The localized description.
     function pane:FallbackSpecText()
         return addon:GetFallbackSpecName(spec) or L['All specializations']
     end
@@ -623,6 +648,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Shows the specialization picker for the rotation, locked on a Built In and on the fallback, with the full choice
     -- in the tooltip because the button has a fixed width.
+    -- @param snapshot table  The rotation body snapshot.
     function pane:RenderSpecs(snapshot)
         if not self:ShowsSpecs() then
             self.specButton:Hide()
@@ -650,6 +676,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Returns the text of the switch condition button: the fallback's fixed text, an explanation when there is no
     -- switch condition, or the readable condition.
+    -- @param snapshot table  The rotation body snapshot.
+    -- @return string  The text with markup stripped.
     function pane:SwitchSummary(snapshot)
         if workspace.fallback then
             return addon:PlainWorkbenchName(L['No other rotations match.'])
@@ -668,6 +696,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Fills the identifier, specialization, priority and Enabled controls for the three kinds of pane: import preview
     -- (shows the incoming values, all locked), Built In (your override per profile, in amber when it differs from the
     -- pack) and your own rotation (editable draft).
+    -- @param snapshot table  The rotation body snapshot.
     function pane:RenderPriority(snapshot)
         self:RenderIdentifier(snapshot)
         self:RenderSpecs(snapshot)
@@ -743,7 +772,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
     end
 
-    -- A Built In priority or Enabled change is saved now, then selection follows.
+    -- Follows a Built In priority or Enabled change (saved already): refreshes automatic switching and the advice, then
+    -- lays out and redraws the pane.
     function pane:BuiltinOverrideChanged()
         if not self.active then
             return
@@ -758,6 +788,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Returns the name to show in child windows: the name being typed, else the saved one, else the workspace title.
+    -- @return string  The name with markup stripped.
     function pane:RotationDisplayName()
         return addon:PlainWorkbenchName(
             self.nameDirty and self.name:GetText() or self.workspace:Snapshot().name or self.workspace.title
@@ -766,6 +797,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Opens the condition editor on a step's conditions or, for `{ kind = "switch" }`, on the switch condition. The
     -- editor edits a copy; the commit callback applies it through the workspace and only if this pane is still active.
+    -- @param target string|table  A step id, or { kind = 'switch' } for the switch condition.
     function pane:EditCondition(target)
         if not self.active then
             return
@@ -853,6 +885,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Opens the Help window for a card, worded for a branch, a cooldown or a rotation step.
+    -- @param model table  The card model (step, section, displayName).
     function pane:ShowCardHelp(model)
         local kind = model.step.type == 'branch' and 'branch'
             or model.section == 'cooldowns' and 'cooldown'
@@ -869,6 +902,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Builds the open card's detail fields (UI/rotation_fields.lua) when that file is loaded.
+    -- @param card table  The card control.
+    -- @param model table  The card model.
+    -- @param alive function  The card's staleness check; field handlers stop acting when it returns false.
     function pane:BuildFields(card, model, alive)
         if addon.BuildRotationCardFields then
             addon:BuildRotationCardFields(self, card, model, alive)
@@ -883,6 +919,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Creates a header button (with an icon when given) whose `action` is `callback` and records it in `pane.tools`,
     -- the list `LayoutGeometry` arranges. `Open` wires the click so a stale pane ignores it.
+    -- @param label string  The button text.
+    -- @param width number  The button width; 24 with an icon makes a compact 68-wide labeled icon button.
+    -- @param callback function  Stored as control.action and called with no arguments on click.
+    -- @param icon string|nil  The icon name; nil makes a plain button.
+    -- @return table  The button.
     local function tool(label, width, callback, icon)
         local control = icon and addon:CreateWorkbenchLabeledIconButton(
             pane.frame,
@@ -897,6 +938,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return control
     end
 
+    -- Creates the Undo button. Its action flushes the typed name and field edits (stopping with a message if they are
+    -- invalid), then undoes the last workspace change and redraws.
     pane.undo = tool(
         L['Undo'],
         24,
@@ -992,11 +1035,14 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     table.remove(pane.tools)
     pane.compare:Hide()
 
+    -- Creates the Duplicate button (Clone to edit on a Built In). Its action asks the roster to select a copy of the
+    -- rotation, after the editor's leave prompt when there is one.
     pane.clone = tool(
         workspace.readOnly and L['Clone to edit'] or L['Duplicate'],
         110,
         function()
-            -- Duplicates the rotation (a Built In is cloned into a custom one) and asks the roster to select the copy.
+            -- Duplicates the rotation (a Built In is cloned into a custom one) and asks the roster to select the copy;
+            -- shows the reason on failure.
             local function duplicate()
                 local generated, problem, reference
                 local name = string.format(L['Copy of %s'], workspace:Snapshot().name or workspace.title)
@@ -1026,6 +1072,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     table.remove(pane.tools)
     pane.clone:Hide()
 
+    -- Creates the Enabled button, replaced below by a pill that reuses its action. The action does nothing on a
+    -- preview, switches a Built In on or off for this profile, and toggles the `disabled` flag on your own rotation.
     pane.enable = tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'], 116, function()
         if workspace.preview then
             return
@@ -1096,10 +1144,12 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     pane.readOnlyPill:Hide()
     pane.switchBaseTooltip = pane.switch.tooltip
 
-    -- What else bears on selection, kept off the page (vertical space is
-    -- scarce): where it loads (the Read-Only pill's tooltip), and the
-    -- specialization being played and overlapping switches (the switch's
-    -- tooltip, with an amber edge on the switch for an overlap).
+    -- Collects what else bears on selection, kept off the page (vertical space is scarce): where it loads (the
+    -- Read-Only pill's tooltip), and the specialization being played and overlapping switches (the switch's tooltip,
+    -- with an amber edge on the switch for an overlap).
+    -- @return string|nil  The notes joined by newlines; nil when there are none.
+    -- @return boolean  True when the switch overlaps another rotation's (the amber edge).
+    -- @return string|nil  Where the rotation loads, from its applicability; nil when unknown.
     function pane:SwitchNotes()
         local lines, amber = {}, false
         local scope
@@ -1252,7 +1302,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     local FOOTER_GAP, FOOTER_PAD = 6, 16
 
-    -- Sizes a footer button to its text (plus padding, never below `minimum`) and returns the width.
+    -- Sizes a footer button to its text (plus padding, never below `minimum`).
+    -- @param button table  The footer button.
+    -- @param minimum number  The smallest width allowed.
+    -- @return number  The width set.
     local function fitButton(button, minimum)
         local label = button:GetFontString()
         local width = math.max(minimum, math.ceil(label and label:GetStringWidth() or 0) + FOOTER_PAD)
@@ -1260,9 +1313,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return width
     end
 
-    -- Places every footer control for the current size and selection. The
-    -- selection bar sits in the row when the hint keeps a readable width,
-    -- else on a row of its own above it (footerStacked).
+    -- Places every footer control for the current size and selection. The selection bar sits in the row when the hint
+    -- keeps a readable width, else on a row of its own above it (footerStacked).
+    -- @return boolean  True when the stacked placement changed, which means the canvas must be resized.
     function pane:LayoutFooter()
         local frame = self.frame
         local width = frame:GetWidth()
@@ -1352,9 +1405,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
     end
 
-    -- Runs a bulk action on the selected cards (duplicate, enable, disable, remove, or clear the selection) as one
-    -- `Batch` command, so a single Undo reverses it. Read-only panes only clear. Branches keep their mode: only steps
-    -- are enabled or disabled.
+    -- Runs a bulk action on the selected cards as one `Batch` command, so a single Undo reverses it. Read-only panes
+    -- only clear. Branches keep their mode: only steps are enabled or disabled.
+    -- @param kind string  'duplicate', 'enable', 'disable', 'remove' or 'clear' (clears the selection).
+    -- @return boolean|nil  Whether the batch command ran; nil when there was nothing to do.
     function pane:BulkCommand(kind)
         if not self.active then
             return
@@ -1411,20 +1465,25 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Saving and discarding
     -- ============================================================================
 
-    -- After a save, makes the advice follow it: clears the glows of the previous cooldowns if this rotation was the one
-    -- in use, then re-runs auto-switching, selection and evaluation. Each step can start a rotation transition of its
-    -- own, so the active-rotation token is re-checked after every lookup and call; returns false as soon as something
-    -- else took over, true when everything ran.
+    -- Makes the advice follow a save: clears the glows of the previous cooldowns if this rotation was the one in use,
+    -- then re-runs auto-switching, selection and evaluation. Each step can start a rotation transition of its own, so
+    -- the active-rotation token is re-checked after every lookup and call.
+    -- @param previous table|nil  The rotation body as saved before this save; nil skips clearing old glows.
+    -- @param previousId string|nil  The id the rotation had before the save, when the save changed it.
+    -- @return boolean  False as soon as something else took over, true when everything ran.
     function pane:RefreshAdvice(previous, previousId)
         local change = beginActive(addon)
 
-        -- True while the active-rotation transition this refresh began is still the current one.
+        -- Tells whether the active-rotation transition this refresh began is still the current one.
+        -- @return boolean  True while the refresh may continue.
         local function current()
             return activeCurrent(addon, change)
         end
 
-        -- Calls `addon[name]` if it exists, re-checking the transition token before and after. Returns whether the
-        -- refresh may continue.
+        -- Calls `addon[name]` if it exists, re-checking the transition token before and after.
+        -- @param name string  The addon method name.
+        -- @param ... any  Arguments passed after the addon.
+        -- @return boolean  Whether the refresh may continue.
         local function optional(name, ...)
             local available = addon[name]
 
@@ -1563,7 +1622,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Saves the draft: flushes typed fields and the name, applies the workspace, reopens under the new id when the save
-    -- changed it, then refreshes the advice and redraws. Returns the workspace result, or nil and a reason.
+    -- changed it, then refreshes the advice and redraws.
+    -- @return boolean|nil  The workspace result; nil when the pane is released or a flush failed.
+    -- @return any  The problem reported by the workspace, or the reason for a nil result.
     function pane:Apply()
         if not self.active then
             return nil, 'rotation-pane-released'
@@ -1617,6 +1678,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Returns the tags in effect for the rotation: its own, else those of the manifest it was created or imported with.
+    -- @param snapshot table|nil  The rotation body snapshot; nil reads the current one.
+    -- @return string[]  The tags; empty when there are none.
     function pane:EffectiveTags(snapshot)
         snapshot = snapshot or self.workspace:Snapshot()
         local manifest = self.workspace.source and self.workspace.source.envelope
@@ -1636,18 +1699,22 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Returns the owner scope being edited (the draft when changed, else the saved one).
+    -- @return string|nil  'character' or 'class' (nil when the workspace has none).
     function pane:EffectiveScope()
         return self.scopeDirty and self.scopeDraft or self.workspace.scope
     end
 
-    -- Returns the saved owner scope from the session, or nil when the session does not track one.
+    -- Returns the saved owner scope from the session.
+    -- @return string|nil  The saved scope; nil when the session does not track one.
     function pane:BaselineScope()
         return self.workspace.session.BaselineOwnership and self.workspace.session:BaselineOwnership()
     end
 
     -- Commits every pending header edit (name, identifier, description, metadata, tags, priority, owner scope) as
-    -- workspace commands. Returns true, or nil and a reason after marking the offending box red and showing the
-    -- message. Read-only and deleted panes have nothing to flush.
+    -- workspace commands. Read-only and deleted panes have nothing to flush.
+    -- @return boolean|nil  True when everything was committed; nil when something was rejected (the offending box is
+    --   marked red and the message shown).
+    -- @return string|nil  The reason when the first value is nil.
     function pane:FlushName()
         if self.deleted or workspace.readOnly then
             return true
@@ -1754,8 +1821,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return true
     end
 
-    -- True when the workspace is dirty or any header or card field has pending input; never for a deleted or read-only
-    -- pane.
+    -- Tells whether the workspace is dirty or any header or card field has pending input; never for a deleted or
+    -- read-only pane.
+    -- @return boolean  True when there is something to save.
     function pane:HasUnsavedChanges()
         return not self.deleted
             and not self.workspace.readOnly
@@ -1811,27 +1879,34 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.name:SetPoint('TOPLEFT', frame, 'TOPLEFT', x, -4)
         self.name:SetWidth(math.max(60, width - x - HEADER_GAP - self.info:GetWidth() - 8 - reserve))
 
-        -- Row 2 is a slot at the left and a cluster at the right. The slot
-        -- holds the Read-Only pill on a Built In and, in the same space, Undo
-        -- and Redo on your own rotation. The cluster is flush right and in
-        -- one order: ID, Priority, Enabled, Delete; it never moves, whether or
-        -- not Reset to default shows. Reset (a Built In whose settings you
-        -- changed) goes left of ID, in the free space, or on the line below
-        -- when there is none. The cluster is kept whole: when it cannot share
-        -- the slot's line it moves down to the next line, still flush right.
         -- Anchors a control at (left, top) from the pane's top left, centered in a 20 pixel row.
+        -- @param control table  The control to place.
+        -- @param left number  The left offset.
+        -- @param top number  The top offset (positive down).
+        --
+        -- Row 2 is a slot at the left and a cluster at the right. The slot holds the Read-Only pill on a Built In and,
+        -- in the same space, Undo and Redo on your own rotation. The cluster is flush right and in one order: ID,
+        -- Priority, Enabled, Delete; it never moves, whether or not Reset to default shows. Reset (a Built In whose
+        -- settings you changed) goes left of ID, in the free space, or on the line below when there is none. The
+        -- cluster is kept whole: when it cannot share the slot's line it moves down to the next line, still flush
+        -- right.
         local function place(control, left, top)
             control:ClearAllPoints()
             control:SetPoint('TOPLEFT', frame, 'TOPLEFT', left, -(top + (20 - control:GetHeight()) / 2))
         end
 
         -- Anchors a label vertically centered on a 20 pixel row.
+        -- @param label table  The font string to place.
+        -- @param left number  The left offset.
+        -- @param top number  The top offset of the row (positive down).
         local function placeLabel(label, left, top)
             label:ClearAllPoints()
             label:SetPoint('LEFT', frame, 'TOPLEFT', left, -(top + 10))
         end
 
-        -- Fits a label to its text and returns the width.
+        -- Fits a label to its text.
+        -- @param label table  The font string to size.
+        -- @return number  The width set.
         local function sized(label)
             local w = math.max(1, math.ceil(label:GetStringWidth() or 0))
             label:SetWidth(w)
@@ -1902,8 +1977,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             clusterLine = first + 24
         end
 
-        -- True when Reset to default fits left of the cluster on `line`, between the slot (or the pane edge) and the
-        -- cluster.
+        -- Tells whether Reset to default fits left of the cluster on `line`, between the slot (or the pane edge) and
+        -- the cluster.
+        -- @param line number  The row's top offset.
+        -- @return boolean  True when it fits.
         local function resetFits(line)
             return clusterLeft - HEADER_GAP - resetWidth >= (line == first and slotEnd + HEADER_GAP or 8)
         end
@@ -2002,11 +2079,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Sets the pane frame width.
+    -- @param value number  The width in points.
     function pane:SetWidth(value)
         self.frame:SetWidth(value)
     end
 
     -- Sets the pane frame height.
+    -- @param value number  The height in points.
     function pane:SetHeight(value)
         self.frame:SetHeight(value)
     end
@@ -2057,9 +2136,14 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
     end
 
-    -- Shows rotation `nextId` of `nextSpec` in this pane (releasing the current one first). `nextDetached` is a preview
-    -- workspace that is shown read-only. Resets all pending state, wires every control to the new workspace under a
-    -- fresh generation token (`alive()`), and starts the live bars. Returns the pane, or nil and a reason.
+    -- Shows a rotation in this pane (releasing the current one first). Resets all pending state, wires every control to
+    -- the new workspace under a fresh generation token (`alive()`), and starts the live bars.
+    -- @param nextSpec number|string  The specialization namespace of the rotation.
+    -- @param nextId string|table  The rotation id or reference to show.
+    -- @param nextSelect function|nil  The roster-selection callback (the new `onSelect`).
+    -- @param nextDetached table|nil  A preview workspace that is shown read-only.
+    -- @return table|nil  The pane; nil when no workspace can be made.
+    -- @return string|nil  The reason when the first value is nil.
     function pane:Open(nextSpec, nextId, nextSelect, nextDetached)
         local selected, problem = nextDetached, nil
 
@@ -2109,7 +2193,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.generation = (self.generation or 0) + 1
         local token = self.generation
 
-        -- True while this opening of the pane is still the current one; every callback wired by `Open` checks it first.
+        -- Tells whether this opening of the pane is still the current one; every callback wired by `Open` checks it
+        -- first.
+        -- @return boolean  True while the callbacks may act.
         local function alive()
             return self.active and self.generation == token
         end
@@ -2188,6 +2274,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         -- Saves a Built In's priority for this profile at once (it is an override, not an edit of the pack); a rejected
         -- value turns the box red.
+        -- @param value number|nil  The new priority; nil means the pack's shipped value.
         local function setBuiltinPriority(value)
             if not alive() or not workspace.readOnly or workspace.preview or not addon.SetBuiltinPriority then
                 return
@@ -2211,6 +2298,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         -- Moves the priority by `delta` within the allowed range: a draft edit on your own rotation, an immediate
         -- override on a Built In. Ignored for the fallback and previews.
+        -- @param delta number  The amount to add (1 or -1).
         local function stepPriority(delta)
             if not alive() or workspace.fallback or workspace.preview then
                 return
@@ -2241,7 +2329,6 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             self:UpdateHistory()
         end
 
-        -- Toggle specializations; the menu stays open for the next one.
         -- Opens the specialization menu with the rotation's current choices ticked. Each pick toggles one
         -- specialization (Any clears the list), is saved through the workspace and reopens the menu for the next pick.
         local function openSpecs()
@@ -2341,6 +2428,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             setBuiltinPriority(value)
         end
 
+        -- Filters typing in the priority box to a whole number (anything else reverts to the last text) and marks the
+        -- priority as edited on your own rotations.
+        -- @param user boolean  True when the change came from typing.
         addon:SetUIScript(self.priority, 'OnTextChanged', function(_, user)
             if not alive() or not user or workspace.preview then
                 return
@@ -2438,6 +2528,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
         end)
 
+        -- Shows the validation window listing every problem that keeps the rotation from running (diagnostics and
+        -- invalid pending field input).
         addon:SetUIScript(self.validationButton, 'OnClick', function()
             if not alive() or not addon.ShowConditionText then
                 return
@@ -2496,6 +2588,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.view.switchCollapsed = nil
         self:BindViewControls(alive)
 
+        -- Marks the name as edited; on a new rotation the identifier follows the name until it is edited by hand.
+        -- @param userInput boolean  True when the change came from typing.
         addon:SetUIScript(self.name, 'OnTextChanged', function(_, userInput)
             if not alive() or not userInput or workspace.readOnly or workspace.fallback then
                 return
@@ -2537,6 +2631,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
         end)
 
+        -- Discards the draft: a new rotation is removed, otherwise the workspace reverts to its saved state and every
+        -- pending header and field edit is cleared.
         addon:SetUIScript(self.discard, 'OnClick', function()
             if not alive() then
                 return
@@ -2600,12 +2696,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Live status
     -- ============================================================================
 
-    -- Live condition bars. Each card's condition (and the switch condition)
-    -- is evaluated with the real evaluator against the player's state now,
-    -- every Live Status Update Frequency seconds (profile.live_config_update,
-    -- 0 = off), only while this editor is open and on screen. Only bound
-    -- (visible) cards are evaluated; Release, or a tick that finds the editor
-    -- hidden, cancels the timer, so a closed editor costs nothing.
+    -- Tells whether a frame is on screen. Live condition bars: each card's condition (and the switch condition) is
+    -- evaluated with the real evaluator against the player's state now, every Live Status Update Frequency seconds
+    -- (profile.live_config_update, 0 = off), only while this editor is open and on screen. Only bound (visible) cards
+    -- are evaluated; Release, or a tick that finds the editor hidden, cancels the timer, so a closed editor costs
+    -- nothing.
+    -- @param frame table  The frame to test.
+    -- @return boolean  True when the frame and all its parents are shown.
     local function onScreen(frame)
         if type(frame.IsVisible) == 'function' then
             return frame:IsVisible()
@@ -2622,7 +2719,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return true
     end
 
-    -- Returns the live bar refresh interval in seconds, or nil when it is switched off (0).
+    -- Returns the live bar refresh interval in seconds.
+    -- @return number|nil  The interval; nil when it is switched off (0).
     function pane:LiveInterval()
         local value = tonumber(addon.db.profile.live_config_update)
         return value and value > 0 and value or nil
@@ -2666,6 +2764,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         local token = self.generation
         local timer
 
+        -- Timer tick: refreshes the live bars, or cancels the timer when this one was replaced or the pane was released
+        -- or reopened.
         timer = addon:ScheduleRepeatingTimer(function()
             if self.liveTimer ~= timer then
                 if addon.CancelTimer then
@@ -2701,8 +2801,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.switchLiveBar:SetState(nil)
     end
 
-    -- Whether this rotation is the one advising now, and which step it chose
-    -- (the last recommendation /rm debug glow recorded), for the tooltips.
+    -- Tells whether this rotation is the one advising now, and which step it chose (the last recommendation /rm debug
+    -- glow recorded), for the tooltips.
+    -- @return boolean  True when this rotation is the one advising now.
+    -- @return string|nil  The step id of the last recommendation, when it was made by this rotation.
     function pane:LiveSelection()
         local key = addon.currentRotation
 
@@ -2722,6 +2824,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     -- Converts an evaluator result into a live state: satisfied, unsatisfied, or unavailable with its reason.
+    -- @param result table|nil  The evaluator result ({ status = 'match'|'no-match'|..., reason }).
+    -- @param now number  The time stamp stored in the state.
+    -- @return table  The live state { status, reason, at }.
     local function liveResult(result, now)
         if type(result) ~= 'table' then
             return { status = 'unavailable', reason = L['the condition could not be evaluated'], at = now }
@@ -2736,9 +2841,14 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         return { status = 'unavailable', reason = result.reason, at = now }
     end
 
-    -- Evaluates one card's condition against the live game for its bar. Returns nil for a card with no condition to
-    -- show (a Branch that is always true or false, a missing condition). When this rotation is the one advising, adds
+    -- Evaluates one card's condition against the live game for its bar. When this rotation is the one advising, adds
     -- the note that the step or cooldown is showing now.
+    -- @param model table  The card model.
+    -- @param now number  The time stamp stored in the state.
+    -- @param active boolean  True when this rotation is the one advising.
+    -- @param chosen string|nil  The step id Rotation Master last advised.
+    -- @return table|nil  The live state; nil for a card with no condition to show (a Branch that is always true or
+    --   false, a missing condition).
     function pane:EvaluateLive(model, now, active, chosen)
         local step = model.step
 
@@ -2815,12 +2925,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
     end
 
-    -- A resize lays out the header and viewport at once. Cards follow through
-    -- the shared reflow driver, once per rendered frame at most, by geometry
-    -- alone: bound cards are re-placed, never released and bound again. The
-    -- diagram keeps its card widths, so that is all it needs. List and
-    -- cooldown cards take the viewport width, which rewraps their text, so
-    -- once the size has settled they are bound again (measured) in one render.
+    -- Lays out the header and viewport at once after a resize. Cards follow through the shared reflow driver, once per
+    -- rendered frame at most, by geometry alone: bound cards are re-placed, never released and bound again. The diagram
+    -- keeps its card widths, so that is all it needs. List and cooldown cards take the viewport width, which rewraps
+    -- their text, so once the size has settled they are bound again (measured) in one render.
     function pane:Resized()
         if not self.active then
             return
@@ -2829,7 +2937,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self:LayoutGeometry()
         local canvas = self.canvas
 
-        -- True when the canvas size differs from the size the cards were last laid out for.
+        -- Tells whether the canvas size differs from the size the cards were last laid out for.
+        -- @return boolean  True when a reflow is needed.
         local function stale()
             return canvas.frame:GetWidth() ~= canvas.reflowedWidth or canvas.frame:GetHeight() ~= canvas.reflowedHeight
         end
@@ -2843,7 +2952,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         local token = self.generation
 
-        -- True while this pane is still open under the same generation.
+        -- Tells whether this pane is still open under the same generation.
+        -- @return boolean  True while the queued callbacks may act.
         local function current()
             return self.active and self.generation == token
         end
@@ -2893,8 +3003,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     return pane:Open(spec, id, onSelect, detached)
 end
 
--- General > Live Status Update Frequency changed: the open editor (if any)
--- restarts its dots at the new interval, or clears them at 0.
+-- Restarts the open editor's live dots at the new interval, or clears them at 0, after General > Live Status Update
+-- Frequency changed.
 function addon:RestartLiveStatus()
     local pane = self.liveStatusLastPane
 

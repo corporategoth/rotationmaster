@@ -11,8 +11,10 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- points down a 600-point page, so even a list this long wraps inside the page.
 local TRANSLATION_CREDIT_LIMIT = 480
 
--- Reads one TOC field for this addon (Version, Author, X-License, ...); returns the localized 'Unknown' when the
--- client API is missing, errors or the field is empty.
+-- Reads one TOC field for this addon (Version, Author, X-License, ...).
+-- @param key string  The TOC field name.
+-- @return string  The field value; the localized 'Unknown' when the client API is missing, errors or the field is
+--   empty.
 local function metadata(key)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
@@ -27,14 +29,16 @@ local function metadata(key)
     return L["Unknown"]
 end
 
--- Builds the hidden launcher page and returns { frame = ..., open = ..., ... }; the caller registers page.frame with
--- the settings panel. Widths follow the panel through OnSizeChanged so the wrapped text never overflows.
+-- Builds the hidden launcher page. Widths follow the panel through OnSizeChanged so the wrapped text never overflows.
+-- @return table  { frame = ..., open = ..., ... }; the caller registers page.frame with the settings panel.
 function addon:CreateSettingsLauncher()
     local frame = CreateFrame("Frame", nil, UIParent)
     frame.name = self.pretty_name
     local page = { frame = frame }
 
     -- Creates a left-justified, word-wrapped font string on the page frame (width is set later by OnSizeChanged).
+    -- @param font string|nil  The font object name; nil means "GameFontHighlight".
+    -- @return table  The font string.
     local function label(font)
         local result = frame:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
         result:SetJustifyH("LEFT")

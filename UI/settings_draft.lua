@@ -16,8 +16,11 @@ end
 
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Deep structural equality for plain saved-data tables (no metatables, no cycles); used to compare a draft with its
--- baseline.
+-- Compares two values by deep structure for plain saved-data tables (no metatables, no cycles); used to compare a draft
+-- with its baseline.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when both have the same type and contents.
 local function equal(a, b)
     if type(a) ~= type(b) then
         return false
@@ -41,13 +44,18 @@ local function equal(a, b)
     return true
 end
 
--- Public wrapper over the deep comparison, for code outside this file.
+-- Compares two saved-data values by deep structure; the public wrapper over the comparison, for code outside this file.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when both have the same type and contents.
 function addon:SettingsDataEqual(a, b)
     return equal(a, b)
 end
 
--- Deep-copies saved data. `seen` maps source tables to their copies so shared and cyclic references survive; scalar
--- values are returned as is.
+-- Deep-copies saved data. Shared and cyclic references survive; scalar values are returned as is.
+-- @param value any  The value to copy.
+-- @param seen table|nil  Maps source tables to their copies; leave nil on the first call.
+-- @return any  The copy.
 function addon:CopySettingsData(value, seen)
     if type(value) ~= 'table' then
         return value
@@ -73,17 +81,22 @@ end
 -- Draft methods on the settings form
 -- ============================================================================
 
--- Adds the draft methods below to settings form `p`. A form whose `transactionKeys` is nil (no transaction) reads and
+-- Adds the draft methods below to a settings form. A form whose `transactionKeys` is nil (no transaction) reads and
 -- writes `addon.db` directly and these methods become pass-throughs.
+-- @param p table  The settings form pane.
 function addon:InstallSettingsDraft(p)
-    -- True when an empty collection may open its creation form by itself: it was not dismissed and the baseline holds
-    -- no entries for `scope`/`key`.
+    -- Tells whether an empty collection may open its creation form by itself: it was not dismissed and the baseline
+    -- holds no entries for the scope and key.
+    -- @param scope string  'profile', 'global' or 'char'.
+    -- @param key string  The saved-variable key of the collection.
+    -- @return boolean  True when the creation form may open automatically.
     function p:CanAutoCreateCollection(scope, key)
         return not self.emptyDismissed
             and not (self.draftBaseline and self.draftBaseline[scope] and next(self.draftBaseline[scope][key] or {}))
     end
 
     -- Snapshots the creation-form fields so a later comparison can tell whether the user typed anything.
+    -- @return table  The current creation-form fields.
     function p:CreationState()
         return {
             effect = self.newEffect,
@@ -96,8 +109,9 @@ function addon:InstallSettingsDraft(p)
         }
     end
 
-    -- True when the creation form was used for a new entry and differs from its baseline, or any open text edit is
+    -- Tells whether the creation form was used for a new entry and differs from its baseline, or any open text edit is
     -- dirty.
+    -- @return boolean  True when there is unsaved creation input.
     function p:IsCreationDirty()
         if not self.creationUsedForNew then
             return false
@@ -136,9 +150,10 @@ function addon:InstallSettingsDraft(p)
         self.emptyDismissed = true
     end
 
-    -- Runs the pending creation action after flushing text edits. When the form was opened for a new entry it returns
-    -- false right after the action, without saving or redrawing; otherwise it saves the draft (a failed save returns
-    -- false) and redraws the page.
+    -- Runs the pending creation action after flushing text edits. When the form was opened for a new entry it stops
+    -- right after the action, without saving or redrawing; otherwise it saves the draft and redraws the page.
+    -- @return boolean  True when the creation was saved and the page redrawn; false when nothing ran, the form was for
+    --   a new entry, or the save failed.
     function p:ApplyCreation()
         if not self:FlushEdits() or not self.creationApply then
             return false
@@ -161,6 +176,7 @@ function addon:InstallSettingsDraft(p)
 
     -- Returns the table the page should read and write: `addon.db` for pages without a transaction, otherwise the
     -- draft, created lazily as a copy of the profile, global and char scopes with a baseline of the declared keys.
+    -- @return table  The settings data table.
     function p:SettingsData()
         if not self.transactionKeys then
             return addon.db
@@ -188,8 +204,10 @@ function addon:InstallSettingsDraft(p)
         return self.draft
     end
 
-    -- Runs a runtime side effect now, or, inside a transaction, queues it under `key` (the last one wins) to run after
-    -- a successful Apply so Cancel leaves the runtime untouched.
+    -- Runs a runtime side effect now, or, inside a transaction, queues it to run after a successful Apply so Cancel
+    -- leaves the runtime untouched.
+    -- @param key string  The name the effect is queued under; the last one queued under a key wins.
+    -- @param callback function  The effect, called with no arguments.
     function p:RunSettingsEffect(key, callback)
         if self.transactionKeys then
             self.draftEffects[key] = callback
@@ -198,7 +216,8 @@ function addon:InstallSettingsDraft(p)
         end
     end
 
-    -- True when a text edit is dirty or any declared key of the draft differs from its baseline.
+    -- Tells whether a text edit is dirty or any declared key of the draft differs from its baseline.
+    -- @return boolean  True when there is something to apply.
     function p:IsSettingsDraftDirty()
         if not self.draft then
             return false
@@ -221,10 +240,11 @@ function addon:InstallSettingsDraft(p)
         return false
     end
 
-    -- Validates and applies the draft. Refuses, with a message and a false result, when saved data changed elsewhere
-    -- since the baseline, effects or announcements are incomplete or duplicated, or the client is in combat. On success
-    -- it copies the changed keys into `addon.db`, bumps the lean-engine dependency revision for item sets and effects,
-    -- runs the queued effects and refreshes glows and buttons. Returns true when there is nothing to save.
+    -- Validates and applies the draft. Refuses, with a message, when saved data changed elsewhere since the baseline,
+    -- effects or announcements are incomplete or duplicated, or the client is in combat. On success it copies the
+    -- changed keys into `addon.db`, bumps the lean-engine dependency revision for item sets and effects, runs the
+    -- queued effects and refreshes glows and buttons.
+    -- @return boolean  True on success, or when there is nothing to save; false when it was refused.
     function p:SaveSettingsDraft()
         if not self.draft then
             return true

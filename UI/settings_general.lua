@@ -12,7 +12,9 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Turns a { key = text } table into a list of { value, text } entries sorted by text, for choice controls.
+-- Turns a { key = text } table into a list of choice entries sorted by text, for choice controls.
+-- @param values table|nil  The map of key to display text.
+-- @return table[]  The entries, each { value = key, text = text }.
 local function entries(values)
     local result = {}
 
@@ -28,9 +30,10 @@ end
 -- The General page
 -- ============================================================================
 
--- Draws the General page into the settings pane `p`. Runs on every redraw of the page, so each call rebuilds all
--- controls from the draft in `p:SettingsData()` and registers its cleanups on p.cleanups; nothing it creates may
--- outlive the drawing (every callback checks the drawing's generation through p:Guard or p:Valid).
+-- Draws the General page into the settings pane. Runs on every redraw of the page, so each call rebuilds all controls
+-- from the draft in `p:SettingsData()` and registers its cleanups on p.cleanups; nothing it creates may outlive the
+-- drawing (every callback checks the drawing's generation through p:Guard or p:Valid).
+-- @param p table  The settings pane.
 function addon:BuildGeneralSettings(p)
     local store = p:SettingsData()
     local profile = store.profile
@@ -114,6 +117,8 @@ function addon:BuildGeneralSettings(p)
         end
     )
 
+    -- Live Status Update Frequency slider: stores the value and, when it changed, queues restarting the condition timer
+    -- and the open editor's live bars.
     p:Slider(
         'live_config_update',
         L['Live Status Update Frequency (seconds)'],
@@ -219,8 +224,10 @@ function addon:BuildGeneralSettings(p)
         function() end
     )
 
-    -- Locking is an immediate window action, like moving or resetting it.
-    -- Synchronize only this field so unrelated General edits remain pending.
+    -- Synchronizes the Lock position and size setting everywhere at once (live profile, draft and draft baseline) and
+    -- repaints the check box. Locking is an immediate window action, like moving or resetting it; only this field is
+    -- synchronized so unrelated General edits remain pending.
+    -- @param value boolean  The new locked state.
     local function syncLocked(value)
         for _, settings in ipairs({ self.db.profile, profile, p.draftBaseline and p.draftBaseline.profile or {} }) do
             settings.preview_locked = value
@@ -271,8 +278,8 @@ function addon:BuildGeneralSettings(p)
     local reset = p:Button('preview_reset', L['Reset'], function() end)
     local resetToken = p.generation
 
-    -- Moving the preview is immediate, like dragging the window. Synchronize
-    -- only these baselines so an unrelated staged setting stays staged.
+    -- Resets the preview window to the middle of the screen at the default icon size. Moving the preview is immediate,
+    -- like dragging the window: only these baselines are synchronized so an unrelated staged setting stays staged.
     self:SetUIScript(reset, 'OnClick', function()
         if not p:Valid(resetToken) then
             return
@@ -326,13 +333,16 @@ function addon:BuildGeneralSettings(p)
     p.fields.preview_skin = skin
     local skinToken = p.generation
 
-    -- True while this drawing of the page is still the live one; Masque and the skin chooser answer late.
+    -- Tells whether this drawing of the page is still the live one; Masque and the skin chooser answer late.
+    -- @return boolean  True while the skin controls may be updated.
     local function currentSkinPage()
         return p:Valid(skinToken)
     end
 
-    -- Returns the skin choices and whether skinning is available: Masque's list when the Masque option is on and the
-    -- addon is present, otherwise the single built-in skin and false (the chooser is then disabled).
+    -- Returns the skin choices and whether skinning is available.
+    -- @return table[]|nil  The choices { value, text }: Masque's list when the Masque option is on and the addon is
+    --   present, otherwise the single built-in skin; nil when the page is no longer current.
+    -- @return boolean|nil  True when skinning is available (the chooser is disabled otherwise).
     local function skinChoices()
         if not currentSkinPage() then
             return
@@ -352,8 +362,8 @@ function addon:BuildGeneralSettings(p)
         return { { value = 'Blizzard Classic', text = L['Blizzard Classic'] } }, false
     end
 
-    -- Shows the current skin on the chooser button and enables it only when skinning is available. Returns the choices,
-    -- or nothing when the page is no longer current.
+    -- Shows the current skin on the chooser button and enables it only when skinning is available.
+    -- @return table[]|nil  The skin choices; nil when the page is no longer current.
     local function paintSkin()
         local choices, available = skinChoices()
 
@@ -459,6 +469,8 @@ function addon:BuildGeneralSettings(p)
 
     -- Builds a control through `build` and moves the caption it just acquired to the right of the preview icon, which
     -- spans the Effect and Magnification rows. Relies on the label pool order: the caption is the next pooled label.
+    -- @param build function  Creates the control (and its caption row) and returns it.
+    -- @return table  The control.
     local function besidePreview(build)
         local count = p.counts.labels or 0
         local rowY = p.y
@@ -736,8 +748,8 @@ function addon:BuildGeneralSettings(p)
         local control = p:Check('cpu_cache_bypass', '', requested == 'cached', function() end)
         control.tooltip = L['Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.']
 
-        -- Labels the box "required" when the loaded mode matches the requested one, "pending" while a reload would
-        -- change it, and checks it when the requested mode is the cached one.
+        -- Labels the observation cache box "required" when the loaded mode matches the requested one, "pending" while a
+        -- reload would change it, and checks it when the requested mode is the cached one.
         local function updateModeCaption()
             local loaded, nextMode = self:GetCacheDiagnosticMode()
 
@@ -768,7 +780,10 @@ function addon:BuildGeneralSettings(p)
     -- while this page is shown. Each action uses live settings, never a draft.
     local captures = {}
 
-    -- Calls addon method `method` under pcall; returns its first result, or false when it is missing or errors.
+    -- Calls an addon method under pcall.
+    -- @param method string  The name of the addon method.
+    -- @param ... any  The arguments passed after the addon.
+    -- @return any  The method's first result; false when the method is missing or errors.
     local function call(method, ...)
         local fn = self[method]
 
@@ -780,8 +795,11 @@ function addon:BuildGeneralSettings(p)
         return ok and value
     end
 
-    -- Returns the action that stops a capture of `kind`: through the shared performance command when it exists,
-    -- otherwise by calling the stop `method` directly.
+    -- Returns the action that stops a capture: through the shared performance command when it exists, otherwise by
+    -- calling the stop method directly.
+    -- @param kind string  The capture kind used in the performance command ('cpu', 'runtime' or 'memory').
+    -- @param method string  The name of the addon method that stops the capture.
+    -- @return function  The action; it returns whether it worked and a message.
     local function stopper(kind, method)
         return function()
             if type(self.HandlePerformanceCommand) == 'function' then
@@ -793,7 +811,9 @@ function addon:BuildGeneralSettings(p)
         end
     end
 
-    -- Returns a check that is true when addon method `method` yields a stored report string.
+    -- Returns a check that is true when an addon method yields a stored report string.
+    -- @param method string  The name of the addon method that returns the report.
+    -- @return function  The check; it returns true when a report exists.
     local function stored(method)
         return function()
             local fn = self[method]
@@ -883,9 +903,11 @@ function addon:BuildGeneralSettings(p)
         local minimumWidth = 120
         local diagnosticY = p.y
 
-        -- Sets one capture's button label from its running state and enables its report button when a report exists.
-        -- A costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
+        -- Sets one capture's button label from its running state and enables its report button when a report exists. A
+        -- costly check (the cast report copies its snapshot) is repeated only when the running state changed, when
         -- forced, or about every two seconds.
+        -- @param entry table  The capture entry.
+        -- @param force boolean|nil  True re-checks for a report even for a costly entry.
         local function paint(entry, force)
             local running = entry.running()
             local has = entry.has
@@ -911,6 +933,7 @@ function addon:BuildGeneralSettings(p)
         end
 
         -- Repaints every capture's buttons, but only while this drawing of the page is current.
+        -- @param force boolean|nil  True forces the report check.
         local function repaint(force)
             if p:Valid(token) then
                 for _, entry in ipairs(captures) do
@@ -976,6 +999,11 @@ function addon:BuildGeneralSettings(p)
         local watcher = p:Acquire('captureWatcher', function() return CreateFrame('Frame', nil, p.child) end)
         local elapsed = 0
 
+        -- Every quarter of a second while the page is shown: ages the capture entries and repaints their buttons, so
+        -- the labels follow the live state whoever started or ended the capture. Stops itself when the page was
+        -- redrawn.
+        -- @param frame table  The watcher frame.
+        -- @param delta number|nil  The time since the last update, in seconds.
         self:SetUIScript(watcher, 'OnUpdate', function(frame, delta)
             if not p:Valid(token) then
                 self:SetUIScript(frame, 'OnUpdate', nil)

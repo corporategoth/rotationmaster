@@ -18,13 +18,18 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Draft profile helpers
 -- ============================================================================
 
--- True when the user switched editor provider `id` off in this draft profile.
+-- Tells whether the user switched editor provider `id` off in this draft profile.
+-- @param profile table  The draft profile.
+-- @param id string  The editor provider id.
+-- @return boolean  True when the provider is switched off.
 local function disabled(profile, id)
     return type(profile.lua_editor_disabled) == 'table' and profile.lua_editor_disabled[id] == true
 end
 
--- The draft's syntax-highlighting setting; when it was never saved, highlighting is on unless the editor choice is
--- plain text.
+-- Returns the draft's syntax-highlighting setting; when it was never saved, highlighting is on unless the editor choice
+-- is plain text.
+-- @param profile table  The draft profile.
+-- @return boolean  True when highlighting is on.
 local function highlighting(profile)
     if profile.lua_native_highlighting ~= nil then
         return profile.lua_native_highlighting == true
@@ -34,6 +39,9 @@ local function highlighting(profile)
 end
 
 -- Escapes pipes and replaces control characters so a provider-supplied name cannot inject color codes or break the row.
+-- @param value string  The name.
+-- @return string  The safe name.
+-- @return number  The number of control characters replaced (the result of the last gsub).
 local function safeName(value)
     return value:gsub('|', '||'):gsub('[%z\1-\31\127]', '?')
 end
@@ -43,6 +51,8 @@ local versionStates = { loaded = true, connected = true, disabled = true, incomp
 
 -- Returns the version string for a catalog row, or an empty string unless there is evidence the addon is loaded (an
 -- installed but not loaded addon shows no version).
+-- @param entry table|nil  The catalog row.
+-- @return string  The version, or ''.
 local function versionFor(entry)
     if entry then
         local loaded = entry.loaded
@@ -68,15 +78,17 @@ local colors = {
 -- Page builder
 -- ============================================================================
 
--- Draws the Integrations page into `p` (the settings page object): builds the editor rows and the addon groups from the
+-- Draws the Integrations page into the settings page object: builds the editor rows and the addon groups from the
 -- catalog, measures shared columns once, then draws one card per row inside collapsible sections. Returns without
 -- drawing when the page generation or draft changed mid-build.
+-- @param p table  The settings page object.
 function addon:BuildIntegrationSettings(p)
     local profile = p:SettingsData().profile
     local token = p.generation
 
-    -- True while this drawing is still the live one: the page generation is unchanged and, in a transaction, the draft
-    -- profile is the one captured at the start.
+    -- Tells whether this drawing is still the live one: the page generation is unchanged and, in a transaction, the
+    -- draft profile is the one captured at the start.
+    -- @return boolean  True while the page may be updated.
     local function current()
         return p:Valid(token) and (not p.transactionKeys or p.draft and p.draft.profile == profile)
     end
@@ -109,8 +121,10 @@ function addon:BuildIntegrationSettings(p)
         client = value
     end
 
-    -- False only when the catalog says addon `id` is explicitly unsupported on this client; an unknown or failed lookup
-    -- keeps the row visible.
+    -- Tells whether the catalog allows an addon on this client; an unknown or failed lookup keeps the row visible.
+    -- @param id string  The addon id ('!!!LuaWorkbench' for LuaWorkbench).
+    -- @return boolean|nil  False only when the catalog says the addon is explicitly unsupported on this client; nil
+    --   when the page went stale.
     local function supported(id)
         local success, state = pcall(function()
             local check = self.GetIntegrationClientSupport
@@ -130,8 +144,12 @@ function addon:BuildIntegrationSettings(p)
         return not (success and state == 'unsupported')
     end
 
-    -- Returns the editor rows { id, name, available } sorted by id, a lookup by id, and the Native row. Providers
-    -- unsupported on this client are left out; LuaWorkbench is listed as unavailable when the addon is not present.
+    -- Returns the editor rows sorted by id, a lookup by id, and the Native row. Providers unsupported on this client
+    -- are left out; LuaWorkbench is listed as unavailable when the addon is not present.
+    -- @return table[]|nil  The rows { id, name, available }; nil when the page went stale or the provider list is
+    --   missing.
+    -- @return table  The rows by id.
+    -- @return table  The Native row.
     local function editors()
         local list = self.ListLuaEditorProviders
 
@@ -199,7 +217,10 @@ function addon:BuildIntegrationSettings(p)
     end
 
     -- Returns the editor that would actually open, following the draft: the first available enabled provider for
-    -- "auto", the chosen provider if usable, else native. Nil when nothing is usable.
+    -- "auto", the chosen provider if usable, else native.
+    -- @param rows table[]  The editor rows.
+    -- @param byID table  The editor rows by id.
+    -- @return string|nil  The editor id; nil when nothing is usable.
     local function effective(rows, byID)
         local selected = profile.lua_editor or 'auto'
 
@@ -224,20 +245,26 @@ function addon:BuildIntegrationSettings(p)
 
     -- Stores the current highlighting choice the first time an editor change is made, so switching to a provider and
     -- back does not lose it.
+    -- @param value boolean  The current highlighting setting.
     local function rememberHighlight(value)
         if profile.lua_native_highlighting == nil then
             profile.lua_native_highlighting = value
         end
     end
 
-    -- The lua_editor value for choosing `id`: Native stands for "native" or "plain" depending on the highlighting
-    -- setting.
+    -- Returns the lua_editor value for choosing an editor: Native stands for "native" or "plain" depending on the
+    -- highlighting setting.
+    -- @param id string  The editor id.
+    -- @param value boolean  The highlighting setting.
+    -- @return string  The lua_editor value.
     local function selection(id, value)
         return id == 'native' and (value and 'native' or 'plain') or id
     end
 
-    -- Returns a copy of the disabled-provider map with `id` set or cleared, or nil (after a message) when it would
-    -- exceed 64 entries.
+    -- Returns a copy of the disabled-provider map with a provider set or cleared.
+    -- @param id string  The editor provider id.
+    -- @param value boolean  True to mark it disabled, false to clear it.
+    -- @return table|nil  The new map; nil (after a message) when it would exceed 64 entries.
     local function mapWith(id, value)
         local map, n = {}, 0
 
@@ -262,6 +289,7 @@ function addon:BuildIntegrationSettings(p)
     end
 
     -- Selects an available, enabled provider as the Lua editor and redraws.
+    -- @param id string  The editor provider id.
     local function choose(id)
         local rows, byID = editors()
 
@@ -282,6 +310,7 @@ function addon:BuildIntegrationSettings(p)
     end
 
     -- Re-enables a disabled provider; if no editor was usable, it also becomes the selected one.
+    -- @param id string  The editor provider id.
     local function enable(id)
         local rows, byID = editors()
 
@@ -313,9 +342,12 @@ function addon:BuildIntegrationSettings(p)
         p:Draw()
     end
 
-    -- Disables provider `id`. If it is the selected editor it needs a `replacement` chosen by the user (or none when no
+    -- Disables a provider. If it is the selected editor it needs a replacement chosen by the user (or none when no
     -- other editor is available, which falls back to plain text); refuses when the state no longer matches what the
     -- card showed.
+    -- @param id string  The editor provider id.
+    -- @param replacement string|nil  The editor that takes over when this one was selected.
+    -- @param wasSelected boolean  True when the card showed this provider as the selected editor.
     local function disable(id, replacement, wasSelected)
         local rows, byID = editors()
 
@@ -367,8 +399,10 @@ function addon:BuildIntegrationSettings(p)
         p:Draw()
     end
 
-    -- Click on an editor card pill: re-enables a disabled provider; for an unselected one asks Disable or Select; for
-    -- the selected one asks which alternative takes over before disabling it.
+    -- Handles a click on an editor card pill: re-enables a disabled provider; for an unselected one asks Disable or
+    -- Select; for the selected one asks which alternative takes over before disabling it.
+    -- @param id string  The editor provider id.
+    -- @param anchor table  The frame the choice menu opens under.
     local function editorAction(id, anchor)
         local rows, byID = editors()
 
@@ -432,7 +466,8 @@ function addon:BuildIntegrationSettings(p)
         end
     end
 
-    -- Fetches the catalog status rows once for this drawing; nil if the drawing went stale.
+    -- Fetches the catalog status rows once for this drawing.
+    -- @return table[]|nil  The rows; nil if the drawing went stale.
     local function inventoryRows()
         local list = self.ListIntegrationStatus
 
@@ -477,6 +512,8 @@ function addon:BuildIntegrationSettings(p)
 
     -- Builds the card model for an editor row (Native or a provider): description, version and state (missing,
     -- disabled, selected or enabled) and the click action.
+    -- @param row table  The editor row { id, name, available }.
+    -- @return table  The card model.
     local function editorRow(row)
         local entry = metadata[row.id == 'LuaWorkbench' and '!!!LuaWorkbench' or row.id]
 
@@ -508,6 +545,8 @@ function addon:BuildIntegrationSettings(p)
 
     -- Builds the card model for a catalog addon: a not-loaded or unknown addon shows "Not loaded", everything else
     -- "Supported", with no action.
+    -- @param entry table  The catalog row.
+    -- @return table  The card model.
     local function readonly(entry)
         return {
             id = entry.id,
@@ -529,6 +568,9 @@ function addon:BuildIntegrationSettings(p)
     }
 
     -- Appends a section containing the cards of the listed addon ids that the catalog has for this client.
+    -- @param key string  The section key.
+    -- @param title string  The section title.
+    -- @param ids string[]  The addon ids.
     local function group(key, title, ids)
         local list = {}
 
@@ -556,6 +598,8 @@ function addon:BuildIntegrationSettings(p)
         if questieRow.state ~= 'missing' then
             questieRow.state = profile.questie_enabled == true and 'enabled' or 'disabled'
 
+            -- Toggles the Questie integration if Questie is still loaded (re-checked against fresh catalog rows) and
+            -- queues syncing it.
             questieRow.action = function()
                 if not supported('Questie') or not current() then
                     return
@@ -689,7 +733,9 @@ function addon:BuildIntegrationSettings(p)
     measure:SetWordWrap(false)
     measure:SetWidth(0)
 
-    -- Pixel width of `text` in the page font, using the hidden measuring string.
+    -- Measures the pixel width of a text in the page font, using the hidden measuring string.
+    -- @param text string|nil  The text.
+    -- @return number  The width in pixels.
     local function width(text)
         measure:SetText(text or '')
         return measure:GetStringWidth()
@@ -727,7 +773,14 @@ function addon:BuildIntegrationSettings(p)
     local positions = { 10, 10 + nameWidth + gap, 10 + nameWidth + versionWidth + gap * 2, p.width - 10 - statusWidth }
     local widths = { nameWidth, versionWidth, descWidth, statusWidth }
 
-    -- Positions a pooled wrapped text label at x, y with width w inside `parent` and returns it, sized to its text.
+    -- Positions a pooled wrapped text label at x, y with width w inside a parent, sized to its text.
+    -- @param kind string  The pool name.
+    -- @param parent table  The frame the label is parented to.
+    -- @param text string|nil  The text.
+    -- @param x number  The left offset.
+    -- @param y number  The top offset (positive down).
+    -- @param w number  The width.
+    -- @return table  The font string.
     local function label(kind, parent, text, x, y, w)
         local c = p:Acquire(kind, function()
             local f = p.child:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
@@ -759,6 +812,7 @@ function addon:BuildIntegrationSettings(p)
     -- Draws one card: a name (a link button when the catalog has a project URL), version, description, status pill (a
     -- button when the row has an action) and, for the Native row, its help button and Syntax highlighting checkbox.
     -- Advances p.y past the card.
+    -- @param row table  The card model.
     local function draw(row)
         local top = p.y
 
@@ -885,6 +939,9 @@ function addon:BuildIntegrationSettings(p)
             p.width = available - 20 - (row.help and 28 or 0)
             p.y = contentTop
 
+            -- Stores the Syntax highlighting choice and, when Native is the active editor, switches between native and
+            -- plain, then redraws.
+            -- @param value boolean  The new state.
             local syntax = p:Check('lua_native_highlighting', L['Syntax highlighting'], highlighting(profile), function(
                 value
             )
@@ -917,6 +974,8 @@ function addon:BuildIntegrationSettings(p)
 
     for _, section in ipairs(groups) do
         if #section.rows > 0 then
+            -- Draws a section's body: the line numbers check box for the editor section, the column headings and one
+            -- card per row.
             p:Section(section.key, section.title, function()
                 if section.editorSettings then
                     p:Check('lua_line_numbers', L['Show line numbers'], profile.lua_line_numbers ~= false, function(

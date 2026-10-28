@@ -13,7 +13,10 @@ local _, addon = ...
 -- Reading saved records
 -- ============================================================================
 
--- Returns the entry of an array whose `id` matches, or nil.
+-- Returns the entry of an array whose `id` matches.
+-- @param list table[]|nil  The array of records.
+-- @param id any  The id to look for.
+-- @return table|nil  The matching record; nil when there is none.
 local function find(list, id)
     for _, value in ipairs(list or {}) do
         if value.id == id then
@@ -22,7 +25,10 @@ local function find(list, id)
     end
 end
 
--- True when the array holds `value`; nil counts as empty.
+-- Tells whether the array holds a value; nil counts as empty.
+-- @param list table|nil  The array.
+-- @param value any  The value to look for.
+-- @return boolean  True when the array holds the value.
 local function contains(list, value)
     for _, entry in ipairs(list or {}) do
         if entry == value then
@@ -33,9 +39,13 @@ local function contains(list, value)
     return false
 end
 
--- Returns the saved record the form is editing for `id` (or the current selection) as read from `store` (the baseline
--- or the draft): the entry itself for Effects, Announces and Integrations, a derived table for Conditions and Item
--- Sets, and a lazy view over the profile for General. Returns nil when the record does not exist in that store.
+-- Returns the saved record the form is editing as read from a store (the baseline or the draft): the entry itself for
+-- Effects, Announces and Integrations, a derived table for Conditions and Item Sets, and a lazy view over the profile
+-- for General.
+-- @param p table  The settings form.
+-- @param store table|nil  The baseline or draft ({ profile, global, char }).
+-- @param id any|nil  The record id; nil means the current selection.
+-- @return table|nil  The record; nil when it does not exist in that store.
 local function context(p, store, id)
     store = store or {}
     local profile, global = store.profile or {}, store.global or {}
@@ -107,8 +117,11 @@ end
 -- Roster and field comparison
 -- ============================================================================
 
--- Build membership/order lookups once when draft markers change. Viewport
--- binding reads these retained maps without rescanning the complete roster.
+-- Builds membership and order lookups once when draft markers change. Viewport binding reads these retained maps
+-- without rescanning the complete roster.
+-- @param p table  The settings form.
+-- @param store table|nil  The baseline or draft.
+-- @return table  The lookup (hidden, switch, groups, categories, positions, announces).
 local function rosterLookup(p, store)
     store = store or {}
     local profile = store.profile or {}
@@ -170,8 +183,14 @@ local function rosterLookup(p, store)
     return result
 end
 
--- Same result as `context` for one roster row, answered from the prebuilt `lookup` so redrawing a long roster does not
--- rescan the saved lists for every row.
+-- Returns the same result as `context` for one roster row, answered from the prebuilt lookup so redrawing a long roster
+-- does not rescan the saved lists for every row.
+-- @param p table  The settings form.
+-- @param store table|nil  The baseline or draft.
+-- @param id any  The roster entry's value.
+-- @param lookup table  The result of rosterLookup for that store.
+-- @param currentAnnounces table  The announces list the roster is showing.
+-- @return table|nil  The record; nil when it does not exist.
 local function rosterContext(p, store, id, lookup, currentAnnounces)
     if p.settingsKey == 'Conditions' then
         if p.mode == 'categories' then
@@ -197,6 +216,9 @@ end
 
 -- Reads the saved value a control key refers to from a record: strips the `entry<N>` and `new_` prefixes and maps the
 -- sequence, item, enabled and action keys onto the record's own fields.
+-- @param object table|nil  The saved record.
+-- @param key string  The control key.
+-- @return any  The saved value; nil when the record is missing.
 local function field(object, key)
     if type(object) ~= 'table' then
         return nil
@@ -238,14 +260,16 @@ end
 -- Installing the markers on a form
 -- ============================================================================
 
--- Every native form uses the same saved baseline, including entries first
--- opened after an import. Pending text is compared before it is committed.
+-- Installs the unsaved-change markers on a form. Every native form uses the same saved baseline, including entries
+-- first opened after an import. Pending text is compared before it is committed.
+-- @param p table  The settings form.
 function addon:InstallSettingsUnsaved(p)
     p.unsavedDefaults = {}
     p.unsavedBindings = {}
 
     -- Names the page and selection a binding belongs to, so fields remembered in `unsavedDefaults` do not leak between
     -- entries.
+    -- @return string  The identity.
     function p:UnsavedIdentity()
         return table.concat({
             self.settingsKey or '',
@@ -262,7 +286,12 @@ function addon:InstallSettingsUnsaved(p)
 
     -- Records one control with its current value and its saved baseline. A field the baseline lacks takes its first
     -- drawn value as the baseline, except in a new or imported entry where the field is marked missing (unsaved)
-    -- outright. Returns the binding.
+    -- outright.
+    -- @param key string  The control's field key.
+    -- @param control table  The control.
+    -- @param value any  The control's current value.
+    -- @param kind string  The control kind ('Edit', 'Check', 'Slider', 'Choice', 'Color', 'Reference' or 'Toggle').
+    -- @return table  The binding { control, value, baseline, kind, missing }.
     function p:BindUnsaved(key, control, value, kind)
         local identity = self:UnsavedIdentity()
         local defaults = self.unsavedDefaults[identity] or {}
@@ -320,8 +349,10 @@ function addon:InstallSettingsUnsaved(p)
         return self.unsavedBindings[key]
     end
 
-    -- True when a roster row differs from the baseline: moved in its order, the selected row with pending text, or
+    -- Tells whether a roster row differs from the baseline: moved in its order, the selected row with pending text, or
     -- changed data. Results are cached per value until the next `RefreshUnsaved`.
+    -- @param entry table  The roster entry.
+    -- @return boolean  True when the row has unsaved changes.
     function p:RosterEntryUnsaved(entry)
         local r = self.roster
         local state = r and r.unsavedState
@@ -502,6 +533,12 @@ function addon:InstallSettingsUnsaved(p)
         local method, index = definition[1], definition[2]
         local original = p[method]
 
+        -- Replaces a control constructor of the form (see the loop above): the callback at the given argument position
+        -- is intercepted so the binding's value follows the control before the caller's callback runs, then the control
+        -- is bound for comparison against the baseline.
+        -- @param self table  The settings form.
+        -- @param ... any  The constructor's arguments (key, caption, value, ...).
+        -- @return table  The control the original constructor returned.
         p[method] = function(self, ...)
             local args = { ... }
             local count = select("#", ...)
@@ -543,6 +580,8 @@ function addon:InstallSettingsUnsaved(p)
     local guard = p.Guard
 
     -- Wraps a guarded callback so the markers refresh after it runs.
+    -- @param callback function  The function to guard.
+    -- @return function  The guarded function; it returns what the callback returns.
     function p:Guard(callback)
         return guard(self, function(...)
             local result = callback(...)
@@ -554,6 +593,7 @@ function addon:InstallSettingsUnsaved(p)
     local discard = p.DiscardSettingsDraft
 
     -- Forgets the remembered defaults along with the draft.
+    -- @return any  What the original DiscardSettingsDraft returns.
     function p:DiscardSettingsDraft()
         self.unsavedDefaults = {}
         return discard(self)
@@ -561,7 +601,9 @@ function addon:InstallSettingsUnsaved(p)
 
     local save = p.SaveSettingsDraft
 
-    -- Forgets the remembered defaults once the draft was saved, so the new saved data becomes the baseline.
+    -- Saves the draft, and once it was saved forgets the remembered defaults, so the new saved data becomes the
+    -- baseline.
+    -- @return boolean  What the original SaveSettingsDraft returns (true on success).
     function p:SaveSettingsDraft()
         local ok = save(self)
 

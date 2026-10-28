@@ -13,13 +13,15 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Help button
 -- ============================================================================
 
--- Text-only transfers never execute Lua. The caller validates the candidate
--- and applies it only while its original form and database are still alive.
--- Optional Help belongs to one current transfer/report, not its edit actions.
--- Adds (or removes, when `metadata` is nil) the Help button on transfer window `d`. `metadata` is { heading, owner,
--- brief, briefs, valid, sections }; `ownerValid` is the caller's liveness check. Each call takes a new lease and
+-- Adds (or removes, when `metadata` is nil) the Help button on a transfer window. Each call takes a new lease and
 -- cleans up the previous one, so only the newest transfer can open Help. Does nothing if the owner or the profile,
 -- global or character tables changed meanwhile.
+-- @param d table  The transfer window record.
+-- @param metadata table|nil  { heading, owner, brief, briefs, valid, sections }; nil removes the button.
+-- @param ownerValid function|nil  The caller's liveness check.
+--
+-- Text-only transfers never execute Lua. The caller validates the candidate and applies it only while its original form
+-- and database are still alive. Optional Help belongs to one current transfer/report, not its edit actions.
 function addon:BindTransferHelp(d, metadata, ownerValid)
     local previous = d.transferHelpLease
     local profile, global, char = self.db.profile, self.db.global, self.db.char
@@ -63,7 +65,8 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
 
     local extraValid = metadata.valid
 
-    -- True while this lease is the newest, the window was not hidden since, and the saved-data tables are unchanged.
+    -- Tells whether this lease is the newest, the window was not hidden since, and the saved-data tables are unchanged.
+    -- @return boolean  True while Help may act.
     local function base()
         return d.transferHelpLease == lease
             and not lease.hidden
@@ -72,8 +75,9 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
             and addon.db.char == char
     end
 
-    -- Full liveness for Help: base() plus the window shown and every caller-supplied validity check passing. base() is
-    -- re-tested after each callback because a callback may close the window or switch profile.
+    -- Tells whether Help is fully live: base() plus the window shown and every caller-supplied validity check passing.
+    -- base() is re-tested after each callback because a callback may close the window or switch profile.
+    -- @return boolean  True while Help may open.
     local function current()
         if not base() or not d.frame:IsShown() or not base() then
             return false
@@ -133,6 +137,8 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
 
     local sections, heading, owner = metadata.sections, metadata.heading or L['Help'], metadata.owner
 
+    -- Opens the Help window for this transfer while its lease is current; the sections come from the metadata (a
+    -- function of the dialog, or a list).
     self:SetUIScript(d.help, 'OnClick', function()
         if d.transferHelpLease ~= lease then
             return
@@ -180,8 +186,9 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
     end
 end
 
--- Tooltip briefs for the transfer window's buttons, keyed by the field name on the dialog; `preview` is a function
--- because its text depends on whether the dialog is replacing or creating.
+-- Returns the tooltip briefs for the transfer window's buttons, keyed by the field name on the dialog; `preview` is a
+-- function because its text depends on whether the dialog is replacing or creating.
+-- @return table  The map of field name to brief (a string, or a function of the dialog that returns one).
 function addon:TransferHelpBriefs()
     return {
         copy = L['Help.Transfers.copy'],
@@ -210,14 +217,20 @@ local EXPORT_FONT = 'Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata
 local EXPORT_FONT_SIZES = { 12, 11, 10, 9 }
 local EXPORT_BOX_MARGIN = 12
 
--- The most letters the box accepts: the plain limit plus one newline per line.
+-- Returns the most letters the box accepts: the plain limit plus one newline per line.
+-- @param letters number  The plain letter limit.
+-- @return number  The limit including line breaks.
 function addon:ExportTextLimit(letters)
     return letters + math.ceil(letters / self.ExportTextWidth)
 end
 
--- Uses Inconsolata at the largest size whose 76-character line fits the box
--- without wrapping, measured rather than assumed. If the file is missing or the
--- client refuses it the box keeps the default font; nothing else changes.
+-- Uses Inconsolata at the largest size whose 76-character line fits the box without wrapping, measured rather than
+-- assumed. If the file is missing or the client refuses it the box keeps the default font; nothing else changes.
+-- @param d table  The transfer window record (input, frame).
+-- @return boolean  True when a fixed-pitch font was applied.
+--
+-- Export and import strings are Base64: a fixed-pitch face keeps the 76-character lines aligned and readable. Shells
+-- that show prose (reports, output) keep the proportional face; the transfer windows call this on their own edit box.
 function addon:UseExportFont(d)
     local input = d.input
     d.exportFont = nil
@@ -269,8 +282,11 @@ end
 -- Window shell and text report
 -- ============================================================================
 
--- Builds the bare transfer window record (frame, chrome, scrolling multi-line edit box, Copy, Clear, Import, Cancel
--- and Close buttons) without behavior; callers wire the scripts. Defaults to 570 by 430.
+-- Builds the bare transfer window record (frame, chrome, scrolling multi-line edit box, Copy, Clear, Import, Cancel and
+-- Close buttons) without behavior; callers wire the scripts.
+-- @param width number|nil  The window width; nil means 570.
+-- @param height number|nil  The window height; nil means 430.
+-- @return table  The window record.
 function addon:CreateWorkbenchTransferShell(width, height)
     width, height = width or 570, height or 430
     local d = { frame = CreateFrame('Frame', nil, UIParent), sharedTransferShell = true }
@@ -305,9 +321,13 @@ function addon:CreateWorkbenchTransferShell(width, height)
     return d
 end
 
+-- Returns a read-only report window; show text in it with d:SetReport(title, text, context, help). Typing into the box
+-- is reverted to the report text, so it can be selected and copied but not edited.
+-- @param width number|nil  The window width; nil means 820.
+-- @param height number|nil  The window height; nil means 500.
+-- @return table  The report window.
+--
 -- Shared themed, copyable report surface. It never accepts document changes.
--- Returns a read-only report window (default 820 by 500); show text in it with d:SetReport(title, text, context,
--- help). Typing into the box is reverted to the report text, so it can be selected and copied but not edited.
 function addon:CreateWorkbenchTextReport(width, height)
     local d = self:CreateWorkbenchTransferShell(width or 820, height or 500)
     d.apply:Hide()
@@ -342,9 +362,13 @@ function addon:CreateWorkbenchTextReport(width, height)
         self.frame:Hide()
     end
 
-    -- Shows `value` as the report text under `title`. Each call supersedes the previous one; between every step the
-    -- request is re-checked (and abandoned) because focus, layout and popup calls can run foreign scripts that close
-    -- the window or switch profile. `help` is optional Help metadata for BindTransferHelp.
+    -- Shows a value as the report text. Each call supersedes the previous one; between every step the request is
+    -- re-checked (and abandoned) because focus, layout and popup calls can run foreign scripts that close the window or
+    -- switch profile.
+    -- @param title string  The window title.
+    -- @param value any  The report text (converted with tostring; nil is empty).
+    -- @param context string|nil  The context line; nil means the addon name.
+    -- @param help table|nil  Optional Help metadata for BindTransferHelp.
     function d:SetReport(title, value, context, help)
         local request = {}
         self.reportRequest = request
@@ -352,8 +376,9 @@ function addon:CreateWorkbenchTextReport(width, height)
         local profile, global, char = db.profile, db.global, db.char
         local displayed = false
 
-        -- True while this request is still the newest, the saved-data tables are the ones it started with, and (once
+        -- Tells whether this request is still the newest, the saved-data tables are the ones it started with, and (once
         -- displayed) the window is still shown.
+        -- @return boolean  True while the request may continue.
         local function current()
             local shown = not displayed or self.frame:IsShown()
 
@@ -508,8 +533,10 @@ local TRANSFER_REVIEW_LEFT = 152
 local TRANSFER_BUTTON_GAP = 6
 local TRANSFER_APPLY_RIGHT = 220
 
--- Sets the width of the import/export dialog `d` and of everything sized from it (the text box, the original-name line,
--- the name box and the status line). The height never changes.
+-- Sets the width of the import/export dialog and of everything sized from it (the text box, the original-name line, the
+-- name box and the status line). The height never changes.
+-- @param d table  The dialog record.
+-- @param width number  The new width.
 local function setTransferWidth(d, width)
     if d.frame:GetWidth() == width then
         return
@@ -524,12 +551,17 @@ local function setTransferWidth(d, width)
     d.scroll:UpdateWorkbenchScroll()
 end
 
--- Opens the import/export dialog for settings form `p`, pre-filled with `text` (formatted to the export line width).
--- `apply(input, settings)` is called on Import, inside p:WithSettingsHistory, with the pasted text and, when `options`
--- is given, { mode = 'new' or 'replace', name, originalName }; it returns ok and an error text. `options` carries
--- canReplace, selectedName, fallbackName, originalName(input), valid(), review, requirePreview and preview/inspect
--- callbacks, onClose, invalidate and help. With no options the window is a plain copy-or-replace box. The dialog is
--- cached on p and each call starts a new serial, so a stale window or handler reports itself out of date. Returns d.
+-- Opens the import/export dialog for a settings form, pre-filled with a text (formatted to the export line width). The
+-- dialog is cached on p and each call starts a new serial, so a stale window or handler reports itself out of date.
+-- With no options the window is a plain copy-or-replace box.
+-- @param p table  The settings form.
+-- @param title string  The window title.
+-- @param text string  The text to show for export (may be empty).
+-- @param apply function  Called on Import as apply(input, settings), inside p:WithSettingsHistory, with the pasted text
+--   and, when `options` is given, { mode = 'new' or 'replace', name, originalName }; it returns ok and an error text.
+-- @param options table|nil  canReplace, selectedName, fallbackName, originalName(input), valid(), review,
+--   requirePreview and preview/inspect callbacks, onClose, invalidate and help.
+-- @return table  The dialog.
 function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     local d = p.textDialog
 
@@ -611,9 +643,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     local token = p.generation
     setTransferWidth(d, TRANSFER_WIDTH)
 
-    -- True while this opening is current: the settings form generation is unchanged, the dialog is still this one and
-    -- shown, and the caller's own valid() agrees. The first check is repeated after options.valid() because that
+    -- Tells whether this opening is current: the settings form generation is unchanged, the dialog is still this one
+    -- and shown, and the caller's own valid() agrees. The first check is repeated after options.valid() because that
     -- callback may close or replace the dialog.
+    -- @return boolean  True while the dialog's handlers may act.
     local function valid()
         if not p:Valid(token) or p.textDialog ~= d or d.serial ~= serial or not d.frame:IsShown() then
             return false
@@ -631,13 +664,15 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     d.mode = options and options.canReplace and 'replace' or 'new'
     d.nameDirty = false
 
-    -- The first button follows the destination: replacing an entry compares the
-    -- import with it, a new copy previews the import in full. The second one
-    -- always checks the import for problems. A button grows with its label.
-    -- A button never does nothing in silence: a window that went stale says so, and an error is shown
-    -- on the status line instead of vanishing.
-    -- Runs a preview or inspect action safely. Returns the action's result, or nothing after writing the problem
-    -- (stale window or a caught error) to the status line.
+    -- Runs a preview or inspect action safely. A button never does nothing in silence: a window that went stale says
+    -- so, and an error is shown on the status line instead of vanishing.
+    -- @param action function  The action to run.
+    -- @param ... any  The arguments passed to the action.
+    -- @return any  The action's result; nothing after writing the problem (stale window or a caught error) to the
+    --   status line.
+    --
+    -- The first button follows the destination: replacing an entry compares the import with it, a new copy previews the
+    -- import in full. The second one always checks the import for problems. A button grows with its label.
     local function run(action, ...)
         if not valid() then
             d.status:SetText(L['This import window is out of date. Close it and open it again.'])
@@ -710,8 +745,8 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         end
     end
 
-    -- Reads the original name out of the pasted text (without running any of it) and shows it, then suggests it as
-    -- the new name unless the player has typed one.
+    -- Reads the original name out of the pasted text (without running any of it) and shows it, then suggests it as the
+    -- new name unless the player has typed one.
     local function preview()
         if not valid() or not options then
             return
@@ -826,6 +861,7 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         d.apply:Enable()
     end
 
+    -- Clears the text box and its preview, and invalidates any review of the old text.
     addon:SetUIScript(d.clear, 'OnClick', function()
         if valid() then
             d.input:SetText('')
@@ -851,6 +887,8 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         end
     end)
 
+    -- Imports the pasted text: checks the new-entry name, calls the caller's apply inside one settings-history step,
+    -- then closes the dialog and redraws the page, or shows the error on the status line.
     addon:SetUIScript(d.apply, 'OnClick', function()
         if not valid() then
             return

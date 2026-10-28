@@ -12,8 +12,9 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Adds the layout methods to the settings form `p` and remembers its original Layout as the single-column fallback.
--- Call once per form, before the first Layout.
+-- Adds the layout methods to the settings form and remembers its original Layout as the single-column fallback. Call
+-- once per form, before the first Layout.
+-- @param p table  The settings form pane.
 function addon:InstallSettingsLayout(p)
     local simpleLayout = p.Layout
 
@@ -22,8 +23,8 @@ function addon:InstallSettingsLayout(p)
     -- ============================================================================
 
     -- Clears the per-page layout state (columns, roster flags, surface) before a page is drawn again, hides the roster
-    -- and column frames, and runs the simple layout. A roster splitter being dragged is left alone so the drag
-    -- survives the redraw it causes.
+    -- and column frames, and runs the simple layout. A roster splitter being dragged is left alone so the drag survives
+    -- the redraw it causes.
     function p:ResetLayout()
         self.surface = nil
         self.rosterUsed = false
@@ -50,9 +51,10 @@ function addon:InstallSettingsLayout(p)
         simpleLayout(self)
     end
 
-    -- Starts column `index` (1 or 2) of a two-column page; later content goes into that column until the next
-    -- Column call or EndColumns. Below 960 px of page width the page collapses to one column and these calls only
-    -- track state. Each column sizes its own caption column, so the label scope is restarted per column.
+    -- Starts a column of a two-column page; later content goes into that column until the next Column call or
+    -- EndColumns. Below 960 px of page width the page collapses to one column and these calls only track state. Each
+    -- column sizes its own caption column, so the label scope is restarted per column.
+    -- @param index number  The column, 1 or 2.
     function p:Column(index)
         if index == 1 then
             self.fullWidth = math.max(340, self.frame:GetWidth() - 40)
@@ -123,8 +125,11 @@ function addon:InstallSettingsLayout(p)
     -- Roster rows
     -- ============================================================================
 
-    -- Changes how the roster entry for `value` is shown (text, search text, icon) and refreshes the list. No-op
-    -- without a roster.
+    -- Changes how the roster entry for a value is shown (text, search text, icon) and refreshes the list. No-op without
+    -- a roster.
+    -- @param value any  The entry's value.
+    -- @param presentation table  { text, search, icon }; text keeps the old text when nil, search and icon are cleared
+    --   when nil.
     function p:UpdateRosterEntry(value, presentation)
         local r = self.roster
 
@@ -146,6 +151,7 @@ function addon:InstallSettingsLayout(p)
 
     -- Unbinds a pooled roster row from its entry: drops the lease and every click and drag handler so a late event
     -- cannot reach the old entry, then hides the row for reuse.
+    -- @param row table  The roster row.
     function p:RetireRosterRow(row)
         row.rosterLease = nil
         row.rosterEntry = nil
@@ -205,8 +211,12 @@ function addon:InstallSettingsLayout(p)
         end
     end
 
-    -- Binds a pooled row to `entry` at list position `index`: places and styles it, shows its icon, validation and
-    -- unsaved marks, and makes a click choose the entry only while the roster revision and the row's lease still match.
+    -- Binds a pooled row to an entry: places and styles it, shows its icon, validation and unsaved marks, and makes a
+    -- click choose the entry only while the roster revision and the row's lease still match.
+    -- @param row table  The pooled row.
+    -- @param entry table  The roster entry { value, text, icon, textColor, custom, invalid, validationMessage, disabled
+    --   }.
+    -- @param index number  The entry's 1-based position in the filtered list.
     function p:BindRosterViewportRow(row, entry, index)
         local r = self.roster
         local lease = {}
@@ -256,10 +266,10 @@ function addon:InstallSettingsLayout(p)
         row:Show()
     end
 
-    -- Virtualized roster drawing: only the rows in (and just around) the visible range are bound, so a long list costs
-    -- a fixed number of frames. Rows scrolled out are retired, rows missing in range are bound from the pool, and a
-    -- carried (dragged) entry gets a placeholder. Re-entrancy is guarded, and a row half-bound when an error occurs is
-    -- retired before the error is rethrown.
+    -- Draws the roster virtualized: only the rows in (and just around) the visible range are bound, so a long list
+    -- costs a fixed number of frames. Rows scrolled out are retired, rows missing in range are bound from the pool, and
+    -- a carried (dragged) entry gets a placeholder. Re-entrancy is guarded, and a row half-bound when an error occurs
+    -- is retired before the error is rethrown.
     function p:RefreshRosterViewport()
         local r = self.roster
 
@@ -270,6 +280,8 @@ function addon:InstallSettingsLayout(p)
         r.refreshing = true
         local binding
 
+        -- Retires rows outside the visible range, then binds a pooled row (or shows a drag placeholder) for each
+        -- missing index in it, and rebuilds the ordering drop zones.
         local ok, why = pcall(function()
             local top = r.scroll.workbenchBar:GetValue()
             local height = r.scroll:GetHeight()
@@ -416,9 +428,10 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRosterViewport()
     end
 
-    -- Replaces the roster's single New button with a footer grid of icon buttons, two per row. Each entry is
-    -- { key, text, icon, action, enabled }; `keepManage` keeps the Manage button above the grid. A click flushes
-    -- pending edits first and runs the action only if that succeeds.
+    -- Replaces the roster's single New button with a footer grid of icon buttons, two per row. A click flushes pending
+    -- edits first and runs the action only if that succeeds.
+    -- @param entries table[]  The actions, each { key, text, icon, action, enabled }.
+    -- @param keepManage boolean|nil  True keeps the Manage button above the grid.
     function p:SetRosterActions(entries, keepManage)
         local r = self.roster
 
@@ -476,9 +489,12 @@ function addon:InstallSettingsLayout(p)
     -- ============================================================================
 
     -- Turns the page into a roster page: builds (once) and shows the sidebar with its search box, source buttons,
-    -- category chooser, scrolling list and New/Manage buttons. `entries` are { value, text, ... } records, `current`
-    -- the selected value and `choose(value)` the selection callback; `options` carries sources, categories, new, manage
-    -- and ordering hooks. Every control click is guarded by the drawing's generation and flushes pending edits first.
+    -- category chooser, scrolling list and New/Manage buttons. Every control click is guarded by the drawing's
+    -- generation and flushes pending edits first.
+    -- @param entries table[]  The roster records, each { value, text, ... }.
+    -- @param current any  The selected value.
+    -- @param choose function  Called with the entry value when a row is chosen.
+    -- @param options table|nil  Sources, categories, new, manage and ordering hooks.
     function p:UseRoster(entries, current, choose, options)
         options = options or {}
         self.rosterUsed = true
@@ -642,8 +658,8 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRoster()
     end
 
-    -- Lays out the page: the plain layout when no roster is in use, otherwise sizes and places the sidebar, its
-    -- footer, the splitter and the detail scroll area from the shared roster geometry, then redraws the visible rows.
+    -- Lays out the page: the plain layout when no roster is in use, otherwise sizes and places the sidebar, its footer,
+    -- the splitter and the detail scroll area from the shared roster geometry, then redraws the visible rows.
     function p:Layout()
         if not self.rosterUsed or not self.roster then
             simpleLayout(self)
@@ -715,9 +731,8 @@ function addon:InstallSettingsLayout(p)
         self:RefreshRosterViewport()
     end
 
-    -- A divider drag changes the detail width without resizing the page, so
-    -- the page is drawn again exactly as after a window resize, pending
-    -- (even invalid) input included.
+    -- Redraws the page after a divider drag, which changes the detail width without resizing the page: the page is
+    -- drawn again exactly as after a window resize, pending (even invalid) input included.
     function p:ResizeSplit()
         if not self.rosterUsed or not self.roster then
             return

@@ -7,10 +7,13 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Builds a picker inside parent and returns the picker table (frame, SetTags, SetWidth, Hide, Release, ...). options:
--- available() -> list of known tags, valid() -> whether the owner is still current, color(tag) -> {r,g,b,a},
--- setColor(tag, rgba), changed(tags) after any edit, layout(height) when the height changes, allowCustom (type new
--- tags), readOnly, inputInset. Every callback is skipped once valid() is false or the picker is released.
+-- Builds a tag picker inside a parent: a search box over the known tags, removable tag chips below it and an optional
+-- per-tag color chooser. Every callback is skipped once valid() is false or the picker is released.
+-- @param parent table  The frame the picker is built in.
+-- @param options table  available() returns the list of known tags, valid() says whether the owner is still current,
+--   color(tag) returns { r, g, b, a }, setColor(tag, rgba), changed(tags) runs after any edit, layout(height) runs when
+--   the height changes, allowCustom lets the player type new tags, readOnly, inputInset.
+-- @return table  The picker (frame, input, menu, height, SetTags, SetWidth, Hide, Release, ...).
 function addon:CreateRotationTagPicker(parent, options)
     local picker = {
         frame = CreateFrame('Frame', nil, parent),
@@ -46,12 +49,15 @@ function addon:CreateRotationTagPicker(parent, options)
 
     picker.menu = addon:CreateWorkbenchSelector()
 
-    -- True while the picker is live and the owner (when it supplied valid) still wants input.
+    -- Tells whether the picker is live and the owner (when it supplied valid) still wants input.
+    -- @return boolean  True while the picker's callbacks may act.
     local function valid()
         return not picker.released and (not options.valid or options.valid())
     end
 
-    -- Returns the owner's color for tag, or opaque white when the owner has no color source.
+    -- Returns the owner's color for a tag, or opaque white when the owner has no color source.
+    -- @param tag string  The tag.
+    -- @return table  The color { r, g, b, a }.
     local function color(tag)
         return options.color and options.color(tag) or { r = 1, g = 1, b = 1, a = 1 }
     end
@@ -139,20 +145,25 @@ function addon:CreateRotationTagPicker(parent, options)
     end
 
     -- Sets the picker width (minimum 80) and re-flows.
+    -- @param width number  The width in points.
     function picker:SetWidth(width)
         self.width = math.max(80, width)
         frame:SetWidth(self.width)
         self:Layout()
     end
 
-    -- Replaces the shown tags with the normalized form of tags without calling options.changed (programmatic load).
+    -- Replaces the shown tags with the normalized form of the given tags without calling options.changed (programmatic
+    -- load).
+    -- @param tags string[]|nil  The tags to show.
     function picker:SetTags(tags)
         self.tags = addon.RotationData.NormalizeRotationTags(tags or {}) or {}
         self:Layout()
     end
 
     -- Applies a user edit: normalizes tags, shows them, clears the box and menu and reports a copy through
-    -- options.changed. Returns false when tags do not normalize.
+    -- options.changed.
+    -- @param tags string[]  The new tag list.
+    -- @return boolean  False when the tags do not normalize; otherwise true.
     function picker:Change(tags)
         local normalized = addon.RotationData.NormalizeRotationTags(tags)
 
@@ -174,7 +185,9 @@ function addon:CreateRotationTagPicker(parent, options)
     end
 
     -- Adds one tag typed or chosen by the user. Without allowCustom the tag must match a known tag (case-insensitive)
-    -- and takes that tag's spelling. Returns whether the tag list changed.
+    -- and takes that tag's spelling.
+    -- @param tag string  The tag.
+    -- @return boolean  True when the tag list changed.
     function picker:Add(tag)
         if not valid() or options.readOnly then
             return false
@@ -229,8 +242,15 @@ function addon:CreateRotationTagPicker(parent, options)
                 local entry = { value = tag, text = tag, selected = selected[tag:lower()], color = color(tag) }
 
                 if options.setColor and addon.CreateWorkbenchColorPicker then
+                    -- Opens the color dialog for a tag from its swatch in the dropdown; a picked color is stored
+                    -- through options.setColor and the swatch repainted.
+                    -- @param swatch table  The swatch button the dialog anchors to.
+                    -- @param repaint function  Called with the picked color { r, g, b, a } to repaint the swatch.
+                    -- @param leaseValid function|nil  Says the dropdown's color lease has not been retired.
+                    -- @return table|nil  The color picker; nil when the picker or lease is no longer valid.
                     entry.chooseColor = function(swatch, repaint, leaseValid)
-                        -- True while the picker is current and the dropdown's color lease has not been retired.
+                        -- Tells whether the picker is current and the dropdown's color lease has not been retired.
+                        -- @return boolean  True while the color dialog's callbacks may act.
                         local function colorValid()
                             return valid() and (not leaseValid or leaseValid())
                         end

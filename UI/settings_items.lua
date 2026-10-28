@@ -17,7 +17,9 @@ end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Parses one item field: a positive whole number is an item id, any other non-blank text is kept as a name or link, and
--- blank or an invalid number returns nil.
+-- blank or an invalid number gives nil.
+-- @param text string  The typed text.
+-- @return number|string|nil  The item id, the name or link text, or nil when blank or invalid.
 local function itemValue(text)
     if text:find('[%z\1-\31\127]') then
         return
@@ -42,8 +44,9 @@ local function itemValue(text)
     return value
 end
 
--- Builds the Item Sets page on settings form `p`: merged roster, detail fields for the selected set and the footers for
+-- Builds the Item Sets page on the settings form: merged roster, detail fields for the selected set and the footers for
 -- the selected and the creating states. Redrawn on every selection or data change.
+-- @param p table  The settings form pane.
 function addon:BuildItemSettings(p)
     local store = p:SettingsData()
     local profileSets = store.profile.itemsets or {}
@@ -75,12 +78,13 @@ function addon:BuildItemSettings(p)
         p.selection = entries[1] and entries[1].value
     end
 
-    -- Binding: drag a set (its roster row or the Bind pill) onto any action
-    -- bar slot, which swaps with what is there, or click Bind and then click
-    -- an empty slot. Both start the same pending bind.
     -- Starts the pending action bar bind for a set after flushing edits; refuses in combat, with unapplied draft
-    -- changes, or when no item of the set can be read. Shows the reason to the user and returns true only when the item
-    -- is on the cursor.
+    -- changes, or when no item of the set can be read. Shows the reason to the user.
+    -- @param setId string  The item set id.
+    -- @return boolean|nil  True only when the item is on the cursor; false or nil when refused.
+    --
+    -- Binding: drag a set (its roster row or the Bind pill) onto any action bar slot, which swaps with what is there,
+    -- or click Bind and then click an empty slot. Both start the same pending bind.
     local function beginBind(setId)
         if not p:FlushEdits() then
             return false
@@ -223,8 +227,8 @@ function addon:BuildItemSettings(p)
         -- drops the chosen item into a gap through the same insert.
         p.newItem = p.newItem or ''
 
-        -- Inserts the item typed in the new-item field at position `gap` (clamped to the end of the list), then
-        -- redraws.
+        -- Inserts the item typed in the new-item field into the set, then redraws.
+        -- @param gap number  The position to insert at (clamped to the end of the list).
         local function insertItem(gap)
             local value = itemValue(tostring(p.newItem))
 
@@ -320,6 +324,8 @@ function addon:BuildItemSettings(p)
             end
         end
 
+        -- Handles a click on the Bind pill: an unbound set starts a pending bind; a bound one is unbound (refused in
+        -- combat).
         self:SetUIScript(binding, 'OnClick', p:Guard(function()
             if not p:FlushEdits() then
                 return
@@ -411,6 +417,8 @@ function addon:BuildItemSettings(p)
                 key = 'transfer',
                 text = L['Import/Export'],
                 icon = 'transfer',
+                -- Opens the import/export dialog for the selected item set, encoded as an 'RM-ItemSet' wrapper. The
+                -- import callback replaces the set's items or creates a new set from the pasted text.
                 action = function()
                     local codec = self:NewRotationCodec()
 
@@ -498,6 +506,8 @@ function addon:BuildItemSettings(p)
                 key = 'delete',
                 text = L['Delete'],
                 icon = 'trash',
+                -- Asks for confirmation, then deletes the item set (profile or global), unbinds it from the action bars
+                -- and invalidates the rotation dependencies that used it.
                 action = function()
                     self:ConfirmSettingsDeletion(
                         p,
@@ -568,6 +578,8 @@ function addon:BuildItemSettings(p)
                 key = 'transfer',
                 text = L['Import/Export'],
                 icon = 'transfer',
+                -- Opens the import dialog when no item set is selected: a valid pasted item set is stored as a new item
+                -- set with the chosen name and selected.
                 action = function()
                     local codec = self:NewRotationCodec()
 
@@ -621,6 +633,8 @@ function addon:BuildItemSettings(p)
             p.newItemSetName = text
         end)
 
+        -- Creation form handlers: Apply creates an empty item set with the typed name (after checking it is not blank)
+        -- and selects it; Cancel closes the form.
         p:CreationActions(function()
             if not self:SettingsNonempty(p.newItemSetName) then
                 p:Message(L['Enter a name first.'])
