@@ -20,7 +20,9 @@ changelog. Nothing outside the checkout is read.
 
 `--check` fails when the package holds a path that is not for the game (tests, tools, docs, .claude,
 sources, secrets), lacks a required file, has a TOC that disagrees with the supported clients or lists
-a file that is missing, or has a file or zip over the size limits.
+a file that is missing, or has a file or zip over the size limits. A package may hold only what the
+client loads (.lua .xml .toc .tga .blp .ttf) and license or notice files; it fails on any other file,
+on code no TOC or XML include loads, and on a texture or font no loaded code names.
 """
 import argparse
 import fnmatch
@@ -63,6 +65,15 @@ FORBIDDEN_SUFFIXES = ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jp
 REQUIRED = ['RotationMaster/RotationMaster.toc', 'RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
             'RotationMaster/THIRD_PARTY_NOTICES.md', 'RotationMaster/embeds.xml', 'RotationMaster/locales.xml']
 NOTICE = 'Copyright (c) 2022 wowsims team'
+# What a package may hold: the files the game client reads, plus license and notice files it cannot read but the
+# licenses of the code, font and data in the package require. Anything else is not for the game.
+CODE_SUFFIXES = ('.lua', '.xml')
+ASSET_SUFFIXES = ('.tga', '.blp', '.ttf')
+LOADABLE_SUFFIXES = CODE_SUFFIXES + ('.toc',) + ASSET_SUFFIXES
+NOTICE_FILE = re.compile(r'(?:.*[-_])?(?:licen[cs]e|copying)(?:\.(?:txt|md))?|ofl\.txt|third_party_notices\.md', re.I)
+# Folders whose textures code finds by a bare name (UI/controls.lua ControlTexture, UI/icon_picker.lua), so a name
+# in a quoted string is what uses one.
+NAMED_TEXTURE_FOLDERS = ('Assets/Controls', 'Assets/Conditions')
 TOC_SUFFIXES = ['', '-Mainline', '_Mainline', '-Classic', '_Classic', '-Vanilla', '_Vanilla', '-BCC', '_BCC', '-TBC',
                 '_TBC', '-Wrath', '_Wrath', '-WOTLKC', '_WOTLKC', '-Cata', '_Cata', '-Mists', '_Mists', '-Camelot', '_Camelot']
 TEXT_PATTERNS = ('*.lua', '*.md', '*.toc', '*.txt', '*.xml')
@@ -226,7 +237,8 @@ def build_files(root, meta, info, changelog=None):
         if relative.endswith(tuple(p[1:] for p in TEXT_PATTERNS)):
             data = process_text(relative, data, info, relative in project)
         files[relative] = data
-    if meta['changelog']:
+    # The changelog goes to the sites from the checkout; it is in the package only if .pkgmeta does not ignore it.
+    if meta['changelog'] and not any(fnmatch.fnmatchcase(meta['changelog'], pattern) for pattern in patterns):
         source = Path(changelog) if changelog else root / meta['changelog']
         if source.is_file():
             files[meta['changelog']] = process_text(meta['changelog'], source.read_bytes(), info, False)
@@ -269,7 +281,7 @@ def toc_files(text):
 
 def xml_files(text):
     text = re.sub(r'<!--.*?-->', '', text, flags=re.S)
-    for match in re.finditer(r'<(?:Script|Include)\s+file="([^"]+)"', text):
+    for match in re.finditer(r'<(?:Script|Include)\s+file\s*=\s*"([^"]+)"', text):
         yield match.group(1).replace('\\', '/')
 
 
@@ -283,6 +295,56 @@ def resolve(base, reference):
         elif part not in ('', '.'):
             parts.append(part)
     return '/'.join(parts)
+
+
+def load_graph(names, read):
+    """The files the game loads from the add-on folder holding `names`: every TOC's lines, followed through the
+    <Script> and <Include> of each XML file. `read(name)` returns a file's text. The client loads a Bindings.xml at
+    the folder's top by itself."""
+    known = set(names)
+    loaded, pending = set(), [name for name in known if name.endswith('.toc')]
+    while pending:
+        name = pending.pop()
+        if name in loaded or name not in known:
+            continue
+        loaded.add(name)
+        base = name.rsplit('/', 1)[0] if '/' in name else ''
+        if name.endswith('.toc'):
+            pending.extend(resolve(base, reference) for reference in toc_files(read(name)))
+        elif name.endswith('.xml'):
+            pending.extend(resolve(base, reference) for reference in xml_files(read(name)))
+    return loaded | ({'Bindings.xml'} & known)
+
+
+def named_in(names, read):
+    """What the code in `names` can call a texture or font: every `/`-separated tail of every path-like word (a `\\`
+    reads as `/`), and every quoted string."""
+    paths, quoted = set(), set()
+    for name in names:
+        text = read(name).replace('\\\\', '/').replace('\\', '/')
+        for word in re.findall(r'[\w./-]+', text):
+            parts = word.strip('/').split('/')
+            paths.update('/'.join(parts[index:]) for index in range(len(parts)))
+        quoted.update(re.findall(r'''["']([^"'\n]*)["']''', text))
+    return paths, quoted
+
+
+def unused_files(names, read):
+    """(code nothing loads, textures and fonts no loaded code names) among the paths `names` of one add-on folder.
+    A texture is named by its path without the extension, or, in the NAMED_TEXTURE_FOLDERS, by its bare file name as
+    a quoted string."""
+    names = sorted(names)
+    loaded = load_graph(names, read)
+    code = [name for name in names if name.endswith(CODE_SUFFIXES)]
+    paths, quoted = named_in([name for name in code if name in loaded], read)
+    unnamed = []
+    for name in names:
+        if name.endswith(ASSET_SUFFIXES):
+            stem = name.rsplit('.', 1)[0]
+            folder, _, bare = stem.rpartition('/')
+            if stem not in paths and name not in paths and not (folder in NAMED_TEXTURE_FOLDERS and bare in quoted):
+                unnamed.append(name)
+    return [name for name in code if name not in loaded], unnamed
 
 
 def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_file_kb=MAX_FILE_KB, zip_bytes=None,
@@ -321,8 +383,19 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
             problems.append(f'development file in the package: {name}')
         elif base.endswith(FORBIDDEN_SUFFIXES):
             problems.append(f'file type that is not for the game: {name}')
+        elif not (base.endswith(LOADABLE_SUFFIXES) or NOTICE_FILE.fullmatch(base)):
+            problems.append(f'neither a file the game loads nor a license or notice: {name}')
         if len(layout[name]) > max_file_kb * 1024:
             problems.append(f'{name} is {len(layout[name]) // 1024} KB (limit {max_file_kb} KB)')
+    folders = {}
+    for name in names:
+        top, _, below = name.partition('/')
+        if below:
+            folders.setdefault(top, []).append(below)
+    for top, inside in sorted(folders.items()):
+        unloaded, unnamed = unused_files(inside, lambda below: layout[f'{top}/{below}'].decode('utf-8', 'replace'))
+        problems += [f'{top}/{below}: no TOC or XML loads this file' for below in unloaded]
+        problems += [f'{top}/{below}: no loaded code names this texture or font' for below in unnamed]
     for required in REQUIRED:
         if required not in names:
             problems.append(f'required file is missing: {required}')

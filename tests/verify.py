@@ -1,5 +1,6 @@
 """Validate every Lua source and the addon's actual TOC/XML load graph."""
 from pathlib import Path
+import fnmatch
 import hashlib
 import json
 import re
@@ -189,12 +190,17 @@ for module in modules:
 for source, target in sorted(moved.items()):
     errors.append(f'.pkgmeta moves a folder that is not a module: {source}: {target}')
 def packaged(relative):
-    return not any(relative == item or relative.startswith(item.rstrip('/') + '/') for item in ignored)
+    return not any(fnmatch.fnmatchcase(relative, item) or fnmatch.fnmatchcase(relative, item.rstrip('/') + '/*') for item in ignored)
 runtime = {str(path.relative_to(root)) for path in entries}
 if (root / 'Data/artwork.lua').is_file():
     runtime |= {m.group(1).replace('\\\\', '/') + '.tga' for m in
                 re.finditer(r'root\.\."(Assets[^"]+)"', (root / 'Data/artwork.lua').read_text())}
-runtime |= {str(path.relative_to(root)) for path in (root / 'Assets' / 'Controls').glob('*.tga')}
+# A control texture is found by its bare name, so one that no loaded Lua file quotes is not packaged (and not runtime).
+quoted = set()
+for path in sources:
+    if path.relative_to(root).parts[0] not in ('tests', 'tools'):
+        quoted.update(re.findall(r"""["']([^"'\n]*)["']""", path.read_text(errors='replace')))
+runtime |= {str(path.relative_to(root)) for path in (root / 'Assets' / 'Controls').glob('*.tga') if path.stem in quoted}
 for relative in sorted(runtime):
     if not packaged(relative):
         errors.append(f'Release package would omit a runtime file: {relative}')

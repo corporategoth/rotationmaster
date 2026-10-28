@@ -80,14 +80,16 @@ compatibility with every client.
 ## Building the release package locally
 
 ```sh
-python3 tools/release_notes.py --target curseforge --out CHANGELOG.md     # optional; becomes CHANGELOG.md in the zip
+python3 tools/release_notes.py --target curseforge --out CHANGELOG.md     # optional; goes to the sites, not into the zip
 python3 tools/package_release.py --check                                   # .release/RotationMaster-<version>.zip
 python3 tools/package_release.py --tag 2.0.0-beta.1 --check                # as that tag would be packaged
 python3 tools/package_release.py --parity                                  # compare with the vendored BigWigs packager
 ```
 
 The builder reproduces the packager from `.pkgmeta` without a network, a token or a `zip` binary, and `--check` fails if
-the package holds anything that is not for the game or lacks something that is. It packages tracked files from the
+the package holds anything the game client cannot load (only `.lua .xml .toc .tga .blp .ttf` and license or notice files
+may ship; the failure names the file), code no TOC or XML include loads, or a texture or font no loaded code names, or
+lacks something that is needed. The ignore rules for that live in `tools/generate_artwork_catalog.py` (`.pkgmeta` is its output). It packages tracked files from the
 working tree. `--parity` clones HEAD into a scratch directory, runs the vendored `tools/vendor/bigwigs-packager/release.sh`
 there and compares every file byte for byte; commit first, since a clone only has committed content.
 `tools/package_release.py --check-zip FILE` verifies any zip, including the packager's.

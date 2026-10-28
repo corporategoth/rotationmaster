@@ -58,7 +58,7 @@ class ArtworkTests(unittest.TestCase):
         self.assertIn(entries[0] + '.toc', names,
                       'package-as must name the actual root TOC with matching case')
 
-    def test_release_excludes_legacy_qa_without_excluding_runtime_or_provenance(self):
+    def test_release_excludes_legacy_qa_and_notes_without_excluding_runtime(self):
         qa = sorted(str(path.relative_to(ROOT)) for path in
                     (ROOT / 'Assets/Conditions/qa').rglob('*') if path.is_file())
         self.assertTrue(qa, 'legacy QA fixture must contain actual files')
@@ -73,9 +73,11 @@ class ArtworkTests(unittest.TestCase):
                 for entry in entries:
                     for size in sizes:
                         suffix = '' if size == max(sizes) else '-' + str(size)
-                        self.assertFalse(ignored(f"{directory}/{entry['name']}{suffix}.tga"))
-                self.assertFalse(ignored(directory + '/provenance.json'))
-                self.assertFalse(ignored(directory + '/README.md'))
+                        # The catalog names the full-size texture only; the smaller export is never loaded.
+                        self.assertEqual(ignored(f"{directory}/{entry['name']}{suffix}.tga"), size != max(sizes))
+                # The client cannot read the manifest or the notes.
+                self.assertTrue(ignored(directory + '/provenance.json'))
+                self.assertTrue(ignored(directory + '/README.md'))
 
     def test_release_keeps_runtime_entry_points(self):
         # The website and browser modules live in the separate
@@ -86,7 +88,7 @@ class ArtworkTests(unittest.TestCase):
             for path in ('Data/artwork.lua', 'Analytics/replay.lua', 'RotationMaster.toc'):
                 self.assertFalse(any(path == item or path.startswith(item + '/') for item in items), path)
 
-    def test_release_keeps_selected_runtime_and_excludes_originals_and_superseded_art(self):
+    def test_release_keeps_selected_runtime_and_excludes_originals_companions_and_superseded_art(self):
         items = [line[4:] for line in GENERATOR.release_metadata().splitlines() if line.startswith('  - ')]
         patterns = [item + '/*' if (ROOT / item).is_dir() else item for item in items]
         def ignored(path):
@@ -96,14 +98,16 @@ class ArtworkTests(unittest.TestCase):
             for entry in entries:
                 for size in sizes:
                     suffix = '' if size == max(sizes) else '-' + str(size)
-                    name = f"{directory}/{entry['name']}{suffix}.tga";selected.add(name)
-                    self.assertFalse(ignored(name), name)
+                    name = f"{directory}/{entry['name']}{suffix}.tga"
+                    if size == max(sizes):
+                        selected.add(name)
+                    self.assertEqual(ignored(name), name not in selected, name)
                 self.assertTrue(ignored(f"{directory}/source/{entry['name']}.png"))
             for path in (ROOT / directory).glob('*.tga'):
                 relative = str(path.relative_to(ROOT))
                 self.assertEqual(ignored(relative), relative not in selected, relative)
-            self.assertFalse(ignored(directory + '/provenance.json'))
-            self.assertFalse(ignored(directory + '/README.md'))
+            self.assertTrue(ignored(directory + '/provenance.json'))
+            self.assertTrue(ignored(directory + '/README.md'))
         for path in ('Assets/Conditions/v2/zonepvp.tga', 'Assets/Conditions/v2/zonepvp-64.tga'):
             self.assertTrue(ignored(path), path)
         for line in (ROOT / 'RotationMaster.toc').read_text().splitlines():
