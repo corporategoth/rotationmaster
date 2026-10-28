@@ -10,7 +10,7 @@ local T = addon.translation
 addon.translation = nil
 addon.localeIsTranslated = T ~= nil
 
--- Read under a key that is not their text: [id] = { key, English }. An English game reads only these.
+-- Read under a key that is not their text: [id] = { key, English }. An English game reads these.
 local S = {
 -- d6f5cde1
 [3042] = { "Help.General.memory_capture", "Observe memory for ten minutes without changing polling or forcing garbage collection. /rm perf memory accepts 1–1800 seconds (default 600), plus stop and report. Whole-Lua heap is sampled each second; bounded retained counts every thirty seconds. Addon attribution refreshes only at start and completion; intermediate values are cached with unknown age. Stop completes the final boundary before you open the report. Refreshes can hitch, and their cost is reported. Heap decreases do not prove collection or a leak." },
@@ -481,326 +481,335 @@ local S = {
 -- 766abde1
 [4091] = { "Help.General.tooltip_exclude_disabled_conditions", "With rotation conditions included, leave out any condition that is switched off in the rotation editor, together with everything under it, because a disabled condition no longer affects the rotation. Off by default: a spell or item that appears only in a disabled condition still counts." },
 }
-for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
+for id, entry in pairs(S) do
+    L[entry[1]] = T and T[id] or entry[2]
+end
 S = nil
-if not T then return end
 
--- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
-local E = {
+if not T then
+    return
+end
+
+-- Every string read under its own text binds it to its ID: N["English text"] = id. Only a translated game builds
+-- this; the languages bind the ID to the translation, and an untranslated text stays absent (it reads as itself).
+local N = {}
 -- 0eebb1cd
 -- Context: Help topic title (General settings help) for the option in the performance section that
 --     turns the observation cache on or off.
-[3046] = "Enable observation cache",
+N["Enable observation cache"] = 3046
 -- 476ed166
 -- Context: Yellow heading in the custom condition help: the function that checks the condition
 --     itself is valid (all required fields have valid values).
-[3051] = "Validity Function",
+N["Validity Function"] = 3051
 -- fb4e0028
 -- Context: Yellow heading in the custom condition help: the function that evaluates the condition
 --     at run time and returns true or false.
-[3052] = "Evaluation Function",
+N["Evaluation Function"] = 3052
 -- d7868586
 -- Context: Yellow heading in the custom condition help: the function that produces the condition's
 --     one-line summary text.
-[3053] = "Print Function",
+N["Print Function"] = 3053
 -- d548d39d
 -- Context: Yellow heading in the custom condition help: the function that builds the condition's
 --     editing widgets.
-[3054] = "Widget Function",
+N["Widget Function"] = 3054
 -- e136f1bc
 -- Context: Yellow heading in the custom condition help: the function that builds the condition's
 --     own help page.
-[3055] = "Help Function",
+N["Help Function"] = 3055
 -- 4efca0d1
 -- Context: Name of the About page of the settings window (version, author, credits and links); also
 --     the title of its help window.
-[3056] = "About",
+N["About"] = 3056
 -- 96c34a07
 -- Context: Status label (with icon) in the rotation help: the rotation or step is not valid, so it
 --     cannot be used.
-[3057] = "Invalid",
+N["Invalid"] = 3057
 -- 29ab8f0c
 -- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
 --     true right now (shown green).
-[3058] = "Currently satisfied",
+N["Currently satisfied"] = 3058
 -- 28f0d12b
 -- Context: Status label (with icon) in the rotation help and on rotation cards: the conditions are
 --     not true right now (shown red).
-[3059] = "Not currently satisfied",
+N["Not currently satisfied"] = 3059
 -- 68c38a65
 -- Context: Yellow heading in the rotation help, in the announcements part: the sound that can be
 --     played along with an announcement.
-[3063] = "Sound Alert",
+N["Sound Alert"] = 3063
 -- 0cda3eb2
-[3065] = "Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it.",
+N["Every rotation has an identifier (ID), shown beside its priority: type /rm set <id> to choose it (any case), /rm set auto to go back to automatic switching, and /rm list to see every identifier. A Built In's identifier is fixed; yours is made from its name until you change it."] = 3065
 -- 5530025a
 -- Context: Heading in the rotation help: how the addon decides which rotation is used. Noun phrase
 --     with gerund.
-[3066] = "Choosing a rotation",
+N["Choosing a rotation"] = 3066
 -- 359bbdff
-[3067] = "Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first that matches; a rotation with no switch condition always matches, so turn it off to keep it from being chosen. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority.",
+N["Automatic switching tries the enabled rotations in priority order, yours and Built Ins alike: higher numbers are tried first, equal priorities by name. It picks the first that matches; a rotation with no switch condition always matches, so turn it off to keep it from being chosen. The fallback (Default) is used only when none matches. The rotation list is sorted in this same order and shows each priority."] = 3067
 -- 1adf9c9d
-[3068] = "Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else.",
+N["Priority sits beside Enabled at the top of the editor. A Built In cannot be edited, but its Enabled setting and priority are yours to change for this profile: they are saved at once, shown in amber when they differ from how it ships, and Reset to default puts it back. Copy a Built In to your rotations to edit anything else."] = 3068
 -- 89d48b07
-[3069] = "A Built In shows a blue Read-Only pill in place of Undo and Redo; Duplicate makes your own copy. It loads only for the edition and class it was written for (the pill's tooltip). The specializations it is for show in the picker before its name; any level it needs is part of its switch condition. The switch's tooltip says when it can be selected together with another rotation, or is for another specialization.",
+N["A Built In shows a blue Read-Only pill in place of Undo and Redo; Duplicate makes your own copy. It loads only for the edition and class it was written for (the pill's tooltip). The specializations it is for show in the picker before its name; any level it needs is part of its switch condition. The switch's tooltip says when it can be selected together with another rotation, or is for another specialization."] = 3069
 -- c85105a0
-[3070] = "In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means it can be selected at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now.",
+N["In the list, a red border means the rotation cannot be selected (the tooltip names why), gray means it is switched off, and an amber bar means it can be selected at the same time as another rotation (yours or Built In), so only priority decides between them; a wider bar means they also have the same priority and the name decides. /rm why lists the order and what automatic switching would choose now."] = 3070
 -- 929902f7
-[3071] = "Each rotation says which specializations it is for, in the picker before its name: several, or Any. It is listed, in the minimap menu and for /rm set, only while you play one of them; its switch condition never hides it. Automatic switching checks the specialization first, then the switch condition, then priority; a rotation with no switch condition matches whenever its specialization and level apply, so priority alone decides; turn it off to keep it for choosing by hand. The specialization menu above the list's search box starts at the one you are playing; choose another, or All specializations, to see theirs. Where the game has dual specialization instead of named specializations (Classic Era, TBC, Wrath, Cataclysm and Forever), they are your primary and secondary talents: exports leave them out, and an import is for the talents the list shows.",
+N["Each rotation says which specializations it is for, in the picker before its name: several, or Any. It is listed, in the minimap menu and for /rm set, only while you play one of them; its switch condition never hides it. Automatic switching checks the specialization first, then the switch condition, then priority; a rotation with no switch condition matches whenever its specialization and level apply, so priority alone decides; turn it off to keep it for choosing by hand. The specialization menu above the list's search box starts at the one you are playing; choose another, or All specializations, to see theirs. Where the game has dual specialization instead of named specializations (Classic Era, TBC, Wrath, Cataclysm and Forever), they are your primary and secondary talents: exports leave them out, and an import is for the talents the list shows."] = 3071
 -- 4c969557
-[3072] = "Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent.",
+N["Stop ends lower priority actions. The implicit auto-attack (Attack or Shoot) remains eligible unless you suppress it. An unavailable Stop condition also suppresses it. Optional reminders remain independent."] = 3072
 -- 2253ae22
-[3074] = "Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed.",
+N["Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed."] = 3074
 -- ef5cde35
-[3075] = "Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit.",
+N["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."] = 3075
 -- 598c73a5
-[3076] = "Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out.",
+N["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."] = 3076
 -- 55e4c200
-[3077] = "Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending.",
+N["Closing the window retains drafts for this session. Switching rotations or opening comparison or transfer asks whether to Apply, Discard or Cancel when changes are pending."] = 3077
 -- 770e0bb6
-[3078] = "The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches.",
+N["The switch condition selects the rotation automatically; with none, it is selected whenever its specialization and level apply. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."] = 3078
 -- 7423362f
-[3079] = "Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings.",
+N["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."] = 3079
 -- 758bf6a1
-[3080] = "Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard.",
+N["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."] = 3080
 -- 9b6cac99
-[3081] = "Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray.",
+N["Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray."] = 3081
 -- 5fc9817f
-[3082] = "Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant.",
+N["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."] = 3082
 -- a6e094f9
-[3083] = "An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it.",
+N["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit auto-attack (Attack or Shoot) remains available unless the Stop suppresses it."] = 3083
 -- 4e0f26c5
-[3084] = "Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone.",
+N["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."] = 3084
 -- c54e950a
-[3085] = "List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows.",
+N["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."] = 3085
 -- e90e0aef
 -- Context: Help topic title in General settings help for the highlight preview (the example that
 --     shows the chosen highlight).
-[3086] = "Highlight preview",
+N["Highlight preview"] = 3086
 -- aafdf428
 -- Context: Help topic title in the Conditions help for the Add category button.
-[3087] = "Add category",
+N["Add category"] = 3087
 -- 539a15c9
 -- Context: Section title in the condition editor help: how to choose a condition type and edit its
 --     fields.
-[3088] = "Choose and edit",
+N["Choose and edit"] = 3088
 -- cfb4186c
-[3089] = "Click a condition type to search or browse categories. Dismissing the picker or choosing the same type keeps its fields. Click the condition summary to edit its fields. The chevron switches between name only and summary; the double chevron closes the fields.",
+N["Click a condition type to search or browse categories. Dismissing the picker or choosing the same type keeps its fields. Click the condition summary to edit its fields. The chevron switches between name only and summary; the double chevron closes the fields."] = 3089
 -- 0e19bead
-[3090] = "Click a name to rename it. Clear a custom step name to restore its action name. Click a collapsed title to show its summary. Click action or condition text to open its details; the double chevron returns from fields to the summary.",
+N["Click a name to rename it. Clear a custom step name to restore its action name. Click a collapsed title to show its summary. Click action or condition text to open its details; the double chevron returns from fields to the summary."] = 3090
 -- 73ff3024
-[3091] = "Click condition text to edit when this card can run. Enabled / Disabled preserves the card while switching its participation. Actions also require known or carried actions, usable resources, cooldown readiness and valid range.",
+N["Click condition text to edit when this card can run. Enabled / Disabled preserves the card while switching its participation. Actions also require known or carried actions, usable resources, cooldown readiness and valid range."] = 3091
 -- 9c1c1630
-[3092] = "Click the action to edit its type, spell or item. The leading icon previews the effect. Effect selects a style; Magnification changes its size. Click the swatch or edit RGBA on the 0–1 scale. Arrows adjust position; V / H show offsets. Default restores profile values. Sound selection and Play preview an audible reminder.",
+N["Click the action to edit its type, spell or item. The leading icon previews the effect. Effect selects a style; Magnification changes its size. Click the swatch or edit RGBA on the 0–1 scale. Arrows adjust position; V / H show offsets. Default restores profile values. Sound selection and Play preview an audible reminder."] = 3092
 -- 3edd382d
-[3093] = "Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides both arms without changing them. Click True or False to fold only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable.",
+N["Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides both arms without changing them. Click True or False to fold only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable."] = 3093
 -- 55129537
 -- Context: Section title in the rotation editor help for the cards that combine conditions and the
 --     state they show.
-[3094] = "Conditions and state",
+N["Conditions and state"] = 3094
 -- eacf49cb
-[3095] = "Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.",
+N["Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = 3095
 -- 63ee762f
-[3096] = "Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry that card and all following siblings. A branch always carries its children. Use Up / Down on the left to move one card. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows.",
+N["Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry that card and all following siblings. A branch always carries its children. Use Up / Down on the left to move one card. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows."] = 3096
 -- 24e03e5b
-[3097] = "Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Hold Ctrl when starting a drag to carry the card and all following siblings. Groups always carry their children. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping; dragging an existing selection moves that selection. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped.",
+N["Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Hold Ctrl when starting a drag to carry the card and all following siblings. Groups always carry their children. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping; dragging an existing selection moves that selection. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped."] = 3097
 -- adb0a440
 -- Context: Section title in the settings help: how text fields and the Apply/Discard draft work.
-[3098] = "Editing settings",
+N["Editing settings"] = 3098
 -- 1352b3ca
 -- Context: Section title in the rotation editor help for the highlight effect options of an action
 --     card.
-[3099] = "Highlight effects",
+N["Highlight effects"] = 3099
 -- fc1e5a5a
-[3100] = "If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached.",
+N["If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached."] = 3100
 -- 0e86051f
 -- Context: Section title in the rotation editor help: how to rename steps and open their details.
-[3101] = "Names and details",
+N["Names and details"] = 3101
 -- e0d1f576
-[3102] = "Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation.",
+N["Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = 3102
 -- d68ae9c9
 -- Context: Section title at the top of the help for the Functions and Integrations pages: a short
 --     guide to the page.
-[3104] = "Using this page",
+N["Using this page"] = 3104
 -- 642f28cb
-[3105] = "Version, author, credits and project links are shown here. Click a link field to select its text for copying.",
+N["Version, author, credits and project links are shown here. Click a link field to select its text for copying."] = 3105
 -- 9cea69fd
 -- Context: Section title in the help: the buttons and controls of the window frame.
-[3106] = "Window controls",
+N["Window controls"] = 3106
 -- efe10c80
 -- Context: Help topic title for the settings made for the first (primary) talent specialization;
 --     used only when the game has no word for it.
-[3107] = "Primary",
+N["Primary"] = 3107
 -- 62f2ccff
 -- Context: Help topic title for the settings made for the second (secondary) talent specialization;
 --     used only when the game has no word for it.
-[3108] = "Secondary",
+N["Secondary"] = 3108
 -- a91d0087
 -- Context: Help topic title in the Conditions help for the Delete category button.
-[3109] = "Delete category",
+N["Delete category"] = 3109
 -- 315dca68
-[3110] = "Rename the selected category in Manage categories. Built-in categories cannot be renamed or deleted.",
+N["Rename the selected category in Manage categories. Built-in categories cannot be renamed or deleted."] = 3110
 -- f6fad90e
-[3111] = "Add an empty named category from the category-management list. Move To in condition settings assigns a condition to it.",
+N["Add an empty named category from the category-management list. Move To in condition settings assigns a condition to it."] = 3111
 -- b31029f7
-[3112] = "In Manage categories, move the selected category earlier in the category list.",
+N["In Manage categories, move the selected category earlier in the category list."] = 3112
 -- 277b5e7b
-[3113] = "In Manage categories, move the selected category later in the category list.",
+N["In Manage categories, move the selected category later in the category list."] = 3113
 -- 32a806a4
-[3114] = "Delete a named category after confirmation. Its conditions remain available under Other; their definitions are preserved.",
+N["Delete a named category after confirmation. Its conditions remain available under Other; their definitions are preserved."] = 3114
 -- e20c9279
-[3115] = "Filter the visible condition list by name or identifier. The category filter still applies.",
+N["Filter the visible condition list by name or identifier. The category filter still applies."] = 3115
 -- 2715ffec
-[3116] = "Allow this condition type to be used when automatically selecting a rotation.",
+N["Allow this condition type to be used when automatically selecting a rotation."] = 3116
 -- 91c0665b
-[3117] = "Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available.",
+N["Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available."] = 3117
 -- 4a954399
 -- Context: Help topic title in the Conditions help: how to reorder conditions and categories.
-[3118] = "Condition order",
+N["Condition order"] = 3118
 -- 54375409
 -- Context: Help topic title for the pair of buttons that save or abandon changes in the announce
 --     and effect editors.
-[3119] = "Apply / Cancel",
+N["Apply / Cancel"] = 3119
 -- af06c200
-[3120] = "Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability.",
+N["Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability."] = 3120
 -- 304b61a5
 -- Context: Section title in the rotation editor help: how to select more than one rotation card.
-[3121] = "Select several cards",
+N["Select several cards"] = 3121
 -- 1e77459b
-[3122] = "Ctrl-click cards to add or remove them from the selection; Shift-click selects the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). With several cards selected, the strip above the canvas groups them as All or Any, and Duplicate, Enable, Disable and Delete act on every selected card; one Undo reverses each. Drag any selected card to move the selection.",
+N["Ctrl-click cards to add or remove them from the selection; Shift-click selects the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). With several cards selected, the strip above the canvas groups them as All or Any, and Duplicate, Enable, Disable and Delete act on every selected card; one Undo reverses each. Drag any selected card to move the selection."] = 3122
 -- 47834c1a
-[3123] = "Ctrl-click cards to add or remove them from the selection; Shift-click a title or condition to select the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). Drag any selected card to move the whole selection to one gap. Beside Apply, Duplicate, Enable, Disable and Delete act on every selected card, and one Undo reverses each. Branches keep their Evaluate / Always mode. Click empty canvas to clear the selection.",
+N["Ctrl-click cards to add or remove them from the selection; Shift-click a title or condition to select the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). Drag any selected card to move the whole selection to one gap. Beside Apply, Duplicate, Enable, Disable and Delete act on every selected card, and one Undo reverses each. Branches keep their Evaluate / Always mode. Click empty canvas to clear the selection."] = 3123
 -- 2c6fdc3c
-[3124] = "Select a profile in the sidebar to inspect it, then Activate profile to switch. New and Duplicate open a named draft with Apply and Cancel. Import stages a validated new profile; Compare shows setting differences. Copy and Reset replace the active profile after confirmation; the red trash deletes an inactive profile.",
+N["Select a profile in the sidebar to inspect it, then Activate profile to switch. New and Duplicate open a named draft with Apply and Cancel. Import stages a validated new profile; Compare shows setting differences. Copy and Reset replace the active profile after confirmation; the red trash deletes an inactive profile."] = 3124
 -- 80f29cb1
-[3125] = "The condition ordering controls are arrows and draggable rows in the sidebar of the selected category. In Manage categories, the same controls order the categories themselves.",
+N["The condition ordering controls are arrows and draggable rows in the sidebar of the selected category. In Manage categories, the same controls order the categories themselves."] = 3125
 -- fdef8f0b
-[3126] = "Unticked, any rank of the spell matches: a numeric spell selection also recognizes auras with the same readable localized spell name. Ticked, only the exact spell ID you chose matches. Conditions saved before this option keep the exact ID until you untick it. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; tick the option when that distinction matters.",
+N["Unticked, any rank of the spell matches: a numeric spell selection also recognizes auras with the same readable localized spell name. Ticked, only the exact spell ID you chose matches. Conditions saved before this option keep the exact ID until you untick it. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; tick the option when that distinction matters."] = 3126
 -- a851dbf4
-[3127] = "Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches.",
+N["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches."] = 3127
 -- 6ef93df0
-[3128] = "Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches, and that rank must be on your action bars.",
+N["Unticked (the default), any rank of the spell matches. Ticked, only the rank you chose matches, and that rank must be on your action bars."] = 3128
 -- 5c9c3144
-[3129] = "A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.",
+N["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = 3129
 -- c647cb40
-[3130] = "A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.",
+N["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = 3130
 -- 51b10901
 -- Context: Section title in the rotation editor help: zooming, panning and switching views.
-[3131] = "Navigating rotations",
+N["Navigating rotations"] = 3131
 -- 35f68027
 -- Context: Help topic title in the Announces help for the checkbox that switches an announcement on
 --     or off.
-[3132] = "Enabled / Disabled",
+N["Enabled / Disabled"] = 3132
 -- 922d8056
 -- Context: Help topic title in the Announces help: the {{target}}, {{spell}} and {{event}}
 --     placeholders that can be put into announcement text.
-[3133] = "Announcement substitutions",
+N["Announcement substitutions"] = 3133
 -- 63ff2d53
-[3134] = "New, Duplicate, Import/Export and Compare",
+N["New, Duplicate, Import/Export and Compare"] = 3134
 -- 50b0f89c
-[3174] = "Move Up / Move Down",
+N["Move Up / Move Down"] = 3174
 -- 2b906316
 -- Context: Help topic title in the item set help for the buttons that connect an item set to a
 --     macro/action button or remove the link.
-[3176] = "Bind / Unbind",
+N["Bind / Unbind"] = 3176
 -- 49c1588e
 -- Context: Help topic title in the item set help for the undo and redo buttons.
-[3180] = "Undo / Redo",
+N["Undo / Redo"] = 3180
 -- 147db4bf
 -- Context: Help topic title in the item set help: older macro buttons made before the current
 --     system.
-[3184] = "Legacy macro buttons",
+N["Legacy macro buttons"] = 3184
 -- df1955d5
-[3192] = "Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments.",
+N["Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments."] = 3192
 -- 190e427d
-[3193] = "Open Manage categories below the list for category maintenance. Manage conditions returns to individual condition settings.",
+N["Open Manage categories below the list for category maintenance. Manage conditions returns to individual condition settings."] = 3193
 -- a9dcdfe2
-[3194] = "Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.",
+N["Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."] = 3194
 -- 936a161c
 -- Context: Help topic title in Integrations settings help for the Lua editor options.
-[3195] = "Editor",
+N["Editor"] = 3195
 -- 0c601351
 -- Context: Help topic title in Integrations help: the list of other addons Rotation Master can work
 --     with.
-[3196] = "Optional addons",
+N["Optional addons"] = 3196
 -- 0413ac9a
-[3197] = "Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel.",
+N["Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel."] = 3197
 -- 5e86a29a
-[3198] = "Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust.",
+N["Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust."] = 3198
 -- b696d1d1
 -- Context: Section title in the Functions help: how the Arguments and Returns lists work.
-[3199] = "Arguments and returns",
+N["Arguments and returns"] = 3199
 -- 2be54423
-[3200] = "Choose an existing namespace from the suggestions or type a new dotted namespace. Built In namespaces follow source files; custom namespaces are implied by saved functions and need no separate maintenance.",
+N["Choose an existing namespace from the suggestions or type a new dotted namespace. Built In namespaces follow source files; custom namespaces are implied by saved functions and need no separate maintenance."] = 3200
 -- f6a949d3
-[3201] = "Function names use letters, numbers and underscores, beginning with a letter or underscore. The code signature shows the qualified namespace.name used by callers.",
+N["Function names use letters, numbers and underscores, beginning with a letter or underscore. The code signature shows the qualified namespace.name used by callers."] = 3201
 -- 330af7d6
-[3202] = "Search helpers by name or description, then filter Built In / Custom and namespace. Packaged helpers use the same read-only pane. Duplicate creates an editable custom copy.",
+N["Search helpers by name or description, then filter Built In / Custom and namespace. Packaged helpers use the same read-only pane. Duplicate creates an editable custom copy."] = 3202
 -- e67ec7ba
-[3203] = "Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Return rows describe those results; moving them does not rewrite return statements. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.",
+N["Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Return rows describe those results; moving them does not rewrite return statements. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites."] = 3203
 -- 6c182d42
 -- Context: Help topic title for the buttons that save or abandon edits in an item list dialog and
 --     the window.
-[3277] = "Apply / Discard",
+N["Apply / Discard"] = 3277
 -- d04a65ba
-[3278] = "Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.",
+N["Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate."] = 3278
 -- 2be8c485
-[3279] = "Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Valid rotation bodies can contain up to 2,000 total steps; large workspaces reuse nearby card controls as you navigate. Folded branches intentionally hide their children.",
+N["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Valid rotation bodies can contain up to 2,000 total steps; large workspaces reuse nearby card controls as you navigate. Folded branches intentionally hide their children."] = 3279
 -- 76bac84a
-[3280] = "New / Duplicate / Import / Compare",
+N["New / Duplicate / Import / Compare"] = 3280
 -- c4875790
-[3281] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted.",
+N["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted."] = 3281
 -- be63470b
-[3282] = "Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement.",
+N["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement."] = 3282
 -- e7df5868
-[3283] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations.",
+N["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations."] = 3283
 -- 27a02657
-[3284] = "Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
+N["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = 3284
 -- 53a70ff7
 -- Context: Help topic title at the top of the item list dialog help.
-[3285] = "Editing this list",
+N["Editing this list"] = 3285
 -- a0515628
-[3292] = "Rotations belong to the active settings profile. New copies use Class, shared by your characters of that class; Metadata can change this to This character. Built In rotations show only for their declared class or universal use. Equal identifiers in different owners remain separate entries.",
+N["Rotations belong to the active settings profile. New copies use Class, shared by your characters of that class; Metadata can change this to This character. Built In rotations show only for their declared class or universal use. Equal identifiers in different owners remain separate entries."] = 3292
 -- 774a185e
-[3293] = "Older rotations without a recorded owner stay in an archive. Recover unassigned rotations opens the current profile and character archives for inspection or copying. Choose Class or This character to adopt one. Adoption preserves its identifier and evidence, refuses an existing destination, and leaves incomplete records unavailable until repaired.",
+N["Older rotations without a recorded owner stay in an archive. Recover unassigned rotations opens the current profile and character archives for inspection or copying. Choose Class or This character to adopt one. Adoption preserves its identifier and evidence, refuses an existing destination, and leaves incomplete records unavailable until repaired."] = 3293
 -- 4886d663
 -- Context: Help topic title in Integrations help for the checkbox that turns on the Questie
 --     integration.
-[3294] = "Enable Questie integration",
+N["Enable Questie integration"] = 3294
 -- 472590ae
 -- Context: Column heading in the addon download links dialog: the website that hosts the download
 --     (e.g. CurseForge).
-[3301] = "Provider",
+N["Provider"] = 3301
 -- e7a241de
 -- Context: Column heading in the addon download links dialog: the web address of the download page.
-[3302] = "URL",
+N["URL"] = 3302
 -- 8ea4edb6
-[3303] = "Select URL for copying (Ctrl+C)",
+N["Select URL for copying (Ctrl+C)"] = 3303
 -- 5ac254c6
 -- Context: Help topic title in the Announces help: an example of how a macro calls an announcement.
-[3353] = "Macro invocation",
+N["Macro invocation"] = 3353
 -- 94a47c93
 -- Context: Help topic title in the Announces help: the unit that a macro passes to the
 --     announcement.
-[3354] = "Supplied macro unit",
+N["Supplied macro unit"] = 3354
 -- b6082c37
-[3364] = "Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements.",
+N["Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements."] = 3364
 -- 6de77638
-[3367] = "Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code.",
+N["Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code."] = 3367
 -- 318a2558
-[3368] = "Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only.",
+N["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."] = 3368
 -- 0e0d00b2
-[3379] = "Not on your action bars",
+N["Not on your action bars"] = 3379
 -- c8117094
-[3380] = "An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data.",
+N["An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data."] = 3380
 -- 2c7e6247
-[3381] = "Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning.",
+N["Actions must also be on an action bar: Rotation Master highlights an action by lighting the button that holds it, so a step or cooldown that no button holds is skipped, and its card shows an amber warning."] = 3381
 -- cb691e6c
-[3391] = "Adopt several at once",
+N["Adopt several at once"] = 3391
 -- 6ac62581
-[3392] = "Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result.",
-}
-for id, text in pairs(E) do
+N["Adopt all and Adopt all from specialization adopt every listed record in one step, for the owner chosen under Applies to. Each record is adopted on its own, exactly as a single adoption would be: a record whose destination already exists, or that is incomplete, stays in the archive and is named in the result."] = 3392
+
+for text, id in pairs(N) do
     local translation = T[id]
-    if translation then L[text] = translation end
+
+    if translation then
+        L[text] = translation
+    end
 end

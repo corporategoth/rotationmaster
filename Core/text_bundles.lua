@@ -25,7 +25,8 @@ local addon_name, addon = ...
 -- none, and tools/locales.py (check) proves a key lives in exactly one catalog.
 --
 -- An English game has no translation to apply: a key that is its own English needs no bundle at all. Only the keys read
--- under another key (the `symbolic` list of the index, such as "Help.Effects.delete") load one, for their English.
+-- under another key (the `symbolic` list of the index, such as "Help.Effects.delete", "TalentTree.Arms" or a key whose
+-- English doubles its pipes) load one, for their English.
 local ace = LibStub("AceLocale-3.0")
 local L = ace:GetLocale(addon_name)
 local mainMeta = getmetatable(L)

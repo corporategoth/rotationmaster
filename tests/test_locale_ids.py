@@ -112,6 +112,27 @@ class FormatTests(unittest.TestCase):
         self.assertEqual(problems, [])
         self.assertEqual(sorted((e.id, e.key, e.text, e.hash) for e in parsed), sorted((e.id, e.key, e.text, e.hash) for e in entries))
 
+    def test_the_english_binds_text_to_id_once_and_derivable_pairs_are_not_pairs(self):
+        entries = [F.English(1, 'Plain', 'Plain', F.text_hash('Plain'), 0),
+                   F.English(2, 'Default.X.Name', 'Arms Warrior', F.text_hash('Arms Warrior'), 0),
+                   F.English(3, 'Use [a|b]', 'Use [a||b]', F.text_hash('Use [a||b]'), 0),
+                   F.English(4, 'TalentTree.Arms', 'Arms', F.text_hash('Arms'), 0)]
+        self.assertEqual([F.kind_of(e.key, e.text) for e in entries], ['plain', 'symbolic', 'piped', 'prefixed'])
+        text = F.render_english(entries, 'x')
+        self.assertIn('\nN["Plain"] = 1\n', text)
+        self.assertIn('\nN["Use [a|b]"] = 3\n', text)
+        # Only a real difference between key and text is a pair; the others are derived.
+        self.assertIn('[2] = { "Default.X.Name", "Arms Warrior" },', text)
+        self.assertNotIn('"Use [a||b]"', text)
+        self.assertIn('[4] = "Arms",', text)
+        self.assertNotIn('"TalentTree.Arms"', text)
+        # The English game returns before N is built; N is a local, never L.
+        self.assertLess(text.index('if not T then'), text.index('local N = {}'))
+        self.assertNotRegex(text, r'\nL\[[^\n]*\] = \d')
+        parsed, problems = F.parse_english(text)
+        self.assertEqual(problems, [])
+        self.assertEqual(sorted((e.id, e.key, e.text, e.kind) for e in parsed), sorted((e.id, e.key, e.text, e.kind) for e in entries))
+
     def test_a_translation_line_holds_only_the_id_and_the_string(self):
         entries = [F.Translation(5, 'Übersetzt "so"', F.text_hash('English'), 'English', 0)]
         text = F.render_locale('deDE', entries, [{'name': 'Claude', 'kind': 'ai'}])
@@ -173,6 +194,60 @@ class IdTests(Sandbox):
         path = self.root / 'Locales/enUS.lua'
         path.write_text('-- something else\n' + path.read_text().split('\n', 1)[1])
         self.assertIn('copyright', self.check()[1])
+
+
+class RuntimeShapeTests(Sandbox):
+    """The English game and an untranslated string read exactly as the text-keyed files read."""
+
+    def setUp(self):
+        super().setUp()
+        model = L.Model()
+        model.add('TalentTree.Arms', 'Arms')
+        model.add('Default.X.Name', 'Arms Warrior')
+        model.write()
+        for name in ('Libs/LibStub', 'Libs/AceLocale-3.0'):
+            shutil.copytree(ROOT / name, self.root / name)
+        for name in ('globals.lua', 'Core/text_bundles.lua', 'Data/text_bundle_index.lua'):
+            (self.root / name).parent.mkdir(exist_ok=True)
+            shutil.copy(ROOT / name, self.root / name)
+        self.run_tool('index')
+
+    def read(self, key, client):
+        keys = self.root / 'keys.txt'
+        keys.write_text(key.encode().hex() + '\n')
+        out = self.root / 'out.txt'
+        subprocess.run(['luajit', str(ROOT / 'tools/locale_dump.lua'), str(self.root), client, str(keys), str(out)],
+                       check=True, capture_output=True, cwd=ROOT)
+        return bytes.fromhex(out.read_text().split()[1]).decode()
+
+    def test_english_and_untranslated_strings_read_as_before(self):
+        self.translate('deDE', {'Cast': 'Zaubern'})
+        for client in ('enUS', 'deDE'):
+            self.assertEqual(self.read('Pipe [a|b]', client), 'Pipe [a||b]', client)
+            self.assertEqual(self.read('TalentTree.Arms', client), 'Arms', client)
+            self.assertEqual(self.read('Default.X.Name', client), 'Arms Warrior', client)
+            self.assertEqual(self.read('Old text', client), 'Old text', client)
+        self.assertEqual(self.read('Cast', 'deDE'), 'Zaubern')
+        self.assertEqual(self.read('Cast', 'enUS'), 'Cast')
+
+    def test_translations_of_derived_pairs_apply(self):
+        self.translate('deDE', {'Pipe [a|b]': 'Rohr [a||b]', 'TalentTree.Arms': 'Waffen', 'Default.X.Name': 'Waffenkrieger'})
+        self.assertEqual(self.read('Pipe [a|b]', 'deDE'), 'Rohr [a||b]')
+        self.assertEqual(self.read('TalentTree.Arms', 'deDE'), 'Waffen')
+        self.assertEqual(self.read('Default.X.Name', 'deDE'), 'Waffenkrieger')
+        self.assertEqual(self.read('TalentTree.Arms', 'enUS'), 'Arms')
+
+    def test_the_english_game_builds_no_table_of_texts(self):
+        text = (self.root / 'Locales/enUS.lua').read_text()
+        self.assertLess(text.index('if not T then'), text.index('N["Old text"]'))
+        self.assertEqual(self.check()[0], 0)
+
+    def test_rewording_a_derived_pair_keeps_it_correct(self):
+        self.assertEqual(self.run_tool('reword', 'Arms', 'Arms Tree')[0], 0)
+        entry = L.by_key()['TalentTree.Arms']
+        self.assertEqual((entry.text, entry.kind), ('Arms Tree', 'symbolic'))
+        self.assertEqual(self.read('TalentTree.Arms', 'enUS'), 'Arms Tree')
+        self.assertEqual(self.check()[0], 0)
 
 
 class MissingTests(Sandbox):
@@ -448,7 +523,7 @@ class NotesTests(Sandbox):
         self.assertIn(f'-- {digest} English: Hello %s, you are %d\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\n[{ids["Hello %s, you are %d"]}] = "Hallo %s, du bist %d",', german)
         self.assertIn(f'-- {F.text_hash("Cast")} English: Cast\n-- Context: Button on the action bar that starts a spell.\n[{ids["Cast"]}]', german)
         english = (self.root / 'Locales/enUS.lua').read_text()
-        self.assertIn(f'-- {digest}\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\n[{ids["Hello %s, you are %d"]}] = "Hello %s, you are %d",', english)
+        self.assertIn(f'-- {digest}\n-- %s #1: the player name, e.g. "Anna"\n-- %d #2: the level, e.g. 70\nN["Hello %s, you are %d"] = {ids["Hello %s, you are %d"]}\n', english)
         # the translation line holds only the key and the string
         for line in german.split('\n'):
             if line.startswith('['):

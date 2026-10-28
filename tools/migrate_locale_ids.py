@@ -160,12 +160,9 @@ def prove(old_root, scratch):
     old_root, scratch = Path(old_root), Path(scratch)
     scratch.mkdir(parents=True, exist_ok=True)
     keys = scratch / 'keys.txt'
-    # The keys of the OLD tree: strings added since the conversion have no old behaviour to compare with.
-    all_keys, newer = [], 0
-    for catalog in L.catalogs():
-        relative = catalog.english_path.relative_to(ROOT)
-        all_keys.extend(key for key, _ in run_reader(old_root / relative, old_root)['entries'])
-    newer = len(L.english_entries()) - len(all_keys)
+    # Every key of the current tree: a string the old tree lacks would read differently and show up as a mismatch.
+    all_keys = [e.key for e in L.english_entries()]
+    newer = 0
     keys.write_text('\n'.join(k.encode('utf-8').hex() for k in all_keys) + '\n')
     report = {}
     mismatches = 0

@@ -22,7 +22,7 @@ programmer except running the tools below.
 ## How the files work
 
 Every string has a **stable ID**, a number from `tools/locale_registry.json` that is never reused and never derived from the
-wording. Code still reads `L["English text"]`; `Locales/enUS.lua` holds `[1234] = "English text"` with a hash of that English
+wording. Code still reads `L["English text"]`; `Locales/enUS.lua` binds the English to the number, `N["English text"] = 1234`, with a hash of that English
 above it. A translation file maps the ID to the translation, with the English it was made from in the comment above:
 
 ```lua
