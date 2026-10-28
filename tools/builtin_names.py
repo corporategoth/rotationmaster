@@ -10,7 +10,7 @@ Mists Unholy Death Knight), the role or build it is for stays, because nothing e
 A Season of Discovery pack keeps "SoD", because Classic Era packs also load there.
 
   tools/builtin_names.py check              validate the names in Locales/enUS.lua
-  tools/builtin_names.py apply              rewrite the Default.*.Name lines from BASE names + OVERRIDES
+  tools/builtin_names.py apply              rewrite the Default.*.Name English from BASE names + OVERRIDES (IDs kept)
   tools/builtin_names.py docs               write docs/builtin-name-changes.md (before/after, from BASE)
 """
 import glob
@@ -43,7 +43,15 @@ def git_show(rev, path):
     return subprocess.run(['git', '-C', str(ROOT), 'show', f'{rev}:{path}'], capture_output=True, text=True, check=True).stdout
 
 
+def current_names():
+    """Default.*.Name -> displayed English, from the generated English catalogs."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import locales
+    return {k: v for k, v in locales.english().items() if re.fullmatch(r'Default\.[^"]+\.Name', k)}
+
+
 def read_names(text):
+    """Names from an English file of the OLD layout (the BASE revision): L["Default.x.Name"] = "text"."""
     names = {}
     for line in text.split('\n'):
         m = re.match(r'L\["(Default\.[^"]+\.Name)"\] = "(.*)"\s*$', line)
@@ -159,14 +167,16 @@ def check(names, rows):
 
 
 def apply(rows, base_names):
-    path = ROOT / 'Locales/enUS.lua'
-    text = path.read_text()
-    names = new_names(base_names, rows)
-    for key, name in names.items():
-        pattern = re.compile(r'^(L\["' + re.escape(key) + r'"\] = )".*"$', re.M)
-        assert pattern.search(text), key
-        text = pattern.sub(lambda m: m.group(1) + '"' + name.replace('\\', '\\\\').replace('"', '\\"') + '"', text, count=1)
-    path.write_text(text)
+    """Set the Default.*.Name English from BASE names + OVERRIDES (keeps each string's ID; translations become stale)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import locales
+    model = locales.Model()
+    for key, name in new_names(base_names, rows).items():
+        entry = model.find_key(key)
+        assert entry, key
+        entry.text = name
+        entry.hash = locales.text_hash(name)
+    model.write()
 
 
 SPEC_NAMES = {'250': 'Blood', '251': 'Frost', '252': 'Unholy', '577': 'Havoc', '581': 'Vengeance', '1480': 'Devourer',
@@ -213,7 +223,7 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'check'
     rows = packs()
     if cmd == 'check':
-        names = read_names((ROOT / 'Locales/enUS.lua').read_text())
+        names = current_names()
         errors = check(names, rows)
         print('\n'.join(errors) or f'{len(rows)} names ok')
         return 1 if errors else 0
@@ -222,7 +232,7 @@ def main():
         apply(rows, base_names)
         return 0
     if cmd == 'docs':
-        docs(rows, base_names, read_names((ROOT / 'Locales/enUS.lua').read_text()))
+        docs(rows, base_names, current_names())
         return 0
     if cmd == 'preview':
         names = new_names(base_names, rows)

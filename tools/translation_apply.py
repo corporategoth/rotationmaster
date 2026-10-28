@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Validate a translated work file and merge it into Locales/<locale>.lua.
+"""Validate a translated work file and merge it into the locale files of one language.
 
-  python3 tools/translation_apply.py deDE deDE-todo.json --dry-run     validate and show what would change
-  python3 tools/translation_apply.py deDE deDE-todo.json               validate, then write the locale file
+  python3 tools/translation_apply.py deDE deDE-todo.json --dry-run                   validate and show what would change
+  python3 tools/translation_apply.py deDE deDE-todo.json --translator "Name"         validate, write, and credit Name
 
 The input is the file tools/translation_todo.py wrote with "translation" filled in (items whose translation
-is null or empty are skipped), or a plain JSON object {key: translation}. Nothing is written unless every
-supplied translation passes; the write itself is tools/locales.py `build`, so the file keeps its format, its
-order and its "-- en:" comment above each entry (the English that entry was translated from).
+is null or empty are skipped), or a plain JSON object {id: translation} (an id or the English key). Nothing is written
+unless every supplied translation passes; the write itself is tools/locales.py `build`, so the files keep their format,
+their order and the "-- <hash> English:" comment above each entry (the English that entry was translated from).
+--translator credits the person (or --ai a model) in the header and, for a human, on the About page of that language.
 
 Errors (nothing is written):
   - the key is not an enUS key, or the translation is empty or not text
@@ -54,9 +55,22 @@ def read_work(path):
             raise SystemExit(f'item {number}: expected an object with "key" and "translation"')
         text = item.get('translation')
         if text not in (None, ''):
-            if item['key'] in out:
-                raise SystemExit(f'item {number}: key appears twice: {item["key"]!r}')
-            out[item['key']] = text
+            key = item['key']
+            if key in out:
+                raise SystemExit(f'item {number}: key appears twice: {key!r}')
+            out[key] = text
+    return out
+
+
+def to_keys(incoming):
+    """Work-file names (an id or a key) as keys; an unknown name is left for validate to reject."""
+    by_id = L.by_id()
+    out = {}
+    for name, text in incoming.items():
+        key = by_id[int(name)].key if str(name).isdigit() and int(name) in by_id else name
+        if key in out:
+            raise SystemExit(f'{name!r} names a string that is supplied twice')
+        out[key] = text
     return out
 
 
@@ -107,14 +121,19 @@ def strip_for_script(text):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('locale', choices=T.LOCALES)
-    parser.add_argument('file', help='Work file from translation_todo.py, or a JSON object {key: translation}.')
+    parser.add_argument('file', help='Work file from translation_todo.py, or a JSON object {id: translation}.')
+    parser.add_argument('--translator', help='Credit this name in the header of every file written (and on the About page if human).')
+    parser.add_argument('--url', help='A link or handle shown beside the name in the header.')
+    kind = parser.add_mutually_exclusive_group()
+    kind.add_argument('--human', action='store_const', const='human', dest='kind', help='A human translator (the default for a new name).')
+    kind.add_argument('--ai', action='store_const', const='ai', dest='kind', help='An AI translator (header only).')
     parser.add_argument('--dry-run', action='store_true', help='Validate and report; write nothing.')
     parser.add_argument('--allow-identical', action='store_true', help='Accept translations equal to the English.')
     parser.add_argument('--record-keep', action='store_true', help='Remember accepted identical strings as keep_english for this locale.')
     parser.add_argument('--max-ratio', type=float, default=2.5, help='Warn when a translation is more than this many times the English length.')
     args = parser.parse_args(argv)
 
-    incoming = read_work(args.file)
+    incoming = to_keys(read_work(args.file))
     if not incoming:
         print('translation_apply: nothing to apply (no item has a translation)')
         return 0
@@ -134,7 +153,7 @@ def main(argv=None):
         print(f'translation_apply: {len(failures)} of {len(incoming)} translation(s) rejected; nothing written', file=sys.stderr)
         return 1
 
-    before_entries, before_sources = dict(corpus.entries[args.locale]), dict(corpus.sources[args.locale])
+    before_entries, before_hashes = dict(corpus.entries[args.locale]), dict(corpus.hashes[args.locale])
     new = sum(1 for key in incoming if key not in before_entries)
     changed = sum(1 for key, text in incoming.items() if key in before_entries and before_entries[key] != text)
     same = len(incoming) - new - changed
@@ -142,22 +161,23 @@ def main(argv=None):
     if args.dry_run:
         return 0
 
-    # A locale spans the main catalog and every text bundle: snapshot all its files to restore on a failed check.
+    # A language spans the main catalog and every text bundle, the registration files and the credits: snapshot them all
+    # to put back exactly what this run replaced if the read-back disagrees.
     paths = [each.path(args.locale) for each in L.catalogs()]
+    paths += [T.ROOT / 'locales.xml', T.ROOT / L.TRANSLATORS_FILE, T.ROOT / L.REGISTRY_FILE]
+    paths += [L.toc_path(each) for each in L.catalogs() if not each.is_main]
     originals = {path: path.read_bytes() for path in paths if path.exists()}
-    xml_path = T.ROOT / 'locales.xml'
-    xml_original = xml_path.read_bytes()
-    L.build(args.locale, incoming)
+    L.build(args.locale, incoming, translator=args.translator, kind=args.kind, url=args.url)
 
     problems = []
-    after_entries, after_sources = dict(L.locale_entries(args.locale)), L.read_sources(args.locale)
+    after_entries, after_hashes = dict(L.locale_entries(args.locale)), L.read_hashes(args.locale)
     for key, text in incoming.items():
         if after_entries.get(key) != text:
             problems.append(f'{key[:60]!r}: not written as given')
-        if after_sources.get(key) != corpus.english[key]:
-            problems.append(f'{key[:60]!r}: the "-- en:" source comment is wrong')
+        if after_hashes.get(key) != L.text_hash(corpus.english[key]):
+            problems.append(f'{key[:60]!r}: the recorded English hash is wrong')
     for key, value in before_entries.items():
-        if key not in incoming and (after_entries.get(key) != value or after_sources.get(key) != before_sources.get(key)):
+        if key not in incoming and (after_entries.get(key) != value or after_hashes.get(key) != before_hashes.get(key)):
             problems.append(f'{key[:60]!r}: an entry you did not supply changed')
     if problems:
         # Put back exactly the bytes this run replaced (our own write; no VCS command is involved).
@@ -166,7 +186,6 @@ def main(argv=None):
                 path.write_bytes(originals[path])
             else:
                 path.unlink(missing_ok=True)
-        xml_path.write_bytes(xml_original)
         print('translation_apply: verification failed, the previous file was restored:', file=sys.stderr)
         for problem in problems[:20]:
             print('  ' + problem, file=sys.stderr)
