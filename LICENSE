@@ -1,4 +1,6 @@
-Copyright 2022 Preston A. Elder <prez@neuromancy.net>
+Rotation Master is released under a modified MIT license ("MIT + Attribution").
+
+Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the 'Software'), to deal in
@@ -10,6 +12,17 @@ so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
+Additional conditions (attribution):
+
+1. Derivative works must retain the copyright notice above. Others may add their
+   own copyright notices for their own changes, but may not remove or alter this
+   one.
+
+2. Any credits, About or author page of a derivative work, including any such
+   display inside the game, and its documentation, must state that the work is
+   based on Rotation Master by Preston A. Elder ("prez"), naming at least the
+   author and the original project.
+
 THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17,3 +30,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Versions of Rotation Master released before this licence text (up to and
+including 1.4.3e) were released under the plain MIT license and may continue to
+be used under it. Bundled third-party libraries and assets keep their own
+licenses; see THIRD_PARTY_NOTICES.md.
