@@ -35,7 +35,9 @@ addon.builtinCallbackBindings["Conditions/player_state.lua"] = {
 -- The states, in the order the editor lists them, and what each reads.
 local STATE_ORDER = { "mounted", "swimming", "flying", "falling", "resting", "dead", "ghost" }
 
--- Returns the editor labels of the states, keyed by state name.
+-- Returns the editor labels of the player states, keyed by state name.
+-- @return table{mounted=string,swimming=string,flying=string,falling=string,resting=string,dead=string,ghost=string}
+--     The localized label of each state.
 local function stateNames()
     return {
         mounted = L["Mounted"], swimming = L["Swimming"], flying = L["Flying"], falling = L["Falling"],
@@ -43,7 +45,9 @@ local function stateNames()
     }
 end
 
--- The readable "you are / are not ..." sentence for a state, or nil for an unknown state.
+-- Gives the readable "you are / are not ..." sentence for a state.
+-- @param state any  The state name.
+-- @return string|nil  The localized sentence with its {{!are|are not}} alternatives; nil for an unknown state.
 local function statePhrase(state)
     if state == "mounted" then return L["you {{!are|are not}} mounted"]
     elseif state == "swimming" then return L["you {{!are|are not}} swimming"]
@@ -61,18 +65,40 @@ addon:RegisterCondition("PLAYER_STATE", {
     icon = addon.Artwork.condition["PLAYER_STATE"],
     requiredFields = { "state" },
     fields = { state = "string" },
+    -- Checks that the saved fields of the PLAYER_STATE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once one of the listed states is chosen.
     valid = function(_, value)
         return value.state ~= nil and Functions.values.isin(stateNames(), value.state)
     end,
+    -- Decides whether the chosen fact about you (mounted, swimming, flying, falling, resting, dead or ghost) holds.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Returns the cached Platform observation for the state unchanged: a boolean, or nil and a reason.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetPlayerStateObservation, addon.Platform, value.state)
     end,
+    -- Builds the readable rule summary for the PLAYER_STATE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; falls back to a generic sentence for an unknown state.
     print = function(_, value)
         return statePhrase(value.state) or string.format(L["you {{!are|are not}} %s"], L["<state>"])
     end,
+    -- Builds the editor controls for the PLAYER_STATE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the state dropdown; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -91,6 +117,8 @@ addon:RegisterCondition("PLAYER_STATE", {
         end
         parent:AddChild(state)
     end,
+    -- Builds the help page for the PLAYER_STATE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.PLAYER_STATE"]))
     end,

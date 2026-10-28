@@ -54,6 +54,11 @@ addon:RegisterCondition("STAT", {
     description = L["Character Stat"],
     icon = addon.Artwork.condition["STAT"],
     fields = { stat = "number", operator = "string", unit = "string", value = "number" },
+    -- Checks that the saved fields of the STAT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a listed stat, a known operator and unit, and a non-negative number.
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(addon.stats, value.stat) and
@@ -61,6 +66,13 @@ addon:RegisterCondition("STAT", {
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Compares one stat of the unit with the configured number; false when the unit does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the Platform cannot read the stat (including a secret value on a restricted client).
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitStatObservation,addon.Platform,value.unit,value.stat)
@@ -68,12 +80,22 @@ addon:RegisterCondition("STAT", {
         if not record.exists then return false end
         return Functions.values.compare(value.operator,record.value,value.value)
     end,
+    -- Builds the readable rule summary for the STAT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary, for example the unit's possessive followed by the stat name.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format("%s %s",
                 Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
                 Functions.presentation.nullable_value(value.stat, addon.stats, L["<stat>"])), Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the STAT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a unit picker limited to player and pet, a stat dropdown and an operator-and-value control; help
     -- describes each.
     widget = function(parent, spec, value)
@@ -101,6 +123,8 @@ addon:RegisterCondition("STAT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the STAT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -125,9 +149,15 @@ end
 -- its menu path for stats reported as numbers, and `percentages` does the same for stats reported as percentage text.
 local ecs_state = { stats = {}, percentages = {} }
 
--- on_register hook of both ECS conditions, run when they register (so only with the addon loaded). Imports the addon's
--- Data module and walks its settings tree once, sorting every stat that has a reference name into ecs_state.stats or
--- ecs_state.percentages by the type its GetStatInfo returns. Later calls do nothing.
+-- Loads the Extended Character Stats data module and sorts its stats into ecs_state.
+--
+-- This is the on_register hook of both ECS conditions, run when they register (so only with the addon loaded). It
+-- imports the addon's Data module and walks its settings tree once, sorting every stat that has a reference name into
+-- ecs_state.stats or ecs_state.percentages by the type its GetStatInfo returns. Later calls do nothing.
+-- The walk is done by the local recurse_ecs(prefix, root) inside, which cannot carry its own comment because the whole
+-- body is frozen. A node with a refName (not ending in "Header") and a text is recorded under its menu path
+-- "prefix -> text" in ecs_state.stats when GetStatInfo returns a number for it, otherwise in ecs_state.percentages;
+-- every table child is then visited with that path as the new prefix.
 local function init_ecs()
     local function recurse_ecs(prefix, root)
         local text
@@ -170,17 +200,33 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
     description = L["Extended Character Stat"],
     icon = addon.Artwork.condition["ECS_STAT"],
     fields = { stat = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the ECS_STAT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a stat from the addon's numeric list, a known operator and a non-negative number.
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(ecs_state.stats, value.stat) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and value.value >= 0)
     end,
+    -- Compares a numeric stat, as Extended Character Stats reports it for you, with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean  True when the condition holds, false when it does not.
+    --
     -- Reads the stat through the addon's GetStatInfo, cached for the poll.
     evaluate = function(value, cache)
         local cur = Functions.cache.getCached(cache, ecs_state.data.GetStatInfo, value.stat)
         return Functions.values.compare(value.operator, cur, value.value)
     end,
+    -- Builds the readable rule summary for the ECS_STAT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary: the stat name, the comparison and the value.
     print = function(_, value)
         return ECSLabels.phrase(L["{stat} {comparison} {value}"], {
@@ -189,6 +235,11 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
             value = Functions.presentation.nullable(value.value),
         })
     end,
+    -- Builds the editor controls for the ECS_STAT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a dropdown of the addon's numeric stats and an operator-and-value control; help describes both.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -211,6 +262,8 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the ECS_STAT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Character Stat"] .. color.RESET .. " - " ..
                 "The character statistic you are interested in."))
@@ -228,18 +281,34 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
     description = L["Extended Character Stat Percentage"],
     icon = addon.Artwork.condition["ECS_STAT_PCT"],
     fields = { stat = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the ECS_STAT_PCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a stat from the addon's percentage list, a known operator and a non-negative number.
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(ecs_state.percentages, value.stat) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and value.value >= 0)
     end,
+    -- Compares a percentage stat, as Extended Character Stats reports it for you, with the configured fraction.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean  True when the condition holds, false when it does not.
+    --
     -- The addon reports the percentage as text; the leading number is parsed out of it before comparing.
     evaluate = function(value, cache)
         local curs = Functions.cache.getCached(cache, ecs_state.data.GetStatInfo, value.stat)
         local cur = tonumber(curs:match("^(%-?%d+%.?%d*)"))
         return Functions.values.compare(value.operator, cur, value.value * 100)
     end,
+    -- Builds the readable rule summary for the ECS_STAT_PCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Shows the stored fraction as a percentage.
     print = function(_, value)
         local v = value.value
@@ -252,6 +321,11 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
             value = Functions.presentation.nullable(v),
         })
     end,
+    -- Builds the editor controls for the ECS_STAT_PCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a dropdown of the addon's percentage stats and an operator-and-percent control; help describes
     -- both.
     widget = function(parent, spec, value)
@@ -275,6 +349,8 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the ECS_STAT_PCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Character Stat"] .. color.RESET .. " - " ..
                 "The character statistic you are interested in."))

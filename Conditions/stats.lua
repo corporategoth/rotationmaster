@@ -58,12 +58,25 @@ addon:RegisterCondition("HEALTH", {
     description = L["Health"],
     icon = addon.Artwork.condition["HEALTH"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the HEALTH condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Compares the unit's current health with the configured amount; a negative amount compares the deficit from
+    -- maximum health instead.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads health once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,value.value<0)
@@ -75,6 +88,11 @@ addon:RegisterCondition("HEALTH", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Builds the readable rule summary for the HEALTH condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
@@ -83,6 +101,11 @@ addon:RegisterCondition("HEALTH", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Builds the editor controls for the HEALTH condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with the health amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -97,6 +120,9 @@ addon:RegisterCondition("HEALTH", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the HEALTH condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the health amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -114,12 +140,25 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
     description = L["Health Percentage"],
     icon = addon.Artwork.condition["HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the HEALTHPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Compares the unit's health as a percentage of its maximum with the configured fraction; false when the unit does
+    -- not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads current and maximum health once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,true)
@@ -130,6 +169,11 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
         if health~=health or health==math.huge or health==-math.huge then return nil,"invalid-health-percentage" end
         return Functions.values.compare(value.operator, health, value.value * 100)
     end,
+    -- Builds the readable rule summary for the HEALTHPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
@@ -138,6 +182,11 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Builds the editor controls for the HEALTHPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with a health percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -152,6 +201,9 @@ addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT', {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the HEALTHPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the health percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -173,12 +225,25 @@ addon:RegisterCondition("MANA", {
     description = L["Mana"],
     icon = addon.Artwork.condition["MANA"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the MANA condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Compares the unit's current mana with the configured amount; a negative amount compares the deficit from maximum
+    -- mana instead.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads mana once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",value.value<0)
@@ -190,6 +255,11 @@ addon:RegisterCondition("MANA", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Builds the readable rule summary for the MANA condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
@@ -198,6 +268,11 @@ addon:RegisterCondition("MANA", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Builds the editor controls for the MANA condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with the mana amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -212,6 +287,9 @@ addon:RegisterCondition("MANA", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the MANA condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the mana amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -229,12 +307,25 @@ addon:RegisterCondition("MANAPCT", {
     description = L["Mana Percentage"],
     icon = addon.Artwork.condition["MANAPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the MANAPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Compares the unit's mana as a percentage of its maximum mana with the configured fraction; false when the unit
+    -- does not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads current and maximum mana once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",true)
@@ -245,6 +336,11 @@ addon:RegisterCondition("MANAPCT", {
         if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
         return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
+    -- Builds the readable rule summary for the MANAPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
@@ -253,6 +349,11 @@ addon:RegisterCondition("MANAPCT", {
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Builds the editor controls for the MANAPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with a mana percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -267,6 +368,9 @@ addon:RegisterCondition("MANAPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the MANAPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the mana percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -285,12 +389,25 @@ addon:RegisterCondition("POWER", {
     description = L["Power"],
     icon = addon.Artwork.condition["POWER"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the POWER condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Compares the unit's current value of whatever power type it uses with the configured amount; a negative amount
+    -- compares the deficit from maximum instead.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads power once per poll through the evaluation cache; the maximum is requested only for a deficit.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",value.value<0)
@@ -304,6 +421,11 @@ addon:RegisterCondition("POWER", {
             return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
+    -- Builds the readable rule summary for the POWER condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
@@ -312,6 +434,11 @@ addon:RegisterCondition("POWER", {
             return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Builds the editor controls for the POWER condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with the power amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -326,6 +453,9 @@ addon:RegisterCondition("POWER", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the POWER condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the power amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -345,12 +475,25 @@ addon:RegisterCondition("POWERPCT", {
     description = L["Power Percentage"],
     icon = addon.Artwork.condition["POWERPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the POWERPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
+    -- Compares the unit's power, as a percentage of its maximum, with the configured fraction; false when the unit does
+    -- not exist.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads current and maximum power once per poll through the evaluation cache.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",true)
@@ -361,6 +504,11 @@ addon:RegisterCondition("POWERPCT", {
         if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
         return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
+    -- Builds the readable rule summary for the POWERPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary with the fraction shown as a percentage.
     print = function(_, value)
         local v = value.value
@@ -369,6 +517,11 @@ addon:RegisterCondition("POWERPCT", {
         end
         return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Builds the editor controls for the POWERPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with a power percentage.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -383,6 +536,9 @@ addon:RegisterCondition("POWERPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the POWERPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the power percentage.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -408,12 +564,25 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT', {
     description = L["Points"],
     icon = addon.Artwork.condition["POINT"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the POINT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit and a number.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
+    -- Compares the unit's points in its class resource (combo points, holy power, arcane charges and so on) with the
+    -- configured amount; a negative amount compares the deficit from maximum.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Resolves the resource, then reads its current value (and the maximum for a deficit) through the evaluation cache.
     evaluate = function(value, cache)
         local point,reason,transport=addon:GetConditionPointResourceV2(value.unit,cache)
@@ -441,6 +610,11 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT', {
             return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
+    -- Builds the readable rule summary for the POINT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, worded as a deficit when the saved amount is negative.
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
@@ -449,6 +623,11 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT', {
             return Functions.presentation.compareString(value.operator, string.format(L["%s point total"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
+    -- Builds the editor controls for the POINT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector and the comparison with the point amount.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -463,6 +642,9 @@ addon:RegisterCondition("POINT", runtimeCondition('POINT', {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the POINT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, then the point amount and the deficit convention.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -487,12 +669,24 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
         description = L["Runes"],
         icon = addon.Artwork.condition["RUNE"],
         fields = { rune = "number", operator = "string", value = "number" },
+        -- Checks that the saved fields of the RUNE condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Configuration check: a known operator, a count from 0 to 2 and a known rune type.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and value.value <= 2 and
                     value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
+        -- Compares the number of the player's six runes of the chosen type that are ready with the configured count.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Reads each rune's type and, for matching runes, its readiness through the evaluation cache.
         evaluate = function(value, cache)
             local count = 0
@@ -508,12 +702,22 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
             end
             return Functions.values.compare(value.operator, count, value.value)
         end,
+        -- Builds the readable rule summary for the RUNE condition.
+        -- @param _ any  Unused; the specialization the summary is printed for.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Rule summary naming the rune type, or a placeholder while none is chosen.
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
             return Functions.presentation.compareString(value.operator, string.format(L["the number of %s runes available"], rune_type),
                         Functions.presentation.nullable(value.value))
         end,
+        -- Builds the editor controls for the RUNE condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The specialization the condition is being edited for.
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- Editor controls: the rune type dropdown and the comparison with the rune count.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -536,6 +740,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Builds the help page for the RUNE condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
+        --
         -- Help page: the rune types, then the rune count.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
@@ -558,12 +765,25 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
         description = L["Rune Cooldown"],
         icon = addon.Artwork.condition["RUNE_COOLDOWN"],
         fields = { rune = "number", operator = "string", value = "number" },
+        -- Checks that the saved fields of the RUNE_COOLDOWN condition are complete and in range.
+        -- @param _ any  Unused; the current specialization the engine passes.
+        -- @param value table  The saved condition fields.
+        -- @return boolean  True when the saved fields are complete and in range.
+        --
         -- Configuration check: a known operator, a non-negative number of seconds and a known rune type.
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and
                     value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
+        -- Compares the seconds until the next rune of the chosen type is ready with the configured number; false when
+        -- the player has no rune of that type.
+        -- @param value table  The saved condition fields.
+        -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+        --     Functions.cache.getCached.
+        -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+        -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+        --
         -- Reads each rune's type and, for matching runes, its start and duration through the evaluation cache.
         evaluate = function(value, cache)
             local now,timeReason=addon.Platform:GetRuneEvaluationTime()
@@ -590,6 +810,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
             if lowest_remain==nil then return false end
             return Functions.values.compare(value.operator, lowest_remain, value.value)
         end,
+        -- Builds the readable rule summary for the RUNE_COOLDOWN condition.
+        -- @param _ any  Unused; the specialization the summary is printed for.
+        -- @param value table  The saved condition fields.
+        -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+        --
         -- Rule summary naming the rune type, or a placeholder while none is chosen.
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
@@ -597,6 +822,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
                     Functions.presentation.compareString(value.operator, string.format(L["cooldown on your next %s rune"], rune_type),
                     string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
         end,
+        -- Builds the editor controls for the RUNE_COOLDOWN condition's fields.
+        -- @param parent table  The editor group the controls are added to.
+        -- @param spec any  The specialization the condition is being edited for.
+        -- @param value table  The saved condition fields; the controls edit it in place.
+        --
         -- Editor controls: the rune type dropdown and the seconds comparison.
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -619,6 +849,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        -- Builds the help page for the RUNE_COOLDOWN condition.
+        -- @param frame table  The help page container that text and example widgets are added to.
+        --
         -- Help page: the rune types, then the seconds until a rune is available.
         help = function(frame)
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
@@ -649,6 +882,11 @@ addon:RegisterCondition("TT_HEALTH", {
     description = L["Time Until Health"],
     icon = addon.Artwork.condition["TT_HEALTH"],
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
+    -- Checks that the saved fields of the TT_HEALTH condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit, non-negative seconds and a target health amount.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -656,6 +894,14 @@ addon:RegisterCondition("TT_HEALTH", {
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil)
     end,
+    -- Compares the estimated seconds until the unit's health reaches the configured amount with the configured number
+    -- of seconds.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Asks the forecast for the ETA (false means no estimate), then checks it and the threshold before comparing.
     evaluate = function(value, cache)
         local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,false,value.mode,cache)
@@ -668,6 +914,11 @@ addon:RegisterCondition("TT_HEALTH", {
         if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
         return Functions.values.compare(value.operator,eta,threshold)
     end,
+    -- Builds the readable rule summary for the TT_HEALTH condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary, worded as a deficit for a negative target and ending with the burn-rate mode.
     print = function(_, value)
         local conditionstr
@@ -682,6 +933,11 @@ addon:RegisterCondition("TT_HEALTH", {
             Functions.presentation.compareString(value.operator, conditionstr,
             string.format(L["%s seconds"], Functions.presentation.nullable(value.value))), addon.trendmode[value.mode or "both"])
     end,
+    -- Builds the editor controls for the TT_HEALTH condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, the target health, the seconds comparison and the burn-rate mode.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -718,6 +974,9 @@ addon:RegisterCondition("TT_HEALTH", {
         end
         parent:AddChild(mode)
     end,
+    -- Builds the help page for the TT_HEALTH condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, the target health, the seconds comparison and the burn-rate modes.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -752,6 +1011,11 @@ addon:RegisterCondition("TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
     icon = addon.Artwork.condition["TT_HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
+    -- Checks that the saved fields of the TT_HEALTHPCT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: a known operator, a selectable unit, non-negative seconds and a health fraction from 0 to 1.
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -759,6 +1023,14 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
+    -- Compares the estimated seconds until the unit's health reaches the configured fraction of its maximum with the
+    -- configured number of seconds.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Asks the forecast for the ETA (false means no estimate), then checks it and the threshold before comparing.
     evaluate = function(value, cache)
         local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,true,value.mode,cache)
@@ -771,6 +1043,11 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
         return Functions.values.compare(value.operator,eta,threshold)
     end,
+    -- Builds the readable rule summary for the TT_HEALTHPCT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary with the target fraction shown as a percentage, ending with the burn-rate mode.
     print = function(_, value)
         local v = value.health
@@ -784,6 +1061,11 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                             addon.trendmode[value.mode or "both"])
 
     end,
+    -- Builds the editor controls for the TT_HEALTHPCT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor controls: the unit selector, a percentage slider for the target health, the seconds comparison and the
     -- burn-rate mode.
     widget = function(parent, spec, value)
@@ -825,6 +1107,9 @@ addon:RegisterCondition("TT_HEALTHPCT", {
         end
         parent:AddChild(mode)
     end,
+    -- Builds the help page for the TT_HEALTHPCT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit, the target health percentage, the seconds comparison and the burn-rate modes.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)

@@ -27,8 +27,18 @@ addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
     icon = addon.Artwork.condition["BEYOND_MELEE"],
     fields = { unit = "string" },
     requiredFields = { "unit" },
+    -- Checks that the saved fields of the BEYOND_MELEE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Configuration check: unit must be one of the selectable unit tokens.
     valid = function(_, value) return type(value.unit)=="string" and addon.units[value.unit]~=nil end,
+    -- Decides whether the unit exists and is farther away than melee range.
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Runs each poll. Unavailable cases: UnitExists missing, throwing, secret or nil, and anything the range reader
     -- cannot decide.
     evaluate = function(value)
@@ -41,11 +51,21 @@ addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
         if exists~=true and exists~=1 then return nil,"invalid-api-result" end
         return addon.Platform:IsBeyondMeleeRange(value.unit)
     end,
+    -- Builds the readable rule summary for the BEYOND_MELEE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; "are" for the player, "is" for other units, with a placeholder while the unit is unset.
     print = function(
         _,
         value
     ) return string.format(value.unit=="player" and L["%s {{!are|are not}} beyond melee range"] or L["%s {{!is|is not}} beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
+    -- Builds the editor controls for the BEYOND_MELEE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor control: the unit selector, which refreshes the status line on change.
     widget = function(parent, spec, value)
         local top=parent:GetUserData("top")
@@ -53,6 +73,9 @@ addon:RegisterCondition("BEYOND_MELEE", runtimeCondition('BEYOND_MELEE', {
             top:SetStatusText(top:GetUserData("funcs"):print(top:GetUserData("root"),spec))
         end))
     end,
+    -- Builds the help page for the BEYOND_MELEE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit selector, then how the range is measured and when it stays unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)

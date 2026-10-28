@@ -38,11 +38,15 @@ addon.builtinCallbackBindings["Conditions/encounter_state.lua"] = {
 }
 
 -- True for a finite number of 0 or more.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number, not NaN, at least 0 and below math.huge.
 local function validNumber(value)
     return type(value) == "number" and value == value and value >= 0 and value < math.huge
 end
 
--- True when value carries a known operator and a finite, non-negative number to compare against.
+-- True when the saved fields carry a known operator and a finite, non-negative number to compare against.
+-- @param value table  The saved condition fields; reads operator and value.
+-- @return boolean  True when operator is one of addon.operators and value passes validNumber.
 local function validCompare(value)
     return value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and validNumber(value.value)
 end
@@ -53,18 +57,34 @@ addon:RegisterCondition("ENCOUNTER", {
     description = L["Boss Encounter"],
     icon = addon.Artwork.condition["ENCOUNTER"],
     fields = {},
+    -- Checks that the saved fields of the ENCOUNTER condition are complete and in range.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Nothing to configure, so always valid.
     valid = function()
         return true
     end,
+    -- Decides whether a boss encounter is in progress.
+    -- @param _ any  Unused; this condition has no fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Returns the cached Platform observation unchanged: a boolean, or nil and a reason.
     evaluate = function(_, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetEncounterObservation, addon.Platform)
     end,
+    -- Builds the readable rule summary for the ENCOUNTER condition.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; there are no fields to mention.
     print = function()
         return L["a boss encounter {{!is|is not}} in progress"]
     end,
+    -- Builds the help page for the ENCOUNTER condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- help draws the help page; there is no widget because nothing is configurable.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.ENCOUNTER"]))
@@ -78,21 +98,43 @@ addon:RegisterCondition("KEYSTONE_LEVEL", {
     icon = addon.Artwork.condition["KEYSTONE_LEVEL"],
     requiredFields = { "operator", "value" },
     fields = { operator = "string", value = "number" },
+    -- Checks that the saved fields of the KEYSTONE_LEVEL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known operator and a finite, non-negative number.
     valid = function(_, value)
         return validCompare(value)
     end,
+    -- Compares the level of the Mythic+ keystone being run (0 when none is) with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the keystone observation fails; otherwise compares its level.
     evaluate = function(value, cache)
         local keystone, reason = Functions.cache.getCached(cache, addon.Platform.GetKeystoneObservation, addon.Platform)
         if not keystone then return nil, reason end
         return Functions.values.compare(value.operator, keystone.level, value.value)
     end,
+    -- Builds the readable rule summary for the KEYSTONE_LEVEL condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary of the level comparison.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, L["the level of your active Mythic+ keystone"],
             Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the KEYSTONE_LEVEL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds an operator-and-level control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -101,6 +143,8 @@ addon:RegisterCondition("KEYSTONE_LEVEL", {
 
         parent:AddChild(addon:Widget_OperatorWidget(value, L["Level"], function() top:SetStatusText(funcs:print(root, spec)) end))
     end,
+    -- Builds the help page for the KEYSTONE_LEVEL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.KEYSTONE_LEVEL"]))
         frame:AddChild(helpers.Gap())

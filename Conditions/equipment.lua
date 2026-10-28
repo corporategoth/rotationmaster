@@ -90,12 +90,16 @@ local subclassOrder = {15, 13, 0, 4, 7, 9, 1, 5, 8, 6, 10, 2, 3, 18, 16, 19, 20}
 -- ============================================================================
 
 -- True for a whole number from 0 to 31, the range of weapon subclass IDs.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number in that range with no fractional part.
 local function subclassID(value)
     return type(value) == "number" and value >= 0 and value <= 31 and value % 1 == 0
 end
 
--- Display name of a weapon subclass: the client's own name when readable, otherwise the English fallback in
--- subclassNames (localized), otherwise "weapon type N". Used by the editor and the readable summary.
+-- Builds the display name of a weapon subclass for the editor and the readable summary.
+-- @param id number  The Enum.ItemWeaponSubclass ID.
+-- @return string  The client's own name when readable, otherwise the localized English fallback from subclassNames,
+--     otherwise "weapon type N".
 local function subclassName(id)
     local fn = C_Item and C_Item.GetItemSubClassInfo or GetItemSubClassInfo
     if type(fn) == "function" then
@@ -105,9 +109,13 @@ local function subclassName(id)
     return subclassNames[id] and L[subclassNames[id]] or string.format(L["weapon type %d"], id)
 end
 
--- Tests an equipment record for one slot (as addon:GetEquippedWeaponSlot returns it: a table, or false for an empty
--- slot) against value.kind or value.subclass. Returns true or false, or nil and a reason ("item-data-unavailable", the
--- record's own typeReason, or "invalid-weapon-type") when the item cannot be classified yet.
+-- Tests an equipment record for one slot against the saved kind or weapon subclass.
+-- @param value table  The saved condition fields; reads kind and subclass.
+-- @param record table|false  The slot record as addon:GetEquippedWeaponSlot returns it: a table, or false for an empty
+--     slot.
+-- @return boolean|nil  True when the item matches, false when it does not; nil when the item cannot be classified yet.
+-- @return string|nil  The reason code when the first value is nil ("item-data-unavailable", the record's own
+--     typeReason, or "invalid-weapon-type"); nil otherwise.
 local function matches(value, record)
     if record == false then return value.kind == "empty" end
     if value.kind == "empty" then return false end
@@ -141,12 +149,23 @@ addon:RegisterCondition("WEAPON_TYPE", {
     icon = addon.Artwork.condition["WEAPON_TYPE"],
     requiredFields = { "slot" },
     fields = { slot = "string", kind = "string", subclass = "number" },
+    -- Checks that the saved fields of the WEAPON_TYPE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a listed slot and either a listed kind or a weapon subclass ID, never both.
     valid = function(_, value)
         if slots[value.slot] == nil then return false end
         if value.subclass ~= nil then return value.kind == nil and subclassID(value.subclass) end
         return kinds[value.kind] ~= nil
     end,
+    -- Decides whether the item in the chosen slot is of the chosen category or weapon subclass; an empty slot is true
+    -- only for "Nothing equipped".
+    -- @param value table  The saved condition fields.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the slot record from the build snapshot and hands it to `matches`; unavailable cases are listed above.
     evaluate = function(value)
         if not addon.GetEquippedWeaponSlot then return nil, "build-context-unavailable" end
@@ -154,6 +173,11 @@ addon:RegisterCondition("WEAPON_TYPE", {
         if record == nil then return nil, reason end
         return matches(value, record)
     end,
+    -- Builds the readable rule summary for the WEAPON_TYPE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the slot and the category or weapon subclass.
     print = function(_, value)
         local what
@@ -162,6 +186,11 @@ addon:RegisterCondition("WEAPON_TYPE", {
             Functions.presentation.nullable(slots[value.slot], L["<slot>"]),
             Functions.presentation.nullable(what, L["<weapon type>"]))
     end,
+    -- Builds the editor controls for the WEAPON_TYPE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the slot dropdown and one dropdown that lists the categories and then the weapon subclasses (a
     -- subclass is saved as `subclass`, a category as `kind`); help draws the help page and examples.
     widget = function(parent, spec, value)
@@ -197,6 +226,8 @@ addon:RegisterCondition("WEAPON_TYPE", {
         end
         parent:AddChild(kind)
     end,
+    -- Builds the help page for the WEAPON_TYPE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.WEAPON_TYPE"]))
         frame:AddChild(helpers.Gap())

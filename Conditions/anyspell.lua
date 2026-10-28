@@ -48,6 +48,11 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
     icon = addon.Artwork.condition["ANYSPELL_AVAIL"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the ANYSPELL_AVAIL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a positive integer spell ID is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -57,6 +62,14 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
             return false
         end
     end,
+    -- Decides whether the chosen spell is ready to use at this pass's time.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the spell ID does not resolve ("spell-data-unavailable") or the Platform cannot read the
     -- cooldown; otherwise the readiness boolean.
     evaluate = function(value, cache, evalStart)
@@ -64,11 +77,21 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
         if not spellid then return nil, reason or "spell-data-unavailable" end
         return Functions.cache.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
     end,
+    -- Builds the readable rule summary for the ANYSPELL_AVAIL condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} available"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the ANYSPELL_AVAIL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (any spell, no specialization filter); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -81,6 +104,8 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the ANYSPELL_AVAIL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end,
@@ -93,6 +118,11 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
     icon = addon.Artwork.condition["ANYSPELL_RANGE"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the ANYSPELL_RANGE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a positive integer spell ID is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -102,6 +132,13 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
             return false
         end
     end,
+    -- Decides whether the target exists and is within the chosen spell's range.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when target presence, the spell ID or the range state is unreadable; a missing target is false.
     evaluate = function(value, cache)
         local exists,presenceReason=Functions.cache.getCached(cache, addon.Platform.GetUnitPresenceObservation, addon.Platform, "target")
@@ -113,11 +150,21 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
         if not range then return nil, why end
         return range.applicable and range.inRange or false
     end,
+    -- Builds the readable rule summary for the ANYSPELL_RANGE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s {{!is|is not}} in range"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the ANYSPELL_RANGE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (any spell, no specialization filter); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -130,6 +177,8 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the ANYSPELL_RANGE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end,
@@ -146,6 +195,11 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
     icon = addon.Artwork.condition["ANYSPELL_COOLDOWN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the ANYSPELL_COOLDOWN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell ID, a known operator and a non-negative number of seconds are chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -156,8 +210,16 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
             return false
         end
     end,
-    -- Unavailable when the spell ID does not resolve, the cooldown is unreadable, or the cooldown is paused by the
-    -- game (isEnabled false, reason "cooldown-held"); otherwise the comparison of the remaining seconds.
+    -- Compares the seconds left on the chosen spell's cooldown with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
+    -- Unavailable when the spell ID does not resolve, the cooldown is unreadable, or the cooldown is paused by the game
+    -- (isEnabled false, reason "cooldown-held"); otherwise the comparison of the remaining seconds.
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
@@ -167,6 +229,11 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
         local remain = math.max(0, addon.Functions.values.round(cooldown.startTime + cooldown.duration - evalStart, 3))
         return Functions.values.compare(value.operator, remain, value.value)
     end,
+    -- Builds the readable rule summary for the ANYSPELL_COOLDOWN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary of the comparison, with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
@@ -174,6 +241,11 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
                 Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s"],  Functions.presentation.nullable(link, L["<spell>"])),
                 string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the ANYSPELL_COOLDOWN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (any spell) and an operator-and-seconds control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -190,6 +262,8 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the ANYSPELL_COOLDOWN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -206,6 +280,11 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Recharge Time"],
     icon = addon.Artwork.condition["ANYSPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the ANYSPELL_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell ID, a known operator and a non-negative number of seconds are chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -216,6 +295,14 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
             return false
         end
     end,
+    -- Compares the seconds until the chosen spell's next charge returns with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the spell ID does not resolve or the Platform cannot read the charges.
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
@@ -228,6 +315,11 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
         end
         return Functions.values.compare(value.operator, remain, value.value)
     end,
+    -- Builds the readable rule summary for the ANYSPELL_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary of the comparison, with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
@@ -235,6 +327,11 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
             Functions.presentation.compareString(value.operator, string.format(L["recharge time on %s"], Functions.presentation.nullable(link, L["<spell>"])),
                             string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the ANYSPELL_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (any spell) and an operator-and-seconds control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -251,6 +348,8 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the ANYSPELL_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -265,6 +364,11 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
     icon = addon.Artwork.condition["ANYSPELL_CHARGES"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the ANYSPELL_CHARGES condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell ID, a known operator and a non-negative count are chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -275,6 +379,13 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
             return false
         end
     end,
+    -- Compares the chosen spell's current number of charges with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the spell ID does not resolve or the Platform cannot read the charges (a hidden count on a
     -- restricted client included).
     evaluate = function(value, cache)
@@ -284,12 +395,22 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
         if not charges then return nil, why end
         return Functions.values.compare(value.operator, charges.currentCharges, value.value)
     end,
+    -- Builds the readable rule summary for the ANYSPELL_CHARGES condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary of the comparison, with the spell link.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
             Functions.presentation.compareString(value.operator, string.format(L["number of charges on %s"], Functions.presentation.nullable(link, L["<spell>"])), Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the ANYSPELL_CHARGES condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the spell picker (any spell) and an operator-and-charges control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -306,6 +427,8 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the ANYSPELL_CHARGES condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
         frame:AddChild(helpers.Gap())

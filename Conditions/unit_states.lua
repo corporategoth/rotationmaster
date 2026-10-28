@@ -23,10 +23,16 @@ addon.builtinCallbackBindings['Conditions/unit_states.lua'] = {
     ['Functions.cache.getCached'] = 'builtin:utils.lua:getCached',
 }
 
--- Shared configuration check: the saved unit must be one of the selectable unit tokens.
+-- Checks that the saved unit is one of the selectable unit tokens; shared by DEAD and FRIENDLY.
+-- @param _ any  Unused; the current specialization the engine passes.
+-- @param value table  The saved condition fields; reads unit.
+-- @return boolean  True when value.unit is a key of addon.units.
 local function valid(_, value) return value.unit~=nil and Functions.values.isin(addon.units,value.unit) end
 
--- Shared editor control: the unit selector, which refreshes the status line on change.
+-- Builds the unit selector, which refreshes the status line on change; shared by DEAD and FRIENDLY.
+-- @param parent table  The editor group the selector is added to.
+-- @param spec any  The specialization the condition is being edited for.
+-- @param value table  The saved condition fields; the selector edits unit in place.
 local function widget(parent, spec, value)
     local top=parent:GetUserData('top')
     parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()
@@ -43,15 +49,30 @@ addon:RegisterCondition('DEAD', {
     fields = { unit = 'string' },
     requiredFields = { 'unit' },
     valid = valid,
+    -- Decides whether the unit is dead or a ghost; a unit that does not exist is unavailable, not false.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the "dead" state once per poll through the evaluation cache.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'dead')
     end,
+    -- Builds the readable rule summary for the DEAD condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; the verb agrees with the player ("are") or another unit ("is").
     print = function(_, value)
         return addon.Functions.presentation.phrase(value.unit=='player' and L['{unit} {{!are dead or a ghost|are alive}}'] or L['{unit} {{!is dead or a ghost|is alive}}'],{unit=addon.units[value.unit] or L['<unit>']})
     end,
     widget = widget,
+    -- Builds the help page for the DEAD condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit selector, then what counts as dead and the Via Macro announcement note.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -68,15 +89,31 @@ addon:RegisterCondition('FRIENDLY', {
     fields = { unit = 'string' },
     requiredFields = { 'unit' },
     valid = valid,
+    -- Decides whether the game reports the unit as friendly to the player; a unit that does not exist is unavailable,
+    -- not false.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the "friendly" state once per poll through the evaluation cache.
     evaluate = function(value, cache)
         return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'friendly')
     end,
+    -- Builds the readable rule summary for the FRIENDLY condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Rule summary; the wording differs for the player and for other units.
     print = function(_, value)
         return addon.Functions.presentation.phrase(value.unit=='player' and L['{unit} {{!are friendly|are not friendly}}'] or L['{unit} {{!is friendly to you|is not friendly to you}}'],{unit=addon.units[value.unit] or L['<unit>']})
     end,
     widget = widget,
+    -- Builds the help page for the FRIENDLY condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit selector, then what counts as friendly and when the result is unavailable.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)

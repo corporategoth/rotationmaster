@@ -47,6 +47,11 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
     icon = addon.Artwork.condition["PETSPELL_AVAIL"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the PETSPELL_AVAIL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell id the client knows is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -56,6 +61,14 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
             return false
         end
     end,
+    -- Decides whether the chosen pet spell is known and ready to cast now; false for an unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, or whatever reason IsSpellKnown or IsSpellReady gives. evalStart is the
     -- poll's time, which readiness is judged against.
     evaluate = function(value, cache, evalStart)
@@ -66,11 +79,21 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
         if not known then return false end
         return Functions.cache.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
     end,
+    -- Builds the readable rule summary for the PETSPELL_AVAIL condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; the {{!is|is not}} pair flips under NOT.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s {{!is|is not}} available"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the PETSPELL_AVAIL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -83,6 +106,9 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the PETSPELL_AVAIL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared spell picker text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -95,6 +121,11 @@ addon:RegisterCondition("PETSPELL_RANGE", {
     description = L["Pet Spell In Range"],
     icon = addon.Artwork.condition["PETSPELL_RANGE"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the PETSPELL_RANGE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell id the client knows is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -104,6 +135,14 @@ addon:RegisterCondition("PETSPELL_RANGE", {
             return false
         end
     end,
+    -- Decides whether the current target is in range of the chosen pet spell, measured from the pet; false with no
+    -- target, an unknown spell or a spell with no range.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: unit-data-unavailable (target presence), spell-data-unavailable, or the reason from IsSpellKnown or
     -- GetSpellRangeState. The range is measured from the pet to the target.
     evaluate = function(value, cache)
@@ -119,11 +158,21 @@ addon:RegisterCondition("PETSPELL_RANGE", {
         if not range then return nil, why end
         return range.applicable and range.inRange or false
     end,
+    -- Builds the readable rule summary for the PETSPELL_RANGE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s {{!is|is not}} in range"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the PETSPELL_RANGE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -136,6 +185,9 @@ addon:RegisterCondition("PETSPELL_RANGE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the PETSPELL_RANGE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared spell picker text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -152,6 +204,11 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
     icon = addon.Artwork.condition["PETSPELL_COOLDOWN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the PETSPELL_COOLDOWN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known spell, a listed operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -162,6 +219,15 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             return false
         end
     end,
+    -- Compares the seconds left on the chosen pet spell's cooldown with the configured number; false for an unknown
+    -- spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, cooldown-held (the cooldown is paused), or the reason from IsSpellKnown or
     -- GetSpellCooldown. The remaining time is measured against evalStart, the poll's time, and rounded to milliseconds.
     evaluate = function(value, cache, evalStart)
@@ -176,6 +242,11 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         local remain = math.max(0, addon.Functions.values.round(cooldown.startTime + cooldown.duration - evalStart, 3))
         return Functions.values.compare(value.operator, remain, value.value)
     end,
+    -- Builds the readable rule summary for the PETSPELL_COOLDOWN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
@@ -183,6 +254,11 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
                 Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s"],  Functions.presentation.nullable(link, L["<spell>"])),
                 string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the PETSPELL_COOLDOWN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker, then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -199,6 +275,9 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the PETSPELL_COOLDOWN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the spell picker text, then the operator text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -215,6 +294,11 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
     description = L["Pet Spell Recharge Time"],
     icon = addon.Artwork.condition["PETSPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the PETSPELL_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known spell, a listed operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -225,6 +309,15 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             return false
         end
     end,
+    -- Compares the seconds until the chosen pet spell's next charge returns (zero when no recharge is running) with the
+    -- configured number; false for an unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, or the reason from IsSpellKnown or GetSpellCharges (missing, restricted or a
     -- spell without charges). evalStart is the poll's time.
     evaluate = function(value, cache, evalStart)
@@ -241,6 +334,11 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         end
         return Functions.values.compare(value.operator, remain, value.value)
     end,
+    -- Builds the readable rule summary for the PETSPELL_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
@@ -248,6 +346,11 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             Functions.presentation.compareString(value.operator, string.format(L["recharge time on %s"], Functions.presentation.nullable(link, L["<spell>"])),
                             string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
+    -- Builds the editor controls for the PETSPELL_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker, then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -264,6 +367,9 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the PETSPELL_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the spell picker text, then the operator text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -279,6 +385,11 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
     icon = addon.Artwork.condition["PETSPELL_CHARGES"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the PETSPELL_CHARGES condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known spell, a listed operator and a non-negative count.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -289,6 +400,14 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             return false
         end
     end,
+    -- Compares the number of charges the chosen pet spell currently holds with the configured number; false for an
+    -- unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, or the reason from IsSpellKnown or GetSpellCharges.
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
@@ -300,12 +419,22 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         if not charges then return nil, why end
         return Functions.values.compare(value.operator, charges.currentCharges, value.value)
     end,
+    -- Builds the readable rule summary for the PETSPELL_CHARGES condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["the %s"],
             Functions.presentation.compareString(value.operator, string.format(L["number of charges on %s"], Functions.presentation.nullable(link, L["<spell>"])), Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the PETSPELL_CHARGES condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker, then the operator and charge count.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -322,6 +451,9 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the PETSPELL_CHARGES condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the spell picker text, then the operator text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -342,6 +474,11 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
     description = L["Pet Spell Cast History"],
     icon = addon.Artwork.condition["PETSPELL_HISTORY"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the PETSPELL_HISTORY condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known spell, a listed operator and a non-negative cast count.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -352,6 +489,14 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
             return false
         end
     end,
+    -- Decides whether the chosen pet spell was cast the configured number of casts ago (1 is the last cast); false for
+    -- an unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, the reason from IsSpellKnown, or restricted-value when a hidden cast might
     -- have been this spell and no readable entry matched.
     evaluate = function(value, cache)
@@ -374,6 +519,11 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
         if unknown then return nil, "restricted-value" end
         return false
     end,
+    -- Builds the readable rule summary for the PETSPELL_HISTORY condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; falls back to a generic "casts ago" wording for an unlisted operator.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
@@ -382,6 +532,11 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
                         ago and string.format(ago, Functions.presentation.nullable(value.value))
                         or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s casts ago"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the PETSPELL_HISTORY condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker, then the operator and cast count.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -398,6 +553,9 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the PETSPELL_HISTORY condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the spell picker text, then how the count and the history memory setting work.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -418,6 +576,11 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     description = L["Pet Spell Cast History Time"],
     icon = addon.Artwork.condition["PETSPELL_HISTORY_TIME"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
+    -- Checks that the saved fields of the PETSPELL_HISTORY_TIME condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a known spell, a listed operator and a non-negative number of seconds.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -428,6 +591,15 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
             return false
         end
     end,
+    -- Decides whether the chosen pet spell was cast a number of seconds ago that passes the comparison; false for an
+    -- unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param evalStart number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, the reason from IsSpellKnown, restricted-value (a hidden timestamp, or a
     -- hidden cast that might match), or history-time-unavailable (a timestamp that is not a finite number).
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
@@ -459,6 +631,11 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
         if unknown then return nil, "restricted-value" end
         return false
     end,
+    -- Builds the readable rule summary for the PETSPELL_HISTORY_TIME condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; falls back to a generic "seconds ago" wording for an unlisted operator.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
@@ -467,6 +644,11 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
                 ago and string.format(ago, Functions.presentation.nullable(value.value))
                 or Functions.presentation.nullable(nil, L["<operator>"]) .. " " .. string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the PETSPELL_HISTORY_TIME condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker, then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -483,6 +665,9 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the PETSPELL_HISTORY_TIME condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the spell picker text, then how the time window and the history memory setting work.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
@@ -505,6 +690,11 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
     description = L["Pet Spell Active or Pending"],
     icon = addon.Artwork.condition["PETSPELL_ACTIVE"],
     fields = { spell = "number", ranked = "boolean" },
+    -- Checks that the saved fields of the PETSPELL_ACTIVE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid once a spell id the client knows is chosen.
     valid = function(_, value)
         if value.spell ~= nil then
@@ -514,6 +704,13 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
             return false
         end
     end,
+    -- Decides whether the chosen pet spell is the game's current (active or pending) spell; false for an unknown spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: spell-data-unavailable, or the reason from IsSpellKnown or IsCurrentSpell.
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
@@ -523,11 +720,21 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
         if not known then return false end
         return Functions.cache.getCached(cache, addon.Platform.IsCurrentSpell, addon.Platform, spellid)
     end,
+    -- Builds the readable rule summary for the PETSPELL_ACTIVE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s {{!is|is not}} active or pending"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
+    -- Builds the editor controls for the PETSPELL_ACTIVE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the pet spell picker.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -540,6 +747,9 @@ addon:RegisterCondition("PETSPELL_ACTIVE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    -- Builds the help page for the PETSPELL_ACTIVE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared spell picker text.
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)

@@ -61,15 +61,33 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
     description = L["Buff Present"],
     icon = addon.Artwork.condition["BUFF"],
     fields = { unit = "string", spell = { "string", "number" }, anyrank = "boolean", ownbuff = "boolean" },
+    -- Checks that the saved fields of the BUFF condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a unit from the unit list and a spell.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
+    -- Decides whether the unit has a helpful aura matching the chosen spell, optionally only one you applied.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateAuraCondition returns (missing-api, api-error, restricted-value,
     -- invalid-api-result, an aura read reason, or aura-scan-limit after 256 auras). start is the poll's time.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "present")
     end,
+    -- Builds the readable rule summary for the BUFF condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         return AuraLiteral.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura}"], L["{unit} {{!has|does not have}} {aura}"]), {
@@ -77,6 +95,11 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
             aura = string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])),
         })
     end,
+    -- Builds the editor controls for the BUFF condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the unit picker, the Own Buff checkbox, the spell name box and the rank choice.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -109,6 +132,9 @@ addon:RegisterCondition("BUFF", runtimeCondition('BUFF', {
         parent:AddChild(spell_group)
         parent:AddChild(addon:Widget_AuraRankWidget(value,function() top:SetStatusText(funcs:print(root,spec)) end))
     end,
+    -- Builds the help page for the BUFF condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the unit text, Own Buff, then the spell name and rank text.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -135,17 +161,35 @@ addon:RegisterCondition("BUFF_REMAIN", {
         operator = "string",
         value = "number",
     },
+    -- Checks that the saved fields of the BUFF_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a unit, a spell, a listed operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Compares the seconds left on a matching helpful aura with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "remaining" mode; an aura field that cannot
     -- be read fails at once rather than waiting for another aura to match.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "remaining")
     end,
+    -- Builds the readable rule summary for the BUFF_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!has|does not have}} {aura} where {remaining} {comparison} {duration}"]), {
@@ -156,6 +200,11 @@ addon:RegisterCondition("BUFF_REMAIN", {
             duration = string.format(L["%s seconds"], Functions.presentation.nullable(value.value)),
         })
     end,
+    -- Builds the editor controls for the BUFF_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the BUFF controls, then the operator and seconds.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -186,6 +235,9 @@ addon:RegisterCondition("BUFF_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the BUFF_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the BUFF text, then the operator text describing permanent, absent and hidden timing.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -215,16 +267,34 @@ addon:RegisterCondition("BUFF_STACKS", {
         operator = "string",
         value = "number",
     },
+    -- Checks that the saved fields of the BUFF_STACKS condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a unit, a spell, a listed operator and a non-negative count.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Compares the application count of a matching helpful aura with the configured number.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "stacks" mode.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stacks")
     end,
+    -- Builds the readable rule summary for the BUFF_STACKS condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list.
     print = function(_, value)
         return AuraSummary.phrase(L["the number of stacks of {aura} on {unit} {comparison} {quantity}"], {
@@ -234,6 +304,11 @@ addon:RegisterCondition("BUFF_STACKS", {
             quantity = Functions.presentation.nullable(value.value),
         })
     end,
+    -- Builds the editor controls for the BUFF_STACKS condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the BUFF controls, then the operator and stack count.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -264,6 +339,9 @@ addon:RegisterCondition("BUFF_STACKS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the BUFF_STACKS condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the BUFF text, then the operator text describing what counts as a stack.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -289,18 +367,41 @@ addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = addon.Artwork.condition["STEALABLE"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the STEALABLE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Valid with a unit from the unit list.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit))
     end,
+    -- Decides whether the unit has a buff the game marks as stealable.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @param start number  The GetTime() reading taken when this evaluation pass began.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable: the reasons addon:EvaluateAuraCondition returns for its "stealable" mode.
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stealable")
     end,
+    -- Builds the readable rule summary for the STEALABLE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Summary line for the condition list; "have" for the player, "has" for anyone else.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a stealable buff"], L["%s {{!has|does not have}} a stealable buff"]), Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the STEALABLE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: the unit picker, without the player and pet entries.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -311,6 +412,9 @@ addon:RegisterCondition("STEALABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the STEALABLE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page: the shared unit picker text.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)

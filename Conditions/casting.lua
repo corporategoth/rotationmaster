@@ -60,10 +60,22 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
     description = L["Casting"],
     icon = addon.Artwork.condition["CASTING"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the CASTING condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Decides whether the unit is casting any spell.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the cached cast record. Unavailable only when the query fails; not casting is a plain false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
@@ -71,11 +83,21 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
         if not record.active then return false end
         return true
     end,
+    -- Builds the readable rule summary for the CASTING condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary; "you are" for the player, "<unit> is" otherwise.
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently casting"], L["%s {{!is|is not}} currently casting"]),
             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the CASTING condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the editor controls (a unit picker); help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -86,6 +108,8 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING', {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the CASTING condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,
@@ -98,12 +122,24 @@ addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
     icon = addon.Artwork.condition["CASTING_SPELL"],
     fields = { unit = "string", spell = { "string", "number" }, ranked = "boolean" },
+    -- Checks that the saved fields of the CASTING_SPELL condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Needs a known unit and a spell; a numeric spell must be a positive whole number.
     valid = function(_, value)
         -- A name (saved before spell IDs) or a spell ID picked in the editor.
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
                 (type(value.spell) ~= "number" or (value.spell > 0 and value.spell < math.huge and value.spell % 1 == 0)))
     end,
+    -- Decides whether the unit is casting the chosen spell, matching a saved name by name and an ID by spell identity.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- A name pick compares the cast's name; an ID pick goes through Platform:MatchSpellIdentity. Both give nil and a
     -- reason when the observed name or ID is unreadable.
     evaluate = function(value, cache)
@@ -117,6 +153,11 @@ addon:RegisterCondition("CASTING_SPELL", {
         -- By ID, any rank unless the exact rank was asked for (locale-safe).
         return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,
+    -- Builds the readable rule summary for the CASTING_SPELL condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary with the spell link (and rank, when ranked) for an ID pick.
     print = function(_, value)
         return LiteralSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!are|are not}} currently casting {spell}"], L["{unit} {{!is|is not}} currently casting {spell}"]), {
@@ -124,6 +165,11 @@ addon:RegisterCondition("CASTING_SPELL", {
             spell = Functions.presentation.nullable(type(value.spell) == "number" and addon:CastSpellLabel(value) or value.spell, L["<spell>"]),
         })
     end,
+    -- Builds the editor controls for the CASTING_SPELL condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a unit picker, the spell box and, on clients with ranks, the exact-rank checkbox; help draws the
     -- help page.
     widget = function(parent, spec, value)
@@ -142,6 +188,8 @@ addon:RegisterCondition("CASTING_SPELL", {
         local rank = addon:Widget_SpellRankWidget(value, function() top:SetStatusText(funcs:print(root, spec)) end)
         if rank then parent:AddChild(rank) end
     end,
+    -- Builds the help page for the CASTING_SPELL condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -160,12 +208,24 @@ addon:RegisterCondition("CASTING_REMAIN", {
     description = L["Cast Time Remaining"],
     icon = addon.Artwork.condition["CASTING_REMAIN"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the CASTING_REMAIN condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Needs a known unit, a known operator and a non-negative number of seconds.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
+    -- Compares the seconds left on the unit's cast with the configured number; false when it is not casting.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Unavailable when the cast's remaining time is hidden or missing; not casting is false.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
@@ -174,12 +234,22 @@ addon:RegisterCondition("CASTING_REMAIN", {
         if record.remainingSeconds==nil then return nil,record.remainingReason end
         return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
+    -- Builds the readable rule summary for the CASTING_REMAIN condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary of the comparison against the unit's remaining cast time, in seconds.
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,
             string.format(L["the time remaining on %s cast"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])),
             string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
+    -- Builds the editor controls for the CASTING_REMAIN condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a unit picker and an operator-and-seconds control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -194,6 +264,8 @@ addon:RegisterCondition("CASTING_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the CASTING_REMAIN condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -213,12 +285,25 @@ addon:RegisterCondition("CASTING_PROGRESS", {
     description = L["Cast Progress"],
     icon = addon.Artwork.condition["CASTING_PROGRESS"],
     fields = { unit = "string", operator = "string", value = "number" },
+    -- Checks that the saved fields of the CASTING_PROGRESS condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Like CASTING_REMAIN, but the value must also be at most 1.
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and value.value <= 1)
     end,
+    -- Compares the fraction of the unit's cast already done (0 to 1) with the configured number; false when it is not
+    -- casting.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Progress is 1 - remaining / duration, floored at 0.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
@@ -230,12 +315,22 @@ addon:RegisterCondition("CASTING_PROGRESS", {
         if done<0 then done=0 end
         return Functions.values.compare(value.operator,done,value.value)
     end,
+    -- Builds the readable rule summary for the CASTING_PROGRESS condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Shows the stored fraction as a percentage.
     print = function(_, value)
         local v = value.value
         if v ~= nil then v = v * 100 end
         return Functions.presentation.compareString(value.operator, string.format(L["%s cast progress"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
+    -- Builds the editor controls for the CASTING_PROGRESS condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds a unit picker and an operator-and-percent control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -250,6 +345,8 @@ addon:RegisterCondition("CASTING_PROGRESS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    -- Builds the help page for the CASTING_PROGRESS condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
@@ -268,10 +365,22 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
     description = L["Cast Interruptible"],
     icon = addon.Artwork.condition["CAST_INTERRUPTABLE"],
     fields = { unit = "string" },
+    -- Checks that the saved fields of the CAST_INTERRUPTABLE condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- Accepts any unit in the full unit list.
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
+    -- Decides whether the unit's current cast can be interrupted; false when it is not casting.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Returns the observed interruptible flag itself, or nil and its reason when it is unreadable.
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
@@ -280,10 +389,20 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         if record.interruptible==nil then return nil,record.interruptibleReason end
         return record.interruptible
     end,
+    -- Builds the readable rule summary for the CAST_INTERRUPTABLE condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary naming the unit whose spell is tested.
     print = function(_, value)
         return string.format(L["%s spell {{!is|is not}} interruptible"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]))
     end,
+    -- Builds the editor controls for the CAST_INTERRUPTABLE condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget offers every unit except player and pet; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -294,6 +413,8 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    -- Builds the help page for the CAST_INTERRUPTABLE condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end,

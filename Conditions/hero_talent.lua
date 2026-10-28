@@ -27,12 +27,18 @@ addon.builtinCallbackBindings["Conditions/hero_talent.lua"] = {
 }
 
 -- True for a positive whole-number hero subtree ID below 2^31 (the range the game uses for IDs).
+-- @param value any  The value to test.
+-- @return boolean  True when value is a number in that range with no fractional part.
 local function validTree(value)
     return type(value) == "number" and value == value and value > 0 and value < 2^31 and value % 1 == 0
 end
 
--- The name the game gives a hero tree, or a generic "hero talent tree N" label when the name is not known yet (the
--- game names a tree only while the talent config is readable). Returns nil for an invalid ID.
+-- Builds the display name of a hero talent tree.
+-- @param id any  The hero subtree ID; anything but a valid ID gives nil.
+-- @return string|nil  The name the game gives the tree, or a generic "hero talent tree N" label when the name is not
+--     known yet; nil for an invalid ID.
+--
+-- The game names a tree only while the talent config is readable.
 local function treeName(id)
     if not validTree(id) then return nil end
     local platform = addon.Platform
@@ -41,8 +47,10 @@ local function treeName(id)
     return string.format(L["hero talent tree %d"], id)
 end
 
--- The specialization whose trees the editor lists: the rotation's, when it is
--- one of your class's, else the one being played (nil, which the Platform reads as "the playing spec").
+-- Picks the specialization whose hero trees the editor lists.
+-- @param spec any  The rotation's specialization ID.
+-- @return number|nil  spec when it is one of your class's specializations; otherwise nil, which the Platform reads as
+--     "the specialization being played".
 local function listedSpec(spec)
     local platform = addon.Platform
     if type(spec) ~= "number" or type(platform.GetClassSpecializationChoices) ~= "function" then return nil end
@@ -62,10 +70,22 @@ addon:RegisterCondition("HERO_TALENT", {
     description = L["Hero Talent Tree"],
     icon = addon.Artwork.condition["HERO_TALENT"],
     fields = { subtree = "number" },
+    -- Checks that the saved fields of the HERO_TALENT condition are complete and in range.
+    -- @param _ any  Unused; the current specialization the engine passes.
+    -- @param value table  The saved condition fields.
+    -- @return boolean  True when the saved fields are complete and in range.
+    --
     -- A missing subtree is valid ("any hero tree"); otherwise it must be a plausible ID.
     valid = function(_, value)
         return value.subtree == nil or validTree(value.subtree)
     end,
+    -- Decides whether you chose any hero tree (with no subtree saved) or the saved hero tree; no tree chosen is false.
+    -- @param value table  The saved condition fields.
+    -- @param cache table  The per-pass memo table shared by every condition in one evaluation; read it through
+    --     Functions.cache.getCached.
+    -- @return boolean|nil  True when the condition holds, false when it does not; nil when it cannot be decided.
+    -- @return string|nil  The reason code when the first value is nil; nil otherwise.
+    --
     -- Reads the active tree once per poll through the shared cache. Unavailable (`nil, reason`) when the Platform
     -- cannot answer; false when no tree is chosen and a specific one is required.
     evaluate = function(value, cache)
@@ -74,6 +94,11 @@ addon:RegisterCondition("HERO_TALENT", {
         if value.subtree == nil then return tree ~= false end
         return tree == value.subtree
     end,
+    -- Builds the readable rule summary for the HERO_TALENT condition.
+    -- @param _ any  Unused; the specialization the summary is printed for.
+    -- @param value table  The saved condition fields.
+    -- @return string  The readable summary, with {{!a|b}} alternatives so the negated form can be rendered.
+    --
     -- Readable summary: "chosen a hero talent tree" or the named tree.
     print = function(_, value)
         if value.subtree == nil then
@@ -81,6 +106,11 @@ addon:RegisterCondition("HERO_TALENT", {
         end
         return string.format(L["your hero talent tree {{!is|is not}} %s"], Functions.presentation.nullable(treeName(value.subtree), L["<hero talent tree>"]))
     end,
+    -- Builds the editor controls for the HERO_TALENT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- Editor: a dropdown of the listed trees ("any" plus each tree) and an ID box that stay in step with each other.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -128,6 +158,9 @@ addon:RegisterCondition("HERO_TALENT", {
         end)
         parent:AddChild(idEdit)
     end,
+    -- Builds the help page for the HERO_TALENT condition.
+    -- @param frame table  The help page container that text and example widgets are added to.
+    --
     -- Help page text (the Help.Conditions.HERO_TALENT locale entry).
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Help.Conditions.HERO_TALENT"]))
