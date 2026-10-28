@@ -9,7 +9,9 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Returns display text for a spell given by ID or name: its hyperlink, else its name, else a placeholder.
--- Never returns nil; an unresolvable numeric ID reads as "Unknown spell (id)".
+-- @param spell number|string|nil  The spell ID or name.
+-- @return string  The hyperlink, name or placeholder; never nil (an unresolvable numeric ID reads as "Unknown spell
+--   (id)").
 function addon:SpellLabel(spell)
     if self.Platform then
         local link = self.Platform:GetSpellLink(spell)
@@ -35,7 +37,9 @@ function addon:SpellLabel(spell)
     return L["<spell>"]
 end
 
--- Label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
+-- Returns the label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
+-- @param value table  The condition value (spell, anyrank).
+-- @return string  The spell label, with " (any rank)" appended for a numeric spell with anyrank set.
 function addon:AuraSpellLabel(value)
     local label = self:SpellLabel(value.spell)
 
@@ -46,7 +50,11 @@ function addon:AuraSpellLabel(value)
     return label
 end
 
--- A cast/channel spell picked by ID matches any rank unless `ranked`. A ranked pick appends the rank in gray.
+-- Returns the label for a cast/channel condition's spell.
+-- @param value table  The condition value (spell, ranked).
+-- @return string  The spell label; a ranked pick by ID appends the rank in gray.
+--
+-- A cast/channel spell picked by ID matches any rank unless `ranked`.
 function addon:CastSpellLabel(value)
     local label = self:SpellLabel(value.spell)
 
@@ -61,13 +69,18 @@ function addon:CastSpellLabel(value)
     return label
 end
 
--- True for a spell hyperlink; other link types are ignored so the label never opens an unrelated tooltip.
+-- Reports whether a hyperlink is a spell link.
+-- @param link any  The hyperlink text from a hyperlink event.
+-- @return boolean  True for a spell hyperlink; other link types are ignored so the label never opens an unrelated
+--   tooltip.
 local function supportedLink(link)
     return type(link) == "string" and link:match("^spell:%d+") ~= nil
 end
 
--- Makes a text frame show the spell tooltip on hover and open the spell link on click. Idempotent per frame
--- (rmSpellHyperlinks), and quietly does nothing on a frame without hyperlink support.
+-- Makes a text frame show the spell tooltip on hover and open the spell link on click.
+-- @param frame table|nil  The text frame to enable; a nil frame or one without hyperlink support is quietly ignored.
+--
+-- Idempotent per frame (rmSpellHyperlinks).
 function addon:InstallSpellHyperlinks(frame)
     if
         not frame
@@ -86,6 +99,9 @@ function addon:InstallSpellHyperlinks(frame)
         frame:EnableMouse(true)
     end
 
+    -- Attaches a handler for a frame script event, hooking when the frame can, else setting it if the event is unused.
+    -- @param event string  The script event name, for example "OnHyperlinkEnter".
+    -- @param callback function  The handler to attach.
     local function install(event, callback)
         if frame.HookScript then
             frame:HookScript(event, callback)
@@ -114,7 +130,10 @@ function addon:InstallSpellHyperlinks(frame)
     end)
 end
 
--- Adds a full-width spell label widget to parent and returns it; the spell is kept in user data for the callbacks.
+-- Adds a full-width spell label widget to a container and returns it.
+-- @param parent table  The AceGUI container to add the label to.
+-- @param spell number|string  The spell ID or name; kept in the widget's user data for the callbacks.
+-- @return table  The label widget.
 function addon:CreateSpellLabel(parent, spell)
     local widget = self:CreateConditionLink()
     widget:SetFullWidth(true)
@@ -153,13 +172,18 @@ function addon:CreateSpellLabel(parent, spell)
     return widget
 end
 
--- Resolve inherited channels without materializing presentation defaults in saved steps.
--- Returns a new { r, g, b, a } table, each channel clamped to 0..1 and taken from value, else the profile color,
--- else 1.
+-- Resolves a highlight color, inheriting missing channels without materializing presentation defaults in saved steps.
+-- @param value table|nil  The step's color table ({ r, g, b, a }); nil or missing channels are inherited.
+-- @return table  A new { r, g, b, a } table, each channel clamped to 0..1 and taken from value, else the profile color,
+--   else 1.
 function addon:ResolveHighlightColor(value)
     local profile = self.db and self.db.profile
     local fallback = profile and profile.color
 
+    -- Reads one color channel from a table and clamps it to 0..1.
+    -- @param source any  The color table; anything else gives nil.
+    -- @param key string  The channel key: "r", "g", "b" or "a".
+    -- @return number|nil  The clamped channel; nil when it is missing or not a finite number.
     local function channel(source, key)
         local number = type(source) == "table" and source[key]
 

@@ -27,7 +27,9 @@ if type(bindExecutionGeneration) == 'function' then
 end
 
 -- Advances the execution generation so the lean evaluation plan and the other generation-keyed caches see that library
--- data changed. Does nothing until the generation has been bound.
+-- data changed.
+--
+-- Does nothing until the generation has been bound.
 local function invalidateExecution()
     if advanceExecutionGeneration then
         advanceExecutionGeneration()
@@ -56,8 +58,9 @@ local definitions, definitionVersion = {}, 0
 -- Only a Default.*.Name key that the locale registers is resolved; anything else a user typed stays as typed.
 local BUILTIN_NAME_KEY = "^Default%.[%w%.]+%.Name$"
 
--- Returns the translated text for a Built In locale key, or nil when the value is not such a key or the locale has no
--- text for it.
+-- Returns the translated text for a Built In locale key.
+-- @param key any  The candidate key.
+-- @return string|nil  The text; nil when the value is not such a key or the locale has no text for it.
 local function registeredBuiltinName(key)
     if type(key) ~= "string" or not key:find(BUILTIN_NAME_KEY) then
         return nil
@@ -70,8 +73,9 @@ local function registeredBuiltinName(key)
     end
 end
 
--- "Default.Era.Druid.Feral.WarcraftTavern.Name" with no translation (a Built In from another version): the
--- variant after the edition and the class, split at its capitals: "Feral Warcraft Tavern".
+-- Makes readable text from a Built In key that has no translation (a Built In from another version).
+-- @param key string  A key such as "Default.Era.Druid.Feral.WarcraftTavern.Name".
+-- @return string  The variant after the edition and the class, split at its capitals: "Feral Warcraft Tavern".
 local function readableBuiltinKey(key)
     local parts = {}
 
@@ -93,8 +97,11 @@ local function readableBuiltinKey(key)
     return table.concat(words, " ")
 end
 
----The name to show for a rotation, in the client's language. Takes a name (string), or an envelope, body or
----legacy export (table). A body.name wins; an envelope's nameKey stands in for a name only when there is none.
+-- Returns the name to show for a rotation, in the client's language.
+-- @param rotation string|table|nil  A name (string), or an envelope, body or legacy export (table).
+-- @return string|nil  The name; nil when there is none.
+--
+-- A body.name wins; an envelope's nameKey stands in for a name only when there is none.
 ---@param rotation string|table|nil
 ---@return string|nil
 function addon:RotationDisplayName(rotation)
@@ -157,13 +164,18 @@ end
 -- Eligibility
 -- ============================================================================
 
--- True for a table with no metatable, judged with the captured type and metatable readers so a later replacement of the
--- globals cannot change the answer.
+-- Reports whether a value is a table with no metatable, judged with the captured type and metatable readers so a later
+-- replacement of the globals cannot change the answer.
+-- @param value any  The value.
+-- @return boolean  True for such a table.
 local function validationPlain(value)
     return validationType(value) == 'table' and validationGetmetatable(value) == nil
 end
 
--- True when the list holds the value; a nil list holds nothing.
+-- Reports whether a list holds a value.
+-- @param list table|nil  The list; a nil list holds nothing.
+-- @param value any  The value to look for.
+-- @return boolean  True when it does.
 local function contains(list, value)
     for _, entry in ipairs(list or {}) do
         if entry == value then
@@ -174,19 +186,25 @@ local function contains(list, value)
     return false
 end
 
--- True when the rotation is not scoped to a class, or is scoped to the player's class.
+-- Reports whether a rotation is not scoped to a class, or is scoped to the player's class.
+-- @param view table  The rotation view (applicability).
+-- @param context table  The rotation context (class).
+-- @return boolean  True when it matches.
 local function matchesClass(view, context)
     local scope = view.applicability
     return not scope or not scope.class or scope.class == context.class
 end
 
--- Shipped premades keep only load-time facts in applicability. A rotation's
--- specializations are its own property, body.specs (absent or empty: any),
--- because a respec changes the choice without a reload; level lives in the
--- switch condition. The switch condition is never read to decide whether a
--- rotation is listed or can be chosen by hand: it only drives automatic
--- switching. specValue is the character's specialization value for the
--- context's namespace (Platform/specializations.lua GetRotationSpecKind).
+-- Returns the character's specialization value for a context's namespace (Platform/specializations.lua
+-- GetRotationSpecKind).
+-- @param context table  The rotation context (spec, specValue).
+-- @return number|nil  The value; nil when unknown.
+-- @return boolean  Whether the client has a specialization concept at all.
+--
+-- Shipped premades keep only load-time facts in applicability. A rotation's specializations are its own property,
+-- body.specs (absent or empty: any), because a respec changes the choice without a reload; level lives in the switch
+-- condition. The switch condition is never read to decide whether a rotation is listed or can be chosen by hand: it
+-- only drives automatic switching.
 local function specValue(context)
     local platform = addon.Platform
 
@@ -222,8 +240,9 @@ local function specValue(context)
     return value, true
 end
 
--- Returns the specialization list a rotation declares (the envelope body's specs, else the view's), or nil when it
--- declares none.
+-- Returns the specialization list a rotation declares.
+-- @param view table  The rotation view.
+-- @return table|nil  The envelope body's specs, else the view's; nil when it declares none.
 local function bodySpecs(view)
     local envelope = view.envelope
     local body = type(envelope) == "table" and envelope.body
@@ -235,7 +254,11 @@ local function bodySpecs(view)
     return view.specs
 end
 
--- Exposed for the runtime pass (custom bodies) and the editor list.
+-- Reports whether a rotation's specializations include a specialization; exposed for the runtime pass (custom bodies)
+-- and the editor list.
+-- @param specs table|nil  The rotation's body.specs; absent or empty means any.
+-- @param spec number  The specialization ID or talent group.
+-- @return boolean  True when it applies (or the client has no specialization concept).
 function addon:RotationSpecsApply(specs, spec)
     if type(specs) ~= "table" or #specs == 0 then
         return true
@@ -250,11 +273,16 @@ function addon:RotationSpecsApply(specs, spec)
     return data.RotationSpecsMatch(specs, value)
 end
 
--- Decides whether a rotation view may run in a context. Returns true, or false and a reason code
--- (invalid-or-unsupported, disabled, class-mismatch, edition-mismatch, specialization-mismatch,
--- action-context-mismatch, level, build or expansion mismatch, ruleset-mismatch, unsupported-context-selector). With
--- candidates set it stops after the class check, so identities survive level and context changes. Reasons are ordered:
--- validity first, so an unusable definition is never reported as disabled.
+-- Decides whether a rotation view may run in a context.
+-- @param view table  The rotation view (validation, enabled, applicability, ...).
+-- @param context table  The rotation context (class, family, spec, actionContext, level, build, expansion ...).
+-- @param candidates boolean|nil  True to stop after the class check, so identities survive level and context changes.
+-- @return boolean  True when it may run.
+-- @return string|nil  The reason code when false (invalid-or-unsupported, disabled, class-mismatch, edition-mismatch,
+--   specialization-mismatch, action-context-mismatch, level, build or expansion mismatch, ruleset-mismatch,
+--   unsupported-context-selector); nil otherwise.
+--
+-- Reasons are ordered: validity first, so an unusable definition is never reported as disabled.
 local function eligible(view, context, candidates)
     -- Validity first: a definition that cannot run here is not "disabled".
     if not view.validation.valid or not view.validation.supported or not view.validation.resolved then
@@ -356,13 +384,18 @@ local function eligible(view, context, candidates)
     return true
 end
 
--- True for a table with no metatable.
+-- Reports whether a value is a table with no metatable.
+-- @param value any  The value.
+-- @return boolean  True for such a table.
 local function plainTable(value)
     return type(value) == "table" and getmetatable(value) == nil
 end
 
--- True when the body opts in to being run on a bar other than the player's own, through
+-- Reports whether a body opts in to being run on a bar other than the player's own, through
 -- addon.RotationData.MatchesBareActionContext.
+-- @param body table  The rotation body.
+-- @param context table  The rotation context.
+-- @return boolean  True when it does.
 local function bareContextOptIn(body, context)
     local matches = data and data.MatchesBareActionContext
     return type(matches) == "function" and matches(body, context) == true
@@ -381,13 +414,16 @@ local blockFields = { id = true, revision = true, families = true, class = true,
 local overrideFields = { families = true, specs = true, steps = true }
 local referenceFields = { id = true, type = true, block = true, prefix = true }
 
--- True for a legal block or step identifier: a short string of letters, digits and . _ : - starting with a letter or
--- digit.
+-- Reports whether a value is a legal block or step identifier.
+-- @param value any  The value.
+-- @return boolean  True for a short string of letters, digits and . _ : - starting with a letter or digit.
 local function blockName(value)
     return type(value) == "string" and #value > 0 and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
 end
 
--- True for a plain gap-free array.
+-- Reports whether a value is a plain gap-free array.
+-- @param value any  The value.
+-- @return boolean  True for such an array.
 local function denseList(value)
     if not plainTable(value) then
         return false
@@ -402,8 +438,10 @@ local function denseList(value)
     return count == #value
 end
 
--- Turns a gap-free list of distinct names (or of distinct non-negative whole numbers when integers is set) into a set,
--- or returns nil when it is empty, malformed or has a repeat.
+-- Turns a list of distinct names into a set.
+-- @param value any  A gap-free list of distinct names (or of distinct non-negative whole numbers when integers is set).
+-- @param integers boolean|nil  True for a list of non-negative whole numbers.
+-- @return table|nil  The set; nil when the list is empty, malformed or has a repeat.
 local function stringSet(value, integers)
     if not denseList(value) or #value == 0 then
         return nil
@@ -426,8 +464,10 @@ local function stringSet(value, integers)
     return set
 end
 
--- 'all' when every consumer value is selected, 'none' when none is, else
--- 'some'. A nil consumer list means every value (e.g. no declared specs).
+-- Says how much of a consumer's values a selector selects.
+-- @param consumer table|nil  The consumer's values; nil means every value (e.g. no declared specs).
+-- @param selector table|nil  The selector set; nil selects everything.
+-- @return string  'all' when every consumer value is selected, 'none' when none is, else 'some'.
 local function coverage(consumer, selector)
     if selector == nil then
         return "all"
@@ -447,7 +487,9 @@ local function coverage(consumer, selector)
     return hits == #consumer and "all" or hits == 0 and "none" or "some"
 end
 
--- Formats a composition problem record (code, path, optional via and detail) as one line for the registration result.
+-- Formats a composition problem record as one line for the registration result.
+-- @param problem table  { code, path, via, detail }.
+-- @return string  The line.
 local function message(problem)
     return problem.code
         .. " at "
@@ -456,6 +498,12 @@ local function message(problem)
         .. (problem.detail and ": " .. problem.detail or "")
 end
 
+-- Validates the step list of a block (or block override).
+-- @param list any  The step list.
+-- @param path string  The path used in problem records.
+-- @param ids table  The step ids seen so far in this variant; filled in as steps are checked.
+-- @return table|nil  A problem record { code, path, detail }; nil when the list is valid.
+--
 -- Block-local IDs are unique per variant; references keep only their fields.
 local function checkBlockSteps(list, path, ids)
     if not denseList(list) then
@@ -501,14 +549,19 @@ local function checkBlockSteps(list, path, ids)
     end
 end
 
--- Only this character's packs are kept: other editions and other classes can
--- never apply to it, and registering them would hold every premade in memory
--- on every client. Their files still load; what they build is garbage. Offline
--- tools and cross-edition/cross-class tests set loadAllDefaults.
--- A pack scoped to other expansions (minExpansion/maxExpansion) is skipped
--- too: a Mists pack never registers on a Wrath progression client. Only a
--- readable client expansion outside the declared range filters; anything
--- unprovable registers, and eligibility refuses it later.
+-- Reports whether a pack or block can never apply to this character.
+-- @param families string[]|nil  The editions it is for.
+-- @param class string|nil  The class it is for.
+-- @param minExpansion number|nil  The lowest expansion it is for.
+-- @param maxExpansion number|nil  The highest expansion it is for.
+-- @return boolean  True when it is for another edition, another class or other expansions.
+--
+-- Only this character's packs are kept: other editions and other classes can never apply to it, and registering them
+-- would hold every premade in memory on every client. Their files still load; what they build is garbage. Offline tools
+-- and cross-edition/cross-class tests set loadAllDefaults. A pack scoped to other expansions
+-- (minExpansion/maxExpansion) is skipped too: a Mists pack never registers on a Wrath progression client. Only a
+-- readable client expansion outside the declared range filters; anything unprovable registers, and eligibility refuses
+-- it later.
 local function notForThisCharacter(families, class, minExpansion, maxExpansion)
     if addon.loadAllDefaults then
         return false
@@ -569,9 +622,12 @@ local function notForThisCharacter(families, class, minExpansion, maxExpansion)
     return false
 end
 
--- Registers a reusable named block of steps shared by packs of one edition or class. Returns true, or false and a
--- one-line problem. A block for another character's edition or class is accepted and dropped (true, "other-character").
--- The block is validated field by field, copied, and rejected when its id is already registered.
+-- Registers a reusable named block of steps shared by packs of one edition or class.
+-- @param block table  The block { id, revision, families, class, steps, overrides }; it is validated field by field,
+--   copied, and rejected when its id is already registered.
+-- @return boolean  True when registered; false on a problem.
+-- @return string|nil  A one-line problem when false; "other-character" when true and the block is for another
+--   character's edition or class (accepted and dropped); nil otherwise.
 function addon:RegisterDefaultBlock(block)
     if not plainTable(block) then
         return false, "invalid-block"
@@ -688,12 +744,14 @@ function addon:RegisterDefaultBlock(block)
     return true
 end
 
--- Returns the expanded envelope, its composition record (nil when the
--- definition uses no blocks) or nil plus a diagnostic. A definition without a
--- manifest-level `blocks` declaration is returned untouched (not copied).
--- Expanded step ID = reference prefix (default `<reference id>.`) .. block step
--- ID, prefixes compounding through nested references: stable across reloads
--- and distinct for every inclusion. Each inclusion is a fresh copy.
+-- Expands the block references of a Built In definition into one independent step tree.
+-- @param envelope any  The definition envelope.
+-- @return table|nil  The expanded envelope (untouched, not copied, when it declares no blocks); nil on a problem.
+-- @return table|nil  The composition record; nil when the definition uses no blocks.
+-- @return string|nil  The one-line diagnostic when the first return is nil; nil otherwise.
+--
+-- Expanded step ID = reference prefix (default `<reference id>.`) .. block step ID, prefixes compounding through nested
+-- references: stable across reloads and distinct for every inclusion. Each inclusion is a fresh copy.
 local function expandDefinition(envelope)
     if not plainTable(envelope) then
         return envelope
@@ -705,8 +763,11 @@ local function expandDefinition(envelope)
         -- Every reference must be declared; never let one reach validation.
         local seen = {}
 
-        -- Looks for a block reference in a definition that declares no blocks and returns a problem record for the
-        -- first one, so a reference can never reach validation unresolved.
+        -- Looks for a block reference in a definition that declares no blocks, so a reference can never reach
+        -- validation unresolved.
+        -- @param list any  The step list.
+        -- @param path string  The path used in the problem record.
+        -- @return table|nil  A problem record for the first reference; nil when there is none.
         local function stray(list, path)
             if not plainTable(list) or seen[list] then
                 return
@@ -764,13 +825,20 @@ local function expandDefinition(envelope)
     local used, active, problem = {}, {}, nil
 
     -- Records the first problem found during expansion and returns nil so callers can unwind.
+    -- @param value table  The problem record.
+    -- @return nil  Always nil.
     local function fail(value)
         problem = problem or value
         return nil
     end
 
-    -- The selected variant must suit the whole consumer scope; a partial
-    -- edition/spec match cannot be expressed by one expanded tree.
+    -- Picks the steps of a block variant that suit the whole consumer scope; a partial edition/spec match cannot be
+    -- expressed by one expanded tree.
+    -- @param block table  The registered block.
+    -- @param at string  The path of the reference.
+    -- @param via string|nil  The chain of references that led here.
+    -- @return table|nil  The chosen step list; nil after recording a problem through fail.
+    -- @return string|nil  The path of the chosen steps.
     local function variant(block, at, via)
         for _, family in ipairs(scope.families) do
             if not stringSet(block.families)[family] then
@@ -814,9 +882,16 @@ local function expandDefinition(envelope)
 
     local expandList
 
-    -- Expands one step into out: a plain step is copied (its id prefixed inside a block), a block reference is replaced
-    -- by the steps of the pinned block variant, and a branch expands both arms. Returns true, or nil after recording a
-    -- problem through fail (missing block, cycle, depth over 16, undeclared or stale pin, invalid id).
+    -- Expands one step into an output list: a plain step is copied (its id prefixed inside a block), a block reference
+    -- is replaced by the steps of the pinned block variant, and a branch expands both arms.
+    -- @param step any  The step.
+    -- @param at string  The path of the step.
+    -- @param prefix string  The prefix for ids inside a block.
+    -- @param out table  The list the expanded steps are appended to.
+    -- @param via string|nil  The chain of references that led here.
+    -- @param depth number  The nesting depth of block references.
+    -- @return boolean|nil  True when expanded; nil after recording a problem through fail (missing block, cycle, depth
+    --   over 16, undeclared or stale pin, invalid id).
     local function expandStep(step, at, prefix, out, via, depth)
         if not plainTable(step) then
             out[#out + 1] = step
@@ -918,7 +993,14 @@ local function expandDefinition(envelope)
         return true
     end
 
-    -- Expands every step of a list in order into out; returns true, or nil when any step failed.
+    -- Expands every step of a list in order into an output list.
+    -- @param list any  The step list.
+    -- @param at string  The path of the list.
+    -- @param prefix string  The prefix for ids inside a block.
+    -- @param out table  The list the expanded steps are appended to.
+    -- @param via string|nil  The chain of references that led here.
+    -- @param depth number  The nesting depth of block references.
+    -- @return boolean|nil  True when every step expanded; nil when any step failed.
     expandList = function(list, at, prefix, out, via, depth)
         if not denseList(list) then
             return fail({ code = "invalid-priority-list", path = at, via = via })
@@ -965,6 +1047,11 @@ local function expandDefinition(envelope)
     -- never reuse a vanished reference's ID, so diagnostics stay unambiguous.
     local ids, references
 
+    -- Checks that step ids are unique across a step list and its branch arms.
+    -- @param list table  The step list.
+    -- @param at string  The path of the list.
+    -- @return table|nil  A problem record { code = 'duplicate-step-id', path, detail } for the first repeat; nil when
+    --   ids are unique.
     local function unique(list, at)
         for index, step in ipairs(list) do
             local where = at .. "[" .. index .. "]"
@@ -1020,7 +1107,11 @@ end
 -- Registering Built Ins
 -- ============================================================================
 
--- Offline tools and corpus checks read the exact tree registration consumes.
+-- Expands a Built In definition's blocks, for offline tools and corpus checks that read the exact tree registration
+-- consumes.
+-- @param envelope table  The definition envelope.
+-- @return table|nil  The expanded envelope (always a copy); nil on a problem.
+-- @return table|string|nil  The composition record on success; the one-line problem when the first return is nil.
 function addon:ExpandDefaultRotation(envelope)
     local expanded, composition, problem = expandDefinition(envelope)
 
@@ -1035,16 +1126,21 @@ function addon:ExpandDefaultRotation(envelope)
     return expanded, composition and data.CopyData(composition)
 end
 
--- The manifest-level block dependencies (id -> pinned revision) a registered
--- Built In was expanded from; nil when it uses no blocks. Never user data.
+-- Returns the manifest-level block dependencies a registered Built In was expanded from.
+-- @param id string  The Built In id.
+-- @return table|nil  A copy of the id to pinned revision map; nil when it uses no blocks. Never user data.
 function addon:GetDefaultRotationComposition(id)
     return compositions[id] and data.CopyData(compositions[id])
 end
 
 -- Registers a packaged Built In rotation envelope: expands its blocks, validates the envelope, and stores it by id.
--- Returns true, or false and a reason (invalid-envelope, missing-class-scope, duplicate-default-id, or the composition
--- problem). An envelope for another character's edition, class or expansion is accepted and dropped (true,
--- "other-character"). Advances the execution generation and the definition version.
+-- @param envelope table  The Built In envelope.
+-- @return boolean  True when registered; false on a problem.
+-- @return string|nil  The reason when false (invalid-envelope, missing-class-scope, duplicate-default-id, or the
+--   composition problem); "other-character" when true and the envelope is for another character's edition, class or
+--   expansion (accepted and dropped); nil otherwise.
+--
+-- Advances the execution generation and the definition version.
 function addon:RegisterDefaultRotation(envelope)
     local scope = type(envelope) == "table" and envelope.applicability
 
@@ -1089,13 +1185,15 @@ end
 -- Library initialization
 -- ============================================================================
 
--- One-time repair, per profile and class: the Built In toggle used to show a
--- pack that could not be validated as "Disabled" and wrote each click as the
--- opposite of that, so packs the player never meant to switch off were saved
--- as enabled=false. Those choices cannot be told apart from deliberate ones,
--- so for packs that ship enabled they are removed once (the shipped default
--- applies again), and one chat line names them. Packs that ship disabled, and
--- every enabled=true, are left alone.
+-- One-time repair, per profile and class, of Built In preferences saved as disabled without the player's choice.
+-- @param self table  The addon.
+-- @param profile table  The profile table.
+-- @param state table  The profile's rotationLibrary state.
+--
+-- The Built In toggle used to show a pack that could not be validated as "Disabled" and wrote each click as the
+-- opposite of that, so packs the player never meant to switch off were saved as enabled=false. Those choices cannot be
+-- told apart from deliberate ones, so for packs that ship enabled they are removed once (the shipped default applies
+-- again), and one chat line names them. Packs that ship disabled, and every enabled=true, are left alone.
 local function repairBuiltinPreferences(self, profile, state)
     if type(UnitClass) ~= "function" then
         return
@@ -1165,10 +1263,13 @@ local function repairBuiltinPreferences(self, profile, state)
     end
 end
 
--- Builds the library for the current profile: validates the saved library state, applies the one-time preference
--- repair, registers every Built In in a fresh catalog, and prepares the runtime body copies (player priority applied,
--- packaged disabled flag cleared) and the clone scopes. Returns true, or false and a reason (invalid-library-state or
--- the catalog's own). On failure active is cleared, so nothing half-built is ever served.
+-- Builds the library for the current profile.
+-- @return boolean  True when built; false on failure (active is cleared, so nothing half-built is ever served).
+-- @return string|nil  The reason when false (invalid-library-state or the catalog's own); nil otherwise.
+--
+-- Validates the saved library state, applies the one-time preference repair, registers every Built In in a fresh
+-- catalog, and prepares the runtime body copies (player priority applied, packaged disabled flag cleared) and the clone
+-- scopes.
 function addon:InitializeRotationLibrary()
     invalidateExecution()
     local profile = self.db.profile
@@ -1285,9 +1386,16 @@ end
 local ownedInitializeRotationLibrary = addon.InitializeRotationLibrary
 
 -- Makes sure the library built for this profile is still current, and rebuilds it when the profile, the saved library
--- state, the registered Built In set or the validation stamp changed. Returns true, or nil and a reason. With needProof
--- it may also return the reference stamp and true: the witness that nothing changed since the last build, which the
--- scoped coordinator uses to skip re-proving. A fresh initialization never issues that witness.
+-- state, the registered Built In set or the validation stamp changed.
+-- @param self table  The addon.
+-- @param needProof boolean|nil  True to also ask for the unchanged-since-last-build witness.
+-- @return boolean|nil  True when current; false or nil on failure.
+-- @return string|nil  The reason on failure; nil otherwise.
+-- @return table|nil  With needProof and no rebuild: the reference stamp.
+-- @return boolean|nil  With needProof and no rebuild: true, the witness that nothing changed since the last build,
+--   which the scoped coordinator uses to skip re-proving.
+--
+-- A fresh initialization never issues that witness.
 local function ensure(self, needProof)
     local referenceStamp, method, db, profile, global, conditions, shared, personal, effects, version, state
     local plainStamps = false
@@ -1358,12 +1466,14 @@ end
 -- Rotation context (client facts)
 -- ============================================================================
 
--- The bar the player is acting through. A vehicle, override bar, possession
--- (mind control, quest possession) or pet battle replaces the player's own
--- actions; each is a separate rotation applicability domain. Every API is
--- feature-detected: TBC/Era clients have possession, Wrath+ add vehicles and
--- override bars, and only Retail has pet battles. Vehicle and pet battle keep
--- their historical read order (one call each per observation).
+-- Reads the bar the player is acting through.
+-- @param read function  read(fn, ...) calls a game query guarded against missing or secret results.
+-- @return string  'petbattle', 'vehicle', 'override', 'possession' or 'player'.
+--
+-- A vehicle, override bar, possession (mind control, quest possession) or pet battle replaces the player's own actions;
+-- each is a separate rotation applicability domain. Every API is feature-detected: TBC/Era clients have possession,
+-- Wrath+ add vehicles and override bars, and only Retail has pet battles. Vehicle and pet battle keep their historical
+-- read order (one call each per observation).
 local function observeActionContext(read)
     local vehicle = read(UnitHasVehicleUI, "player")
 
@@ -1392,7 +1502,11 @@ local function observeActionContext(read)
     return "player"
 end
 
--- Fresh observation for the event-driven cache in main.lua; never polled.
+-- Reads one game value for the action context: a fresh observation for the event-driven cache in main.lua; never
+-- polled.
+-- @param fn any  The game function to call.
+-- @param ... any  Its arguments.
+-- @return any  The value; nil when `fn` is not a function, the call fails or the client does not allow reading it.
 local function readActionContextValue(fn, ...)
     if type(fn) ~= "function" then
         return nil
@@ -1405,18 +1519,25 @@ local function readActionContextValue(fn, ...)
     end
 end
 
--- Reads the action context now (player, vehicle, override, possession or petbattle). Called by main.lua's event-driven
--- cache, not on the poll.
+-- Reads the action context now. Called by main.lua's event-driven cache, not on the poll.
+-- @return string  'player', 'vehicle', 'override', 'possession' or 'petbattle'.
 function addon:ReadActionContext()
     return observeActionContext(readActionContextValue)
 end
 
--- Platform facts used for selection are public identity/context observations.
--- Restricted results never enter comparisons or portable-data traversal.
+-- Returns the client facts used to decide which rotations apply.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @return table  The client info plus class, level, build, spec and actionContext.
+--
+-- Platform facts used for selection are public identity/context observations. Restricted results never enter
+-- comparisons or portable-data traversal.
 function addon:GetRotationContext(spec)
     local context = self.Platform:GetClientInfo()
 
-    -- Calls fn protected and returns its value only when the client allows reading it.
+    -- Calls a function protected and returns its value only when the client allows reading it.
+    -- @param fn any  The function to call.
+    -- @param ... any  Its arguments.
+    -- @return any  The value; nil when it cannot be read.
     local function read(fn, ...)
         if type(fn) ~= "function" then
             return nil
@@ -1430,6 +1551,7 @@ function addon:GetRotationContext(spec)
     end
 
     -- Returns the player's class token.
+    -- @return string  The class token.
     local function class()
         local _, token = UnitClass("player")
         return token
@@ -1463,8 +1585,14 @@ if type(bindClient) == 'function' then
     addon.BindRotationClientReader = nil
 end
 
--- Only the exact owned methods use the narrow projection. Overrides retain
--- their actual receiver, first result, shared table and error behavior.
+-- Returns the rotation context for a spec, through the narrow projection when the owner's reader is the owned one.
+-- @param owner table  The addon.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @return table  The context (as GetRotationContext returns it).
+-- @return boolean  True when the context came from the private projection.
+--
+-- Only the exact owned methods use the narrow projection. Overrides retain their actual receiver, first result, shared
+-- table and error behavior.
 local function rotationContext(owner, spec)
     local method = owner.GetRotationContext
 
@@ -1475,7 +1603,10 @@ local function rotationContext(owner, spec)
 
     local context, private = clientContextReader(owner.Platform)
 
-    -- Calls fn protected and returns its value only when the client allows reading it.
+    -- Calls a function protected and returns its value only when the client allows reading it.
+    -- @param fn any  The function to call.
+    -- @param ... any  Its arguments.
+    -- @return any  The value; nil when it cannot be read.
     local function read(fn, ...)
         if type(fn) ~= "function" then
             return nil
@@ -1489,6 +1620,7 @@ local function rotationContext(owner, spec)
     end
 
     -- Returns the player's class token.
+    -- @return string  The class token.
     local function class()
         local _, token = UnitClass("player")
         return token
@@ -1502,10 +1634,17 @@ local function rotationContext(owner, spec)
     return context, private == true
 end
 
--- Uncovered vehicle/pet-battle notifications retain fresh observation at every
--- publication boundary, even when the other owned eligibility facts are reused.
+-- Reads a fresh action context at a publication boundary.
+-- @param owner table  The addon.
+-- @return string  'player', 'vehicle', 'override', 'possession' or 'petbattle'.
+--
+-- Uncovered vehicle/pet-battle notifications retain fresh observation at every publication boundary, even when the
+-- other owned eligibility facts are reused.
 local function runtimeActionContext(owner)
-    -- Calls fn protected and returns its value only when the client allows reading it.
+    -- Calls a function protected and returns its value only when the client allows reading it.
+    -- @param fn any  The function to call.
+    -- @param ... any  Its arguments.
+    -- @return any  The value; nil when it cannot be read.
     local function read(fn, ...)
         if type(fn) ~= "function" then
             return nil
@@ -1521,8 +1660,10 @@ local function runtimeActionContext(owner)
     return observeActionContext(read)
 end
 
--- Returns the runtime key of a Built In among a spec's custom rotations: "RM-BUILTIN:<id>", prefixed with colons until
--- it collides with no custom key.
+-- Returns the runtime key of a Built In among a spec's custom rotations.
+-- @param id string  The Built In id.
+-- @param custom table  The spec's custom rotations, keyed by key.
+-- @return string  "RM-BUILTIN:<id>", prefixed with colons until it collides with no custom key.
 local function runtimeKey(id, custom)
     local key = "RM-BUILTIN:" .. id
 
@@ -1537,8 +1678,12 @@ end
 -- Reader handed to the scoped coordinator
 -- ============================================================================
 
--- One-time handoff to the scoped coordinator. No canonical source getter stays
--- on the addon surface after its consumer captures this private reader.
+-- Hands the scoped coordinator the library reader (one-time handoff).
+-- @param bind function  Called with the reader and the private proof helpers.
+-- @return boolean|nil  True when handed over; nil when `bind` is not a function.
+-- @return string|nil  'invalid-library-reader-binder' when the first return is nil; nil otherwise.
+--
+-- No canonical source getter stays on the addon surface after its consumer captures this private reader.
 function addon:BindRotationLibraryReader(bind)
     if type(bind) ~= 'function' then
         return nil, 'invalid-library-reader-binder'
@@ -1547,20 +1692,30 @@ function addon:BindRotationLibraryReader(bind)
     local owner = self
     local reader = {}
 
-    -- True when fn is the addon's own context reader.
+    -- Reports whether a function is the addon's own context reader.
+    -- @param fn any  The function.
+    -- @return boolean  True when it is.
     function reader:OwnsContext(fn)
         return fn == ownedRotationContext
     end
 
     -- The context reader the coordinator receives: the addon's own narrow projection of the client context for a spec.
+    -- @param self any  Unused.
+    -- @param spec number|nil  The specialization ID or talent group.
+    -- @return table  The context.
+    -- @return boolean  True when it came from the private projection.
     local function contextMethod(self, spec)
         return rotationContext(owner, spec)
     end
 
     reader.Context = contextMethod
 
-    -- True when the context method, projection and dispatch functions are the ones this file owns and still share its
-    -- environment, so a replaced reader cannot authorize a result.
+    -- Reports whether the context method, projection and dispatch functions are the ones this file owns and still share
+    -- its environment, so a replaced reader cannot authorize a result.
+    -- @param method any  The context method in use.
+    -- @param projection any  The client context projection function.
+    -- @param dispatch any  The dispatch function.
+    -- @return boolean  True when they are.
     local function ownsPrivateContext(method, projection, dispatch)
         return contextGetfenv
             and contextEnvironment
@@ -1573,9 +1728,16 @@ function addon:BindRotationLibraryReader(bind)
             and contextEqual(contextRawget(contextEnvironment, 'ipairs'), contextIpairs)
     end
 
-    -- Validates a context value read through the owned reader. Returns nil when a reader was replaced or the value is
-    -- implausible (no class, level or build, unknown family); otherwise returns a function that re-checks the captured
-    -- client functions and returns true when a fresh action-context read still equals the value's actionContext.
+    -- Validates a context value read through the owned reader.
+    -- @param value table  The context value.
+    -- @param method function  The context method in use.
+    -- @param projection function  The client context projection function.
+    -- @param dispatch function  The dispatch function.
+    -- @return function|nil  A re-check, or nil when a reader was replaced or the value is implausible (no class, level
+    --   or build, unknown family).
+    --
+    -- The re-check function fails when any captured client function was replaced and otherwise returns true when a
+    -- fresh action-context read still equals the value's actionContext.
     local function runtimeContextGuard(value, method, projection, dispatch)
         local platform = owner.Platform
 
@@ -1609,8 +1771,10 @@ function addon:BindRotationLibraryReader(bind)
         local inBattle = petBattles and petBattles.IsInBattle
         local secret, access = issecretvalue, canaccessvalue
 
-        -- The re-check handed back by runtimeContextGuard: it fails when any captured client function was replaced and
-        -- otherwise tells whether the live action context still equals the one in the value.
+        -- The re-check handed back by runtimeContextGuard.
+        -- @return boolean|nil  True when a fresh action-context read still equals the value's actionContext; false when
+        --   it
+        --   differs; nil when any captured client function was replaced.
         return function()
             if
                 not ownsPrivateContext(method, projection, dispatch)
@@ -1644,8 +1808,12 @@ function addon:BindRotationLibraryReader(bind)
         end
     end
 
-    -- Returns the library generation table after making the library current, with the proof results of ensure; or nil
-    -- and a reason.
+    -- Makes the library current and returns its generation table.
+    -- @param self any  Unused.
+    -- @return table|nil  The library generation table; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    -- @return table|nil  The reference stamp, with the proof results of ensure.
+    -- @return boolean|nil  The proof that nothing changed since the last build.
     local function generationMethod(self)
         local ok, why, checked, proof = ensure(owner, true)
 
@@ -1658,8 +1826,14 @@ function addon:BindRotationLibraryReader(bind)
 
     reader.Generation = generationMethod
 
-    -- The checker captures the definition-owned method; a replaced reader field
-    -- cannot authorize its own returned proof. Nil checks the pre-dispatch layout.
+    -- Reports whether a generation and reference come from this file's own reader.
+    -- @param method function|nil  The reader's Generation method; nil checks the pre-dispatch layout.
+    -- @param reference table  The reference stamp.
+    -- @param generation table  The generation table.
+    -- @return boolean  True when they do.
+    --
+    -- The checker captures the definition-owned method; a replaced reader field cannot authorize its own returned
+    -- proof.
     local function provesGeneration(method, reference, generation)
         return validationRawget ~= nil
             and validationPlain(reader)
@@ -1669,9 +1843,16 @@ function addon:BindRotationLibraryReader(bind)
             and (method == nil or validationRawequal(method, generationMethod))
     end
 
-    -- Returns true, the projected row and the generation for one Built In if it exists, matches the class and has been
-    -- made current; or nil and a reason (unknown-rotation, class-mismatch, or the library's). project builds the row
-    -- from the view, the runtime body and the eligibility answer.
+    -- Reads one Built In for the scoped coordinator.
+    -- @param spec number  The specialization ID or talent group.
+    -- @param id string  The Built In id.
+    -- @param project function  project(view, body, allowed, reason) builds the row from the view, the runtime body and
+    --   the eligibility answer.
+    -- @param candidates boolean|nil  True to stop the eligibility check after the class check.
+    -- @return boolean|nil  True when the Built In exists, matches the class and has been made current; nil on failure.
+    -- @return table|string|nil  The projected row; the reason (unknown-rotation, class-mismatch, or the library's) when
+    --   the first return is nil.
+    -- @return table|nil  The generation table.
     function reader:Read(spec, id, project, candidates)
         local ok, why = ensure(owner)
 
@@ -1696,7 +1877,11 @@ function addon:BindRotationLibraryReader(bind)
         return true, project(view, active.bodies[id], allowed, reason), active.generation
     end
 
-    -- Returns one projected row per Built In of the player's class, with the generation; or nil and a reason.
+    -- Lists the Built Ins of the player's class for the scoped coordinator.
+    -- @param spec number  The specialization ID or talent group.
+    -- @param project function  project(id, view, body) builds one row.
+    -- @return table[]|nil  One projected row per Built In of the player's class; nil on failure.
+    -- @return table|string|nil  The generation table; the reason when the first return is nil.
     function reader:List(spec, project)
         local ok, why = ensure(owner)
 
@@ -1718,6 +1903,11 @@ function addon:BindRotationLibraryReader(bind)
     end
 
     -- Answers eligible() for a view in the context of a spec.
+    -- @param view table  The rotation view.
+    -- @param spec number  The specialization ID or talent group.
+    -- @param candidates boolean|nil  True to stop after the class check.
+    -- @return boolean  True when it may run.
+    -- @return string|nil  The reason code when false; nil otherwise.
     function reader:Eligible(view, spec, candidates)
         local context = rotationContext(owner, spec)
         context.spec = spec
@@ -1726,6 +1916,7 @@ function addon:BindRotationLibraryReader(bind)
 
     -- Marks every Built In id (and the step ids inside) as taken in the used set, so new identities never collide with
     -- a shipped one.
+    -- @param used table  The set of identities already in use; filled in.
     function reader:Reserve(used)
         for id, envelope in pairs(definitions) do
             used[id] = true
@@ -1733,7 +1924,9 @@ function addon:BindRotationLibraryReader(bind)
         end
     end
 
-    -- Returns the current generation table (nil before the library is built) and the definition version.
+    -- Returns the current library generation and definition version.
+    -- @return table|nil  The generation table; nil before the library is built.
+    -- @return number  The definition version.
     local function runtimeGeneration()
         return active and active.generation, definitionVersion
     end
@@ -1757,9 +1950,12 @@ end
 -- Built In listing and preferences
 -- ============================================================================
 
--- Returns the Built In rows for the player's class sorted by name, each with its runtime key, eligibility and reason,
--- localized name and description. A pack for another edition says so (its scope reason) in preference to naming a
--- condition unavailable only because it belongs to that edition. For menus and the editor, not the poll.
+-- Lists the Built In rotations for the player's class, for menus and the editor, not the poll.
+-- @param spec number  The specialization ID or talent group.
+-- @return table[]  The rows sorted by name, each with its runtime key, eligibility and reason, localized name and
+--   description. A pack for another edition says so (its scope reason) in preference to naming a condition unavailable
+--   only because it belongs to that edition.
+-- @return string|nil  The reason when the library could not be made current (the list is then empty); nil otherwise.
 function addon:ListDefaultRotations(spec)
     local ok, why = ensure(self)
 
@@ -1816,11 +2012,13 @@ function addon:ListDefaultRotations(spec)
     return rows
 end
 
--- Every Built In for this class and why it is or is not on: state is
--- 'enabled', 'user-disabled' (the player switched it off), 'shipped-disabled'
--- (an alternative that ships off) or 'invalid' (it cannot be validated here).
--- applies/reason say whether it would be selectable for `spec` if it were on.
--- Commands, menus and the editor only; never while polling.
+-- Lists every Built In for this class and why it is or is not on. Commands, menus and the editor only; never while
+-- polling.
+-- @param spec number  The specialization ID or talent group.
+-- @return table[]  The rows. `state` is 'enabled', 'user-disabled' (the player switched it off), 'shipped-disabled' (an
+--   alternative that ships off) or 'invalid' (it cannot be validated here); applies/reason say whether it would be
+--   selectable for `spec` if it were on.
+-- @return string|nil  The reason when the library could not be made current (the list is then empty); nil otherwise.
 function addon:GetBuiltinStates(spec)
     local ok, why = ensure(self)
 
@@ -1901,8 +2099,12 @@ function addon:GetBuiltinStates(spec)
     return rows
 end
 
--- One Built In's switch: true (on), false (off) and the state name from
--- GetBuiltinStates; nil when unknown. Live, never a cached copy.
+-- Returns one Built In's switch. Live, never a cached copy.
+-- @param id string  The Built In id.
+-- @return boolean|nil  True (on) or false (off); nil when unknown.
+-- @return string|nil  The state name from GetBuiltinStates ('enabled', 'user-disabled', 'shipped-disabled' or
+--   'invalid').
+-- @return boolean|nil  Whether the pack ships disabled.
 function addon:GetBuiltinSwitch(id)
     if not ensure(self) then
         return nil
@@ -1933,7 +2135,9 @@ function addon:GetBuiltinSwitch(id)
     return on, state, shipped
 end
 
--- Returns the catalog view of a Built In by id, or nil.
+-- Returns the catalog view of a Built In.
+-- @param id string  The Built In id.
+-- @return table|nil  The view; nil when unknown.
 function addon:GetDefaultRotation(id)
     if not ensure(self) then
         return nil
@@ -1943,8 +2147,14 @@ function addon:GetDefaultRotation(id)
 end
 
 -- Switches a Built In on or off for the profile through the catalog, keeping a preference only when it differs from the
--- shipped default. Turning off the rotation that is currently selected also stops it. Returns the catalog's saved flag
--- and reason, or false and a reason when a newer rotation transition superseded this call.
+-- shipped default.
+-- @param id string  The Built In id.
+-- @param value boolean  True to switch it on.
+-- @return boolean|nil  The catalog's saved flag; false when a newer rotation transition superseded this call or the
+--   library is unavailable.
+-- @return string|nil  The reason.
+--
+-- Turning off the rotation that is currently selected also stops it.
 function addon:SetDefaultRotationEnabled(id, value)
     local change = beginActive(self)
     local ok, why = ensure(self)
@@ -2018,6 +2228,8 @@ end
 -- clash takes the edition, then a number, as a suffix.
 local identifierCache, identifierVersion
 
+-- Returns the unique identifier of every registered Built In, cached per definition version.
+-- @return table  A map from Built In id to identifier.
 local function builtinIdentifiers()
     if identifierVersion == definitionVersion and identifierCache then
         return identifierCache
@@ -2069,15 +2281,19 @@ local function builtinIdentifiers()
     return byId
 end
 
--- Returns the unique identifier of a Built In (see builtinIdentifiers), or nil for an unknown id.
+-- Returns the unique identifier of a Built In (see builtinIdentifiers).
+-- @param id string  The Built In id.
+-- @return string|nil  The identifier; nil for an unknown id.
 function addon:GetBuiltinIdentifier(id)
     return builtinIdentifiers()[id]
 end
 
--- Per-profile Built In overrides live in rotationLibrary.preferences[id]
--- ({enabled=, priority=}); the rotation itself is never copied. A value equal
--- to the shipped one is not stored.
--- Returns the priority the pack ships with (0 when it declares none).
+-- Returns the priority a pack ships with.
+-- @param id string  The Built In id.
+-- @return number  The priority; 0 when it declares none.
+--
+-- Per-profile Built In overrides live in rotationLibrary.preferences[id] ({enabled=, priority=}); the rotation itself
+-- is never copied. A value equal to the shipped one is not stored.
 local function shippedPriority(id)
     local definition = definitions[id]
 
@@ -2085,8 +2301,11 @@ local function shippedPriority(id)
         or 0
 end
 
--- Returns the profile's overrides of one Built In next to the shipped values and the effective ones, or nil when the id
--- is unknown. Reads live; nothing is copied into the profile.
+-- Returns the profile's overrides of one Built In next to the shipped values and the effective ones. Reads live;
+-- nothing is copied into the profile.
+-- @param id string  The Built In id.
+-- @return table|nil  { shippedEnabled, shippedPriority, enabled, priority, effectiveEnabled, effectivePriority,
+--   overridden }; nil when the id is unknown.
 function addon:GetBuiltinOverrides(id)
     if not ensure(self) then
         return nil
@@ -2115,9 +2334,12 @@ function addon:GetBuiltinOverrides(id)
     return result
 end
 
--- Sets the player's priority for a Built In (nil removes it), storing it only when it differs from the shipped
--- priority, and applies it to the runtime body at once. Returns true, or false and a reason (unknown-rotation,
--- invalid-priority, invalid-preference).
+-- Sets the player's priority for a Built In, storing it only when it differs from the shipped priority, and applies it
+-- to the runtime body at once.
+-- @param id string  The Built In id.
+-- @param value number|nil  The priority; nil removes the override.
+-- @return boolean  True when set; false on failure.
+-- @return string|nil  The reason (unknown-rotation, invalid-priority, invalid-preference) when false; nil otherwise.
 function addon:SetBuiltinPriority(id, value)
     local ok, why = ensure(self)
 
@@ -2164,7 +2386,10 @@ function addon:SetBuiltinPriority(id, value)
     return true
 end
 
--- Back to the shipped switch and priority: the preference entry is removed.
+-- Returns a Built In to the shipped switch and priority: the preference entry is removed.
+-- @param id string  The Built In id.
+-- @return boolean|nil  True when reset; false on failure.
+-- @return string|nil  The reason when false; nil otherwise.
 function addon:ResetBuiltinOverrides(id)
     local current = self:GetBuiltinOverrides(id)
 
@@ -2184,8 +2409,12 @@ function addon:ResetBuiltinOverrides(id)
     return true
 end
 
--- Returns the saved (editable) body of a custom rotation, or nil. With a scoped store the coordinator decides;
--- otherwise it reads the profile table.
+-- Returns the saved (editable) body of a custom rotation.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id or reference.
+-- @return table|nil  The body; nil when there is none.
+--
+-- With a scoped store the coordinator decides; otherwise it reads the profile table.
 function addon:GetEditableRotation(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2197,8 +2426,13 @@ function addon:GetEditableRotation(spec, id)
     return rotations and rotations[id]
 end
 
--- True when the condition table belongs to the step in the saved body of that rotation, so a callback can prove it was
+-- Reports whether a condition table belongs to a step in the saved body of a rotation, so a callback can prove it was
 -- handed the real one.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @param step table  The step.
+-- @param condition table  The condition table.
+-- @return boolean  True when it does.
 function addon:OwnsRotationCondition(spec, id, step, condition)
     local body = self:GetEditableRotation(spec, id)
     local tree = body and data.IndexRotationSteps(body, { allowMissingIds = true })
@@ -2220,10 +2454,16 @@ end
 -- Runtime rotations
 -- ============================================================================
 
--- Returns the rotations the poll may run for a spec, keyed by runtime key. With a scoped store it comes from the
--- coordinator's runtime pass; otherwise custom bodies and eligible Built Ins are merged here. internal gives the
--- trusted engine the private Built In bodies (never to be edited); public callers get copies. candidates keeps
--- rotations that fit the class but not the current level or context.
+-- Returns the rotations the poll may run for a spec, keyed by runtime key.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @param internal boolean|nil  True to give the trusted engine the private Built In bodies (never to be edited); public
+--   callers get copies.
+-- @param candidates boolean|nil  True to keep rotations that fit the class but not the current level or context.
+-- @return table  A map from runtime key to body.
+-- @return string|nil  The reason, with a scoped store when the runtime pass is unavailable; nil otherwise.
+--
+-- With a scoped store it comes from the coordinator's runtime pass; otherwise custom bodies and eligible Built Ins are
+-- merged here.
 function addon:GetRuntimeRotations(spec, internal, candidates)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2317,8 +2557,11 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
     return rotations
 end
 
--- Returns one rotation for the runtime by key, or nil and a reason. Custom bodies are the live saved tables; Built In
--- bodies are copies.
+-- Returns one rotation for the runtime by key. Custom bodies are the live saved tables; Built In bodies are copies.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The runtime key.
+-- @return table|nil  The body; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetRuntimeRotation(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2351,10 +2594,17 @@ end
 -- Cloning, sources and comparison
 -- ============================================================================
 
--- Clones a Built In into a new custom rotation named name. With a scoped store the coordinator does it; otherwise the
--- clone is built in a temporary catalog, stored in the profile with its origin record, and registered as a clone scope.
--- Returns the new id, or nil and a reason (unknown-rotation, class-mismatch, id-collision,
--- rotation-changed-externally...).
+-- Clones a Built In into a new custom rotation.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The Built In id.
+-- @param name string  The new rotation's name.
+-- @param options table|nil  Passed to the scoped coordinator.
+-- @return string|nil  The new rotation id; nil on failure.
+-- @return string|nil  The reason (unknown-rotation, class-mismatch, id-collision, rotation-changed-externally...) when
+--   the first return is nil; nil otherwise.
+--
+-- With a scoped store the coordinator does it; otherwise the clone is built in a temporary catalog, stored in the
+-- profile with its origin record, and registered as a clone scope.
 function addon:CloneDefaultRotation(spec, id, name, options)
     local coordinator = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2434,8 +2684,12 @@ function addon:CloneDefaultRotation(spec, id, name, options)
     return generated
 end
 
--- Returns the validated source view (envelope, lineage) of a cloned rotation, or nil and a reason (no-source-baseline
--- when it was never a clone, invalid-origin-state when the retained record is damaged).
+-- Returns the validated source view of a cloned rotation.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  The view (envelope, lineage); nil on failure.
+-- @return string|nil  The reason (no-source-baseline when it was never a clone, invalid-origin-state when the retained
+--   record is damaged) when the first return is nil; nil otherwise.
 function addon:GetSourcedRotationView(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2497,7 +2751,10 @@ function addon:GetSourcedRotationView(spec, id)
     return view
 end
 
--- True when the runtime key belongs to a Built In.
+-- Reports whether a runtime key belongs to a Built In.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The runtime key.
+-- @return boolean  True when it does.
 function addon:IsDefaultRuntimeRotation(spec, key)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2519,7 +2776,10 @@ function addon:IsDefaultRuntimeRotation(spec, key)
     return false
 end
 
--- Returns the Built In id behind a runtime key, or nil when the key is a custom rotation.
+-- Returns the Built In id behind a runtime key.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The runtime key.
+-- @return string|nil  The Built In id; nil when the key is a custom rotation.
 function addon:GetDefaultIdForRuntime(spec, key)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2541,15 +2801,20 @@ function addon:GetDefaultIdForRuntime(spec, key)
     end
 end
 
--- Candidate identities survive level/context changes within the declared class.
--- Current eligibility is
--- always checked again by the runtime facade when switching or evaluating.
+-- Returns the rotations that are candidates for a spec.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @return table  A map from runtime key to body.
+--
+-- Candidate identities survive level/context changes within the declared class. Current eligibility is always checked
+-- again by the runtime facade when switching or evaluating.
 function addon:GetRotationCandidates(spec)
     return self:GetRuntimeRotations(spec, true, true)
 end
 
--- Returns the body to use when cleaning up references to a rotation key: the custom body if there is one, else the
--- Built In runtime body.
+-- Returns the body to use when cleaning up references to a rotation key.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The rotation key.
+-- @return table|nil  The custom body if there is one, else the Built In runtime body; nil when there is none.
 function addon:GetRotationForCleanup(spec, key)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2575,8 +2840,15 @@ function addon:GetRotationForCleanup(spec, key)
     end
 end
 
--- Correspondence for ordinary duplicates needs only origin IDs. It must not
--- pretend an incomplete legacy body is a validated historical envelope.
+-- Returns the correspondence identity of a rotation, used to compare it with its source.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  { kind, id, origins }; nil on failure.
+-- @return string|nil  The reason (invalid-library-state, invalid-comparison-origin or a source view's) when the first
+--   return is nil; nil otherwise.
+--
+-- Correspondence for ordinary duplicates needs only origin IDs. It must not pretend an incomplete legacy body is a
+-- validated historical envelope.
 function addon:GetRotationComparisonIdentity(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2643,8 +2915,16 @@ function addon:GetRotationComparisonIdentity(spec, id)
     return identity or { kind = "custom", id = id }
 end
 
--- Transitional legacy editing still writes bodies directly. Duplication must use
--- a real data copy, fresh step identities, and explicitly retain source lineage.
+-- Duplicates a custom rotation under a new name.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @param name string  The new rotation's name.
+-- @param options table|nil  Passed to the scoped coordinator.
+-- @return string|nil  The new rotation id; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Transitional legacy editing still writes bodies directly. Duplication must use a real data copy, fresh step
+-- identities, and explicitly retain source lineage.
 function addon:DuplicateCustomRotation(spec, id, name, options)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2756,6 +3036,7 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
     end
 
     -- Marks a string as a taken identity.
+    -- @param value any  The value; anything but a string is ignored.
     local function reserve(value)
         if type(value) == "string" then
             used[value] = true
@@ -2763,6 +3044,7 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
     end
 
     -- Marks an envelope's own id and every identity inside it as taken.
+    -- @param envelope table  The envelope.
     local function reserveEnvelope(envelope)
         reserve(envelope.id)
         data.ReserveRotationIdentities(envelope, used)
@@ -2818,8 +3100,9 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
         end
     end
 
-    -- Returns a new identity from the id provider that is well formed and unused, or nil and invalid-id-provider or
-    -- id-collision.
+    -- Returns a new identity from the id provider that is well formed and unused.
+    -- @return string|nil  The identity; nil on failure.
+    -- @return string|nil  'invalid-id-provider' or 'id-collision' when the first return is nil; nil otherwise.
     local function fresh()
         local generatedOk, value = pcall(self.uuid)
 
@@ -2904,9 +3187,14 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
 end
 
 -- Compares a custom rotation with a target (another custom rotation or a Built In) and returns the difference with the
--- views the comparison window shows, or nil and a reason (self-comparison, unknown-rotation,
--- missing-comparison-target...). A clone compared with its own source gets three views (current, source changes, custom
--- changes); anything else gets one.
+-- views the comparison window shows.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id (or reference).
+-- @param target table|string  The target: { kind = 'custom' | 'builtin', id } or a reference.
+-- @return table|nil  The difference, with a `views` list; nil on failure. A clone compared with its own source gets
+--   three views (current, source changes, custom changes); anything else gets one.
+-- @return string|nil  The reason (self-comparison, unknown-rotation, missing-comparison-target...) when the first
+--   return is nil; nil otherwise.
 function addon:BuildRotationComparison(spec, id, target)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -2932,7 +3220,10 @@ function addon:BuildRotationComparison(spec, id, target)
             return nil, why
         end
 
-        -- True when two rotation references name the same rotation.
+        -- Reports whether two rotation references name the same rotation.
+        -- @param a table  The first reference.
+        -- @param b table  The second reference.
+        -- @return boolean  True when they do.
         local function sameAddress(a, b)
             if a.kind ~= b.kind then
                 return false
@@ -3145,9 +3436,17 @@ end
 -- Deleting
 -- ============================================================================
 
--- Deletes a custom rotation and every record kept about it. Built Ins are refused (read-only-rotation). When the
--- rotation being deleted is the one currently running, it is retired first and the glows removed, guarded against a
--- newer transition at each step. Returns true, or nil and a reason.
+-- Deletes a custom rotation and every record kept about it.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id (or reference).
+-- @param expected any  With a scoped store: the record token the caller saw; the delete is refused if the rotation
+--   changed. Read here when nil.
+-- @return boolean|nil  True when deleted; nil on failure.
+-- @return string|nil  The reason (for example read-only-rotation for a Built In) when the first return is nil; nil
+--   otherwise.
+--
+-- When the rotation being deleted is the one currently running, it is retired first and the glows removed, guarded
+-- against a newer transition at each step.
 function addon:DeleteCustomRotation(spec, id, expected)
     local change = beginActive(self)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()

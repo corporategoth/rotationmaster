@@ -49,21 +49,23 @@ addon.BuiltInModules = {
     },
 }
 
--- Returns the load-on-demand module addon name for a class token (for example "RotationMaster_Mage"), or nil for an
--- unknown class or a non-string.
+-- Returns the load-on-demand module addon name for a class token.
+-- @param class string|nil  The class token (for example "MAGE"); any non-string is treated as unknown.
+-- @return string|nil  The module name (for example "RotationMaster_Mage"); nil for an unknown class or a non-string.
 function addon:GetBuiltInModuleName(class)
     local className = type(class) == "string" and addon.BuiltInModules.classes[class]
     return className and "RotationMaster_" .. className or nil
 end
 
--- A load-on-demand addon's files receive its own name and a fresh private
--- namespace, not this addon's. Each module's first file (bind.lua) passes that
--- namespace here; it gains exactly the two registration methods packs call,
--- forwarded to this addon, so pack sources stay `local _,addon=...` unchanged.
--- The global has a fixed name because the main addon's own global follows
--- its folder name, which an install may spell in any case.
--- Gives a module's private namespace the two registration methods packs call. Returns true when the namespace was
--- bound, false for a non-table or for this addon's own namespace (which already has them).
+-- Gives a module's private namespace the two registration methods packs call.
+-- @param namespace table  The private namespace a load-on-demand module received.
+-- @return boolean  True when the namespace was bound; false for a non-table or for this addon's own namespace (which
+--   already has them).
+--
+-- A load-on-demand addon's files receive its own name and a fresh private namespace, not this addon's. Each module's
+-- first file (bind.lua) passes that namespace here; it gains exactly the two registration methods packs call, forwarded
+-- to this addon, so pack sources stay `local _,addon=...` unchanged. The global has a fixed name because the main
+-- addon's own global follows its folder name, which an install may spell in any case.
 local function bind(namespace)
     if type(namespace) ~= "table" or namespace == addon then
         return false
@@ -76,8 +78,11 @@ end
 
 _G.RotationMasterBuiltIns = { Bind = bind }
 
--- True when a value from the client may be inspected: platform:CanReadValue allows it and, where the client has
--- canaccessvalue, that agrees. Guards the class token read from UnitClass.
+-- Reports whether a value from the client may be inspected; guards the class token read from UnitClass.
+-- @param platform table|nil  The Platform adapter; nil makes the answer falsy.
+-- @param value any  The client value to check.
+-- @return boolean|nil  Truthy when platform:CanReadValue allows it and, where the client has canaccessvalue, that
+--   agrees; falsy otherwise.
 local function readable(platform, value)
     return platform and platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
 end
@@ -85,12 +90,13 @@ end
 -- Memo of the one load attempt: whether it ran, the module name that loaded, and the reason nothing loaded.
 local attempted, outcome, outcomeReason
 
--- Loads this character's module once, before the rotation library builds its
--- catalog. Returns the module name (or nil) and why nothing loaded:
--- "no-module" (an unrecognised client), "no-loader" (not a game
--- client), "unknown-class", or the client's LoadAddOn reason (MISSING,
--- DISABLED, ...). A module that cannot load leaves Rotation Master working
--- with no Built Ins and says so once.
+-- Loads this character's class module once, before the rotation library builds its catalog.
+-- @return string|nil  The loaded module name; nil when nothing loaded.
+-- @return string|nil  Why nothing loaded: "no-module" (an unrecognised client), "no-loader" (not a game client),
+--   "unknown-class", or the client's LoadAddOn reason (MISSING, DISABLED, ...); nil on success.
+--
+-- Only the first call does the work; later calls return the memoized outcome. A module that cannot load leaves Rotation
+-- Master working with no Built Ins and says so once.
 function addon:LoadBuiltInModule()
     if attempted then
         return outcome, outcomeReason

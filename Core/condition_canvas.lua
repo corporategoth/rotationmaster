@@ -13,6 +13,8 @@ local _, addon = ...
 -- ============================================================================
 
 -- Returns a new list with the same path parts, so scene records never share a path table with the model.
+-- @param path (string|number)[]  The path to copy.
+-- @return (string|number)[]  The copy.
 local function copy(path)
     local result = {}
 
@@ -23,8 +25,11 @@ local function copy(path)
     return result
 end
 
--- Returns a string key for a condition path, unique per path (parts are type-tagged and escaped). Called as a plain
--- function, not a method.
+-- Returns a string key for a condition path, unique per path (parts are type-tagged and escaped).
+-- @param path (string|number)[]  The keys from the condition root.
+-- @return string  The key that view state (selection, collapsed, expanded) is stored under.
+--
+-- Called as a plain function, not a method.
 function addon.ConditionPathKey(path)
     local result = {}
 
@@ -37,6 +42,9 @@ function addon.ConditionPathKey(path)
 end
 
 -- Returns the node found by following the path from root.
+-- @param root table  The condition root.
+-- @param path (string|number)[]  The keys to follow.
+-- @return any  The value at the end of the path.
 local function at(root, path)
     for _, part in ipairs(path) do
         root = root[part]
@@ -45,7 +53,11 @@ local function at(root, path)
     return root
 end
 
--- Returns a measured size when it is a positive finite number (clamped to maximum), else the fallback.
+-- Returns a measured size clamped to a maximum, or a fallback when the measurement is unusable.
+-- @param value any  The measured size; a positive number is usable, while zero, negatives, NaN and non-numbers are not.
+-- @param fallback number  The size to use when the measurement is unusable.
+-- @param maximum number  The upper bound the measurement is clamped to.
+-- @return number  The clamped measurement or the fallback.
 local function dimension(value, fallback, maximum)
     return type(value) == "number" and value == value and value > 0 and math.min(value, maximum) or fallback
 end
@@ -54,11 +66,21 @@ end
 -- Scene building
 -- ============================================================================
 
--- The input rows come from the bounded draft model. This scene holds plain,
--- detached presentation values; it never calls condition printers or widgets.
--- `view` carries the editor's state and measurements (width, cardStates, collapsed, expanded, selection, label and
--- summary heights, definitions). Returns the scene { cards, cardsByKey, connectors, dropTargets, width, height, ... },
--- or nil and { code = "condition-limit" } when the rows are incomplete or exceed 4096.
+-- Builds the card, connector and drop-target geometry for a condition tree.
+-- @param root table  The condition root.
+-- @param rows table[]  The editor's flat row list (path, depth, disabled, invalidDisabled, name ...) from the bounded
+--   draft model.
+-- @param view table|nil  The editor's state and measurements: width, cardStates, collapsed, expanded, selection, help,
+--   hiddenChildren, label, summary and detail sizes, and definitions.
+-- @param rowsComplete boolean|nil  False when the row list is known to be incomplete.
+-- @return table|nil  The scene { cards, cardsByKey, commandPathsByKey, connectors, connectorsByTo, dropTargets,
+--   dropTargetsByY, maxDropHeight, width, height, complete }; nil when the rows are incomplete or exceed 4096.
+-- @return table|nil  { code = "condition-limit" } when the first return is nil; nil otherwise.
+--
+-- The input rows come from the bounded draft model. This scene holds plain, detached presentation values; it never
+-- calls condition printers or widgets. NOT is stored as a node, but shown as a property of its operand. Both paths are
+-- kept: structural commands act on the outer wrapper; fields act on the underlying operand. This is a projection, never
+-- a data rewrite.
 function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
     if rowsComplete == false or #rows > 4096 then
         return nil, { code = "condition-limit" }
@@ -90,8 +112,11 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
 
     local projected = {}
 
-    -- Flattens one branch into `projected`, folding a chain of NOT nodes into the negated flag of its operand, then
-    -- recurses into the children. `inactive` marks rows under a disabled ancestor as unreachable.
+    -- Flattens one branch into the projected row list, folding a chain of NOT nodes into the negated flag of its
+    -- operand, then recurses into the children.
+    -- @param branch table  The branch { row, node, children } to flatten.
+    -- @param depth number  The depth of the projected row.
+    -- @param inactive boolean|nil  True for rows under a disabled ancestor, which are marked unreachable.
     local function project(branch, depth, inactive)
         local outer = branch
         local count = 0
@@ -99,6 +124,7 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
         local disabledPath, name, namePath
 
         -- Accumulates the disabled flags and the first group name seen along the folded NOT chain.
+        -- @param current table  The branch { row, node, children } to read.
         local function flags(current)
             if current.row.disabled and not disabledPath then
                 disabledPath = copy(current.row.path)
@@ -180,7 +206,8 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
 
     local stack, y, hiddenDepth = {}, 8, nil
 
-    -- Closes every open group at or below `depth`: fixes its final height and grows its width to fit its children.
+    -- Closes every open group at or below a depth: fixes its final height and grows its width to fit its children.
+    -- @param depth number  The depth at or below which groups are closed.
     local function finish(depth)
         while #stack > 0 and stack[#stack].depth >= depth do
             local group = table.remove(stack)
@@ -195,7 +222,12 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
         end
     end
 
-    -- Records a drop target ('before', 'after' or 'inside') for a card; `destination` is what a drop command receives.
+    -- Records a drop target for a card.
+    -- @param card table  The card the target belongs to.
+    -- @param kind string  'before', 'after' or 'inside'.
+    -- @param destination table  What a drop command receives (path, field, index or relation).
+    -- @param top number  The target's top edge.
+    -- @param height number  The target's height.
     local function drop(card, kind, destination, top, height)
         scene.dropTargets[#scene.dropTargets + 1] = {
             cardKey = card.key,
@@ -470,10 +502,17 @@ end
 -- Viewport query
 -- ============================================================================
 
--- Complete geometry is indexed independently of leased native controls. Only
--- nearby rows and their enclosing outlines are needed for a viewport query.
--- Returns the cards that intersect the rectangle, plus their ancestors that do, in card order. Cards are sorted by y,
--- so the start is found by binary search and the scan stops at the first card below the rectangle.
+-- Returns the cards that intersect a rectangle, plus their ancestors that do.
+-- @param scene table  The scene built by BuildConditionCanvas.
+-- @param left number  The left edge of the rectangle, in canvas coordinates.
+-- @param top number  The top edge.
+-- @param right number  The right edge.
+-- @param bottom number  The bottom edge.
+-- @return table[]  The cards in card order.
+--
+-- Complete geometry is indexed independently of leased native controls; only nearby rows and their enclosing outlines
+-- are needed for a viewport query. Cards are sorted by y, so the start is found by binary search and the scan stops at
+-- the first card below the rectangle.
 function addon:GetConditionCanvasViewport(scene, left, top, right, bottom)
     local cards = scene.cards
     local low, high = 1, #cards
@@ -492,6 +531,7 @@ function addon:GetConditionCanvasViewport(scene, left, top, right, bottom)
     local wanted, result = {}, {}
 
     -- Adds the card and each ancestor that intersects the rectangle; stops at one that is already included.
+    -- @param card table|nil  The card to add.
     local function include(card)
         while card do
             if wanted[card.key] then

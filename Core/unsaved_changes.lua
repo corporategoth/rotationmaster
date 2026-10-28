@@ -7,8 +7,14 @@
 
 local _, addon = ...
 
--- Deep structural equality for saved-data tables (cycle-safe through `seen`); true when both sides hold the same keys
--- and values. Used by the editors to decide whether a working copy differs from its baseline.
+-- Deep structural equality for saved-data tables; used by the editors to decide whether a working copy differs from its
+-- baseline.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @param seen table|nil  The cycle guard shared across the recursion; callers leave it nil.
+-- @return boolean  True when both sides hold the same keys and values.
+--
+-- Cycle-safe through `seen`.
 function addon:UnsavedDataEqual(a, b, seen)
     if type(a) ~= type(b) then
         return false
@@ -40,9 +46,11 @@ function addon:UnsavedDataEqual(a, b, seen)
     return true
 end
 
--- Compares a rotation before and after editing. Returns a table with a changed flag per field (name, switch,
--- description, metadata, tags, priority) and `cards[stepId]`, true for a new or modified step, so the editor can mark
--- exactly what carries unsaved edits.
+-- Compares a rotation before and after editing so the editor can mark exactly what carries unsaved edits.
+-- @param before table|nil  The baseline rotation; nil is treated as empty.
+-- @param after table|nil  The working-copy rotation; nil is treated as empty.
+-- @return table  A changed flag per field (name, switch, description, metadata, tags, priority) plus `cards`, a table
+--   keyed by step id that is true for a new or modified step.
 function addon:RotationUnsavedState(before, after)
     before = before or {}
     after = after or {}

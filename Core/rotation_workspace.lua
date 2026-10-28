@@ -18,13 +18,19 @@ local data = addon.RotationData
 -- the same unsaved edits. Keyed by the profile table itself, so a profile switch starts a fresh list.
 local profiles = {}
 
--- True when two plain-data trees are equal by value. Non-portable data is never equal, so it always reads as changed.
+-- Reports whether two plain-data trees are equal by value.
+-- @param a any  The first tree.
+-- @param b any  The second tree.
+-- @return boolean  True when equal. Non-portable data is never equal, so it always reads as changed.
 local function equal(a, b)
     if not data.CheckPortable(a) or not data.CheckPortable(b) then
         return false
     end
 
     -- Recursive by-value comparison of two plain values.
+    -- @param x any  The first value.
+    -- @param y any  The second value.
+    -- @return boolean  True when equal.
     local function compare(x, y)
         if type(x) ~= type(y) then
             return false
@@ -51,14 +57,21 @@ local function equal(a, b)
     return compare(a, b)
 end
 
--- Returns the saved rotation body for a specialization and id in the unscoped layout, or nil.
+-- Returns the saved rotation body for a specialization and id in the unscoped layout.
+-- @param profile table  The profile table.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  The body; nil when there is none.
 local function originalAt(profile, spec, id)
     local list = profile.rotations and profile.rotations[spec]
     return type(list) == 'table' and list[id] or nil
 end
 
--- Returns the library records (origins, comparisons, imports) kept for one saved rotation, so an edit session can keep
--- their identities reserved. Missing kinds are simply absent.
+-- Returns the library records kept for one saved rotation, so an edit session can keep their identities reserved.
+-- @param profile table  The profile table.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table  { origins, comparisons, imports } records; missing kinds are simply absent.
 local function retained(profile, spec, id)
     local result = {}
     local library = profile.rotationLibrary
@@ -82,9 +95,16 @@ end
 -- ============================================================================
 
 -- Returns the edit workspace for a rotation reference in the scoped store, creating it (and caching it for the profile)
--- when none is live. value is anything the coordinator can resolve: a reference, an id, or a legacy draft id. Returns
--- nil and a reason when the rotation is unknown or its snapshot cannot be taken. A workspace is detached from the saved
--- rotation: nothing is written until Apply, and every write goes through the coordinator's compare-and-commit.
+-- when none is live.
+-- @param owner table  The addon.
+-- @param coordinator table  The scoped rotation coordinator.
+-- @param spec number  The specialization ID or talent group.
+-- @param value any  Anything the coordinator can resolve: a reference, an id, or a legacy draft id.
+-- @return table|nil  The workspace; nil when the rotation is unknown or its snapshot cannot be taken.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- A workspace is detached from the saved rotation: nothing is written until Apply, and every write goes through the
+-- coordinator's compare-and-commit.
 local function scopedWorkspace(owner, coordinator, spec, value)
     local reference, why = coordinator:Resolve(spec, value)
 
@@ -160,7 +180,8 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     local baseline = data.CopyData(record.body)
 
     -- Refreshes the derived flags after any change: the effective scope, a pending rotation's staged reference, and
-    -- whether this rotation is the one the specialization currently resolves as its fallback.
+    -- whether
+    -- this rotation is the one the specialization currently resolves as its fallback.
     local function flags()
         workspace.scope = workspace.session and workspace.session:Ownership()
             or (not builtin and workspace.reference.address.scope)
@@ -177,8 +198,9 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         workspace.effectiveFallback = effective and equal(effective, workspace.reference) or false
     end
 
-    -- True while this workspace still edits what it was opened on: not discarded, the same coordinator, and the stored
-    -- rotation unchanged since the snapshot (or, for a new rotation, still pending).
+    -- Reports whether this workspace still edits what it was opened on.
+    -- @return boolean  True while it is not discarded, has the same coordinator, and the stored rotation is unchanged
+    --   since the snapshot (or, for a new rotation, still pending).
     function workspace:ValidTarget()
         if self.discarded or owner:GetScopedRotationCoordinator() ~= coordinator then
             return false
@@ -194,8 +216,12 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     end
 
     -- Opens an edit session over a body, reserving the identities of the saved origin, import and comparison records so
-    -- new ids never collide with them. Returns the session, or nil and a problem code. Commit goes to the coordinator,
-    -- which rejects a write when the stored rotation changed meanwhile.
+    -- new ids never collide with them.
+    -- @param body table  The body to edit.
+    -- @return table|nil  The session; nil on failure.
+    -- @return string|nil  A problem code when the first return is nil; nil otherwise.
+    --
+    -- Commit goes to the coordinator, which rejects a write when the stored rotation changed meanwhile.
     local function sessionFor(body)
         workspace.reserved = {
             origins = data.CopyData(record.origin),
@@ -213,7 +239,8 @@ local function scopedWorkspace(owner, coordinator, spec, value)
             end
         end
 
-        -- Returns an unused uuid, or nil after 100 collisions.
+        -- Allocates an unused uuid.
+        -- @return string|nil  The id; nil after 100 collisions.
         local function fresh()
             for _ = 1, 100 do
                 local id = owner.uuid()
@@ -231,6 +258,12 @@ local function scopedWorkspace(owner, coordinator, spec, value)
             ownership = not builtin and sourceReference.address.scope or nil,
             setOwnershipAllowed = not builtin,
             targetValid = function() return workspace:ValidTarget() end,
+            -- Commit callback of the edit session: writes the candidate through the coordinator, which rejects the
+            -- write when the stored rotation changed meanwhile.
+            -- @param candidate table  The body to save.
+            -- @param scope string|nil  The ownership scope chosen in the editor.
+            -- @return boolean|nil  True when saved; nil on failure.
+            -- @return table|string|nil  The saved reference; the reason when the first return is nil.
             commit = function(candidate, scope)
                 local replacement = {
                     body = candidate,
@@ -260,14 +293,17 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     flags()
 
     -- Returns a copy of the body as edited so far.
+    -- @return table  The copy.
     function workspace:Snapshot()
         flags()
         return self.session:Snapshot()
     end
 
-    -- The class this rotation is for: the owner class of a saved rotation, the
-    -- declared class of a Built In (nil when it declares none, which is the
-    -- player's class). Tree conditions are named for it (Data/talent_trees.lua).
+    -- Returns the class this rotation is for.
+    -- @return string|nil  The owner class of a saved rotation, or the declared class of a Built In; nil when it
+    --   declares none, which is the player's class.
+    --
+    -- Tree conditions are named for it (Data/talent_trees.lua).
     function workspace:RotationClass()
         local address = self.reference and self.reference.address
 
@@ -282,8 +318,9 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         end
     end
 
-    -- Returns the reference this workspace would be saved under, using the chosen scope and the current owner, or nil
-    -- and missing-owner-context when the character or class is unknown.
+    -- Returns the reference this workspace would be saved under, using the chosen scope and the current owner.
+    -- @return table|nil  The reference; nil when the character or class is unknown.
+    -- @return string|nil  'missing-owner-context' when the first return is nil; nil otherwise.
     function workspace:TargetReference()
         local result = data.CopyData(self.reference)
 
@@ -305,8 +342,9 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         return result
     end
 
-    -- Returns what the editor shows about the rotation besides its body: id, reference, scope, kind (builtin or
-    -- custom), metadata and the preserved source records.
+    -- Returns what the editor shows about the rotation besides its body.
+    -- @return table  { id, reference, scope, kind ('builtin' or 'custom'), metadata, source } with the preserved source
+    --   records.
     function workspace:Metadata()
         return {
             id = self.id,
@@ -318,14 +356,21 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         }
     end
 
-    -- True when there are unsaved edits; a Built In is never dirty because it cannot be edited.
+    -- Reports whether there are unsaved edits.
+    -- @return boolean  True when there are; a Built In is never dirty because it cannot be edited.
     function workspace:IsDirty()
         flags()
         return not self.readOnly and self.session:IsDirty()
     end
 
-    -- Runs one edit command on the session. Refuses when the target changed underneath, protects the fallback's name,
-    -- and refuses a character scope with no character context.
+    -- Runs one edit command on the session.
+    -- @param name string  The command name (as for the edit session).
+    -- @param ... any  The command's arguments.
+    -- @return boolean|nil  Whether the command changed something; nil when it was refused.
+    -- @return any  The command's result; the reason code when the first return is nil.
+    --
+    -- Refuses when the target changed underneath, protects the fallback's name, and refuses a character scope with no
+    -- character context.
     function workspace:Command(name, ...)
         if not self:ValidTarget() then
             return nil, 'rotation-target-missing'
@@ -347,9 +392,13 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         return ok, result
     end
 
-    -- Saves the edits through the coordinator. A new rotation needs a real name (not the placeholders). On success the
-    -- workspace re-baselines on the saved record and opens a fresh session, so it can be edited and applied again.
-    -- Returns true, nil, the saved reference; or nil and a reason.
+    -- Saves the edits through the coordinator.
+    -- @return boolean|nil  True when saved; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    -- @return table|nil  The saved reference on success; the session's details (a validation report) on failure.
+    --
+    -- A new rotation needs a real name (not the placeholders). On success the workspace re-baselines on the saved
+    -- record and opens a fresh session, so it can be edited and applied again.
     function workspace:Apply()
         if self.pending and not self.fallback then
             local name = self:Snapshot().name
@@ -387,6 +436,8 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     end
 
     -- Throws away the unsaved edits by swapping in a session over the baseline; the saved rotation is untouched.
+    -- @return boolean|nil  True when discarded; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function workspace:Discard()
         if not self:ValidTarget() then
             return nil, 'rotation-target-missing'
@@ -404,13 +455,17 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         return true
     end
 
-    -- Returns the target the condition editor works on for the switch or one step: a detached copy of the condition, a
-    -- validity check that fails if the session or condition changed meanwhile, and a commit that writes the result back
-    -- through SetCondition. Read-only workspaces refuse the commit.
+    -- Returns the target the condition editor works on for the switch or one step.
+    -- @param target table|string  { kind = 'switch' } for the switch condition, or a step id.
+    -- @return table|nil  { condition = a detached copy of the condition, readOnly, valid = a validity check that fails
+    --   if the session or condition changed meanwhile, commit = a function that writes the result back through
+    --   SetCondition }; nil when the step is missing. Read-only workspaces refuse the commit.
+    -- @return string|nil  'missing-rotation-step' when the first return is nil; nil otherwise.
     function workspace:ConditionEditorTarget(target)
         local captured = self.session
 
         -- Reads the targeted condition tree from the captured session's current snapshot.
+        -- @return table|nil  The condition tree; nil when the step is missing.
         local function condition()
             local body = captured:Snapshot()
 
@@ -431,7 +486,8 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
         local committed = false
 
-        -- True while the editor's target is still the same session, unchanged and not yet committed.
+        -- Reports whether the editor's target is still the same session, unchanged and not yet committed.
+        -- @return boolean  True while it is.
         local function valid()
             return not committed and workspace.session == captured and workspace:ValidTarget() and equal(
                 baselineCondition,
@@ -443,6 +499,11 @@ local function scopedWorkspace(owner, coordinator, spec, value)
             condition = data.CopyData(baselineCondition),
             readOnly = self.readOnly,
             valid = valid,
+            -- Writes the edited condition back through the SetCondition command.
+            -- @param edited table  The edited condition tree.
+            -- @return boolean|nil  Whether the command changed something; nil when refused.
+            -- @return string|nil  'readonly-rotation', 'condition-target-changed' or the command's own reason when
+            --   refused.
             commit = function(edited)
                 if workspace.readOnly then
                     return nil, 'readonly-rotation'
@@ -470,9 +531,14 @@ end
 -- Unscoped workspaces
 -- ============================================================================
 
--- Returns the edit workspace for a rotation id in a specialization. With a scoped store this defers to scopedWorkspace;
--- otherwise it works directly on profile.rotations (the pre-scope layout), where a Built In is read-only and a new
--- rotation is saved into the profile table on Apply. Returns nil and a reason code when the target is invalid.
+-- Returns the edit workspace for a rotation id in a specialization.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  The workspace; nil when the target is invalid.
+-- @return string|nil  A reason code when the first return is nil; nil otherwise.
+--
+-- With a scoped store this defers to scopedWorkspace; otherwise it works directly on profile.rotations (the pre-scope
+-- layout), where a Built In is read-only and a new rotation is saved into the profile table on Apply.
 function addon:GetRotationEditWorkspace(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -550,8 +616,9 @@ function addon:GetRotationEditWorkspace(spec, id)
         value.name = source.name
     end
 
-    -- True while the profile and its rotation table are the ones this workspace was opened on and the rotation is
-    -- unchanged.
+    -- Reports whether this workspace still edits what it was opened on.
+    -- @return boolean  True while the profile and its rotation table are the ones this workspace was opened on and the
+    --   rotation is unchanged.
     function workspace:ValidTarget()
         if self.discarded or addon.db.profile ~= profile or profile.rotations ~= capturedRoot then
             return false
@@ -564,6 +631,9 @@ function addon:GetRotationEditWorkspace(spec, id)
     end
 
     -- Opens an edit session over a body, bound to this workspace's validity and reserved identities.
+    -- @param body table  The body to edit.
+    -- @return table|nil  The session; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     local function sessionFor(body)
         return addon:NewRotationEditSession(spec, body, {
             readOnly = workspace.readOnly,
@@ -590,12 +660,14 @@ function addon:GetRotationEditWorkspace(spec, id)
     workspace.session = session
 
     -- Returns a copy of the body as edited so far.
+    -- @return table  The copy.
     function workspace:Snapshot()
         return self.session:Snapshot()
     end
 
-    -- Returns what the editor shows about the rotation besides its body: id, kind, metadata and the source envelope or
-    -- reserved records.
+    -- Returns what the editor shows about the rotation besides its body.
+    -- @return table  { id, kind ('builtin' or 'custom'), metadata, source } with the source envelope or reserved
+    --   records.
     function workspace:Metadata()
         return {
             id = id,
@@ -605,12 +677,17 @@ function addon:GetRotationEditWorkspace(spec, id)
         }
     end
 
-    -- True when there are unsaved edits; never for a Built In.
+    -- Reports whether there are unsaved edits.
+    -- @return boolean  True when there are; never for a Built In.
     function workspace:IsDirty()
         return not self.readOnly and self.session:IsDirty()
     end
 
     -- Runs one edit command on the session, refusing it when the target changed or when it would rename the fallback.
+    -- @param name string  The command name (as for the edit session).
+    -- @param ... any  The command's arguments.
+    -- @return boolean|nil  Whether the command changed something; nil when it was refused.
+    -- @return any  The command's result; the reason code when the first return is nil.
     function workspace:Command(name, ...)
         if not self:ValidTarget() then
             return nil, 'rotation-target-missing'
@@ -622,8 +699,10 @@ function addon:GetRotationEditWorkspace(spec, id)
         return self.session:Command(name, ...)
     end
 
-    -- Applies the session and, for a new rotation, stores the body in the profile table. Returns true, or nil and a
-    -- reason.
+    -- Applies the session and, for a new rotation, stores the body in the profile table.
+    -- @return boolean|nil  True when applied; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    -- @return table|nil  The session's details (a validation report) on failure.
     function workspace:Apply()
         if self.pending and id ~= DEFAULT then
             local name = self:Snapshot().name
@@ -659,6 +738,8 @@ function addon:GetRotationEditWorkspace(spec, id)
     end
 
     -- Throws away the unsaved edits by swapping in a session over the stored body.
+    -- @return boolean|nil  True when discarded; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function workspace:Discard()
         if not self:ValidTarget() then
             return nil, 'rotation-target-missing'
@@ -676,10 +757,14 @@ function addon:GetRotationEditWorkspace(spec, id)
     end
 
     -- Returns the condition editor target for the switch or one step; same contract as the scoped workspace's.
+    -- @param target table|string  { kind = 'switch' } for the switch condition, or a step id.
+    -- @return table|nil  { condition, readOnly, valid, commit }; nil when the step is missing.
+    -- @return string|nil  'missing-rotation-step' when the first return is nil; nil otherwise.
     function workspace:ConditionEditorTarget(target)
         local sessionToken = self.session
 
         -- Reads the targeted condition tree from the captured session's current snapshot.
+        -- @return table|nil  The condition tree; nil when the step is missing.
         local function condition()
             local snapshot = sessionToken:Snapshot()
 
@@ -700,7 +785,8 @@ function addon:GetRotationEditWorkspace(spec, id)
 
         local committed = false
 
-        -- True while the editor's target is still the same session, unchanged and not yet committed.
+        -- Reports whether the editor's target is still the same session, unchanged and not yet committed.
+        -- @return boolean  True while it is.
         local function valid()
             return not committed and workspace.session == sessionToken and workspace:ValidTarget() and equal(
                 baseline,
@@ -712,6 +798,11 @@ function addon:GetRotationEditWorkspace(spec, id)
             condition = data.CopyData(baseline),
             readOnly = self.readOnly,
             valid = valid,
+            -- Writes the edited condition back through the SetCondition command.
+            -- @param edited table  The edited condition tree.
+            -- @return boolean|nil  Whether the command changed something; nil when refused.
+            -- @return string|nil  'readonly-rotation', 'condition-target-changed' or the command's own reason when
+            --   refused.
             commit = function(edited)
                 if workspace.readOnly then
                     return nil, 'readonly-rotation'
@@ -739,11 +830,16 @@ end
 -- Import preview, lookup and drafts
 -- ============================================================================
 
--- A detached, read-only workspace for an incoming rotation (an import preview).
--- The editor draws it exactly as it draws a Built In, but it belongs to no
--- profile: it is a private copy of the candidate, never cached, listed or
--- resolved by reference, and every write is refused. Close it when the window
--- that shows it closes.
+-- Creates a detached, read-only workspace for an incoming rotation (an import preview).
+-- @param spec number  The specialization ID or talent group.
+-- @param preview table  { body, manifest } of the candidate.
+-- @return table|nil  The workspace; nil when there is nothing previewable.
+-- @return string|nil  The reason ('no-previewable-body' or a copy failure code) when the first return is nil; nil
+--   otherwise.
+--
+-- The editor draws it exactly as it draws a Built In, but it belongs to no profile: it is a private copy of the
+-- candidate, never cached, listed or resolved by reference, and every write is refused. Close it when the window that
+-- shows it closes.
 function addon:NewRotationPreviewWorkspace(spec, preview)
     if type(spec) ~= 'number' or type(preview) ~= 'table' or type(preview.body) ~= 'table' then
         return nil, 'no-previewable-body'
@@ -786,17 +882,20 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
         reserved = manifest and { imports = { manifest = manifest } } or {},
     }
 
-    -- True until the preview is closed.
+    -- Reports whether the preview is still open.
+    -- @return boolean  True until the preview is closed.
     function workspace:ValidTarget()
         return not self.closed
     end
 
     -- Returns a copy of the previewed body.
+    -- @return table  The copy.
     function workspace:Snapshot()
         return self.session:Snapshot()
     end
 
     -- Returns the preview's metadata and the import manifest, if any.
+    -- @return table  { id, kind = 'preview', metadata, source }.
     function workspace:Metadata()
         return {
             id = self.id,
@@ -806,22 +905,29 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
         }
     end
 
-    -- A preview is never dirty.
+    -- Reports whether there are unsaved edits.
+    -- @return boolean  Always false: a preview is never dirty.
     function workspace:IsDirty()
         return false
     end
 
-    -- Every write to a preview is refused.
+    -- Refuses every write to a preview.
+    -- @return nil  Always nil.
+    -- @return string  'readonly-rotation'.
     function workspace:Command()
         return nil, 'readonly-rotation'
     end
 
-    -- Refused: a preview cannot be applied.
+    -- Refuses to apply: a preview cannot be applied.
+    -- @return nil  Always nil.
+    -- @return string  'readonly-rotation'.
     function workspace:Apply()
         return nil, 'readonly-rotation'
     end
 
-    -- Refused: a preview has nothing to discard.
+    -- Refuses to discard: a preview has nothing to discard.
+    -- @return nil  Always nil.
+    -- @return string  'readonly-rotation'.
     function workspace:Discard()
         return nil, 'readonly-rotation'
     end
@@ -835,8 +941,12 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
     end
 
     -- Returns a read-only condition target for the previewed switch or step; commit is always refused.
+    -- @param target table|string  { kind = 'switch' } for the switch condition, or a step id.
+    -- @return table|nil  { condition, readOnly = true, valid, commit }; nil when the step is missing.
+    -- @return string|nil  'missing-rotation-step' when the first return is nil; nil otherwise.
     function workspace:ConditionEditorTarget(target)
         -- Reads the targeted condition tree from the preview's current snapshot.
+        -- @return table|nil  The condition tree; nil when the step is missing.
         local function condition()
             local snapshot = self.session:Snapshot()
 
@@ -866,8 +976,10 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
     return workspace
 end
 
--- Returns the live, still-valid workspace already open for a specialization and id or reference, or nil. It never
--- creates one.
+-- Returns the live, still-valid workspace already open for a specialization and id or reference. It never creates one.
+-- @param spec number  The specialization ID or talent group.
+-- @param value any  A rotation id or reference.
+-- @return table|nil  The workspace; nil when none is open.
 function addon:GetRotationWorkspace(spec, value)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     local reference = scoped and scoped:Resolve(spec, value)
@@ -883,9 +995,13 @@ function addon:GetRotationWorkspace(spec, value)
     end
 end
 
--- Throws away a new rotation that was never saved: it leaves the roster and
--- cannot be selected or applied any more. Saved rotations, Built Ins and the
--- fallback are refused. Safe to repeat.
+-- Throws away a new rotation that was never saved: it leaves the roster and cannot be selected or applied any more.
+-- @param workspace table  The workspace of the new rotation.
+-- @return boolean|nil  True when discarded (also when it already was); nil on failure.
+-- @return string|nil  'invalid-rotation-target', 'not-a-new-rotation' (saved rotations, Built Ins and the fallback are
+--   refused) or the coordinator's reason when the first return is nil; nil otherwise.
+--
+-- Safe to repeat.
 function addon:DiscardPendingRotation(workspace)
     if type(workspace) ~= 'table' then
         return nil, 'invalid-rotation-target'
@@ -926,6 +1042,9 @@ end
 
 -- Returns one list row for every new, unsaved rotation open for the specialization, so the browser can show it beside
 -- the saved ones.
+-- @param spec number  The specialization ID or talent group.
+-- @return table[]  The rows { id, key, reference, canonicalId, scope, pending, fallback, effectiveFallback, name,
+--   presentation }.
 function addon:ListPendingRotationDrafts(spec)
     local result = {}
 

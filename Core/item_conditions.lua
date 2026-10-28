@@ -13,20 +13,27 @@ local platform = addon.Platform
 -- Reference validation
 -- ============================================================================
 
--- True for a number that is a real, non-negative, non-infinite value (rejects NaN).
+-- Reports whether a value is a real, non-negative, non-infinite number.
+-- @param value any  The value to test.
+-- @return boolean  True for such a number; NaN, negatives, infinities and non-numbers give false.
 local function finite(value)
     return type(value) == 'number' and value == value and value >= 0 and value < math.huge
 end
 
--- True for one acceptable list entry: a positive integer item id, or a non-empty item name string of at most 1024
--- bytes.
+-- Reports whether a value is one acceptable item-list entry.
+-- @param value any  The candidate entry.
+-- @return boolean  True for a positive integer item id, or a non-empty item name string of at most 1024 bytes.
 local function item(value)
     return type(value) == 'number' and finite(value) and value > 0 and value % 1 == 0
         or type(value) == 'string' and #value > 0 and #value <= 1024
 end
 
--- True when `value` is a usable item reference: a short string naming an item set, or a plain (no metatable) dense
--- list of at most 512 entries, each passing item(). Bounds the size of anything a saved condition can make us walk.
+-- Reports whether a value is a usable item reference.
+-- @param value any  The candidate reference.
+-- @return boolean  True for a short string (at most 128 bytes) naming an item set, or a plain (no metatable) dense list
+--   of at most 512 entries, each passing item().
+--
+-- Bounds the size of anything a saved condition can make us walk.
 function addon:IsConditionItemReference(value)
     if type(value) == 'string' then
         return #value > 0 and #value <= 128
@@ -53,8 +60,11 @@ end
 -- Item list resolution
 -- ============================================================================
 
--- Resolves a reference to its list: a table is returned as is, a string is looked up as an item set, per-character
--- sets first and then global ones. Returns the list, or nil and 'invalid-item-reference' / 'item-set-unavailable'.
+-- Resolves an item reference to its item list.
+-- @param reference string|table  An item set name or an item list.
+-- @return table|nil  The list: a table reference is returned as is, a string is looked up as an item set (per-character
+--   sets first and then global ones); nil when it cannot be resolved.
+-- @return string|nil  'invalid-item-reference' or 'item-set-unavailable' when the first return is nil; nil otherwise.
 function addon:GetConditionItemList(reference)
     if not self:IsConditionItemReference(reference) then
         return nil, 'invalid-item-reference'
@@ -83,13 +93,27 @@ function addon:GetConditionItemList(reference)
 end
 
 -- Calls a Platform reader through the evaluation cache so one poll asks the game for each answer at most once.
+-- @param cache table|nil  The evaluation cache.
+-- @param method function  The Platform method to call; the Platform is passed as its self.
+-- @param ... any  The remaining arguments for the method.
+-- @return any  The reader's results, passed through from the cache (value, or nil then a reason).
 local function read(cache, method, ...)
     return addon.Functions.cache.getCached(cache, method, platform, ...)
 end
 
 -- Picks the item a condition should judge: the first list entry that is carried (or, with `equipped`, worn).
--- Returns id and count, or nil, nil and a reason when a read is unavailable. When nothing is held it returns the first
--- entry only if `notcarrying` is set, with a count of 0, so conditions can still describe an item the player lacks.
+-- @param list table  A resolved item list.
+-- @param cache table|nil  The evaluation cache.
+-- @param equipped boolean|nil  True to also accept an entry that is worn.
+-- @param notcarrying boolean|nil  True to fall back to the first entry when nothing is held.
+-- @return number|nil  The item id; nil when a read is unavailable, or when nothing is held and `notcarrying` is not
+--   set.
+-- @return number|nil  The carried count (0 for a worn item or the notcarrying fallback); nil when a read is
+--   unavailable.
+-- @return string|nil  The reason when a read is unavailable; only returned (as a third value) in that case.
+--
+-- When nothing is held it returns the first entry only if `notcarrying` is set, with a count of 0, so conditions can
+-- still describe an item the player lacks.
 local function selectItem(list, cache, equipped, notcarrying)
     local first
 
@@ -129,12 +153,18 @@ end
 -- Condition evaluation
 -- ============================================================================
 
--- ITEM_COOLDOWN with a slot: the cooldown left on whatever is equipped in that
--- trinket slot, so one rotation works for every trinket. The equipped item
--- comes from the build context (refreshed on equipment changes, so no native
--- read per evaluation); its cooldown is read fresh through the same reader as
--- an item named in the condition. An empty slot is false; a trinket with no
--- on-use effect has no cooldown to read and is unavailable, never a confident zero.
+-- Evaluates ITEM_COOLDOWN for a trinket slot: the cooldown left on whatever is equipped in that slot.
+-- @param self table  The addon.
+-- @param value table  The condition value (slot, operator, value).
+-- @param cache table|nil  The evaluation cache.
+-- @param now number  The poll's GetTime value.
+-- @return boolean|nil  The comparison result; false for an empty slot; nil when a read is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- One rotation works for every trinket. The equipped item comes from the build context (refreshed on equipment changes,
+-- so no native read per evaluation); its cooldown is read fresh through the same reader as an item named in the
+-- condition. An empty slot is false; a trinket with no on-use effect has no cooldown to read and is unavailable, never
+-- a confident zero.
 local function slotCooldown(self, value, cache, now)
     if not self.GetEquippedSlotInfo then
         return nil, 'build-context-unavailable'
@@ -170,8 +200,13 @@ local function slotCooldown(self, value, cache, now)
     return self.Functions.values.compare(value.operator, self.Functions.values.round(remaining, 3), value.value)
 end
 
--- Evaluates one item condition by tag for Conditions/item.lua. `now` is the poll's GetTime value and must pass
--- platform:CanReadValue before it is compared. Returns true or false, or nil and a reason when any read is unavailable.
+-- Evaluates one item condition by tag for Conditions/item.lua.
+-- @param tag string  The condition tag: EQUIPPED, CARRYING, ITEM, ITEM_RANGE or ITEM_COOLDOWN.
+-- @param value table  The condition value (item, slot, operator, value, notcarrying).
+-- @param cache table|nil  The evaluation cache.
+-- @param now number  The poll's GetTime value; it must pass platform:CanReadValue before it is compared.
+-- @return boolean|nil  The condition's answer; nil when any read is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function addon:EvaluateItemCondition(tag, value, cache, now)
     if tag == 'ITEM_COOLDOWN' and value.slot ~= nil then
         return slotCooldown(self, value, cache, now)

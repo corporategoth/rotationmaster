@@ -24,8 +24,11 @@ local functions = {
 local kinds = { string = true, number = true, boolean = true, condition = true, ['condition[]'] = true }
 local legacy = '{ string, { string, number } }'
 
--- True when key is a legal custom condition tag: only letters, digits and underscore, not a grammar keyword, and at
--- most 256 characters unless compatibility is set (loading data saved before the limit existed).
+-- Reports whether a key is a legal custom condition tag.
+-- @param key any  The candidate tag.
+-- @param compatibility boolean|nil  True when loading data saved before the length limit existed.
+-- @return boolean  True when key is a string of only letters, digits and underscore, not a grammar keyword (AND, OR,
+--   NOT, DELETE), and at most 256 characters unless compatibility is set.
 function addon:IsCustomConditionIdentifier(key, compatibility)
     return type(key) == 'string'
         and (compatibility or #key <= 256)
@@ -33,15 +36,24 @@ function addon:IsCustomConditionIdentifier(key, compatibility)
         and not ({ AND = true, OR = true, NOT = true, DELETE = true })[key]
 end
 
--- Validates a custom condition field schema and returns a fresh normalized copy, or nil and a reason code
--- (schema-limit, unknown-field-type, invalid-schema, invalid-field-name, invalid-schema-shape). The copy never shares
--- tables with the input. compatibility raises the size limits so existing saved schemas keep loading.
+-- Validates a custom condition field schema.
+-- @param fields table  The schema to validate.
+-- @param compatibility boolean|nil  True to raise the size limits so existing saved schemas keep loading.
+-- @return table|nil  A fresh normalized copy that never shares tables with the input; nil when invalid.
+-- @return string|nil  The reason code (schema-limit, unknown-field-type, invalid-schema, invalid-field-name,
+--   invalid-schema-shape) when the first return is nil; nil otherwise.
 function addon:NormalizeCustomFieldSchema(fields, compatibility)
     local active, nodes = {}, 0
     local visit
 
-    -- Validates one schema node and returns a normalized copy, or nil and a reason. Counts nodes and tracks the tables
-    -- on the current path, so size limits and cycles are refused.
+    -- Validates one schema node and returns a normalized copy.
+    -- @param value any  The node to validate.
+    -- @param depth number  The nesting depth of the node (0 for the root).
+    -- @param root boolean  True for the root node, which must be a table.
+    -- @return table|string|nil  The normalized node; nil when invalid.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- Counts nodes and tracks the tables on the current path, so size limits and cycles are refused.
     visit = function(value, depth, root)
         nodes = nodes + 1
 
@@ -107,9 +119,13 @@ function addon:NormalizeCustomFieldSchema(fields, compatibility)
     return visit(fields, 0, true)
 end
 
--- Decodes and validates a pasted custom condition (bare, or in the RM-CustomCondition envelope). Returns
--- { name = ..., condition = copy }, or nil and a localized reason. Nothing is saved or executed here, and every
--- member is checked, so unknown keys and non-string code are refused.
+-- Decodes and validates a pasted custom condition (bare, or in the RM-CustomCondition envelope).
+-- @param text string  The pasted text.
+-- @param codec table  The codec whose Decode(text) method decodes it.
+-- @return table|nil  { name = string|nil, condition = table } where name is set only for an envelope; nil when invalid.
+-- @return string|nil  The localized reason when the first return is nil; nil otherwise.
+--
+-- Nothing is saved or executed here, and every member is checked, so unknown keys and non-string code are refused.
 function addon:ParseCustomConditionImport(text, codec)
     local decoded, why = codec:Decode(text)
 

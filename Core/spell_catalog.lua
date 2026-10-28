@@ -24,12 +24,15 @@ local ordered, groupVersion, memberNames = {}, {}, {}
 
 -- Retires the cached ordering of a name group and bumps its version, so a sort being built while the group changes is
 -- discarded instead of published.
+-- @param key string  The lower-cased spell name that identifies the group.
 local function invalidateGroup(key)
     ordered[key] = nil
     groupVersion[key] = (groupVersion[key] or 0) + 1
 end
 
 -- Returns a new array with the same ids, so callers never hold the cached ordering.
+-- @param ids number[]  The ids to copy.
+-- @return number[]  The copy.
 local function copyIDs(ids)
     local result = {}
 
@@ -40,12 +43,17 @@ local function copyIDs(ids)
     return result
 end
 
--- Returns the numeric part of a spell's rank text ("Rank 3" gives 3), or 0 when it has none.
+-- Returns the numeric part of a spell's rank text ("Rank 3" gives 3).
+-- @param entry table  The index entry; its `rank` text may be nil.
+-- @return number  The rank number, or 0 when it has none.
 local function rankNumber(entry)
     return tonumber((entry.rank or ""):match("%d+")) or 0
 end
 
 -- Sort order for ids that share a name: higher rank first, then the higher id.
+-- @param left number  The first spell id.
+-- @param right number  The second spell id.
+-- @return boolean  True when `left` sorts before `right`.
 local function preferred(left, right)
     local a, b = rankNumber(entries[left]), rankNumber(entries[right])
 
@@ -60,8 +68,12 @@ end
 -- Catalog queries
 -- ============================================================================
 
--- Reads the spell's metadata from the platform into the index and returns true, or nil and a reason when the id is
--- invalid or unknown. Replaces the entry and re-files it when the name changed. Safe to call repeatedly.
+-- Reads a spell's metadata from the platform into the index.
+-- @param id number  The spell id; a non-positive or non-whole number is invalid.
+-- @return boolean|nil  True when the entry was stored; nil when the id is invalid or unknown.
+-- @return string|nil  The platform's reason when the id is unknown; nil on success or an invalid id.
+--
+-- Replaces the entry and re-files it when the name changed. Safe to call repeatedly.
 function catalog:UpdateSpell(id)
     if type(id) ~= "number" or id < 1 or id == math.huge or id % 1 ~= 0 then
         return nil
@@ -108,8 +120,11 @@ function catalog:UpdateSpell(id)
     return true
 end
 
--- Returns every indexed id that shares the name of a spell id or name string, best rank first, or nil when nothing
--- matches. The result is a private copy; the sorted view is cached until the group's membership changes.
+-- Returns every indexed id that shares the name of a spell id or name string.
+-- @param spell number|string  A spell id (indexed on demand) or a spell name.
+-- @return number[]|nil  The ids, best rank first; nil when nothing matches.
+--
+-- The result is a private copy; the sorted view is cached until the group's membership changes.
 function catalog:GetAllSpellIds(spell)
     local name
 
@@ -155,8 +170,16 @@ function catalog:GetAllSpellIds(spell)
     return result
 end
 
--- Resolves a spell id or name to one id. Without a rank it asks the native name resolver which id is current; with a
--- rank it returns the id whose rank text matches. Returns nil, reason when the platform could not answer.
+-- Resolves a spell id or name to one id.
+-- @param spell number|string  A spell id or name.
+-- @param rank string|nil  The rank text to match; nil asks the native name resolver for the current id.
+-- @return number|nil  The spell id; nil when nothing matches or the platform could not answer.
+-- @return string|nil  The platform's reason ("restricted-value", "api-error" or "spell-data-unavailable") when it could
+--   not answer; nil otherwise.
+--
+-- Without a rank it asks the native name resolver which id is current; with a rank it returns the id whose rank text
+-- matches. This preserves the native name resolver's canonical/override choice rather than assuming the highest indexed
+-- metadata rank is currently learned.
 function catalog:GetSpellId(spell, rank)
     local ids = self:GetAllSpellIds(spell)
 
@@ -198,7 +221,10 @@ function catalog:GetSpellId(spell, rank)
     end
 end
 
--- Returns the spell's display name, with its rank appended in gray unless norank is set; nil when unknown.
+-- Returns a spell's display name.
+-- @param id number  The spell id.
+-- @param norank boolean|nil  True to leave the rank off.
+-- @return string|nil  The name, with its rank appended in gray unless norank is set; nil when unknown.
 function catalog:SpellName(id, norank)
     if not entries[id] then
         self:UpdateSpell(id)
@@ -215,7 +241,9 @@ function catalog:SpellName(id, norank)
     end
 end
 
--- Returns the spell link, from the index when present, else straight from the platform.
+-- Returns a spell's link, from the index when present, else straight from the platform.
+-- @param id number  The spell id.
+-- @return string|nil  The spell hyperlink; nil when none is available.
 function catalog:SpellLink(id)
     if not entries[id] then
         self:UpdateSpell(id)
@@ -224,7 +252,9 @@ function catalog:SpellLink(id)
     return entries[id] and entries[id].link or addon.Platform:GetSpellLink(id)
 end
 
--- Returns the rank text of an indexed spell, or nil.
+-- Returns the rank text of an indexed spell.
+-- @param id number  The spell id.
+-- @return string|nil  The rank text; nil when the spell is unknown or has none.
 function catalog:SpellRank(id)
     if not entries[id] then
         self:UpdateSpell(id)
@@ -233,7 +263,9 @@ function catalog:SpellRank(id)
     return entries[id] and entries[id].rank
 end
 
--- Returns the numeric rank of an indexed spell, or 0.
+-- Returns the numeric rank of an indexed spell.
+-- @param id number  The spell id.
+-- @return number  The rank number, or 0.
 function catalog:SpellRankNum(id)
     if not entries[id] then
         self:UpdateSpell(id)
@@ -246,13 +278,15 @@ end
 -- Spellbook snapshot
 -- ============================================================================
 
--- Rotation keys a spec-agnostic spellbook entry also belongs to. On clients
--- whose rotations are keyed by specialization ID (Retail, Forever), the General
--- and Class skill lines are shared by every specialization of the class, and
--- so is a line for a specialization that is not one of them: below level 10
--- the active "initial" specialization (index > GetNumSpecializations(),
--- Blizzard_SharedXML/UnitUtil.lua IsInitialSpec) has its own ID that no
--- rotation is ever keyed by. Other clients key rotations by talent group or a
+-- Finds the rotation keys a spec-agnostic spellbook entry also belongs to.
+-- @param self table  The addon, whose Platform is queried.
+-- @return table|nil  { list = number[], set = table<number, boolean> } of specialization ids; nil when this client keys
+--   rotations another way or the class cannot be read.
+--
+-- On clients whose rotations are keyed by specialization ID (Retail, Forever), the General and Class skill lines are
+-- shared by every specialization of the class, and so is a line for a specialization that is not one of them: below
+-- level 10 the active "initial" specialization (index > GetNumSpecializations(), Blizzard_SharedXML/UnitUtil.lua
+-- IsInitialSpec) has its own ID that no rotation is ever keyed by. Other clients key rotations by talent group or a
 -- single key and keep the current-spec attribution only.
 local function sharedSpecs(self)
     local platform = self.Platform
@@ -300,8 +334,10 @@ local function sharedSpecs(self)
     return { list = list, set = set }
 end
 
--- Rebuilds addon.specSpells and addon.specSpellsReverse (spec key to spell id set, and spec key to name to best id)
--- from a fresh spellbook snapshot and returns addon.spellBookStatus (per bank completeness, reason and coverage). A
+-- Rebuilds the spellbook snapshot from a fresh read.
+-- @return table  addon.spellBookStatus: per bank ("player", "pet") completeness, reason and coverage.
+--
+-- Rebuilds addon.specSpells and addon.specSpellsReverse (spec key to spell id set, and spec key to name to best id). A
 -- bank whose observation was incomplete contributes nothing, and nothing of the old snapshot is carried over.
 function addon:RefreshSpellCatalog()
     local snapshot = self.Platform:GetSpellBookSnapshot()
@@ -316,6 +352,8 @@ function addon:RefreshSpellCatalog()
     local shared = sharedSpecs(self)
 
     -- Files a spell id under a specialization key and remembers the best id for its name.
+    -- @param spec number|string  The specialization key (or the pet book key).
+    -- @param id number  The spell id.
     local function add(spec, id)
         spells[spec] = spells[spec] or {}
         reverse[spec] = reverse[spec] or {}
@@ -333,6 +371,8 @@ function addon:RefreshSpellCatalog()
 
     -- Files a spellbook entry under a specialization key, along with the base of an active override, which is the same
     -- book entry.
+    -- @param spec number|string  The specialization key (or the pet book key).
+    -- @param entry table  The spellbook entry (spellID, baseSpellID).
     local function attribute(spec, entry)
         add(spec, entry.spellID)
 
@@ -403,6 +443,9 @@ function addon:RefreshSpellCatalog()
     return self.spellBookStatus
 end
 
+-- Returns a detached snapshot of the indexed spell metadata.
+-- @return table[]  One { id, name, rank, icon, link } record per indexed spell, in no particular order.
+--
 -- Detached metadata snapshots support owned search without exposing the index.
 function catalog:GetIndexedSpells()
     local result = {}
@@ -421,6 +464,8 @@ do
     local ownedUpdate = catalog.UpdateSpell
 
     -- Counts the keys of a map, stopping at 4096 so a capture never walks a huge table.
+    -- @param map table  The map to count.
+    -- @return table  { n = number (at most 4096), capped = boolean }.
     local function count(map)
         local n, key = 0, nil
 

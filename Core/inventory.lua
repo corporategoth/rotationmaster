@@ -8,12 +8,16 @@
 
 local _, addon = ...
 
--- Keep the legacy snapshot shape for custom/UI consumers while publishing only
--- complete, normalized bag observations. Runtime item predicates query Platform.
 -- Rebuilds addon.bagContents from the carried-bag snapshot, keyed by item id with count, use-spell name, and the slot
--- and bag/slot locations. Returns true on success. On failure it clears the table, records the reason in
--- addon.bagContentsUnavailable and returns false, reason, so a stale snapshot is never read. The snapshot is session
--- data and is never saved. Runs on the poll path, so the shared evaluation cache is passed through.
+-- and bag/slot locations.
+-- @param cache table|nil  The per-poll evaluation cache the snapshot read goes through; nil reads uncached.
+-- @return boolean  True when the snapshot was rebuilt; false when the bag snapshot is unavailable.
+-- @return string|nil  The reason the snapshot is unavailable (default 'inventory-unavailable'); nil on success.
+--
+-- Keeps the legacy snapshot shape for custom/UI consumers while publishing only complete, normalized bag observations.
+-- Runtime item predicates query Platform directly. On failure it clears the table and records the reason in
+-- addon.bagContentsUnavailable, so a stale snapshot is never read. The snapshot is session data and is never saved.
+-- Runs on the poll path, so the shared evaluation cache is passed through.
 function addon:UpdateBagContents(cache)
     local snapshot, reason = self.Functions.cache.getCached(cache, self.Platform.GetBagSnapshot, self.Platform)
 

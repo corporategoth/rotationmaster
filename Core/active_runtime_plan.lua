@@ -46,8 +46,12 @@ end
 
 local glowCooldown, presentationEnvironment
 
--- buttons.lua consumes this receiver before its library callbacks, then sends
--- the literal method immediately after definition. Never recapture a live field.
+-- Captures the presentation method (GlowCooldown) and its environment, once.
+-- @param method function  The original GlowCooldown method.
+-- @param env table  The environment GlowCooldown was defined in.
+--
+-- buttons.lua consumes this receiver before its library callbacks, then sends the literal method immediately after
+-- definition. Never recapture a live field. Ignored when not called on the addon or when already captured.
 function addon:BindActiveRuntimePresentationSource(method, env)
     if self ~= addon or glowCooldown ~= nil or kind(method) ~= 'function' or kind(env) ~= 'table' then
         return
@@ -64,9 +68,11 @@ local spellIDs, sequence, mainEnvironment, registered
 local request, plan, planGeneration
 local plansBuilt, reused, declined, currentRoute = 0, 0, 0, 'idle'
 
--- True only while every function this plan depends on (glow, spell-id lookup, sequence evaluator, announcement
--- dispatch) is still the exact original value with its original environment. Any swapped function means the plan is not
--- trusted.
+-- Reports whether every function this plan depends on is still the original.
+-- @param owner table  The addon.
+-- @return boolean  True only while every function this plan depends on (glow, spell-id lookup, sequence evaluator,
+--   announcement dispatch) is still the exact original value with its original environment. Any swapped function means
+--   the plan is not trusted.
 local function consumers(owner)
     return registered
         and identity(owner, addon)
@@ -84,8 +90,14 @@ local function consumers(owner)
         and identity(environment(dispatch), dispatchEnvironment)
 end
 
--- Called once by main.lua to register its spell-id lookup, sequence evaluator and function environment as consumers of
--- plans. Returns true on the first valid registration, nothing afterwards.
+-- Registers main.lua's spell-id lookup, sequence evaluator and function environment as consumers of plans.
+-- @param owner table  The addon.
+-- @param ids function  The spell-id lookup (GetSpellIds).
+-- @param run function  The sequence evaluator (EvaluateRotationSequence).
+-- @param env table  The function environment main.lua's functions run in.
+-- @return boolean|nil  True on the first valid registration, nothing afterwards.
+--
+-- Called once by main.lua.
 local function register(owner, ids, run, env)
     if registered or owner ~= addon or kind(ids) ~= 'function' or kind(run) ~= 'function' or kind(env) ~= 'table' then
         return
@@ -95,8 +107,8 @@ local function register(owner, ids, run, env)
     return true
 end
 
--- Publication guard handed out for a request that was superseded: it always answers false, so stale work publishes
--- nothing.
+-- Publication guard handed out for a request that was superseded.
+-- @return boolean  Always false, so stale work publishes nothing.
 local function retired()
     return false
 end
@@ -105,10 +117,23 @@ end
 -- Acquiring a plan
 -- ============================================================================
 
--- Called by main.lua each poll for the selected spec and rotation. Returns `nil, nil, nil, false` when the standard
--- engine must run, or `body, current, token, true, presentation, conditionLease, notifiedLease, deliveryLease,
--- dispatchLease` when the plan manages the poll; `body` is nil when the rotation is not allowed now. With handled=true
--- and a nil body, the guard (`retired`) says the request was superseded.
+-- Decides whether the active rotation may run from a cached plan and hands back the leases that prove it stays current.
+-- @param owner table  The addon.
+-- @param spec number  The specialization ID or talent group of the selected rotation.
+-- @param key string  The selected rotation id.
+-- @return table|nil  The rotation body when the plan manages the poll and the rotation is allowed now; nil when the
+--   standard engine must run, or when the rotation is not allowed now.
+-- @return function|nil  current(), the full guard; the `retired` guard when the request was superseded.
+-- @return any  The plan's token.
+-- @return boolean  True when the plan manages the poll (the `handled` flag); false when the standard engine must run.
+-- @return any  The plan's presentation.
+-- @return function|nil  conditionCurrent(), the lease for condition evaluation.
+-- @return function|nil  notifiedCurrent(), the lease that checks only the managed execution clock.
+-- @return function|nil  deliveryCurrent(), the lease for publishing the result to the glow.
+-- @return function|nil  dispatchCurrent(receiver), the lease asked by each receiver before it runs.
+--
+-- Called by main.lua each poll. Returns `nil, nil, nil, false` when the standard engine must run. With handled=true and
+-- a nil body, the guard (`retired`) says the request was superseded.
 local function acquire(owner, spec, key)
     if owner ~= addon then
         return nil, nil, nil, false
@@ -130,8 +155,11 @@ local function acquire(owner, spec, key)
         handle, revision, operation = readActive(owner, spec, key)
     end
 
-    -- A newer acquire replaces `request`, which retires this one; the active handle, revision and operation must also
-    -- be unchanged since the plan was read.
+    -- Reports whether this request is still the newest one.
+    -- @return boolean  True when no newer acquire replaced `request` and the active handle, revision and operation are
+    --   unchanged since the plan was read.
+    --
+    -- A newer acquire replaces `request`, which retires this one.
     local function requestCurrent()
         if not identity(request, ticket) then
             return false
@@ -217,8 +245,8 @@ local function acquire(owner, spec, key)
     -- callouts must never bless an old plan with a newer generation.
     planGeneration = executionGeneration
 
-    -- Cheap scalar proof that this acquisition still owns the poll: same ticket, plan, generation, database, profile,
-    -- spec and rotation.
+    -- Cheap scalar proof that this acquisition still owns the poll.
+    -- @return boolean  True while the ticket, plan, generation, database, profile, spec and rotation are the same.
     local function continuationCurrent()
         return request == ticket
             and plan == selected
@@ -230,8 +258,9 @@ local function acquire(owner, spec, key)
             and identity(raw(owner, 'currentRotation'), key)
     end
 
-    -- Full guard returned to main.lua: the scalar proof plus the consumers' identity and the scope's own proof that the
-    -- active handle, revision and operation are the ones read at acquire time.
+    -- Full guard returned to main.lua.
+    -- @return boolean  True while the scalar proof holds, the consumers' identity is intact and the scope's own proof
+    --   says the active handle, revision and operation are the ones read at acquire time.
     local function current()
         if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then
             return false
@@ -260,8 +289,8 @@ local function acquire(owner, spec, key)
 
     currentRoute = state.allowed and 'managed' or 'unavailable'
 
-    -- Lease for condition evaluation: the request and plan are still ours and the plan's own condition proof still
-    -- holds.
+    -- Lease for condition evaluation.
+    -- @return boolean  True while the request and plan are still ours and the plan's own condition proof still holds.
     local function conditionCurrent()
         return identity(request, ticket)
             and identity(plan, selected)
@@ -269,7 +298,8 @@ local function acquire(owner, spec, key)
             and selected.conditionCurrent(state)
     end
 
-    -- Lease that checks only the managed execution clock (no change was notified since acquire).
+    -- Lease that checks only the managed execution clock.
+    -- @return boolean  True while no change was notified since acquire.
     local function notifiedCurrent()
         return executionGeneration ~= nil
             and request == ticket
@@ -277,7 +307,8 @@ local function acquire(owner, spec, key)
             and readExecutionGeneration() == executionGeneration
     end
 
-    -- Lease for publishing the result to the glow: ownership holds and the presentation method is still the original.
+    -- Lease for publishing the result to the glow.
+    -- @return boolean  True while ownership holds and the presentation method is still the original.
     local function deliveryCurrent()
         -- Completed scalar/detached output follows the managed mutation clock.
         -- Raw profile/spec/selection remain immediate ownership boundaries;
@@ -299,9 +330,10 @@ local function acquire(owner, spec, key)
     -- continue after a partial run.
     local dispatchFailed = false
 
-    -- Lease asked by each receiver ('condition', 'resume', 'step', 'sequence', 'iterator', 'pathcopy') before it runs:
-    -- proves the functions that receiver uses and the globals they read are unchanged. After one failure it answers
-    -- false.
+    -- Lease asked by each receiver before it runs.
+    -- @param receiver string  'condition', 'resume', 'step', 'sequence', 'iterator' or 'pathcopy'.
+    -- @return boolean  True when the functions that receiver uses and the globals they read are unchanged. After one
+    --   failure it answers false.
     local function dispatchCurrent(receiver)
         if dispatchFailed then
             return false
@@ -365,8 +397,9 @@ end
 -- Public surface
 -- ============================================================================
 
--- One-time handoff to main.lua, which keeps `acquire` and `register` locally and clears this public name; any other
--- caller gets nothing.
+-- One-time handoff to main.lua, which keeps `acquire` and `register` locally and clears this public name.
+-- @return function|nil  `acquire`; nil for any other caller.
+-- @return function|nil  `register`.
 function addon:ConsumeActiveRuntimePlan()
     if self ~= addon then
         return
@@ -375,6 +408,9 @@ function addon:ConsumeActiveRuntimePlan()
     return acquire, register
 end
 
+-- Returns the plan route counters for a diagnostic capture.
+-- @return table|nil  { plansBuilt, reused, declined, currentRoute }; nil unless called on the addon.
+--
 -- Scalar snapshots only; collection does not prepare or inspect a plan.
 function addon:GetActiveRuntimePlanDiagnostic()
     if self ~= addon then

@@ -64,8 +64,10 @@ local planType, planRawget = type, rawget
 local planPairs, planMeta, planTable, planSort, planMath, planHuge =
     pairs, getmetatable, table, table.sort, math, math.huge
 
--- True while the data helpers and the standard functions the plan path captured are still the originals, so a swapped
--- public helper cannot receive private execution data.
+-- Reports whether the data helpers and the standard functions the plan path captured are still the originals, so a
+-- swapped public helper cannot receive private execution data.
+-- @param owner table  The addon.
+-- @return boolean  True while they are.
 local function planDataCurrent(owner)
     return rawget(storeScopeEnvironment, 'ipairs') == planIpairs
         and rawget(owner, 'RotationData') == data
@@ -77,8 +79,10 @@ local function planDataCurrent(owner)
         and storeGetfenv(planPortable) == storeScopeEnvironment
 end
 
--- Answers whether the plan may use the private route for one kind of receiver ('iterator', 'step', 'pathcopy',
--- 'sequence', 'condition', 'resume'): the captured functions that receiver relies on must still be the originals.
+-- Answers whether the plan may use the private route for one kind of receiver.
+-- @param owner table  The addon.
+-- @param receiver string  'iterator', 'step', 'pathcopy', 'sequence', 'condition' or 'resume'.
+-- @return boolean  True when the captured functions that receiver relies on are still the originals.
 local function planExecutionSource(owner, receiver)
     if planRawget(storeScopeEnvironment, 'type') ~= planType then
         return false
@@ -141,6 +145,16 @@ local ownedRuntimePasses = setmetatable({}, { __mode = "kv" })
 local bindLibrary = addon.BindRotationLibraryReader
 
 if type(bindLibrary) == 'function' then
+    -- Receives the library reader and the private proof helpers Core/rotation_library.lua hands over.
+    -- @param reader table  The library reader (Context, Generation, Read, List, Eligible, Reserve).
+    -- @param proof function  Proves a generation came from the reader.
+    -- @param contextProof function  Proves the context method, projection and dispatch are the owned ones.
+    -- @param runtimeGuard function  Validates a context value and returns a re-check.
+    -- @param authority function  The constant-time managed publication authority.
+    -- @param eligible function  The eligibility check.
+    -- @param contextMethod function  The owned GetRotationContext.
+    -- @param readValue function  The owned Platform CanReadValue.
+    -- @param generation function  Returns the library generation and definition version.
     bindLibrary(addon, function(
         reader,
         proof,
@@ -169,8 +183,13 @@ if type(bindLibrary) == 'function' then
     addon.BindRotationLibraryReader = nil
 end
 
--- Reads the rotation context for `spec` from the library reader when it owns the context method, otherwise through the
--- public GetRotationContext. Returns the value, whether it came from the private path, and the method used.
+-- Reads the rotation context for a spec from the library reader when it owns the context method, otherwise through the
+-- public GetRotationContext.
+-- @param owner table  The addon.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @return table  The context.
+-- @return boolean  Whether it came from the private path.
+-- @return function|nil  The method used (only when read from the library reader).
 local function rotationContext(owner, spec)
     local method = libraryReader and libraryReader.Context
 
@@ -194,29 +213,42 @@ local exposureVersion = {}
 -- Small helpers
 -- ============================================================================
 
--- True for a table without a metatable.
+-- Reports whether a value is a table without a metatable.
+-- @param v any  The value.
+-- @return boolean  True for such a table.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
--- True when a rotation without applicability facts opts into a special action context (pet, vehicle, ...) through its
--- switch condition.
+-- Reports whether a rotation without applicability facts opts into a special action context (pet, vehicle, ...) through
+-- its switch condition.
+-- @param body table  The rotation body.
+-- @param context string  The action context.
+-- @return boolean  True when it does.
 local function bareContextOptIn(body, context)
     local matches = data and data.MatchesBareActionContext
     return type(matches) == 'function' and matches(body, context) == true
 end
 
--- True for a printable string of 1 to `n` bytes with a non-space character and no control characters.
+-- Reports whether a value is a printable string.
+-- @param v any  The value.
+-- @param n number  The most bytes allowed.
+-- @return boolean  True for a string of 1 to `n` bytes with a non-space character and no control characters.
 local function text(v, n)
     return type(v) == 'string' and #v > 0 and #v <= n and v:find('%S') ~= nil and not v:find('[%z\1-\31\127]')
 end
 
 -- Deep copy through the data module, which refuses anything that is not portable data.
+-- @param v any  The value.
+-- @return any  The copy; nil (with a problem record as the second return) when it cannot be copied.
+-- @return table|nil  The problem record when it cannot be copied.
 local function copy(v)
     return data.CopyData(v)
 end
 
 -- Copies only the known string metadata fields (author, realm, email, website, version) for roster display.
+-- @param value any  The metadata.
+-- @return table|nil  The copy; nil when it is not a plain table.
 local function metadataView(value)
     if not plain(value) then
         return nil
@@ -233,7 +265,9 @@ local function metadataView(value)
     return result
 end
 
--- Normalized tag list for display; nil when absent and false when the saved tags are invalid.
+-- Returns the normalized tag list for display.
+-- @param value any  The saved tags.
+-- @return table|boolean|nil  The tags; nil when absent and false when the saved tags are invalid.
 local function tagsView(value)
     if value == nil then
         return nil
@@ -242,7 +276,10 @@ local function tagsView(value)
     return data.NormalizeRotationTags(value) or false
 end
 
--- Structural equality for plain data; false for any table with a metatable.
+-- Structural equality for plain data.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when equal; false for any table with a metatable.
 local function same(a, b)
     if type(a) ~= type(b) then
         return false
@@ -267,17 +304,23 @@ local function same(a, b)
 end
 
 -- Flattens a custom rotation address to a string usable as a table key.
+-- @param a table  The address { scope, class, owner, spec, id }.
+-- @return string  The key.
 local function addressKey(a)
     return a.scope .. '\0' .. a.class .. '\0' .. a.owner .. '\0' .. a.spec .. '\0' .. a.id
 end
 
--- True for a non-negative integer specialization index.
+-- Reports whether a value is a valid specialization index.
+-- @param v any  The value.
+-- @return boolean  True for a non-negative integer.
 local function validSpec(v)
     return type(v) == 'number' and v >= 0 and v < math.huge and v % 1 == 0
 end
 
--- True when `r` is a well-formed custom reference: only `kind` and `address`, an address with a class or character
--- scope, a valid class token, owner, specialization and id, and a class-scope owner equal to the class.
+-- Reports whether a value is a well-formed custom reference.
+-- @param r any  The candidate reference.
+-- @return boolean  True for only `kind` and `address`, an address with a class or character scope, a valid class token,
+--   owner, specialization and id, and a class-scope owner equal to the class.
 local function customReference(r)
     if not plain(r) or r.kind ~= 'custom' or not plain(r.address) then
         return false
@@ -306,6 +349,8 @@ local function customReference(r)
 end
 
 -- Copies the four persisted parts of a stored record: body, origin, imported and comparison.
+-- @param r table  The record.
+-- @return table  The copy.
 local function copyRecord(r)
     local out = {}
 
@@ -319,6 +364,8 @@ local function copyRecord(r)
 end
 
 -- Flattens a Built In or custom reference to a unique string for the coordinator's lookup tables.
+-- @param r table  The reference.
+-- @return string  The key.
 local function referenceKey(r)
     return r.kind == 'builtin' and 'builtin\0' .. r.id or 'custom\0' .. addressKey(r.address)
 end
@@ -327,8 +374,11 @@ end
 -- Owner context and profile binding
 -- ============================================================================
 
--- Returns { class, character } for the player who owns custom rotations, or nil and 'missing-owner-context'. The
--- character key is dropped when it is not usable text. Uses the library's observation when it owns the context method.
+-- Returns the player who owns custom rotations.
+-- @return table|nil  { class, character }; the character key is dropped when it is not usable text; nil on failure.
+-- @return string|nil  'missing-owner-context' when the first return is nil; nil otherwise.
+--
+-- Uses the library's observation when it owns the context method.
 function addon:GetRotationOwnerContext()
     local class
     local platform = self.Platform
@@ -361,7 +411,11 @@ end
 
 local ownedOwnerContext = addon.GetRotationOwnerContext
 
--- Returns the coordinator bound to the current profile, or nil when none is bound.
+-- Returns the coordinator bound to the current profile.
+-- @return table|nil  The coordinator; nil when none is bound.
+--
+-- Once scoped mode is bound, a profile transition must fail closed until the explicit event handler rebinds it; never
+-- reopen the old flat adapter.
 function addon:GetScopedRotationCoordinator()
     -- Once scoped mode is bound, a profile transition must fail closed until
     -- the explicit event handler rebinds it; never reopen the old flat adapter.
@@ -370,8 +424,9 @@ end
 
 local ownedScopedCoordinator = addon.GetScopedRotationCoordinator
 
--- Asks Core/rotation_active.lua to open a rebind for the selected rotation before the profile changes. Returns the
--- binding (ticket, reference, token, specialization, id) or nil when there is no active selection to carry over.
+-- Asks Core/rotation_active.lua to open a rebind for the selected rotation before the profile changes.
+-- @return table|nil  The binding { ticket, reference, token, spec, id }; nil when there is no active selection to carry
+--   over.
 local function rebindContext()
     if not prepareActiveRebind then
         return nil
@@ -386,15 +441,24 @@ local function rebindContext()
     return { ticket = ticket, reference = reference, token = token, spec = spec, id = id }
 end
 
--- Re-selects the previously active rotation in the new coordinator once it exists. The selection is resolved by its old
--- reference (or the fallback) and handed back to finishActiveRebind; if it cannot be resolved the selection is cleared
--- and manual mode is turned off. Every step re-checks that the transition is still current.
+-- Re-selects the previously active rotation in the new coordinator once it exists.
+-- @param binding table|nil  The binding from rebindContext.
+-- @param coordinator table  The new coordinator.
+-- @param problem any  A reason the new coordinator is unusable; the selection is then cleared.
+--
+-- The selection is resolved by its old reference (or the fallback) and handed back to finishActiveRebind; if it cannot
+-- be resolved the selection is cleared and manual mode is turned off. Every step re-checks that the transition is still
+-- current.
 local function completeRebind(binding, coordinator, problem)
     if not binding or not binding.ticket or not activeCurrent(addon, binding.token) then
         return
     end
 
-    -- Calls object[name] and returns its result, or nil if the transition was superseded before or after the call.
+    -- Calls object[name] and returns its result.
+    -- @param object table  The object.
+    -- @param name string  The method name.
+    -- @param ... any  The method's arguments.
+    -- @return any  The result; nil if the transition was superseded before or after the call.
     local function read(object, name, ...)
         if not activeCurrent(addon, binding.token) then
             return nil
@@ -415,7 +479,10 @@ local function completeRebind(binding, coordinator, problem)
         return value
     end
 
-    -- Looks up the previous selection in the new coordinator. Returns its key, reference and body, or nothing.
+    -- Looks up the previous selection in the new coordinator.
+    -- @return string|nil  The key; nothing when it cannot be found.
+    -- @return table|nil  The reference.
+    -- @return table|nil  The body.
     local function resolve()
         if problem then
             return nil
@@ -481,8 +548,13 @@ local function completeRebind(binding, coordinator, problem)
     end
 end
 
--- Runs `method` with `binding` as the prepared rebind, so a BindRotationProfile call inside it reuses the binding
--- instead of opening its own. Errors propagate unchanged after the previous binding is restored.
+-- Runs a method with a binding as the prepared rebind, so a BindRotationProfile call inside it reuses the binding
+-- instead of opening its own.
+-- @param owner table  The addon.
+-- @param binding table  The prepared rebind binding.
+-- @param method function  method(owner) to run; errors propagate unchanged after the previous binding is restored.
+-- @return any  method's first result.
+-- @return any  method's second result.
 local function runPreparedBind(owner, binding, method)
     local previous = preparedBinding
     preparedBinding = binding
@@ -500,6 +572,8 @@ local function runPreparedBind(owner, binding, method)
 end
 
 -- One-time handoff of rebindContext and runPreparedBind to the module that switches profiles.
+-- @param receiver function  Called as receiver(rebindContext, runPreparedBind).
+-- @return boolean|nil  True when handed over; nil for a foreign caller or a non-function receiver.
 function addon:BindActiveRotationProfileRebind(receiver)
     if self ~= addon or type(receiver) ~= 'function' then
         return nil
@@ -509,9 +583,10 @@ function addon:BindActiveRotationProfileRebind(receiver)
     return true
 end
 
--- Builds a new coordinator for the current profile and retires the previous one. Returns true, or nil and the reason
--- the coordinator is unusable (the coordinator still exists and reports that reason from every call). A later bind or a
--- superseded transition makes this call return 'rotation-transition-superseded'.
+-- Builds a new coordinator for the current profile and retires the previous one.
+-- @return boolean|nil  True when bound; nil when the coordinator is unusable.
+-- @return string|nil  The reason the coordinator is unusable (the coordinator still exists and reports that reason from
+--   every call); 'rotation-transition-superseded' when a later bind or a superseded transition took over.
 function addon:BindRotationProfile()
     invalidateExecution()
 
@@ -523,7 +598,8 @@ function addon:BindRotationProfile()
     bindGeneration = bindToken
     local binding, profile
 
-    -- True while this bind is still the newest one, its rebind binding is current and the profile is unchanged.
+    -- Reports whether this bind is still the newest one, its rebind binding is current and the profile is unchanged.
+    -- @return boolean  True while it is.
     local function bindingCurrent()
         if bindGeneration ~= bindToken or binding and not activeCurrent(self, binding.token) then
             return false
@@ -635,13 +711,19 @@ function addon:BindRotationProfile()
     -- Coordinator: references
     -- ============================================================================
 
-    -- Owner context for this coordinator; every operation re-reads it to detect a character or class change.
+    -- Returns the owner context for this coordinator; every operation re-reads it to detect a character or class
+    -- change.
+    -- @return table|nil  { class, character }; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     local function context()
         return owner:GetRotationOwnerContext()
     end
 
-    -- Returns true while this coordinator is alive and the profile, store and fallback id are the ones it was built
-    -- for, otherwise nil and 'rotation-profile-changed' (or the reason the store could not be built).
+    -- Reports whether this coordinator can be used.
+    -- @return boolean|nil  True while this coordinator is alive and the profile, store and fallback id are the ones it
+    --   was built for; nil otherwise.
+    -- @return string|nil  'rotation-profile-changed' (or the reason the store could not be built) when the first return
+    --   is nil; nil otherwise.
     local function ready()
         if
             not alive
@@ -658,8 +740,9 @@ function addon:BindRotationProfile()
         return true
     end
 
-    -- Returns the opaque session key for a reference, issuing one the first time it is seen. Keys are not saved and are
-    -- only meaningful to this coordinator.
+    -- Returns the opaque session key for a reference, issuing one the first time it is seen.
+    -- @param reference table  The reference.
+    -- @return string  The key. Keys are not saved and are only meaningful to this coordinator.
     local function keyFor(reference)
         local index = referenceKey(reference)
         local key = byReference[index]
@@ -674,9 +757,14 @@ function addon:BindRotationProfile()
         return key
     end
 
-    -- Returns a validated copy of a reference for specialization `number`, or nil and a reason. A Built In must be
-    -- readable from the library; a custom one must be well formed, belong to this class and character, not be another
-    -- specialization's fallback, and exist in the store.
+    -- Returns a validated copy of a reference for a specialization.
+    -- @param reference any  The candidate reference.
+    -- @param number number  The specialization ID or talent group.
+    -- @return table|nil  The validated copy; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    --
+    -- A Built In must be readable from the library; a custom one must be well formed, belong to this class and
+    -- character, not be another specialization's fallback, and exist in the store.
     local function validateReference(reference, number)
         if plain(reference) and reference.kind == 'builtin' and text(reference.id, 128) then
             local ok, why = libraryReader:Read(number, reference.id, function() return true end)
@@ -718,8 +806,11 @@ function addon:BindRotationProfile()
         return copy(reference)
     end
 
-    -- Finds the fallback rotation of a specialization, preferring the character's copy over the class copy. Returns nil
-    -- and 'unknown-rotation' when neither is saved.
+    -- Finds the fallback rotation of a specialization, preferring the character's copy over the class copy.
+    -- @param number number  The specialization ID or talent group.
+    -- @return table|nil  The reference; nil on failure.
+    -- @return string|nil  'unknown-rotation' when neither is saved (or another reason) when the first return is nil;
+    --   nil otherwise.
     local function fallbackReference(number)
         local c, why = context()
 
@@ -752,18 +843,23 @@ function addon:BindRotationProfile()
         return nil, 'unknown-rotation'
     end
 
-    -- Returns true, or nil and the reason this coordinator cannot be used.
+    -- Reports whether this coordinator can be used.
+    -- @return boolean|nil  True when it can; nil otherwise.
+    -- @return string|nil  The reason this coordinator cannot be used; nil otherwise.
     function coordinator:CheckReady()
         return ready()
     end
 
-    -- True when `value` is the profile table this coordinator was built for.
+    -- Reports whether a value is the profile table this coordinator was built for.
+    -- @param value any  The value.
+    -- @return boolean  True when it is.
     function coordinator:OwnsProfile(value)
         return value == profile
     end
 
     -- Ends this coordinator: every later call fails with 'rotation-profile-changed', the store reader is retired and
-    -- the execution generation advances if this is still the current coordinator. Returns true.
+    -- the execution generation advances if this is still the current coordinator.
+    -- @return boolean  Always true.
     function coordinator:Retire()
         if current == coordinator then
             invalidateExecution()
@@ -778,9 +874,13 @@ function addon:BindRotationProfile()
         return true
     end
 
-    -- Resolves `value` to a reference table for specialization `number`. `value` may be a reference, a key issued by
-    -- Key, the DEFAULT constant (the fallback) or a bare rotation id. Returns the reference, or nil and a reason such
-    -- as 'unknown-rotation', 'ambiguous-rotation-reference', 'foreign-owner' or 'invalid-specialization'.
+    -- Resolves a value to a reference table for a specialization.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, a key issued by Key, the DEFAULT constant (the fallback) or a bare
+    --   rotation id.
+    -- @return table|nil  The reference; nil on failure.
+    -- @return string|nil  A reason such as 'unknown-rotation', 'ambiguous-rotation-reference', 'foreign-owner' or
+    --   'invalid-specialization' when the first return is nil; nil otherwise.
     function coordinator:Resolve(number, value)
         local ok, why = ready()
 
@@ -863,6 +963,10 @@ function addon:BindRotationProfile()
     end
 
     -- Returns a copy of an unsaved draft's reference after checking it belongs to this owner and specialization.
+    -- @param number number  The specialization ID or talent group.
+    -- @param r table  The draft's reference.
+    -- @return table|nil  The copy; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:PendingReference(number, r)
         local c, contextReason = context()
 
@@ -883,18 +987,25 @@ function addon:BindRotationProfile()
     end
 
     -- Returns the session key for a reference (see keyFor).
+    -- @param reference table  The reference.
+    -- @return string  The key.
     function coordinator:Key(reference)
         return keyFor(reference)
     end
 
-    -- True for a custom reference that is a registered draft and has not been saved.
+    -- Reports whether a reference is a registered draft that has not been saved.
+    -- @param reference any  The reference.
+    -- @return boolean  True for such a custom reference.
     function coordinator:IsPending(reference)
         return customReference(reference) and pending[referenceKey(reference)] ~= nil
     end
 
-    -- Moves an unsaved draft to the class or character scope before its first save, keeping its key. Returns the new
-    -- reference. When the other scope already holds a saved rotation of that id the target is returned without
-    -- re-pointing the key.
+    -- Moves an unsaved draft to the class or character scope before its first save, keeping its key.
+    -- @param reference table  The draft's reference.
+    -- @param scope string  'class' or 'character'.
+    -- @return table|nil  The new reference; when the other scope already holds a saved rotation of that id the target
+    --   is returned without re-pointing the key. nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:StagePending(reference, scope)
         if not customReference(reference) then
             return nil, 'invalid-rotation-reference'
@@ -942,8 +1053,9 @@ function addon:BindRotationProfile()
         return copy(target)
     end
 
-    -- True while the record a Snapshot token was issued for is unchanged in the store (same owner context, same body,
-    -- origin, import and comparison parts).
+    -- Reports whether the record a Snapshot token was issued for is unchanged in the store.
+    -- @param token table  The token from Snapshot.
+    -- @return boolean  True while the owner context and the body, origin, import and comparison parts are the same.
     function coordinator:TokenCurrent(token)
         local issued = expected[token]
 
@@ -974,8 +1086,14 @@ function addon:BindRotationProfile()
         return ok and value == true
     end
 
-    -- Returns a detached copy of a rotation record, a public token to pass back to Commit or Delete (nil for a Built
-    -- In), and the validation of its body. A Built In record carries `source` instead of a token.
+    -- Returns a detached copy of a rotation record, a public token to pass back to Commit or Delete, and the validation
+    -- of its body.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, key or id, as for Resolve.
+    -- @return table|nil  The record { body, origin, imported, comparison }; a Built In record carries `source` instead
+    --   of a token. nil on failure.
+    -- @return table|string|nil  The public token (nil for a Built In); the reason when the first return is nil.
+    -- @return table|nil  The validation of the body.
     function coordinator:Snapshot(number, value)
         local reference, why = self:Resolve(number, value)
 
@@ -1026,8 +1144,14 @@ function addon:BindRotationProfile()
     -- ============================================================================
 
     -- Registers an unsaved custom rotation under a fresh unique id (or the fallback id when `fallback` is set) in the
-    -- class or character scope. Returns its reference and key; asking again for the same draft returns the existing
-    -- one. Gives up after 100 failed id attempts with 'id-allocation-exhausted'.
+    -- class or character scope.
+    -- @param number number  The specialization ID or talent group.
+    -- @param scope string|nil  'class' (default) or 'character'.
+    -- @param fallback boolean|nil  True to register the fallback's draft.
+    -- @return table|nil  The reference; asking again for the same draft returns the existing one. nil on failure.
+    -- @return string|nil  The key; the reason when the first return is nil.
+    --
+    -- Gives up after 100 failed id attempts with 'id-allocation-exhausted'.
     function coordinator:NewDraft(number, scope, fallback)
         if not validSpec(number) then
             return nil, 'invalid-specialization'
@@ -1140,9 +1264,14 @@ function addon:BindRotationProfile()
         return copy(reference), key
     end
 
-    -- A new rotation that was never saved is only a registered draft: dropping
-    -- it retires every alias and key, so it leaves the roster. The fallback's
-    -- virtual draft is not one: it is re-created whenever it is listed.
+    -- Drops a new rotation that was never saved: it is only a registered draft, so dropping it retires every alias and
+    -- key, and it leaves the roster.
+    -- @param reference table  The draft's reference.
+    -- @return boolean|nil  True when dropped; nil on failure.
+    -- @return string|nil  'invalid-rotation-reference', 'unknown-rotation' or 'protected-rotation' when the first
+    --   return is nil; nil otherwise.
+    --
+    -- The fallback's virtual draft is not one: it is re-created whenever it is listed.
     function coordinator:DiscardPending(reference)
         if not customReference(reference) then
             return nil, 'invalid-rotation-reference'
@@ -1173,7 +1302,12 @@ function addon:BindRotationProfile()
     end
 
     -- Registers a draft for an id that so far exists only in the legacy flat list, class scope, so it can be edited and
-    -- adopted. Refuses an id already used by a stored rotation or Built In.
+    -- adopted.
+    -- @param number number  The specialization ID or talent group.
+    -- @param id string  The rotation id; DEFAULT registers the fallback's draft.
+    -- @return table|nil  The reference; nil on failure (an id already used by a stored rotation or Built In is
+    --   refused).
+    -- @return string|nil  The key; the reason when the first return is nil.
     function coordinator:LegacyDraft(number, id)
         local ok, why = ready()
 
@@ -1239,11 +1373,19 @@ function addon:BindRotationProfile()
         return reference, key
     end
 
-    -- Saves a custom rotation. Without a token it creates; with a Snapshot token it replaces, or moves when `scope`
-    -- differs. The active-rotation and choice-preference publications are prepared first, the owner is re-verified,
-    -- then the store plan is committed and the keys, drafts and publications follow. `revisionPolicy` is nil or
-    -- 'import'. Returns the target reference, nil and the active-rotation transition, or nil and a reason such as
-    -- 'stale-rotation-record'.
+    -- Saves a custom rotation.
+    -- @param reference table  The rotation's reference.
+    -- @param token table|nil  A Snapshot token: without one it creates; with one it replaces, or moves when `scope`
+    --   differs.
+    -- @param record table  The record { body, origin, imported, comparison }.
+    -- @param scope string|nil  'class' or 'character'; defaults to the reference's scope.
+    -- @param revisionPolicy string|nil  nil or 'import'.
+    -- @return table|nil  The target reference; nil on failure.
+    -- @return string|nil  A reason such as 'stale-rotation-record' when the first return is nil; nil otherwise.
+    -- @return table|nil  The active-rotation transition, when the commit changed the active rotation.
+    --
+    -- The active-rotation and choice-preference publications are prepared first, the owner is re-verified, then the
+    -- store plan is committed and the keys, drafts and publications follow.
     function coordinator:Commit(reference, token, record, scope, revisionPolicy)
         local ok, why = ready()
 
@@ -1435,7 +1577,12 @@ function addon:BindRotationProfile()
     end
 
     -- Deletes a saved custom rotation using its Snapshot token and removes any choice preference that pointed at it.
-    -- The fallback is read-only. Returns true, or nil and a reason.
+    -- @param reference table  The rotation's reference.
+    -- @param token table  The token from Snapshot.
+    -- @return boolean|nil  True when deleted; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    --
+    -- The fallback is read-only.
     function coordinator:Delete(reference, token)
         local ok, why = ready()
 
@@ -1491,8 +1638,12 @@ function addon:BindRotationProfile()
     end
 
     -- Returns the body a deleted or replaced rotation was last running, so the caller can release what that body held,
-    -- or the current body when the rotation still exists. A caller that is not the private plan path marks the body
-    -- borrowed.
+    -- or the current body when the rotation still exists.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value string  The rotation key.
+    -- @param privateToken table|nil  The private plan-pass token; a caller that is not the private plan path marks the
+    --   body borrowed.
+    -- @return table|nil  The body; nil when there is none.
     function coordinator:Cleanup(number, value, privateToken)
         if cleanup[value] then
             return cleanup[value]
@@ -1522,8 +1673,12 @@ function addon:BindRotationProfile()
     -- Coordinator: read views
     -- ============================================================================
 
-    -- Returns the roster metadata of a rotation (name, description, priority, tags, metadata and import sources)
-    -- without copying its action tree. Returns nil and a reason when it cannot be resolved.
+    -- Returns the roster metadata of a rotation without copying its action tree.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, key or id, as for Resolve.
+    -- @return table|nil  { body = { name, description, priority, tags, metadata }, tags, sources }; nil when it cannot
+    --   be resolved.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:TagView(number, value)
         local reference, why = self:Resolve(number, value)
 
@@ -1549,6 +1704,9 @@ function addon:BindRotationProfile()
 
         local c = context()
 
+        -- Projects one stored record into the roster metadata TagView returns.
+        -- @param record table  The stored record.
+        -- @return table  { body = { name, description, priority, tags, metadata }, tags, sources }.
         local ok, result = reader:Read(reference.address, c, function(record)
             local body = record.body
             local retained = record.origin or record.imported
@@ -1574,7 +1732,9 @@ function addon:BindRotationProfile()
         return result
     end
 
-    -- Returns every stored record row of the profile, for usage scans. Returns nil and a reason when not ready.
+    -- Returns every stored record row of the profile, for usage scans.
+    -- @return table[]|nil  The rows { address, record }; nil when not ready.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:StoredRecords()
         local ok, why = ready()
 
@@ -1586,6 +1746,8 @@ function addon:BindRotationProfile()
     end
 
     -- Returns the stored rows still in the legacy scope that have not been adopted into a class or character scope.
+    -- @return table[]|nil  The rows { address, record, validation }; nil when not ready.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:Unassigned()
         local ok, why = ready()
 
@@ -1616,8 +1778,11 @@ function addon:BindRotationProfile()
 
     local adoptionPlans = setmetatable({}, { __mode = 'k' })
 
-    -- Plans moving the legacy rotation `selection` ({ spec, id }) into the class or character scope. Writes nothing;
-    -- returns a public plan for ApplyAdoption, or nil and a reason.
+    -- Plans moving a legacy rotation into the class or character scope. Writes nothing.
+    -- @param selection table  { spec, id } of the legacy rotation.
+    -- @param scope string  'class' or 'character'.
+    -- @return table|nil  A public plan for ApplyAdoption; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:PlanAdoption(selection, scope)
         local ok, why = ready()
 
@@ -1662,8 +1827,10 @@ function addon:BindRotationProfile()
     end
 
     -- Commits an adoption plan if the owner is unchanged, retires any draft with the same address (its pending
-    -- workspace keeps its text but can no longer write over the new entity) and publishes the active selection. Returns
-    -- true and the reference.
+    -- workspace keeps its text but can no longer write over the new entity) and publishes the active selection.
+    -- @param public table  The plan from PlanAdoption.
+    -- @return boolean|nil  True when adopted; nil on failure.
+    -- @return table|string|nil  The adopted rotation's reference; the reason when the first return is nil.
     function coordinator:ApplyAdoption(public)
         local ok, why = ready()
 
@@ -1750,8 +1917,13 @@ function addon:BindRotationProfile()
         return true, reference
     end
 
-    -- Returns the retained source of a rotation as a validated view: its import manifest when `imported`, otherwise its
-    -- Built In origin with lineage. Returns nil and 'not-imported' or 'no-source-baseline' when there is none.
+    -- Returns the retained source of a rotation as a validated view.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, key or id, as for Resolve.
+    -- @param imported boolean|nil  True for its import manifest; otherwise its Built In origin with lineage.
+    -- @return table|nil  The view; nil when there is none or on failure.
+    -- @return string|nil  'not-imported' or 'no-source-baseline' when there is none (or another reason) when the first
+    --   return is nil; nil otherwise.
     function coordinator:SourceView(number, value, imported)
         local record, why = self:Snapshot(number, value)
 
@@ -1803,8 +1975,12 @@ function addon:BindRotationProfile()
         return view
     end
 
-    -- Returns the identity ({ kind, id, origins }) a rotation is compared against, following its origin or import
-    -- through clones. A Built In returns itself; a custom rotation with no source returns its own address.
+    -- Returns the identity a rotation is compared against, following its origin or import through clones.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, key or id, as for Resolve.
+    -- @return table|nil  { kind, id, origins }; a Built In returns itself and a custom rotation with no source returns
+    --   its own address. nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:ComparisonIdentity(number, value)
         local reference, why = self:Resolve(number, value)
 
@@ -1841,8 +2017,10 @@ function addon:BindRotationProfile()
         return identity or { kind = 'custom', id = reference.address.id, sourceAddress = copy(reference.address) }
     end
 
-    -- Returns a function that yields ids unused by any stored rotation, step, Built In or draft (nil when the generator
-    -- fails), or nil and a reason when the inventory cannot be read.
+    -- Returns an id generator that avoids ids used by any stored rotation, step, Built In or draft.
+    -- @return function|nil  A function that yields an unused id, or nil when the generator fails; nil when the
+    --   inventory cannot be read.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function coordinator:Allocator()
         local used = {}
 
@@ -1887,10 +2065,20 @@ function addon:BindRotationProfile()
         end
     end
 
-    -- Saves a prepared import as a new custom rotation, or over `replacement` when given. Validates the body and class,
-    -- applies the spec policy, keeps a free identifier, gives every step a fresh id while recording its origin, retains
-    -- the import manifest and commits with the 'import' revision policy. Returns id, nil, the saved reference and the
-    -- active transition, or nil and a reason.
+    -- Saves a prepared import as a new custom rotation, or over `replacement` when given.
+    -- @param prepared table  The prepared import ({ body, manifest, sourceId, sourceRevision, stepOrigins }).
+    -- @param number number  The specialization ID or talent group.
+    -- @param name string  The rotation name (at most 256 bytes).
+    -- @param replacement table|nil  { profile, reference, recordToken } or { id, valid } to overwrite that rotation.
+    -- @param options table|nil  options.scope ('class' or 'character') and options.specs (the caller's specialization
+    --   choice).
+    -- @return string|nil  The rotation id; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    -- @return table|nil  The saved reference.
+    -- @return table|nil  The active transition.
+    --
+    -- Validates the body and class, applies the spec policy, keeps a free identifier, gives every step a fresh id while
+    -- recording its origin, retains the import manifest and commits with the 'import' revision policy.
     function coordinator:Import(prepared, number, name, replacement, options)
         if options ~= nil and not plain(options) then
             return nil, 'invalid-rotation-options'
@@ -2100,9 +2288,17 @@ function addon:BindRotationProfile()
         return id, nil, saved, transition
     end
 
-    -- Clones a Built In or custom rotation under `name` into the class or character scope, with fresh step ids and the
-    -- lineage or correspondence needed to compare the copy with its source. The copy never keeps the source's
-    -- identifier. Returns the new id, nil and the saved reference, or nil and a reason.
+    -- Clones a Built In or custom rotation under a name into the class or character scope, with fresh step ids and the
+    -- lineage or correspondence needed to compare the copy with its source.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  The source: a reference, key or id, as for Resolve.
+    -- @param name string  The new rotation's name (at most 256 bytes).
+    -- @param options table|nil  options.scope: 'class' (default) or 'character'.
+    -- @return string|nil  The new rotation id; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    -- @return table|nil  The saved reference.
+    --
+    -- The copy never keeps the source's identifier.
     function coordinator:Copy(number, value, name, options)
         if options ~= nil and not plain(options) then
             return nil, 'invalid-rotation-options'
@@ -2275,9 +2471,14 @@ function addon:BindRotationProfile()
         return id, nil, saved
     end
 
-    -- Returns the live canonical body of a custom rotation for the older in-place editors. First rewrites the record so
-    -- the body is independent of any shared table, keeping valid Snapshot tokens, then marks it exposed so later passes
-    -- revalidate it. A Built In returns 'readonly-rotation'.
+    -- Returns the live canonical body of a custom rotation for the older in-place editors.
+    -- @param number number  The specialization ID or talent group.
+    -- @param value table|string  A reference, key or id, as for Resolve.
+    -- @return table|nil  The body; nil on failure.
+    -- @return string|nil  The reason ('readonly-rotation' for a Built In) when the first return is nil; nil otherwise.
+    --
+    -- First rewrites the record so the body is independent of any shared table, keeping valid Snapshot tokens, then
+    -- marks it exposed so later passes revalidate it.
     function coordinator:GetEditableRotation(number, value)
         local reference, why = self:Resolve(number, value)
 
@@ -2370,9 +2571,12 @@ function addon:BindRotationProfile()
     -- Coordinator: roster headers
     -- ============================================================================
 
-    -- Builds the roster rows for specialization `number`: saved custom rotations (projections cached by record seal),
-    -- the fallback's virtual draft when none is saved, and Built In rotations. Returns the rows and a roster stamp that
-    -- changes only when something the roster shows has changed.
+    -- Builds the roster rows for a specialization.
+    -- @param number number  The specialization ID or talent group.
+    -- @return table[]|nil  The rows: saved custom rotations (projections cached by record seal), the fallback's virtual
+    --   draft when none is saved, and Built In rotations; nil on failure.
+    -- @return table|string|nil  A roster stamp that changes only when something the roster shows has changed; the
+    --   reason when the first return is nil.
     function coordinator:Headers(number)
         local ok, why = ready()
 
@@ -2405,6 +2609,11 @@ function addon:BindRotationProfile()
                 local header = headers[key]
                 local valid = header and reader:IsCurrent(header.seal, c)
 
+                -- Projects one stored record into its roster view (validation state, first problem, presentation
+                -- fields); the cached
+                -- view is reused while the record seal and the validation stamp are unchanged.
+                -- @param record table  The stored record { body, origin, imported, comparison }.
+                -- @return table  The roster view { validationState, problem, body, tags, sources }.
                 local projected, view = reader:Read(row.address, c, function(record)
                     if header and valid and header.stamp == validationStamp and not exposed[record.body] then
                         return header.view
@@ -2541,6 +2750,13 @@ function addon:BindRotationProfile()
         local builtinPresentation = {}
 
         if libraryReader then
+            -- Projects one Built In into its roster row, and records its presentation (name, description, eligibility,
+            -- problem and
+            -- state) for the roster stamp.
+            -- @param id string  The Built In id.
+            -- @param view table  The library view.
+            -- @param body table  The runtime body.
+            -- @return table  The roster row.
             local rows, why = libraryReader:List(number, function(id, view, body)
                 local reference = { kind = 'builtin', id = id }
                 local name = L[view.nameKey or id]
@@ -2636,10 +2852,15 @@ function addon:BindRotationProfile()
     -- Coordinator: runtime pass
     -- ============================================================================
 
-    -- Opens a read pass for specialization `number` that evaluation takes rotation bodies from. A pass records the
-    -- owner context, library generation, validation stamp and the record seals it read, and reports through IsCurrent
-    -- when any of them changed. Methods: IsCurrent(), Get(value, candidates) and Candidates(candidates). `privateToken`
-    -- marks the plan path, whose bodies are not treated as borrowed. Returns the pass, or nil and a reason.
+    -- Opens a read pass for a specialization that evaluation takes rotation bodies from.
+    -- @param number number  The specialization ID or talent group.
+    -- @param privateToken table|nil  Marks the plan path, whose bodies are not treated as borrowed.
+    -- @return table|nil  The pass, with methods IsCurrent(), Get(value, candidates) and Candidates(candidates); nil on
+    --   failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
+    --
+    -- A pass records the owner context, library generation, validation stamp and the record seals it read, and reports
+    -- through IsCurrent when any of them changed.
     function coordinator:RuntimePass(number, privateToken)
         local request = evaluationRequest
         evaluationRequest = nil
@@ -2666,8 +2887,9 @@ function addon:BindRotationProfile()
         local makePublicationGuard = managedStoreReader and ownedPublicationGuard
         local observedPrivate, observedMethod
 
-        -- Returns the context eligibility is judged against: the private library value when the context method is
-        -- proven to be the library's own, otherwise a copy of only the fields eligibility reads.
+        -- Returns the context eligibility is judged against.
+        -- @return table  The private library value when the context method is proven to be the library's own, otherwise
+        --   a copy of only the fields eligibility reads.
         local function eligibilityContext()
             local value, private, method = rotationContext(owner, number)
 
@@ -2708,8 +2930,9 @@ function addon:BindRotationProfile()
         )
 
         -- Checks everything a pass depends on except the record seals: coordinator readiness, owner context, evaluation
-        -- context, library generation, validation stamp and condition registry version. Returns true, or nil and a
-        -- reason.
+        -- context, library generation, validation stamp and condition registry version.
+        -- @return boolean|nil  True when all hold; nil otherwise.
+        -- @return string|nil  The reason when the first return is nil; nil otherwise.
         local function baseCurrent()
             local readyNow, problemText = ready()
 
@@ -2774,7 +2997,9 @@ function addon:BindRotationProfile()
             return true
         end
 
-        -- True while the pass's checks and every record it has read are unchanged; otherwise nil and the reason.
+        -- Reports whether the pass's checks and every record it has read are unchanged.
+        -- @return boolean|nil  True while they are; nil otherwise.
+        -- @return string|nil  The reason when the first return is nil; nil otherwise.
         function pass:IsCurrent()
             local current, problemText = baseCurrent()
 
@@ -2808,6 +3033,8 @@ function addon:BindRotationProfile()
         end
 
         -- Reads the owner's record list once and keeps its seal, so a later change to the list invalidates the pass.
+        -- @return boolean|nil  True when the list was read; nil on failure.
+        -- @return string|nil  The reason when the first return is nil; nil otherwise.
         local function observeList()
             if listSeal then
                 return true
@@ -2823,11 +3050,18 @@ function addon:BindRotationProfile()
             return true
         end
 
-        -- Batch candidates validate their complete list once before publication.
-        -- Rechecking an ever-growing selected set for each row would be O(n^2).
-        -- Returns the evaluation body for one rotation, or nil and a reason ('disabled', 'specialization-mismatch',
-        -- 'action-context-mismatch', 'disabled-dependency', 'invalid-fallback', ...). The body is validated and cached
-        -- per record seal. `batch` skips the per-call currency check because Candidates validates the whole list once.
+        -- Returns the evaluation body for one rotation.
+        -- @param value table|string  A reference, key or id, as for Resolve.
+        -- @param candidates boolean|nil  True to keep rotations that fit the class but not the current level or
+        --   context.
+        -- @param batch boolean|nil  True to skip the per-call currency check because Candidates validates the whole
+        --   list once.
+        -- @return table|nil  The body; nil when unavailable.
+        -- @return string|nil  The reason ('disabled', 'specialization-mismatch', 'action-context-mismatch',
+        --   'disabled-dependency', 'invalid-fallback', ...) when the first return is nil; nil otherwise.
+        --
+        -- The body is validated and cached per record seal. Batch candidates validate their complete list once before
+        -- publication. Rechecking an ever-growing selected set for each row would be O(n^2).
         local function get(value, candidates, batch)
             local readyNow, problemText
 
@@ -2919,6 +3153,13 @@ function addon:BindRotationProfile()
                 end
             end
 
+            -- Builds (or reuses) the cached asset for a stored record: its validated copy of the body, keyed by record
+            -- seal and
+            -- validation stamp.
+            -- @param record table  The stored record.
+            -- @param recordSeal table  The record's seal.
+            -- @return table  The asset { seal, stamp, baseline, body, validation, applicability, untracked } or {
+            --   unavailable }.
             local okRead, asset, seal = reader:Read(reference.address, c, function(record, recordSeal)
                 local previous = assets[index]
 
@@ -3074,13 +3315,21 @@ function addon:BindRotationProfile()
             return asset.body
         end
 
-        -- Public read of one rotation by reference, key or id; see get.
+        -- Reads one rotation by reference, key or id; see get.
+        -- @param value table|string  A reference, key or id.
+        -- @param candidates boolean|nil  True to keep rotations that fit the class but not the current level or
+        --   context.
+        -- @return table|nil  The body; nil when unavailable.
+        -- @return string|nil  The reason when the first return is nil; nil otherwise.
         function pass:Get(value, candidates)
             return get(value, candidates, false)
         end
 
-        -- Returns a table of key to body for every rotation that can be considered (saved ones, the effective fallback
-        -- and Built In), or an empty table and a reason when the pass is not current.
+        -- Returns every rotation that can be considered (saved ones, the effective fallback and Built In), by key.
+        -- @param candidates boolean|nil  Defaults to true: keep rotations that fit the class but not the current level
+        --   or context.
+        -- @return table  A table from key to body; an empty table when the pass is not current.
+        -- @return string|nil  The reason when the pass is not current; nil otherwise.
         function pass:Candidates(candidates)
             local current, problemText = self:IsCurrent()
 
@@ -3148,6 +3397,10 @@ function addon:BindRotationProfile()
             local originalCurrent = pass.IsCurrent
             request.pass = pass
 
+            -- Checks the pass for publication, retaining the full route for public overrides and list/fallback
+            -- semantics.
+            -- @return boolean|nil  True while the pass is current; nil otherwise.
+            -- @return string|nil  The reason when the first return is nil; nil otherwise.
             request.publication = function()
                 -- Public overrides and list/fallback semantics retain the full route.
                 if
@@ -3215,9 +3468,14 @@ function addon:BindRotationProfile()
     local ownerClass = type(ownerPlatform) == 'table' and rawget(ownerPlatform, 'GetPlayerOwnerClassObservation')
 
     -- Builds the private plan source for the active custom rotation: a detached execution body, the cooldown
-    -- presentation views and the currency checks (entry, current, conditionCurrent, authority) that let the lean engine
-    -- reuse a plan. Returns nothing unless every captured function, the profile, the store, the library and the active
-    -- selection are the originals and the body has not been exposed or borrowed.
+    -- presentation views and the currency checks that let the lean engine reuse a plan.
+    -- @param spec number  The specialization ID or talent group.
+    -- @param key string  The rotation key.
+    -- @return table|nil  The plan { body, presentation, handle, token, entry, current, conditionCurrent, authority,
+    --   executionSource }; nothing unless every captured function, the profile, the store, the library and the active
+    --   selection are the originals and the body has not been exposed or borrowed.
+    --
+    -- Main alone receives this cold planner; public RuntimePass stays eager.
     currentPlanSource = function(spec, key)
         if
             current ~= coordinator
@@ -3323,8 +3581,11 @@ function addon:BindRotationProfile()
         local generation, definitionVersion = readLibraryRuntime()
         local exposure = exposureVersion
 
-        -- Full proof that the plan's inputs are unchanged. Returns whether it holds, plus the active handle, revision
-        -- and transition token it observed.
+        -- Full proof that the plan's inputs are unchanged.
+        -- @return boolean  Whether it holds.
+        -- @return table|nil  The active handle it observed.
+        -- @return number|nil  The active revision it observed.
+        -- @return table|nil  The transition token it observed.
         local function authority()
             local nextEpoch, nextDB, nextProfile, nextGlobal, nextDefs, nextRegistry, nextShared, nextPersonal, nextEffects, nextLibrary = runtimeAuthority(
                 owner
@@ -3383,10 +3644,11 @@ function addon:BindRotationProfile()
 
         local view = { enabled = true, validation = asset.validation, applicability = asset.applicability }
 
-        -- Plan's private caller has just proved cache authority. Recheck only
-        -- the actual inputs to context/eligibility before those handoffs; the
-        -- complete proof follows their callbacks at the end of entry.
-        -- True while the functions the context and eligibility handoffs call are still the captured originals.
+        -- Reports whether the functions the context and eligibility handoffs call are still the captured originals.
+        -- @return boolean  True while they are.
+        --
+        -- Plan's private caller has just proved cache authority. Recheck only the actual inputs to context/eligibility
+        -- before those handoffs; the complete proof follows their callbacks at the end of entry.
         local function contextInputsCurrent()
             return planRawget(storeScopeEnvironment, 'type') == planType
                 and planRawget(storeScopeEnvironment, 'ipairs') == planIpairs
@@ -3398,8 +3660,8 @@ function addon:BindRotationProfile()
                 and storeGetfenv(planEligible) == storeScopeEnvironment
         end
 
-        -- Evaluates context and eligibility for the plan. Returns { version, operation, allowed, reason }, or nothing
-        -- when any input or authority check fails.
+        -- Evaluates context and eligibility for the plan.
+        -- @return table|nil  { version, operation, allowed, reason }; nothing when any input or authority check fails.
         local function entry()
             if not contextInputsCurrent() then
                 return
@@ -3445,7 +3707,12 @@ function addon:BindRotationProfile()
             return { version = contextVersion, operation = operation, allowed = allowed == true, reason = reason }
         end
 
-        -- True while an entry result still matches the context version and authority.
+        -- Reports whether an entry result still matches the context version and authority.
+        -- @param value table|nil  The entry result.
+        -- @return boolean  True while it does.
+        -- @return table|nil  The active handle observed.
+        -- @return number|nil  The active revision observed.
+        -- @return table|nil  The transition token observed.
         local function currentEntry(value)
             if not value or value.version ~= contextVersion then
                 return false
@@ -3457,6 +3724,8 @@ function addon:BindRotationProfile()
 
         -- Cheaper currency check for the condition phase: the same authorities as `authority` without the ownership
         -- checks already proved by the preceding entry.
+        -- @param value table|nil  The entry result.
+        -- @return boolean  True while they hold.
         local function conditionCurrent(value)
             if
                 not value
@@ -3557,7 +3826,9 @@ end
 -- Public wrappers and startup handoffs
 -- ============================================================================
 
--- Returns the bound coordinator, or nil and 'rotation-profile-not-bound'.
+-- Returns the bound coordinator.
+-- @return table|nil  The coordinator; nil when none is bound.
+-- @return string|nil  'rotation-profile-not-bound' when the first return is nil; nil otherwise.
 local function bound()
     local value = addon:GetScopedRotationCoordinator()
 
@@ -3569,6 +3840,11 @@ local function bound()
 end
 
 -- Public wrapper for coordinator:Resolve.
+-- @param spec number  The specialization ID or talent group.
+-- @param value table|string  A reference, key or id.
+-- @return table|nil  The reference; nil on failure.
+-- @return string|nil  The reason ('rotation-profile-not-bound' when no coordinator is bound, or Resolve's) when the
+--   first return is nil; nil otherwise.
 function addon:ResolveRotationReference(spec, value)
     local c, why = bound()
 
@@ -3580,6 +3856,9 @@ function addon:ResolveRotationReference(spec, value)
 end
 
 -- Public wrapper for coordinator:Headers.
+-- @param spec number  The specialization ID or talent group.
+-- @return table[]|nil  The roster rows; nil on failure.
+-- @return table|string|nil  The roster stamp; the reason when the first return is nil.
 function addon:ListRotationHeaders(spec)
     local c, why = bound()
 
@@ -3591,6 +3870,11 @@ function addon:ListRotationHeaders(spec)
 end
 
 -- Public wrapper for coordinator:Snapshot.
+-- @param spec number  The specialization ID or talent group.
+-- @param value table|string  A reference, key or id.
+-- @return table|nil  The record; nil on failure.
+-- @return table|string|nil  The public token (nil for a Built In); the reason when the first return is nil.
+-- @return table|nil  The validation of the body.
 function addon:GetRotationRecordSnapshot(spec, value)
     local c, why = bound()
 
@@ -3602,6 +3886,11 @@ function addon:GetRotationRecordSnapshot(spec, value)
 end
 
 -- Public wrapper for coordinator:NewDraft.
+-- @param spec number  The specialization ID or talent group.
+-- @param scope string|nil  'class' (default) or 'character'.
+-- @param fallback boolean|nil  True to register the fallback's draft.
+-- @return table|nil  The reference; nil on failure.
+-- @return string|nil  The key; the reason when the first return is nil.
 function addon:NewRotationDraftTarget(spec, scope, fallback)
     local c, why = bound()
 
@@ -3613,6 +3902,13 @@ function addon:NewRotationDraftTarget(spec, scope, fallback)
 end
 
 -- Public wrapper for coordinator:Commit.
+-- @param reference table  The rotation's reference.
+-- @param token table|nil  A Snapshot token.
+-- @param record table  The record.
+-- @param scope string|nil  'class' or 'character'.
+-- @return table|nil  The target reference; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+-- @return table|nil  The active-rotation transition.
 function addon:CommitRotationDraft(reference, token, record, scope)
     local c, why = bound()
 
@@ -3624,6 +3920,10 @@ function addon:CommitRotationDraft(reference, token, record, scope)
 end
 
 -- Public wrapper for coordinator:Delete.
+-- @param reference table  The rotation's reference.
+-- @param token table  The token from Snapshot.
+-- @return boolean|nil  True when deleted; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:DeleteRotationRecord(reference, token)
     local c, why = bound()
 
@@ -3635,6 +3935,9 @@ function addon:DeleteRotationRecord(reference, token)
 end
 
 -- Public wrapper for coordinator:RuntimePass; evaluation in main.lua normally takes the private route instead.
+-- @param spec number  The specialization ID or talent group.
+-- @return table|nil  The pass; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:AcquireRotationRuntimePass(spec)
     local c, why = bound()
 
@@ -3649,6 +3952,17 @@ ownedAcquireRuntimePass = addon.AcquireRotationRuntimePass
 local ownedGetCleanup = addon.GetRotationForCleanup
 
 if type(installConsumerAvailability) == 'function' then
+    -- Answers whether the current rotation's body is still available, for Core/conditions.lua (the reader installed
+    -- through
+    -- ConsumeConditionConsumerAvailability).
+    -- @param owner table  The addon.
+    -- @return boolean|nil  True when the body is available; false when it is not; nil when the owner or coordinator is
+    --   not
+    --   the original (the caller then follows the eager route).
+    --
+    -- Decline before callback-capable work so public override/error dispatch follows the original eager sequence
+    -- exactly
+    -- once.
     installConsumerAvailability(function(owner)
         -- Decline before callback-capable work so public override/error dispatch
         -- follows the original eager sequence exactly once.
@@ -3682,11 +3996,15 @@ if type(installConsumerAvailability) == 'function' then
     end)
 end
 
--- Only main receives this capability. Public/manual RuntimePass callers retain
--- the fresh provider route, and every main invocation starts a new observation.
--- Hands main.lua four private functions, in order: acquire a pass (starting a fresh observation), invalidate the
--- evaluation context, acquire a plan pass, and read the cleanup body. Each falls back to the public method when the
--- owner or coordinator is not the original. Returns true.
+-- Hands main.lua four private functions, in order.
+-- @param bind function  Called with: acquire(owner, spec), which acquires a pass starting a fresh observation
+--   (returning the pass, a reason and the publication check); invalidate(), which invalidates the evaluation context; a
+--   plan-pass acquirer(owner, spec); and a cleanup reader(owner, spec, key, capturedMethod). Each falls back to the
+--   public method when the owner or coordinator is not the original.
+-- @return boolean|nil  True when handed over; nil for a foreign caller or a non-function `bind`.
+--
+-- Only main receives this capability. Public/manual RuntimePass callers retain the fresh provider route, and every main
+-- invocation starts a new observation.
 function addon:BindRuntimeEvaluationContext(bind)
     if self ~= addon or type(bind) ~= 'function' then
         return nil
@@ -3752,10 +4070,13 @@ function addon:BindRuntimeEvaluationContext(bind)
     return true
 end
 
--- Inspection of another profile never switches the active database or grants
--- edit authority. Only detached saved headers for the current owner leave here.
--- Returns detached roster headers (all specializations) for the current owner's custom rotations in `profile`, or nil
--- and a reason. Opens a throwaway store reader over that profile and retires it before returning.
+-- Returns detached roster headers (all specializations) for the current owner's custom rotations in a profile.
+-- @param profile table  The profile table to inspect.
+-- @return table[]|nil  The headers; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Opens a throwaway store reader over that profile and retires it before returning. Inspection of another profile never
+-- switches the active database or grants edit authority. Only detached saved headers for the current owner leave here.
 function addon:GetProfileRotationHeaders(profile)
     if not plain(profile) then
         return nil, 'invalid-profile'
@@ -3790,6 +4111,10 @@ function addon:GetProfileRotationHeaders(profile)
     end
 
     -- Retires the temporary reader, then passes the result through.
+    -- @param value any  The result to pass through.
+    -- @param problem any  The reason to pass through.
+    -- @return any  `value`.
+    -- @return any  `problem`.
     local function finish(value, problem)
         reader:Retire()
         return value, problem
@@ -3830,6 +4155,11 @@ function addon:GetProfileRotationHeaders(profile)
 
         for _, row in ipairs(rows) do
             if row.address.spec == number then
+                -- Projects one stored record into a detached roster header.
+                -- @param record table  The stored record.
+                -- @return table  The header { reference, canonicalId, kind, scope, spec, name, description, enabled,
+                --   priority, tags,
+                --   search, fallback, readOnly, pending }.
                 local ok, view = reader:Read(row.address, c, function(record)
                     local body = record.body
 
@@ -3898,9 +4228,11 @@ end
 
 -- END PRIVATE VALIDATION CPU HANDOFF
 
--- Cold-consumed by Core/active_runtime_plan, never a public body getter.
 -- Hands Core/active_runtime_plan.lua the plan-source function and the active-runtime reader. The receiver gets nothing
 -- for any other caller.
+-- @param receiver function  Called with planSource(owner, spec, key) and the active-runtime reader.
+--
+-- Cold-consumed by Core/active_runtime_plan, never a public body getter.
 function addon:BindScopedActiveRuntimePlan(receiver)
     if self ~= addon or type(receiver) ~= 'function' then
         return

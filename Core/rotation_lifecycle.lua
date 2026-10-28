@@ -18,10 +18,13 @@ end
 
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Also called after import overlays: AceDB emits Reset/Copy before the
--- importer publishes its final roots, so its event alone cannot authorize them.
--- Re-syncs integrations, notifies dependency freshness and rebuilds scoped storage and the library. Returns true, or
--- nil and the recovery reason (also kept in rotationStorageError).
+-- Re-syncs integrations, notifies dependency freshness and rebuilds the scoped storage and the library.
+-- @return boolean|nil  True when the scoped storage initialized; nil otherwise.
+-- @return string|nil  The recovery reason (also kept in rotationStorageError) when the first return is nil; nil
+--   otherwise.
+--
+-- Also called after import overlays: AceDB emits Reset/Copy before the importer publishes its final roots, so its event
+-- alone cannot authorize them.
 function addon:RefreshRotationProfileStorage()
     if self.SyncQuestieIntegration then
         self:SyncQuestieIntegration()
@@ -49,9 +52,14 @@ function addon:RefreshRotationProfileStorage()
     return ok, why
 end
 
--- Handles a profile change, copy or reset. Returns true, or nil and a reason ('rotation-transition-superseded' when a
--- newer switch took over mid-way). The method reads are repeated after each step on purpose: any of them can run
--- foreign code that starts a newer transition, and the check must catch that before the next step.
+-- Handles a profile change, copy or reset: retires the active rotation, rebuilds the rotation storage and re-enables
+-- the engine.
+-- @return boolean|nil  True on success; nil on failure.
+-- @return string|nil  The reason ('rotation-transition-superseded' when a newer switch took over mid-way, or the
+--   storage recovery reason) when the first return is nil; nil otherwise.
+--
+-- The method reads are repeated after each step on purpose: any of them can run foreign code that starts a newer
+-- transition, and the check must catch that before the next step.
 function addon:RotationProfileChanged()
     local change = beginActive(self)
 
@@ -150,7 +158,9 @@ function addon:RotationProfileChanged()
     return ok, why
 end
 
--- Registers the profile callbacks on the current AceDB, replacing a previous registration. Safe to call repeatedly.
+-- Registers the profile callbacks on the current AceDB, replacing a previous registration.
+--
+-- Safe to call repeatedly.
 function addon:InstallRotationProfileLifecycle()
     local db = self.db
     local previous = self.rotationProfileLifecycleDB
@@ -175,7 +185,11 @@ function addon:InstallRotationProfileLifecycle()
     -- Give lifecycle callbacks a distinct binding owner so both can coexist.
     local owner = {}
 
-    -- Ignores an event delivered to a callback that belongs to a database or owner that has since been replaced.
+    -- Ignores an event delivered to a callback that belongs to a database or owner that has since been replaced;
+    -- otherwise handles the profile change.
+    -- @param ... any  The AceDB callback arguments, passed on to RotationProfileChanged.
+    -- @return boolean|nil  RotationProfileChanged's result; nil when the event was ignored.
+    -- @return string|nil  RotationProfileChanged's reason.
     local function changed(...)
         if self.db ~= db or self.rotationProfileLifecycleDB ~= db or self.rotationProfileLifecycleOwner ~= owner then
             return

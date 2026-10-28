@@ -8,9 +8,12 @@
 
 local _, addon = ...
 
--- Maps a stored creature-type key to the numeric creature type id the client reports, or nil for an unknown key.
--- Existing stored keys retain their identities, including GAS_CLUUD's spelling.
--- This is one executable map; no mutable caption table enters gameplay matching.
+-- Maps a stored creature-type key to the numeric creature type id the client reports.
+-- @param key string  The stored creature-type key (for example 'BEAST').
+-- @return number|nil  The creature type id; nil for an unknown key.
+--
+-- Existing stored keys retain their identities, including GAS_CLUUD's spelling. This is one executable map; no mutable
+-- caption table enters gameplay matching.
 local function configuredID(key)
     if key=='BEAST' then return 1
     elseif key=='DRAGONKIN' then return 2
@@ -27,9 +30,16 @@ local function configuredID(key)
     elseif key=='GAS_CLUUD' then return 13 end
 end
 
--- Answers whether the unit's creature type is the one selected by a stored key. Returns true or false, or nil and a
--- reason (restricted-value, invalid-unit, invalid-creature-type-selection, or the platform's own reason). The unit and
--- key are checked with CanReadValue first because a restricted client can hand back secret values.
+-- Answers whether the unit's creature type is the one selected by a stored key.
+-- @param unit string  The unit token to inspect (non-empty).
+-- @param key string  The stored creature-type key.
+-- @param cache table|nil  The per-pass evaluation cache; nil reads uncached.
+-- @return boolean|nil  True when the types match, false when they differ or the unit has no creature type; nil when the
+--   answer is unavailable.
+-- @return string|nil  The reason code when the first return is nil (restricted-value, invalid-unit,
+--   invalid-creature-type-selection, or the platform's own reason); nil otherwise.
+--
+-- The unit and key are checked with CanReadValue first because a restricted client can hand back secret values.
 function addon:GetConditionCreatureTypeMatch(unit, key, cache)
     if not self.Platform:CanReadValue(unit) or not self.Platform:CanReadValue(key) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

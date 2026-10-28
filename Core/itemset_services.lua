@@ -12,8 +12,11 @@ local units = addon.units
 
 -- Runtime ItemSet services; legacy UI and secure-action policy remain unchanged.
 
--- Walks a legacy condition tree (NOT / AND / OR around leaves) and returns true when an item condition names the item
--- set `id`. Only string items count; a numeric item id is never a set reference.
+-- Walks a legacy condition tree (NOT / AND / OR around leaves) and reports whether an item condition names an item set.
+-- @param cond table|nil  The condition tree.
+-- @param id string  The item set id.
+-- @return boolean  True when an item condition names the item set `id`. Only string items count; a numeric item id is
+--   never a set reference.
 local function CondIsItem(cond, id)
     if cond then
         if cond.type == "NOT" then
@@ -44,9 +47,13 @@ end
 -- Usage scan
 -- ============================================================================
 
--- True when item set `id` is referenced by a button binding or by any stored rotation. With the scoped rotation store
--- the scan is conservative: an unreadable store, a very deep or very large record counts as "in use". Without it, it
--- walks db.profile.rotations the legacy way. The usage scan has no caller outside tests in this tree.
+-- Reports whether an item set is referenced by a button binding or by any stored rotation.
+-- @param id string  The item set id.
+-- @return boolean  True when it is.
+--
+-- With the scoped rotation store the scan is conservative: an unreadable store, a very deep or very large record counts
+-- as "in use". Without it, it walks db.profile.rotations the legacy way. The usage scan has no caller outside tests in
+-- this tree.
 function addon:ItemSetInUse(id)
     local bindings = self.db.char.bindings
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
@@ -64,6 +71,10 @@ function addon:ItemSetInUse(id)
 
         local seen, count = {}, 0
 
+        -- Reports whether a value, searched recursively, names the item set under an `action` or `item` key.
+        -- @param value any  The value to search.
+        -- @param depth number|nil  The nesting depth (at most 64).
+        -- @return boolean  True when it does; also true when the search limits (64 levels, 20000 nodes) are exceeded.
         local function uses(value, depth)
             if type(value) ~= 'table' then
                 return false
@@ -155,10 +166,12 @@ end
 -- Secure buttons
 -- ============================================================================
 
--- Rebuilds the hidden secure macro buttons for item set `id`, one per unit key in addon.units, each named
--- RM_<set name>_<unit> with a macro that /uses every item in the set against that unit. A deleted set removes its
--- buttons; a renamed set replaces them because the global frame name changes. Callers are the settings page and the
--- PLAYER_ENTERING_WORLD and PLAYER_REGEN_ENABLED handlers in main.lua, never the poll.
+-- Rebuilds the hidden secure macro buttons for an item set, one per unit key in addon.units, each named RM_<set
+-- name>_<unit> with a macro that /uses every item in the set against that unit.
+-- @param id string  The item set id.
+--
+-- A deleted set removes its buttons; a renamed set replaces them because the global frame name changes. Callers are the
+-- settings page and the PLAYER_ENTERING_WORLD and PLAYER_REGEN_ENABLED handlers in main.lua, never the poll.
 function addon:UpdateItemSetButtons(id)
     local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
@@ -230,13 +243,24 @@ end
 -- Editor lists
 -- ============================================================================
 
--- Legacy six-argument entry point; forwards to the native owner OpenItemListPopup (UI/item_list_popup.lua).
+-- Legacy entry point; forwards to the native owner OpenItemListPopup (UI/item_list_popup.lua).
+-- @param name string  The popup title.
+-- @param editbox string|nil  The reference provider kind that resolves and displays items (default the item editbox).
+-- @param items table  The caller's list, edited only on Apply.
+-- @param isvalid function|nil  isvalid(resolved) vets each entry.
+-- @param update function|nil  update() runs after a successful Apply.
+-- @param onclose function|nil  onclose(widget) runs after release.
+-- @param options table|nil  options.valid() may revoke the popup.
+-- @return table  The popup widget.
 function addon:item_list_popup(name, editbox, items, isvalid, update, onclose, options)
     return self:OpenItemListPopup(name, editbox, items, isvalid, update, onclose, options)
 end
 
--- Builds the item set choices for a dropdown: returns a value-to-label table and a sorted key list. Personal sets come
--- first by name, then global sets (labeled in cyan), then the empty key "" labeled `empty` for the Custom choice.
+-- Builds the item set choices for a dropdown.
+-- @param empty string  The label for the empty key "" (the Custom choice).
+-- @return table  A table from value to label.
+-- @return string[]  The sorted key list: personal sets first by name, then global sets (labeled in cyan), then the
+--   empty key "".
 function addon:get_item_list(empty)
     local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets

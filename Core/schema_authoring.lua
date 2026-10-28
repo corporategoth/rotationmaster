@@ -13,12 +13,15 @@ local _, addon = ...
 -- ============================================================================
 
 -- Returns a deep copy of settings data.
+-- @param value any  The data to copy.
+-- @return any  The copy.
 local function copy(value)
     return addon:CopySettingsData(value)
 end
 
--- Flattens a field path (a list of string and number keys) into one string, so paths can key a table; the key type is
--- part of the text, so 1 and "1" differ.
+-- Flattens a field path into one string, so paths can key a table.
+-- @param path (string|number)[]  The field path: a list of string and number keys.
+-- @return string  The flattened path; the key type is part of the text, so 1 and "1" differ.
 local function pathKey(path)
     local parts = {}
 
@@ -29,8 +32,10 @@ local function pathKey(path)
     return table.concat(parts, '/')
 end
 
--- True when name is a legal editable field name: a short identifier, and at the top level not one of the reserved
--- condition keys type and disabled.
+-- Reports whether a name is a legal editable field name.
+-- @param name any  The candidate name.
+-- @param root boolean|nil  True at the top level, where the reserved condition keys type and disabled are refused.
+-- @return boolean  True for a short identifier (at most 64 characters) that is not reserved at the top level.
 function addon:IsEditableFieldSchemaName(name, root)
     return type(name) == 'string'
         and #name <= 64
@@ -38,8 +43,12 @@ function addon:IsEditableFieldSchemaName(name, root)
         and not (root and (name == 'type' or name == 'disabled'))
 end
 
--- Validates a stored field display order (a list of paths into the schema) against the schema. Returns a fresh copy, an
--- empty list for nil, or nil and invalid-field-order when it is not a dense list of distinct, existing paths.
+-- Validates a stored field display order against the schema.
+-- @param order table|nil  A list of paths into the schema; nil means no order.
+-- @param fields table  The schema the paths must exist in.
+-- @return table[]|nil  A fresh copy (an empty list for nil); nil when `order` is not a dense list of distinct, existing
+--   paths.
+-- @return string|nil  'invalid-field-order' when the first return is nil; nil otherwise.
 function addon:NormalizeCustomFieldOrder(order, fields)
     if order == nil then
         return {}
@@ -114,8 +123,12 @@ function addon:NormalizeCustomFieldOrder(order, fields)
     return result
 end
 
--- Returns the names in a required-fields list that still exist in the schema, deduplicated and capped at 128, or nil
--- when there is no list. Entries that no longer match a field are dropped.
+-- Returns the names in a required-fields list that still exist in the schema.
+-- @param required table|nil  The stored required-fields list.
+-- @param fields table  The schema whose top-level names are checked.
+-- @return string[]|nil  The names that still exist, deduplicated and capped at 128; nil when there is no list. Entries
+--   that no longer match a field are dropped.
+--
 -- Reconcile only after an explicit schema edit/Apply, never while rendering.
 function addon:FilterCustomRequiredFields(required, fields)
     if required == nil then
@@ -143,11 +156,16 @@ end
 -- ============================================================================
 
 -- Builds the editable draft the schema editor works on from a stored schema, its field order and its required fields.
--- Returns the draft, or nil and a reason code when the stored schema does not normalize. The draft is a tree of nodes
--- (record, union or a scalar kind); every method below changes it through Change so each edit lands on the bounded undo
--- stack, and Snapshot turns it back into stored form.
--- A schema is data: records have named children; numeric children describe
--- alternatives, including list element schemas. Lua source is never evaluated.
+-- @param fields table  The stored schema.
+-- @param fieldOrder table|nil  The stored field display order.
+-- @param requiredFields table|nil  The stored required-fields list.
+-- @return table|nil  The draft; nil when the stored schema or order does not normalize.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The draft is a tree of nodes (record, union or a scalar kind); every method below changes it through Change so each
+-- edit lands on the bounded undo stack, and Snapshot turns it back into stored form. A schema is data: records have
+-- named children; numeric children describe alternatives, including list element schemas. Lua source is never
+-- evaluated.
 function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     local normalized, why = self:NormalizeCustomFieldSchema(fields, true)
 
@@ -169,6 +187,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
 
     -- Turns a normalized schema value into a draft node: a scalar kind, or a record or union with children in field
     -- order.
+    -- @param value table|string  The normalized schema value.
+    -- @param path (string|number)[]  The field path of the value, used to look up its position in the stored order.
+    -- @param name string|number|nil  The node's name (nil for the root).
+    -- @return table  The draft node { name, kind, children }.
     local function build(value, path, name)
         if type(value) == 'string' then
             return { name = name, kind = value }
@@ -181,6 +203,12 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
             keys[#keys + 1] = key
         end
 
+        -- Sort order for the children of a node: numeric keys first by value, then named keys by their position in the
+        -- stored
+        -- field order, then by name.
+        -- @param a string|number  The first key.
+        -- @param b string|number  The second key.
+        -- @return boolean  True when `a` sorts before `b`.
         table.sort(keys, function(a, b)
             if type(a) == 'number' then
                 return a < b
@@ -226,8 +254,11 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end
     end
 
-    -- Applies an edit function to the draft root. Returns true and records an undo step (at most 50 are kept) only when
-    -- the edit really changed the tree.
+    -- Applies an edit function to the draft root.
+    -- @param fn function  Called as fn(root) to edit the tree in place.
+    -- @return boolean  True when the edit really changed the tree; false when it changed nothing.
+    --
+    -- Records an undo step (at most 50 are kept) only when the edit really changed the tree.
     function d:Change(fn)
         local before = copy(self.root)
         fn(self.root)
@@ -247,8 +278,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         return true
     end
 
-    -- Moves one step back (or forward when redo is true) through the history. Returns false when there is nothing to
-    -- move.
+    -- Moves one step back (or forward when redo is true) through the history.
+    -- @param redo boolean|nil  True to move forward.
+    -- @return boolean  True when a step was taken; false when there is nothing to move.
     function d:Travel(redo)
         local from = redo and self.redo or self.undo
         local to = redo and self.undo or self.redo
@@ -263,8 +295,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         return true
     end
 
-    -- Returns the node at a path of child indexes (the root for an empty path), or nil when the path does not lead to a
-    -- node.
+    -- Returns the node at a path of child indexes.
+    -- @param path number[]  The child indexes from the root; empty for the root.
+    -- @return table|nil  The node; nil when the path does not lead to a node.
     function d:Node(path)
         local node = self.root
 
@@ -283,8 +316,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         return node
     end
 
-    -- Marks or unmarks a top-level field as required. Only top-level fields can be required; returns whether anything
-    -- changed.
+    -- Marks or unmarks a top-level field as required.
+    -- @param path number[]  The path of the field; only top-level fields (one index) can be required.
+    -- @param required boolean  The new required state.
+    -- @return boolean  True when anything changed.
     function d:SetRequired(path, required)
         if #path ~= 1 or type(required) ~= 'boolean' then
             return false
@@ -303,14 +338,19 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     end
 
     -- Returns the path of the node that contains the node at path.
+    -- @param path number[]  A non-empty node path.
+    -- @return number[]  The parent's path.
     local function parentPath(path)
         local result = copy(path)
         table.remove(result)
         return result
     end
 
-    -- Picks a legal field name under a record that no sibling (other than except) uses, shortening and numbering it as
-    -- needed and avoiding the reserved top-level names.
+    -- Picks a legal field name under a record that no sibling uses.
+    -- @param parent table  The record node the name is for.
+    -- @param base string|nil  The preferred name; anything illegal falls back to 'field'.
+    -- @param except table|nil  A child that does not count as a sibling (the node being renamed).
+    -- @return string  The name, shortened and numbered as needed and avoiding the reserved top-level names.
     local function uniqueName(parent, base, except)
         base = type(base) == 'string' and base:match('^[%a_][%w_]*$') and base or 'field'
 
@@ -339,8 +379,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         return name
     end
 
-    -- Adds a new field of the given kind (default string) at the end of the container at path; returns whether it
-    -- changed.
+    -- Adds a new field at the end of a container.
+    -- @param path number[]  The path of the container node.
+    -- @param kind string|nil  The kind of the new field; default 'string'.
+    -- @return boolean  True when it changed the draft.
     function d:Add(path, kind)
         local parent = self:Node(path)
 
@@ -357,7 +399,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end)
     end
 
-    -- Inserts a copy of the node right after it, with a fresh name when the container is a record.
+    -- Inserts a copy of a node right after it, with a fresh name when the container is a record.
+    -- @param path number[]  The path of the node to copy; must not be the root.
+    -- @return boolean  True when it changed the draft.
     function d:Duplicate(path)
         local node = self:Node(path)
         local parent = self:Node(parentPath(path))
@@ -377,7 +421,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end)
     end
 
-    -- Removes the node at path.
+    -- Removes the node at a path.
+    -- @param path number[]  The path of the node; must not be the root.
+    -- @return boolean  True when it changed the draft.
     function d:Remove(path)
         if #path == 0 or not self:Node(path) then
             return false
@@ -390,8 +436,14 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end)
     end
 
-    -- Changes a node's kind, creating a starter child when it becomes a record or union, renaming record children so
-    -- they stay legal and unique, and dropping the children of a scalar kind. Rejects unknown kinds.
+    -- Changes a node's kind.
+    -- @param path number[]  The path of the node; must not be the root.
+    -- @param kind string  'record', 'union', 'string', 'number', 'boolean', 'condition' or 'condition[]'; unknown kinds
+    --   are rejected.
+    -- @return boolean  True when it changed the draft.
+    --
+    -- Creates a starter child when the node becomes a record or union, renames record children so they stay legal and
+    -- unique, and drops the children of a scalar kind.
     function d:SetKind(path, kind)
         local node = self:Node(path)
 
@@ -410,6 +462,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
             return false
         end
 
+        -- Edit applied by SetKind: sets the node's kind, giving a record or union a starter child and renaming record
+        -- children so
+        -- they stay legal and unique, or dropping the children of a scalar kind.
         return self:Change(function()
             node.kind = kind
 
@@ -441,9 +496,13 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end)
     end
 
-    -- True when the node at path (and, with tail, every later sibling) may be moved into the container at destination
-    -- at slot gap: the slot must exist, the move must change something, a container may not move inside itself, and
-    -- record names may not collide.
+    -- Reports whether a node may be moved into another slot.
+    -- @param path number[]  The path of the node to move.
+    -- @param destination number[]  The path of the target container.
+    -- @param gap number  The slot in the target container (1 to its child count + 1).
+    -- @param tail boolean|nil  True to move every later sibling with the node.
+    -- @return boolean  True when the slot exists, the move changes something, a container does not move inside itself,
+    --   and record names do not collide.
     function d:CanTransfer(path, destination, gap, tail)
         if #path == 0 or not self:Node(path) then
             return false
@@ -508,8 +567,15 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         return true
     end
 
-    -- Moves the node (or, with tail, it and its later siblings) to slot gap of the destination container if CanTransfer
-    -- allows it. A node moved anywhere but the top level loses its required flag.
+    -- Moves a node (or, with tail, it and its later siblings) to a slot of the destination container if CanTransfer
+    -- allows.
+    -- @param path number[]  The path of the node to move.
+    -- @param destination number[]  The path of the target container.
+    -- @param gap number  The slot in the target container.
+    -- @param tail boolean|nil  True to move every later sibling with the node.
+    -- @return boolean  True when it changed the draft.
+    --
+    -- A node moved anywhere but the top level loses its required flag.
     function d:Transfer(path, destination, gap, tail)
         if not self:CanTransfer(path, destination, gap, tail) then
             return false
@@ -520,6 +586,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         local index = path[#path]
         local count = tail and #parent.children - index + 1 or 1
 
+        -- Edit applied by Transfer: moves the nodes to the destination slot, clearing the required flag of nodes that
+        -- leave the
+        -- top level and naming unnamed nodes that enter a record.
         return self:Change(function()
             local moved = {}
 
@@ -544,16 +613,23 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end)
     end
 
-    -- Converts the draft back to stored form and returns schema, field order, required names (nil when the draft never
-    -- had a required list); or nil and a reason code when it is invalid (schema-limit, invalid-field-name,
-    -- duplicate-field, invalid-required-fields).
+    -- Converts the draft back to stored form.
+    -- @return table|nil  The stored schema; nil when the draft is invalid.
+    -- @return table[]|string  The field order (a list of paths) on success, or the reason code (schema-limit,
+    --   invalid-field-name, duplicate-field, invalid-required-fields) when the first return is nil.
+    -- @return string[]|nil  The required names; nil when the draft never had a required list.
     function d:Snapshot()
         local order = {}
         local count = 0
         local active = {}
 
-        -- Turns a draft node back into stored schema form, collecting the field order. Raises schema-limit,
-        -- invalid-field-name or duplicate-field, which Snapshot catches.
+        -- Turns a draft node back into stored schema form, collecting the field order.
+        -- @param node table  The draft node.
+        -- @param path (string|number)[]  The field path of the node.
+        -- @param depth number  The nesting depth (0 for the root).
+        -- @return table|string  The stored form of the node.
+        --
+        -- Raises schema-limit, invalid-field-name or duplicate-field, which Snapshot catches.
         local function encode(node, path, depth)
             count = count + 1
 

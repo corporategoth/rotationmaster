@@ -9,9 +9,17 @@
 
 local _, addon = ...
 
--- A count is complete only after every selected fixed roster slot is known.
--- Current player observations are pass snapshots; archived source keeps its
--- original load-time class binding independently of this live path.
+-- Counts the members of the player's group (or just the player) whose class matches the given class.
+-- @param cache table|nil  The per-pass evaluation cache; nil reads uncached.
+-- @param class string  The class token to count (non-empty).
+-- @param raid boolean|nil  True to count a raid roster when the player is in a raid; nil or false counts only the
+--   party.
+-- @return number|nil  The number of matching members; nil when any needed fact is unavailable.
+-- @return string|nil  The reason code when the count is nil ('restricted-value', 'invalid-class-group-query' or the
+--   platform's own reason); nil otherwise.
+--
+-- A count is complete only after every selected fixed roster slot is known. Current player observations are pass
+-- snapshots; archived source keeps its original load-time class binding independently of this live path.
 function addon:GetClassGroupCount(cache, class, raid)
     local platform=self.Platform
     if not platform:CanReadValue(class) or not platform:CanReadValue(raid) then return nil,'restricted-value' end

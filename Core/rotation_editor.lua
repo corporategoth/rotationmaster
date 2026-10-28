@@ -17,13 +17,20 @@ if type(addon.BindActiveRotationPublication) == 'function' then
     end)
 end
 
--- Deep equality of two portable data trees (no cycles, no functions). Returns false when either side is not portable
--- data, so a draft holding a stray function or cycle never compares equal to anything.
+-- Deep equality of two portable data trees (no cycles, no functions).
+-- @param left any  The first tree.
+-- @param right any  The second tree.
+-- @return boolean  True when equal; false when either side is not portable data, so a draft holding a stray function or
+--   cycle never compares equal to anything.
 local function equal(left, right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then
         return false
     end
 
+    -- Compares two values deeply.
+    -- @param a any  The first value.
+    -- @param b any  The second value.
+    -- @return boolean  True when equal.
     local function compare(a, b)
         if type(a) ~= type(b) then
             return false
@@ -50,7 +57,10 @@ local function equal(left, right)
     return compare(left, right)
 end
 
--- Rough memory cost in bytes of a value, used only to bound the undo history; it is a budget, not an exact size.
+-- Estimates the memory cost in bytes of a value, used only to bound the undo history; it is a budget, not an exact
+-- size.
+-- @param value any  The value to measure.
+-- @return number  The estimated bytes.
 local function weight(value)
     if type(value) == 'string' then
         return 32 + #value
@@ -68,9 +78,15 @@ local function weight(value)
     return total
 end
 
--- Opens an edit session on `original` (the saved rotation body) for the given spec. `options` is a plain table:
--- targetValid, commit, readOnly, newRecord, ownership, setOwnershipAllowed, newId and reserved. Returns the session
--- (Snapshot, Baseline, Ownership, IsDirty, HistoryState, Command, Undo, Redo, Cancel, Apply), or nil and a reason.
+-- Opens an edit session on a saved rotation body.
+-- @param spec number  The specialization ID or talent group the rotation is edited for.
+-- @param original table  The saved rotation body.
+-- @param options table|nil  Plain table: targetValid, commit, readOnly, newRecord, ownership, setOwnershipAllowed,
+--   newId and reserved.
+-- @return table|nil  The session (Snapshot, Baseline, BaselineOwnership, Ownership, IsDirty, HistoryState, Command,
+--   Undo, Redo, Cancel, Apply); nil when the options or the body are invalid.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
 -- Only Apply writes `original`, and it does so in place so every holder of the record sees the new body.
 function addon:NewRotationEditSession(spec, original, options)
     options = options or {}
@@ -114,13 +130,18 @@ function addon:NewRotationEditSession(spec, original, options)
     local undo, redo, bytes = {}, {}, 0
 
     -- Pushes a snapshot frame on an undo or redo stack and adds its weight to the shared byte budget.
+    -- @param stack table  The undo or redo stack.
+    -- @param value table  The frame { body, ownership }.
     local function push(stack, value)
         local size = weight(value)
         stack[#stack + 1] = { value = value, bytes = size }
         bytes = bytes + size
     end
 
-    -- Removes and returns a frame (the top one unless `at` is given) and releases its weight.
+    -- Removes a frame and releases its weight.
+    -- @param stack table  The undo or redo stack.
+    -- @param at number|nil  The frame to remove; the top one when nil.
+    -- @return table|nil  The removed frame { value, bytes }; nil when the stack was empty.
     local function pop(stack, at)
         local entry = table.remove(stack, at or #stack)
 
@@ -144,7 +165,10 @@ function addon:NewRotationEditSession(spec, original, options)
         end
     end
 
-    -- Returns true when a change may be made now, else nil and why (closed, busy or read-only).
+    -- Reports whether a change may be made now.
+    -- @return boolean|nil  True when it may; nil otherwise.
+    -- @return string|nil  'rotation-editor-closed', 'rotation-editor-busy' or 'readonly-rotation' when not; nil
+    --   otherwise.
     local function writable()
         if closed then
             return nil, 'rotation-editor-closed'
@@ -159,7 +183,8 @@ function addon:NewRotationEditSession(spec, original, options)
         return true
     end
 
-    -- True while the record this session edits still exists. A throwing targetValid counts as gone.
+    -- Reports whether the record this session edits still exists.
+    -- @return boolean  True while it does; a throwing targetValid counts as gone.
     local function owner()
         if not targetValid then
             return true
@@ -180,31 +205,37 @@ function addon:NewRotationEditSession(spec, original, options)
     local session = {}
 
     -- Returns a detached copy of the draft body as it stands now.
+    -- @return table  The copy.
     function session:Snapshot()
         return draft:Snapshot()
     end
 
     -- Returns a detached copy of the original body that unsaved-change detection compares against.
+    -- @return table  The copy.
     function session:Baseline()
         return data.CopyData(dirtyBaseline)
     end
 
-    -- Returns the pending ownership scope ('class' or 'character'), or nil when the caller does not manage it.
+    -- Returns the pending ownership scope.
+    -- @return string|nil  'class' or 'character'; nil when the caller does not manage it.
     function session:Ownership()
         return ownership
     end
 
     -- Returns the ownership scope the rotation had when the session opened.
+    -- @return string|nil  'class' or 'character'; nil when the caller does not manage it.
     function session:BaselineOwnership()
         return originalOwnership
     end
 
-    -- True when the draft content or the ownership differs from what was opened.
+    -- Reports whether the draft content or the ownership differs from what was opened.
+    -- @return boolean  True when it does.
     function session:IsDirty()
         return ownership ~= originalOwnership or not data.SameRotationContent(dirtyBaseline, draft:Snapshot())
     end
 
-    -- Returns { canUndo, canRedo } for enabling the editor's buttons; both are false while closed, busy or read-only.
+    -- Reports whether undo and redo are currently possible, for enabling the editor's buttons.
+    -- @return table  { canUndo = boolean, canRedo = boolean }; both are false while closed, busy or read-only.
     function session:HistoryState()
         return {
             canUndo = not closed and not busy and not readOnly and #undo > 0,
@@ -212,8 +243,13 @@ function addon:NewRotationEditSession(spec, original, options)
         }
     end
 
-    -- Runs one named editing command on the draft (or 'SetOwnership'). Returns changed and the command's result, or
-    -- nil and a reason. A command that changed something is recorded for undo and clears the redo stack.
+    -- Runs one named editing command on the draft (or 'SetOwnership').
+    -- @param name string  The draft command name, or 'SetOwnership'.
+    -- @param ... any  The command's arguments ('SetOwnership' takes the scope, 'class' or 'character').
+    -- @return boolean|nil  Whether the command changed something; nil when it was refused.
+    -- @return any  The command's result; the reason code when the first return is nil.
+    --
+    -- A command that changed something is recorded for undo and clears the redo stack.
     function session:Command(name, ...)
         local ok, reason = writable()
 
@@ -249,7 +285,11 @@ function addon:NewRotationEditSession(spec, original, options)
         return changed, result
     end
 
-    -- Moves one history frame from `source` to `destination`, restoring the draft to it. Returns true, or nil and why.
+    -- Moves one history frame from `source` to `destination`, restoring the draft to it.
+    -- @param source table  The stack to take the frame from.
+    -- @param destination table  The stack that receives the current state.
+    -- @return boolean|nil  True when a step was taken; nil otherwise.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     local function travel(source, destination)
         local ok, reason = writable()
 
@@ -276,16 +316,22 @@ function addon:NewRotationEditSession(spec, original, options)
     end
 
     -- Restores the previous draft state, if any.
+    -- @return boolean|nil  True when a step was taken; nil otherwise.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function session:Undo()
         return travel(undo, redo)
     end
 
     -- Re-applies the most recently undone draft state, if any.
+    -- @return boolean|nil  True when a step was taken; nil otherwise.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     function session:Redo()
         return travel(redo, undo)
     end
 
-    -- Discards the session without touching the original. Refused while an Apply is running.
+    -- Discards the session without touching the original.
+    -- @return boolean|nil  True when cancelled; nil while an Apply is running.
+    -- @return string|nil  'rotation-editor-busy' when the first return is nil; nil otherwise.
     function session:Cancel()
         if busy then
             return nil, 'rotation-editor-busy'
@@ -295,7 +341,11 @@ function addon:NewRotationEditSession(spec, original, options)
         return true
     end
 
-    -- Validates the draft and publishes it. Returns true, or nil, a reason and optional details (a validation report).
+    -- Validates the draft and publishes it.
+    -- @return boolean|nil  True when published; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    -- @return table|nil  Optional details (a validation report, or what the commit callback returned).
+    --
     -- Validation runs condition code that can call back into the addon, so the target and the baseline are re-checked
     -- afterwards, and a validator that mutated the candidate is rejected rather than saved.
     function session:Apply()
@@ -308,6 +358,12 @@ function addon:NewRotationEditSession(spec, original, options)
         busy = true
 
         -- Clears the busy flag on every exit path and passes the result through.
+        -- @param ok any  The result to pass through.
+        -- @param problem any  The reason to pass through.
+        -- @param details any  The details to pass through.
+        -- @return any  `ok`.
+        -- @return any  `problem`.
+        -- @return any  `details`.
         local function finish(ok, problem, details)
             busy = false
             return ok, problem, details
@@ -336,7 +392,8 @@ function addon:NewRotationEditSession(spec, original, options)
         local candidate = data.CopyData(snapshot)
         local tree = data.IndexRotationSteps(candidate)
 
-        -- Validates the switch and every step's conditions against the spec; true only when all of them are valid.
+        -- Validates the switch and every step's conditions against the spec.
+        -- @return boolean  True only when all of them are valid.
         local function validate()
             local valid = addon:validateCondition(candidate.switch or {}, spec)
 

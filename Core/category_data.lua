@@ -9,8 +9,9 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- True when `value` can be used as a category icon: a texture path string up to 1024 bytes, or a positive whole file
--- id.
+-- Reports whether a value can be used as a category icon.
+-- @param value any  The candidate icon.
+-- @return boolean  True for a texture path string up to 1024 bytes, or a positive whole file id.
 function addon:IsCategoryIcon(value)
     return type(value) == 'string' and #value > 0 and #value <= 1024
         or type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
@@ -18,8 +19,10 @@ end
 
 local packagedCategoryIcons = addon.Artwork.category
 
--- Returns the icon a category shows: its own explicit choice, else the packaged icon for its stable id, else the icon
--- of its first condition that has one, else the DEFAULT icon. A nil `group` yields the DEFAULT icon.
+-- Returns the icon a category shows.
+-- @param group table|nil  The category record (icon, id, conditions); nil yields the DEFAULT icon.
+-- @return string|number  The category's own explicit choice, else the packaged icon for its stable id, else the icon of
+--   its first condition that has one, else the DEFAULT icon.
 function addon:GetConditionCategoryIcon(group)
     if type(group) == 'table' then
         if self:IsCategoryIcon(group.icon) then
@@ -46,9 +49,15 @@ function addon:GetConditionCategoryIcon(group)
     return packagedCategoryIcons.DEFAULT
 end
 
--- Parses pasted text (at most 128 KiB) into `{ conditions = {tags...}, metadata, name, icon }` with duplicate tags
--- removed, or returns nil and a localized reason. Every tag must name a registered condition or special; the envelope's
--- `codec` is supplied by the caller.
+-- Parses pasted category-import text into a category candidate.
+-- @param text string  The pasted text (at most 128 KiB): an RM-ConditionCategory envelope or a plain comma/space
+--   separated tag list.
+-- @param codec table|nil  The codec whose Decode(text) method decodes an envelope; nil treats the text as a plain list.
+-- @return table|nil  { conditions = string[], metadata = true|nil, name = string|nil, icon = string|number|nil } with
+--   duplicate tags removed; nil when the text is invalid. metadata, name and icon are set only for an envelope.
+-- @return string|nil  The localized reason when the first return is nil; nil otherwise.
+--
+-- Every tag must name a registered condition or special; the envelope's `codec` is supplied by the caller.
 function addon:ParseConditionCategoryImport(text, codec)
     if type(text) ~= 'string' or #text > 131072 then
         return nil, L['Invalid import.']

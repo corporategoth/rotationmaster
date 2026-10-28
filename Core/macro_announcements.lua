@@ -20,12 +20,17 @@ local restricted = { say = 'SAY', yell = 'YELL', whisper = 'WHISPER' }
 -- Validation and target observation
 -- ============================================================================
 
--- Builds the result table for a call that produced no output, with the reason chat did not happen.
+-- Builds the result table for a call that produced no output.
+-- @param reason string|nil  The reason chat did not happen.
+-- @return table  { chat = false, sound = false, chatReason = reason }.
 local function failure(reason)
     return { chat = false, sound = false, chatReason = reason }
 end
 
--- True when `value` is a readable, non-empty string of at most `limit` bytes without control characters.
+-- Reports whether a value is a readable, non-empty string without control characters.
+-- @param value any  The value to check.
+-- @param limit number  The most bytes allowed.
+-- @return boolean  True when it is.
 local function text(value, limit)
     return platform:CanReadValue(value)
         and type(value) == 'string'
@@ -34,6 +39,14 @@ local function text(value, limit)
         and not value:find('[%z\1-\31\127]')
 end
 
+-- Observes the target unit of a macro call.
+-- @param unit string|nil  The unit token the macro passed; nil means no target.
+-- @param whisper boolean|nil  True when the target must also be a player.
+-- @return string|nil  The target's name (with realm when it has one); nil when there is no target or on failure.
+-- @return function|nil  current(), true while the unit still has the same GUID and resolved name under unchanged game
+--   functions; nil on failure.
+-- @return string|nil  'invalid-unit', 'missing-api' or 'target-unavailable' on failure; nil otherwise.
+--
 -- Cold invocation-only observation. Nothing is retained between macro calls.
 local function target(unit, whisper)
     if unit == nil then
@@ -55,8 +68,9 @@ local function target(unit, whisper)
         return nil, nil, 'missing-api'
     end
 
-    -- Reads the unit once: returns its GUID and its name (with realm when it has one), or nothing when the unit is
-    -- absent, unreadable or, for a whisper, not a player.
+    -- Reads the unit once.
+    -- @return string|nil  The unit's GUID; nil when the unit is absent, unreadable or, for a whisper, not a player.
+    -- @return string|nil  The unit's name (with realm when it has one).
     local function observe()
         local ok, present = pcall(exists, unit)
 
@@ -94,6 +108,7 @@ local function target(unit, whisper)
     end
 
     -- Proves the game functions read for the unit were not replaced since the observation began.
+    -- @return boolean  True while they are the same.
     local function sameAPI()
         return exists == UnitExists
             and guid == UnitGUID
@@ -102,8 +117,9 @@ local function target(unit, whisper)
             and isPlayer == UnitIsPlayer
     end
 
-    -- True while the unit still has the same GUID and resolved name as when it was observed, under unchanged game
+    -- Reports whether the unit still has the same GUID and resolved name as when it was observed, under unchanged game
     -- functions.
+    -- @return boolean  True while it does.
     local function current()
         if not sameAPI() then
             return false
@@ -130,8 +146,14 @@ local function target(unit, whisper)
     return resolved, current
 end
 
--- Series may contain independent outputs even when a valid supplied unit is
--- absent. Preserve that negative observation until the synchronous call ends.
+-- Observes the target unit for a series announcement.
+-- @param unit string|nil  The unit token the macro passed; nil means no target.
+-- @return string|nil  The target's name; nil when there is no target, it is absent or on failure.
+-- @return function|nil  current(), a proof that the observation still holds (also for an absent unit); nil on failure.
+-- @return string|nil  'invalid-unit', 'missing-api' or 'target-unavailable' on failure; nil otherwise.
+--
+-- Series may contain independent outputs even when a valid supplied unit is absent. Preserve that negative observation
+-- until the synchronous call ends.
 local function seriesTarget(unit)
     if unit == nil then
         return nil, function() return true end
@@ -177,8 +199,17 @@ end
 -- Sending
 -- ============================================================================
 
--- Sends one output of a series announcement. Say, Yell, Whisper and channel are sent here directly after re-proving the
--- whisper target and channel with `current()`; other modes go to addon:DispatchAnnouncement. Returns the result table.
+-- Sends one output of a series announcement.
+-- @param view table  The detached card view (announce, channel_name, announce_sound ...).
+-- @param value string  The expanded text.
+-- @param recipient string|nil  The target's name.
+-- @param unit string|nil  The target's unit token.
+-- @param current function  The lease check.
+-- @param installTargetWitness function  installTargetWitness(witness) adds a channel proof to the current target proof.
+-- @return table  The result { chat, sound, chatReason, soundReason }.
+--
+-- Say, Yell, Whisper and channel are sent here directly after re-proving the whisper target and channel with
+-- `current()`; other modes go to addon:DispatchAnnouncement.
 local function seriesSend(view, value, recipient, unit, current, installTargetWitness)
     local destination = restricted[view.announce]
 
@@ -255,8 +286,17 @@ local function seriesSend(view, value, recipient, unit, current, installTargetWi
     return result
 end
 
--- Direct chat send for the single-output path; returns `ok` or false and a reason. A completed native call is treated
--- as an attempt only.
+-- Sends the single-output path's chat message directly.
+-- @param textValue string  The message text.
+-- @param destination string  'SAY', 'YELL' or 'WHISPER'.
+-- @param recipient string|nil  The whisper target.
+-- @param current function  The lease check.
+-- @return boolean  True when the native call completed; false otherwise.
+-- @return string|nil  'invalid-message', 'missing-api', 'announcement-retired' or 'api-error' when not sent; nil
+--   otherwise.
+--
+-- A completed native call is treated as an attempt only; it is not proof of visible delivery. Never retry a selected
+-- backend, defer output or attest the caller.
 local function send(textValue, destination, recipient, current)
     if not text(textValue, 16384) or destination == 'WHISPER' and not text(recipient, 512) then
         return false, 'invalid-message'
@@ -285,9 +325,16 @@ end
 -- Running one invocation
 -- ============================================================================
 
--- Runs one Via Macro invocation for `serial`: finds the one matching enabled announcement, validates the unit and spell
--- arguments, expands the template and delivers it. Every step re-checks `current()` so a newer call, a profile change
--- or a disabled addon retires this one silently. Always returns a result table.
+-- Runs one Via Macro invocation.
+-- @param serial number  The call serial; an older serial is retired by a newer call.
+-- @param identifier string  The macro announcement identifier.
+-- @param unit string|nil  The target unit token.
+-- @param spell number|string|nil  The spell id or name for the {{spell}} placeholder.
+-- @return table  The result { chat, sound, chatReason, soundReason }; always a table.
+--
+-- Finds the one matching enabled announcement, validates the unit and spell arguments, expands the template and
+-- delivers it. Every step re-checks `current()` so a newer call, a profile change or a disabled addon retires this one
+-- silently.
 local function execute(serial, identifier, unit, spell)
     if not platform:CanReadValue(identifier) or not addon:IsValidMacroAnnouncementIdentifier(identifier) then
         return failure('invalid-identifier')
@@ -329,6 +376,7 @@ local function execute(serial, identifier, unit, spell)
 
     -- Re-walks the announcement list and proves the chosen entry is still the only macro entry with this identifier at
     -- the same index, in an unmodified list.
+    -- @return boolean  True while it is.
     local function selectionCurrent()
         if getmetatable(list) ~= nil then
             return false
@@ -365,7 +413,8 @@ local function execute(serial, identifier, unit, spell)
     local registry = addon.conditionRegistryVersion
     local lifecycle = addon.IsEnabled
 
-    -- True while the addon is enabled; a replaced or erroring `IsEnabled` counts as not enabled.
+    -- Reports whether the addon is enabled.
+    -- @return boolean  True while it is; a replaced or erroring `IsEnabled` counts as not enabled.
     local function enabled()
         if lifecycle ~= addon.IsEnabled then
             return false
@@ -383,8 +432,9 @@ local function execute(serial, identifier, unit, spell)
 
     local targetCurrent = function() return true end
 
-    -- Ownership guard passed to PrepareAnnouncementDelivery: true only while this call is still the latest one and the
-    -- database, profile, list, entry and condition registry are the same objects it started with.
+    -- Ownership guard passed to PrepareAnnouncementDelivery.
+    -- @return boolean  True only while this call is still the latest one and the database, profile, list, entry and
+    --   condition registry are the same objects it started with.
     local function owner()
         if
             serial ~= request
@@ -501,6 +551,13 @@ local function execute(serial, identifier, unit, spell)
                     return link
                 end):gsub('{{event}}', function() return L['Via Macro'] end)
             end,
+            -- Delivers one card of the series: a whisper card re-proves its target first, then the card goes through
+            -- seriesSend.
+            -- @param view table  The detached card view.
+            -- @param value string  The expanded text.
+            -- @param live function  The card's lease check.
+            -- @return table  The result { chat, sound, chatReason, soundReason }; an error becomes an `api-error`
+            --   failure.
             function(view, value, live)
                 local previous = targetCurrent
 
@@ -515,6 +572,7 @@ local function execute(serial, identifier, unit, spell)
                 end
 
                 -- Adds a channel witness to the current target proof, so the output is retired if the channel changes.
+                -- @param witness function  witness() is true while the channel is unchanged.
                 local function install(witness)
                     local prior = targetCurrent
                     targetCurrent = function() return prior() and witness() end
@@ -574,8 +632,13 @@ local function execute(serial, identifier, unit, spell)
     return result
 end
 
--- The function behind both global names: bumps the call serial (retiring any call still running), runs `execute` under
--- diagnostics when available, and turns an error into an `invocation-error` result.
+-- The function behind both global names (RM_Announce and RM_Annouce).
+-- @param identifier string  The macro announcement identifier.
+-- @param unit string|nil  The target unit token.
+-- @param spell number|string|nil  The spell id or name.
+-- @return table  The result { chat, sound, chatReason, soundReason }; an error becomes an `invocation-error` result.
+--
+-- Bumps the call serial (retiring any call still running) and runs `execute` under diagnostics when available.
 local function invoke(identifier, unit, spell)
     request = request + 1
     local serial = request

@@ -20,12 +20,15 @@ local contextSeeds = {
 }
 
 -- Appends each context seed's tags to its category once, guarded by profile.contextConditionsSeeded.
+-- @param profile table  The AceDB profile table to seed.
 local function seedContextConditions(profile)
     if profile.contextConditionsSeeded then
         return
     end
 
-    -- Adds each tag to `list` unless it is already there.
+    -- Adds each tag to a condition list unless it is already there.
+    -- @param list table|nil  The condition tag list to extend; anything else is ignored.
+    -- @param tags string[]  The tags to add.
     local function append(list, tags)
         if type(list) ~= 'table' then
             return
@@ -58,8 +61,11 @@ local function seedContextConditions(profile)
     profile.contextConditionsSeeded = true
 end
 
--- Assisted Combat joins the Spells category once per profile, under its own
--- flag, so profiles seeded with the context conditions receive it too.
+-- Adds ASSISTED_SUGGESTION to the Spells category once, guarded by profile.assistedConditionsSeeded.
+-- @param profile table  The AceDB profile table to seed.
+--
+-- Assisted Combat joins the Spells category once per profile, under its own flag, so profiles seeded with the context
+-- conditions receive it too.
 local function seedAssistedConditions(profile)
     if profile.assistedConditionsSeeded then
         return
@@ -85,8 +91,11 @@ local function seedAssistedConditions(profile)
     profile.assistedConditionsSeeded = true
 end
 
--- The Assisted Combat rotation-set and availability conditions follow under
--- their own flag, since profiles already carry assistedConditionsSeeded.
+-- Adds the Assisted Combat rotation-set and availability conditions to the Spells category once, guarded by
+-- profile.assistedSignalConditionsSeeded.
+-- @param profile table  The AceDB profile table to seed.
+--
+-- They follow under their own flag, since profiles already carry assistedConditionsSeeded.
 local function seedAssistedSignalConditions(profile)
     if profile.assistedSignalConditionsSeeded then
         return
@@ -114,14 +123,19 @@ local function seedAssistedSignalConditions(profile)
     profile.assistedSignalConditionsSeeded = true
 end
 
--- Season of Discovery rune engraving joins the Character category and the
--- Switch picker once per profile, under its own flag.
+-- Adds RUNE_ENGRAVED to the Switch picker and to its condition category once, guarded by
+-- profile.engravingConditionsSeeded.
+-- @param profile table  The AceDB profile table to seed.
+--
+-- Season of Discovery rune engraving joins the Character category and the Switch picker once per profile, under its own
+-- flag.
 local function seedEngravingConditions(profile)
     if profile.engravingConditionsSeeded then
         return
     end
 
-    -- Adds RUNE_ENGRAVED to `list` unless it is already there.
+    -- Adds RUNE_ENGRAVED to a condition list unless it is already there.
+    -- @param list table|nil  The condition tag list to extend; anything else is ignored.
     local function append(list)
         if type(list) ~= 'table' then
             return
@@ -147,8 +161,11 @@ local function seedEngravingConditions(profile)
     profile.engravingConditionsSeeded = true
 end
 
--- Runs every seeder for the profile of `db` (the first argument is the callback event name and is ignored). Idempotent,
--- and the last block seeds DEAD and FRIENDLY into the Switch list and the Action context category under its own flag.
+-- Runs every seeder for a profile; idempotent.
+-- @param _ any  The callback event name; ignored.
+-- @param db table  The AceDB database whose current profile is seeded.
+--
+-- The last block seeds DEAD and FRIENDLY into the Switch list and the Action context category under its own flag.
 function addon:InitializeUnitStateConditions(_, db)
     local profile = db.profile
     seedContextConditions(profile)
@@ -160,7 +177,8 @@ function addon:InitializeUnitStateConditions(_, db)
         return
     end
 
-    -- Adds DEAD and FRIENDLY to `list` unless they are already there.
+    -- Adds DEAD and FRIENDLY to a condition list unless they are already there.
+    -- @param list table  The condition tag list to extend.
     local function append(list)
         for _, tag in ipairs({ 'DEAD', 'FRIENDLY' }) do
             local found = false
@@ -194,6 +212,10 @@ end
 local callbackOwner = {}
 
 -- Seeds the current profile now and again whenever AceDB creates, resets, switches or copies a profile.
+-- @param db table  The AceDB database to seed and to register profile callbacks on.
+--
+-- CallbackHandler keeps one callback per owner/event, so a private owner is used and these seeds coexist with existing
+-- profile lifecycle handlers on the addon.
 function addon:InstallUnitStateConditions(db)
     for _, event in ipairs({ 'OnNewProfile', 'OnProfileReset', 'OnProfileChanged', 'OnProfileCopied' }) do
         db.RegisterCallback(callbackOwner, event, function(event, currentDB)

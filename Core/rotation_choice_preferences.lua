@@ -36,22 +36,32 @@ local classes = {
 -- Validation
 -- ============================================================================
 
--- True for a table without a metatable.
+-- Reports whether a value is a table without a metatable.
+-- @param v any  The value.
+-- @return boolean  True for such a table.
 local function plain(v)
     return kind(v) == 'table' and meta(v) == nil
 end
 
--- True for a printable string of 1 to `n` bytes with at least one non-space character and no control characters.
+-- Reports whether a value is a printable string.
+-- @param v any  The value.
+-- @param n number  The most bytes allowed.
+-- @return boolean  True for a string of 1 to `n` bytes with at least one non-space character and no control characters.
 local function text(v, n)
     return kind(v) == 'string' and #v > 0 and #v <= n and find(v, '%S') ~= nil and not find(v, '[%z\1-\31\127]')
 end
 
--- True for a non-negative integer specialization index.
+-- Reports whether a value is a valid specialization index.
+-- @param v any  The value.
+-- @return boolean  True for a non-negative integer.
 local function spec(v)
     return kind(v) == 'number' and v >= 0 and v < infinity and v % 1 == 0
 end
 
--- True when `v` is a plain table whose keys are all in the `fields` set.
+-- Reports whether a value is a plain table whose keys are all in a set.
+-- @param v any  The value.
+-- @param fields table  The set of allowed keys.
+-- @return boolean  True when it is.
 local function closed(v, fields)
     if not plain(v) then
         return false
@@ -66,7 +76,10 @@ local function closed(v, fields)
     return true
 end
 
--- Structural equality for plain data with raw reads; false for any table with a metatable.
+-- Structural equality for plain data with raw reads.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when equal; false for any table with a metatable.
 local function same(a, b)
     if kind(a) ~= kind(b) then
         return false
@@ -94,6 +107,8 @@ local function same(a, b)
 end
 
 -- Deep copy of plain, already validated data.
+-- @param v any  The value to copy; non-tables are returned as they are.
+-- @return any  The copy.
 local function copy(v)
     if kind(v) ~= 'table' then
         return v
@@ -108,8 +123,11 @@ local function copy(v)
     return r
 end
 
--- True when `v` is a valid rotation reference for `row`'s class, specialization and character: { kind = 'builtin', id }
--- or { kind = 'custom', address } where the address scope is class or character and its owner matches the row.
+-- Reports whether a value is a valid rotation reference for a row's class, specialization and character.
+-- @param v any  The candidate reference: { kind = 'builtin', id } or { kind = 'custom', address }, where the address
+--   scope is class or character and its owner matches the row.
+-- @param row table  The preference row.
+-- @return boolean  True when it is.
 local function reference(v, row)
     if not plain(v) then
         return false
@@ -134,7 +152,10 @@ local function reference(v, row)
         and a.owner == (a.scope == 'class' and row.class or row.character)
 end
 
--- True when two rows describe the same context (family, character, class, specialization, action context).
+-- Reports whether two rows describe the same context (family, character, class, specialization, action context).
+-- @param a table  The first row.
+-- @param b table  The second row.
+-- @return boolean  True when they do.
 local function domain(a, b)
     return a.family == b.family
         and a.character == b.character
@@ -143,8 +164,10 @@ local function domain(a, b)
         and a.actionContext == b.actionContext
 end
 
--- True when `value` is a well-formed preference table: version 1, a dense list of at most 256 rows, every row closed
--- and valid, no shared sub-tables, and at most one row per context.
+-- Reports whether a value is a well-formed preference table.
+-- @param value any  The candidate table.
+-- @return boolean  True for version 1, a dense list of at most 256 rows, every row closed and valid, no shared
+--   sub-tables, and at most one row per context.
 local function validate(value)
     if not closed(value, { version = true, entries = true }) or value.version ~= 1 or not plain(value.entries) then
         return false
@@ -214,7 +237,9 @@ local function validate(value)
     return true
 end
 
--- Public validator used by profile validation; false for any caller other than the addon.
+-- Validates a preference table; the public validator used by profile validation.
+-- @param value any  The candidate preference table.
+-- @return boolean  True when valid; false for any caller other than the addon.
 function addon:ValidateRotationChoicePreferences(value)
     return self == addon and validate(value)
 end
@@ -227,19 +252,24 @@ local generation = {}
 local publicationEpoch = {}
 local cache, dirty = nil, true
 
--- Returns the saved profile table with a raw read, or nil.
+-- Returns the saved profile table with a raw read.
+-- @return table|nil  The profile; nil (or false) when there is none.
 local function profile()
     local db = get(addon, 'db')
     return kind(db) == 'table' and get(db, 'profile')
 end
 
--- Returns the preference table stored in profile `p`, if any.
+-- Returns the preference table stored in a profile, if any.
+-- @param p any  The profile.
+-- @return table|nil  The preference table; nil (or false) when there is none.
 local function root(p)
     return plain(p) and get(p, 'rotationChoicePreferences')
 end
 
--- Snapshots the profile, the preference table and a copy of it into a ticket, or returns nil when the saved table is
--- invalid. A ticket is only good while nothing it captured has changed (see current).
+-- Snapshots the profile, the preference table and a copy of it into a ticket.
+-- @return table|nil  The ticket { profile, root, snapshot, generation }; nil when the saved table is invalid.
+--
+-- A ticket is only good while nothing it captured has changed (see current).
 local function capture()
     local p = profile()
 
@@ -256,7 +286,9 @@ local function capture()
     return { profile = p, root = r, snapshot = r and copy(r), generation = generation }
 end
 
--- True while a ticket's profile, preference table and generation are untouched since capture().
+-- Reports whether a ticket is still good.
+-- @param ticket table|nil  The ticket from capture().
+-- @return boolean  True while the ticket's profile, preference table and generation are untouched since capture().
 local function current(ticket)
     return ticket
         and equal(profile(), ticket.profile)
@@ -265,8 +297,10 @@ local function current(ticket)
         and (ticket.root == nil or same(ticket.root, ticket.snapshot))
 end
 
--- Writes `value` into the profile if the ticket is still current, dropping the table when it has no rows, and marks the
--- cache dirty. Returns true when written.
+-- Writes a preference table into the profile if the ticket is still current, and marks the cache dirty.
+-- @param ticket table  The ticket from capture().
+-- @param value table  The new preference table; it is dropped when it has no rows.
+-- @return boolean  True when written.
 local function publish(ticket, value)
     if not current(ticket) then
         return false
@@ -278,15 +312,18 @@ local function publish(ticket, value)
     return true
 end
 
--- Returns the current character key (db.keys.char), or nil.
+-- Returns the current character key (db.keys.char).
+-- @return string|nil  The key; nil when there is none.
 local function characterKey()
     local db = get(addon, 'db')
     local keys = kind(db) == 'table' and get(db, 'keys')
     return kind(keys) == 'table' and get(keys, 'char')
 end
 
--- True when the cached observation no longer matches the profile, preference table, specialization, character or
--- GetRotationContext method, or has been marked dirty.
+-- Reports whether the cached observation is stale.
+-- @param owner table  The addon; anything else gives false.
+-- @return boolean  True when the cached observation no longer matches the profile, preference table, specialization,
+--   character or GetRotationContext method, or has been marked dirty.
 local function needsRefresh(owner)
     if owner ~= addon then
         return false
@@ -303,9 +340,15 @@ local function needsRefresh(owner)
         or cache.contextMethod ~= get(owner, 'GetRotationContext')
 end
 
--- Resolves the current context (through GetRotationContext) and the stored reference for it. Returns the cached state
--- and whether it was recomputed; nil when the context is unusable. With no saved rows and no `needDomain` it skips the
--- context lookup. The state is rebuilt only after an invalidation, never on every poll.
+-- Resolves the current context (through GetRotationContext) and the stored reference for it.
+-- @param owner table  The addon.
+-- @param needDomain boolean|nil  True to look up the context even when there are no saved rows.
+-- @return table|nil  The cached state { profile, root, spec, character, contextMethod, domain, reference }; nil when
+--   the context is unusable.
+-- @return boolean  Whether the state was recomputed.
+--
+-- With no saved rows and no `needDomain` it skips the context lookup. The state is rebuilt only after an invalidation,
+-- never on every poll; only cold profile/spec/context/publication invalidations reach observation.
 local function observe(owner, needDomain)
     local p = profile()
     local number = get(owner, 'currentSpec')
@@ -370,6 +413,7 @@ local function observe(owner, needDomain)
 end
 
 -- Marks the cached context stale; call after anything that changes family, class, specialization or action context.
+-- @return boolean  True when marked; false for any caller other than the addon.
 function addon:InvalidateRotationChoiceContext()
     if self ~= addon then
         return false
@@ -383,9 +427,13 @@ end
 -- Selection and publication handoffs
 -- ============================================================================
 
--- Step one of choosing a rotation: builds the new table for the current context, replacing its row with one holding
--- `referenceValue`, or removing it when that is nil. Returns a ticket, or nil when the context, the reference or the
--- 256-row limit forbid it. Nothing is written until finishSelection.
+-- Step one of choosing a rotation: builds the new table for the current context, replacing its row with one holding the
+-- reference, or removing it when that is nil.
+-- @param owner table  The addon.
+-- @param referenceValue table|nil  The rotation reference to remember; nil removes the row.
+-- @return table|nil  A ticket; nil when the context, the reference or the 256-row limit forbid it.
+--
+-- Nothing is written until finishSelection.
 local function prepareSelection(owner, referenceValue)
     if owner ~= addon then
         return nil
@@ -430,12 +478,17 @@ local function prepareSelection(owner, referenceValue)
     return ticket
 end
 
--- Step two: writes the prepared table if nothing changed since prepare. Returns true when written.
+-- Step two: writes the prepared table if nothing changed since prepare.
+-- @param ticket table|nil  The ticket from prepareSelection.
+-- @return boolean  True when written.
 local function finishSelection(ticket)
     return ticket and publish(ticket, ticket.value) or false
 end
 
--- Returns a copy of the stored reference for the current context (or nil) and whether the state was recomputed.
+-- Returns the stored reference for the current context.
+-- @param owner table  The addon.
+-- @return table|nil  A copy of the stored reference; nil when there is none or the state was not recomputed.
+-- @return boolean  Whether the state was recomputed.
 local function readDesired(owner)
     if owner ~= addon then
         return nil, false
@@ -449,8 +502,14 @@ end
 -- notification, game API or extensible copying is used by either finalizer.
 local selectionBound, publicationBound = false, false
 
--- One-time handoff to main.lua: returns prepareSelection, finishSelection, readDesired and needsRefresh, then refuses
--- any later caller.
+-- One-time handoff to main.lua, which then refuses any later caller.
+-- @return function|nil  prepareSelection.
+-- @return function|nil  finishSelection.
+-- @return function|nil  readDesired.
+-- @return function|nil  needsRefresh.
+--
+-- Direct one-time cold handoffs. No callback registry, public post-write notification, game API or extensible copying
+-- is used by either finalizer.
 function addon:ConsumeRotationChoiceSelection()
     if self ~= addon or selectionBound then
         return nil
@@ -460,9 +519,13 @@ function addon:ConsumeRotationChoiceSelection()
     return prepareSelection, finishSelection, readDesired, needsRefresh
 end
 
--- Step one of a rotation change that affects saved preferences: builds the table in which every row pointing at
--- `oldReference` now points at `nextReference` (or is removed when that is nil or invalid for the row), and a second
--- table with those rows removed for use if the target disappears. Returns a ticket, or nil when no row is affected.
+-- Step one of a rotation change that affects saved preferences.
+-- @param p table  The profile.
+-- @param oldReference table  The reference that is changing.
+-- @param nextReference table|nil  The reference rows now point at; a row is removed when this is nil or invalid for it.
+-- @return table|nil  A ticket holding the table in which every row pointing at `oldReference` now points at
+--   `nextReference`, and a second table with those rows removed for use if the target disappears; nil when no row is
+--   affected.
 local function preparePublication(p, oldReference, nextReference)
     if nextReference and same(oldReference, nextReference) then
         return nil
@@ -507,11 +570,16 @@ local function preparePublication(p, oldReference, nextReference)
 end
 
 -- Reads `value[key]` raw when `value` is a plain table.
+-- @param value any  The table.
+-- @param key any  The key.
+-- @return any  The value; nil (or false) when `value` is not a plain table.
 local function child(value, key)
     return plain(value) and get(value, key)
 end
 
--- True when the custom rotation the ticket points at still has a body in the store (a Built In target always counts).
+-- Reports whether the custom rotation a ticket points at still has a body in the store.
+-- @param ticket table  The publication ticket.
+-- @return boolean  True when it does (a Built In target always counts).
 local function targetPresent(ticket)
     local r = ticket.target
 
@@ -535,8 +603,10 @@ local function targetPresent(ticket)
 end
 
 -- Step two: after the store write, publishes the prepared table, or the table with the affected rows removed when the
--- write was nested or the target vanished. Returns true when written; false when the store changed or the writer was
--- not authorized.
+-- write was nested or the target vanished.
+-- @param ticket table|nil  The ticket from preparePublication.
+-- @param authorized boolean  True when the store writer was authorized.
+-- @return boolean  True when written; false when the store changed or the writer was not authorized.
 local function finishPublication(ticket, authorized)
     local nested = ticket and ticket.publicationEpoch ~= publicationEpoch
     publicationEpoch = {}
@@ -551,8 +621,9 @@ local function finishPublication(ticket, authorized)
     return publish(ticket, not nested and targetPresent(ticket) and ticket.value or ticket.removed)
 end
 
--- One-time handoff to Core/rotation_scope.lua: returns preparePublication and finishPublication, then refuses any later
--- caller.
+-- One-time handoff to Core/rotation_scope.lua, which then refuses any later caller.
+-- @return function|nil  preparePublication.
+-- @return function|nil  finishPublication.
 function addon:ConsumeRotationChoicePublication()
     if self ~= addon or publicationBound then
         return nil

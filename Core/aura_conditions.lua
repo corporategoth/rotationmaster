@@ -14,8 +14,13 @@ local cacheKey = {}
 -- Aura reads
 -- ============================================================================
 
--- Returns the aura at `index` of the unit's `filter` list, or nil at the end of the list; the second result is a
--- reason when the read failed. With a cache, each (unit, filter, index) is read once per evaluation pass.
+-- Reads the aura at an index of a unit's aura list.
+-- @param cache table|nil  The per-pass cache; with it each (unit, filter, index) is read once per evaluation pass.
+-- @param unit string  The unit token.
+-- @param index number  The 1-based position in the filtered aura list.
+-- @param filter string  The aura filter, for example "HELPFUL" or "HARMFUL".
+-- @return table|nil  The aura record; nil at the end of the list or when the read failed.
+-- @return string|nil  The reason when the read failed; nil otherwise.
 local function query(cache, unit, index, filter)
     if not cache then
         return platform:GetAuraByIndex(unit, index, filter)
@@ -66,10 +71,16 @@ end
 -- Matching
 -- ============================================================================
 
--- Tests one aura against the condition. `mode` selects what to compare: 'stealable', 'dispel' (by dispel type, where
--- Enrage is the empty type) or a spell by id or name; `anyrank` falls back to comparing names. Honors ownbuff and
--- owndebuff via the aura's source unit. Returns true or false, or nil and a reason; `identity` memoizes the any-rank
--- spell name for one scan.
+-- Tests one aura against the condition.
+-- @param aura table  The aura record to test.
+-- @param value table  The condition value (spell, anyrank, debufftype, ownbuff, owndebuff).
+-- @param mode string  What to compare: 'stealable', 'dispel' (by dispel type, where Enrage is the empty type) or
+--   anything else for a spell by id or name.
+-- @param identity table  Scratch memo for one scan's any-rank spell name; `anyrank` falls back to comparing names.
+-- @return boolean|nil  True when the aura matches; nil when a needed field is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Honors ownbuff and owndebuff via the aura's source unit.
 local function matchesAura(aura, value, mode, identity)
     local matches
 
@@ -155,9 +166,20 @@ end
 -- rank, the player's own aura when asked); anything else walks as before.
 local spellNames = {}
 
--- Fast path: answers a spell condition with one lookup by name instead of walking every aura. Returns "none" (no aura
--- of that name, so no match), "found" and the aura, or nothing when the walk must decide (restricted values, an
--- unresolvable name, a different rank, or a mode that needs more than presence, remaining time or stacks).
+-- Fast path: answers a spell condition with one lookup by name instead of walking every aura.
+-- @param value table  The condition value (unit, spell, anyrank, ownbuff, owndebuff).
+-- @param filter string  The aura filter, for example "HELPFUL" or "HARMFUL".
+-- @param mode string  The evaluation mode; only 'present', 'remaining' and 'stacks' can use the fast path.
+-- @return string|nil  "none" (no aura of that name, so no match) or "found"; nil when the walk must decide.
+-- @return table|nil  The aura when the first return is "found"; nil otherwise.
+--
+-- The walk must decide for restricted values, an unresolvable name, a different rank, or a mode that needs more than
+-- presence, remaining time or stacks.
+--
+-- Walking every aura costs one new native table per aura, every poll. For a spell match one lookup by name gives the
+-- walk's answer: the walk's first match carries that name, and nothing of that name means no match. It is used only
+-- where that holds exactly (no secrets, a result of the requested rank, the player's own aura when asked); anything
+-- else walks as before.
 local function lookupByName(value, filter, mode)
     if not platform.secretsUnrestricted or type(platform.GetAuraBySpellName) ~= "function" then
         return
@@ -215,8 +237,14 @@ end
 -- Evaluation
 -- ============================================================================
 
--- Turns a matched aura into the condition's answer: true for presence, or the comparison of remaining time or stacks
--- against the condition's operator and value. Returns true or false, or nil and a reason.
+-- Turns a matched aura into the condition's answer.
+-- @param aura table  The matched aura record.
+-- @param value table  The condition value (operator, value).
+-- @param mode string  'remaining' compares remaining time, 'stacks' compares stacks, anything else is presence.
+-- @param start number|nil  The poll's time for the remaining-time read; nil reads GetTime().
+-- @return boolean|nil  True for presence, or the comparison of remaining time or stacks against the condition's
+--   operator and value; nil when a field is unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function auraResult(aura, value, mode, start)
     if mode == "remaining" then
         local remaining, why = platform:AuraRemaining(aura, start or GetTime())
@@ -245,10 +273,17 @@ end
 -- Scratch memo for one scan's any-rank name; reset per scan, never retained.
 local identity = {}
 
--- Evaluates a buff or debuff condition on `value.unit`. `filter` is the aura list ("HELPFUL", "HARMFUL", ...), `mode`
--- is 'present', 'remaining', 'stacks', 'dispel' or 'stealable', and `start` is the poll's time. Returns true or false
--- (a missing unit is false), or nil and a reason. For presence-style modes a field read that fails only counts if no
--- other aura matches; the other modes fail at once. The scan stops at 256 auras.
+-- Evaluates a buff or debuff condition on `value.unit`.
+-- @param value table  The condition value (unit, spell, operator, value, dispellable, ...).
+-- @param cache table|nil  The per-pass cache for aura reads.
+-- @param start number|nil  The poll's time.
+-- @param filter string  The aura list: "HELPFUL", "HARMFUL", ...
+-- @param mode string  'present', 'remaining', 'stacks', 'dispel' or 'stealable'.
+-- @return boolean|nil  The condition's answer (a missing unit is false); nil when unavailable.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- For presence-style modes a field read that fails only counts if no other aura matches; the other modes fail at once.
+-- The scan stops at 256 auras.
 function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     if type(UnitExists) ~= "function" then
         return nil, "missing-api"

@@ -48,18 +48,26 @@ local snapshot = {
 local revision = 0
 local frame, watching
 
--- True when `value` is not a secret value this client refuses to expose.
+-- Reports whether a value is not a secret value this client refuses to expose.
+-- @param value any  The value to check.
+-- @return boolean  True when readable.
 local function readable(value)
     return addon.Platform:CanReadValue(value)
 end
 
--- Returns `value` when it is a readable positive whole number, else nil.
+-- Returns a value when it is a readable positive whole number.
+-- @param value any  The value to check.
+-- @return number|nil  The value; nil otherwise.
 local function positive(value)
     return readable(value) and type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0 and value
         or nil
 end
 
 -- pcall wrapper that returns false when `fn` is not a function, so a missing native API reads as a failed call.
+-- @param fn any  The function to call.
+-- @param ... any  Its arguments.
+-- @return boolean  True when the call succeeded.
+-- @return any  The call's results, or the error message.
 local function call(fn, ...)
     if type(fn) ~= 'function' then
         return false
@@ -69,6 +77,7 @@ local function call(fn, ...)
 end
 
 -- Marks the named sections for rebuilding and advances the revision that consumers use to detect change.
+-- @param ... string  The section names.
 local function markDirty(...)
     for i = 1, select('#', ...) do
         dirty[(select(i, ...))] = true
@@ -106,8 +115,13 @@ local engravingNotifications = {
     NEW_RECIPE_LEARNED = { 'runes' },
 }
 
--- Maps a game notification to the sections it dirties. Inventory changes for other units are ignored, and item metadata
--- arriving only matters while an equipped item's set ID is still pending.
+-- Maps a game notification to the sections it dirties.
+-- @param _ any  The frame; unused.
+-- @param event string  The event name.
+-- @param unit string|nil  The unit of a unit event.
+--
+-- Inventory changes for other units are ignored, and item metadata arriving only matters while an equipped item's set
+-- ID is still pending.
 local function onEvent(_, event, unit)
     local parts = notifications[event] or engravingNotifications[event]
 
@@ -130,9 +144,10 @@ local function onEvent(_, event, unit)
     markDirty(unpack(parts))
 end
 
--- Creates the notification frame and registers the events once (lazily, on the first read); each registration is
--- guarded so an event this client lacks does not block the others. Returns false when no frame can be made, which makes
--- every read rebuild.
+-- Creates the notification frame and registers the events once (lazily, on the first read).
+-- @return boolean  False when no frame can be made, which makes every read rebuild.
+--
+-- Each registration is guarded so an event this client lacks does not block the others.
 local function watch()
     if watching ~= nil then
         return watching
@@ -178,7 +193,10 @@ end
 -- Reading equipment
 -- ============================================================================
 
--- Item string fields: itemID:enchantID:gem1:gem2:gem3:gem4:suffixID:...
+-- Parses an item link's fields: itemID:enchantID:gem1:gem2:gem3:gem4:suffixID:...
+-- @param link any  The item link.
+-- @return table|nil  { enchantID = number|nil, gems = number[], suffixID = number|nil }; nil when it is not a readable
+--   item link.
 local function parseLink(link)
     if type(link) ~= 'string' or not readable(link) then
         return nil
@@ -214,8 +232,11 @@ local function parseLink(link)
     }
 end
 
--- Returns the item's set ID, false when it has none, or nil and a reason ('item-data-pending' until the client has
--- cached the item).
+-- Returns an item's set ID.
+-- @param itemID number  The item ID.
+-- @return number|boolean|nil  The set ID; false when the item has none; nil when unavailable.
+-- @return string|nil  The reason ('missing-api', 'api-error', 'item-data-pending' until the client has cached the item,
+--   or 'restricted-value') when the first return is nil; nil otherwise.
 local function itemSetID(itemID)
     local info = C_Item and C_Item.GetItemInfo or GetItemInfo
 
@@ -241,7 +262,9 @@ local function itemSetID(itemID)
     return positive(setID) or false
 end
 
--- Number of empty sockets in the item link's stat table, or nil when the stats cannot be read.
+-- Counts the empty sockets in the item link's stat table.
+-- @param link any  The item link.
+-- @return number|nil  The number of empty sockets; nil when the stats cannot be read.
 local function socketCount(link)
     local stats = C_Item and C_Item.GetItemStats or GetItemStats
 
@@ -271,7 +294,11 @@ end
 -- names), read once per equipment change for WEAPON_TYPE.
 local WEAPON_SLOTS = { [16] = true, [17] = true, [18] = true }
 
--- Fills the record's class, subclass and equip location (or a reason) from the item's instant info.
+-- Fills a weapon record's class, subclass and equip location (or a reason) from the item's instant info.
+-- @param record table  The equipment record for the weapon slot; modified in place.
+--
+-- Weapon slots carry their item class, subclass and equip location (Platform GetItemInfoInstant: IDs and INVTYPE_*
+-- tokens, never localized names), read once per equipment change for WEAPON_TYPE.
 local function weaponType(record)
     local reader = addon.Platform and addon.Platform.GetItemInfoInstant
 
@@ -290,8 +317,12 @@ local function weaponType(record)
     record.classID, record.subClassID, record.equipLoc = info.classID, info.subClassID, info.equipLoc
 end
 
--- The ranged slot (bows, guns, wands, relics) exists through Cataclysm; Mists
--- of Pandaria removed it and Retail followed. Elsewhere the client says.
+-- Finds the ranged slot.
+-- @return number|nil  The slot number; nil when this client has none.
+-- @return string|nil  'no-ranged-slot' or 'missing-api' when the first return is nil; nil otherwise.
+--
+-- The ranged slot (bows, guns, wands, relics) exists through Cataclysm; Mists of Pandaria removed it and Retail
+-- followed. Elsewhere the client says.
 local function rangedSlot()
     local info = addon.Platform:GetClientInfo()
 
@@ -327,8 +358,9 @@ end
 -- Section builders
 -- ============================================================================
 
--- Rebuilds slots 1 to 19: item, enchant, gems, sockets, set membership and weapon type. Marks the snapshot pending
--- while any item's metadata is still loading.
+-- Rebuilds slots 1 to 19: item, enchant, gems, sockets, set membership and weapon type.
+--
+-- Marks the snapshot pending while any item's metadata is still loading.
 local function buildEquipment()
     snapshot.rangedSlot, snapshot.rangedReason = rangedSlot()
     local equipment, sets, pending = {}, {}, false
@@ -402,7 +434,8 @@ local function buildWeapons()
     snapshot.weapons = weapons
 end
 
--- Active talent group (1 to 4) on clients with talent groups, or nil.
+-- Returns the active talent group.
+-- @return number|nil  The group (1 to 4) on clients with talent groups; nil otherwise.
 local function activeGroup()
     local native = C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup
     local fn = type(native) == 'function' and native or GetActiveTalentGroup
@@ -598,11 +631,13 @@ end
 -- Rulesets and the client section
 -- ============================================================================
 
--- Rulesets are the realm's season and game rules: a pack's
--- applicability.rulesets matches when any listed token is active.
--- 'standard' (no season, not hardcore), 'hardcore', 'self-found',
--- 'season:<id>', 'season:<name>' (Enum.SeasonID name, lower case) and
--- 'mode:<id>' (C_GameRules game mode record).
+-- Returns the Enum.SeasonID name of a season id.
+-- @param id number  The season id.
+-- @return string|nil  The enum name; nil when there is none.
+--
+-- Rulesets are the realm's season and game rules: a pack's applicability.rulesets matches when any listed token is
+-- active. 'standard' (no season, not hardcore), 'hardcore', 'self-found', 'season:<id>', 'season:<name>' (Enum.SeasonID
+-- name, lower case) and 'mode:<id>' (C_GameRules game mode record).
 local function seasonName(id)
     local enum = type(Enum) == 'table' and Enum.SeasonID
 
@@ -665,8 +700,9 @@ local function buildClient()
     snapshot.season, snapshot.rulesets = season, rulesets
 end
 
--- Runes engraved on the equipped items. A rune list that has not loaded yet
--- stays dirty, so the next read tries again.
+-- Rebuilds the engraved runes of the equipped items.
+--
+-- A rune list that has not loaded yet stays dirty, so the next read tries again.
 local function buildRunes()
     local platform = addon.Platform
 
@@ -695,8 +731,12 @@ local builders = {
     runes = buildRunes,
 }
 
--- Rebuilds the dirty sections (or `only` one of them) and returns the snapshot. A builder that errors stays dirty and
--- its message is kept in `snapshot.<section>Error`. When the frame cannot be created every read rebuilds.
+-- Rebuilds the dirty sections (or one of them) and returns the snapshot.
+-- @param only string|nil  The one section to refresh; nil refreshes every dirty section.
+-- @return table  The snapshot.
+--
+-- A builder that errors stays dirty and its message is kept in `snapshot.<section>Error`. When the frame cannot be
+-- created every read rebuilds.
 local function refresh(only)
     local watched = watch()
 
@@ -716,13 +756,15 @@ local function refresh(only)
     return snapshot
 end
 
--- The shared normalized snapshot. It is replaced section by section on
--- change; callers must treat it as read-only.
+-- Returns the shared normalized snapshot of the player's build.
+-- @return table  The snapshot (equipment, sets, weapons, talents, season, rulesets, runes, pending ...). It is replaced
+--   section by section on change; callers must treat it as read-only.
 function addon:GetBuildContext()
     return refresh()
 end
 
 -- Marks one section (or all) dirty, e.g. after a test or a manual refresh.
+-- @param section string|nil  'equipment', 'weapons', 'talents', 'client' or 'runes'; nil marks all of them.
 function addon:InvalidateBuildContext(section)
     if section == nil then
         markDirty('equipment', 'weapons', 'talents', 'client', 'runes')
@@ -731,12 +773,17 @@ function addon:InvalidateBuildContext(section)
     end
 end
 
--- Set of active ruleset tokens ('standard', 'hardcore', 'season:<id>', ...) for the premade applicability check.
+-- Returns the set of active ruleset tokens ('standard', 'hardcore', 'season:<id>', ...) for the premade applicability
+-- check.
+-- @return table  A set keyed by token.
 function addon:GetBuildRulesets()
     return refresh('client').rulesets
 end
 
--- Equipment record for an inventory slot, false when empty, or nil and a reason.
+-- Returns the equipment record for an inventory slot.
+-- @param slot number  The inventory slot (1 to 19).
+-- @return table|boolean|nil  The record; false when the slot is empty; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetEquippedSlotInfo(slot)
     local value = refresh('equipment')
 
@@ -747,8 +794,12 @@ function addon:GetEquippedSlotInfo(slot)
     return value.equipment[slot] or false
 end
 
--- Equipped pieces of one game item set. Unknown while any equipped item's
--- metadata is still loading, so a count is never understated.
+-- Counts the equipped pieces of one game item set.
+-- @param setID number  The item set ID.
+-- @return number|nil  The number of equipped pieces; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Unknown while any equipped item's metadata is still loading, so a count is never understated.
 function addon:GetEquippedSetPieces(setID)
     local value = refresh('equipment')
 
@@ -762,7 +813,9 @@ function addon:GetEquippedSetPieces(setID)
     return value.sets[setID] or 0
 end
 
--- Returns the table of equipped piece counts per set ID and whether any item data is still pending.
+-- Returns the equipped piece counts per set ID and whether any item data is still pending.
+-- @return table|nil  A table from set ID to piece count; nil when unavailable.
+-- @return boolean|string|nil  Whether item data is still pending; the reason when the first return is nil.
 function addon:GetEquippedSets()
     local value = refresh('equipment')
 
@@ -773,7 +826,9 @@ function addon:GetEquippedSets()
     return value.sets, value.pending
 end
 
--- A game item set's display name where the client exposes one.
+-- Returns a game item set's display name where the client exposes one.
+-- @param setID number  The item set ID.
+-- @return string|nil  The name; nil when the client does not expose one.
 function addon:GetItemSetName(setID)
     local fn = C_Item and C_Item.GetItemSetInfo or GetItemSetInfo
     local ok, name = call(fn, setID)
@@ -787,32 +842,43 @@ end
 -- Specialization, weapon, season and rune readers
 -- ============================================================================
 
--- The talent section of the snapshot (layout, trees or loadout, specialization values).
+-- Returns the talent section of the snapshot (layout, trees or loadout, specialization values).
+-- @return table  The talent section.
 function addon:GetTalentBuild()
     return refresh('talents').talents
 end
 
--- The character's rotation specialization value (a specialization ID, or a
--- talent group on dual-specialization clients) and the reason when unknown.
+-- Returns the character's rotation specialization value.
+-- @return number|nil  A specialization ID, or a talent group on dual-specialization clients; nil when unknown.
+-- @return string|nil  The reason when the value is unknown; nil otherwise.
+--
 -- Cached until a talent or specialization notification.
 function addon:GetRotationSpecValue()
     local talents = refresh('talents').talents
     return talents.rotationSpec, talents.rotationSpecReason
 end
 
--- mode ('tree' or 'id'), value (primary tree index or specialization ID),
--- reason when the value is unavailable, and the player's class token.
+-- Returns the player's specialization facts.
+-- @return string|nil  The mode: 'tree' or 'id'.
+-- @return number|nil  The value: the primary tree index or the specialization ID.
+-- @return string|nil  The reason when the value is unavailable.
+-- @return string|nil  The player's class token.
+--
 -- Cached until a talent or specialization notification; no allocation.
 function addon:GetPlayerSpecializationObservation()
     local talents = refresh('talents').talents
     return talents.specMode, talents.specValue, talents.specReason, talents.class
 end
 
--- One weapon slot ('mainhand', 'offhand' or 'ranged'): its equipment record
--- (with classID/subClassID/equipLoc or typeReason), false when empty, or nil
--- and a reason (no ranged slot on this client, missing API).
+-- Inventory slot numbers of the two hand slots (the ranged slot is looked up per client).
 local weaponSlotIDs = { mainhand = 16, offhand = 17 }
 
+-- Returns the equipment record of one weapon slot.
+-- @param kind string  'mainhand', 'offhand' or 'ranged'.
+-- @return table|boolean|nil  The record (with classID/subClassID/equipLoc or typeReason); false when the slot is empty;
+--   nil when unavailable.
+-- @return string|nil  The reason (no ranged slot on this client, missing API, 'invalid-weapon-slot') when the first
+--   return is nil; nil otherwise.
 function addon:GetEquippedWeaponSlot(kind)
     local value = refresh('equipment')
 
@@ -837,14 +903,18 @@ function addon:GetEquippedWeaponSlot(kind)
     return value.equipment[slot] or false
 end
 
--- The season and game-mode facts of the client section.
+-- Returns the season and game-mode facts of the client section.
+-- @return table  The season facts { family, id, gameModeId, hardcore, selfFoundAllowed, selfFound, name }.
 function addon:GetSeasonInfo()
     return refresh('client').season
 end
 
--- Whether a Season of Discovery rune is engraved on an equipped item, by
--- rune (skillLineAbilityID) or by a spell the rune teaches. nil plus a
--- reason when engraving cannot be read here.
+-- Reports whether a Season of Discovery rune is engraved on an equipped item, by rune (skillLineAbilityID) or by a
+-- spell the rune teaches.
+-- @param rune number|nil  The rune (skillLineAbilityID).
+-- @param spell number|nil  A spell the rune teaches; used when `rune` is nil.
+-- @return boolean|nil  True when engraved; nil when engraving cannot be read here or no argument was given.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:IsRuneEngraved(rune, spell)
     local runes = refresh('runes').runes
 
@@ -865,11 +935,15 @@ end
 -- Trait talents
 -- ============================================================================
 
--- Trait talents (Retail, Forever): a node's committed rank, or for a choice
--- node's entry the rank when that entry is the chosen one (else 0).
--- One node's state, read on first use and kept until the next talent
--- notification. withEntries also keeps the node's entry IDs, which matching a
--- saved spell ID needs.
+-- Returns one trait node's state, read on first use and kept until the next talent notification.
+-- @param talents table  The talent section.
+-- @param node number  The node ID.
+-- @param withEntries boolean|nil  True to also keep the node's entry IDs, which matching a saved spell ID needs.
+-- @return table|nil  The node state; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Trait talents (Retail, Forever): a node's committed rank, or for a choice node's entry the rank when that entry is
+-- the chosen one (else 0).
 local function traitNode(talents, node, withEntries)
     local nodes = talents.nodes
     local state = nodes[node]
@@ -898,9 +972,13 @@ local function traitNode(talents, node, withEntries)
     return state
 end
 
--- Whether a node (with its entries read) still holds the saved spell: the
--- given choice entry, else any of its entries. nil and a reason when a read
--- fails.
+-- Reports whether a node (with its entries read) still holds the saved spell.
+-- @param talents table  The talent section.
+-- @param state table  The node state with its entries.
+-- @param entry number|nil  The choice entry to check; nil checks any of the node's entries.
+-- @param spell number  The saved spell ID.
+-- @return boolean|nil  True when it holds the spell; false when it does not; nil when a read fails.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 local function traitHolds(talents, state, entry, spell)
     local spells = talents.entrySpells
 
@@ -933,8 +1011,13 @@ local function traitHolds(talents, state, entry, spell)
     return false
 end
 
--- Where a spell ID sits in the tree now: node, choice entry. The index is
--- built once per talent notification, and only for a reference that needs it.
+-- Finds where a spell ID sits in the trait tree now.
+-- @param talents table  The talent section.
+-- @param spell number  The spell ID.
+-- @return table|nil  { node, entry }; nil when the spell is not in the tree.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- The index is built once per talent notification, and only for a reference that needs it.
 local function traitSpellAt(talents, spell)
     local index = talents.spellIndex
 
@@ -958,9 +1041,13 @@ local function traitSpellAt(talents, spell)
     return at
 end
 
--- spell is the spell ID saved with the reference: when the saved node no
--- longer holds it (Blizzard renumbered the tree), the talent is found again
--- by spell.
+-- Returns the committed rank of a trait node.
+-- @param node number  The node ID.
+-- @param entry number|nil  The choice entry; the rank is 0 when another entry is the chosen one.
+-- @param spell number|nil  The spell ID saved with the reference: when the saved node no longer holds it (Blizzard
+--   renumbered the tree), the talent is found again by spell.
+-- @return number|nil  The rank; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetTraitNodeRank(node, entry, spell)
     local talents = refresh('talents').talents
 
@@ -1014,8 +1101,10 @@ function addon:GetTraitNodeRank(node, entry, spell)
     return 0
 end
 
--- Forever's trees as read at the last talent notification: points spent per
--- tree (display order) and the unique primary tree.
+-- Returns the points spent in one of Forever's trees as read at the last talent notification.
+-- @param tree number  The tree index (display order).
+-- @return number|nil  The points spent; nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetTraitTreePoints(tree)
     local talents = refresh('talents').talents
 
@@ -1035,7 +1124,10 @@ function addon:GetTraitTreePoints(tree)
     return record.points
 end
 
--- Index of the unique tree with the most points spent, or nil and the reason ('no-talents-spent' or ambiguous).
+-- Returns the index of the unique tree with the most points spent.
+-- @return number|nil  The tree index; nil when there is none or it is ambiguous.
+-- @return string|nil  The reason ('no-talents-spent', ambiguous or layout reasons) when the first return is nil; nil
+--   otherwise.
 function addon:GetTraitPrimaryTree()
     local talents = refresh('talents').talents
 

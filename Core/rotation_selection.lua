@@ -14,10 +14,15 @@ local data = addon.RotationData
 -- Automatic switch ordering
 -- ============================================================================
 
--- Build the candidate order without evaluating switch conditions: by
--- priority (higher first), then name, then identity. Your rotations and Built
--- Ins compete on priority alone. Missing priorities are zero.
--- `rotations` maps id to body. Returns the ids of the enabled, valid rotations in that order (never the fallback).
+-- Builds the automatic switch candidate order without evaluating switch conditions.
+-- @param spec number  The specialization ID or talent group.
+-- @param rotations table  Maps each rotation id to its body.
+-- @return string[]  The ids of the enabled, valid rotations ordered by priority (higher first), then name, then
+--   identity (never the fallback).
+--
+-- Your rotations and Built Ins compete on priority alone. Missing priorities are zero. When the scoped coordinator can
+-- resolve the rotation, its full address is the last tie-break, so equal priority and name still order the same way
+-- every time.
 function addon:GetOrderedAutoSwitchRotations(spec, rotations)
     local candidates = {}
 
@@ -141,8 +146,10 @@ local refusalText = {
 -- bytes so the source stays ASCII (editors and the forge flag the glyph as confusable with a colon).
 local SEPARATOR = ' \226\128\186 '
 
--- Walk a validation path ("$.body.rotation[2].onTrue[1].conditions.type").
--- Returns the names and numeric indexes in order ('rotation', 2, 'onTrue', 1, ...), or nil for a path outside the body.
+-- Walks a validation path ("$.body.rotation[2].onTrue[1].conditions.type") into its parts.
+-- @param path any  The validation path.
+-- @return table|nil  The names and numeric indexes in order ('rotation', 2, 'onTrue', 1, ...); nil for a path outside
+--   the body.
 local function tokens(path)
     local list = {}
     local rest = type(path) == 'string' and path:match('^%$%.body(.*)$')
@@ -162,8 +169,10 @@ local function tokens(path)
     return list
 end
 
--- Returns a display name for a step: its own name, else one by step type (a spell step reads as the spell name or
--- "Spell <id>"); nil when the step has no usable name.
+-- Returns a display name for a step.
+-- @param step any  The step.
+-- @return string|nil  Its own name, else one by step type (a spell step reads as the spell name or "Spell <id>"); nil
+--   when the step has no usable name.
 local function stepName(step)
     if type(step) ~= 'table' then
         return nil
@@ -195,8 +204,11 @@ local function stepName(step)
     end
 end
 
--- Where a diagnostic is, in words: "Cooldown 2 (Touch of Death)",
--- "Rotation step 1 > Yes 2 (Stop)" (parts joined by SEPARATOR), "Switch condition". body is optional.
+-- Says where a diagnostic is, in words: "Cooldown 2 (Touch of Death)", "Rotation step 1 > Yes 2 (Stop)" (parts joined
+-- by SEPARATOR), "Switch condition".
+-- @param path string  The validation path.
+-- @param body table|nil  The rotation body, used to name the step.
+-- @return string  The description.
 function addon:DescribeRotationIssueLocation(path, body)
     local list = tokens(path)
 
@@ -233,7 +245,10 @@ function addon:DescribeRotationIssueLocation(path, body)
     return text
 end
 
--- Returns the node of `body` that a validation path points at, or nil.
+-- Returns the node of a body that a validation path points at.
+-- @param body any  The rotation body.
+-- @param path any  The validation path.
+-- @return any  The node; nil when there is none.
 local function valueAt(body, path)
     local list = tokens(path)
 
@@ -254,8 +269,11 @@ local function valueAt(body, path)
     return node
 end
 
--- One diagnostic in plain words; body (optional) names the step. Returns nil for a non-table. The text is "where: what"
--- with the trailing period dropped so callers can add their own.
+-- Describes one validation diagnostic in plain words.
+-- @param problem table  The diagnostic ({ code, path, ... }).
+-- @param body table|nil  The rotation body, used to name the step.
+-- @return string|nil  The text "where: what" with the trailing period dropped so callers can add their own; nil for a
+--   non-table.
 function addon:DescribeRotationIssue(problem, body)
     if type(problem) ~= 'table' then
         return nil
@@ -296,8 +314,11 @@ function addon:DescribeRotationIssue(problem, body)
     return string.format('%s: %s', where, (what:gsub('%.$', '')))
 end
 
--- The first issue that stops a body being selected, and its description. Validates the body itself when no validation
--- result is passed. Returns the diagnostic and its text, or nil when there is none.
+-- Finds the first issue that stops a body being selected, and its description.
+-- @param body table  The rotation body.
+-- @param validation table|nil  The body's validation result; the body is validated here when nil.
+-- @return table|nil  The first diagnostic; nil when there is none.
+-- @return string|nil  Its description.
 function addon:FirstRotationIssue(body, validation)
     if validation == nil and type(body) == 'table' then
         validation = data.ValidateBody(body, self:GetRotationValidationOptions())
@@ -319,9 +340,12 @@ end
 -- Rotation specializations
 -- ============================================================================
 
--- Rotation specializations (body.specs) for the list, the editor and
--- commands. Values are specialization IDs or talent groups, as
--- Platform/specializations.lua GetRotationSpecKind classifies the client.
+-- Returns how this client keys rotation specializations (body.specs), as Platform/specializations.lua
+-- GetRotationSpecKind classifies it.
+-- @return string|nil  The kind (for example 'portable' or 'slot'); nil when the platform has none.
+--
+-- Rotation specializations (body.specs) for the list, the editor and commands. Values are specialization IDs or talent
+-- groups.
 function addon:GetRotationSpecKind()
     local platform = self.Platform
 
@@ -332,7 +356,8 @@ function addon:GetRotationSpecKind()
     return (platform:GetRotationSpecKind())
 end
 
--- The character's current value; nil when unknown (or no specialization concept).
+-- Returns the character's current rotation specialization value.
+-- @return number|nil  A specialization ID or talent group; nil when unknown (or no specialization concept).
 function addon:GetCurrentRotationSpecValue()
     if not self:GetRotationSpecKind() then
         return nil
@@ -344,8 +369,11 @@ function addon:GetCurrentRotationSpecValue()
     return (self.Platform:GetRotationSpecValue())
 end
 
--- A talent group as the game words it (primary or secondary talents), with
--- its main talent tree when the client can name it for that group.
+-- Names a talent group as the game words it (primary or secondary talents), with its main talent tree when the client
+-- can name it for that group.
+-- @param owner table  The addon.
+-- @param slot number  The talent group.
+-- @return string  The name; a name the player gave it (General > Specialization Names) wins.
 local function slotName(owner, slot)
     -- Your own name for it (General > Specialization Names) wins.
     local char = owner.db and owner.db.char
@@ -393,7 +421,8 @@ local function slotName(owner, slot)
     return base
 end
 
--- The values this character can restrict a rotation to, each {id,name}.
+-- Returns the values this character can restrict a rotation to.
+-- @return table[]  Entries { id, name, initial, slot, icon }.
 function addon:GetRotationSpecEntries()
     if not self:GetRotationSpecKind() then
         return {}
@@ -435,9 +464,10 @@ function addon:GetRotationSpecEntries()
     return entries
 end
 
--- The specialization (or talent group, or "No specialization") whose Default a
--- fallback is, named as the Rotations list's specialization dropdown names it;
--- nil where the client keeps one Default for every specialization.
+-- Names the specialization (or talent group, or "No specialization") whose Default a fallback is, as the Rotations
+-- list's specialization dropdown names it.
+-- @param spec number  The specialization ID or talent group the fallback is saved under.
+-- @return string|nil  The name; nil where the client keeps one Default for every specialization.
 function addon:GetFallbackSpecName(spec)
     local platform = self.Platform
 
@@ -457,6 +487,8 @@ function addon:GetFallbackSpecName(spec)
 end
 
 -- Names one specialization value (an ID, a talent group or the initial no-specialization state) for display.
+-- @param value any  The specialization value.
+-- @return string  The name.
 function addon:DescribeRotationSpecValue(value)
     if type(value) ~= 'number' then
         return L['Unknown specialization']
@@ -480,7 +512,9 @@ function addon:DescribeRotationSpecValue(value)
     return name or string.format(L['specialization %d'], value)
 end
 
--- "Any specialization", or the names joined.
+-- Names a rotation's specializations.
+-- @param specs table|nil  The specialization values (body.specs).
+-- @return string  "Any specialization" when there are none, otherwise the names joined.
 function addon:DescribeRotationSpecs(specs)
     if type(specs) ~= 'table' or #specs == 0 or not self:GetRotationSpecKind() then
         return L['Any specialization']
@@ -495,8 +529,9 @@ function addon:DescribeRotationSpecs(specs)
     return table.concat(names, ', ')
 end
 
--- What a new rotation is for: the specialization the Rotations list shows
--- (any when it shows all of them), else the one you are playing.
+-- Says what a new rotation is for.
+-- @return number[]|nil  The specialization the Rotations list shows, else the one you are playing; nil for any (when
+--   the list shows all of them, or the client has no specializations).
 function addon:DefaultNewRotationSpecs()
     if not self:GetRotationSpecKind() then
         return nil
@@ -515,7 +550,9 @@ function addon:DefaultNewRotationSpecs()
     return value ~= nil and { value } or nil
 end
 
--- A specialization's name as the editor shows it.
+-- Names a specialization as the editor shows it.
+-- @param spec number  The specialization ID or talent group.
+-- @return string  The name.
 function addon:DescribeRotationSpec(spec)
     if type(self.GetRotationEditorSpecs) == 'function' then
         local ok, entries = pcall(self.GetRotationEditorSpecs, self)
@@ -547,11 +584,13 @@ function addon:DescribeRotationSpec(spec)
     return tostring(spec)
 end
 
--- The specialization RM runs when the Rotations editor does not offer it.
--- On Retail a character who has not chosen a specialization reports the
--- class's initial spec (an index past the class's count, its own spec ID);
--- RM keys rotations by that ID and the editor offers it as "No
--- specialization". This names any other unoffered namespace.
+-- Names the specialization RM runs when the Rotations editor does not offer it.
+-- @return number|nil  The current specialization; nil when the editor offers it.
+-- @return string[]|nil  The names of the specializations the editor does offer.
+--
+-- On Retail a character who has not chosen a specialization reports the class's initial spec (an index past the class's
+-- count, its own spec ID); RM keys rotations by that ID and the editor offers it as "No specialization". This names any
+-- other unoffered namespace.
 function addon:GetUnofferedRotationSpec()
     local spec = self.currentSpec
 
@@ -585,6 +624,9 @@ end
 -- ============================================================================
 
 -- Returns the names of the other specializations that have a fallback saved, for the "there is one for ..." hint.
+-- @param self table  The addon.
+-- @param spec number  The specialization ID or talent group to leave out.
+-- @return string[]  The names.
 local function otherFallbacks(self, spec)
     local names = {}
 
@@ -607,8 +649,12 @@ local function otherFallbacks(self, spec)
     return names
 end
 
--- nil when `value` (a rotation key, or DEFAULT) can be selected now for
--- `spec`; otherwise a sentence saying why, and the refusal code.
+-- Explains why a rotation cannot be selected now.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @param value string  A rotation key, or DEFAULT.
+-- @return string|nil  nil when `value` can be selected now for `spec`; otherwise a sentence saying why.
+-- @return string|nil  The refusal code when the first return is a sentence; nil otherwise.
+--
 -- Reads through a runtime pass when the scoped coordinator exists, so it reports what selection itself would see.
 function addon:ExplainRotationRefusal(spec, value)
     if spec == nil then
@@ -691,7 +737,10 @@ function addon:ExplainRotationRefusal(spec, value)
     return refusalText[code] or string.format(L['it is unavailable (%s)'], tostring(code)), code
 end
 
--- A rotation's priority as automatic switching ranks it (nil when unknown).
+-- Returns a rotation's priority as automatic switching ranks it.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The rotation key.
+-- @return number|nil  The priority; nil when unknown (and for the fallback).
 function addon:GetRotationEffectivePriority(spec, key)
     if key == DEFAULT then
         return nil
@@ -707,10 +756,13 @@ function addon:GetRotationEffectivePriority(spec, key)
     return type(body) == 'table' and data.GetRotationPriority(body.priority) or nil
 end
 
--- Built Ins that would be selectable for `spec` now (applicability, and a
--- switch condition that is not known to fail) but are switched off: every one
--- the player switched off, and, when no Built In for `spec` is on at all, the
--- alternatives that ship off. Menus and commands only.
+-- Lists the Built Ins that would be selectable for a specialization now but are switched off.
+-- @param spec number|nil  The specialization ID or talent group.
+-- @return table[]  The Built In state rows: every one the player switched off, and, when no Built In for `spec` is on
+--   at all, the alternatives that ship off.
+--
+-- Applicability, and a switch condition that is not known to fail, are what make a Built In selectable. Menus and
+-- commands only.
 function addon:GetDisabledApplicableBuiltins(spec)
     if spec == nil or type(self.GetBuiltinStates) ~= 'function' then
         return {}
@@ -746,8 +798,11 @@ function addon:GetDisabledApplicableBuiltins(spec)
     return user
 end
 
--- The specialization you are playing, as rotations see it (body.specs): its
--- name and value; the saved namespace on clients without specializations.
+-- Names the specialization you are playing, as rotations see it (body.specs).
+-- @param self table  The addon.
+-- @param spec number|nil  The saved namespace, used on clients without specializations.
+-- @return string  The name.
+-- @return string  The value as text ('nil' when unknown).
 local function currentSpecText(self, spec)
     if spec == nil then
         return L['None'], 'nil'
@@ -766,8 +821,8 @@ local function currentSpecText(self, spec)
     return self:DescribeRotationSpec(spec), tostring(spec)
 end
 
--- /rm why: each rotation's eligibility for the current character, with the
--- first blocking issue. Returns the lines.
+-- Builds the /rm why report: each rotation's eligibility for the current character, with the first blocking issue.
+-- @return string[]  The lines.
 function addon:GetRotationEligibilityReport()
     local spec = self.currentSpec
     local lines = {}
@@ -820,6 +875,9 @@ function addon:GetRotationEligibilityReport()
         )
     end
 
+    -- Adds a line saying whether a rotation can be selected, and why not.
+    -- @param name string  The rotation's display name.
+    -- @param value string  The rotation key, or DEFAULT.
     local function verdict(name, value)
         local why, code = self:ExplainRotationRefusal(spec, value)
 
@@ -853,6 +911,10 @@ function addon:GetRotationEligibilityReport()
         end
     end
 
+    -- Appends a rotation's identifier to its name, if it has one.
+    -- @param text string  The display name.
+    -- @param key string  The rotation key.
+    -- @return string  The text, as "text [identifier]" when the rotation has an identifier.
     local function tagged(text, key)
         return identifiers[key] and string.format('%s [%s]', text, identifiers[key]) or text
     end
@@ -954,7 +1016,7 @@ function addon:GetRotationEligibilityReport()
 end
 
 -- Prints the eligibility report to chat, or opens it in a copyable window when it is longer than four lines.
--- Returns the lines.
+-- @return string[]  The lines.
 function addon:ShowRotationEligibilityReport()
     local lines = self:GetRotationEligibilityReport()
 
@@ -995,6 +1057,8 @@ end
 -- the auto-switch list identity; never while polling.
 
 -- Returns a deterministic text form of a value (table keys sorted), so equal conditions get equal keys.
+-- @param value any  The value.
+-- @return string  The text.
 local function canonical(value)
     if type(value) ~= 'table' then
         return type(value) .. ':' .. tostring(value)
@@ -1016,12 +1080,16 @@ local function canonical(value)
     return '{' .. table.concat(parts, ',') .. '}'
 end
 
--- Returns an empty region: an unbounded level range, no specialization or ruleset limit and no other conditions.
+-- Returns an empty region.
+-- @return table  { lo, hi, atoms, count }: an unbounded level range, no specialization or ruleset limit and no other
+--   conditions.
 local function newRegion()
     return { lo = -math.huge, hi = math.huge, atoms = {}, count = 0 }
 end
 
 -- Records a condition the analysis cannot reduce to a range, once per distinct condition.
+-- @param region table  The region.
+-- @param condition table  The condition.
 local function addAtom(region, condition)
     local key = canonical(condition)
 
@@ -1031,7 +1099,9 @@ local function addAtom(region, condition)
     end
 end
 
--- Restricts the region's specializations to the list (intersecting with any limit already set).
+-- Restricts a region's specializations to a list (intersecting with any limit already set).
+-- @param region table  The region.
+-- @param list number[]  The specialization values.
 local function narrowSpecs(region, list)
     local set = {}
 
@@ -1044,8 +1114,12 @@ local function narrowSpecs(region, list)
     region.specs = set
 end
 
--- Folds a switch condition into the region: AND groups are walked, player LEVEL comparisons narrow the level range, a
--- SPECIALIZATION narrows the specializations where those are IDs, and anything else is kept as an atom.
+-- Folds a switch condition into a region.
+-- @param region table  The region.
+-- @param condition any  The switch condition.
+--
+-- AND groups are walked, player LEVEL comparisons narrow the level range, a SPECIALIZATION narrows the specializations
+-- where those are IDs, and anything else is kept as an atom.
 local function addCondition(region, condition)
     if type(condition) ~= 'table' or condition.type == nil then
         return
@@ -1094,7 +1168,10 @@ local function addCondition(region, condition)
     addAtom(region, condition)
 end
 
--- True when the two regions can both hold at once: their level ranges, specializations and rulesets intersect.
+-- Reports whether two regions can both hold at once.
+-- @param a table  The first region.
+-- @param b table  The second region.
+-- @return boolean  True when their level ranges, specializations and rulesets intersect.
 local function meets(a, b)
     if math.max(a.lo, b.lo) > math.min(a.hi, b.hi) then
         return false
@@ -1134,7 +1211,10 @@ local function meets(a, b)
     return true
 end
 
--- True when every other condition of `a` is also in `b`, so b matches whenever a does apart from the ranges.
+-- Reports whether every other condition of one region is also in the other.
+-- @param a table  The first region.
+-- @param b table  The second region.
+-- @return boolean  True when b matches whenever a does apart from the ranges.
 local function subset(a, b)
     if a.count > b.count then
         return false
@@ -1149,7 +1229,10 @@ local function subset(a, b)
     return true
 end
 
--- True when both regions limit specializations to the same set (or neither limits them).
+-- Reports whether both regions limit specializations to the same set.
+-- @param a table  The first region.
+-- @param b table  The second region.
+-- @return boolean  True when they do (or neither limits them).
 local function sameSpecs(a, b)
     if (a.specs == nil) ~= (b.specs == nil) then
         return false
@@ -1173,8 +1256,11 @@ local function sameSpecs(a, b)
     return true
 end
 
--- Builds the region of one rotation from its switch condition, optional Built In applicability and body.specs. Returns
--- { lo, hi, specs, rulesets, atoms, count } for CompareSwitchRegions.
+-- Builds the region of one rotation from its switch condition, optional Built In applicability and body.specs.
+-- @param switch table|nil  The switch condition.
+-- @param applicability table|nil  A Built In's applicability (specs, minLevel, maxLevel, rulesets).
+-- @param specs table|nil  The rotation's body.specs.
+-- @return table  { lo, hi, specs, rulesets, atoms, count } for CompareSwitchRegions.
 function addon:GetSwitchRegion(switch, applicability, specs)
     local region = newRegion()
     local platform = self.Platform
@@ -1212,7 +1298,10 @@ function addon:GetSwitchRegion(switch, applicability, specs)
     return region
 end
 
--- True when the inner level range and specialization set lie inside the outer ones.
+-- Reports whether one region lies inside another.
+-- @param inner table  The inner region.
+-- @param outer table  The outer region.
+-- @return boolean  True when the inner level range and specialization set lie inside the outer ones.
 local function within(inner, outer)
     if inner.lo < outer.lo or inner.hi > outer.hi then
         return false
@@ -1233,9 +1322,11 @@ local function within(inner, outer)
     return true
 end
 
--- How two switch regions relate when both can match at once: 'identical';
--- 'subsumes' (a matches whenever b does); 'subsumed' (the reverse);
--- 'overlaps' (they share some of their range); nil when no overlap is proved.
+-- Says how two switch regions relate when both can match at once.
+-- @param a table  The first region.
+-- @param b table  The second region.
+-- @return string|nil  'identical'; 'subsumes' (a matches whenever b does); 'subsumed' (the reverse); 'overlaps' (they
+--   share some of their range); nil when no overlap is proved.
 function addon:CompareSwitchRegions(a, b)
     if not meets(a, b) then
         return nil
@@ -1263,9 +1354,13 @@ end
 -- unchanged.
 local overlapCache = {}
 
--- Returns, for each rotation key in the live auto-switch list, the list of other rotations whose switch can match at
--- the same time ({ key, name, priority, kind, live, tie }). Only the current spec is analyzed; other specs return {}.
--- Pairs that are not proved to overlap statically are still listed when both switches match right now.
+-- Finds, for each rotation in the live auto-switch list, the other rotations whose switch can match at the same time.
+-- @param spec number|nil  The specialization ID or talent group; defaults to the current one. Only the current spec is
+--   analyzed; other specs return {}.
+-- @return table  A table from rotation key to a list of { key, name, priority, kind, live, tie }.
+--
+-- Pairs that are not proved to overlap statically are still listed when both switches match right now. The last result
+-- is cached while the auto-switch list, the spec and the condition registry are unchanged.
 function addon:GetSwitchOverlaps(spec)
     spec = spec or self.currentSpec
     local order = self.autoswitchRotation
@@ -1306,6 +1401,11 @@ function addon:GetSwitchOverlaps(spec)
 
     local result = {}
 
+    -- Records that another rotation overlaps a row's rotation.
+    -- @param row table  The rotation's row.
+    -- @param other table  The overlapping rotation's row.
+    -- @param kind string  How they relate ('identical', 'subsumes', 'subsumed', 'overlaps' or 'live').
+    -- @param live boolean  Whether both switches match right now.
     local function add(row, other, kind, live)
         local list = result[row.key]
 
@@ -1342,8 +1442,10 @@ function addon:GetSwitchOverlaps(spec)
     return result
 end
 
--- One line naming what a rotation overlaps with, for a tooltip or note; nil when nothing.
--- Returns the text and whether any overlap is an exact priority tie.
+-- Names what a rotation overlaps with in one line, for a tooltip or note.
+-- @param list table|nil  The overlap list for the rotation (from GetSwitchOverlaps).
+-- @return string|nil  The text; nil when nothing.
+-- @return boolean|nil  Whether any overlap is an exact priority tie.
 function addon:DescribeSwitchOverlap(list)
     if type(list) ~= 'table' or #list == 0 then
         return nil
@@ -1395,8 +1497,9 @@ local SEASONS = {
 -- Maps the season words a pack may use to the same ids.
 local SEASON_NAMES = { seasonofmastery = 1, seasonofdiscovery = 2, hardcore = 3, fresh = 11, freshhardcore = 12 }
 
--- Returns display text for a pack ruleset token ('hardcore', 'season:<id or word>', 'mode:<n>', ...); an unknown token
--- reads as itself.
+-- Returns display text for a pack ruleset token.
+-- @param token any  The token ('hardcore', 'season:<id or word>', 'mode:<n>', ...).
+-- @return string  The text; an unknown token reads as itself.
 local function rulesetName(token)
     if token == 'hardcore' then
         return L['Hardcore']
@@ -1427,9 +1530,12 @@ local function rulesetName(token)
     return tostring(token)
 end
 
--- The load-time scope of a definition, as one line; nil when it has none.
--- Specializations are never listed (you can respec) and only a minimum level
--- is (you only level up); rulesets read as names.
+-- Describes the load-time scope of a definition as one line.
+-- @param scope table|nil  The applicability (families, class, minLevel, minExpansion, maxExpansion, rulesets).
+-- @return string|nil  The line; nil when it has none.
+--
+-- Specializations are never listed (you can respec) and only a minimum level is (you only level up); rulesets read as
+-- names.
 function addon:DescribeApplicability(scope)
     if type(scope) ~= 'table' then
         return nil
@@ -1502,6 +1608,7 @@ end
 -- the rest are derived in name order, a clash taking -2, -3...
 
 -- Sorts rows in place by name, then canonical id, so derived identifiers are always handed out in the same order.
+-- @param list table[]  The rows.
 local function sortedUnstored(list)
     table.sort(list, function(a, b)
         if a.name ~= b.name then
@@ -1512,8 +1619,17 @@ local function sortedUnstored(list)
     end)
 end
 
--- Returns one row per rotation of the spec (key, name, kind, identifier and whether it is stored, derived or a
--- duplicate of another) and a map from identifier to row. `headers` is the rotation list, read when not passed.
+-- Lists the identifier of every rotation of a specialization.
+-- @param spec number  The specialization ID or talent group.
+-- @param headers table[]|nil  The rotation list; read when not passed.
+-- @return table[]  One row per rotation: key, name, kind, canonicalId, fallback, identifier, and whether it is
+--   `stored`, `derived` or a `duplicateOf` another.
+-- @return table  A map from identifier to row.
+--
+-- Stored identifiers and Built Ins claim theirs first; the rest are derived in name order, a clash taking -2, -3...
+-- Every rotation for a specialization has an identifier (Data/validation.lua): a Built In's comes from its pack
+-- (GetBuiltinIdentifier), yours is stored in the rotation (body.identifier) or, until you set one, made from its name.
+-- The fallback is "default".
 function addon:ListRotationIdentifiers(spec, headers)
     headers = headers or self.ListRotationHeaders and self:ListRotationHeaders(spec)
     local rows, used, pending = {}, {}, {}
@@ -1570,7 +1686,11 @@ function addon:ListRotationIdentifiers(spec, headers)
     return rows, used
 end
 
--- Returns the identifier of a rotation key ("default" for the fallback) and its row, or nil when the key is unknown.
+-- Returns the identifier of a rotation key.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The rotation key, or DEFAULT.
+-- @return string|nil  The identifier ("default" for the fallback); nil when the key is unknown.
+-- @return table|nil  The identifier row.
 function addon:GetRotationIdentifier(spec, key)
     if key == DEFAULT then
         return 'default'
@@ -1585,8 +1705,11 @@ function addon:GetRotationIdentifier(spec, key)
     end
 end
 
--- A free identifier made from a name, for a new rotation or a copy. `except` is the key whose own identifier does not
--- count as taken.
+-- Makes a free identifier from a name, for a new rotation or a copy.
+-- @param spec number  The specialization ID or talent group.
+-- @param name string  The rotation name.
+-- @param except string|nil  The key whose own identifier does not count as taken.
+-- @return string  The identifier.
 function addon:NewRotationIdentifier(spec, name, except)
     local _, used = self:ListRotationIdentifiers(spec)
     local base = data.SlugRotationIdentifier(name)
@@ -1600,7 +1723,12 @@ function addon:NewRotationIdentifier(spec, name, except)
     return identifier
 end
 
--- nil when `text` can be this rotation's identifier; else a sentence why.
+-- Checks whether a text can be a rotation's identifier.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The rotation key.
+-- @param text string  The proposed identifier.
+-- @return string|nil  nil when `text` can be this rotation's identifier; else a sentence why.
+-- @return string|nil  The normalized identifier when it can.
 function addon:CheckRotationIdentifier(spec, key, text)
     local identifier, why = data.NormalizeRotationIdentifier(text)
 
@@ -1622,9 +1750,14 @@ function addon:CheckRotationIdentifier(spec, key, text)
     return nil, identifier
 end
 
--- The rotation an identifier names among those selectable now; nil, and the
--- valid identifiers, when none or several do. `selectable` maps keys to true (nil allows all). Returns the key and
--- row, or nil, nil, the sorted valid identifiers and whether several rotations matched.
+-- Finds the rotation an identifier names among those selectable now.
+-- @param spec number  The specialization ID or talent group.
+-- @param text string  The identifier as typed.
+-- @param selectable table|nil  Maps keys to true; nil allows all.
+-- @return string|nil  The rotation key (DEFAULT for the fallback); nil when none or several match.
+-- @return table|nil  The matching row.
+-- @return string[]|nil  When none or several match: the sorted valid identifiers.
+-- @return boolean|nil  When none or several match: whether several rotations matched.
 function addon:ResolveRotationIdentifier(spec, text, selectable)
     local wanted = type(text) == 'string' and text:lower():match('^%s*(.-)%s*$')
 
@@ -1654,7 +1787,10 @@ function addon:ResolveRotationIdentifier(spec, text, selectable)
     return nil, nil, valid, #found > 1
 end
 
--- The identifiers of the rotations in `selectable` (runtime rows), sorted.
+-- Lists the identifiers of the rotations that are selectable.
+-- @param spec number  The specialization ID or talent group.
+-- @param selectable table  The runtime rows, mapping keys to true.
+-- @return string[]  The identifiers, sorted.
 function addon:ListSelectableIdentifiers(spec, selectable)
     local list = {}
 
@@ -1668,7 +1804,11 @@ function addon:ListSelectableIdentifiers(spec, selectable)
     return list
 end
 
--- "Name [identifier]" for chat and menus.
+-- Formats "Name [identifier]" for chat and menus.
+-- @param name any  The rotation name; a non-string is returned unchanged.
+-- @param key string  The rotation key.
+-- @param spec number|nil  The specialization ID or talent group; defaults to the current one.
+-- @return any  The label; the bare name when the rotation has no identifier.
 function addon:FormatRotationLabel(name, key, spec)
     if type(name) ~= 'string' then
         return name
@@ -1678,7 +1818,10 @@ function addon:FormatRotationLabel(name, key, spec)
     return identifier and string.format('%s [%s]', name, identifier) or name
 end
 
--- "Name [identifier]" for a rotation key, or nil when the key has no name.
+-- Returns "Name [identifier]" for a rotation key.
+-- @param key string  The rotation key, or DEFAULT.
+-- @param spec number|nil  The specialization ID or talent group; defaults to the current one.
+-- @return string|nil  The label; nil when the key has no name.
 function addon:GetRotationLabel(key, spec)
     local name = key == DEFAULT and DEFAULT or self:GetRotationName(key)
 
@@ -1689,7 +1832,8 @@ function addon:GetRotationLabel(key, spec)
     return self:FormatRotationLabel(name, key, spec)
 end
 
--- /rm list: identifier, name and status of every rotation for the live spec.
+-- Builds the /rm list report: identifier, name and status of every rotation for the live spec.
+-- @return string[]  The lines.
 function addon:GetRotationIdentifierReport()
     local spec = self.currentSpec
     local lines = {}
@@ -1735,7 +1879,7 @@ function addon:GetRotationIdentifierReport()
 end
 
 -- Prints the /rm list report to chat, or opens it in a copyable window when it is longer than six lines.
--- Returns the lines.
+-- @return string[]  The lines.
 function addon:ShowRotationIdentifierReport()
     local lines = self:GetRotationIdentifierReport()
 
