@@ -12,7 +12,11 @@ local data = addon.RotationData
 -- Tag validation
 -- ============================================================================
 
--- Linear trim. A '^%s*(.-)%s*$' (or '%s+$') pattern is quadratic on a long run of spaces inside pasted text.
+-- Trims whitespace from both ends of a string in linear time.
+-- @param s string  The string to trim.
+-- @return string  The trimmed string.
+--
+-- A '^%s*(.-)%s*$' (or '%s+$') pattern is quadratic on a long run of spaces inside pasted text.
 local function trim(s)
     local a = s:find('%S')
 
@@ -23,8 +27,10 @@ local function trim(s)
     return s:sub(a, s:match('^.*()%S'))
 end
 
--- Returns the number of UTF-8 characters in the text, or nil when it is not well-formed UTF-8 (overlong forms,
--- surrogates, code points above U+10FFFF and C1 control characters are rejected).
+-- Counts the UTF-8 characters in a text.
+-- @param text string  The text to count.
+-- @return number|nil  The number of characters; nil when it is not well-formed UTF-8 (overlong forms, surrogates,
+--   code points above U+10FFFF and C1 control characters are rejected).
 local function characters(text)
     local i, n = 1, 0
 
@@ -67,9 +73,14 @@ local function characters(text)
     return n
 end
 
--- Validates a dense list of tag strings and returns a trimmed copy with case-insensitive duplicates dropped (first
--- spelling wins), or nil and 'invalid-tags', 'tag-limit', 'invalid-tag' or 'tag-length'. Rejects tables with a
--- metatable, holes or extra keys.
+-- Validates a dense list of tag strings.
+-- @param tags table  The list of tags.
+-- @return string[]|nil  A trimmed copy with case-insensitive duplicates dropped (first spelling wins); nil when the
+--   list is not valid.
+-- @return string|nil  'invalid-tags', 'tag-limit', 'invalid-tag' or 'tag-length' when the first return is nil; nil
+--   otherwise.
+--
+-- Rejects tables with a metatable, holes or extra keys.
 function data.NormalizeRotationTags(tags)
     if type(tags) ~= 'table' or getmetatable(tags) then
         return nil, 'invalid-tags'
@@ -121,9 +132,14 @@ end
 -- Tag text and lookup
 -- ============================================================================
 
--- Parses the tag text box (comma or newline separated, with double-quoted entries that may hold commas and escaped
--- quotes) into a normalized list. Returns the list, or nil and 'tag-limit', 'invalid-tag-quotes' or a normalize reason.
--- Input is bounded to 32 KiB and is only ever read as data.
+-- Parses the tag text box into a normalized list.
+-- @param text string  Comma or newline separated tags, with double-quoted entries that may hold commas and escaped
+--   quotes; bounded to 32 KiB.
+-- @return string[]|nil  The normalized list; nil on failure.
+-- @return string|nil  'tag-limit', 'invalid-tag-quotes' or a normalize reason when the first return is nil; nil
+--   otherwise.
+--
+-- The input is only ever read as data.
 function data.ParseRotationTags(text)
     if type(text) ~= 'string' or #text > 32768 then
         return nil, 'tag-limit'
@@ -186,8 +202,10 @@ function data.ParseRotationTags(text)
     return data.NormalizeRotationTags(tags)
 end
 
--- Formats a tag list as the text ParseRotationTags reads back: ", " separated, quoting any tag with a comma or quote.
--- Returns nil and the reason when the list is not valid.
+-- Formats a tag list as the text ParseRotationTags reads back.
+-- @param tags table  The list of tags.
+-- @return string|nil  The tags ", " separated, quoting any tag with a comma or quote; nil when the list is not valid.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function data.FormatRotationTags(tags)
     local normalized, why = data.NormalizeRotationTags(tags)
 
@@ -204,8 +222,11 @@ function data.FormatRotationTags(tags)
     return table.concat(parts, ', ')
 end
 
--- Returns the effective tags of an envelope or bare body: the body's own list when present (even if empty), otherwise
--- the envelope's. Always a list; invalid stored tags give nil and the reason from the normalizer.
+-- Resolves the effective tags of an envelope or bare body.
+-- @param value any  The envelope or bare body.
+-- @return string[]|nil  The body's own list when present (even if empty), otherwise the envelope's; always a list,
+--   but nil when the stored tags are invalid.
+-- @return string|nil  The normalizer's reason when the first return is nil; nil otherwise.
 function data.GetRotationTags(value)
     if type(value) ~= 'table' then
         return {}
@@ -225,8 +246,11 @@ function data.GetRotationTags(value)
     return data.NormalizeRotationTags(tags)
 end
 
--- Tests a tag list against a filter (one tag or a list), ignoring case. mode 'all' needs every filtered tag; anything
--- else needs at least one. A missing or empty filter matches everything.
+-- Tests a tag list against a filter, ignoring case.
+-- @param tags string[]|nil  The tags to test.
+-- @param filter string|string[]|nil  One tag or a list; a missing or empty filter matches everything.
+-- @param mode string|nil  'all' needs every filtered tag; anything else needs at least one.
+-- @return boolean  True when the tags match the filter.
 function data.RotationTagMatches(tags, filter, mode)
     if filter == nil then
         return true
@@ -262,8 +286,14 @@ function data.RotationTagMatches(tags, filter, mode)
     return mode == 'all'
 end
 
--- Compare effective labels once, regardless of whether they are inherited or
--- explicitly stored. This detached view never materializes tags in saved data.
+-- Builds a detached view of a body with its effective labels, for comparison.
+-- @param body table  The rotation body.
+-- @param inheritedTags string[]|nil  The tags inherited from the envelope.
+-- @return table|nil  { body (a copy without tags), tags }; nil when the body cannot be copied.
+-- @return table|nil  The copy diagnostic when the first return is nil; nil otherwise.
+--
+-- Compares effective labels once, regardless of whether they are inherited or explicitly stored. This detached view
+-- never materializes tags in saved data.
 function data.RotationComparisonValue(body, inheritedTags)
     local copy, why = data.CopyData(body)
 
@@ -276,8 +306,12 @@ function data.RotationComparisonValue(body, inheritedTags)
     return { body = copy, tags = tags }
 end
 
--- Builds the lowercase text the rotation list searches: display name and description (falling back to the body's),
--- tags, metadata fields and the title, url, publisher and author of each source.
+-- Builds the lowercase text the rotation list searches.
+-- @param value any  The envelope or bare body.
+-- @param displayName string|nil  The display name; the body's name is used when missing.
+-- @param displayDescription string|nil  The display description; the body's description is used when missing.
+-- @return string  The text: display name and description, tags, metadata fields and the title, url, publisher and
+--   author of each source.
 function data.RotationSearchText(value, displayName, displayDescription)
     local body = type(value) == 'table' and (type(value.body) == 'table' and value.body or value) or {}
 

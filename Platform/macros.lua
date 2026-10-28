@@ -7,8 +7,12 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Macro buttons are observed every poll: read the session-fixed policy
--- through the shared reader rather than building client metadata each time.
+-- Reads the combat data policy of the client.
+-- @param current table  The platform table whose client info is read.
+-- @return string  The policy name: "probe", "restricted" or another value for an unsupported client.
+--
+-- Macro buttons are observed every poll: the session-fixed policy is read through the shared reader (replaced just
+-- below by the allocation-free one from Platform/client.lua) rather than building client metadata each time.
 local function readClientPolicy(current)
     return current:GetClientInfo().combatDataPolicy
 end
@@ -20,17 +24,23 @@ if type(consumeClientPolicy) == 'function' then
     readClientPolicy = consumeClientPolicy(addon)
 end
 
--- True for a positive whole number.
+-- Whether a value is a positive whole number.
+-- @param value any  The value to test.
+-- @return boolean  True for a positive integer.
 local function id(value)
     return type(value) == 'number' and value > 0 and value < math.huge and value % 1 == 0
 end
 
--- True for a non-empty string of at most 1024 characters.
+-- Whether a value is a non-empty string of at most 1024 characters.
+-- @param value any  The value to test.
+-- @return boolean  True for such a string.
 local function text(value)
     return type(value) == 'string' and #value > 0 and #value <= 1024
 end
 
--- Extracts the item id from a plain or hyperlink item string (colors stripped), or nil when the link is not one.
+-- Extracts the item id from a plain or hyperlink item string (colors stripped).
+-- @param link string  The item link or "item:<id>" string.
+-- @return number|nil  The item id; nil when the link is not an item link.
 local function linkedItemID(link)
     local plain = link:gsub('^|c%x%x%x%x%x%x%x%x', ''):gsub('|r$', '')
 
@@ -43,10 +53,14 @@ local function linkedItemID(link)
     return id(value) and value or nil
 end
 
--- Resolve only the action Blizzard exposes for an existing macro. This does
--- not parse, execute or reconstruct a macro body or its hidden decisions.
--- macro is a macro index or name. Returns { kind = "item", itemID, spellID } or { kind = "spell", spellID }, or nil
--- and a reason code.
+-- Resolves the item or spell an existing macro uses (GetMacroItem, then GetMacroSpell).
+-- @param macro number|string  The macro index or name.
+-- @return table|nil  { kind = "item", itemID, spellID } or { kind = "spell", spellID }; nil when it cannot be
+--   resolved.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Only the action Blizzard exposes for an existing macro is resolved; this does not parse, execute or reconstruct a
+-- macro body or its hidden decisions.
 function platform:GetMacroAction(macro)
     if readClientPolicy(self) ~= 'probe' then
         return nil, 'unsupported-policy'

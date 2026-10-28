@@ -7,7 +7,11 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Calls a native predicate under pcall and requires a boolean answer; returns it, or nil and a reason code.
+-- Calls a native predicate under pcall and requires a boolean answer.
+-- @param fn function|nil  The native predicate; a non-function is "missing-api".
+-- @param ... any  The arguments passed to fn.
+-- @return boolean|nil  The boolean answer; nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function boolean(fn, ...)
     if type(fn) ~= 'function' then
         return nil, 'missing-api'
@@ -28,10 +32,13 @@ local function boolean(fn, ...)
     return value
 end
 
--- Permissions may be unavailable even when group membership is public. Keep
--- those observations separate; callers can still choose ordinary raid chat.
--- Returns { inRaid, inGroup } plus isLeader and isAssistant when in a raid (either may be nil when unreadable), or nil
--- and a reason code when group state itself cannot be read.
+-- Reads the player's announcement group (raid or party) and, in a raid, its leader flags.
+-- @return table|nil  { inRaid, inGroup } plus isLeader and isAssistant when in a raid (either may be nil when
+--   unreadable); nil when group state itself cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Permissions may be unavailable even when group membership is public. Those observations are kept separate; callers
+-- can still choose ordinary raid chat.
 function platform:GetAnnouncementGroup()
     local raid, why = boolean(IsInRaid)
 
@@ -64,8 +71,13 @@ end
 -- The chat destinations an announcement may use.
 local destinations = { PARTY = true, RAID = true, RAID_WARNING = true, SAY = true, YELL = true, EMOTE = true }
 
--- Sends one chat line to a destination from the list above. Returns true, or nil and a reason code. current, when
--- given, must still return true or nothing is sent ("announcement-retired").
+-- Sends one chat line to a destination from the allowed list (party, raid, raid warning, say, yell, emote).
+-- @param text string  The message text.
+-- @param destination string  The chat destination: PARTY, RAID, RAID_WARNING, SAY, YELL or EMOTE.
+-- @param current function|nil  Callback returning true while the announcement that asked is still current; when it
+--   does not return true nothing is sent ("announcement-retired").
+-- @return boolean|nil  True when the line was sent; nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:SendAnnouncementChat(text, destination, current)
     if not self:CanReadValue(text) or not self:CanReadValue(destination) then
         return nil, 'restricted-value'
@@ -103,10 +115,12 @@ function platform:SendAnnouncementChat(text, destination, current)
     return true
 end
 
--- Resolve the current client's own slash-command catalog only on editor/output
--- requests. No retained global catalog, native target lookup or polling work.
--- Returns the client's emotes as { value = token, text = slash command } rows sorted by command; an empty list when
--- the catalog cannot be read.
+-- Lists the client's own emotes.
+-- @return table[]  Rows { value = token, text = slash command } sorted by command; an empty list when the catalog
+--   cannot be read.
+--
+-- The current client's own slash-command catalog is resolved only on editor/output requests. No retained global
+-- catalog, native target lookup or polling work.
 function platform:GetAnnouncementEmotes()
     local limit = MAXEMOTEINDEX
 
@@ -139,9 +153,19 @@ function platform:GetAnnouncementEmotes()
     return rows
 end
 
--- Performs one emote from the catalog, aimed at target ("" for none). Returns true (or nil and a reason code) and a
--- bounded observation of the native call (backend, completed or threw, return count and type) for diagnostics.
--- current, when given, must still return true or nothing is performed.
+-- Performs one emote from the catalog.
+-- @param token string  The emote token (for example "WAVE"); must be in the emote catalog.
+-- @param target string  The emote target; "" for none.
+-- @param current function|nil  Callback returning true while the announcement that asked is still current; when it
+--   does not return true nothing is performed ("announcement-retired").
+-- @return boolean|nil  True when the emote call completed; nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return table|nil  A bounded observation of the native call for diagnostics { backend, call, returns, firstType,
+--   firstBoolean }; nil when the failure came before the call.
+--
+-- Only bounded shape observations are kept, never native values, error strings or recipients. The explicit target
+-- 'none' matches the user's working targetless native test, and a missing cast recipient never substitutes the
+-- selected unit or prior cast.
 function platform:PerformAnnouncementEmote(token, target, current)
     if not self:CanReadValue(token) or not self:CanReadValue(target) then
         return nil, 'restricted-value'
@@ -183,7 +207,10 @@ function platform:PerformAnnouncementEmote(token, target, current)
     -- or recipients. A native boolean has no inferred acceptance semantics.
     local observation = { backend = backend }
 
-    -- Records the shape of a pcall result into observation and returns its success flag.
+    -- Records the shape of a pcall result into the observation.
+    -- @param ok boolean  Whether the pcall succeeded.
+    -- @param ... any  The values the pcall returned.
+    -- @return boolean  ok, unchanged.
     local function observed(ok, ...)
         observation.call = ok and 'completed' or 'threw'
 

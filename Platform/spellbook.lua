@@ -11,14 +11,21 @@ local platform = addon.Platform
 -- Reading helpers
 -- ============================================================================
 
--- Builds the result for a bank that could not be scanned at all: incomplete, with the reason and no entries.
+-- Builds the result for a bank that could not be scanned at all.
+-- @param reason string  The reason code to record.
+-- @return table  { complete = false, reason, entries = {} }.
 local function failure(reason)
     return { complete = false, reason = reason, entries = {} }
 end
 
--- Returns value when it is a readable finite integer of at least minimum (and at most maximum when given); otherwise
--- nil and a reason. A nil value is "spellbook-data-unavailable"; a value above maximum is "spellbook-limit", which
--- bounds the work a hostile or broken client can cause.
+-- Validates a readable finite integer of at least a minimum.
+-- @param value any  The value to check.
+-- @param minimum number  The smallest accepted value.
+-- @param maximum number|nil  The largest accepted value; nil means no upper bound.
+-- @return number|nil  The value when valid; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil: "spellbook-data-unavailable" for a nil value,
+--   "spellbook-limit" for a value above maximum (which bounds the work a hostile or broken client can cause), or
+--   another code for an unreadable or invalid one.
 local function number(value, minimum, maximum)
     if not platform:CanReadValue(value) then
         return nil, "restricted-value"
@@ -40,8 +47,12 @@ local function number(value, minimum, maximum)
     return value
 end
 
--- Calls fn(...) under pcall and returns its first result, or nil and a reason when fn is missing, throws or returns a
--- restricted value. A readable nil result is returned as nil with no reason.
+-- Calls fn(...) under pcall and returns its first result.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return any|nil  The first result; nil when fn is missing, throws or returns a restricted value, or when the result
+--   is a readable nil.
+-- @return string|nil  The reason code when the call failed; nil otherwise (a readable nil result has no reason).
 local function call(fn, ...)
     if type(fn) ~= "function" then
         return nil, "missing-api"
@@ -63,13 +74,15 @@ end
 -- Skill lines and items
 -- ============================================================================
 
--- Skill lines (Retail 11.0+: Enum.SpellBookSkillLineIndex General=1, Class=2,
--- MainSpec=3, OffSpecStart=4). A modern line names its specialization
--- (specID) or a non-active one (offSpecID); a line naming neither (General,
--- Class) is shared by every specialization. Legacy tabs carry no specID, so
--- their sharing is unknown (nil).
--- Returns { offset, count, offSpecID, specID, shared } for skill line or tab `index`, or nil and a reason. modern
--- selects C_SpellBook over GetSpellTabInfo.
+-- Reads one spellbook skill line or spell tab.
+-- @param index number  The skill line or tab index.
+-- @param modern boolean  True to read C_SpellBook skill lines; false to read GetSpellTabInfo tabs.
+-- @return table|nil  { offset, count, offSpecID, specID, shared }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Skill lines (Retail 11.0+: Enum.SpellBookSkillLineIndex General=1, Class=2, MainSpec=3, OffSpecStart=4). A modern
+-- line names its specialization (specID) or a non-active one (offSpecID); a line naming neither (General, Class) is
+-- shared by every specialization. Legacy tabs carry no specID, so their sharing is unknown (nil).
 local function readLine(index, modern)
     local record, why
 
@@ -151,10 +164,14 @@ local function readLine(index, modern)
     return { offset = offset, count = count, offSpecID = offSpecID, specID = specID, shared = shared }
 end
 
--- The bank and item-type constants are the same for every slot, so they are
--- resolved once per scan; a problem here is structural (fails the bank).
--- Returns { modern, native, bank, spellType } for the player or pet bank, or nil and a reason. It falls back to the
--- legacy GetSpellBookItemInfo reader when the Enum constants are missing and that global exists.
+-- Resolves the bank and item-type constants for scanning the player's or pet's book.
+-- @param pet boolean  True for the pet bank; false for the player bank.
+-- @return table|nil  { modern, native, bank, spellType }; nil when it cannot be resolved. Falls back to the legacy
+--   GetSpellBookItemInfo reader when the Enum constants are missing and that global exists.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The bank and item-type constants are the same for every slot, so they are resolved once per scan; a problem here is
+-- structural (fails the bank).
 local function bankReader(pet)
     local native = C_SpellBook and C_SpellBook.GetSpellBookItemInfo
     local modern = type(native) == "function"
@@ -200,7 +217,10 @@ local function bankReader(pet)
     return { modern = modern, native = native, bank = bank, spellType = spellType }
 end
 
--- Returns true when value is a readable Boolean or nil, otherwise nil and a reason. Used for optional native flags.
+-- Validates an optional native Boolean flag.
+-- @param value any  The flag value.
+-- @return boolean|nil  True when value is a readable Boolean or nil; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function flag(value)
     if not platform:CanReadValue(value) then
         return nil, "restricted-value"
@@ -212,10 +232,15 @@ local function flag(value)
     return true
 end
 
--- One slot: an entry, false (not a spell: future spell, flyout, pet action),
--- or nil plus the reason this one slot could not be read.
--- A returned entry carries spellID, baseSpellID (the un-overridden spell), slot, bank ("player" or "pet"), isPassive,
--- isOffSpec and, from the skill line, offSpecID, lineSpecID and shared.
+-- Reads one spellbook slot.
+-- @param reader table  The bank reader from bankReader.
+-- @param slot number  The spellbook slot.
+-- @param pet boolean  True when the slot is in the pet bank.
+-- @param line table|nil  The skill line record from readLine; nil for the pet bank.
+-- @return table|false|nil  An entry { spellID, baseSpellID (the un-overridden spell), slot, bank ("player" or "pet"),
+--   isPassive, isOffSpec, offSpecID, lineSpecID, shared } (the last three from the skill line); false when the slot is
+--   not a spell (future spell, flyout, pet action); nil when this one slot could not be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function readItem(reader, slot, pet, line)
     local id, baseID, passive, offspec
 
@@ -315,18 +340,22 @@ end
 -- Scans
 -- ============================================================================
 
--- A single unreadable slot or line is skipped and counted, never allowed to
--- empty the whole book. Only a structural failure (no API, an unreadable line
--- count, unusable bank constants, or nothing at all readable) leaves the bank
+-- Counts one skipped slot or line in a scan result and remembers the first reason.
+-- @param result table  The scan result being built.
+-- @param reason string  The reason code for the skipped item.
+--
+-- A single unreadable slot or line is skipped and counted, never allowed to empty the whole book. Only a structural
+-- failure (no API, an unreadable line count, unusable bank constants, or nothing at all readable) leaves the bank
 -- incomplete.
--- Counts one skipped slot or line in result and remembers the first reason.
 local function skip(result, reason)
     result.skipped = result.skipped + 1
     result.skipReason = result.skipReason or reason
 end
 
--- Returns result, unless something was skipped and nothing at all was readable (no spells and no other items), in
--- which case the bank is reported as failed with the first skip reason.
+-- Finishes a scan.
+-- @param result table  The scan result being built.
+-- @return table  result, unless something was skipped and nothing at all was readable (no spells and no other
+--   items), in which case the bank is reported as failed with the first skip reason.
 local function finishScan(result)
     if result.skipped > 0 and #result.entries == 0 and not result.hasOtherItems then
         return failure(result.skipReason)
@@ -335,8 +364,11 @@ local function finishScan(result)
     return result
 end
 
--- Scans every player skill line or spell tab and returns { complete, entries, coverage, skipped, skipReason? }. The
--- 4096-slot total and the seen-slot set guard against overlapping or runaway lines.
+-- Scans every player skill line or spell tab.
+-- @return table  { complete, entries, coverage, skipped, skipReason }; skipReason is present only when something was
+--   skipped. A bank that could not be scanned at all gives failure()'s { complete = false, reason, entries = {} }.
+--
+-- The 4096-slot total and the seen-slot set guard against overlapping or runaway lines.
 local function scanPlayer()
     local modern = C_SpellBook and type(C_SpellBook.GetNumSpellBookSkillLines) == "function"
     local count, why = call(modern and C_SpellBook.GetNumSpellBookSkillLines or GetNumSpellTabs)
@@ -395,8 +427,8 @@ local function scanPlayer()
     return finishScan(result)
 end
 
--- Scans the pet spellbook (slots 1 to the pet spell count) and returns the same shape as scanPlayer. A player with no
--- pet spells yields a complete, empty result.
+-- Scans the pet spellbook (slots 1 to the pet spell count).
+-- @return table  The same shape as scanPlayer. A player with no pet spells yields a complete, empty result.
 local function scanPet()
     local fn = C_SpellBook and C_SpellBook.HasPetSpells or HasPetSpells
     local count, why = call(fn)
@@ -445,9 +477,12 @@ end
 -- Public API
 -- ============================================================================
 
--- Returns { player = scan, pet = scan } where each scan is { complete, entries, ... } (or { complete = false,
--- reason, entries = {} } when that bank could not be read). Reads the whole book on every call and allocates, so it
--- is for the catalog refresh (addon:RefreshSpellCatalog in Core/spell_catalog.lua), not for the poll path.
+-- Reads the player's and the pet's spellbook.
+-- @return table  { player = scan, pet = scan } where each scan is { complete, entries, ... } (or
+--   { complete = false, reason, entries = {} } when that bank could not be read).
+--
+-- Reads the whole book on every call and allocates, so it is for the catalog refresh (addon:RefreshSpellCatalog in
+-- Core/spell_catalog.lua), not for the poll path.
 function platform:GetSpellBookSnapshot()
     return { player = scanPlayer(), pet = scanPet() }
 end

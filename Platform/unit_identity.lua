@@ -7,9 +7,15 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Preserve the original first-unit existence check and ordered comparison.
--- The second token is passed to UnitIsUnit without an extra existence query.
--- Returns false when the first unit does not exist, otherwise the UnitIsUnit result, or nil and a reason.
+-- Reads whether two unit tokens are the same unit (UnitExists on the first, then UnitIsUnit).
+-- @param unit string  The first unit token; must be a non-empty string.
+-- @param otherunit string  The second unit token; must be a non-empty string.
+-- @return boolean|nil  False when the first unit does not exist, otherwise the UnitIsUnit result; nil when it cannot
+--   be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Preserves the original first-unit existence check and ordered comparison. The second token is passed to UnitIsUnit
+-- without an extra existence query.
 function platform:GetUnitIdentityObservation(unit, otherunit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

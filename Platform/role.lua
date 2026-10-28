@@ -7,8 +7,13 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Returns object[key] read under pcall, or nil and a reason when object is restricted, not a table, the read throws or
--- the value is restricted. A missing key is a readable nil, not an error.
+-- Reads one field of a table under pcall.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param object any  The table to read; anything else is refused.
+-- @param key any  The key to read.
+-- @return any|nil  object[key]; nil when it is missing (a readable nil, not an error) or cannot be read.
+-- @return string|nil  The reason code when object is restricted or not a table, the read throws or the value is
+--   restricted; nil otherwise.
 local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-api-result' end
@@ -18,8 +23,13 @@ local function readField(self, object, key)
     return value
 end
 
--- Validates a role result: returns the readable non-empty string unchanged, or nil and a reason. Unknown future role
--- strings are passed through rather than matched against TANK/HEALER/DAMAGER.
+-- Validates a role result.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param value any  The role value as returned by the native call.
+-- @return string|nil  The readable non-empty string unchanged; nil otherwise.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Unknown future role strings are passed through rather than matched against TANK/HEALER/DAMAGER.
 local function roleValue(self, value)
     if not self:CanReadValue(value) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(value) then return nil,'restricted-value' end
@@ -28,10 +38,13 @@ local function roleValue(self, value)
     return value
 end
 
--- No inspection requests or inferred roles. A chosen modern capability's
--- failure never falls through to the legacy global capability.
--- Returns the role string for the unit's inspected specialization, false when the unit does not exist, or nil and a
--- reason. Works on probe and restricted policies only.
+-- Reads the role of a unit's inspected specialization (GetInspectSpecialization, then GetSpecializationInfoByID).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return string|false|nil  The role string; false when the unit does not exist; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Works on the probe and restricted policies only. No inspection requests or inferred roles. A chosen modern
+-- capability's failure (C_SpecializationInfo) never falls through to the legacy global capability.
 function platform:GetInspectRoleObservation(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -71,9 +84,13 @@ function platform:GetInspectRoleObservation(unit)
     return roleValue(self,role)
 end
 
--- Keep the live legacy group argument exactly, including readable nil. Its
--- historical declaration is incomplete; no group-domain inference is added.
--- Returns the first result of GetTalentGroupRole(group) as a role string, or nil and a reason.
+-- Reads the role of a talent group (GetTalentGroupRole).
+-- @param group any  The group argument passed to GetTalentGroupRole unchanged, including nil.
+-- @return string|nil  The role string (first result of the native call); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The live legacy group argument is kept exactly, including a readable nil. Its historical declaration is
+-- incomplete; no group-domain inference is added.
 function platform:GetTalentGroupRoleObservation(group)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

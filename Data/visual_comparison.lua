@@ -13,8 +13,13 @@ local data = addon.RotationData
 -- Row pairing helpers
 -- ============================================================================
 
--- Returns true when a changed step flag (use_name, ranked, disabled) is not a real difference: a missing flag reads as
--- its implied default (use_name follows whether the step has a name), so both sides resolve to the same value.
+-- Tells whether a changed step flag is not a real difference.
+-- @param path table[]  The change's path segments, each { kind, key }.
+-- @param row table|nil  The paired row, with left and right sides.
+-- @param stepIndex number  The index of the step segment in path.
+-- @return boolean  True when the change is to use_name, ranked or disabled and both sides resolve to the same value.
+--
+-- A missing flag reads as its implied default (use_name follows whether the step has a name).
 local function equivalentStepDefault(path, row, stepIndex)
     if
         #path ~= stepIndex + 1
@@ -34,6 +39,8 @@ local function equivalentStepDefault(path, row, stepIndex)
     end
 
     -- Resolves the flag on one step, applying the implied default when the field is absent.
+    -- @param step table  The step.
+    -- @return boolean  The flag value.
     local function flag(step)
         if step[key] ~= nil then
             return step[key]
@@ -62,11 +69,14 @@ local shownFields = {
     onFalse = true,
 }
 
--- Only structural field/step segments form identity locations. Numeric source
--- positions are replaced with canonical IDs, so same-arm reordering still pairs
--- but moving across parents or arms stays an explicit removal plus addition.
--- Builds a string key from the path segments 2 through last, length-prefixing each key so no key can impersonate
--- another segment.
+-- Builds a string key from the path segments 2 through last.
+-- @param path table[]  The path segments, each { kind, key }.
+-- @param last number  The index of the last segment to include.
+-- @return string  The key; each segment is length-prefixed so no key can impersonate another segment.
+--
+-- Only structural field and step segments form identity locations. Numeric source positions are replaced with
+-- canonical ids, so same-arm reordering still pairs but moving across parents or arms stays an explicit removal plus
+-- addition.
 local function locationKey(path, last)
     local parts = {}
 
@@ -79,8 +89,12 @@ local function locationKey(path, last)
     return table.concat(parts, "/")
 end
 
--- Returns the location key of the step at a numeric body path, replacing each position with the step's canonical id
--- (origins maps a clone's regenerated ids back to the source ids), so the same step pairs across both sides.
+-- Computes the location key of the step at a numeric body path.
+-- @param body table  The rotation body.
+-- @param path table  The numeric body path to the step.
+-- @param origins table  Maps a clone's regenerated step ids back to the source ids.
+-- @return string  The location key, with each position replaced by the step's canonical id so the same step pairs
+--   across both sides.
 local function rowLocation(body, path, origins)
     local cursor = body
     local segments = { { kind = "field", key = "body" } }
@@ -99,11 +113,14 @@ end
 -- Comparison model
 -- ============================================================================
 
--- Consumes the trusted structural diff and detached snapshots supplied by the
--- library facade. Canonical identities never depend on rendered path strings.
--- view carries diff, left, right and optional leftOrigins / rightOrigins. Returns the model (groups.cooldowns and
--- groups.rotation rows, name, switch, tag and priority fields, change flags and counts), or nil and
--- 'invalid-comparison' for malformed or over-limit input.
+-- Builds the visual comparison model from a structural diff and the two snapshots.
+-- @param view table  { diff, left, right, leftOrigins?, rightOrigins? }.
+-- @return table|nil  The model (groups.cooldowns and groups.rotation rows, name, switch, tag and priority fields,
+--   change flags and counts); nil for malformed or over-limit input.
+-- @return string|nil  'invalid-comparison' when the first return is nil; nil otherwise.
+--
+-- Consumes the trusted structural diff and detached snapshots supplied by the library facade. Canonical identities
+-- never depend on rendered path strings.
 function data.BuildVisualComparison(view)
     if
         type(view) ~= "table"

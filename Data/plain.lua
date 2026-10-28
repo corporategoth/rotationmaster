@@ -26,8 +26,11 @@ end
 -- Limits: nesting depth, total nodes (values and keys), total string bytes, and bytes in any one string.
 local maxDepth, maxNodes, maxBytes, maxString = 64, 20000, 1048576, 262144
 
--- Builds the error record { code, path, severity = "error" } for a failed check. path is the list of keys walked so
--- far and is rendered as "$.key[1]"; each string key is cut to 80 bytes to keep the message short.
+-- Builds the error record for a failed portable-data check.
+-- @param code string  The diagnostic code.
+-- @param path table  The list of keys walked so far; rendered as "$.key[1]", each string key cut to 80 bytes to keep
+--   the message short.
+-- @return table  { code, path, severity = "error" }.
 local function diagnostic(code, path)
     local location = "$"
 
@@ -38,19 +41,30 @@ local function diagnostic(code, path)
     return { code = code, path = location, severity = "error" }
 end
 
--- True for a real, finite number (false for NaN and both infinities).
+-- Whether a value is a real, finite number.
+-- @param value any  The value to test.
+-- @return boolean  False for NaN and both infinities.
 local function finite(value)
     return value == value and value ~= math.huge and value ~= -math.huge
 end
 
--- Returns true when value is portable: nil, booleans, finite numbers, strings, and tables without metatables or cycles
--- whose keys are strings or positive integers, all within the size limits. Otherwise returns false and a diagnostic
--- (data-node-limit, data-depth-limit, data-string-limit, data-byte-limit, non-finite-number, non-portable-type,
--- non-portable-key, data-metatable, data-cycle). Keys are visited in sorted order so the reported failure is
--- deterministic. Does not call __index or any other metamethod, since it rejects tables that have a metatable.
+-- Checks whether a value is portable data.
+-- @param value any  The value to check.
+-- @return boolean  True when value is portable: nil, booleans, finite numbers, strings, and tables without
+--   metatables or cycles whose keys are strings or positive integers, all within the size limits.
+-- @return table|nil  When false, a diagnostic { code, path, severity } with one of data-node-limit, data-depth-limit,
+--   data-string-limit, data-byte-limit, non-finite-number, non-portable-type, non-portable-key, data-metatable or
+--   data-cycle; nil when true.
+--
+-- Keys are visited in sorted order so the reported failure is deterministic. Does not call __index or any other
+-- metamethod, since it rejects tables that have a metatable.
 function data.CheckPortable(value)
     local active, path, nodes, bytes = {}, {}, 0, 0
 
+    -- Checks a string against the string and total byte limits.
+    -- @param value string  The string to check.
+    -- @return boolean  True when within the limits.
+    -- @return table|nil  The diagnostic when false; nil otherwise.
     local function text(value)
         if #value > maxString then
             return false, diagnostic("data-string-limit", path)
@@ -65,6 +79,11 @@ function data.CheckPortable(value)
         return true
     end
 
+    -- Checks one value and everything below it.
+    -- @param current any  The value to check.
+    -- @param depth number  The nesting depth of the value.
+    -- @return boolean  True when the value is portable.
+    -- @return table|nil  The diagnostic when false; nil otherwise.
     local function visit(current, depth)
         nodes = nodes + 1
 
@@ -155,8 +174,11 @@ function data.CheckPortable(value)
     return visit(value, 0)
 end
 
--- Returns a deep copy of portable data, or nil and the CheckPortable diagnostic. Shared subtables stay shared in the
--- copy; the copy has no metatables.
+-- Deep-copies portable data.
+-- @param value any  The value to copy.
+-- @return any|nil  The deep copy (shared subtables stay shared; the copy has no metatables); nil when the value is not
+--   portable.
+-- @return table|nil  The CheckPortable diagnostic when the first return is nil; nil otherwise.
 function data.CopyData(value)
     local ok, why = data.CheckPortable(value)
 
@@ -166,6 +188,9 @@ function data.CopyData(value)
 
     local copies = {}
 
+    -- Copies one value, reusing the copy of a subtable already copied.
+    -- @param current any  The value to copy.
+    -- @return any  The copy.
     local function copy(current)
         if type(current) ~= "table" then
             return current
@@ -204,9 +229,13 @@ local portableSort, portableHuge = table.sort, math.huge
 local portableEnvironment = portableType(portableGetfenv) == "function" and portableGetfenv(1) or nil
 local ownedPortable = data.CheckPortable
 
--- True only while this file's functions are provably the originals: namespace is the RotationData table, CheckPortable
--- is the function defined above, its helpers share the load-time environment, and that environment still holds the
--- captured type, pairs, ipairs, getmetatable, getfenv, math and table.sort. Never raises; returns false on any doubt.
+-- Tells whether this file's functions are provably the originals.
+-- @param namespace table  The table claiming to be the RotationData namespace.
+-- @return boolean  True only when namespace is the RotationData table, CheckPortable is the function defined above,
+--   its helpers share the load-time environment, and that environment still holds the captured type, pairs, ipairs,
+--   getmetatable, getfenv, math and table.sort. Never raises; false on any doubt.
+--
+-- Private source-owner proof. Public portable and copy APIs remain fresh and live.
 local function portableOwned(namespace)
     return portableEqual(namespace, data)
         and portableType(portableEnvironment) == "table"
@@ -226,12 +255,19 @@ local function portableOwned(namespace)
         and portableEqual(portableRawget(portableTable, "sort"), portableSort)
 end
 
--- Capture-only explanation of the existing proof; never authorizes execution.
--- Runs the same checks as portableOwned but reports the first one that failed as result.reason ("ready" when all pass),
--- plus a per-global map in result.raw, for the profiler's ownership report.
+-- Explains the ownership proof.
+-- @param namespace table  The table claiming to be the RotationData namespace.
+-- @return table  { reason, raw, parserSub }: reason is the first check that failed ("ready" when all pass), raw maps
+--   each captured global to whether it still matches, and parserSub says whether the byte slicer is available.
+--
+-- Runs the same checks as portableOwned, for the profiler's ownership report. Capture-only explanation of the
+-- existing proof; never authorizes execution.
 local function portableStatus(namespace)
     local result = { reason = "ready", raw = {} }
 
+    -- Records a failed check, keeping the first failure.
+    -- @param reason string  The reason to record.
+    -- @param ok boolean  Whether the check passed.
     local function check(reason, ok)
         if result.reason == "ready" and not ok then
             result.reason = reason
@@ -290,8 +326,10 @@ local function portableStatus(namespace)
     return result
 end
 
--- One-time handoff to Data/rotation_tree.lua, which calls it at load and then removes the name. Hands bind the proof
--- function and the status function. Does nothing for any caller other than the addon.
+-- One-time handoff to Data/rotation_tree.lua, which calls it at load and then removes the name.
+-- @param bind function  Called with the proof function and the status function.
+--
+-- Does nothing for any caller other than the addon.
 function addon:BindRotationPortableReader(bind)
     if self ~= addon or portableType(bind) ~= "function" then
         return

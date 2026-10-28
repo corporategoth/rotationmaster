@@ -20,10 +20,14 @@ local fields = {
     isStealable = "boolean",
 }
 
--- owned: raw is a fresh table nobody else holds (a native record or our own
--- tuple). On builds without secrets it is normalized in place instead of
--- copied; invalid fields are still cleared and marked unavailable.
--- Returns the validated record, nil for no aura, or nil and a reason code when raw itself is unusable.
+-- Validates a native aura into a record that RM reads.
+-- @param raw table|nil  The native aura record, or the tuple rebuilt into one.
+-- @param owned boolean  True when raw is a fresh table nobody else holds (a native record or our own tuple).
+-- @return table|nil  The validated record; nil for no aura (raw was nil) or when raw itself is unusable.
+-- @return string|nil  The reason code when raw itself is unusable; nil otherwise.
+--
+-- On builds without secrets an owned raw is normalized in place instead of copied; invalid fields are still cleared
+-- and marked unavailable in record.unavailable, which exists only when a field is unavailable.
 local function normalize(raw, owned)
     if not platform:CanReadValue(raw) then
         return nil, "restricted-value"
@@ -39,6 +43,8 @@ local function normalize(raw, owned)
     local result = owned and platform.secretsUnrestricted and raw or {}
 
     -- Records why one field has no value.
+    -- @param key string  The aura field name.
+    -- @param reason string  The reason code stored in result.unavailable.
     local function unavailable(key, reason)
         result.unavailable = result.unavailable or {}
         result.unavailable[key] = reason
@@ -70,8 +76,15 @@ local function normalize(raw, owned)
     return result
 end
 
--- Returns the validated aura at index (1 to 256) of a unit for filter "HELPFUL", "HARMFUL" or "HARMFUL|RAID", nil
--- when there is no such aura, or nil and a reason code. Never retains the native record.
+-- Reads one aura of a unit by position.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param index number  The aura position, an integer from 1 to 256.
+-- @param filter string  "HELPFUL", "HARMFUL" or "HARMFUL|RAID".
+-- @return table|nil  The validated aura; nil when there is no such aura or it cannot be read.
+-- @return string|nil  The reason code when the first return is nil because of a failure; nil otherwise.
+--
+-- Never retains the native record. On Era, LibClassicDurations (when present) supplies otherwise unavailable timer
+-- estimates; it stays optional and never substitutes for a restricted native result.
 function platform:GetAuraByIndex(unit, index, filter)
     if not self:CanReadValue(unit) or not self:CanReadValue(index) or not self:CanReadValue(filter) then
         return nil, "restricted-value"
@@ -159,7 +172,12 @@ function platform:GetAuraByIndex(unit, index, filter)
     }, true)
 end
 
--- The first aura with this spell name that the filter admits, or nil.
+-- Finds the first aura with a spell name that a filter admits.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param name string  The spell name to look up; must be a non-empty string.
+-- @param filter string  The aura filter string.
+-- @return table|nil  The validated aura; nil when there is none or it cannot be read.
+-- @return string|nil  The reason code when the first return is nil because of a failure; nil otherwise.
 function platform:GetAuraBySpellName(unit, name, filter)
     local lookup = C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName
 
@@ -179,7 +197,12 @@ function platform:GetAuraBySpellName(unit, name, filter)
     return normalize(raw, true)
 end
 
--- Returns one field of a validated aura, or nil and the reason that field is unavailable (or "invalid-aura-field").
+-- Reads one field of a validated aura.
+-- @param aura table  An aura record from GetAuraByIndex or GetAuraBySpellName.
+-- @param field string  The field name, one of those RM reads (name, spellID, applications, dispelName, duration,
+--   expirationTime, sourceUnit, isStealable).
+-- @return any|nil  The field value; nil when it is absent or unavailable.
+-- @return string|nil  The reason that field is unavailable, or "invalid-aura-field"; nil otherwise.
 function platform:ReadAuraField(aura, field)
     if not fields[field] or type(aura) ~= "table" then
         return nil, "invalid-aura-field"
@@ -191,8 +214,12 @@ function platform:ReadAuraField(aura, field)
     return aura[field]
 end
 
--- Returns the seconds left on an aura at time now (a GetTime value), math.huge for an aura with no duration, or nil
--- and a reason code when its expiration cannot be read.
+-- Computes the seconds left on an aura.
+-- @param aura table  An aura record from GetAuraByIndex or GetAuraBySpellName.
+-- @param now number  The current time, a GetTime value.
+-- @return number|nil  The seconds left (never negative); math.huge for an aura with no duration; nil when its
+--   expiration cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:AuraRemaining(aura, now)
     local expiration, reason = self:ReadAuraField(aura, "expirationTime")
 

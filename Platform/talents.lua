@@ -12,7 +12,11 @@ local platform = addon.Platform
 -- Shared helpers
 -- ============================================================================
 
--- True when value is readable and is an integer within [minimum, maximum].
+-- Whether a value is readable and is an integer within a range.
+-- @param value any  The value to test.
+-- @param minimum number  The smallest accepted value.
+-- @param maximum number  The largest accepted value.
+-- @return boolean  True for a readable integer in [minimum, maximum].
 local function integer(value, minimum, maximum)
     return platform:CanReadValue(value)
         and type(value) == "number"
@@ -21,13 +25,18 @@ local function integer(value, minimum, maximum)
         and value % 1 == 0
 end
 
--- A talent group argument is valid when it is nil (the active group) or an integer from 1 to 4.
+-- Whether a talent group argument is valid.
+-- @param group any  The candidate: nil (the active group) or an integer from 1 to 4.
+-- @return boolean  True when valid.
 local function groupValid(group)
     return group == nil or integer(group, 1, 4)
 end
 
--- Returns "tree", "grid" or "traits" for this client, or nil and "unsupported-talent-layout". Every other reader
--- here checks it first and answers "talent-layout-mismatch" when called on the wrong layout.
+-- Tells which talent layout this client uses.
+-- @return string|nil  "tree", "grid" or "traits"; nil when the layout is unsupported.
+-- @return string|nil  "unsupported-talent-layout" when the first return is nil; nil otherwise.
+--
+-- Every other reader here checks it first and answers "talent-layout-mismatch" when called on the wrong layout.
 function platform:GetTalentLayout()
     local client = self:GetClientInfo()
 
@@ -50,7 +59,10 @@ function platform:GetTalentLayout()
     return nil, "unsupported-talent-layout"
 end
 
--- Returns true when the client's talent layout is `wanted`, otherwise nil and "talent-layout-mismatch".
+-- Checks that the client's talent layout is the wanted one.
+-- @param wanted string  The layout: "tree", "grid" or "traits".
+-- @return boolean|nil  True when it matches; nil otherwise.
+-- @return string|nil  "talent-layout-mismatch" when the first return is nil; nil otherwise.
 local function layout(wanted)
     if platform:GetTalentLayout() ~= wanted then
         return nil, "talent-layout-mismatch"
@@ -59,8 +71,12 @@ local function layout(wanted)
     return true
 end
 
--- Calls fn(...) under pcall and returns the result when it is a readable integer from 0 to maximum, otherwise nil and
--- a reason.
+-- Calls fn(...) under pcall and returns the result when it is a readable integer from 0 to a maximum.
+-- @param fn function|nil  The native function.
+-- @param maximum number  The largest accepted result.
+-- @param ... any  The arguments passed to fn.
+-- @return number|nil  The integer result; nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function count(fn, maximum, ...)
     if type(fn) ~= "function" then
         return nil, "missing-api"
@@ -85,9 +101,11 @@ end
 -- Talent trees (tab layout, and Forever's trait node groups)
 -- ============================================================================
 
--- Forever's classic trees are trait node groups (GetTraitTreeGroups below);
--- the tree count, tree names and points read them there. Retail has none.
--- True when this client is Forever or Retail and has C_Traits.GetGroupDisplayInfoByTreeID.
+-- Whether this client reads its talent trees from trait node groups.
+-- @return boolean  True when the client is Forever or Retail and has C_Traits.GetGroupDisplayInfoByTreeID.
+--
+-- Forever's classic trees are trait node groups (GetTraitTreeGroups below); the tree count, tree names and points
+-- read them there. Retail has none.
 local function traitTrees()
     local family = platform:GetClientFamily()
 
@@ -98,7 +116,9 @@ local function traitTrees()
     return type(C_Traits) == "table" and type(C_Traits.GetGroupDisplayInfoByTreeID) == "function"
 end
 
--- Returns how many talent trees the class has (Forever: its node groups), or nil and a reason.
+-- Counts the talent trees the class has.
+-- @return number|nil  The tree count (Forever: its node groups); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTalentTreeCount()
     if traitTrees() then
         local groups, why = self:GetTraitTreeGroups()
@@ -119,7 +139,10 @@ function platform:GetTalentTreeCount()
     return count(GetNumTalentTabs, 16, false, false)
 end
 
--- Returns how many talents tree `tree` (1 to 16) holds on a "tree" layout client, or nil and a reason.
+-- Counts the talents in one tree on a "tree" layout client.
+-- @param tree number  The tree index, an integer from 1 to 16.
+-- @return number|nil  The talent count; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTreeTalentCount(tree)
     local supported, reason = layout("tree")
 
@@ -133,7 +156,13 @@ function platform:GetTreeTalentCount(tree)
     return count(GetNumTalents, 256, tree, false, false)
 end
 
--- Validates a tree's name, icon and points-spent values and returns { name, icon, pointsSpent }, or nil and a reason.
+-- Validates a tree's name, icon and points-spent values.
+-- @param name string|nil  The tree name.
+-- @param icon number|string|nil  The tree icon.
+-- @param points number|nil  The points spent in the tree.
+-- @return table{name=string,icon=number|string|nil,pointsSpent=number|nil}|nil  The record; nil when a value is
+--   restricted or invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function treeMetadata(name, icon, points)
     for _, value in pairs({ name = name, icon = icon, points = points }) do
         if not platform:CanReadValue(value) then
@@ -154,8 +183,14 @@ local function treeMetadata(name, icon, points)
     return { name = name, icon = icon, pointsSpent = points }
 end
 
--- Returns { name, icon, pointsSpent } for tree `tree` (1 to 16) in talent group `group` (nil for the active one), or
--- nil and a reason. Handles both return orders of the legacy GetTalentTabInfo (see the comment inside).
+-- Reads the name, icon and points spent of one talent tree.
+-- @param tree number  The tree index, an integer from 1 to 16.
+-- @param group number|nil  The talent group (1 to 4); nil means the active one.
+-- @return table{name=string,icon=number|string|nil,pointsSpent=number|nil}|nil  The record; nil when it cannot be
+--   read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Handles both return orders of the legacy GetTalentTabInfo (see the comment inside).
 function platform:GetTalentTreeInfo(tree, group)
     if traitTrees() then
         if not integer(tree, 1, 16) or not groupValid(group) then
@@ -223,8 +258,11 @@ function platform:GetTalentTreeInfo(tree, group)
     return nil, "talent-data-unavailable"
 end
 
--- Returns the tree with the most points spent (the GetTalentTreeInfo record plus its index), or nil and a reason:
--- "no-talents-spent" when every tree is at zero and "ambiguous-primary-talent-tree" on a tie for the lead.
+-- Finds the talent tree with the most points spent.
+-- @param group number|nil  The talent group (1 to 4); nil means the active one.
+-- @return table|nil  The GetTalentTreeInfo record plus its index; nil when there is none.
+-- @return string|nil  The reason code when the first return is nil: "no-talents-spent" when every tree is at zero and
+--   "ambiguous-primary-talent-tree" on a tie for the lead, or another reason; nil otherwise.
 function platform:GetPrimaryTalentTree(group)
     if not groupValid(group) then
         return nil, 'invalid-talent-query'
@@ -272,8 +310,11 @@ end
 -- Individual talents (tree and grid layouts)
 -- ============================================================================
 
--- Validates a talent record's name, icon, talentID and spellID and returns { name, icon, talentID?, spellID? } (an ID
--- of zero is dropped), or nil and a reason.
+-- Validates a talent record's name, icon, talent id and spell id.
+-- @param data any  The native talent record.
+-- @return table|nil  { name, icon, talentID?, spellID? } (an id of zero is dropped); nil when it is restricted or
+--   invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function identity(data)
     if not platform:CanReadValue(data) then
         return nil, "restricted-value"
@@ -314,15 +355,23 @@ local function identity(data)
     return result
 end
 
--- Calls the legacy multi-return GetTalentInfo and names the fields the modern record would carry (positions 1, 2, 5,
--- 6 and 12 of the tuple). Run under pcall by the caller.
+-- Calls the legacy multi-return GetTalentInfo and names the fields the modern record would carry.
+-- @param fn function  The legacy GetTalentInfo function.
+-- @param ... any  The arguments passed to fn.
+-- @return table  { name, icon, rank, maxRank, talentID } from positions 1, 2, 5, 6 and 12 of the tuple.
+--
+-- Run under pcall by the caller.
 local function legacyTreeRecord(fn, ...)
     local tuple = { fn(...) }
     return { name = tuple[1], icon = tuple[2], rank = tuple[5], maxRank = tuple[6], talentID = tuple[12] }
 end
 
--- Returns { name, icon, talentID?, spellID?, rank, maxRank } for talent `talent` of tree `tree` on a "tree" layout
--- client, or nil and a reason.
+-- Reads one talent of a tree on a "tree" layout client.
+-- @param tree number  The tree index, an integer from 1 to 16.
+-- @param talent number  The talent index, an integer from 1 to 256.
+-- @param group number|nil  The talent group (1 to 4); nil means the active one.
+-- @return table|nil  { name, icon, talentID?, spellID?, rank, maxRank }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTreeTalentInfo(tree, talent, group)
     local supported, reason = layout("tree")
 
@@ -370,8 +419,11 @@ function platform:GetTreeTalentInfo(tree, talent, group)
     return result
 end
 
--- Returns { name, icon, talentID, spellID, selected } for grid slot `index` (1 to 18, three columns per tier) on a
--- "grid" layout client, or nil and a reason.
+-- Reads one talent slot on a "grid" layout client.
+-- @param index number  The grid slot, an integer from 1 to 18 (three columns per tier).
+-- @param group number|nil  The talent group (1 to 4); nil means the active one.
+-- @return table|nil  { name, icon, talentID, spellID, selected }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetGridTalentInfo(index, group)
     local supported, reason = layout("grid")
 
@@ -441,7 +493,10 @@ end
 --     skillLineID, orderIndex, displayName, icon}[]
 -- showing GetGroupCurrencyInfo(configID, groupIDs)[i].currencyInfos[1].spent
 -- as the points spent in that tree.
--- True for a readable positive integer below 2^31, the range of trait IDs.
+
+-- Whether a value is a readable positive integer below 2^31, the range of trait ids.
+-- @param value any  The value to test.
+-- @return boolean  True for such an id.
 local function traitID(value)
     return platform:CanReadValue(value)
         and type(value) == 'number'
@@ -454,12 +509,18 @@ end
 -- TraitConstantsDocumentation.lua) has a negative ID; every other config is positive.
 local VIEW_CONFIG = -3
 
--- True for a trait config ID: a positive ID or the negative view-loadout config.
+-- Whether a value is a trait config id.
+-- @param value any  The value to test.
+-- @return boolean  True for a positive id or the negative view-loadout config.
 local function traitConfig(value)
     return traitID(value) or (platform:CanReadValue(value) and value == VIEW_CONFIG)
 end
 
--- Calls C_Traits[name](...) under pcall. Returns true and the readable result, or false and a reason.
+-- Calls C_Traits[name](...) under pcall.
+-- @param name string  The C_Traits function name.
+-- @param ... any  The arguments passed to the function.
+-- @return boolean  True when the call produced a readable result.
+-- @return any  The readable result; the reason code when the first return is false.
 local function traits(name, ...)
     local namespace = C_Traits
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -480,7 +541,9 @@ local function traits(name, ...)
     return true, value
 end
 
--- Returns true on Retail and Forever, otherwise nil and "talent-layout-mismatch".
+-- Checks that the client uses the trait layout.
+-- @return boolean|nil  True on Retail and Forever; nil otherwise.
+-- @return string|nil  "talent-layout-mismatch" when the first return is nil; nil otherwise.
 local function traitsLayout()
     local family = platform:GetClientFamily()
 
@@ -491,8 +554,9 @@ local function traitsLayout()
     return true
 end
 
--- The active trait config and its talent tree.
--- Returns configID, treeID, or nil and a reason.
+-- Reads the active trait config and its talent tree.
+-- @return number|nil  The config id; nil when it cannot be read.
+-- @return number|string|nil  The tree id; the reason code when the first return is nil.
 function platform:GetActiveTraitConfig()
     local supported, reason = traitsLayout()
 
@@ -543,9 +607,12 @@ function platform:GetActiveTraitConfig()
     return config, tree
 end
 
--- Forever's trees: the node groups of the class trait tree in display order,
--- each {groupID, name, icon, pointsSpent}. Retail has no such groups.
--- config and tree default to the active ones. Returns the list, or nil and a reason.
+-- Lists Forever's talent trees: the node groups of the class trait tree in display order.
+-- @param config number|nil  The trait config id; nil means the active one.
+-- @param tree number|nil  The trait tree id; nil means the active one (used with config).
+-- @return table[]|nil  The groups, each { groupID, name, icon, pointsSpent }; nil when it cannot be read. Retail has no
+--   such groups.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTraitTreeGroups(config, tree)
     local supported, reason = traitsLayout()
 
@@ -668,11 +735,14 @@ function platform:GetTraitTreeGroups(config, tree)
     return groups
 end
 
--- One node's committed state in a config: rank (0 when the node's hero
--- subtree is not chosen), the active entry and the maximum rank. With
--- withEntries the node's entry IDs come back too (a fresh list), for matching
--- a saved spell ID against the node.
--- Returns { rank, entry, maxRanks, entries? } or nil and a reason.
+-- Reads one node's committed state in a config.
+-- @param config number  The trait config id.
+-- @param node number  The trait node id.
+-- @param withEntries boolean|nil  True to also return the node's entry ids (a fresh list), for matching a saved spell
+--   id against the node.
+-- @return table|nil  { rank, entry, maxRanks, entries? }; rank is 0 when the node's hero subtree is not chosen, entry
+--   is the active entry. nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTraitNodeState(config, node, withEntries)
     local supported, reason = traitsLayout()
 
@@ -752,9 +822,13 @@ end
 -- Trait entries and identities
 -- ============================================================================
 
--- A trait entry's definition: the spell ID it teaches and its display
--- overrides. Two C_Traits reads, no spell lookup.
--- Returns the entry info and the definition info tables, or nil and a reason.
+-- Reads a trait entry's definition: the spell id it teaches and its display overrides.
+-- @param config number  The trait config id.
+-- @param entry number  The trait entry id.
+-- @return table|nil  The entry info table; nil when it cannot be read.
+-- @return table|string|nil  The definition info table; the reason code when the first return is nil.
+--
+-- Two C_Traits reads, no spell lookup.
 local function entryDefinition(config, entry)
     if not traitConfig(config) or not traitID(entry) then
         return nil, 'invalid-talent-query'
@@ -794,7 +868,11 @@ local function entryDefinition(config, entry)
     return info, definition
 end
 
--- The spell ID a trait entry teaches, or nil and a reason.
+-- Reads the spell id a trait entry teaches.
+-- @param config number  The trait config id.
+-- @param entry number  The trait entry id.
+-- @return number|nil  The spell id; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTraitEntrySpell(config, entry)
     local info, definition = entryDefinition(config, entry)
 
@@ -808,10 +886,14 @@ function platform:GetTraitEntrySpell(config, entry)
     return definition.spellID
 end
 
--- A trait entry's display identity: name, icon and spell ID. The name and icon
--- are the talent window's own: the definition's override, else the spell's name
--- and (original) icon (TalentUtil.GetTalentName, TalentButtonUtil.CalculateIconTexture).
--- Returns { name, icon, spellID?, maxRanks?, entryType? } or nil and a reason.
+-- Reads a trait entry's display identity: name, icon and spell id.
+-- @param config number  The trait config id.
+-- @param entry number  The trait entry id.
+-- @return table|nil  { name, icon, spellID?, maxRanks?, entryType? }; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The name and icon are the talent window's own: the definition's override, else the spell's name and (original) icon
+-- (TalentUtil.GetTalentName, TalentButtonUtil.CalculateIconTexture).
 function platform:GetTraitEntryIdentity(config, entry)
     local info, definition = entryDefinition(config, entry)
 
@@ -848,9 +930,13 @@ function platform:GetTraitEntryIdentity(config, entry)
     }
 end
 
--- A node's display identity (its chosen entry, else the given or first one).
--- A saved spell ID names the talent when the node is gone from the tree.
--- Returns the GetTraitEntryIdentity record (or { name, icon, spellID } from the saved spell), or nil and a reason.
+-- Reads a node's display identity (its chosen entry, else the given or first one).
+-- @param node number  The trait node id.
+-- @param entry number|nil  The entry to name; nil means the active entry, else the node's first one.
+-- @param spell number|nil  A saved spell id that names the talent when the node is gone from the tree.
+-- @return table|nil  The GetTraitEntryIdentity record, or { name, icon, spellID } from the saved spell; nil when it
+--   cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetTraitTalentIdentity(node, entry, spell)
     local config, why = self:GetActiveTraitConfig()
 
@@ -915,7 +1001,11 @@ end
 -- Reading a specialization's tree
 -- ============================================================================
 
--- Calls C_ClassTalents[name](...) under pcall. Returns true and the readable result, or false and a reason.
+-- Calls C_ClassTalents[name](...) under pcall.
+-- @param name string  The C_ClassTalents function name.
+-- @param ... any  The arguments passed to the function.
+-- @return boolean  True when the call produced a readable result.
+-- @return any  The readable result; the reason code when the first return is false.
 local function classTalents(name, ...)
     local namespace = C_ClassTalents
     local fn = type(namespace) == 'table' and namespace[name] or nil
@@ -936,8 +1026,11 @@ local function classTalents(name, ...)
     return true, value
 end
 
--- The level a view loadout is built for: the expansion maximum, else the player's level, else 80. Same rule as
--- platform:GetTraitViewLevel in Platform/talent_tree.lua, which cannot be called from here because it loads later.
+-- Reads the level a view loadout is built for.
+-- @return number  The expansion maximum level, else the player's level, else 80.
+--
+-- Same rule as platform:GetTraitViewLevel in Platform/talent_tree.lua, which cannot be called from here because it
+-- loads later.
 local function viewLevel()
     for _, name in ipairs({ 'GetMaxLevelForPlayerExpansion', 'GetMaxLevelForLatestExpansion' }) do
         local fn = rawget(_G, name)
@@ -960,11 +1053,12 @@ local function viewLevel()
     return 80
 end
 
--- Reading another specialization fills the shared view config (-3), the one
--- Blizzard's talent window shows a linked or inspected build from: it is left
--- alone while that window is on screen showing such a build. Nothing here
--- opens, loads or needs the window; it is only looked at when it already exists.
--- Returns true only when PlayerSpellsFrame exists, is shown and is inspecting another build.
+-- Tells whether Blizzard's talent window is showing an inspected build.
+-- @return boolean  True only when PlayerSpellsFrame exists, is shown and is inspecting another build.
+--
+-- Reading another specialization fills the shared view config (-3), the one Blizzard's talent window shows a linked
+-- or inspected build from: it is left alone while that window is on screen showing such a build. Nothing here opens,
+-- loads or needs the window; it is only looked at when it already exists.
 local function talentWindowInspecting()
     local frame = rawget(_G, 'PlayerSpellsFrame')
 
@@ -977,15 +1071,18 @@ local function talentWindowInspecting()
     return okShown and okInspecting and shown == true and inspecting == true
 end
 
--- Where a specialization's talents are read. The specialization being played
--- (or any, on a client with one tree per class) is the active config. Another
--- specialization of the class is read from Blizzard's view loadout, the config
--- the talent window fills to show a shared build
--- (C_ClassTalents.InitializeViewLoadout(specID, level), tree from
--- C_ClassTalents.GetTraitTreeForSpec(specID); Blizzard_ClassTalentImportExport.lua
--- ViewLoadout). Returns config, tree and "active" or "view".
--- A view read refuses ("in-combat", "talent-window-inspecting") rather than disturb the shared view config; set
--- options.ignoreInspect to skip the window check. Returns nil and a reason when no tree can be read.
+-- Finds where a specialization's talents are read from.
+-- @param specID number|nil  A Retail specialization id; nil means the one being played.
+-- @param options table|nil  { ignoreInspect = boolean }; true skips the talent window check.
+-- @return number|nil  The config id; nil when no tree can be read.
+-- @return number|string|nil  The tree id; the reason code when the first return is nil. A view read refuses
+--   ("in-combat", "talent-window-inspecting") rather than disturb the shared view config.
+-- @return string|nil  "active" or "view".
+--
+-- The specialization being played (or any, on a client with one tree per class) is the active config. Another
+-- specialization of the class is read from Blizzard's view loadout, the config the talent window fills to show a
+-- shared build (C_ClassTalents.InitializeViewLoadout(specID, level), tree from
+-- C_ClassTalents.GetTraitTreeForSpec(specID); Blizzard_ClassTalentImportExport.lua ViewLoadout).
 function platform:GetTraitSpecTree(specID, options)
     local supported, reason = traitsLayout()
 
@@ -1050,11 +1147,12 @@ function platform:GetTraitSpecTree(specID, options)
     return VIEW_CONFIG, viewTree, 'view'
 end
 
--- Where the class talents end and the specialization talents begin, from the
--- columns the talent window puts them in (class tree left, specialization tree
--- right, a gap between). nil when there is no clean gap: the caller then keeps
--- them as one group rather than guess.
--- columns is a list of node x positions (tenths of a pixel); returns the x midpoint of the widest gap or nil.
+-- Finds where the class talents end and the specialization talents begin.
+-- @param columns number[]  The node x positions (tenths of a pixel).
+-- @return number|nil  The x midpoint of the widest gap; nil when there is no clean gap, in which case the caller keeps
+--   the talents as one group rather than guess.
+--
+-- Uses the columns the talent window puts them in (class tree left, specialization tree right, a gap between).
 local function classSpecBoundary(columns)
     local distinct, seen = {}, {}
 
@@ -1100,17 +1198,19 @@ local function classSpecBoundary(columns)
     return (distinct[at] + distinct[at + 1]) / 2
 end
 
--- The talents of a specialization for the editor, grouped: the class talents,
--- the specialization talents and one group per hero subtree the specialization
--- can choose on Retail (kind "class", "spec", "hero"; "talents" when the two
--- could not be told apart), one group per tree on Forever (kind "tree").
--- specID names a Retail specialization (default: the one being played). Each
--- talent is {node, entry (choice nodes only), name, icon, spellID, maxRanks};
--- a second result describes where they were read: {spec, source ("active" or
--- "view"), hero (the subtree IDs the specialization can choose, when the
--- client says), nodes, visible, skipped (entries that could not be named)}.
--- Nothing listed is a reason, never an empty list.
--- Reads many C_Traits records and allocates freely, so it is for editors and diagnostics, not the poll path.
+-- Lists the talents of a specialization for the editor, grouped.
+-- @param specID number|nil  A Retail specialization id; nil means the one being played.
+-- @param options table|nil  Passed to GetTraitSpecTree ({ ignoreInspect = boolean }).
+-- @return table[]|nil  The groups { name, hero, kind, talents }: kind is "class", "spec" or "hero" ("talents" when
+--   the first two could not be told apart) on Retail and "tree" on Forever. Each talent is { node, entry (choice
+--   nodes only), name, icon, spellID, maxRanks }. nil with a reason when nothing could be listed, never an empty list.
+-- @return table|string|nil  Where the talents were read: { spec, source ("active" or "view"), hero (the subtree ids
+--   the specialization can choose, when the client says), nodes, visible, skipped (entries that could not be named) };
+--   the reason code when the first return is nil.
+--
+-- Groups: the class talents, the specialization talents and one group per hero subtree the specialization can choose
+-- on Retail, one group per tree on Forever. Reads many C_Traits records and allocates freely, so it is for editors
+-- and diagnostics, not the poll path.
 function platform:GetTraitTalents(specID, options)
     local config, tree, source = self:GetTraitSpecTree(specID, options)
 
@@ -1217,7 +1317,12 @@ function platform:GetTraitTalents(specID, options)
     local selection = 2  -- Enum.TraitNodeType.Selection
     local groups, byKey = {}, {}
 
-    -- Returns the group registered under key, creating it (in first-seen order) when needed.
+    -- Finds or creates a talent group.
+    -- @param key string  The group key.
+    -- @param name string|nil  The group name.
+    -- @param hero number|nil  The hero subtree id, for a hero group.
+    -- @param kind string  The group kind.
+    -- @return table  The group registered under key, created (in first-seen order) when needed.
     local function groupFor(key, name, hero, kind)
         local group = byKey[key]
 
@@ -1413,11 +1518,15 @@ function platform:GetTraitTalents(specID, options)
     }
 end
 
--- Every spell ID the config's tree teaches and where: spell -> {node, entry
--- (choice nodes only), visible}. Built on demand by the build context when a
--- saved node ID no longer holds its talent (node IDs can change between
--- patches; spell IDs do not).
--- Returns the index table, or nil and a reason. A visible node wins over a hidden one that teaches the same spell.
+-- Indexes every spell the config's tree teaches.
+-- @param config number  The trait config id.
+-- @param tree number  The trait tree id.
+-- @return table|nil  spell -> { node, entry (choice nodes only), visible }; a visible node wins over a hidden one that
+--   teaches the same spell. nil when it cannot be built.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Built on demand by the build context when a saved node id no longer holds its talent (node ids can change between
+-- patches; spell ids do not).
 function platform:GetTraitSpellIndex(config, tree)
     if not traitID(config) or not traitID(tree) then
         return nil, 'invalid-talent-query'

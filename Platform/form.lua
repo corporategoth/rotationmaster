@@ -6,9 +6,12 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Keep the native numeric observation unchanged; form labels and configured
--- class-dependent bounds belong to the authored condition and its Fields UI.
--- Returns the form index (0 means none), or nil and a reason code.
+-- Reads the player's shapeshift form index (GetShapeshiftForm).
+-- @return number|nil  The form index (0 means none); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The native numeric observation is kept unchanged; form labels and configured class-dependent bounds belong to the
+-- authored condition and its Fields UI.
 function platform:GetPlayerFormObservation()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -27,8 +30,12 @@ end
 -- without a stance-bar entry, so it is known by its constant form ID instead.
 local GHOST_WOLF_FORM, GHOST_WOLF = 16, 2645
 
--- Validates a form's spell id: returns it, nil when absent, or nil and a reason code when secret or not a positive
--- integer.
+-- Validates a form's spell id.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param id any  The id returned by the native call.
+-- @return number|nil  The id when it is a positive integer; nil when it is absent or refused.
+-- @return string|nil  The reason code when the id is secret or not a positive integer; nil otherwise (including when
+--   the id is simply absent).
 local function spellID(self, id)
     if not self:CanReadValue(id) then
         return nil, 'restricted-value'
@@ -46,8 +53,12 @@ local function spellID(self, id)
     return id
 end
 
--- Returns the spell id of the player's active form (0 when in no form), or nil and a reason code. Tries the stance
--- bar entry first, then the constant form id for forms that have no stance-bar entry (Ghost Wolf).
+-- Reads the spell id of the player's active form.
+-- @return number|nil  The spell id (0 when in no form); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Tries the stance bar entry first, then the constant form id for forms that have no stance-bar entry (Ghost Wolf).
+-- The active form's spell is its stable identity; the slot index shifts as forms are learned.
 function platform:GetPlayerFormSpellObservation()
     local index, reason = self:GetPlayerFormObservation()
 
@@ -142,8 +153,10 @@ local classForms = {
     WARLOCK = { { 103958, 'm' } },
 }
 
--- Returns the form spell ids the editor may offer for a class token on this client family, keeping only spells the
--- client knows. Returns an empty list when the family or class has none.
+-- Lists the form spell ids the editor may offer for a class on this client family.
+-- @param class string  The class file name (for example "DRUID").
+-- @return number[]  The spell ids, keeping only spells the client knows; an empty list when the family or class has
+--   none.
 function platform:GetFormSpellCandidates(class)
     local result = {}
     local letter = familyLetter[self:GetClientFamily()]

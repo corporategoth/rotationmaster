@@ -6,8 +6,10 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Returns { speed = number } (yards per second, never negative), or nil and a reason code when the speed is
--- missing, secret, not a finite number or negative.
+-- Reads how fast the player is currently moving (GetUnitSpeed("player")).
+-- @return table{speed=number}|nil  The observation, with speed in yards per second (never negative); nil when the
+--   speed is missing, secret, not a finite number or negative.
+-- @return string|nil  The reason code when the first return is nil; nil on success.
 function platform:GetPlayerMovementObservation()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

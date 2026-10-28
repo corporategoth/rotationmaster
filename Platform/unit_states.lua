@@ -7,10 +7,15 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Unit absence is unavailable, including under NOT: never infer a living or
--- friendly recipient from a missing mouseover. Observations expire each pass.
--- kind is "dead" or "friendly". Returns the state, or nil and a reason; a unit that does not exist is the
--- "unit-data-unavailable" reason, unlike Platform/unit_flags.lua where absence is false.
+-- Reads one of two Boolean unit states, dead-or-ghost or friendly to the player.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param kind string  Which state: "dead" (UnitIsDeadOrGhost) or "friendly" (UnitIsFriend, from the player to unit).
+-- @return boolean|nil  The state; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise. A unit that does not exist is the
+--   "unit-data-unavailable" reason, unlike Platform/unit_flags.lua where absence is false.
+--
+-- Unit absence is unavailable, including under NOT: never infer a living or friendly recipient from a missing
+-- mouseover. Observations expire each pass.
 function platform:GetUnitStateObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

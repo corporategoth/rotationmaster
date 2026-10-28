@@ -13,9 +13,12 @@ local data = addon.RotationData
 -- Helpers
 -- ============================================================================
 
--- Independent copies deliberately break aliases: editing one card or its
--- condition cannot also edit a sibling that reused the same source table.
--- Returns a deep copy of plain data (non-tables are returned as they are).
+-- Deep copies plain data.
+-- @param value any  The value to copy.
+-- @return any  A deep copy of a table; any other value as it is.
+--
+-- Independent copies deliberately break aliases: editing one card or its condition cannot also edit a sibling that
+-- reused the same source table.
 local function detach(value)
     if type(value) ~= 'table' then
         return value
@@ -30,7 +33,10 @@ local function detach(value)
     return result
 end
 
--- Returns true when two paths are dense lists with the same keys in the same order.
+-- Whether two paths are dense lists with the same keys in the same order.
+-- @param a table  The first path.
+-- @param b table  The second path.
+-- @return boolean  True when they are the same path.
 local function samePath(a, b)
     if #a ~= #b then
         return false
@@ -51,7 +57,10 @@ local function samePath(a, b)
     return true
 end
 
--- Returns true when path a is a prefix of (or equal to) path b, i.e. a step at a contains or is the step at b.
+-- Whether a path is a prefix of (or equal to) another, i.e. a step at a contains or is the step at b.
+-- @param a table  The possible prefix path.
+-- @param b table  The other path.
+-- @return boolean  True when a is a prefix of b.
 local function prefix(a, b)
     if #a > #b then
         return false
@@ -66,13 +75,21 @@ local function prefix(a, b)
     return true
 end
 
--- Returns true for a valid step id: at most 128 characters, starting alphanumeric, then letters, digits or . _ : -.
+-- Whether a value is a valid step id.
+-- @param value any  The value to test.
+-- @return boolean  True for a string of at most 128 characters, starting alphanumeric, then letters, digits or . _ : -.
 local function identifier(value)
     return type(value) == 'string' and #value > 0 and #value <= 128 and value:match('^[%w][%w._:%-]*$') ~= nil
 end
 
--- Asks the injected allocator for an unused valid id and marks it used. Gives up after 100 tries. Returns the id,
--- or nil and 'missing-id-allocator', 'id-allocation-error' or 'id-allocation-exhausted'.
+-- Asks the injected allocator for an unused valid id and marks it used.
+-- @param newId function|nil  The id allocator; a non-function is 'missing-id-allocator'.
+-- @param used table  The set of ids already taken (id -> true); the new id is added.
+-- @return string|nil  The id; nil on failure.
+-- @return string|nil  'missing-id-allocator', 'id-allocation-error' or 'id-allocation-exhausted' when the first return
+--   is nil; nil otherwise.
+--
+-- Gives up after 100 tries.
 local function fresh(newId, used)
     if type(newId) ~= 'function' then
         return nil, 'missing-id-allocator'
@@ -94,8 +111,11 @@ local function fresh(newId, used)
     return nil, 'id-allocation-exhausted'
 end
 
--- Indexes the body's steps. With legacy true, steps without an id are accepted (the draft assigns them on creation).
--- Returns the tree, or nil and the error code.
+-- Indexes the body's steps.
+-- @param body table  The rotation body.
+-- @param legacy boolean|nil  True to accept steps without an id (the draft assigns them on creation).
+-- @return table|nil  The tree from IndexRotationSteps; nil on failure.
+-- @return string|nil  The error code when the first return is nil; nil otherwise.
 local function inspect(body, legacy)
     local tree, why = data.IndexRotationSteps(body, { allowMissingIds = legacy })
     return tree, why and why.code
@@ -105,9 +125,14 @@ end
 -- Draft
 -- ============================================================================
 
--- Creates a draft from a portable rotation body. newId allocates step ids; reserved is another body whose ids must
--- not be reused (for example the source of a clone). Steps lacking an id (legacy bodies) receive one. Returns the
--- draft (Snapshot, Restore, Command), or nil and a reason code.
+-- Creates a draft from a portable rotation body.
+-- @param original table  The rotation body; a detached copy is edited.
+-- @param newId function  Allocates step ids.
+-- @param reserved table|nil  Another body whose ids must not be reused (for example the source of a clone).
+-- @return table|nil  The draft (Snapshot, Restore, Command); nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Steps lacking an id (legacy bodies) receive one.
 function data.NewRotationDraft(original, newId, reserved)
     local portable, why = data.CheckPortable(original)
 
@@ -163,14 +188,19 @@ function data.NewRotationDraft(original, newId, reserved)
     local draft = {}
 
     -- Returns a detached copy of the current body, for the caller's undo history or for saving.
+    -- @return table  The copy.
     function draft:Snapshot()
         return detach(root)
     end
 
-    -- History snapshots are bounded body data; reservation bookkeeping is an
-    -- internal set and may grow beyond a transport object's node count.
-    -- Replaces the body with a snapshot after validating it. Ids already allocated stay reserved, so an id freed by
-    -- undo is never handed out again. Returns true, or nil and a reason code.
+    -- Replaces the body with a snapshot after validating it.
+    -- @param snapshot table  A body returned by Snapshot.
+    -- @return boolean|nil  True when restored; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- Ids already allocated stay reserved, so an id freed by undo is never handed out again. History snapshots are
+    -- bounded body data; reservation bookkeeping is an internal set and may grow beyond a transport object's node
+    -- count.
     function draft:Restore(snapshot)
         local valid, reason = inspect(snapshot)
 
@@ -188,10 +218,16 @@ function data.NewRotationDraft(original, newId, reserved)
         return true
     end
 
-    -- Applies one named edit. first and second are the command's arguments (a step id, a destination
-    -- { path, index, parentId }, a step, fields or a condition). Returns true and the command's result (usually the
-    -- affected step id), or nil and a reason code with the draft unchanged. 'Batch' applies a list of
-    -- { name, first, second } operations as one edit.
+    -- Applies one named edit.
+    -- @param name string  The command: Insert, Remove, Move, MoveTail, MoveMany, Duplicate, UpdateStep, PatchStep,
+    --   UnsetStepField, SetCondition, SetDetails, SetBodyField or Batch.
+    -- @param first any  The command's first argument (a step id, a destination { path, index, parentId }, a list of
+    --   operations for Batch, ...).
+    -- @param second any  The command's second argument (a step, fields, a condition, a destination, ...).
+    -- @return boolean|nil  True when applied; nil with the draft unchanged on failure.
+    -- @return any  The command's result (usually the affected step id); the reason code when the first return is nil.
+    --
+    -- 'Batch' applies a list of { name, first, second } operations as one edit.
     function draft:Command(name, first, second)
         if not data.CheckPortable(first) or not data.CheckPortable(second) then
             return nil, 'non-portable-edit'
@@ -230,8 +266,12 @@ function data.NewRotationDraft(original, newId, reserved)
         local candidate, allocated = detach(root), detach(used)
         local index = assert(inspect(candidate))
 
-        -- Resolves a destination { path, index, parentId } to its priority list in the candidate. Refuses a stale
-        -- parent (the list moved since the caller looked) and an index outside 1..#list+1.
+        -- Resolves a destination to its priority list in the candidate.
+        -- @param value table  The destination { path, index, parentId }.
+        -- @return table|nil  The list record from the index; nil on failure.
+        -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+        --
+        -- Refuses a stale parent (the list moved since the caller looked) and an index outside 1..#list+1.
         local function destination(value)
             if
                 type(value) ~= 'table'
@@ -258,7 +298,10 @@ function data.NewRotationDraft(original, newId, reserved)
             return nil, 'missing-priority-list'
         end
 
-        -- Looks up a step's index entry by id, or nil and 'missing-rotation-step'.
+        -- Looks up a step's index entry by id.
+        -- @param id any  The step id.
+        -- @return table|nil  The entry; nil when there is no such step.
+        -- @return string|nil  'missing-rotation-step' when the first return is nil; nil otherwise.
         local function row(id)
             if type(id) ~= 'string' or not index.byId[id] then
                 return nil, 'missing-rotation-step'
@@ -267,7 +310,9 @@ function data.NewRotationDraft(original, newId, reserved)
             return index.byId[id]
         end
 
-        -- Returns the list in the candidate that holds the entry's step.
+        -- Returns the list in the candidate that holds an entry's step.
+        -- @param entry table  The step's index entry.
+        -- @return table  The list.
         local function parent(entry)
             local list = candidate
 
@@ -278,8 +323,12 @@ function data.NewRotationDraft(original, newId, reserved)
             return list
         end
 
-        -- Gives a step, and every step nested inside it, fresh ids. Used by Insert and Duplicate so copies never share
-        -- an identity with the original.
+        -- Gives a step, and every step nested inside it, fresh ids.
+        -- @param step table  The step; its ids are replaced in place.
+        -- @return boolean|nil  True when done; nil on failure.
+        -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+        --
+        -- Used by Insert and Duplicate so copies never share an identity with the original.
         local function reidentify(step)
             local wrapper = { rotation = { step }, cooldowns = {} }
             local nodes, reason = inspect(wrapper, true)

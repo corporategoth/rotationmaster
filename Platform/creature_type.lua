@@ -6,8 +6,12 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Identity is native return two, independent of the localized caption in one.
--- Returns the creature type id, false when the unit does not exist, or nil and a reason code.
+-- Reads the numeric creature type of a unit (the id, not the localized name).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return number|false|nil  The creature type id; false when the unit does not exist; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Identity is native return two of UnitCreatureType, independent of the localized caption in return one.
 function platform:GetUnitCreatureTypeID(unit)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

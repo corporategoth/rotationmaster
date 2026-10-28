@@ -8,10 +8,14 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Native Attack range, when the client supports that query, includes the game's
--- melee geometry. An invalid nil result may use a conservative public estimate.
--- Returns true when the unit is beyond melee range, false when within it, plus a nil reason and the source used
--- ("native-attack-range" or "estimated-five-yard-range"); or nil and a reason when it cannot be decided.
+-- Decides whether a unit is beyond melee range.
+-- @param unit string  The unit token to test; must be a non-empty string.
+-- @return boolean|nil  True when the unit is beyond melee range, false when within it; nil when it cannot be decided.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return string|nil  The source used when decided: "native-attack-range" or "estimated-five-yard-range".
+--
+-- Native Attack range, when the client supports that query, includes the game's melee geometry. An invalid nil result
+-- may use a conservative public estimate from LibRangeCheck.
 function platform:IsBeyondMeleeRange(unit)
     if type(unit) ~= "string" or unit == "" then
         return nil, "invalid-unit"
@@ -95,8 +99,11 @@ function platform:IsBeyondMeleeRange(unit)
     return nil, "range-uncertain"
 end
 
+-- Reads the nameplateMaxDistance CVar.
+-- @return number|nil  The distance in yards, a positive number; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
 -- This setting limits nameplate visibility, not the completeness of any scan.
--- Returns the nameplateMaxDistance CVar as a positive number of yards, or nil and a reason.
 function platform:GetNameplateMaxDistance()
     local query=C_CVar and C_CVar.GetCVar or GetCVar
     if type(query)~='function' then return nil,'missing-api' end
@@ -109,9 +116,14 @@ function platform:GetNameplateMaxDistance()
     return maximum
 end
 
--- Public LibRangeCheck intervals retain their bounds. Never invent an exact
--- distance from either bound or turn an absent result into an outside result.
--- Returns { minimum = n or nil, maximum = n or nil } with at least one bound present, or nil and a reason.
+-- Reads the LibRangeCheck distance interval for a unit.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @return table|nil  { minimum = number|nil, maximum = number|nil } with at least one bound present; nil when it
+--   cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Public LibRangeCheck intervals retain their bounds. Never invent an exact distance from either bound or turn an
+-- absent result into an outside result.
 function platform:GetRangeCheckBounds(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end

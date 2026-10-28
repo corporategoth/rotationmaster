@@ -7,14 +7,23 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Returns true when value is a readable finite number, otherwise false and a reason code.
+-- Checks that a value is a readable finite number.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param value any  The value to check.
+-- @return boolean  True when value is a readable finite number.
+-- @return string|nil  The reason code when the first return is false; nil otherwise.
 local function finite(self, value)
     if not self:CanReadValue(value) then return false,'restricted-value' end
     if type(value)~='number' or value~=value or value>=math.huge or value<=-math.huge then return false,'invalid-mobinfo2-number' end
     return true
 end
 
--- Reads object[key] under pcall from a foreign table, returning the value or nil and a reason code.
+-- Reads object[key] under pcall from a foreign table.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param object any  The foreign table to read; anything else is refused.
+-- @param key any  The key to read.
+-- @return any|nil  The value; nil when it is missing or cannot be read.
+-- @return string|nil  The reason code when the read failed or was refused; nil otherwise.
 local function readField(self, object, key)
     if not self:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-mobinfo2-data' end
@@ -24,8 +33,14 @@ local function readField(self, object, key)
     return value
 end
 
--- Only this prerequisite is cached. Provider history and its name/level
--- identity remain fresh on every call, preserving the original boundary.
+-- Reads whether a unit exists (UnitExists); the one prerequisite the per-pass cache holds.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param unit string  The unit token to read.
+-- @return boolean|nil  Whether the unit exists; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Only this prerequisite is cached. Provider history and its name/level identity remain fresh on every call,
+-- preserving the original boundary.
 local function presence(self, unit)
     if type(UnitExists)~='function' then return nil,'missing-api' end
     local ok,exists=pcall(UnitExists,unit)
@@ -36,8 +51,12 @@ local function presence(self, unit)
     return exists
 end
 
--- Returns how many hits the provider recorded for a school (1 when none was recorded, so a ratio stays defined), or
--- nil and a reason code.
+-- Reads how many hits the provider recorded for a damage school.
+-- @param self table  The platform table, used for its CanReadValue method.
+-- @param resists table  The provider's resists table.
+-- @param school string  The damage school name.
+-- @return number|nil  The recorded hits, or 1 when none was recorded so a ratio stays defined; nil on failure.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 local function hitCount(self, resists, school)
     local hits,reason=readField(self,resists,school..'Hits')
     if reason then return nil,reason end
@@ -47,9 +66,14 @@ local function hitCount(self, resists, school)
     return hits
 end
 
--- kind is "runner", "resist" or "immune"; school names the damage school for the last two. cache is the optional
--- per-pass cache. Returns { exists = false } for an absent unit, { exists = true, recorded = false } when MobInfo-2
--- has no data, otherwise a record with runner, ratio or immune (plus hits); nil and a reason code on failure.
+-- Reads recorded runner, resist or immunity data about a unit from the MobInfo-2 addon.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param kind string  "runner", "resist" or "immune".
+-- @param school string|nil  The damage school name; required for "resist" and "immune", ignored for "runner".
+-- @param cache table|nil  The optional per-pass cache holding the unit-presence result.
+-- @return table|nil  { exists = false } for an absent unit, { exists = true, recorded = false } when MobInfo-2 has no
+--   data, otherwise a record with runner, ratio, or immune (plus hits and hitsReason); nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetMobInfo2Observation(unit, kind, school, cache)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

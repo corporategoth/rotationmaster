@@ -32,8 +32,11 @@ local sequences = {
     "\239\187\191",  -- U+FEFF zero-width no-break space / byte order mark
 }
 
--- Returns pasted text with all whitespace and invisible formatting characters removed, ready for decoding; anything
--- that is not a string gives "". Text already made of only the encoding alphabet is returned without a copy.
+-- Removes whitespace and invisible formatting characters from pasted text, ready for decoding.
+-- @param text any  The pasted text; anything that is not a string gives "".
+-- @return string  The text with all whitespace and invisible formatting characters removed.
+--
+-- Text already made of only the encoding alphabet is returned without a copy.
 function addon:NormalizeImportText(text)
     if type(text) ~= "string" then
         return ""
@@ -56,8 +59,12 @@ function addon:NormalizeImportText(text)
     return text
 end
 
--- Returns the encoded text cut into lines of width characters (76 when width is missing or below 1) joined by
--- newlines, with no trailing newline. Existing line breaks are dropped first, so formatting twice gives the same text.
+-- Cuts encoded text into lines of a fixed width.
+-- @param text any  The encoded text; anything that is not a string gives "".
+-- @param width number|nil  The line width; 76 when missing or below 1.
+-- @return string  The text cut into lines of width characters joined by newlines, with no trailing newline.
+--
+-- Existing line breaks are dropped first, so formatting twice gives the same text.
 function addon:FormatExportText(text, width)
     if type(text) ~= "string" then
         return ""

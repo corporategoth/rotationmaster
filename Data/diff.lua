@@ -12,7 +12,10 @@ local data = addon.RotationData
 -- Indexing and ordering helpers
 -- ============================================================================
 
--- Returns a failed diff result (valid = false, no changes) carrying one error diagnostic with the code and path.
+-- Builds a failed diff result.
+-- @param code string  The diagnostic code.
+-- @param path string|nil  The path of the failure; "$" when missing.
+-- @return table  A result with valid = false, no changes and one error diagnostic carrying the code and path.
 local function failure(code, path)
     return {
         valid = false,
@@ -22,7 +25,10 @@ local function failure(code, path)
     }
 end
 
--- Returns the union of both tables' keys in a stable order (numbers first, then by value), so diffs are deterministic.
+-- Lists the union of both tables' keys in a stable order, so diffs are deterministic.
+-- @param left table  The first table.
+-- @param right table  The second table.
+-- @return table  The keys: numbers first, then by value.
 local function keys(left, right)
     local seen, result = {}, {}
 
@@ -48,14 +54,21 @@ local function keys(left, right)
     return result
 end
 
--- Returns true for a step id: a non-empty string of at most 128 characters that starts alphanumeric and continues
--- with letters, digits or . _ : -.
+-- Whether a value is a valid step id.
+-- @param value any  The value to test.
+-- @return boolean  True for a non-empty string of at most 128 characters that starts alphanumeric and continues with
+--   letters, digits or . _ : -.
 local function validId(value)
     return type(value) == "string" and #value > 0 and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
 end
 
--- Indexes one step list by canonical id (origins maps a clone's regenerated ids to the source ids). Returns
--- { ordered, byId }, or nil, a reason code and the failing path for a non-dense list, a bad id or a duplicate id.
+-- Indexes one step list by canonical id.
+-- @param list table|nil  The step list; nil is an empty list.
+-- @param origins table|nil  Maps a clone's regenerated ids to the source ids.
+-- @param path string  The display path of the list, used in failure paths.
+-- @return table|nil  { ordered, byId }; nil for a non-dense list, a bad id or a duplicate id.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return string|nil  The failing path when the first return is nil; nil otherwise.
 local function index(list, origins, path)
     if list == nil then
         list = {}
@@ -103,10 +116,14 @@ local function index(list, origins, path)
     return result
 end
 
--- Unique IDs reduce the common subsequence problem to a longest increasing
--- subsequence of original positions: bounded O(n log n), no n-by-n matrix.
--- Returns the set of ids that keep their relative order between the two indexed lists; every other shared id is
--- reported as moved.
+-- Finds the steps that keep their relative order between two indexed lists.
+-- @param left table  The indexed left list, as built by index.
+-- @param right table  The indexed right list, as built by index.
+-- @return table  The set of ids (id -> true) that keep their relative order; every other shared id is reported as
+--   moved.
+--
+-- Unique ids reduce the common subsequence problem to a longest increasing subsequence of original positions: bounded
+-- O(n log n), no n-by-n matrix.
 local function stationary(left, right)
     local sequence = {}
 
@@ -147,9 +164,14 @@ local function stationary(left, right)
     return result
 end
 
--- Structural segments drive list dispatch and ancestry. Rendered text is only
--- for display: a literal dotted key must never impersonate a nested field.
--- Returns a copy of the segment list with one more { kind, key } segment appended.
+-- Appends one segment to a segment list.
+-- @param segments table[]  The segment list.
+-- @param kind string  The kind of the new segment ("field" or "step").
+-- @param key any  The key of the new segment.
+-- @return table[]  A copy of the segment list with one more { kind, key } segment appended.
+--
+-- Structural segments drive list dispatch and ancestry. Rendered text is only for display: a literal dotted key must
+-- never impersonate a nested field.
 local function child(segments, kind, key)
     local result = {}
 
@@ -161,7 +183,9 @@ local function child(segments, kind, key)
     return result
 end
 
--- Renders one key as a display path suffix: [n] for numbers, .name for identifiers, ["quoted"] otherwise.
+-- Renders one key as a display path suffix.
+-- @param key number|string  The key.
+-- @return string  [n] for numbers, .name for identifiers, ["quoted"] otherwise.
 local function fieldSuffix(key)
     if type(key) == "number" then
         return "[" .. key .. "]"
@@ -173,7 +197,10 @@ local function fieldSuffix(key)
     return "[" .. string.format("%q", key) .. "]"
 end
 
--- Returns true when segment list a is a strict prefix of b (a change to a contains a change to b).
+-- Whether a segment list is a strict prefix of another (a change to a contains a change to b).
+-- @param a table[]  The possible ancestor's segments.
+-- @param b table[]  The possible descendant's segments.
+-- @return boolean  True when a is a strict prefix of b.
 local function ancestor(a, b)
     if #a >= #b then
         return false
@@ -192,10 +219,14 @@ end
 -- Rotation diff
 -- ============================================================================
 
--- Compares two rotation envelopes and returns { valid, complete, changes, diagnostics }. Each change has kind
--- (added, removed, changed or moved), a display path, structural segments and detached before/after values. options
--- may carry leftOrigins / rightOrigins (id maps for clones) and ignoreIdentity (skip root id and revision). Returns a
--- failed result for non-portable data or ambiguous step identity.
+-- Compares two rotation envelopes.
+-- @param left table  The left envelope.
+-- @param right table  The right envelope.
+-- @param options table|nil  { leftOrigins, rightOrigins (id maps for clones), ignoreIdentity (skip root id and
+--   revision) }.
+-- @return table  { valid, complete, changes, diagnostics }. Each change has kind (added, removed, changed or moved), a
+--   display path, structural segments and detached before/after values. A failed result for non-portable data or
+--   ambiguous step identity.
 function data.DiffRotations(left, right, options)
     options = options or {}
 
@@ -273,6 +304,7 @@ function data.DiffRotations(left, right, options)
     local limits = {}
 
     -- Marks the result incomplete and records one warning per limit code.
+    -- @param code string  The limit code.
     local function limited(code)
         result.complete = false
 
@@ -282,8 +314,15 @@ function data.DiffRotations(left, right, options)
         end
     end
 
-    -- Appends one change with detached copies of its values, or records a limit warning when the path or change count
-    -- is over the cap.
+    -- Appends one change with detached copies of its values.
+    -- @param kind string  The change kind: added, removed, changed or moved.
+    -- @param path string  The display path.
+    -- @param segments table[]  The structural segments.
+    -- @param before any  The value before; nil if none.
+    -- @param after any  The value after; nil if none.
+    -- @param extra table|nil  Further fields merged into the change.
+    --
+    -- Records a limit warning instead when the path or change count is over the cap.
     local function emit(kind, path, segments, before, after, extra)
         if #path > 4096 then
             limited("diff-path-limit")
@@ -313,8 +352,14 @@ function data.DiffRotations(left, right, options)
 
     local walk
 
-    -- Diffs two ordered step lists by id: removed steps first, then added and moved steps in the new order, recursing
-    -- into every step present on both sides.
+    -- Diffs two ordered step lists by id.
+    -- @param leftList table|nil  The left step list.
+    -- @param rightList table|nil  The right step list.
+    -- @param path string  The display path of the list.
+    -- @param segments table[]  The structural segments of the list.
+    --
+    -- Emits removed steps first, then added and moved steps in the new order, recursing into every step present on both
+    -- sides.
     local function priorities(leftList, rightList, path, segments)
         local a, b = lists.left[leftList] or empty, lists.right[rightList] or empty
         local stable = stationary(a, b)
@@ -349,8 +394,14 @@ function data.DiffRotations(left, right, options)
         end
     end
 
-    -- Recursively compares two values at a path. The body's rotation and cooldowns lists and a Branch's onTrue/onFalse
-    -- lists go through the id-based list diff; step is true for a step table, whose own id is not a change.
+    -- Recursively compares two values at a path.
+    -- @param a any  The left value.
+    -- @param b any  The right value.
+    -- @param path string  The display path.
+    -- @param segments table[]  The structural segments.
+    -- @param step boolean  True for a step table, whose own id is not a change.
+    --
+    -- The body's rotation and cooldowns lists and a Branch's onTrue/onFalse lists go through the id-based list diff.
     walk = function(a, b, path, segments, step)
         if #path > 4096 then
             limited("diff-path-limit")
@@ -401,7 +452,10 @@ function data.DiffRotations(left, right, options)
     return result
 end
 
--- Deep structural equality over plain data (tables compare by content, using the stable key union).
+-- Deep structural equality over plain data.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when equal (tables compare by content, using the stable key union).
 local function equal(a, b)
     if a == b then
         return true
@@ -423,10 +477,14 @@ end
 -- Clone comparison
 -- ============================================================================
 
--- Three-way comparison of a cloned Built In. clone carries envelope and lineage (baseline, step origins, source
--- identity); source carries envelope and reference. Returns sourceChanges, customChanges, currentDifferences and the
--- conflicts (changes that touch the same path or an ancestor on both sides), or a failed result when the lineage does
--- not match the source. Highlights overlaps only; it never merges.
+-- Compares a cloned Built In three ways: baseline to source, baseline to custom and source to custom.
+-- @param clone table  { envelope, lineage (baseline, step origins, source identity) }.
+-- @param source table  { envelope, reference }.
+-- @return table  { valid, complete, sourceChanges, customChanges, currentDifferences, conflicts, conflictCoverage,
+--   diagnostics }, where conflicts are the changes that touch the same path or an ancestor on both sides; a failed
+--   result when the lineage does not match the source.
+--
+-- Highlights overlaps only; it never merges.
 function data.CompareClone(clone, source)
     if type(clone) ~= "table" or type(source) ~= "table" or getmetatable(clone) or getmetatable(source) then
         return failure("invalid-comparison-view")

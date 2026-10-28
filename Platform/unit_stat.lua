@@ -6,15 +6,22 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value~=math.huge and value~=-math.huge
 end
 
--- The selector range is RM's six authored choices. Only native return two is
--- consumed; its signed/fractional finite domain is not narrowed by UI display.
--- stat is an integer from 1 to 5 (the UnitStat index) or 6 (UnitArmor). Returns { exists = false } or
--- { exists = true, value = effective stat }, or nil and a reason.
+-- Reads a unit's effective primary stat or armor (UnitExists, UnitStat, UnitArmor).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param stat number  An integer from 1 to 5 (the UnitStat index) or 6 (UnitArmor).
+-- @return table{exists=boolean,value=number|nil}|nil  { exists = false } or { exists = true, value = effective stat };
+--   nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The selector range is RM's six authored choices. Only native return two is consumed; its signed or fractional
+-- finite domain is not narrowed by UI display.
 function platform:GetUnitStatObservation(unit, stat)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

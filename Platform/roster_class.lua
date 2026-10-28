@@ -7,17 +7,23 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Returns true for exactly "player", "party1" to "party4" and "raid1" to "raid40" (no leading zeros). unit must be a
--- string.
+-- Whether a unit token is exactly "player", "party1" to "party4" or "raid1" to "raid40" (no leading zeros).
+-- @param unit string  The unit token to test; must be a string.
+-- @return boolean  True when the token is a roster token.
 local function rosterUnit(unit)
     if unit=='player' or unit:match('^party[1-4]$') then return true end
     local slot=unit:match('^raid(%d+)$');slot=slot and tonumber(slot)
     return slot~=nil and slot>=1 and slot<=40 and unit=='raid'..tostring(slot)
 end
 
--- Public roster facts are available on identified families independently of
--- enemy-combat observation policy. Only exact helper-owned roster tokens route.
--- Returns the class file name (second UnitClass return), false when the unit does not exist, or nil and a reason.
+-- Reads the class of a player, party or raid roster member (UnitExists and UnitClass).
+-- @param unit string  A roster token ("player", "party1" to "party4", "raid1" to "raid40").
+-- @return string|false|nil  The class file name (second UnitClass return); false when the unit does not exist; nil
+--   when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Public roster facts are available on identified families independently of enemy-combat observation policy. Only
+-- exact helper-owned roster tokens route.
 function platform:GetRosterClassObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or not rosterUnit(unit) then return nil,'invalid-roster-unit' end

@@ -13,7 +13,11 @@ local platform = addon.Platform
 -- Query helpers
 -- ============================================================================
 
--- True when value is readable and is an integer within [minimum, maximum].
+-- Whether a value is readable and is an integer within a range.
+-- @param value any  The value to test.
+-- @param minimum number  The smallest accepted value.
+-- @param maximum number  The largest accepted value.
+-- @return boolean  True for a readable integer in [minimum, maximum].
 local function integer(value, minimum, maximum)
     return platform:CanReadValue(value)
         and type(value) == "number"
@@ -23,9 +27,10 @@ local function integer(value, minimum, maximum)
         and value % 1 == 0
 end
 
--- Returns how this client addresses specializations: "specialization" (Retail, Forever), "single" (Era, TBC: one
--- namespace), or "group" (progression clients from expansion 2, which key by talent group); nil and a reason when the
--- family is unknown.
+-- Tells how this client addresses specializations.
+-- @return string|nil  "specialization" (Retail, Forever), "single" (Era, TBC: one namespace) or "group" (progression
+--   clients from expansion 2, which key by talent group); nil when the family is unknown.
+-- @return string|nil  "unsupported-client" when the first return is nil; nil otherwise.
 local function mode()
     local client = platform:GetClientInfo()
 
@@ -42,8 +47,13 @@ local function mode()
     return nil, "unsupported-client"
 end
 
--- Returns C_SpecializationInfo[name] when the client has that function, otherwise the legacy global passed in (which
--- may be nil). Feature detection, not a client-version branch.
+-- Looks up a specialization function, preferring C_SpecializationInfo.
+-- @param name string  The C_SpecializationInfo function name.
+-- @param legacy function|nil  The legacy global to fall back to.
+-- @return function|nil  C_SpecializationInfo[name] when the client has that function, otherwise legacy (which may be
+--   nil).
+--
+-- Feature detection, not a client-version branch.
 local function method(name, legacy)
     if C_SpecializationInfo and type(C_SpecializationInfo[name]) == "function" then
         return C_SpecializationInfo[name]
@@ -52,8 +62,13 @@ local function method(name, legacy)
     return legacy
 end
 
--- Calls fn(...) under pcall and returns the result when it is a readable integer from 1 to maximum, otherwise nil and
--- a reason ("missing-api", "api-error", "restricted-value", "specialization-unavailable" or "invalid-api-result").
+-- Calls fn(...) under pcall and returns the result when it is a readable integer from 1 to maximum.
+-- @param fn function|nil  The native function.
+-- @param maximum number  The largest accepted result.
+-- @param ... any  The arguments passed to fn.
+-- @return number|nil  The integer result; nil on failure.
+-- @return string|nil  The reason code when the first return is nil ("missing-api", "api-error", "restricted-value",
+--   "specialization-unavailable" or "invalid-api-result"); nil otherwise.
 local function queryInteger(fn, maximum, ...)
     if type(fn) ~= "function" then
         return nil, "missing-api"
@@ -104,9 +119,12 @@ local INITIAL_SPECS = {
     [13] = 1465,
 }
 
+-- Reads the player's current selection and the rotation storage key it maps to.
+-- @return table|nil  { kind = "single"|"group"|"specialization", index = n, key = n }; "single" clients always
+--   answer index 0 and key 0. nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
 -- key is the saved rotation namespace; index is the native API selector.
--- Returns { kind = "single"|"group"|"specialization", index = n, key = n } for the player's current selection, or nil
--- and a reason. "single" clients always answer index 0 and key 0.
 function platform:GetRotationSpecialization()
     local kind, reason = mode()
 
@@ -142,22 +160,25 @@ function platform:GetRotationSpecialization()
     return { kind = kind, index = index, key = id }
 end
 
--- The player's active specialization INDEX (1..4), for an observation that
--- depends on it: POINT's per-specialization resource on Mists of Pandaria
--- Classic. It is not the rotation storage key above (progression stores per
--- talent group). Blizzard's 5.5.4 resource bars compare
--- C_SpecializationInfo.GetSpecialization() with the SPEC_* indices
--- (Gethe/wow-ui-source classic 45eb466ddb, Blizzard_FrameXMLBase/Classic/
--- Constants.lua; Blizzard_UnitFrame/Mists/ShardBar.lua, PriestBar.lua).
--- No specialization yet (below level 10) is unavailable, never index 1.
--- Returns the integer index, or nil and a reason.
+-- Reads the player's active specialization index (1..4).
+-- @return number|nil  The integer index; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- For an observation that depends on it: POINT's per-specialization resource on Mists of Pandaria Classic. It is not
+-- the rotation storage key above (progression stores per talent group). Blizzard's 5.5.4 resource bars compare
+-- C_SpecializationInfo.GetSpecialization() with the SPEC_* indices (Gethe/wow-ui-source classic 45eb466ddb,
+-- Blizzard_FrameXMLBase/Classic/Constants.lua; Blizzard_UnitFrame/Mists/ShardBar.lua, PriestBar.lua). No
+-- specialization yet (below level 10) is unavailable, never index 1.
 function platform:GetPlayerSpecializationIndex()
     return queryInteger(method("GetSpecialization", GetSpecialization), 16)
 end
 
--- Returns the storage choices for a class as a fresh list of { id, name?, initial? }: one entry on "single" clients,
--- one per talent group on "group" clients, and the class's specializations on "specialization" clients (plus Retail's
--- initial "no specialization" entry). Returns nil and a reason when the client cannot answer.
+-- Lists the storage choices for a class.
+-- @param classID number|nil  The class id; required on "specialization" clients, ignored elsewhere.
+-- @return table[]|nil  A fresh list of { id, name?, initial? }: one entry on "single" clients, one per talent group
+--   on "group" clients, and the class's specializations on "specialization" clients (plus Retail's initial "no
+--   specialization" entry). nil when the client cannot answer.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetRotationSpecializations(classID)
     local kind, reason = mode()
 
@@ -261,14 +282,17 @@ end
 -- Exports drop slot values; imports fill them in (Core/imports.lua).
 local SPEC_KINDS = { retail = 'portable', era = 'slot', tbc = 'slot', forever = 'slot' }
 
--- Mists of Pandaria and later progression clients name real specializations.
--- True when LE_EXPANSION_LEVEL_CURRENT is a readable integer of 4 or more.
+-- Whether the client is Mists of Pandaria or later, whose progression clients name real specializations.
+-- @return boolean  True when LE_EXPANSION_LEVEL_CURRENT is a readable integer of 4 or more.
 local function mistsOrLater()
     local expansion = LE_EXPANSION_LEVEL_CURRENT
     return integer(expansion, 4, 100)
 end
 
--- Returns "portable" or "slot" for this client (see SPEC_KINDS above), or nil and "unsupported-client".
+-- Tells which kind of specialization value a rotation's specs hold on this client.
+-- @return string|nil  "portable" (the game's specialization ids) or "slot" (a talent group number), see SPEC_KINDS;
+--   nil when the client is unsupported.
+-- @return string|nil  "unsupported-client" when the first return is nil; nil otherwise.
 function platform:GetRotationSpecKind()
     local family = self:GetClientFamily()
     local kind = SPEC_KINDS[family]
@@ -283,12 +307,12 @@ function platform:GetRotationSpecKind()
     return nil, 'unsupported-client'
 end
 
--- Whether the saved-rotation namespace (GetRotationSpecialization().key) is
--- itself a specialization value: Retail keys by specialization ID and Wrath
--- or Cataclysm Classic by talent group; Mists Classic keys by talent group
--- but its values are specialization IDs, and Era, TBC and Forever keep one
+-- Tells whether the saved-rotation namespace (GetRotationSpecialization().key) is itself a specialization value.
+-- @return boolean  True on Retail (keyed by specialization id) and Wrath or Cataclysm Classic (keyed by talent group);
+--   false for Mists Classic, Era, TBC, Forever and an unidentified client family.
+--
+-- Mists Classic keys by talent group but its values are specialization ids, and Era, TBC and Forever keep one
 -- namespace per class.
--- Returns true or false; an unidentified client family is false.
 function platform:RotationKeyIsSpecValue()
     local family = self:GetClientFamily()
 
@@ -299,10 +323,12 @@ function platform:RotationKeyIsSpecValue()
     return family == 'progression' and not mistsOrLater()
 end
 
--- The character's current specialization value (see GetRotationSpecKind).
--- Slot clients answer the active talent group, 1 when the client has a
--- single one; Mists Classic without a specialization yet is unavailable.
--- Returns the value as an integer, or nil and a reason.
+-- Reads the character's current specialization value (see GetRotationSpecKind).
+-- @return number|nil  The value as an integer; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Slot clients answer the active talent group, 1 when the client has a single one; Mists Classic without a
+-- specialization yet is unavailable.
 function platform:GetRotationSpecValue()
     local kind, reason = self:GetRotationSpecKind()
 
@@ -333,8 +359,11 @@ function platform:GetRotationSpecValue()
     return self:GetPlayerSpecializationID()
 end
 
--- The values a rotation can be restricted to on this client, as a fresh list
--- of {id,name,initial,slot}. Slot clients always offer both talent groups.
+-- Lists the specialization values a rotation can be restricted to on this client.
+-- @param classID number|nil  The class id whose specializations are offered; ignored on slot clients.
+-- @return table[]|nil  A fresh list of { id, name, initial, slot }; slot clients always offer both talent groups. nil
+--   when the client cannot answer.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
 function platform:GetRotationSpecChoices(classID)
     local kind, reason = self:GetRotationSpecKind()
 
@@ -351,7 +380,9 @@ function platform:GetRotationSpecChoices(classID)
     return self:GetClassSpecializationChoices(classID)
 end
 
--- Whether a Retail spec ID is a class's initial spec ("No specialization"). False on every other client family.
+-- Whether a Retail spec id is a class's initial spec ("No specialization").
+-- @param specID number  The specialization id.
+-- @return boolean  True for an initial spec; false on every other client family.
 function platform:IsInitialSpecialization(specID)
     if self:GetClientFamily() ~= "retail" or type(specID) ~= "number" then
         return false
@@ -370,12 +401,13 @@ end
 -- Specialization identity and display data
 -- ============================================================================
 
--- The player's specialization ID (Retail, Mists of Pandaria Classic), for the
--- SPECIALIZATION condition. Forever's specialization API reports one ID per
--- class (its three trees are trait groups), so it cannot name a spec there.
--- Talent-tree clients have no specialization API; the condition reads their
--- primary talent tree instead (Core/build_context.lua). No specialization yet
--- is unavailable, never a guessed index.
+-- Reads the player's specialization id (Retail, Mists of Pandaria Classic), for the SPECIALIZATION condition.
+-- @return number|nil  The specialization id; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Forever's specialization API reports one id per class (its three trees are trait groups), so it cannot name a spec
+-- there. Talent-tree clients have no specialization API; the condition reads their primary talent tree instead
+-- (Core/build_context.lua). No specialization yet is unavailable, never a guessed index.
 function platform:GetPlayerSpecializationID()
     local family = self:GetClientFamily()
 
@@ -395,9 +427,12 @@ function platform:GetPlayerSpecializationID()
     return queryInteger(method("GetSpecializationInfo", GetSpecializationInfo), math.huge, index)
 end
 
--- One class's specializations as the client names them, for editors. Only
--- clients whose specialization API names real specs answer (not Forever).
--- Returns a fresh list of {id,name,icon}.
+-- Lists one class's specializations as the client names them, for editors.
+-- @param classID number  The class id, an integer from 1 to 64.
+-- @return table[]|nil  A fresh list of { id, name, icon }; nil when the client cannot answer.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Only clients whose specialization API names real specs answer (not Forever).
 function platform:GetClassSpecializationChoices(classID)
     local family = self:GetClientFamily()
 
@@ -446,9 +481,13 @@ function platform:GetClassSpecializationChoices(classID)
     return choices
 end
 
--- Display name, icon and class token of a specialization ID, where the
--- client can name it (Retail order: id, name, description, icon, role, class).
--- Returns { id, name, icon?, class? } or nil and a reason; icon and class are nil when the client reports another type.
+-- Reads the display name, icon and class token of a specialization id, where the client can name it.
+-- @param specID number  The specialization id.
+-- @return table|nil  { id, name, icon?, class? }; icon and class are nil when the client reports another type. nil
+--   when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Retail order of GetSpecializationInfoByID: id, name, description, icon, role, class.
 function platform:GetSpecializationDisplay(specID)
     local family = self:GetClientFamily()
 

@@ -7,15 +7,22 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- True for a number that is neither NaN nor infinite.
+-- Whether a value is a number that is neither NaN nor infinite.
+-- @param value any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(value)
     return type(value)=='number' and value==value and value<math.huge and value>-math.huge
 end
 
--- Request maximum only for predicates that need it. A readable false existence
--- is ordinary absence; nil or unreadable data never establishes absence.
--- Returns { exists = false }, or { exists = true, current = n } plus maximum = n when includeMaximum is true, or nil
--- and a reason. Callers cache the result per evaluation pass.
+-- Reads a unit's health (UnitExists, UnitHealth, UnitHealthMax).
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param includeMaximum boolean|nil  True to also read the maximum health; nil or false skips it.
+-- @return table{exists=boolean,current=number|nil,maximum=number|nil}|nil  { exists = false }, or
+--   { exists = true, current = n } plus maximum = n when includeMaximum is true; nil when it cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Maximum is requested only for predicates that need it. A readable false existence is ordinary absence; nil or
+-- unreadable data never establishes absence. Callers cache the result per evaluation pass.
 function platform:GetUnitHealthObservation(unit, includeMaximum)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

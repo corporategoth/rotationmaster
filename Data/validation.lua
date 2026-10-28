@@ -31,16 +31,21 @@ local classes = {
     EVOKER = true,
 }
 
--- Returns true for one of the thirteen upper-case class tokens (WARRIOR ... EVOKER).
+-- Whether a value is one of the thirteen upper-case class tokens (WARRIOR ... EVOKER).
+-- @param value any  The value to test.
+-- @return boolean  True for a class token.
 function data.IsRotationClassToken(value)
     return type(value) == "string" and classes[value] == true
 end
 
--- A rotation without a source manifest belongs to the player's own action bar.
--- It opts into a vehicle, possession, override bar or pet battle only through
--- its switch condition: an enabled ACTION_CONTEXT leaf naming that context,
+-- Tells whether a rotation body may run in an action context.
+-- @param body table  The rotation body.
+-- @param context string  The action context: "player", "pet", "vehicle", "possession", "override" or "petbattle".
+-- @return boolean  True when the body may run in the context (always true for the player's own bar).
+--
+-- A rotation without a source manifest belongs to the player's own action bar. It opts into a vehicle, possession,
+-- override bar or pet battle only through its switch condition: an enabled ACTION_CONTEXT leaf naming that context,
 -- reached through AND/OR (never under NOT). Bounded, data-only traversal.
--- Returns true when the body may run in the given context (always true for the player's own bar).
 function data.MatchesBareActionContext(body, context)
     if context == "player" then
         return true
@@ -52,6 +57,9 @@ function data.MatchesBareActionContext(body, context)
     local budget = 256
 
     -- Looks for an enabled ACTION_CONTEXT leaf for the context, within a budget of 256 nodes and depth 32.
+    -- @param node any  The condition node to search.
+    -- @param depth number  The nesting depth of the node.
+    -- @return boolean  True when such a leaf is reached.
     local function visit(node, depth)
         budget = budget - 1
 
@@ -76,7 +84,10 @@ function data.MatchesBareActionContext(body, context)
     return visit(body.switch, 0)
 end
 
--- Returns true for a whole number at or above the minimum.
+-- Whether a value is a whole number at or above a minimum.
+-- @param value any  The value to test.
+-- @param minimum number  The smallest accepted value.
+-- @return boolean  True for such a number.
 local function integer(value, minimum)
     return type(value) == "number" and value >= minimum and value % 1 == 0
 end
@@ -86,7 +97,12 @@ end
 -- and stored lower-case. auto and default are reserved for /rm set.
 local reservedIdentifiers = { auto = true, default = true }
 
--- Returns the lower-case identifier, or nil and 'invalid-identifier' / 'reserved-identifier'.
+-- Normalizes a rotation identifier (ID), a short name for /rm set and lists.
+-- @param value any  The candidate: a letter, then letters, digits, _ or -; at most 32 characters.
+-- @return string|nil  The lower-case identifier; nil when invalid.
+-- @return string|nil  'invalid-identifier' or 'reserved-identifier' when the first return is nil; nil otherwise.
+--
+-- Compared without case and stored lower-case. auto and default are reserved for /rm set.
 function data.NormalizeRotationIdentifier(value)
     if type(value) ~= "string" or #value < 1 or #value > 32 or not value:match("^[A-Za-z][A-Za-z0-9_%-]*$") then
         return nil, "invalid-identifier"
@@ -101,9 +117,11 @@ function data.NormalizeRotationIdentifier(value)
     return id
 end
 
--- An identifier made from a name: other characters become -, repeats collapse,
--- the ends are trimmed, and a leading digit gets an r prefix.
--- Always returns a usable identifier (at most 32 characters, never a reserved word), "rotation" for an empty name.
+-- Makes an identifier from a name.
+-- @param name any  The name; anything that is not a string is treated as empty.
+-- @return string  A usable identifier (at most 32 characters, never a reserved word); "rotation" for an empty name.
+--
+-- Other characters become -, repeats collapse, the ends are trimmed, and a leading digit gets an r prefix.
 function data.SlugRotationIdentifier(name)
     local text = type(name) == "string" and name:lower() or ""
     text = text:gsub("[^%w_%-]+", "-"):gsub("%-%-+", "-"):gsub("^[-_]+", ""):gsub("[-_]+$", "")
@@ -124,11 +142,10 @@ function data.SlugRotationIdentifier(name)
     return text
 end
 
--- A rotation's specializations (body.specs): the specialization values it is
--- for (Platform/specializations.lua GetRotationSpecKind says which kind),
--- at most 16, each a whole number. Absent or empty means any specialization.
--- Returns a sorted copy without duplicates, nil for "any", or false when the
--- value is malformed.
+-- Normalizes a rotation's specializations (body.specs).
+-- @param value any  The specialization values the rotation is for (Platform/specializations.lua GetRotationSpecKind
+--   says which kind): at most 16, each a whole number. Absent or empty means any specialization.
+-- @return table|nil|boolean  A sorted copy without duplicates; nil for "any"; false when the value is malformed.
 function data.NormalizeRotationSpecs(value)
     if value == nil then
         return nil
@@ -168,8 +185,10 @@ function data.NormalizeRotationSpecs(value)
     return list
 end
 
--- Whether a rotation restricted to `specs` applies to specialization value
--- `value`; nil (unknown) only matches an unrestricted rotation.
+-- Tells whether a rotation restricted to some specializations applies to a specialization value.
+-- @param specs table|nil  The rotation's normalized specializations; nil or empty means any.
+-- @param value number|nil  The specialization value; nil (unknown) only matches an unrestricted rotation.
+-- @return boolean  True when it applies.
 function data.RotationSpecsMatch(specs, value)
     if type(specs) ~= "table" or #specs == 0 then
         return true
@@ -187,8 +206,9 @@ function data.RotationSpecsMatch(specs, value)
     return false
 end
 
--- Returns a rotation's priority: 0 when absent, the value when it is a whole number in [-100000, 100000], otherwise
--- nil (invalid).
+-- Reads a rotation's priority.
+-- @param value any  The stored priority.
+-- @return number|nil  0 when absent, the value when it is a whole number in [-100000, 100000]; nil when invalid.
 function data.GetRotationPriority(value)
     if value == nil then
         return 0
@@ -198,18 +218,23 @@ function data.GetRotationPriority(value)
     end
 end
 
--- Returns true for a non-empty string.
+-- Whether a value is a non-empty string.
+-- @param value any  The value to test.
+-- @return boolean  True for a non-empty string.
 local function nonempty(value)
     return type(value) == "string" and #value > 0
 end
 
--- Returns true for a valid rotation or step id: at most 128 characters, starting alphanumeric, then letters, digits
--- or . _ : -.
+-- Whether a value is a valid rotation or step id.
+-- @param value any  The value to test.
+-- @return boolean  True for a string of at most 128 characters, starting alphanumeric, then letters, digits or . _ : -.
 local function identifier(value)
     return nonempty(value) and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
 end
 
--- Returns the table's keys in a stable order (numbers first), so diagnostics come out in the same order every time.
+-- Lists a table's keys in a stable order, so diagnostics come out in the same order every time.
+-- @param value table  The table.
+-- @return table  The keys, numbers first.
 local function sortedKeys(value)
     local keys = {}
 
@@ -228,7 +253,9 @@ local function sortedKeys(value)
     return keys
 end
 
--- Returns true when the value is a table with only positive integer keys and no holes (an empty table counts).
+-- Whether a value is a table with only positive integer keys and no holes.
+-- @param value any  The value to test.
+-- @return boolean  True for such a table (an empty table counts).
 local function dense(value)
     if type(value) ~= "table" then
         return false
@@ -255,8 +282,12 @@ end
 -- invoking a live valid/evaluate callback. Missing fields are handled separately.
 local matchesType, matchesTable
 
--- Returns true when the value is a table that fits a list schema (every element matches) or a record schema (every
--- key is declared and its value matches). Depth is capped at 32.
+-- Tells whether a value fits a list or record schema.
+-- @param value any  The value to test.
+-- @param schema table  A list schema (every element matches) or a record schema (every key is declared and its value
+--   matches).
+-- @param depth number  The nesting depth; capped at 32.
+-- @return boolean  True when the value is a table that fits the schema.
 matchesTable = function(value, schema, depth)
     if depth > 32 or type(value) ~= "table" then
         return false
@@ -283,8 +314,13 @@ matchesTable = function(value, schema, depth)
     return true
 end
 
--- Returns true when the value fits a field declaration: a type name, "condition", "<type>[]", a record table or a list
--- of alternatives. Conditions only need to be tables here; their content is checked separately.
+-- Tells whether a value fits a field declaration.
+-- @param value any  The value to test.
+-- @param schema string|table  A type name, "condition", "<type>[]", a record table or a list of alternatives.
+-- @param depth number|nil  The nesting depth; capped at 32.
+-- @return boolean  True when the value fits.
+--
+-- Conditions only need to be tables here; their content is checked separately.
 matchesType = function(value, schema, depth)
     depth = depth or 0
 
@@ -340,11 +376,14 @@ end
 -- Envelope and body validation
 -- ============================================================================
 
--- Validates an envelope (or, with bodyOnly, a bare body) and returns { valid, supported, resolved, diagnostics,
--- semanticStatus, executionStatus, qualityStatus }. valid is false on any error; supported is false for things this
--- version cannot represent (an unknown field, schema or format); resolved is false when a condition, item set or effect
--- is not available here. executionStatus becomes "unavailable" unless all three are true. options carries
--- conditions, support, itemsets and effects from the caller.
+-- Validates an envelope (or, with bodyOnly, a bare body).
+-- @param envelope table  The envelope, or { body = body } for a bare body.
+-- @param options table|nil  { conditions, support, itemsets, effects } from the caller.
+-- @param bodyOnly boolean  True to validate only the body.
+-- @return table  { valid, supported, resolved, diagnostics, semanticStatus, executionStatus, qualityStatus }. valid is
+--   false on any error; supported is false for things this version cannot represent (an unknown field, schema or
+--   format); resolved is false when a condition, item set or effect is not available here. executionStatus becomes
+--   "unavailable" unless all three are true.
 local function validate(envelope, options, bodyOnly)
     options = options or {}
 
@@ -358,8 +397,13 @@ local function validate(envelope, options, bodyOnly)
         qualityStatus = "unreviewed",
     }
 
-    -- Records one diagnostic (the first 100 are kept) and updates the flags: an error clears valid, kind "unsupported"
-    -- clears supported and kind "unresolved" clears resolved.
+    -- Records one diagnostic (the first 100 are kept) and updates the flags.
+    -- @param code string  The diagnostic code.
+    -- @param path string  The path of the problem.
+    -- @param severity string|nil  "error" (the default, clears valid) or "warning".
+    -- @param kind string|nil  "unsupported" clears supported; "unresolved" clears resolved.
+    -- @param condition string|nil  The condition type concerned.
+    -- @param reason string|nil  The reason concerned.
     local function issue(code, path, severity, kind, condition, reason)
         severity = severity or "error"
 
@@ -383,7 +427,8 @@ local function validate(envelope, options, bodyOnly)
         end
     end
 
-    -- Marks the result unavailable for execution when anything failed, and returns it.
+    -- Marks the result unavailable for execution when anything failed.
+    -- @return table  The result.
     local function finish()
         if not result.valid or not result.supported or not result.resolved then
             result.executionStatus = "unavailable"
@@ -404,7 +449,10 @@ local function validate(envelope, options, bodyOnly)
         return finish()
     end
 
-    -- Returns true for a table; otherwise records missing-field or expected-object and returns false.
+    -- Checks that a value is a table; otherwise records missing-field or expected-object.
+    -- @param value any  The value to test.
+    -- @param path string  The path of the value.
+    -- @return boolean  True for a table.
     local function object(value, path)
         if type(value) == "table" then
             return true
@@ -414,8 +462,11 @@ local function validate(envelope, options, bodyOnly)
         return false
     end
 
-    -- Returns true for a dense list. A missing optional list is just false; a missing required one, a non-table and a
-    -- list with holes are recorded as errors.
+    -- Checks that a value is a dense list.
+    -- @param value any  The value to test.
+    -- @param path string  The path of the value.
+    -- @param required boolean  True when a missing list is an error; a missing optional list is just false.
+    -- @return boolean  True for a dense list; a non-table and a list with holes are recorded as errors.
     local function list(value, path, required)
         if value == nil and not required then
             return false
@@ -435,6 +486,10 @@ local function validate(envelope, options, bodyOnly)
     end
 
     -- Runs a predicate on a field and records missing-field or invalid-field-value when it fails.
+    -- @param value any  The field value.
+    -- @param predicate function  Takes the value and returns true when it is valid.
+    -- @param path string  The path of the field.
+    -- @return boolean  True when the predicate passed.
     local function check(value, predicate, path)
         if not predicate(value) then
             issue(value == nil and "missing-field" or "invalid-field-value", path, "error")
@@ -444,8 +499,12 @@ local function validate(envelope, options, bodyOnly)
         return true
     end
 
-    -- Warns (as unsupported, not an error) about every key of the table that is not in the allowed set, so data from a
-    -- newer version still loads and is reported.
+    -- Warns about every key of a table that is not in the allowed set.
+    -- @param value table  The table to scan.
+    -- @param allowed table  The allowed keys (key -> true).
+    -- @param path string  The path of the table.
+    --
+    -- Reported as unsupported, not an error, so data from a newer version still loads and is reported.
     local function unknown(value, allowed, path)
         for _, key in ipairs(sortedKeys(value)) do
             if not allowed[key] then
@@ -455,6 +514,9 @@ local function validate(envelope, options, bodyOnly)
     end
 
     -- Records an error when an optional field is present with the wrong Lua type.
+    -- @param value any  The field value.
+    -- @param kind string  The expected Lua type.
+    -- @param path string  The path of the field.
     local function optionalType(value, kind, path)
         if value ~= nil and type(value) ~= kind then
             issue("invalid-field-type", path, "error")
@@ -643,6 +705,9 @@ local function validate(envelope, options, bodyOnly)
     local condition, declaredConditions
 
     -- Validates the nested conditions inside a record or list value, following the schema's shape.
+    -- @param value table  The record or list value.
+    -- @param schema table  The field declaration.
+    -- @param path string  The path of the value.
     local function tableConditions(value, schema, path)
         if schema[1] ~= nil then
             for i, child in ipairs(value) do
@@ -655,8 +720,11 @@ local function validate(envelope, options, bodyOnly)
         end
     end
 
-    -- Finds the nested conditions a condition's field declares ("condition", "condition[]", or inside a record or the
-    -- first union alternative that matches) and validates each one.
+    -- Finds the nested conditions a condition's field declares and validates each one.
+    -- @param value any  The field value.
+    -- @param schema string|table  The field declaration: "condition", "condition[]", or inside a record or the first
+    --   union alternative that matches.
+    -- @param path string  The path of the value.
     declaredConditions = function(value, schema, path)
         if schema == "condition" then
             condition(value, path)
@@ -683,9 +751,13 @@ local function validate(envelope, options, bodyOnly)
         end
     end
 
-    -- Validates one condition node. AND, OR and NOT are structural; any other type is looked up in options.conditions:
-    -- an unknown, disabled, function-unavailable or client-unsupported condition is "unresolved" (a warning), its
-    -- fields are type-checked against the definition, and required fields must be present.
+    -- Validates one condition node.
+    -- @param value table|nil  The condition node; nil is ignored.
+    -- @param path string  The path of the node.
+    --
+    -- AND, OR and NOT are structural; any other type is looked up in options.conditions: an unknown, disabled,
+    -- function-unavailable or client-unsupported condition is "unresolved" (a warning), its fields are type-checked
+    -- against the definition, and required fields must be present.
     condition = function(value, path)
         if value == nil then
             return
@@ -970,11 +1042,17 @@ local function validate(envelope, options, bodyOnly)
 end
 
 -- Validates a full rotation envelope (format, schema, id, revision, applicability, sources, body).
+-- @param envelope table  The envelope.
+-- @param options table|nil  { conditions, support, itemsets, effects } from the caller.
+-- @return table  The validation result, as described at validate.
 function data.ValidateEnvelope(envelope, options)
     return validate(envelope, options, false)
 end
 
 -- Validates a bare rotation body (a legacy import or an editor draft) without inventing an envelope or a scope.
+-- @param body table  The body.
+-- @param options table|nil  { conditions, support, itemsets, effects } from the caller.
+-- @return table  The validation result, as described at validate.
 function data.ValidateBody(body, options)
     return validate({ body = body }, options, true)
 end

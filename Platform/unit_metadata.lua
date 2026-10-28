@@ -7,10 +7,15 @@
 local _, addon = ...
 local platform = addon.Platform
 
--- Keep native metadata identities: class token, localized creature name, or
--- classification token. Unused tuple fields do not determine availability.
--- kind is "class", "creature" or "classification". Returns the readable non-empty string, false when the unit does
--- not exist, or nil and a reason.
+-- Reads one unit metadata string: class file name, creature type name or classification token.
+-- @param unit string  The unit token to read; must be a non-empty string.
+-- @param kind string  Which string: "class" (UnitClass, second return), "creature" (UnitCreatureType, the localized
+--   name) or "classification" (UnitClassification).
+-- @return string|false|nil  The readable non-empty string; false when the unit does not exist; nil when it cannot be
+--   read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Native metadata identities are kept; unused tuple fields do not determine availability.
 function platform:GetUnitMetadataObservation(unit, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end

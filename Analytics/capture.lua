@@ -17,22 +17,32 @@ local RECORDS, ALIASES, PENDING, BYTES = 4096, 1024, 128, 524288
 -- Validation primitives and schemas
 -- ============================================================================
 
--- True for a real, finite number (rejects NaN and both infinities).
+-- Whether a value is a real, finite number (rejects NaN and both infinities).
+-- @param v any  The value to test.
+-- @return boolean  True for a finite number.
 local function finite(v)
     return type(v) == 'number' and v == v and v ~= huge and v ~= -huge
 end
 
--- True for a finite whole number between low and 2^31 - 1.
+-- Whether a value is a finite whole number between a minimum and 2^31 - 1.
+-- @param v any  The value to test.
+-- @param low number  The smallest accepted value.
+-- @return boolean  True for such a number.
 local function integer(v, low)
     return finite(v) and v >= low and v <= 2147483647 and v % 1 == 0
 end
 
--- True for a table with no metatable, so no hidden __index or __eq can run during validation.
+-- Whether a value is a table with no metatable, so no hidden __index or __eq can run during validation.
+-- @param v any  The value to test.
+-- @return boolean  True for a plain table.
 local function plain(v)
     return type(v) == 'table' and getmetatable(v) == nil
 end
 
--- True when v is a string present in the allowed-value set (read with rawget).
+-- Whether a value is a string present in an allowed-value set (read with rawget).
+-- @param v any  The value to test.
+-- @param set table  The allowed values (value -> true).
+-- @return boolean  True when v is in the set.
 local function member(v, set)
     return type(v) == 'string' and rawget(set, v) == true
 end
@@ -55,8 +65,10 @@ local fields = {
     result = { type = true, key = true, actor = true, castKind = true, spell = true, status = true },
 }
 
--- True when value is a plain table whose keys are all strings listed in allowed; this is how unknown fields are
--- refused.
+-- Whether a value is a plain table whose keys are all strings listed in an allowed set.
+-- @param value any  The value to test.
+-- @param allowed table  The allowed keys (key -> true); this is how unknown fields are refused.
+-- @return boolean  True for such a table.
 local function closed(value, allowed)
     if not plain(value) then
         return false
@@ -75,8 +87,12 @@ end
 -- Size accounting and helpers
 -- ============================================================================
 
--- Fixed data-only charge, not a Lua heap/wire-size claim. Cast rows reserve the
--- longest kind (autorepeat), plus18+keyBytes for each private alias tombstone.
+-- Charges the size of a value in the data-only byte accounting.
+-- @param v any  The value to charge.
+-- @return number  The charge: 2 plus the length for a string, 8 for a number, 1 for a boolean and 2 otherwise.
+--
+-- Fixed data-only charge, not a Lua heap or wire-size claim. Cast rows reserve the longest kind (autorepeat), plus
+-- 18 + keyBytes for each private alias tombstone.
 local function charge(v)
     local t = type(v)
 
@@ -91,7 +107,9 @@ local function charge(v)
     return 2
 end
 
--- Byte charge of one row; castKind is always charged as the longest kind because replay may rewrite it at Stop.
+-- Computes the byte charge of one row.
+-- @param row table  The row.
+-- @return number  The charge; castKind is always charged as the longest kind because replay may rewrite it at Stop.
 local function rowCharge(row)
     local bytes = 10
 
@@ -102,7 +120,9 @@ local function rowCharge(row)
     return bytes
 end
 
--- Deep copy of plain data, so snapshots handed to callers share nothing with the session.
+-- Deep copies plain data, so snapshots handed to callers share nothing with the session.
+-- @param value any  The value to copy.
+-- @return any  A deep copy of a table; any other value unchanged.
 local function copy(value)
     if type(value) ~= 'table' then
         return value
@@ -117,8 +137,10 @@ local function copy(value)
     return result
 end
 
--- The evidence block of a snapshot: how ordinary and presentation receipts were trusted for this session; damage is
--- never collected here.
+-- Builds the evidence block of a snapshot.
+-- @param state table  The session.
+-- @return table  { ordinary, presentation, damage, collection }: how ordinary and presentation receipts were trusted
+--   for this session; damage is never collected here.
 local function evidence(state)
     return {
         ordinary = state.ordinary,
@@ -129,6 +151,7 @@ local function evidence(state)
 end
 
 -- Ends every pending attempt alias (an epoch change or retire made them unobservable) and zeroes the counter.
+-- @param state table  The session.
 local function finishPending(state)
     for _, alias in next, state.byAlias do
         if alias.pending then
@@ -140,6 +163,8 @@ local function finishPending(state)
 end
 
 -- Drops pending status from attempts older than 30 seconds, mirroring replay's expiry so the pending limit agrees.
+-- @param state table  The session.
+-- @param time number  The current session time in seconds.
 local function expire(state, time)
     for _, alias in next, state.byAlias do
         if alias.pending and time - alias.time > 30 then
@@ -153,9 +178,13 @@ end
 -- Capture builder
 -- ============================================================================
 
--- Creates a capture object (nil and a reason if replay is missing or options are invalid). options may only hold
--- adviceMaxAge, a number above 0 and at most 0.5 seconds (default 0.5). Only one session can run at a time, and every
--- method must be called with the colon on the returned object.
+-- Creates a capture object.
+-- @param options table|nil  May only hold adviceMaxAge, a number above 0 and at most 0.5 seconds (default 0.5).
+-- @return table|nil  The capture object (Start, Push, Stop, Clear, GetSnapshot); nil if replay is missing or options
+--   are invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Only one session can run at a time, and every method must be called with the colon on the returned object.
 function analytics.NewCapture(options)
     if type(replay) ~= 'function' then
         return nil, 'missing-replay'
@@ -176,7 +205,11 @@ function analytics.NewCapture(options)
 
     local active, last, api
 
-    -- Ends the running session, stores an unavailable snapshot carrying reason, and returns nil, reason.
+    -- Ends the running session and stores an unavailable snapshot.
+    -- @param state table  The session.
+    -- @param reason string  The reason carried by the snapshot.
+    -- @return nil  Always nil.
+    -- @return string  reason.
     local function fail(state, reason)
         active = nil
 
@@ -194,7 +227,11 @@ function analytics.NewCapture(options)
         return nil, reason
     end
 
-    -- Returns the active session when self is this object and lease is the live one; otherwise nil and a reason.
+    -- Resolves the active session for a method call.
+    -- @param self any  The receiver of the method call.
+    -- @param lease table  The lease returned by Start.
+    -- @return table|nil  The active session when self is this object and lease is the live one; nil otherwise.
+    -- @return string|nil  'foreign-receiver' or 'retired-lease' when the first return is nil; nil otherwise.
     local function owned(self, lease)
         if not rawequal(self, api) then
             return nil, 'foreign-receiver'
@@ -206,7 +243,11 @@ function analytics.NewCapture(options)
         return active
     end
 
-    -- Checks a caller-supplied elapsed time: finite, 0 to 600 seconds, and not before the last accepted row.
+    -- Checks a caller-supplied elapsed time.
+    -- @param state table  The session.
+    -- @param time any  The elapsed time in seconds: finite, 0 to 600, and not before the last accepted row.
+    -- @return boolean|nil  True when valid; nil otherwise.
+    -- @return string|nil  'invalid-time' or 'decreasing-time' when the first return is nil; nil otherwise.
     local function validTime(state, time)
         if not finite(time) or time < 0 or time > 600 then
             return nil, 'invalid-time'
@@ -220,8 +261,14 @@ function analytics.NewCapture(options)
 
     api = {}
 
-    -- Begins a session for a validated context (family 'tbc', actor 'player', optional evidence modes) and returns its
-    -- lease; refuses while another session runs. Any earlier snapshot is discarded.
+    -- Begins a session for a validated context.
+    -- @param context table  { family = 'tbc', actor = 'player', ordinaryEvidence?, presentationEvidence? }; the
+    --   evidence modes are 'unavailable' (default) or 'trusted-receipt'.
+    -- @return table|nil  The session lease; nil when refused.
+    -- @return string|nil  The reason code ('foreign-receiver', 'already-running' or 'invalid-context') when the first
+    --   return is nil; nil otherwise.
+    --
+    -- Refuses while another session runs. Any earlier snapshot is discarded.
     function api:Start(context)
         if not rawequal(self, api) then
             return nil, 'foreign-receiver'
@@ -270,9 +317,16 @@ function analytics.NewCapture(options)
         return lease
     end
 
-    -- Validates one receipt (advice, presentation, retire, attempt or result) against its closed schema and appends it
-    -- as a row with the next sequence number. Returns the sequence number, or nil and a reason; a bad receipt or a
-    -- limit breach also ends the session. Raw cast keys become numeric aliases here and are never stored on a row.
+    -- Validates one receipt and appends it as a row with the next sequence number.
+    -- @param lease table  The lease returned by Start.
+    -- @param time number  The elapsed session time in seconds.
+    -- @param receipt table  The receipt: advice, presentation, retire, attempt or result, checked against its closed
+    --   schema.
+    -- @return number|nil  The sequence number; nil when refused.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    --
+    -- A bad receipt or a limit breach also ends the session. Raw cast keys become numeric aliases here and are never
+    -- stored on a row.
     function api:Push(lease, time, receipt)
         local state, why = owned(self, lease)
 
@@ -450,8 +504,15 @@ function analytics.NewCapture(options)
         return row.seq
     end
 
-    -- Ends the session at time, resolves each alias's cast kind from every receipt that mentioned it, runs replay over
-    -- the trace and returns a detached snapshot (the unavailable one, plus a reason, if replay refuses it).
+    -- Ends the session and returns a detached snapshot.
+    -- @param lease table  The lease returned by Start.
+    -- @param time number  The elapsed session time in seconds.
+    -- @param reason string|nil  An allowlisted end reason; nil means 'stop'.
+    -- @return table|nil  The snapshot (the unavailable one, plus a reason, if replay refuses the trace); nil for a
+    --   foreign receiver or retired lease.
+    -- @return string|nil  The reason code when the snapshot is unavailable or the first return is nil; nil otherwise.
+    --
+    -- Resolves each alias's cast kind from every receipt that mentioned it and runs replay over the trace.
     function api:Stop(lease, time, reason)
         local state, why = owned(self, lease)
 
@@ -530,6 +591,8 @@ function analytics.NewCapture(options)
     end
 
     -- Discards any running session and the last snapshot.
+    -- @return boolean|nil  True; nil for a foreign receiver.
+    -- @return string|nil  'foreign-receiver' when the first return is nil; nil otherwise.
     function api:Clear()
         if not rawequal(self, api) then
             return nil, 'foreign-receiver'
@@ -540,7 +603,9 @@ function analytics.NewCapture(options)
         return true
     end
 
-    -- Returns a copy of the last snapshot, or nil and 'running' / 'no-session'.
+    -- Returns a copy of the last snapshot.
+    -- @return table|nil  The copy; nil while a session is running or when there is none.
+    -- @return string|nil  'foreign-receiver', 'running' or 'no-session' when the first return is nil; nil otherwise.
     function api:GetSnapshot()
         if not rawequal(self, api) then
             return nil, 'foreign-receiver'

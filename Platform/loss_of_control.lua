@@ -6,8 +6,11 @@
 local _, addon = ...
 local platform = addon.Platform
 
+-- Counts the loss of control effects currently on the player (C_LossOfControl.GetActiveLossOfControlDataCount).
+-- @return number|nil  The number of active effects; nil when it cannot be read or exceeds the 256 scan limit.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
 -- The scan limit is an RM resource budget, not a declared native maximum.
--- Returns the number of active loss of control effects, or nil and a reason code.
 function platform:GetLossOfControlCount()
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
@@ -28,10 +31,15 @@ function platform:GetLossOfControlCount()
     return count
 end
 
--- Only the requested subject is required. Timing readiness stays on the row
--- so an unrelated event with unknown duration does not block a later match.
--- index is the effect's position (1 to 256) and kind is "type" or "school". Returns { locType } or { lockoutSchool },
--- plus timeRemaining or timeRemainingReason; nil and a reason code when the subject itself cannot be read.
+-- Reads one field of one active loss of control effect (C_LossOfControl.GetActiveLossOfControlData).
+-- @param index number  The effect's position, an integer from 1 to 256.
+-- @param kind string  Which subject to read: "type" (the locType string) or "school" (the lockoutSchool number).
+-- @return table|nil  The record { locType = string } or { lockoutSchool = number } for the requested subject, plus
+--   timeRemaining (number) or timeRemainingReason (string); nil when the subject itself cannot be read.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Only the requested subject is required. Timing readiness stays on the row so an unrelated event with unknown
+-- duration does not block a later match.
 function platform:GetLossOfControlEvent(index, kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
