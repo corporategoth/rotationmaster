@@ -222,6 +222,33 @@ class Check(unittest.TestCase):
         self.assertEqual(P.read_zip(first), layout)
 
 
+class LoadGraph(unittest.TestCase):
+    """What the game loads and names, read from TOCs, XML includes and strings in code."""
+
+    def files(self, **extra):
+        files = {'A.toc': '## Interface: 11509\nmain.lua\nembeds.xml\n', 'main.lua': 'return 1\n',
+                 'embeds.xml': '<Ui><!-- <Script file="old.lua"/> --><Script file = "Libs\\a.lua"/><Include file="Libs\\b.xml"/></Ui>\n',
+                 'Libs/a.lua': 'return 1\n', 'Libs/b.xml': '<Ui><Script file="b.lua"/></Ui>\n', 'Libs/b.lua': 'return 1\n',
+                 'old.lua': 'return 1\n', 'Libs/dead.lua': 'return 1\n', 'Bindings.xml': '<Bindings/>\n', 'Sub/Bindings.xml': '<Bindings/>\n'}
+        files.update(extra)
+        return files
+
+    def test_the_graph_follows_tocs_through_xml_and_skips_comments_and_orphans(self):
+        files = self.files()
+        loaded = P.load_graph(files, files.__getitem__)
+        self.assertEqual(sorted(loaded), ['A.toc', 'Bindings.xml', 'Libs/a.lua', 'Libs/b.lua', 'Libs/b.xml', 'embeds.xml', 'main.lua'])
+        self.assertEqual(P.unused_files(files, files.__getitem__)[0], ['Libs/dead.lua', 'Sub/Bindings.xml', 'old.lua'])
+
+    def test_a_texture_is_named_by_its_path_or_by_a_quoted_name_in_the_named_folders_only(self):
+        files = self.files(**{
+            'main.lua': 'local a = "Interface\\\\AddOns\\\\" .. n .. "\\\\Assets\\\\Cond\\\\v2\\\\used"\n'
+                        'local b = ControlTexture("plus"); local grip = 1\n',
+            'Assets/Cond/v2/used.tga': '', 'Assets/Cond/v2/used-64.tga': '', 'Assets/Cond/v2/plus.tga': '',
+            'Assets/Controls/plus.tga': '', 'Assets/Controls/grip.tga': '', 'Fonts/F.ttf': '', 'dead.lua': '"Fonts/F"'})
+        self.assertEqual(P.unused_files(files, files.__getitem__)[1],
+                         ['Assets/Cond/v2/plus.tga', 'Assets/Cond/v2/used-64.tga', 'Assets/Controls/grip.tga', 'Fonts/F.ttf'])
+
+
 class Notes(unittest.TestCase):
     def repository(self):
         root = temp_dir(self)
