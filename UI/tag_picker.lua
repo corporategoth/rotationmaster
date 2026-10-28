@@ -9,8 +9,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- per-tag color chooser. Every callback is skipped once valid() is false or the picker is released.
 -- @param parent table  The frame the picker is built in.
 -- @param options table  available() returns the list of known tags, valid() says whether the owner is still current,
--- color(tag) returns { r, g, b, a }, setColor(tag, rgba), changed(tags) runs after any edit, layout(height) runs when
--- the height changes, allowCustom lets the player type new tags, readOnly, inputInset.
+--   color(tag) returns { r, g, b, a }, setColor(tag, rgba), changed(tags) runs after any edit, layout(height) runs when
+--   the height changes, allowCustom lets the player type new tags, readOnly, inputInset.
 -- @return table  The picker (frame, input, menu, height, SetTags, SetWidth, Hide, Release, ...).
 function addon:CreateRotationTagPicker(parent, options)
     local picker = {

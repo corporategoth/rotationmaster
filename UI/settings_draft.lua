@@ -151,8 +151,7 @@ function addon:InstallSettingsDraft(p)
     -- Runs the pending creation action after flushing text edits. When the form was opened for a new entry it stops
     -- right after the action, without saving or redrawing; otherwise it saves the draft and redraws the page.
     -- @return boolean  True when the creation was saved and the page redrawn; false when nothing ran, the form was for
-    --   a new
-    -- entry, or the save failed.
+    --   a new entry, or the save failed.
     function p:ApplyCreation()
         if not self:FlushEdits() or not self.creationApply then
             return false

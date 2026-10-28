@@ -375,8 +375,7 @@ function addon:BuildAnnounceSettings(p)
         -- @param _ any  Unused (the output's id).
         -- @param index number  The output's 1-based position in the list.
         -- @param output table  The output ({ id, announce, value, announce_sound, emote, emote_target, conditions,
-        --   channel_name,
-        -- disabled }).
+        --   channel_name, disabled }).
         -- @param row table  The shared card row that supplies the duplicate, help and enabled controls.
         p:OrderedCollection(
             'announce_outputs_' .. prefix,

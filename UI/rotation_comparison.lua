@@ -14,7 +14,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 -- Returns the comparison as plain text for the copy box. Consumes trusted results from RotationData, never live
 -- observations or Lua.
 -- @param result table  The comparison result ({ valid, complete, changes, diagnostics }, or with sourceChanges,
--- customChanges, currentDifferences and conflicts for a clone of a Built In).
+--   customChanges, currentDifferences and conflicts for a clone of a Built In).
 -- @return string  The report lines joined with newlines.
 --
 -- Every value is cut to a fixed length, the whole report stays under 65,000 bytes, and "|" is doubled so no stored text

@@ -55,7 +55,7 @@ local SPEC_WIDTH, HEADER_GAP, KIND_WIDTH = 172, 8, 78
 -- workspace, or nil for anything else, including an import preview.
 -- @param workspace table  The rotation edit workspace.
 -- @return table|nil  The override record (priority, effectivePriority, shippedPriority, enabled, shippedEnabled,
--- overridden); nil when the workspace is not a read-only Built In.
+--   overridden); nil when the workspace is not a read-only Built In.
 local function builtinOverrides(workspace)
     return workspace.readOnly
         and not workspace.preview
@@ -73,9 +73,9 @@ end
 -- @param spec number|string  The specialization namespace of the rotation.
 -- @param id string|table  The rotation id or reference to edit.
 -- @param onSelect function|nil  Called as onSelect(spec, id) when the editor wants the roster to move to another
--- rotation.
+--   rotation.
 -- @param detached table|nil  A workspace made by NewRotationPreviewWorkspace: the pane then shows an incoming rotation
--- read-only and writes nothing anywhere.
+--   read-only and writes nothing anywhere.
 -- @return table|nil  The pane; nil when no workspace can be made.
 -- @return string|nil  The reason when the first value is nil.
 --
@@ -980,6 +980,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     table.remove(pane.tools)
     pane.compare:Hide()
 
+    -- Creates the Duplicate button (Clone to edit on a Built In). Its action asks the roster to select a copy of the
+    -- rotation, after the editor's leave prompt when there is one.
     pane.clone = tool(
         workspace.readOnly and L['Clone to edit'] or L['Duplicate'],
         110,
@@ -1656,8 +1658,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Commits every pending header edit (name, identifier, description, metadata, tags, priority, owner scope) as
     -- workspace commands. Read-only and deleted panes have nothing to flush.
     -- @return boolean|nil  True when everything was committed; nil when something was rejected (the offending box is
-    --   marked
-    -- red and the message shown).
+    --   marked red and the message shown).
     -- @return string|nil  The reason when the first value is nil.
     function pane:FlushName()
         if self.deleted or workspace.readOnly then
@@ -2371,6 +2372,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             setBuiltinPriority(value)
         end
 
+        -- Filters typing in the priority box to a whole number (anything else reverts to the last text) and marks the
+        -- priority as edited on your own rotations.
+        -- @param user boolean  True when the change came from typing.
         addon:SetUIScript(self.priority, 'OnTextChanged', function(_, user)
             if not alive() or not user or workspace.preview then
                 return
@@ -2788,8 +2792,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- @param active boolean  True when this rotation is the one advising.
     -- @param chosen string|nil  The step id Rotation Master last advised.
     -- @return table|nil  The live state; nil for a card with no condition to show (a Branch that is always true or
-    --   false, a
-    -- missing condition).
+    --   false, a missing condition).
     function pane:EvaluateLive(model, now, active, chosen)
         local step = model.step
 

@@ -135,6 +135,8 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
 
     local sections, heading, owner = metadata.sections, metadata.heading or L['Help'], metadata.owner
 
+    -- Opens the Help window for this transfer while its lease is current; the sections come from the metadata (a
+    -- function of the dialog, or a list).
     self:SetUIScript(d.help, 'OnClick', function()
         if d.transferHelpLease ~= lease then
             return
@@ -554,9 +556,9 @@ end
 -- @param title string  The window title.
 -- @param text string  The text to show for export (may be empty).
 -- @param apply function  Called on Import as apply(input, settings), inside p:WithSettingsHistory, with the pasted text
--- and, when `options` is given, { mode = 'new' or 'replace', name, originalName }; it returns ok and an error text.
+--   and, when `options` is given, { mode = 'new' or 'replace', name, originalName }; it returns ok and an error text.
 -- @param options table|nil  canReplace, selectedName, fallbackName, originalName(input), valid(), review,
--- requirePreview and preview/inspect callbacks, onClose, invalidate and help.
+--   requirePreview and preview/inspect callbacks, onClose, invalidate and help.
 -- @return table  The dialog.
 function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     local d = p.textDialog

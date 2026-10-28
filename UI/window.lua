@@ -798,7 +798,7 @@ end
 -- entry. Does not place it.
 -- @param widget table  The widget table, or a bare frame.
 -- @param options table  escape (false for a window that is not an Escape target), layer (false opts out of ordering),
--- strata and kind.
+--   strata and kind.
 -- @return table|nil  The registry entry; nil when the value is not a frame.
 local function register(widget, options)
     local frame = widget and (widget.frame or widget)
@@ -950,8 +950,7 @@ end
 -- @param widget table  The window widget or frame.
 -- @param opener table|nil  A frame or widget inside the window that opened it.
 -- @param options table|nil  over (foreign frames it must clear, e.g. Blizzard panels it was opened over), kind
---   ('window'
--- for a peer window) and escape (false for a window that is not an Escape target).
+--   ('window' for a peer window) and escape (false for a window that is not an Escape target).
 -- @return boolean  False when the value cannot be registered; otherwise true.
 function addon:OpenPopup(widget, opener, options)
     options = options or {}
@@ -1236,7 +1235,7 @@ end
 -- @param frame table  The dialog frame.
 -- @param title table  A font string the caller owns.
 -- @param help table|nil  When given, a Help button is added (the argument of addon:OpenWorkbenchHelp, with an optional
--- valid function).
+--   valid function).
 -- @return table  The chrome object, with `SetContext(heading, kind, rotationName)` and `LayoutTitle()`.
 function addon:CreateWorkbenchDialogChrome(frame, title, help)
     local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)

@@ -43,8 +43,7 @@ end
 -- @param model table  The cooldown card model (model.step is the step shown).
 -- @param alive function  Says the card is still current.
 -- @param ctx table  The shared row helpers (acquire, label, choice, input, patch, active, getY/setY), the layout
---   metrics
--- (width, valueX, valueWidth) and readOnly.
+--   metrics (width, valueX, valueWidth) and readOnly.
 -- @return number  The y position below the rows.
 function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     local step = model.step
@@ -356,6 +355,9 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     for index, key in ipairs({ 'r', 'g', 'b', 'a' }) do
         local input = fields[key]
 
+        -- Stages the typed color channel: updates the pending color text, reddens the box when the color does not parse
+        -- and repaints the swatch when it does.
+        -- @param userInput boolean  True when the change came from typing.
         addon:SetUIScript(input, 'OnTextChanged', function(_, userInput)
             if not ctx.active() or not userInput then
                 return
@@ -576,6 +578,7 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     play:SetPoint('LEFT', sound, 'RIGHT', 4, 0)
     play.tooltip = L['Preview sound']
 
+    -- Plays the chosen announce sound as a preview, or says why it cannot.
     addon:SetUIScript(play, 'OnClick', function()
         if not alive() then
             return

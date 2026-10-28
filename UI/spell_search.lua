@@ -86,7 +86,7 @@ end
 -- right-click menu. Values the client marks unreadable, and repeats, are left out.
 -- @param kind string  'spell' or 'item'.
 -- @return table[]  The entries, each { id = number, context = format string taking the name }: the target's and focus's
--- current cast and the player's recent casts (newest first) for a spell; equipped trinkets for an item.
+--   current cast and the player's recent casts (newest first) for a spell; equipped trinkets for an item.
 function addon:GetReferenceContextEntries(kind)
     local entries, seen = {}, {}
     local platform = self.Platform
@@ -495,8 +495,7 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     -- Commits typed-but-unaccepted text (as Enter would).
     -- @return boolean|nil  True when nothing was pending or the text was accepted; nil when it could not be resolved,
-    --   so the
-    -- caller keeps the page dirty.
+    --   so the caller keeps the page dirty.
     widget.CommitPending = function(self)
         if not alive or self.disabled or not self:IsPending() then
             return true

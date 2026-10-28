@@ -127,8 +127,7 @@ function addon:InstallSettingsLayout(p)
     -- a roster.
     -- @param value any  The entry's value.
     -- @param presentation table  { text, search, icon }; text keeps the old text when nil, search and icon are cleared
-    --   when
-    -- nil.
+    --   when nil.
     function p:UpdateRosterEntry(value, presentation)
         local r = self.roster
 

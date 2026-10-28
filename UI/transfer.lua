@@ -557,6 +557,9 @@ function addon:ShowRotationTransfer(spec, id)
 
     local destination = dialog.destination:GetScript('OnClick')
 
+    -- Runs the dialog's own destination toggle (replace or new copy), then resets the scope boxes to match, closes any
+    -- open preview and syncs the Class and This character boxes.
+    -- @param ... any  The click arguments, passed on to the original handler.
     self:SetUIScript(dialog.destination, 'OnClick', function(...)
         if dialog.options == options then
             destination(...)

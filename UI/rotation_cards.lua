@@ -68,7 +68,7 @@ end
 -- Returns the tooltip for the card's not-on-your-bars warning: the missing-spell list for Blizzard's suggestion,
 -- otherwise the cooldown or step wording.
 -- @param model table  The card model; model.unbound must be set (with .missing for Blizzard's suggestion) and
--- model.section tells a cooldown from a step.
+--   model.section tells a cooldown from a step.
 -- @return string  The localized tooltip text.
 local function unboundTooltip(model)
     local unbound = model.unbound

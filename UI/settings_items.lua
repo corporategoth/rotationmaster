@@ -576,6 +576,8 @@ function addon:BuildItemSettings(p)
                 key = 'transfer',
                 text = L['Import/Export'],
                 icon = 'transfer',
+                -- Opens the import dialog when no item set is selected: a valid pasted item set is stored as a new item
+                -- set with the chosen name and selected.
                 action = function()
                     local codec = self:NewRotationCodec()
 

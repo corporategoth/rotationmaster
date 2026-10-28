@@ -12,7 +12,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- @param field table  The edit box.
 -- @param y number  The row's top offset.
 -- @param width number  The width available (at least 60 is used).
--- @return number  The width used by the field's left margin (always 0).
+-- @return number  How far the heading is moved right to make room for the field; always 0, because the field sits on
+--   its own row start and the list has no heading beside it.
 function addon:LayoutNewItemField(form, field, y, width)
     form.y = y
     field:ClearAllPoints()
@@ -33,9 +34,9 @@ function addon:InstallSettingsOrdered(p)
     -- @param build function  build(form, i, item, row) fills row i's body.
     -- @param changed function  Runs after a reorder or insert.
     -- @param options table|nil  Optional settings: readOnly, compact, prefix (field-name prefix), unsavedKey, current()
-    -- (the page revokes the list by returning anything but true), heading and add (header row), help, duplicate,
-    -- canDuplicate, enabled ({get,toggle,width,tooltip}), removeItem(i, item), confirmReorder(apply, from, gap, tail),
-    -- confirmInsert(apply, gap), dragIcon, dragSummary and endPreview.
+    --   (the page revokes the list by returning anything but true), heading and add (header row), help, duplicate,
+    --   canDuplicate, enabled ({get,toggle,width,tooltip}), removeItem(i, item), confirmReorder(apply, from, gap, tail),
+    --   confirmInsert(apply, gap), dragIcon, dragSummary and endPreview.
     -- @return table  The list's view.
     function p:OrderedCollection(key, items, title, build, changed, options)
         options = options or {}
@@ -116,8 +117,7 @@ function addon:InstallSettingsOrdered(p)
         -- the list changed under the drag or a confirm callback declines.
         -- @param gap number  The gap to drop at.
         -- @return boolean|nil  Whether the drop was accepted; for a confirm callback, true when the confirmation was
-        --   started; for
-        -- a reorder or insert, what applying returns.
+        --   started; for a reorder or insert, what applying returns.
         function view:Drop(gap)
             local from, tail, factory, action = self.drag, self.tail, self.insertFactory, self.insertAction
             local allowed = self:CanDrop(gap)
@@ -526,6 +526,8 @@ function addon:InstallSettingsOrdered(p)
             local y = self.y
             local outerSurface, outerWidth = self.surface, self.width
 
+            -- Acquires the pooled row for an item (created on first use): a frame with the header button, body, Move
+            -- Up, Move Down and Delete buttons and, for cards, the rounded decoration.
             local row = self:Acquire(options.compact and 'orderedTableRows' or 'orderedCards', function()
                 local frame = CreateFrame('Frame', nil, parent)
                 frame.header = addon:CreateWorkbenchButton(frame, '', width - 56)

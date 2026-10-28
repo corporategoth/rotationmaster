@@ -543,6 +543,7 @@ function addon:BuildFieldSchemaCards(form, owner)
             command(function() return model:Remove(path) end)
         end))
 
+        -- Opens the Help window for the field schema (fields, moving and copying, Required, saving).
         addon:SetUIScript(row.help, 'OnClick', p:Guard(function()
             addon:ShowWorkbenchHelp(
                 tostring(child.name),

@@ -437,8 +437,7 @@ end
 -- Opens the window for a request (replacing any tree already open). The window opens above the owner through the window
 -- registry.
 -- @param request table  { owner (any table, to tell whose tree this is), spec, hero, selection = { node, entry, spell
---   },
--- selectionName, name, specs = { { id, name, icon } }, onSelect(selection), onSpec(spec), onClose() }.
+--   }, selectionName, name, specs = { { id, name, icon } }, onSelect(selection), onSpec(spec), onClose() }.
 -- @return table|nil  The window record; nil for a malformed request.
 function addon:OpenTalentTree(request)
     if type(request) ~= 'table' then
@@ -645,8 +644,7 @@ end
 -- choice entries answer for their base button.
 -- @param button any  The clicked talent button.
 -- @return table|nil  { node, entry, spell }; nil for anything that is not a plain talent of this session's frame (a
---   hero
--- subtree selector, a button of another talent frame, an unreadable value).
+--   hero subtree selector, a button of another talent frame, an unreadable value).
 local function identify(button)
     if type(button) ~= 'table' then
         return nil
@@ -912,7 +910,7 @@ end
 -- @param ctx table  The provider context.
 -- @return table|nil  A handle { heroes, spec, hero, Reload, Close }.
 -- @return string|nil  A failure code when the handle is nil (in combat, window busy with someone else's build or staged
--- changes, unavailable).
+--   changes, unavailable).
 function blizzard.open(ctx)
     if type(InCombatLockdown) == 'function' and InCombatLockdown() then
         return nil, 'in-combat'

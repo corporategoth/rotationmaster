@@ -250,8 +250,7 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Sets the diagram zoom (clamped), keeping the viewport center fixed, and reflows.
     -- @param value number  The requested zoom factor.
     -- @return boolean|nil  True when applied; nil when the editor is closed, the canvas is not the diagram or the value
-    --   is
-    -- not finite.
+    --   is not finite.
     function canvas:SetZoom(value)
         if not owner.active or not self:IsDiagram() or not finite(value) then
             return nil

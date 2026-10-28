@@ -159,7 +159,7 @@ end
 -- back only the keys named for the tab, so a key a page edits must be listed.
 -- @param parent table  The frame that holds the form.
 -- @param key string  The tab: 'General', 'Profiles', 'About', 'Announces', 'Effects', 'ItemSets', 'Conditions',
--- 'Functions' or 'Integrations'.
+--   'Functions' or 'Integrations'.
 -- @param cached table|nil  A settings form to reuse instead of creating one.
 -- @return table|nil  The form; nil for an unknown tab.
 function addon:OpenNativeSettings(parent, key, cached)
@@ -244,8 +244,7 @@ end
 -- @param duplicate table  The Duplicate action definition ({ key, text, icon, enabled, action }).
 -- @param transfer table  The Import/Export action definition.
 -- @param compare function|nil  Called as compare(a, b) with two entries; overrides the default comparison window for
---   the
--- kind.
+--   the kind.
 function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, compare)
     local candidates = {}
 
@@ -379,7 +378,7 @@ end
 -- @param key string  The custom condition key.
 -- @return boolean  True on success.
 -- @return string|nil  The reason when false ('definition-changed' when there is no saved source, or the unregister
--- error).
+--   error).
 function addon:DeleteSavedCustomCondition(key)
     local source = (self.db.global.custom_conditions or {})[key]
 

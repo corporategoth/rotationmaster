@@ -13,8 +13,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- @param key string  The field key ('name', 'items', 'sound', 'magnification', 'xoffs', 'yoffs' or 'color').
 -- @param value string  The pending text.
 -- @return table|nil  The patch { set = {...}, unset = {...} }; nil when the text is not valid for that key (a
---   non-finite
--- number, a magnification of 0 or less, a color that is not four 0..1 channels) or the key is unknown.
+--   non-finite number, a magnification of 0 or less, a color that is not four 0..1 channels) or the key is unknown.
 local function parsedText(key, value)
     local patch = { set = {}, unset = {} }
 
@@ -473,6 +472,8 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         wrapper:Hide()
         menus[#menus + 1] = wrapper
 
+        -- Opens (or closes) the selector menu over the entries; a pick that differs from the current value is passed to
+        -- commit.
         addon:SetUIScript(button, 'OnClick', function()
             if not active() then
                 return

@@ -249,6 +249,7 @@ function addon:InstallRotationMetadata(pane)
     dialog.help:SetSize(20, 20)
     dialog.help.icon:SetSize(16, 16)
 
+    -- Opens the metadata Help window (description and attribution, and what Applies to means).
     addon:SetUIScript(dialog.help, 'OnClick', function()
         if dialog:Valid() and addon.ShowWorkbenchHelp then
             addon:ShowWorkbenchHelp(

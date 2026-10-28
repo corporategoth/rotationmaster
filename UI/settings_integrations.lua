@@ -122,8 +122,7 @@ function addon:BuildIntegrationSettings(p)
     -- Tells whether the catalog allows an addon on this client; an unknown or failed lookup keeps the row visible.
     -- @param id string  The addon id ('!!!LuaWorkbench' for LuaWorkbench).
     -- @return boolean|nil  False only when the catalog says the addon is explicitly unsupported on this client; nil
-    --   when the
-    -- page went stale.
+    --   when the page went stale.
     local function supported(id)
         local success, state = pcall(function()
             local check = self.GetIntegrationClientSupport

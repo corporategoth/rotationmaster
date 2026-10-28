@@ -269,6 +269,8 @@ function addon:CreateWorkbenchSelector()
         self.refreshing = true
         local binding
 
+        -- Retires bound rows outside the visible slice (pinned rows are only hidden), then binds a pooled (or new) row
+        -- to each unbound index in the slice.
         local ok, why = pcall(function()
             local first, last = addon:GetWorkbenchVisibleRowRange(
                 #self.matches,
@@ -372,8 +374,7 @@ function addon:CreateWorkbenchSelector()
     -- @param selected any  The value that is currently selected.
     -- @param changed function  Called as changed(value, text, icon) when an entry is picked.
     -- @param valid function|nil  Called to check the menu is still wanted; when it returns false the menu closes on the
-    --   next
-    -- frame.
+    --   next frame.
     -- @param inline boolean|nil  True hides the search box.
     function menu:Open(anchor, entries, selected, changed, valid, inline)
         if not inline and frame:IsShown() and self.anchor == anchor then

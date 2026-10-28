@@ -339,8 +339,7 @@ function addon:BuildGeneralSettings(p)
 
     -- Returns the skin choices and whether skinning is available.
     -- @return table[]|nil  The choices { value, text }: Masque's list when the Masque option is on and the addon is
-    --   present,
-    -- otherwise the single built-in skin; nil when the page is no longer current.
+    --   present, otherwise the single built-in skin; nil when the page is no longer current.
     -- @return boolean|nil  True when skinning is available (the chooser is disabled otherwise).
     local function skinChoices()
         if not currentSkinPage() then

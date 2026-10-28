@@ -53,7 +53,7 @@ end
 -- conditionSource, condition) and is corrected here when it no longer exists.
 -- @param p table  The settings form pane.
 -- @return any  What the category page or the inline custom condition editor builder returns when it takes over; nothing
--- otherwise.
+--   otherwise.
 function addon:BuildConditionSettings(p)
     local store = p:SettingsData()
 
@@ -944,6 +944,8 @@ function addon:BuildConditionCategorySettings(p)
     end
 
     if group then
+        -- Creates the category's Delete button: after confirmation it removes the category from the profile (its
+        -- conditions stay available under Other) and falls back to the Other category if it was the shown one.
         p.fields.delete_category = self:SettingsTopDelete(p, function()
             self:ConfirmSettingsDeletion(
                 p,

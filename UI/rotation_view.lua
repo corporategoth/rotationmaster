@@ -207,7 +207,7 @@ function addon:InstallRotationView(pane)
 
     -- Wires every view control's click and drag handlers. Palette controls are disabled for read-only rotations.
     -- @param alive function  Says whether the pane's current render is still the live one; handlers do nothing once it
-    -- returns false.
+    --   returns false.
     function pane:BindViewControls(alive)
         for section, button in pairs(self.contentTabs) do
             addon:SetUIScript(button, 'OnClick', function()

@@ -170,10 +170,9 @@ function addon:InstallRotationNavigation(pane)
     -- / Cancel prompt opens instead, and the callback runs only after the draft is applied or discarded.
     -- @param callback function  Called with no arguments once leaving is safe.
     -- @return boolean|nil  True when the callback ran at once; false when a prompt was opened (or the metadata flush
-    -- failed); nil when the pane is released or callback is not a function.
+    --   failed); nil when the pane is released or callback is not a function.
     -- @return string|nil  'rotation-navigation-pending' when a prompt is open; 'invalid-metadata' or
-    --   'rotation-pane-released'
-    -- for the failures; nil when the callback ran.
+    --   'rotation-pane-released' for the failures; nil when the callback ran.
     function pane:RequestLeave(callback)
         if not self.active or type(callback) ~= 'function' then
             return nil, 'rotation-pane-released'

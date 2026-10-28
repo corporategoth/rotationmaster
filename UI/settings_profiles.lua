@@ -314,6 +314,11 @@ function addon:BuildProfileSettings(p)
                         review = {
                             kind = 'profile',
                             maxRows = 400,
+                            -- Decodes pasted text for the import review.
+                            -- @param input string  The pasted export text.
+                            -- @return table|nil  { name, profile } for a valid 'RM-Profile' wrapper; nil when it does
+                            --   not decode or is invalid.
+                            -- @return string|nil  The error text when the first value is nil.
                             parse = function(input)
                                 local decoded, errorText = codec:Decode(input)
                                 local wrapper = decoded and decoded.value
@@ -338,6 +343,12 @@ function addon:BuildProfileSettings(p)
                                 }
                             end,
                             current = function() return selected and { name = selectedName, profile = selected } end,
+                            -- Lists what blocks importing the profile: a failed migration plan or validation, a name
+                            -- already in use (new copy), or a selected profile that changed since the dialog opened
+                            -- (replace).
+                            -- @param entry table  The parsed import { name, profile }.
+                            -- @param dialog table  The transfer dialog.
+                            -- @return string[]  The problem texts; empty when the import can be applied.
                             problems = function(entry, dialog)
                                 local list = {}
                                 local copy = self:CopySettingsData(entry.profile)

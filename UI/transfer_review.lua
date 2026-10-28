@@ -21,10 +21,9 @@ end
 -- you look, so no flow gets stricter.
 -- @param p table  The settings pane that owns the transfer window.
 -- @param review table  The review definition: kind (collection kind for the rows), parse(text) -> candidate or nil and
---   a
--- reason, record(candidate) -> the record shown (default: the candidate), current() -> the record of the entry being
--- replaced, rows (custom rows function), problems(candidate, dialog) and notes(candidate, dialog) -> lists of texts,
--- and maxRows (cap on rows drawn).
+--   a reason, record(candidate) -> the record shown (default: the candidate), current() -> the record of the entry being
+--   replaced, rows (custom rows function), problems(candidate, dialog) and notes(candidate, dialog) -> lists of texts,
+--   and maxRows (cap on rows drawn).
 -- @return function  preview(dialog): opens a comparison (or a single-record view).
 -- @return function  inspect(dialog): shows a problems and notes report.
 --
@@ -67,6 +66,8 @@ function addon:BuildTransferReview(p, review)
         local current = d.mode == 'replace' and d.options.canReplace and review.current and review.current() or nil
         local shown, problem
 
+        -- Opens the comparison window under pcall: against the selected entry when replacing, or a single-record
+        -- preview of the incoming entry.
         local ok, err = pcall(function()
             if current then
                 shown = owner:ShowCollectionComparison(p, review.kind, current, record, {
