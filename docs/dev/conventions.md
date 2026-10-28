@@ -45,9 +45,10 @@ version for something the client can tell you.
 act on it: print one message (`addon:warn(L["..."], ...)`).
 
 **Comments.** Comments say *why*, in full sentences, above the code. Every file starts with a header (purpose, what it
-owns and must not do, what loads it, the dependencies that matter); every function has a comment above it stating what it
-does in terms of inputs and result and the assumption a caller must keep; files longer than about 150 lines have section
-headers. Comment non-obvious client behavior with the evidence (client, date, probe output). Document a trap where it will
+owns and must not do, what loads it, the dependencies that matter); every function has a header above it: a brief line,
+one `@param name type  description` line per parameter and one `@return type  description` line per returned value, then
+the notes a caller must know (`docs/dev/formatting.md`, "Function headers"; `python3 tools/function_comments.py` checks
+it); files longer than about 150 lines have section headers. Comment non-obvious client behavior with the evidence (client, date, probe output). Document a trap where it will
 bite (`-- /rm perf engine standard turns this off.`). No commented-out code, no change-log comments, no TODO that is not
 also in an issue. LuaLS annotations (`---@type fun(f: number|function): table`) are used where the static checker needs
 them; keep them valid. The exact standard, with examples, is `docs/dev/formatting.md`. The text of a Built In helper or

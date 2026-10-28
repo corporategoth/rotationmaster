@@ -870,8 +870,8 @@ local function dispatch(run, self, ...)
     -- The callback the native profiler measures: runs the original once, and only with the arguments it was given.
     -- @param ... any  The arguments the profiler hands over; they must equal the dispatch's own arguments to count as
     --   exact.
-    -- @return string|nil  The marker "RM:runtime" when the original ran; nil when the callback was closed or entered
-    --   again.
+    -- @return string|nil  The marker "RM:runtime" when the original ran; nil when the callback was closed, was entered
+    --   again or the capture is no longer current.
     local function once(...)
         if not open then
             return
