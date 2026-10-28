@@ -4,6 +4,19 @@ local F = {}
 -- Retail and Forever as a client with loadDeprecationFallbacks off (the addon must not rely
 -- on Blizzard's deprecation fallbacks), the Classic families with it on (their default).
 -- options.fallbacks overrides that; options.clientApi=false keeps an unrestricted env.
+-- Loads the English of every catalog into the fixture's locale table the way the whole text used to read: every key an entry,
+-- the keys that are their own English as themselves and the symbolic ones as their English. The files only write what an
+-- English game needs (the symbolic keys); a translation that answers every ID with `true` makes them write the rest, and
+-- a second plain pass puts the symbolic English back over the `true` that stood in for it.
+function F.loadEnglish(load)
+    local files = dofile('tests/fixtures/locale_files.lua')
+    local everything = setmetatable({}, {__index = function() return true end})
+    for _, path in ipairs(files) do
+        load(path, nil, {translation = everything})
+    end
+    for _, path in ipairs(files) do load(path, nil, {}) end
+end
+
 function F.new(product, expansion, class, options)
     -- Some suites pass a fourth positional value F.new never read; only a table is options.
     if type(options) ~= 'table' then options = {} end
@@ -66,15 +79,15 @@ function F.new(product, expansion, class, options)
     }
     env.LibStub = function(name) return assert(libraries[name], 'Unexpected library '..name) end
     function addon:RegisterCondition(tag, definition) self.definitions[tag]=definition end
-    local function load(path)
+    local function load(path, name, namespace)
         local chunk=assert(loadfile(path)); setfenv(chunk, env)
         if path=='Data/plain.lua' then chunk('rotationmaster',addon);return load('Data/rotation_revision.lua') end
-        return chunk('rotationmaster',addon)
+        return chunk(name or 'rotationmaster',namespace or addon)
     end
     dofile('tests/fixtures/native_ui.lua')(env)
     load('Data/export_text.lua')
     load('globals.lua');load('Core/dependency_revisions.lua');load('Core/rotation_active.lua');load('Platform/client.lua');load('Platform/rotation_owner.lua');load('Platform/groups.lua');load('Platform/roster_class.lua');load('Platform/role.lua');load('Platform/mobinfo2.lua');load('Platform/casting.lua');load('Platform/unit_health.lua');load('Platform/unit_stat.lua');load('Platform/health_forecast.lua');load('Platform/unit_level.lua');load('Platform/unit_power.lua');load('Platform/player_movement.lua');load('Platform/unit_attackability.lua');load('Platform/unit_flags.lua');load('Platform/player_flags.lua');load('Platform/form.lua');load('Platform/points.lua');load('Platform/runes.lua');load('Platform/unit_identity.lua');load('Platform/unit_metadata.lua');load('Platform/creature_type.lua');load('Platform/unit_presence.lua');load('Platform/pet.lua');load('Platform/threat.lua');load('Platform/instance.lua');load('Platform/zone_pvp.lua');load('Platform/loss_of_control.lua');load('Platform/items.lua');load('Platform/glyphs.lua');load('Platform/specializations.lua')
-    for _,path in ipairs(dofile('tests/fixtures/locale_files.lua')) do load(path) end; load('constants.lua');load('Data/artwork.lua');load('Data/talent_trees.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Functions/trends.lua');load('Functions/forecast.lua'); load('utils.lua');load('Core/level_conditions.lua');load('Core/point_conditions.lua');load('Core/class_group_conditions.lua');load('Core/creature_conditions.lua');load('Core/health_forecast_conditions.lua');load('Core/threat_count_conditions.lua')
+    F.loadEnglish(load); load('constants.lua');load('Data/artwork.lua');load('Data/talent_trees.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Functions/trends.lua');load('Functions/forecast.lua'); load('utils.lua');load('Core/level_conditions.lua');load('Core/point_conditions.lua');load('Core/class_group_conditions.lua');load('Core/creature_conditions.lua');load('Core/health_forecast_conditions.lua');load('Core/threat_count_conditions.lua')
     load('UI/controls.lua');load('UI/condition_widgets.lua');load('UI/condition_observation.lua');load('UI/condition_icon.lua');load('UI/condition_position.lua');load('UI/condition_display.lua');load('UI/drag_presentation.lua');load('Core/unsaved_changes.lua');load('UI/unsaved.lua');load('UI/settings_draft.lua');load('UI/collection_compare.lua');load('UI/draft_changes.lua');load('UI/draft_change_controls.lua');load('UI/window.lua');load('UI/selector.lua');load('UI/tag_picker.lua');load('UI/checkbox.lua');load('UI/condition_inputs.lua');load('UI/condition_layout.lua');load('UI/condition_table.lua');load('UI/condition_unit.lua');load('Core/item_conditions.lua');load('Core/rotation_references.lua');load('Help/common.lua'); load('Help/conditional.lua'); load('Core/presentation.lua');load('Core/condition_description.lua'); load('Core/spell_catalog.lua');load('Core/spell_search.lua');load('Core/reference_catalog.lua');load('Core/category_data.lua');load('Core/announcement_data.lua');load('Core/profile_data.lua');load('Core/collection_data.lua');load('Core/custom_condition_data.lua');load('Core/functions.lua');load('UI/spell_search.lua');load('UI/spell_icon.lua')
     -- Switches the fixture to a game language the way the client applies one: the language's file hands its ID table to
     -- the catalogs' English files, which run again and write the translations over the English.
