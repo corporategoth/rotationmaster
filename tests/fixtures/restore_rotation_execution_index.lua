@@ -1,7 +1,11 @@
 -- Exact authorized source delta; rejects partial, repeated or unrelated edits.
-local changes={
-['Core/rotation_sequence.lua']={hash='07870379',bytes=2480,patches={
-{old=([====[!local _,addon=...
+local changes = {
+    ['Core/rotation_sequence.lua'] = {
+        hash = '07870379',
+        bytes = 2480,
+        patches = {
+            {
+                old = ([====[!local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -52,7 +56,8 @@ function addon:EvaluateRotationSequence(body,evaluate,visit)
     walk(body.rotation or {})
     return result
 end
-]====]):sub(2),new=([====[!local _,addon=...
+]====]):sub(2),
+                new = ([====[!local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -157,11 +162,18 @@ function addon:BindRotationSequenceReader(bind)
     end
     bind(rawMethod,run)
 end
-]====]):sub(2)},
-}},
-['main.lua']={hash='22faab04',bytes=65177,patches={
-{old=([====[!local getCached
-]====]):sub(2),new=([====[!local getCached
+]====]):sub(2),
+            },
+        },
+    },
+    ['main.lua'] = {
+        hash = '22faab04',
+        bytes = 65177,
+        patches = {
+            {
+                old = ([====[!local getCached
+]====]):sub(2),
+                new = ([====[!local getCached
 local sequenceRawMethod,sequenceRun
 local bindSequence=addon.BindRotationSequenceReader
 if type(bindSequence)=="function" then
@@ -174,11 +186,20 @@ local function evaluateSequence(owner,body,evaluate,visit)
     if sequenceRun then return sequenceRun(owner,before,method,body,evaluate,visit) end
     return method(owner,body,evaluate,visit)
 end
-]====]):sub(2)},
-{old=([====[!local sequence=self:EvaluateRotationSequence(rot,]====]):sub(2),new=([====[!local sequence=evaluateSequence(self,rot,]====]):sub(2)},
-}},
-['Data/plain.lua']={hash='e86f4e25',bytes=3442,patches={
-{old=([====[!function data.CopyData(value)
+]====]):sub(2),
+            },
+            {
+                old = ([====[!local sequence=self:EvaluateRotationSequence(rot,]====]):sub(2),
+                new = ([====[!local sequence=evaluateSequence(self,rot,]====]):sub(2),
+            },
+        },
+    },
+    ['Data/plain.lua'] = {
+        hash = 'e86f4e25',
+        bytes = 3442,
+        patches = {
+            {
+                old = ([====[!function data.CopyData(value)
     local ok, why = data.CheckPortable(value)
     if not ok then return nil, why end
     local copies = {}
@@ -192,7 +213,8 @@ end
     end
     return copy(value)
 end
-]====]):sub(2),new=([====[!function data.CopyData(value)
+]====]):sub(2),
+                new = ([====[!function data.CopyData(value)
     local ok, why = data.CheckPortable(value)
     if not ok then return nil, why end
     local copies = {}
@@ -237,10 +259,16 @@ function addon:BindRotationPortableReader(bind)
     if self~=addon or portableType(bind)~="function" then return end
     bind(portableOwned)
 end
-]====]):sub(2)},
-}},
-['Data/rotation_tree.lua']={hash='0e9aa290',bytes=5155,patches={
-{old=([====[!function data.ReserveRotationIdentities(value,used)
+]====]):sub(2),
+            },
+        },
+    },
+    ['Data/rotation_tree.lua'] = {
+        hash = '0e9aa290',
+        bytes = 5155,
+        patches = {
+            {
+                old = ([====[!function data.ReserveRotationIdentities(value,used)
     local portable,why=data.CheckPortable(value)
     if not portable then return nil,why end
     local function reserve(current)
@@ -251,7 +279,8 @@ end
     end
     reserve(value);return true
 end
-]====]):sub(2),new=([====[!function data.ReserveRotationIdentities(value,used)
+]====]):sub(2),
+                new = ([====[!function data.ReserveRotationIdentities(value,used)
     local portable,why=data.CheckPortable(value)
     if not portable then return nil,why end
     local function reserve(current)
@@ -368,17 +397,31 @@ function addon:BindRotationExecutionIndexReader(bind)
     end
     bind(read,retire)
 end
-]====]):sub(2)},
-}},
+]====]):sub(2),
+            },
+        },
+    },
 }
-return function(text,path)
-    local change=assert(changes[path],"unknown execution source")
-    for _,patch in ipairs(change.patches) do
-        local first,last=text:find(patch.new,1,true)
-        assert(first and not text:find(patch.new,last+1,true),"execution delta missing/repeated: "..path)
-        text=text:sub(1,first-1)..patch.old..text:sub(last+1)
+
+return function(text, path)
+    local change = assert(changes[path], "unknown execution source")
+
+    for _, patch in ipairs(change.patches) do
+        local first, last = text:find(patch.new, 1, true)
+        assert(first and not text:find(patch.new, last + 1, true), "execution delta missing/repeated: " .. path)
+        text = text:sub(1, first - 1) .. patch.old .. text:sub(last + 1)
     end
-    local hash=0;for i=1,#text do hash=(hash*33+text:byte(i))%4294967296 end
-    assert(#text==change.bytes and string.format("%08x",hash)==change.hash,"unrelated execution source delta: "..path)
+
+    local hash = 0
+
+    for i = 1, #text do
+        hash = (hash * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(
+        #text == change.bytes and string.format("%08x", hash) == change.hash,
+        "unrelated execution source delta: " .. path
+    )
+
     return text
 end

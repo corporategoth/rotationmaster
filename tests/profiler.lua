@@ -1,35 +1,72 @@
-local F=dofile('tests/fixtures/addon.lua')
-local test,finish=F.suite()
+local F = dofile('tests/fixtures/addon.lua')
+local test, finish = F.suite()
+
 local function fixture()
-    local f=F.new();local now=0
-    f.env.GetTime=function() return now end
+    local f = F.new()
+    local now = 0
+    f.env.GetTime = function() return now end
     f.load('profiler.lua')
-    return f.addon:ProfiledCode(),function(value) now=value end
+
+    return f.addon:ProfiledCode(), function(value)
+        now = value
+    end
 end
-test('repeated evaluation samples preserve actual minimum maximum count and total',function()
-    local profile,clock=fixture()
-    clock(10);profile:start();clock(10.5);profile:stop()
-    clock(11);profile:start();clock(11.75);profile:stop()
-    clock(12);profile:start();clock(12.25);profile:stop()
-    assert(profile.count==3 and profile.min==.25 and profile.max==.75 and profile.total==1.5)
-    assert(profile:report()=='3 runs (inclusive): total=1500.000 ms, min=250.000 ms, avg=500.000 ms, max=750.000 ms')
+
+test('repeated evaluation samples preserve actual minimum maximum count and total', function()
+    local profile, clock = fixture()
+    clock(10)
+    profile:start()
+    clock(10.5)
+    profile:stop()
+    clock(11)
+    profile:start()
+    clock(11.75)
+    profile:stop()
+    clock(12)
+    profile:start()
+    clock(12.25)
+    profile:stop()
+    assert(profile.count == 3 and profile.min == .25 and profile.max == .75 and profile.total == 1.5)
+    assert(profile:report() == '3 runs (inclusive): total=1500.000 ms, min=250.000 ms, avg=500.000 ms, max=750.000 ms')
 end)
-test('zero duration is a real minimum',function()
-    local profile,clock=fixture()
-    profile:start();profile:stop()
-    clock(1);profile:start();clock(1.5);profile:stop()
-    assert(profile.min==0 and profile.max==.5 and profile.count==2)
+
+test('zero duration is a real minimum', function()
+    local profile, clock = fixture()
+    profile:start()
+    profile:stop()
+    clock(1)
+    profile:start()
+    clock(1.5)
+    profile:stop()
+    assert(profile.min == 0 and profile.max == .5 and profile.count == 2)
 end)
-test('unused children do not break reports and sampled children remain visible until reset',function()
-    local profile,clock=fixture()
-    profile:start();clock(.5);profile:stop()
+
+test('unused children do not break reports and sampled children remain visible until reset', function()
+    local profile, clock = fixture()
+    profile:start()
+    clock(.5)
+    profile:stop()
     profile:child('not observed')
-    assert(profile:report(true)=='1 runs (inclusive): total=500.000 ms, min=500.000 ms, avg=500.000 ms, max=500.000 ms')
-    local child=profile:child('environment')
-    child:start();clock(.75);child:stop()
-    local report=profile:report(true)
-    assert(report:find('environment[1 runs (inclusive): total=250.000 ms, min=250.000 ms, avg=250.000 ms, max=250.000 ms]',1,true))
-    assert(not report:find('not observed',1,true))
-    profile:reset();assert(profile:report(true)==nil and profile.count==0 and next(profile.children)==nil)
+
+    assert(
+        profile:report(true) == '1 runs (inclusive): total=500.000 ms, min=500.000 ms, avg=500.000 ms, max=500.000 ms'
+    )
+
+    local child = profile:child('environment')
+    child:start()
+    clock(.75)
+    child:stop()
+    local report = profile:report(true)
+
+    assert(report:find(
+        'environment[1 runs (inclusive): total=250.000 ms, min=250.000 ms, avg=250.000 ms, max=250.000 ms]',
+        1,
+        true
+    ))
+
+    assert(not report:find('not observed', 1, true))
+    profile:reset()
+    assert(profile:report(true) == nil and profile.count == 0 and next(profile.children) == nil)
 end)
+
 finish()

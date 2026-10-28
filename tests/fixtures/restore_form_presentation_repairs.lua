@@ -1,6 +1,7 @@
 -- Strict test-only inverse of exactly FORM print and widget metadata repairs.
-local old={
-    print='\n'..[=[
+local old = {
+    print = '\n'
+        .. [=[
         local form
         if value.value ~= nil then
             if value.value == 0 then
@@ -13,7 +14,8 @@ local old={
         end
         return string.format(L["you {{!are|are not}} in %s form"], Functions.presentation.nullable(form, L["<form>"]))
     ]=],
-    widget='\n'..[=[
+    widget = '\n'
+        .. [=[
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -79,8 +81,10 @@ local old={
         parent:AddChild(form)
     ]=],
 }
-local repaired={
-    print='\n'..[=[
+
+local repaired = {
+    print = '\n'
+        .. [=[
         local form
         if value.value ~= nil then
             if value.value == 0 then
@@ -95,7 +99,8 @@ local repaired={
         end
         return string.format(L["you {{!are|are not}} in %s form"], Functions.presentation.nullable(form, L["<form>"]))
     ]=],
-    widget='\n'..[=[
+    widget = '\n'
+        .. [=[
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -164,20 +169,26 @@ local repaired={
         parent:AddChild(form)
     ]=],
 }
-local signatures={print='print = function(_, value)',widget='widget = function(parent, spec, value)'}
-local function inverse(text,callback)
-    assert(type(text)=='string','form metadata inverse needs text')
-    if callback~=nil then
-        assert(repaired[callback] and text==repaired[callback],'unexpected FORM callback body')
+
+local signatures = { print = 'print = function(_, value)', widget = 'widget = function(parent, spec, value)' }
+
+local function inverse(text, callback)
+    assert(type(text) == 'string', 'form metadata inverse needs text')
+
+    if callback ~= nil then
+        assert(repaired[callback] and text == repaired[callback], 'unexpected FORM callback body')
         return old[callback]
     end
-    for _,name in ipairs({'print','widget'}) do
-        local from=signatures[name]..repaired[name]..'end,'
-        local to=signatures[name]..old[name]..'end,'
-        local first,last=text:find(from,1,true)
-        assert(first and not text:find(from,last+1,true),'unexpected FORM metadata callback count: '..name)
-        text=text:sub(1,first-1)..to..text:sub(last+1)
+
+    for _, name in ipairs({ 'print', 'widget' }) do
+        local from = signatures[name] .. repaired[name] .. 'end,'
+        local to = signatures[name] .. old[name] .. 'end,'
+        local first, last = text:find(from, 1, true)
+        assert(first and not text:find(from, last + 1, true), 'unexpected FORM metadata callback count: ' .. name)
+        text = text:sub(1, first - 1) .. to .. text:sub(last + 1)
     end
+
     return text
 end
-return inverse,old,repaired
+
+return inverse, old, repaired

@@ -1,7 +1,8 @@
 -- Closed continuation successor to its exact combined predecessor.
-local rows={}
+local rows = {}
+
 do
- local before=([[!local _,addon=...
+    local before = ([[!local _,addon=...
 local data=addon.RotationData
 local isClass=data.IsRotationClassToken
 local components={'body','origin','imported','comparison'}
@@ -683,8 +684,11 @@ do
 end
 -- END CPU RUNTIME WORK HANDOFF
 ]]):sub(2)
- local after=before
- after=after:sub(1,26805)..([[!        -- Configuration was admitted by fullCurrent. Between real callouts,
+
+    local after = before
+
+    after = after:sub(1, 26805)
+        .. ([[!        -- Configuration was admitted by fullCurrent. Between real callouts,
         -- use raw identity/epoch witnesses only; never invoke extension code.
         local function continuationCurrent()
             if readerState~='active' or readEpoch~=epoch or publicationWriteVersion~=writeVersion
@@ -701,13 +705,19 @@ end
             return true
         end
         return fullCurrent,continuationCurrent
-]]):sub(2)..after:sub(26806)
- after=after:sub(1,24392)..([[!        local function fullCurrent()
-]]):sub(2)..after:sub(24419)
- rows["Data/rotation_store.lua"]={before=before,after=after}
+]]):sub(2)
+        .. after:sub(26806)
+
+    after = after:sub(1, 24392)
+        .. ([[!        local function fullCurrent()
+]]):sub(2)
+        .. after:sub(24419)
+
+    rows["Data/rotation_store.lua"] = { before = before, after = after }
 end
+
 do
- local before=([[!local addon_name,addon=...
+    local before = ([[!local addon_name,addon=...
 local data=addon.RotationData
 local ownedStoreFactory,ownedStoreEnvironment
 local bindOwnedStoreFactory=data.BindOwnedRotationStoreFactory
@@ -1749,10 +1759,16 @@ function addon:BindScopedActiveRuntimePlan(receiver)
     end,readActiveRuntime)
 end
 ]]):sub(2)
- local after=before
- after=after:sub(1,69965)..([[!        return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,conditionCurrent=conditionCurrent,authority=authority}
-]]):sub(2)..after:sub(70100)
- after=after:sub(1,69337)..([[!        local function conditionCurrent(value)
+
+    local after = before
+
+    after = after:sub(1, 69965)
+        .. ([[!        return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,conditionCurrent=conditionCurrent,authority=authority}
+]]):sub(2)
+        .. after:sub(70100)
+
+    after = after:sub(1, 69337)
+        .. ([[!        local function conditionCurrent(value)
             if not value or value.version~=contextVersion or not alive or current~=coordinator
                 or rawget(profile,'rotationStore')~=state or rawget(profile,'rotationFallbackID')~=fallbackID
                 or exposure~=exposureVersion or exposed[selected.body] or asset.borrowed or not planDataCurrent(owner) then return false end
@@ -1765,15 +1781,21 @@ end
             local libraryGeneration,libraryVersion=readLibraryRuntime()
             return bindIdentity(libraryGeneration,generation) and libraryVersion==definitionVersion and storeContinuation()==true
         end
-]]):sub(2)..after:sub(69338)
- after=after:sub(1,65803)..([[!        local guard,storeContinuation
+]]):sub(2)
+        .. after:sub(69338)
+
+    after = after:sub(1, 65803)
+        .. ([[!        local guard,storeContinuation
         if ownedPublicationGuard then guard,storeContinuation=ownedPublicationGuard(reader,seal,contextValue) end
         if not guard or not storeContinuation or guard()~=true then return end
-]]):sub(2)..after:sub(65952)
- rows["Core/rotation_scope.lua"]={before=before,after=after}
+]]):sub(2)
+        .. after:sub(65952)
+
+    rows["Core/rotation_scope.lua"] = { before = before, after = after }
 end
+
 do
- local before=([[!local _,addon=...
+    local before = ([[!local _,addon=...
 local kind,raw,identity=type,rawget,rawequal
 ---@type fun(f: number|function): table
 local environment=getfenv
@@ -1855,16 +1877,22 @@ function addon:GetActiveRuntimePlanDiagnostic()
     return {plansBuilt=plansBuilt,reused=reused,declined=declined,currentRoute=currentRoute}
 end
 ]]):sub(2)
- local after=before
- after=after:sub(1,4294)..([[!    local function conditionCurrent()
+
+    local after = before
+
+    after = after:sub(1, 4294)
+        .. ([[!    local function conditionCurrent()
         return identity(request,ticket) and identity(plan,selected) and consumers(owner) and selected.conditionCurrent(state)
     end
     return state.allowed and selected.body or nil,current,selected.token,true,selected.presentation,conditionCurrent
-]]):sub(2)..after:sub(4395)
- rows["Core/active_runtime_plan.lua"]={before=before,after=after}
+]]):sub(2)
+        .. after:sub(4395)
+
+    rows["Core/active_runtime_plan.lua"] = { before = before, after = after }
 end
+
 do
- local before=([[!local _,addon=...
+    local before = ([[!local _,addon=...
 local observed,stamp
 local dependencyReader
 local bindDependency=addon.BindRotationDependencyReader
@@ -2137,21 +2165,42 @@ do
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
 ]]):sub(2)
- local after=before
- after=after:sub(1,12435)..([[!    if continuation~=true and (not proofPlain(conditions) or not proofPlain(shared) or not proofPlain(personal) or not proofPlain(effects)) then return end
-]]):sub(2)..after:sub(12567)
- after=after:sub(1,11880)..([[!        or proofGetfenv(ownedValidationStamp)~=proofEnvironment or proofGetfenv(ownedDisabledDependency)~=proofEnvironment) then return end
-]]):sub(2)..after:sub(12020)
- after=after:sub(1,11442)..([[!runtimeAuthority=function(owner,continuation)
+
+    local after = before
+
+    after = after:sub(1, 12435)
+        .. ([[!    if continuation~=true and (not proofPlain(conditions) or not proofPlain(shared) or not proofPlain(personal) or not proofPlain(effects)) then return end
+]]):sub(2)
+        .. after:sub(12567)
+
+    after = after:sub(1, 11880)
+        .. ([[!        or proofGetfenv(ownedValidationStamp)~=proofEnvironment or proofGetfenv(ownedDisabledDependency)~=proofEnvironment) then return end
+]]):sub(2)
+        .. after:sub(12020)
+
+    after = after:sub(1, 11442)
+        .. ([[!runtimeAuthority=function(owner,continuation)
     if not dependencyReader or not dependencyIdentity(owner,addon) then return end
     if continuation~=true and (proofRawget(owner,'GetRotationValidationOptions')~=ownedOptions
-]]):sub(2)..after:sub(11618)
- rows["Core/rotation_references.lua"]={before=before,after=after}
+]]):sub(2)
+        .. after:sub(11618)
+
+    rows["Core/rotation_references.lua"] = { before = before, after = after }
 end
-return function(text,path,mode)
- if mode==nil then text=dofile('tests/fixtures/restore_execution_generation.lua')(text,path)end
- local row=rows[path];assert(row,"unknown continuation source path")
- if mode=="before"then assert(text==nil);return row.before end
- assert(mode==nil and text==row.after,"unrelated continuation source change: "..path)
- return row.before
+
+return function(text, path, mode)
+    if mode == nil then
+        text = dofile('tests/fixtures/restore_execution_generation.lua')(text, path)
+    end
+
+    local row = rows[path]
+    assert(row, "unknown continuation source path")
+
+    if mode == "before" then
+        assert(text == nil)
+        return row.before
+    end
+
+    assert(mode == nil and text == row.after, "unrelated continuation source change: " .. path)
+    return row.before
 end

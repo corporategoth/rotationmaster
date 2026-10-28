@@ -1,39 +1,64 @@
 -- Exact event-context stage inverse before historical complete-source proofs.
-local rows={
-['Core/rotation_scope.lua']={bytes=63157,hash='0473c689',oldBytes=60973,oldHash='af6f6739',changes={{current=[====[
+local rows = {
+    ['Core/rotation_scope.lua'] = {
+        bytes = 63157,
+        hash = '0473c689',
+        oldBytes = 60973,
+        oldHash = 'af6f6739',
+        changes = {
+            {
+                current = [====[
 local libraryReader,libraryGenerationProof,libraryContextProof,libraryRuntimeContextGuard
 local evaluationRequest,contextVersion
 contextVersion={}
 local ownedRuntimePasses=setmetatable({},{__mode="kv"})
-]====],previous=[====[
+]====],
+                previous = [====[
 local libraryReader,libraryGenerationProof,libraryContextProof
-]====]},
-{current=[====[
+]====],
+            },
+            {
+                current = [====[
     bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard) libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
-]====],previous=[====[
+]====],
+                previous = [====[
     bindLibrary(addon,function(reader,proof,contextProof) libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
-]====]},
-{current=[====[
+]====],
+            },
+            {
+                current = [====[
         local request=evaluationRequest;evaluationRequest=nil
         local version=contextVersion
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
         local observedPrivate,observedMethod
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
             if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then observedPrivate,observedMethod=true,method;return value end
             observedPrivate=false
-]====],previous=[====[
+]====],
+                previous = [====[
             if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then return value end
-]====]},
-{current=[====[
+]====],
+            },
+            {
+                current = [====[
         local contextGuard=request and observedPrivate and libraryRuntimeContextGuard
             and libraryRuntimeContextGuard(observedContext,observedMethod,eligibilityContext,rotationContext)
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
             if request and version~=contextVersion then return nil,'rotation-context-changed' end
             if contextGuard then
                 local unchanged=contextGuard()
@@ -42,14 +67,20 @@ local libraryReader,libraryGenerationProof,libraryContextProof
                 if unchanged==nil then contextGuard=nil end
             end
             if not contextGuard and not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
-]====],previous=[====[
+]====],
+                previous = [====[
             if not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
-]====]},
-{current=[====[
+]====],
+            },
+            {
+                current = [====[
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
 
 
 local ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
@@ -71,17 +102,34 @@ function addon:BindRuntimeEvaluationContext(bind)
     end,function() contextVersion={} end)
     return true
 end
-]====],previous=[====[
-]====]}}},
-['Core/rotation_library.lua']={bytes=44694,hash='858703e0',oldBytes=41871,oldHash='5dd9f2e4',changes={{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+        },
+    },
+    ['Core/rotation_library.lua'] = {
+        bytes = 44694,
+        hash = '858703e0',
+        oldBytes = 41871,
+        oldHash = '5dd9f2e4',
+        changes = {
+            {
+                current = [====[
 local ownedReadValue=addon.Platform.CanReadValue
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
 local contextPairs=pairs
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
 -- Uncovered vehicle/pet-battle notifications retain fresh observation at every
 -- publication boundary, even when the other owned eligibility facts are reused.
 local function runtimeActionContext(owner)
@@ -97,9 +145,12 @@ local function runtimeActionContext(owner)
     if C_PetBattles and read(C_PetBattles.IsInBattle) then result="petbattle" end
     return result
 end
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
     end
     local function runtimeContextGuard(value,method,projection,dispatch)
         local platform=owner.Platform
@@ -125,29 +176,49 @@ end
                 or contextRawget(contextEnvironment,'pairs')~=contextPairs then return nil end
             return runtimeActionContext(owner)==value.actionContext
         end
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
     bind(reader,provesGeneration,ownsPrivateContext,runtimeContextGuard);return true
-]====],previous=[====[
+]====],
+                previous = [====[
     bind(reader,provesGeneration,ownsPrivateContext);return true
-]====]}}},
-['main.lua']={bytes=85546,hash='d64c4f0b',oldBytes=84322,oldHash='6c5a80f6',changes={{current=[====[
+]====],
+            },
+        },
+    },
+    ['main.lua'] = {
+        bytes = 85546,
+        hash = 'd64c4f0b',
+        oldBytes = 84322,
+        oldHash = '6c5a80f6',
+        changes = {
+            {
+                current = [====[
 local acquireEvaluationPass,invalidateEvaluationContext
 local bindEvaluationContext=addon.BindRuntimeEvaluationContext
 if type(bindEvaluationContext)=='function' then
     bindEvaluationContext(addon,function(acquire,invalidate) acquireEvaluationPass,invalidateEvaluationContext=acquire,invalidate end)
     addon.BindRuntimeEvaluationContext=nil
 end
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
             if acquireEvaluationPass then runtimePass=acquireEvaluationPass(self,selectedSpec)
             else runtimePass=self:AcquireRotationRuntimePass(selectedSpec) end
-]====],previous=[====[
+]====],
+                previous = [====[
             runtimePass=self:AcquireRotationRuntimePass(selectedSpec)
-]====]},
-{current=[====[
+]====],
+            },
+            {
+                current = [====[
 -- These notifications may change eligibility facts or their readability. Other
 -- event handlers do not invalidate a snapshot of player/session eligibility.
 local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING_WORLD=true,PLAYER_LEAVING_WORLD=true,
@@ -155,20 +226,59 @@ local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING
     CHARACTER_POINTS_CHANGED=true,SPELLS_CHANGED=true,PLAYER_CONTROL_GAINED=true,PLAYER_CONTROL_LOST=true,
     UPDATE_SHAPESHIFT_FORM=true,VEHICLE_UPDATE=true,UNIT_ENTERED_VEHICLE=true,UNIT_EXITED_VEHICLE=true,
     PLAYER_REGEN_ENABLED=true,PLAYER_REGEN_DISABLED=true}
-]====],previous=[====[
-]====]},
-{current=[====[
+]====],
+                previous = [====[
+]====],
+            },
+            {
+                current = [====[
         if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
-]====],previous=[====[
-]====]}}}}
-local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-return function(text,path)
- if path=='Core/rotation_library.lua'and text:find('local invalidateChoiceContext',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
- if path=='main.lua'and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF',1,true)then text=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text,path)end
- text=dofile('tests/fixtures/restore_runtime_publication_store.lua')(text,path)
- if path=='main.lua'and text:find('local function registerOptionalEvent(owner,change,event)',1,true)then text=dofile('tests/fixtures/restore_event_registration.lua')(text,path)end
- local r=rows[path];if not r then return text end
- assert(#text==r.bytes and hash(text)==r.hash,'unrelated event-context source: '..path)
- for _,c in ipairs(r.changes)do local a,b=text:find(c.current,1,true);assert(a and not text:find(c.current,b+1,true),'event inverse anchor: '..path);text=text:sub(1,a-1)..c.previous..text:sub(b+1)end
- assert(#text==r.oldBytes and hash(text)==r.oldHash,'event inverse predecessor: '..path);return text
+]====],
+                previous = [====[
+]====],
+            },
+        },
+    },
+}
+
+local function hash(s)
+    local n = 5381
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+return function(text, path)
+    if path == 'Core/rotation_library.lua' and text:find('local invalidateChoiceContext', 1, true) then
+        text = dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text, path)
+    end
+    if path == 'main.lua' and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF', 1, true) then
+        text = dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text, path)
+    end
+
+    text = dofile('tests/fixtures/restore_runtime_publication_store.lua')(text, path)
+
+    if path == 'main.lua' and text:find('local function registerOptionalEvent(owner,change,event)', 1, true) then
+        text = dofile('tests/fixtures/restore_event_registration.lua')(text, path)
+    end
+
+    local r = rows[path]
+
+    if not r then
+        return text
+    end
+
+    assert(#text == r.bytes and hash(text) == r.hash, 'unrelated event-context source: ' .. path)
+
+    for _, c in ipairs(r.changes) do
+        local a, b = text:find(c.current, 1, true)
+        assert(a and not text:find(c.current, b + 1, true), 'event inverse anchor: ' .. path)
+        text = text:sub(1, a - 1) .. c.previous .. text:sub(b + 1)
+    end
+
+    assert(#text == r.oldBytes and hash(text) == r.oldHash, 'event inverse predecessor: ' .. path)
+    return text
 end

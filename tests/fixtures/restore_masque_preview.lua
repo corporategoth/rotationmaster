@@ -1,7 +1,9 @@
 -- Strict additive Masque inverse. The complete pre-feature bytes and the
 -- complete reconstructed successor are checked before older frozen proofs.
-local records={}
-records["UI/settings_integrations.lua"]={old=[====[
+local records = {}
+
+records["UI/settings_integrations.lua"] = {
+    old = [====[
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function disabled(profile,id)
@@ -263,8 +265,12 @@ function addon:BuildIntegrationSettings(p)
         end)
     end end
 end
-]====],changes={
-{10914,10913,[====[
+]====],
+    changes = {
+        {
+            10914,
+            10913,
+            [====[
 local masqueAllowed=supported('Masque');if not current()then return end
     if masqueAllowed then
         local entry=metadata.Masque or{id='Masque',name=L['Masque'],state='missing'}
@@ -281,9 +287,13 @@ local masqueAllowed=supported('Masque');if not current()then return end
         end
         groups[#groups+1]={key='integrations_preview',title=L['Preview appearance'],rows={row}}
     end
-    ]====]},
-}}
-records["Core/profile_data.lua"]={old=[====[
+    ]====],
+        },
+    },
+}
+
+records["Core/profile_data.lua"] = {
+    old = [====[
 local _,addon=...
 local scalar={rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}
 local function dense(value,validate)
@@ -440,11 +450,19 @@ function addon:ProfileFromPortable(profile,options)
     if copy.rotationLibrary~=nil then if type(copy.rotationLibrary)~='table' then return nil end;for _,key in ipairs({'origins','comparisons','imports'}) do if copy.rotationLibrary[key]~=nil then copy.rotationLibrary[key]=decode(copy.rotationLibrary[key]);if not copy.rotationLibrary[key] then return nil end end end end
     return copy
 end
-]====],changes={
-{157,156,[====[
-='boolean',preview_masque]====]},
-}}
-records["UI/settings_collections.lua"]={old=[====[
+]====],
+    changes = {
+        {
+            157,
+            156,
+            [====[
+='boolean',preview_masque]====],
+        },
+    },
+}
+
+records["UI/settings_collections.lua"] = {
+    old = [====[
 local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
@@ -527,22 +545,43 @@ function addon:DeleteSavedCustomCondition(key)
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return true
 end
-]====],changes={
-{2593,2592,[====[
-','preview_masque]====]},
-}}
-for _,record in pairs(records)do
- local source=record.old
- for _,change in ipairs(record.changes)do source=source:sub(1,change[1]-1)..change[3]..source:sub(change[2]+1)end
- record.new=source;record.changes=nil
+]====],
+    changes = {
+        {
+            2593,
+            2592,
+            [====[
+','preview_masque]====],
+        },
+    },
+}
+
+for _, record in pairs(records) do
+    local source = record.old
+
+    for _, change in ipairs(record.changes) do
+        source = source:sub(1, change[1] - 1) .. change[3] .. source:sub(change[2] + 1)
+    end
+
+    record.new = source
+    record.changes = nil
 end
-return function(path,source)
- source=dofile('tests/fixtures/restore_catalog_cleanup.lua')(source,path)
- source=dofile('tests/fixtures/restore_bossmod_integration.lua')(source,path)
- if path=='Core/profile_data.lua'and source:find('local function validRotationChoices',1,true)then source=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(source,path)end
- source=dofile('tests/fixtures/restore_general_preview.lua')(path,source)
- local record=records[path]
- if not record or source==record.old then return source end
- assert(source==record.new,'Masque inverse requires exact complete successor: '..path)
- return record.old
+
+return function(path, source)
+    source = dofile('tests/fixtures/restore_catalog_cleanup.lua')(source, path)
+    source = dofile('tests/fixtures/restore_bossmod_integration.lua')(source, path)
+
+    if path == 'Core/profile_data.lua' and source:find('local function validRotationChoices', 1, true) then
+        source = dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(source, path)
+    end
+
+    source = dofile('tests/fixtures/restore_general_preview.lua')(path, source)
+    local record = records[path]
+
+    if not record or source == record.old then
+        return source
+    end
+
+    assert(source == record.new, 'Masque inverse requires exact complete successor: ' .. path)
+    return record.old
 end

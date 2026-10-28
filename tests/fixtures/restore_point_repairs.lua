@@ -1,5 +1,5 @@
 -- Exact test-only inverse for the one POINT evaluator; no runtime source rewrites.
-local original=[=[    evaluate = function(value, cache)
+local original = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local class
         if value.unit == "player" then
@@ -20,7 +20,8 @@ local original=[=[    evaluate = function(value, cache)
             return false
         end
     end,]=]
-local repaired=[=[    evaluate = function(value, cache)
+
+local repaired = [=[    evaluate = function(value, cache)
         local point,reason=addon:GetConditionPointResource(value.unit,cache)
         if point==nil then return nil,reason end
         if point==false then return false end
@@ -36,15 +37,17 @@ local repaired=[=[    evaluate = function(value, cache)
             return Functions.values.compare(value.operator, cur, value.value)
         end
     end,]=]
-return function(text,callback)
+
+return function(text, callback)
     if callback then
-        text=dofile('tests/fixtures/restore_point_tbc_transport.lua')(text,'POINT',true)
-        local before=assert(repaired:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
-        local after=assert(original:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
-        assert(text==before,'unexpected repaired POINT callback bytes')
+        text = dofile('tests/fixtures/restore_point_tbc_transport.lua')(text, 'POINT', true)
+        local before = assert(repaired:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+        local after = assert(original:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+        assert(text == before, 'unexpected repaired POINT callback bytes')
         return after
     end
-    local first=assert(text:find(repaired,1,true),'exact repaired POINT missing')
-    assert(not text:find(repaired,first+1,true),'multiple repaired POINT bodies')
-    return text:sub(1,first-1)..original..text:sub(first+#repaired)
+
+    local first = assert(text:find(repaired, 1, true), 'exact repaired POINT missing')
+    assert(not text:find(repaired, first + 1, true), 'multiple repaired POINT bodies')
+    return text:sub(1, first - 1) .. original .. text:sub(first + #repaired)
 end

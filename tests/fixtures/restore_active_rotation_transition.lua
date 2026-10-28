@@ -1,7 +1,8 @@
 -- Exact full-module inverse for the active transition unit.
 -- Baseline: 9af1ad9 plus the frozen combined revision overlay.
-local rows={
- ['main.lua']={old=[====[local addon_name, addon = ...
+local rows = {
+    ['main.lua'] = {
+        old = [====[local addon_name, addon = ...
 -- SavedVariables identity must match the TOC, independent of folder casing.
 addon.savedVariableName = "RotationMasterDB"
 local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
@@ -1708,7 +1709,8 @@ addon.ITEM_DATA_LOAD_RESULT = wrapEvent(function(_, _, itemId, success)
         addon:UpdateReferenceItem(itemId)
     end
 end)
-]====],new=[====[local addon_name, addon = ...
+]====],
+        new = [====[local addon_name, addon = ...
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
 local advanceActiveSpec=addon.AdvanceActiveRotationSpecialization
@@ -3566,8 +3568,10 @@ addon.ITEM_DATA_LOAD_RESULT = wrapEvent(function(_, _, itemId, success)
         addon:UpdateReferenceItem(itemId)
     end
 end)
-]====]},
- ['Core/rotation_lifecycle.lua']={old=[====[local addon_name,addon=...
+]====],
+    },
+    ['Core/rotation_lifecycle.lua'] = {
+        old = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
@@ -3622,7 +3626,8 @@ function addon:InstallRotationProfileLifecycle()
     self.rotationProfileLifecycleOwner=owner
     self.rotationProfileLifecycleInstalled=true
 end
-]====],new=[====[local addon_name,addon=...
+]====],
+        new = [====[local addon_name,addon=...
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
 local retireActive=addon.RetireActiveRotationTransition
@@ -3710,8 +3715,10 @@ function addon:InstallRotationProfileLifecycle()
     self.rotationProfileLifecycleOwner=owner
     self.rotationProfileLifecycleInstalled=true
 end
-]====]},
- ['Core/rotation_library.lua']={old=[====[local addon_name, addon = ...
+]====],
+    },
+    ['Core/rotation_library.lua'] = {
+        old = [====[local addon_name, addon = ...
 local data = addon.RotationData
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
@@ -4369,7 +4376,8 @@ do
  if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====],new=[====[local addon_name, addon = ...
+]====],
+        new = [====[local addon_name, addon = ...
 local data = addon.RotationData
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
@@ -5055,8 +5063,10 @@ do
  if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====]},
- ['Core/rotation_scope.lua']={old=[====[local addon_name,addon=...
+]====],
+    },
+    ['Core/rotation_scope.lua'] = {
+        old = [====[local addon_name,addon=...
 local data=addon.RotationData
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof
@@ -5769,7 +5779,8 @@ do
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====],new=[====[local addon_name,addon=...
+]====],
+        new = [====[local addon_name,addon=...
 local data=addon.RotationData
 local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
@@ -6586,8 +6597,10 @@ do
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====]},
- ['Core/rotation_editor.lua']={old=[====[local _,addon=...
+]====],
+    },
+    ['Core/rotation_editor.lua'] = {
+        old = [====[local _,addon=...
 local data=addon.RotationData
 
 local function equal(left,right)
@@ -6745,7 +6758,8 @@ function addon:NewRotationEditSession(spec,original,options)
     end
     return session
 end
-]====],new=[====[local _,addon=...
+]====],
+        new = [====[local _,addon=...
 local data=addon.RotationData
 local prepareActivePublication,finishActivePublication
 if type(addon.BindActiveRotationPublication)=='function' then
@@ -6911,8 +6925,10 @@ function addon:NewRotationEditSession(spec,original,options)
     end
     return session
 end
-]====]},
- ['Core/imports.lua']={old=[====[local _,addon=...
+]====],
+    },
+    ['Core/imports.lua'] = {
+        old = [====[local _,addon=...
 local data=addon.RotationData
 local function plain(value) return type(value)=="table" and getmetatable(value)==nil end
 local function settings(self)
@@ -7096,7 +7112,8 @@ function addon:GetRotationExportData(spec,id)
     if reason~="not-imported" then return nil,reason end
     return data.CopyData(self:GetEditableRotation(spec,id))
 end
-]====],new=[====[local _,addon=...
+]====],
+        new = [====[local _,addon=...
 local data=addon.RotationData
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
@@ -7332,8 +7349,10 @@ function addon:GetRotationExportData(spec,id)
     if reason~="not-imported" then return nil,reason end
     return data.CopyData(self:GetEditableRotation(spec,id))
 end
-]====]},
- ['Core/rotation_migration.lua']={old=[====[local _,addon=...
+]====],
+    },
+    ['Core/rotation_migration.lua'] = {
+        old = [====[local _,addon=...
 local data=addon.RotationData
 local migrations,adoptions=setmetatable({},{__mode='k'}),setmetatable({},{__mode='k'})
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
@@ -7499,7 +7518,8 @@ function addon:ApplyRotationAdoption(public)
     local bound,bindReason=self:BindRotationProfile();if not bound then return nil,bindReason end
     return true,clone(plan.reference)
 end
-]====],new=[====[local _,addon=...
+]====],
+        new = [====[local _,addon=...
 local data=addon.RotationData
 local prepareRootRebind,runRootRebind
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
@@ -7688,8 +7708,10 @@ function addon:ApplyRotationAdoption(public)
     if not bound then return nil,bindReason end
     return true,clone(plan.reference)
 end
-]====]},
- ['UI/rotation_editor.lua']={old=[====[local addon_name,addon=...
+]====],
+    },
+    ['UI/rotation_editor.lua'] = {
+        old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local data=addon.RotationData
 local function text(parent,font)
@@ -7997,7 +8019,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
     return pane:Open(spec,id,onSelect)
 end
-]====],new=[====[local addon_name,addon=...
+]====],
+        new = [====[local addon_name,addon=...
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
@@ -8347,8 +8370,10 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
     return pane:Open(spec,id,onSelect)
 end
-]====]},
- ['tests/fixtures/addon.lua']={old=[======[-- Explicit external boundaries; production constants/utilities/help stay real.
+]====],
+    },
+    ['tests/fixtures/addon.lua'] = {
+        old = [======[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -8428,7 +8453,8 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]======],new=[======[-- Explicit external boundaries; production constants/utilities/help stay real.
+]======],
+        new = [======[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -8508,15 +8534,26 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]======]},
-
+]======],
+    },
 }
-return function(text,path)
- text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
- if path=='Core/rotation_scope.lua'and text:find('local prepareChoicePublication',1,true)or path=='Core/rotation_library.lua'and text:find('local invalidateChoiceContext',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
- if path=='Core/rotation_lifecycle.lua' then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end
- if path=='main.lua' then text=dofile('tests/fixtures/restore_cpu_work_views.lua')(text,path) end
- local row=assert(rows[path],'unknown active-transition inverse path')
- assert(text==row.new,'active-transition source differs: '..path)
- return row.old
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_workbench_resize.lua')(text, path)
+
+    if path == 'Core/rotation_scope.lua' and text:find('local prepareChoicePublication', 1, true) or path
+        == 'Core/rotation_library.lua'
+        and text:find('local invalidateChoiceContext', 1, true) then
+        text = dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text, path)
+    end
+    if path == 'Core/rotation_lifecycle.lua' then
+        text = dofile('tests/fixtures/restore_questie_wiring.lua')(text, path)
+    end
+    if path == 'main.lua' then
+        text = dofile('tests/fixtures/restore_cpu_work_views.lua')(text, path)
+    end
+
+    local row = assert(rows[path], 'unknown active-transition inverse path')
+    assert(text == row.new, 'active-transition source differs: ' .. path)
+    return row.old
 end

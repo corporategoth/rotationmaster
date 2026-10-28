@@ -1,6 +1,7 @@
 -- Strict inverses of the TIME evaluators from8d6efc0, including completed COUNT fixes.
-local old={
- SPELL_HISTORY_TIME=' -- Cooldown until the spell is available\n'..[=[
+local old = {
+    SPELL_HISTORY_TIME = ' -- Cooldown until the spell is available\n'
+        .. [=[
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
@@ -8,7 +9,8 @@ local old={
         end
         return false
     ]=],
- PETSPELL_HISTORY_TIME=' -- Cooldown until the spell is available\n'..[=[
+    PETSPELL_HISTORY_TIME = ' -- Cooldown until the spell is available\n'
+        .. [=[
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         local known, knownReason = Functions.cache.getCached(cache, addon.Platform.IsSpellKnown, addon.Platform, spellid, true)
@@ -20,8 +22,10 @@ local old={
         return false
     ]=],
 }
-local repaired={
- SPELL_HISTORY_TIME=' -- Cooldown until the spell is available\n'..[=[
+
+local repaired = {
+    SPELL_HISTORY_TIME = ' -- Cooldown until the spell is available\n'
+        .. [=[
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
@@ -30,7 +34,8 @@ local repaired={
         end
         return false
     ]=],
- PETSPELL_HISTORY_TIME=' -- Cooldown until the spell is available\n'..[=[
+    PETSPELL_HISTORY_TIME = ' -- Cooldown until the spell is available\n'
+        .. [=[
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         local known, knownReason = Functions.cache.getCached(cache, addon.Platform.IsSpellKnown, addon.Platform, spellid, true)
@@ -43,15 +48,37 @@ local repaired={
         return false
     ]=],
 }
-local signatures={SPELL_HISTORY_TIME='evaluate = function(value, _, evalStart)',PETSPELL_HISTORY_TIME='evaluate = function(value, cache, evalStart)'}
-local paths={['Conditions/spell.lua']='SPELL_HISTORY_TIME',['Conditions/petspell.lua']='PETSPELL_HISTORY_TIME'}
-local function inverse(text,tag,callback)
- assert(type(text)=='string','spell time inverse requires text');tag=paths[tag] or tag
- if callback then assert(repaired[tag] and text==repaired[tag],'unexpected spell time evaluate body');return old[tag] end
- if not tag then for name,body in pairs(repaired)do if text:find(signatures[name]..body..'end,',1,true)then assert(not tag,'ambiguous time module');tag=name end end end
- assert(repaired[tag],'unknown or missing time module')
- local from,to=signatures[tag]..repaired[tag]..'end,',signatures[tag]..old[tag]..'end,'
- local first,last=text:find(from,1,true);assert(first and not text:find(from,last+1,true),'missing or duplicate spell time evaluate')
- return text:sub(1,first-1)..to..text:sub(last+1)
+
+local signatures = {
+    SPELL_HISTORY_TIME = 'evaluate = function(value, _, evalStart)',
+    PETSPELL_HISTORY_TIME = 'evaluate = function(value, cache, evalStart)',
+}
+
+local paths = { ['Conditions/spell.lua'] = 'SPELL_HISTORY_TIME', ['Conditions/petspell.lua'] = 'PETSPELL_HISTORY_TIME' }
+
+local function inverse(text, tag, callback)
+    assert(type(text) == 'string', 'spell time inverse requires text')
+    tag = paths[tag] or tag
+
+    if callback then
+        assert(repaired[tag] and text == repaired[tag], 'unexpected spell time evaluate body')
+        return old[tag]
+    end
+
+    if not tag then
+        for name, body in pairs(repaired) do
+            if text:find(signatures[name] .. body .. 'end,', 1, true) then
+                assert(not tag, 'ambiguous time module')
+                tag = name
+            end
+        end
+    end
+
+    assert(repaired[tag], 'unknown or missing time module')
+    local from, to = signatures[tag] .. repaired[tag] .. 'end,', signatures[tag] .. old[tag] .. 'end,'
+    local first, last = text:find(from, 1, true)
+    assert(first and not text:find(from, last + 1, true), 'missing or duplicate spell time evaluate')
+    return text:sub(1, first - 1) .. to .. text:sub(last + 1)
 end
-return inverse,old,repaired
+
+return inverse, old, repaired

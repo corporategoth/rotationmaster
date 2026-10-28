@@ -1,6 +1,8 @@
 -- Exact whole-module inverse for relocating top-level tab Help into the active pane.
-local rows={}
-rows["UI/config.lua"]={before=[====[local addon_name,addon=...
+local rows = {}
+
+rows["UI/config.lua"] = {
+    before = [====[local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local sections={
     {value="Rotations",text=L["Rotations"]},{value="General",text=L["General"]},
@@ -319,7 +321,8 @@ function addon:ShowConfig(...)
     local function result(ok,...) if ok then return ... end end
     return result(self.Diagnostics:Call({module='ui',operation='open-config'},showConfig,self,...))
 end
-]====],after=[====[local addon_name,addon=...
+]====],
+    after = [====[local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local sections={
     {value="Rotations",text=L["Rotations"]},{value="General",text=L["General"]},
@@ -658,8 +661,11 @@ function addon:ShowConfig(...)
     local function result(ok,...) if ok then return ... end end
     return result(self.Diagnostics:Call({module='ui',operation='open-config'},showConfig,self,...))
 end
-]====]}
-rows["Locales/enUS.lua"]={before=[====[local addon_name = ...
+]====],
+}
+
+rows["Locales/enUS.lua"] = {
+    before = [====[local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
@@ -4001,7 +4007,8 @@ L["Wrap text at whitespace boundaries near a target column count. Long words are
 L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
 L["noheals selects damage only; nodmg selects healing only; other readable values select both."] = true
 -- END GENERATED RM PUBLIC HELPER DOCS
-]====],after=[====[local addon_name = ...
+]====],
+    after = [====[local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
@@ -7343,17 +7350,33 @@ L["Wrap text at whitespace boundaries near a target column count. Long words are
 L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
 L["noheals selects damage only; nodmg selects healing only; other readable values select both."] = true
 -- END GENERATED RM PUBLIC HELPER DOCS
-]====]}
-return function(text,path)
- local row=assert(rows[path],'unexpected top-tab Help inverse path')
- if path=='UI/config.lua' and text~=row.after and text~=row.before then
-  local function once(from,to)
-   local first,last=text:find(from,1,true);assert(first and not text:find(from,last+1,true),'pane anchor inverse drift')
-   text=text:sub(1,first-1)..to..text:sub(last+1)
-  end
-  once('paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))','paneHeader:SetSize(math.max(1,width-24),self.paneHeaderHeight or 24)')
-  once('content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))','content:SetPoint("TOPLEFT",paneHeader,"BOTTOMLEFT",0,0)')
- end
- if text==row.after or text==row.before then return row.before end
- error('unrelated whole top-tab Help source')
+]====],
+}
+
+return function(text, path)
+    local row = assert(rows[path], 'unexpected top-tab Help inverse path')
+
+    if path == 'UI/config.lua' and text ~= row.after and text ~= row.before then
+        local function once(from, to)
+            local first, last = text:find(from, 1, true)
+            assert(first and not text:find(from, last + 1, true), 'pane anchor inverse drift')
+            text = text:sub(1, first - 1) .. to .. text:sub(last + 1)
+        end
+
+        once(
+            'paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))',
+            'paneHeader:SetSize(math.max(1,width-24),self.paneHeaderHeight or 24)'
+        )
+
+        once(
+            'content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))',
+            'content:SetPoint("TOPLEFT",paneHeader,"BOTTOMLEFT",0,0)'
+        )
+    end
+
+    if text == row.after or text == row.before then
+        return row.before
+    end
+
+    error('unrelated whole top-tab Help source')
 end

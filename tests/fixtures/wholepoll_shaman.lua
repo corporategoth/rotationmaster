@@ -1,36 +1,104 @@
 -- Whole-poll fixture: the real addon in TOC order with WoW API models and the
 -- Shaman starter clone selected. Adapted from the Codex whole-poll harness.
-local measurement,snapshotRoot,candidateEnabled,productRoot,direct=...
-assert(measurement=='trace'or measurement=='price')
+local measurement, snapshotRoot, candidateEnabled, productRoot, direct = ...
+assert(measurement == 'trace' or measurement == 'price')
+
 -- Actual scoped main with TOC-order private handoffs and native raw globals.
-local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
-local function once(text,old,new)local a,b=text:find(old,1,true);assert(a,'fixture anchor missing '..old);assert(not text:find(old,b+1,true),'fixture anchor repeated');return text:sub(1,a-1)..new..text:sub(b+1)end
-local startup=read(snapshotRoot..'/tests/startup.lua')
-local common=assert(startup:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
-local persistent=assert(startup:match('(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'))
+local function read(path)
+    local h = assert(io.open(path))
+    local s = h:read('*a')
+    h:close()
+    return s
+end
+
+local function once(text, old, new)
+    local a, b = text:find(old, 1, true)
+    assert(a, 'fixture anchor missing ' .. old)
+    assert(not text:find(old, b + 1, true), 'fixture anchor repeated')
+    return text:sub(1, a - 1) .. new .. text:sub(b + 1)
+end
+
+local startup = read(snapshotRoot .. '/tests/startup.lua')
+local common = assert(startup:match('(local function fixture%(modern, absentThreat%).-)\ntest%('))
+
+local persistent = assert(startup:match(
+    '(local function persistentFixture%(saved,folder,scoped[,%a]*%).-)\n%-%- WoW SavedVariables'
+))
+
 -- Model TOC order: owned Data and sequence exist before main captures its reader.
 -- Avoid rotation_data.lua's asserting __index global shim in the native model.
-common=once(common,'    env._G = env','    env._G = env\n    for _,key in ipairs({"type","pairs","ipairs","next","rawget","rawset","rawequal","getmetatable","getfenv","math","table","string","tonumber","tostring","unpack","select","pcall","error","assert"})do rawset(env,key,_G[key])end')
+common = once(
+    common,
+    '    env._G = env',
+    '    env._G = env\n    for _,key in ipairs({"type","pairs","ipairs","next","rawget","rawset","rawequal","getmetatable","getfenv","math","table","string","tonumber","tostring","unpack","select","pcall","error","assert"})do rawset(env,key,_G[key])end'
+)
+
 -- Simulated native security APIs exist before any addon source, as in WoW.
-common=once(common,'    env._G = env',[[    env._G = env
+common = once(
+    common,
+    '    env._G = env',
+    [[    env._G = env
     env.issecretvalue=function()return false end
     env.canaccessvalue=function()return true end
     env.C_Secrets={HasSecretRestrictions=function()local observe=env.__reviewSecretObservation;if observe then observe('HasSecretRestrictions')end;return false end}
-]])
-persistent=once(persistent,"    load('main.lua')\n",'')
-persistent=once(persistent,'    local data,envelope=make();addon.RotationData=data',"    local _,envelope=make();addon.RotationData={}\n    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua')\n    local data=addon.RotationData")
-persistent=once(persistent,'    addon.GetRotationContext=function()',"    load('Core/rotation_sequence.lua');load('main.lua')\n    addon.GetRotationContext=function()")
-persistent=once(persistent,"load('Core/rotation_library.lua')","load('Core/rotation_choice_preferences.lua');load('Core/rotation_library.lua')")
-persistent=once(persistent,"load('Core/conditions.lua');","load('Data/builtin_sources.lua');load('Diagnostics/errors.lua');load('Core/conditions.lua');if candidateEnabled then load('Core/condition_runtime.lua')end;load('Platform/unit_level.lua');load('Core/level_conditions.lua');")
-persistent=once(persistent,"if scoped then load('Core/rotation_scope.lua');","if scoped then load('Platform/rotation_owner.lua');load('Core/rotation_scope.lua');")
-persistent=once(persistent,"load('Core/rotation_sequence.lua');load('main.lua')","load('Core/rotation_sequence.lua');if candidateEnabled then load('Core/active_runtime_plan.lua');addon.preparedRuntimeTrial=true end;load('main.lua')")
+]]
+)
+
+persistent = once(persistent, "    load('main.lua')\n", '')
+
+persistent = once(
+    persistent,
+    '    local data,envelope=make();addon.RotationData=data',
+    "    local _,envelope=make();addon.RotationData={}\n    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua')\n    local data=addon.RotationData"
+)
+
+persistent = once(
+    persistent,
+    '    addon.GetRotationContext=function()',
+    "    load('Core/rotation_sequence.lua');load('main.lua')\n    addon.GetRotationContext=function()"
+)
+
+persistent = once(
+    persistent,
+    "load('Core/rotation_library.lua')",
+    "load('Core/rotation_choice_preferences.lua');load('Core/rotation_library.lua')"
+)
+
+persistent = once(
+    persistent,
+    "load('Core/conditions.lua');",
+    "load('Data/builtin_sources.lua');load('Diagnostics/errors.lua');load('Core/conditions.lua');if candidateEnabled then load('Core/condition_runtime.lua')end;load('Platform/unit_level.lua');load('Core/level_conditions.lua');"
+)
+
+persistent = once(
+    persistent,
+    "if scoped then load('Core/rotation_scope.lua');",
+    "if scoped then load('Platform/rotation_owner.lua');load('Core/rotation_scope.lua');"
+)
+
+persistent = once(
+    persistent,
+    "load('Core/rotation_sequence.lua');load('main.lua')",
+    "load('Core/rotation_sequence.lua');if candidateEnabled then load('Core/active_runtime_plan.lua');addon.preparedRuntimeTrial=true end;load('main.lua')"
+)
+
 -- Actual TOC registers every stock condition once before addon initialization.
-persistent=once(persistent,"load('Conditions/known_spell.lua');",'')
-persistent=once(persistent,"load('Conditions/unit_states.lua');",'')
-persistent=once(persistent,"    addon:OnInitialize()\n",'')
-persistent=once(persistent,"load('Functions/cache.lua');load('Functions/trends.lua')","load('Functions/cache.lua');load('Diagnostics/cache_mode.lua');load('Functions/trends.lua')")
-local makePersistent=assert(loadstring('local candidateEnabled=...\n'..common..'\n'..persistent..'\nreturn persistentFixture','@external-toc-ordered-runtime'))(candidateEnabled)
-local source=[====[local function make(options)
+persistent = once(persistent, "load('Conditions/known_spell.lua');", '')
+persistent = once(persistent, "load('Conditions/unit_states.lua');", '')
+persistent = once(persistent, "    addon:OnInitialize()\n", '')
+
+persistent = once(
+    persistent,
+    "load('Functions/cache.lua');load('Functions/trends.lua')",
+    "load('Functions/cache.lua');load('Diagnostics/cache_mode.lua');load('Functions/trends.lua')"
+)
+
+local makePersistent = assert(loadstring(
+    'local candidateEnabled=...\n' .. common .. '\n' .. persistent .. '\nreturn persistentFixture',
+    '@external-toc-ordered-runtime'
+))(candidateEnabled)
+
+local source = [====[local function make(options)
  local e,a,_,_,_,_,load=fixture();load('Core/rotation_sequence.lua');local native={};local phase;local trace={};local cacheIDs=setmetatable({},{__mode='k'});local cacheCount=0
  local function hit(name,...)
   native[name]=(native[name] or 0)+1
@@ -118,21 +186,42 @@ local source=[====[local function make(options)
  for i=1,5 do tick() end;assert(not a.adviceErrorReport,'real advice errored during warmup: '..a.Diagnostics:FormatReport(nil,true));assert(#a.Diagnostics:GetReports()==0,'warmup diagnostics')
  if options.exposed then assert(a:GetEditableRotation(0,id));for i=1,5 do tick() end end
 ]====]
-source=once(source,"local e,a,_,_,_,_,load=fixture();load('Core/rotation_sequence.lua');","local e,a,_,_,_,_,load=fixture();load('Libs/AceAddon-3.0/AceAddon-3.0.lua');assert(e.LibStub('AceAddon-3.0'):NewAddon(a,'rotationmaster')==a);assert(type(getmetatable(a).__tostring)=='function');")
-local hitStart=assert(source:find(' local function hit(name,...',1,true));local hitEnd=assert(source:find(' local target,combat=',hitStart,true))
-if measurement=='price'then
- source=source:sub(1,hitStart-1)..' local tracking=false;local observed={}\n'..source:sub(hitEnd)
- source=source:gsub('hit%b()%s*;?%s*','');source=source:gsub('e.__reviewSecretObservation=hit','e.__reviewSecretObservation=nil')
+
+source = once(
+    source,
+    "local e,a,_,_,_,_,load=fixture();load('Core/rotation_sequence.lua');",
+    "local e,a,_,_,_,_,load=fixture();load('Libs/AceAddon-3.0/AceAddon-3.0.lua');assert(e.LibStub('AceAddon-3.0'):NewAddon(a,'rotationmaster')==a);assert(type(getmetatable(a).__tostring)=='function');"
+)
+
+local hitStart = assert(source:find(' local function hit(name,...', 1, true))
+local hitEnd = assert(source:find(' local target,combat=', hitStart, true))
+
+if measurement == 'price' then
+    source = source:sub(1, hitStart - 1) .. ' local tracking=false;local observed={}\n' .. source:sub(hitEnd)
+    source = source:gsub('hit%b()%s*;?%s*', '')
+    source = source:gsub('e.__reviewSecretObservation=hit', 'e.__reviewSecretObservation=nil')
 else
- source=source:sub(1,hitStart-1).." local tracking=false;local observed={}\n local function hit(name,...)native[name]=(native[name]or 0)+1;if tracking then local row={name};for i=1,select('#',...)do row[#row+1]=type(select(i,...))..':'..tostring(select(i,...))end;observed[#observed+1]=table.concat(row,'|')end end\n"..source:sub(hitEnd)
+    source = source:sub(1, hitStart - 1)
+        .. " local tracking=false;local observed={}\n local function hit(name,...)native[name]=(native[name]or 0)+1;if tracking then local row={name};for i=1,select('#',...)do row[#row+1]=type(select(i,...))..':'..tostring(select(i,...))end;observed[#observed+1]=table.concat(row,'|')end end\n"
+        .. source:sub(hitEnd)
 end
-source=source.." return {a=a,e=e,tick=tick,load=load,alignReset=function()a.lastCacheReport=clock end,setAura=function(v)auraPresent=v end,setCombat=function(v)combat=v;a.inCombat=v end,setTarget=function(v)target=v end,setEnchant=function(v)enchanted=v end,setLevel=function(v)playerLevel=v end,setClass=function(v)playerClass=v end,setVehicle=function(v)vehicle=v end,setSpellReady=function(v)spellReady=v end,fire=function(event,unit)for _,frame in ipairs(eventFrames)do local callback=frame.GetScript and frame:GetScript('OnEvent');if frame.modelEvents[event]and callback then callback(frame,event,unit)end end end,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
-local holder={}
-local factory=assert(loadstring('local persistent,productRoot,direct,holder=...\nlocal function fixture()local e,a,_,load=persistent({RotationMasterDB=holder.saved and holder.saved(direct) or {global={diagnosticCacheBypass=direct}}},nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent,productRoot,direct,holder)
+
+source = source
+    .. " return {a=a,e=e,tick=tick,load=load,alignReset=function()a.lastCacheReport=clock end,setAura=function(v)auraPresent=v end,setCombat=function(v)combat=v;a.inCombat=v end,setTarget=function(v)target=v end,setEnchant=function(v)enchanted=v end,setLevel=function(v)playerLevel=v end,setClass=function(v)playerClass=v end,setVehicle=function(v)vehicle=v end,setSpellReady=function(v)spellReady=v end,fire=function(event,unit)for _,frame in ipairs(eventFrames)do local callback=frame.GetScript and frame:GetScript('OnEvent');if frame.modelEvents[event]and callback then callback(frame,event,unit)end end end,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
+
+local holder = {}
+
+local factory = assert(loadstring(
+    'local persistent,productRoot,direct,holder=...\nlocal function fixture()local e,a,_,load=persistent({RotationMasterDB=holder.saved and holder.saved(direct) or {global={diagnosticCacheBypass=direct}}},nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'
+        .. source,
+    '@external-normalized-shaman-factory'
+))(makePersistent, productRoot, direct, holder)
+
 return function(options)
- holder.saved=options and options.saved
- local ok,c=pcall(factory,options or {});assert(ok,c)
- assert(type(getmetatable(c.a).__tostring)=='function'and tostring(c.a)=='rotationmaster')
- assert(getfenv(c.a.EvaluateRotationSequence)==c.e,'wrong sequence owner environment')
- return c
+    holder.saved = options and options.saved
+    local ok, c = pcall(factory, options or {})
+    assert(ok, c)
+    assert(type(getmetatable(c.a).__tostring) == 'function' and tostring(c.a) == 'rotationmaster')
+    assert(getfenv(c.a.EvaluateRotationSequence) == c.e, 'wrong sequence owner environment')
+    return c
 end

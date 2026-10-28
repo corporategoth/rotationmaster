@@ -1,5 +1,5 @@
 -- Exact overlay animation successor to complete a6 buttons source.
-local before=([[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+local before = ([[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -941,26 +941,56 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]]):sub(2)
-local after=before
-after=after:sub(1,10032)..([[!	InvalidateOverlay(frame)
-]]):sub(2)..after:sub(10033)
-after=after:sub(1,9099)..([[!			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0)) then return false end
-]]):sub(2)..after:sub(9312)
-after=after:sub(1,8838)..([[!			if not UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle) then return false end
-]]):sub(2)..after:sub(8945)
-after=after:sub(1,8693)..([[!			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle) then return false end
-]]):sub(2)..after:sub(8790)
-after=after:sub(1,8556)..([[!			if not UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle) then return false end
-]]):sub(2)..after:sub(8662)
-after=after:sub(1,7865)..([[!			if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1))) then return false end
-]]):sub(2)..after:sub(8000)
-after=after:sub(1,7698)..([[!            if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (effect.steps - (frame.sequenceIdx - 1)))) then return false end
-]]):sub(2)..after:sub(7859)
-after=after:sub(1,7335)..([[!        return UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
-]]):sub(2)..after:sub(7444)
-after=after:sub(1,6634)..([[!	InvalidateOverlay(frame)
-]]):sub(2)..after:sub(6635)
-after=after:sub(1,6203)..([[!    local generation=frame.rmOverlayGeneration
+
+local after = before
+
+after = after:sub(1, 10032)
+    .. ([[!	InvalidateOverlay(frame)
+]]):sub(2)
+    .. after:sub(10033)
+
+after = after:sub(1, 9099)
+    .. ([[!			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0)) then return false end
+]]):sub(2)
+    .. after:sub(9312)
+
+after = after:sub(1, 8838)
+    .. ([[!			if not UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle) then return false end
+]]):sub(2)
+    .. after:sub(8945)
+
+after = after:sub(1, 8693)
+    .. ([[!			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle) then return false end
+]]):sub(2)
+    .. after:sub(8790)
+
+after = after:sub(1, 8556)
+    .. ([[!			if not UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle) then return false end
+]]):sub(2)
+    .. after:sub(8662)
+
+after = after:sub(1, 7865)
+    .. ([[!			if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1))) then return false end
+]]):sub(2)
+    .. after:sub(8000)
+
+after = after:sub(1, 7698)
+    .. ([[!            if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (effect.steps - (frame.sequenceIdx - 1)))) then return false end
+]]):sub(2)
+    .. after:sub(7859)
+
+after = after:sub(1, 7335)
+    .. ([[!        return UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
+]]):sub(2)
+    .. after:sub(7444)
+
+after = after:sub(1, 6634)
+    .. ([[!	InvalidateOverlay(frame)
+]]):sub(2)
+    .. after:sub(6635)
+
+after = after:sub(1, 6203)
+    .. ([[!    local generation=frame.rmOverlayGeneration
     -- Native size scripts can alter any earlier render channel. These frames
     -- keep the complete legacy write path; sample the script each tick so late
     -- registration is covered without an observer or new subscription.
@@ -1033,16 +1063,25 @@ after=after:sub(1,6203)..([[!    local generation=frame.rmOverlayGeneration
     -- Leave a final repaint pending after the script is removed.
     frame.rmOverlayDirty=sizeScript
     return true
-]]):sub(2)..after:sub(6596)
-after=after:sub(1,6116)..([[!local function InvalidateOverlay(frame)
+]]):sub(2)
+    .. after:sub(6596)
+
+after = after:sub(1, 6116)
+    .. ([[!local function InvalidateOverlay(frame)
     frame.rmOverlayGeneration=(frame.rmOverlayGeneration or 0)+1
     frame.rmOverlayDirty=true
     frame.rmOverlayParent=nil
 end
 
-]]):sub(2)..after:sub(6117)
-return function(text,path)
- text=dofile('tests/fixtures/restore_postmanaged_buttons.lua')(text,path)
- if path=="buttons.lua"and text==after then return before end
- return text
+]]):sub(2)
+    .. after:sub(6117)
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_postmanaged_buttons.lua')(text, path)
+
+    if path == "buttons.lua" and text == after then
+        return before
+    end
+
+    return text
 end

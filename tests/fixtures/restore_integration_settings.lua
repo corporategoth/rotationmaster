@@ -1,6 +1,8 @@
 -- Exact four complete predecessors at c7377a3. No broad normalization.
-local records={}
-records["UI/settings_integrations.lua"]={old=[=[
+local records = {}
+
+records["UI/settings_integrations.lua"] = {
+    old = [=[
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:BuildIntegrationSettings(p)
@@ -44,11 +46,19 @@ function addon:BuildIntegrationSettings(p)
     end
     p:Text(L['Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available.'])
 end
-]=],changes={
-{1325,3339,[=[
+]=],
+    changes = {
+        {
+            1325,
+            3339,
+            [=[
     passiveGroup(L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
-]=]},
-{835,1315,[=[
+]=],
+        },
+        {
+            835,
+            1315,
+            [=[
     p:Text(L['Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it.'])
     title(L['Lua editor integrations'])
     local entries=self:ListLuaEditorProviders();local found={}
@@ -79,8 +89,12 @@ end
         p:Text(L['Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection.'])
         p:Text(L['Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used.'])
         p:Button('questie_refresh',L['Refresh Questie status'],function()self:RefreshQuestieIntegration();p:Draw()end)
-]=]},
-{169,741,[=[
+]=],
+        },
+        {
+            169,
+            741,
+            [=[
     local inventory,byID=self.ListIntegrationStatus and self:ListIntegrationStatus() or {},{}
     for _,entry in ipairs(inventory)do byID[entry.id]=entry end
     local states={missing=L['Not loaded.'],loaded=L['Loaded; connection not confirmed.'],connected=L['Connected'],disabled=L['Disabled'],incompatible=L['Incompatible'],unknown=L['Unknown']}
@@ -138,8 +152,12 @@ end
     p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
     p:Text(L['Baseline plain editor; always available.'])
     p:Text(L['Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor).'])
-]=]},
-{83,82,[=[
+]=],
+        },
+        {
+            83,
+            82,
+            [=[
 local controllable={native=true,LuaWorkbench=true}
 local function disabled(profile,id)
     return controllable[id] and type(profile.lua_editor_disabled)=='table' and profile.lua_editor_disabled[id]==true
@@ -188,9 +206,13 @@ local function card(p,id,name,version,description,controls,options)
     p.surface=surface;p.width=width;p.y=top+height+10
     return frame
 end
-]=]},
-}}
-records["UI/lua_editor.lua"]={old=[=[
+]=],
+        },
+    },
+}
+
+records["UI/lua_editor.lua"] = {
+    old = [=[
 local addon_name,addon=...
 local providers={}
 function addon:ListLuaEditorProviders()
@@ -520,34 +542,86 @@ function addon:AcquireSourceLuaEditor(owner,parent,changed,valid,preferred)
     code.preference=preferred;owner.code=code
     return code
 end
-]=],changes={
-{23078,23077,[=[
+]=],
+    changes = {
+        {
+            23078,
+            23077,
+            [=[
 ' end
-    if editorDisabled(self,resolved) then resolved='plain]=]},
-{22894,22973,[=[
-]=]},
-{22821,22892,[=[
-]=]},
-{22812,22811,[=[
-resolveEditor(self,]=]},
-{9699,9698,[=[
+    if editorDisabled(self,resolved) then resolved='plain]=],
+        },
+        {
+            22894,
+            22973,
+            [=[
+]=],
+        },
+        {
+            22821,
+            22892,
+            [=[
+]=],
+        },
+        {
+            22812,
+            22811,
+            [=[
+resolveEditor(self,]=],
+        },
+        {
+            9699,
+            9698,
+            [=[
  end
-    if editorDisabled(self,'native') then preferred='plain']=]},
-{1713,1741,[=[
-)]=]},
-{1630,1703,[=[
-,]=]},
-{1615,1628,[=[
-]=]},
-{1604,1613,[=[
-]=]},
-{1599,1602,[=[
-r(s]=]},
-{1593,1596,[=[
-resolveEdi]=]},
-{1580,1582,[=[
-]=]},
-{46,45,[=[
+    if editorDisabled(self,'native') then preferred='plain']=],
+        },
+        {
+            1713,
+            1741,
+            [=[
+)]=],
+        },
+        {
+            1630,
+            1703,
+            [=[
+,]=],
+        },
+        {
+            1615,
+            1628,
+            [=[
+]=],
+        },
+        {
+            1604,
+            1613,
+            [=[
+]=],
+        },
+        {
+            1599,
+            1602,
+            [=[
+r(s]=],
+        },
+        {
+            1593,
+            1596,
+            [=[
+resolveEdi]=],
+        },
+        {
+            1580,
+            1582,
+            [=[
+]=],
+        },
+        {
+            46,
+            45,
+            [=[
 
 -- Only RM-owned choices have persisted enable switches; extensions retain
 -- their existing registration contract and remain available to Automatic.
@@ -563,9 +637,13 @@ local function resolveEditor(self,preferred)
     end
     if editorDisabled(self,preferred) then return 'plain' end
     return preferred
-end]=]},
-}}
-records["Core/profile_data.lua"]={old=[=[
+end]=],
+        },
+    },
+}
+
+records["Core/profile_data.lua"] = {
+    old = [=[
 local _,addon=...
 local scalar={rotationFallbackID='string',lua_editor='string',lua_line_numbers='boolean',questie_enabled='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}
 local function dense(value,validate)
@@ -715,14 +793,22 @@ function addon:ProfileFromPortable(profile,options)
     if copy.rotationLibrary~=nil then if type(copy.rotationLibrary)~='table' then return nil end;for _,key in ipairs({'origins','comparisons','imports'}) do if copy.rotationLibrary[key]~=nil then copy.rotationLibrary[key]=decode(copy.rotationLibrary[key]);if not copy.rotationLibrary[key] then return nil end end end end
     return copy
 end
-]=],changes={
-{6101,6100,[=[
+]=],
+    changes = {
+        {
+            6101,
+            6100,
+            [=[
  end
         elseif key=='lua_editor_disabled' then
             if type(item)~='table' or getmetatable(item)~=nil then return false end
-            for name,disabled in pairs(item) do if (name~='native' and name~='LuaWorkbench') or disabled~=true then return false end]=]},
-}}
-records["UI/settings_collections.lua"]={old=[=[
+            for name,disabled in pairs(item) do if (name~='native' and name~='LuaWorkbench') or disabled~=true then return false end]=],
+        },
+    },
+}
+
+records["UI/settings_collections.lua"] = {
+    old = [=[
 local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
@@ -805,18 +891,31 @@ function addon:DeleteSavedCustomCondition(key)
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return true
 end
-]=],changes={
-{2508,2507,[=[
-','lua_editor_disabled]=]},
-}}
-for _,record in pairs(records)do
- local source=record.old
- for _,change in ipairs(record.changes)do source=source:sub(1,change[1]-1)..change[3]..source:sub(change[2]+1)end
- record.new=source;record.changes=nil
+]=],
+    changes = {
+        {
+            2508,
+            2507,
+            [=[
+','lua_editor_disabled]=],
+        },
+    },
+}
+
+for _, record in pairs(records) do
+    local source = record.old
+
+    for _, change in ipairs(record.changes) do
+        source = source:sub(1, change[1] - 1) .. change[3] .. source:sub(change[2] + 1)
+    end
+
+    record.new = source
+    record.changes = nil
 end
-return function(path,source)
- source=dofile('tests/fixtures/restore_integration_pills.lua')(path,source)
- local record=assert(records[path],'unsupported integration settings inverse path')
- assert(source==record.new,'integration settings inverse requires exact complete successor: '..path)
- return record.old
+
+return function(path, source)
+    source = dofile('tests/fixtures/restore_integration_pills.lua')(path, source)
+    local record = assert(records[path], 'unsupported integration settings inverse path')
+    assert(source == record.new, 'integration settings inverse requires exact complete successor: ' .. path)
+    return record.old
 end

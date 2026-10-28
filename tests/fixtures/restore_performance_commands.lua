@@ -1,7 +1,8 @@
 -- Exact cold CLI diagnostics successor -> Git7552 predecessor.
 -- Construct the complete successor once; unknown bytes never normalize.
-local rows={
-["Diagnostics/cpu.lua"]={before=([==[~local addon_name,addon=...
+local rows = {
+    ["Diagnostics/cpu.lua"] = {
+        before = ([==[~local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
@@ -981,16 +982,32 @@ function addon:OnDisable()
   and type(self.StopMemoryCapture)=='function' then self:StopMemoryCapture() end
  if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end
-]==]):sub(2),edits={{50085,50084,([==[~'..(run.stopRequested and 'stopped' or ']==]):sub(2)},{50094,50093,([==[~)]==]):sub(2)},{54669,54668,([==[~if status=='complete'and run.stopRequested then status='stopped'end
- ]==]):sub(2)},{58131,58130,([==[~StopCPUProfile()
+]==]):sub(2),
+        edits = {
+            { 50085, 50084, ([==[~'..(run.stopRequested and 'stopped' or ']==]):sub(2) },
+            { 50094, 50093, ([==[~)]==]):sub(2) },
+            {
+                54669,
+                54668,
+                ([==[~if status=='complete'and run.stopRequested then status='stopped'end
+ ]==]):sub(2),
+            },
+            {
+                58131,
+                58130,
+                ([==[~StopCPUProfile()
  local run=active;if not run then return false,'not-running'end
  local timer=run.timer;run.stopRequested=true
  finish(run,'complete')
  if timer then pcall(run.cancel,run.owner,timer)end
  return true
 end
-function addon:]==]):sub(2)}}},
-["Diagnostics/cpu_runtime.lua"]={before=([==[~local addon_name,addon=...
+function addon:]==]):sub(2),
+            },
+        },
+    },
+    ["Diagnostics/cpu_runtime.lua"] = {
+        before = ([==[~local addon_name,addon=...
 -- Explicit native measurements of normal outer evaluator dispatches. This
 -- module never starts evaluation, resets counters, or installs a lasting hook.
 local active,lastReport
@@ -1329,14 +1346,39 @@ function addon:GetCPURuntimeCaptureReport()
  if lastReport then return lastReport end
  return nil,'not-captured'
 end
-]==]):sub(2),edits={{12446,12447,([==[~'..string.format('%g',run.requested)..']==]):sub(2)},{15838,15839,([==[~run.requested]==]):sub(2)},{18317,18317,([==[~=]==]):sub(2)},{18323,18323,([==[~the]==]):sub(2)},{18325,18325,([==[~]==]):sub(2)},{18335,18335,([==[~]==]):sub(2)},{18338,18337,([==[~0 end
- if not finite(duration)or duration<1 or duration>6]==]):sub(2)},{18846,18845,([==[~,requested=duration]==]):sub(2)},{20344,20345,([==[~duration]==]):sub(2)},{20917,20916,([==[~StopCPURuntimeCapture()
+]==]):sub(2),
+        edits = {
+            { 12446, 12447, ([==[~'..string.format('%g',run.requested)..']==]):sub(2) },
+            { 15838, 15839, ([==[~run.requested]==]):sub(2) },
+            { 18317, 18317, ([==[~=]==]):sub(2) },
+            { 18323, 18323, ([==[~the]==]):sub(2) },
+            { 18325, 18325, ([==[~]==]):sub(2) },
+            { 18335, 18335, ([==[~]==]):sub(2) },
+            {
+                18338,
+                18337,
+                ([==[~0 end
+ if not finite(duration)or duration<1 or duration>6]==]):sub(2),
+            },
+            { 18846, 18845, ([==[~,requested=duration]==]):sub(2) },
+            { 20344, 20345, ([==[~duration]==]):sub(2) },
+            {
+                20917,
+                20916,
+                ([==[~StopCPURuntimeCapture()
  if not rawequal(self,addon)then return false,'invalid-owner'end
  if not active then return false,'not-running'end
  finish(active,'stopped');return true
 end
-function addon:]==]):sub(2)},{21235,21234,([==[~string.format(]==]):sub(2)},{21295,21296,([==[~%g]==]):sub(2)},{21334,21333,([==[~,active.requested)]==]):sub(2)}}},
-["Diagnostics/memory.lua"]={before=([==[~local addon_name,addon=...
+function addon:]==]):sub(2),
+            },
+            { 21235, 21234, ([==[~string.format(]==]):sub(2) },
+            { 21295, 21296, ([==[~%g]==]):sub(2) },
+            { 21334, 21333, ([==[~,active.requested)]==]):sub(2) },
+        },
+    },
+    ["Diagnostics/memory.lua"] = {
+        before = ([==[~local addon_name,addon=...
 -- Explicit, bounded lifetime observations. No evaluator hook or GC control.
 local active,lastReport,latest
 local DURATION,HEAP_LIMIT,DETAIL_LIMIT,COUNT_LIMIT,NODE_LIMIT=600,601,21,4096,8192
@@ -1604,28 +1646,89 @@ function addon:GetMemoryCaptureReport()
  if active then return nil,'running'end
  return lastReport,lastReport and nil or'not-captured'
 end
-]==]):sub(2),edits={{143,142,([==[~EFAULT_D]==]):sub(2)},{151,152,([==[~M]==]):sub(2)},{154,154,([==[~X]==]):sub(2)},{156,156,([==[~DURAT]==]):sub(2)},{158,173,([==[~ON]==]):sub(2)},{202,202,([==[~18]==]):sub(2)},{204,207,([==[~0]==]):sub(2)},{5373,5375,([==[~%g]==]):sub(2)},{5430,5429,([==[~,run.requested]==]):sub(2)},{8690,8689,([==[~
- if status=='complete'and run.stopRequested then status='stopped'end]==]):sub(2)},{11968,11972,([==[~run.heap]==]):sub(2)},{11974,11977,([==[~imit]==]):sub(2)},{12622,12629,([==[~run.requested]==]):sub(2)},{12651,12655,([==[~run.heap]==]):sub(2)},{12657,12660,([==[~imit]==]):sub(2)},{12957,12961,([==[~run.detail]==]):sub(2)},{12963,12968,([==[~imit]==]):sub(2)},{13331,13338,([==[~run.requested]==]):sub(2)},{13360,13364,([==[~run.heap]==]):sub(2)},{13366,13369,([==[~imit]==]):sub(2)},{13594,13593,([==[~duration]==]):sub(2)},{13895,13894,([==[~if duration==nil then duration=DEFAULT_DURATION end
+]==]):sub(2),
+        edits = {
+            { 143, 142, ([==[~EFAULT_D]==]):sub(2) },
+            { 151, 152, ([==[~M]==]):sub(2) },
+            { 154, 154, ([==[~X]==]):sub(2) },
+            { 156, 156, ([==[~DURAT]==]):sub(2) },
+            { 158, 173, ([==[~ON]==]):sub(2) },
+            { 202, 202, ([==[~18]==]):sub(2) },
+            { 204, 207, ([==[~0]==]):sub(2) },
+            { 5373, 5375, ([==[~%g]==]):sub(2) },
+            { 5430, 5429, ([==[~,run.requested]==]):sub(2) },
+            {
+                8690,
+                8689,
+                ([==[~
+ if status=='complete'and run.stopRequested then status='stopped'end]==]):sub(2),
+            },
+            { 11968, 11972, ([==[~run.heap]==]):sub(2) },
+            { 11974, 11977, ([==[~imit]==]):sub(2) },
+            { 12622, 12629, ([==[~run.requested]==]):sub(2) },
+            { 12651, 12655, ([==[~run.heap]==]):sub(2) },
+            { 12657, 12660, ([==[~imit]==]):sub(2) },
+            { 12957, 12961, ([==[~run.detail]==]):sub(2) },
+            { 12963, 12968, ([==[~imit]==]):sub(2) },
+            { 13331, 13338, ([==[~run.requested]==]):sub(2) },
+            { 13360, 13364, ([==[~run.heap]==]):sub(2) },
+            { 13366, 13369, ([==[~imit]==]):sub(2) },
+            { 13594, 13593, ([==[~duration]==]):sub(2) },
+            {
+                13895,
+                13894,
+                ([==[~if duration==nil then duration=DEFAULT_DURATION end
  if not number(duration)or duration<1 or duration>MAX_DURATION then return false,'invalid-duration'end
- ]==]):sub(2)},{13921,13920,([==[~,requested=duration,heapLimit=math.ceil(duration)+1,detailLimit=math.ceil(duration/30)+1]==]):sub(2)},{15365,15372,([==[~duration]==]):sub(2)},{15601,15600,([==[~
+ ]==]):sub(2),
+            },
+            {
+                13921,
+                13920,
+                ([==[~,requested=duration,heapLimit=math.ceil(duration)+1,detailLimit=math.ceil(duration/30)+1]==]):sub(
+                    2
+                ),
+            },
+            { 15365, 15372, ([==[~duration]==]):sub(2) },
+            {
+                15601,
+                15600,
+                ([==[~
  return true
 end
 -- Explicit completed boundary; legacy StopMemoryCapture remains cancellation.
 function addon:CompleteMemoryCapture()
  if self~=addon or not active then return false,'not-running'end
  local run=active;run.stopRequested=true
- if run.sampling then finish(run,'stopped')else sample(run,true)end]==]):sub(2)}}},
+ if run.sampling then finish(run,'stopped')else sample(run,true)end]==]):sub(2),
+            },
+        },
+    },
 }
-for _,row in pairs(rows)do
- local parts,at={},1
- for _,edit in ipairs(row.edits)do
-  parts[#parts+1]=row.before:sub(at,edit[1]-1);parts[#parts+1]=edit[3];at=edit[2]+1
- end
- parts[#parts+1]=row.before:sub(at);row.after=table.concat(parts);row.edits=nil
+
+for _, row in pairs(rows) do
+    local parts, at = {}, 1
+
+    for _, edit in ipairs(row.edits) do
+        parts[#parts + 1] = row.before:sub(at, edit[1] - 1)
+        parts[#parts + 1] = edit[3]
+        at = edit[2] + 1
+    end
+
+    parts[#parts + 1] = row.before:sub(at)
+    row.after = table.concat(parts)
+    row.edits = nil
 end
-return function(text,path)
- local row=rows[path];if not row then return text end
- if text==row.after then return row.before end
- assert(text==row.before,'unrelated performance command source: '..path)
- return text
+
+return function(text, path)
+    local row = rows[path]
+
+    if not row then
+        return text
+    end
+    if text == row.after then
+        return row.before
+    end
+
+    assert(text == row.before, 'unrelated performance command source: ' .. path)
+    return text
 end

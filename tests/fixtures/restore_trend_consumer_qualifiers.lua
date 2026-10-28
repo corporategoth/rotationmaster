@@ -1,8 +1,8 @@
 -- Strict test-only inverse of exactly two canonical trend consumer expressions.
 -- Full module mode restores both entire evaluator blocks once; callback mode
 -- requires the exact evaluator body and its tag. No general alias rewriting.
-local original={
- TT_HEALTH=[=[    evaluate = function(value, cache)
+local original = {
+    TT_HEALTH = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
@@ -34,7 +34,7 @@ local original={
         end
         return false
     end,]=],
- TT_HEALTHPCT=[=[    evaluate = function(value, cache)
+    TT_HEALTHPCT = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
@@ -72,26 +72,40 @@ local original={
         return false
     end,]=],
 }
-local repaired,oldBodies,newBodies={},{},{}
-local order={'TT_HEALTH','TT_HEALTHPCT'}
-for _,tag in ipairs(order) do
- local block,count=original[tag]:gsub('addon%.calculate_trend%(','addon.Functions.trends.calculate(')
- assert(count==1,'invalid trend consumer fixture')
- repaired[tag]=block
- oldBodies[tag]=assert(original[tag]:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
- newBodies[tag]=assert(block:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+
+local repaired, oldBodies, newBodies = {}, {}, {}
+local order = { 'TT_HEALTH', 'TT_HEALTHPCT' }
+
+for _, tag in ipairs(order) do
+    local block, count = original[tag]:gsub('addon%.calculate_trend%(', 'addon.Functions.trends.calculate(')
+    assert(count == 1, 'invalid trend consumer fixture')
+    repaired[tag] = block
+    oldBodies[tag] = assert(original[tag]:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+    newBodies[tag] = assert(block:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
 end
-return function(text,tag,callback)
- assert(type(text)=='string','expected trend consumer source')
- if callback then
-  assert(newBodies[tag] and text==newBodies[tag],'unexpected trend evaluator body/tag')
-  return oldBodies[tag]
- end
- assert(tag==nil or repaired[tag],'unexpected trend consumer tag')
- for _,selected in ipairs(tag and {tag} or order) do
-  local first,last=text:find(repaired[selected],1,true)
-  assert(first and not text:find(repaired[selected],last+1,true),'unexpected '..selected..' evaluator count/body')
-  text=text:sub(1,first-1)..original[selected]..text:sub(last+1)
- end
- return text
-end,oldBodies,newBodies
+
+return function(text, tag, callback)
+    assert(type(text) == 'string', 'expected trend consumer source')
+
+    if callback then
+        assert(newBodies[tag] and text == newBodies[tag], 'unexpected trend evaluator body/tag')
+        return oldBodies[tag]
+    end
+
+    assert(tag == nil or repaired[tag], 'unexpected trend consumer tag')
+
+    for _, selected in ipairs(tag and { tag } or order) do
+        local first, last = text:find(repaired[selected], 1, true)
+
+        assert(
+            first and not text:find(repaired[selected], last + 1, true),
+            'unexpected ' .. selected .. ' evaluator count/body'
+        )
+
+        text = text:sub(1, first - 1) .. original[selected] .. text:sub(last + 1)
+    end
+
+    return text
+end,
+    oldBodies,
+    newBodies

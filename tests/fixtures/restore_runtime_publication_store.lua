@@ -1,5 +1,13 @@
 -- Exact source inverse to a609a28; compose before the prior complete proofs.
-local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]========],oldBytes=36975,oldHash=[========[896a1f48]========],changes={{current=[========[    -- This capability is bound only to trusted facade code. Canonical borrows
+local rows = {
+    ["Data/rotation_store.lua"] = {
+        bytes = 41494,
+        hash = [========[11e30f95]========],
+        oldBytes = 36975,
+        oldHash = [========[896a1f48]========],
+        changes = {
+            {
+                current = [========[    -- This capability is bound only to trusted facade code. Canonical borrows
     -- must not escape its synchronous projectors; UI keeps snapshot APIs.
     local reader,readerState,readerBusy={},'binding',false
     local readIndex,readEpoch,readRevision=nil,0,0
@@ -8,7 +16,8 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
     local nilCharacter={}
     local function detachedAddress(a)
         return {scope=a.scope,class=a.class,owner=a.owner,spec=a.spec,id=a.id}
-]========],previous=[========[    -- This capability is bound only to trusted facade code. Canonical borrows
+]========],
+                previous = [========[    -- This capability is bound only to trusted facade code. Canonical borrows
     -- must not escape its synchronous projectors; UI keeps snapshot APIs.
     local reader,readerState,readerBusy={},'binding',false
     local readIndex,readEpoch,readRevision=nil,0,0
@@ -16,8 +25,10 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
     local nilCharacter={}
     local function detachedAddress(a)
         return {scope=a.scope,class=a.class,owner=a.owner,spec=a.spec,id=a.id}
-]========]},
-{current=[========[            if not current or #current~=#entry.items then return nil,'stale-rotation-read-seal' end
+]========],
+            },
+            {
+                current = [========[            if not current or #current~=#entry.items then return nil,'stale-rotation-read-seal' end
             for i,meta in ipairs(current) do if meta~=entry.items[i] then return nil,'stale-rotation-read-seal' end end
         end
         return true
@@ -80,7 +91,8 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
     function reader:ListOwned(number,c)
         local ready,reason=readerReady(true);if not ready then return nil,reason end
         local items,problem=privateRows(number,c);if not items then return nil,problem end
-]========],previous=[========[            if not current or #current~=#entry.items then return nil,'stale-rotation-read-seal' end
+]========],
+                previous = [========[            if not current or #current~=#entry.items then return nil,'stale-rotation-read-seal' end
             for i,meta in ipairs(current) do if meta~=entry.items[i] then return nil,'stale-rotation-read-seal' end end
         end
         return true
@@ -88,8 +100,10 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
     function reader:ListOwned(number,c)
         local ready,reason=readerReady(true);if not ready then return nil,reason end
         local items,problem=privateRows(number,c);if not items then return nil,problem end
-]========]},
-{current=[========[        if readIndex then
+]========],
+            },
+            {
+                current = [========[        if readIndex then
             advanceDestination=readRows(destination,c,readIndex)
             if pending.operation=='move' then advanceSource=readRows(pending.address,c,readIndex) end
         end
@@ -103,7 +117,8 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
         if pending.operation=='delete' then write(pending.address,nil)
         else
             write(destination,payload)
-]========],previous=[========[        if readIndex then
+]========],
+                previous = [========[        if readIndex then
             advanceDestination=readRows(destination,c,readIndex)
             if pending.operation=='move' then advanceSource=readRows(pending.address,c,readIndex) end
         end
@@ -111,8 +126,10 @@ local rows={["Data/rotation_store.lua"]={bytes=41494,hash=[========[11e30f95]===
         if pending.operation=='delete' then write(pending.address,nil)
         else
             write(destination,payload)
-]========]},
-{current=[========[        local valid,reason=validState(state)
+]========],
+            },
+            {
+                current = [========[        local valid,reason=validState(state)
         if not valid then readerState='retired';return nil,reason end
         index=buildIndex();resetReaderIndex();readerState='active'
     end
@@ -129,7 +146,8 @@ end
 do
  local bind=addon.BindCPURuntimeWorkDiagnostic
  if type(bind)=='function' then bind(addon,'store',data.NewRotationStore,function() return plain,fields,validAddress end) end
-]========],previous=[========[        local valid,reason=validState(state)
+]========],
+                previous = [========[        local valid,reason=validState(state)
         if not valid then readerState='retired';return nil,reason end
         index=buildIndex();resetReaderIndex();readerState='active'
     end
@@ -139,8 +157,18 @@ end
 do
  local bind=addon.BindCPURuntimeWorkDiagnostic
  if type(bind)=='function' then bind(addon,'store',data.NewRotationStore,function() return plain,fields,validAddress end) end
-]========]}}},
-["Core/rotation_scope.lua"]={bytes=66058,hash=[========[9703e477]========],oldBytes=63157,oldHash=[========[0473c689]========],changes={{current=[========[local addon_name,addon=...
+]========],
+            },
+        },
+    },
+    ["Core/rotation_scope.lua"] = {
+        bytes = 66058,
+        hash = [========[9703e477]========],
+        oldBytes = 63157,
+        oldHash = [========[0473c689]========],
+        changes = {
+            {
+                current = [========[local addon_name,addon=...
 local data=addon.RotationData
 local ownedStoreFactory,ownedStoreEnvironment
 local bindOwnedStoreFactory=data.BindOwnedRotationStoreFactory
@@ -155,14 +183,17 @@ local prepareActivePublication,finishActivePublication,prepareActiveRebind,finis
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local protect,raise=pcall,error
 local preparedBinding,bindGeneration
-]========],previous=[========[local addon_name,addon=...
+]========],
+                previous = [========[local addon_name,addon=...
 local data=addon.RotationData
 local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local protect,raise=pcall,error
 local preparedBinding,bindGeneration
-]========]},
-{current=[========[        retire(previous)
+]========],
+            },
+            {
+                current = [========[        retire(previous)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     end
     local owner=self;profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
@@ -171,7 +202,8 @@ local preparedBinding,bindGeneration
     elseif not text(profile.rotationFallbackID,128) then problem='missing-fallback-configuration'
     else
         local construct=data.NewRotationStore
-]========],previous=[========[        retire(previous)
+]========],
+                previous = [========[        retire(previous)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     end
     local owner=self;profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
@@ -180,8 +212,10 @@ local preparedBinding,bindGeneration
     elseif not text(profile.rotationFallbackID,128) then problem='missing-fallback-configuration'
     else
         local construct=data.NewRotationStore
-]========]},
-{current=[========[        local getOptions=self.GetRotationValidationOptions
+]========],
+            },
+            {
+                current = [========[        local getOptions=self.GetRotationValidationOptions
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
         local validation=getOptions(self)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
@@ -192,7 +226,8 @@ local preparedBinding,bindGeneration
     if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     local coordinator={};current=coordinator
     local rosterStamp,rosterOwned,rosterLibrary,rosterValidation,rosterVirtual,rosterBuiltin
-]========],previous=[========[        local getOptions=self.GetRotationValidationOptions
+]========],
+                previous = [========[        local getOptions=self.GetRotationValidationOptions
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
         local validation=getOptions(self)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
@@ -201,8 +236,10 @@ local preparedBinding,bindGeneration
     if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     local coordinator={};current=coordinator
     local rosterStamp,rosterOwned,rosterLibrary,rosterValidation,rosterVirtual,rosterBuiltin
-]========]},
-{current=[========[        local ok,why=ready();if not ok then return nil,why end
+]========],
+            },
+            {
+                current = [========[        local ok,why=ready();if not ok then return nil,why end
         local c,reason=context();if not c then return nil,reason end
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
@@ -211,7 +248,8 @@ local preparedBinding,bindGeneration
         local function eligibilityContext()
             local value,private,method=rotationContext(owner,number)
             if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then observedPrivate,observedMethod=true,method;return value end
-]========],previous=[========[        local ok,why=ready();if not ok then return nil,why end
+]========],
+                previous = [========[        local ok,why=ready();if not ok then return nil,why end
         local c,reason=context();if not c then return nil,reason end
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
@@ -219,8 +257,10 @@ local preparedBinding,bindGeneration
         local function eligibilityContext()
             local value,private,method=rotationContext(owner,number)
             if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then observedPrivate,observedMethod=true,method;return value end
-]========]},
-{current=[========[                assets[index]=item;return item
+]========],
+            },
+            {
+                current = [========[                assets[index]=item;return item
             end)
             if not okRead then return nil,asset end
             selected[index]=seal
@@ -229,7 +269,8 @@ local preparedBinding,bindGeneration
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             local status=asset.validation
             if asset.unavailable or not status.valid or not status.supported or not status.resolved then return nil,reference.address.id==fallbackID and 'invalid-fallback' or asset.unavailable or 'rotation-unavailable' end
-]========],previous=[========[                assets[index]=item;return item
+]========],
+                previous = [========[                assets[index]=item;return item
             end)
             if not okRead then return nil,asset end
             selected[index]=seal
@@ -237,8 +278,10 @@ local preparedBinding,bindGeneration
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             local status=asset.validation
             if asset.unavailable or not status.valid or not status.supported or not status.resolved then return nil,reference.address.id==fallbackID and 'invalid-fallback' or asset.unavailable or 'rotation-unavailable' end
-]========]},
-{current=[========[            end
+]========],
+            },
+            {
+                current = [========[            end
             local complete,completionReason=self:IsCurrent();if not complete then return {},completionReason end
             return result
         end
@@ -276,7 +319,8 @@ local preparedBinding,bindGeneration
     end
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
     completeRebind(binding,coordinator,problem)
-]========],previous=[========[            end
+]========],
+                previous = [========[            end
             local complete,completionReason=self:IsCurrent();if not complete then return {},completionReason end
             return result
         end
@@ -284,8 +328,10 @@ local preparedBinding,bindGeneration
     end
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
     completeRebind(binding,coordinator,problem)
-]========]},
-{current=[========[        contextVersion={}
+]========],
+            },
+            {
+                current = [========[        contextVersion={}
         if owner~=addon or owner.AcquireRotationRuntimePass~=ownedAcquireRuntimePass
             or owner.GetScopedRotationCoordinator~=ownedScopedCoordinator
             or not current or current.RuntimePass~=ownedRuntimePasses[current] then return owner:AcquireRotationRuntimePass(spec) end
@@ -298,7 +344,8 @@ local preparedBinding,bindGeneration
     return true
 end
 
-]========],previous=[========[        contextVersion={}
+]========],
+                previous = [========[        contextVersion={}
         if owner~=addon or owner.AcquireRotationRuntimePass~=ownedAcquireRuntimePass
             or owner.GetScopedRotationCoordinator~=ownedScopedCoordinator
             or not current or current.RuntimePass~=ownedRuntimePasses[current] then return owner:AcquireRotationRuntimePass(spec) end
@@ -311,8 +358,18 @@ end
     return true
 end
 
-]========]}}},
-["main.lua"]={bytes=86781,hash=[========[50e6cf45]========],oldBytes=86599,oldHash=[========[c0b43855]========],changes={{current=[========[end
+]========],
+            },
+        },
+    },
+    ["main.lua"] = {
+        bytes = 86781,
+        hash = [========[50e6cf45]========],
+        oldBytes = 86599,
+        oldHash = [========[c0b43855]========],
+        changes = {
+            {
+                current = [========[end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
@@ -324,7 +381,8 @@ function addon:EvaluateNextActionInternal()
             if runtimePass then rot=runtimePass:Get(selectedRotation) end
         else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
     end
-]========],previous=[========[end
+]========],
+                previous = [========[end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
@@ -336,8 +394,10 @@ function addon:EvaluateNextActionInternal()
             if runtimePass then rot=runtimePass:Get(selectedRotation) end
         else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
     end
-]========]},
-{current=[========[        local previewWindow=self.nextWindow
+]========],
+            },
+            {
+                current = [========[        local previewWindow=self.nextWindow
         local nativePreview=previewWindow and type(previewWindow.AddRecommendation)=="function"
         local staged={}
         local function current()
@@ -350,7 +410,8 @@ function addon:EvaluateNextActionInternal()
         local function stage(callback) staged[#staged+1]=callback end
         if nativePreview then
             stage(function() previewWindow:ReleaseChildren();if current() then previewWindow:PauseLayout() end end)
-]========],previous=[========[        local previewWindow=self.nextWindow
+]========],
+                previous = [========[        local previewWindow=self.nextWindow
         local nativePreview=previewWindow and type(previewWindow.AddRecommendation)=="function"
         local staged={}
         local function current()
@@ -360,22 +421,58 @@ function addon:EvaluateNextActionInternal()
         local function stage(callback) staged[#staged+1]=callback end
         if nativePreview then
             stage(function() previewWindow:ReleaseChildren();if current() then previewWindow:PauseLayout() end end)
-]========]}}}}
-local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-return function(text,path)
- text=dofile('tests/fixtures/restore_execution_generation.lua')(text,path)
- if path=='Data/rotation_store.lua'and text:find('local function continuationCurrent()',1,true)then text=dofile('tests/fixtures/restore_active_runtime_continuation.lua')(text,path)end
- if path=='Core/rotation_scope.lua'and text:find('currentPlanSource=function',1,true)then text=dofile('tests/fixtures/restore_active_runtime_plan.lua')(text,path)end
- if path=='main.lua'then text=dofile('tests/fixtures/restore_active_runtime_main.lua')(text,path)end
- if path=='Core/rotation_scope.lua'and text:find('local prepareChoicePublication',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
- if path=='main.lua'and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF',1,true)then text=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text,path)end
- if path=='Data/rotation_store.lua' and text:find("-- Preserve public-reader admission",1,true) then text=dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text,path) end
- local row=rows[path];if not row then return text end
- assert(#text==row.bytes and hash(text)==row.hash,'unrelated publication-store source: '..path)
- for _,change in ipairs(row.changes)do
-  local a,b=text:find(change.current,1,true);assert(a and not text:find(change.current,b+1,true),'publication-store inverse anchor: '..path)
-  text=text:sub(1,a-1)..change.previous..text:sub(b+1)
- end
- assert(#text==row.oldBytes and hash(text)==row.oldHash,'publication-store inverse predecessor: '..path)
- return text
+]========],
+            },
+        },
+    },
+}
+
+local function hash(s)
+    local n = 5381
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_execution_generation.lua')(text, path)
+
+    if path == 'Data/rotation_store.lua' and text:find('local function continuationCurrent()', 1, true) then
+        text = dofile('tests/fixtures/restore_active_runtime_continuation.lua')(text, path)
+    end
+    if path == 'Core/rotation_scope.lua' and text:find('currentPlanSource=function', 1, true) then
+        text = dofile('tests/fixtures/restore_active_runtime_plan.lua')(text, path)
+    end
+    if path == 'main.lua' then
+        text = dofile('tests/fixtures/restore_active_runtime_main.lua')(text, path)
+    end
+    if path == 'Core/rotation_scope.lua' and text:find('local prepareChoicePublication', 1, true) then
+        text = dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text, path)
+    end
+    if path == 'main.lua' and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF', 1, true) then
+        text = dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text, path)
+    end
+    if path == 'Data/rotation_store.lua' and text:find("-- Preserve public-reader admission", 1, true) then
+        text = dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text, path)
+    end
+
+    local row = rows[path]
+
+    if not row then
+        return text
+    end
+
+    assert(#text == row.bytes and hash(text) == row.hash, 'unrelated publication-store source: ' .. path)
+
+    for _, change in ipairs(row.changes) do
+        local a, b = text:find(change.current, 1, true)
+        assert(a and not text:find(change.current, b + 1, true), 'publication-store inverse anchor: ' .. path)
+        text = text:sub(1, a - 1) .. change.previous .. text:sub(b + 1)
+    end
+
+    assert(#text == row.oldBytes and hash(text) == row.oldHash, 'publication-store inverse predecessor: ' .. path)
+    return text
 end

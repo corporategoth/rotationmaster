@@ -1,6 +1,6 @@
 -- Strict original-module accessor; implementation patches are filled after RED.
-local records={
- ["Core/rotation_references.lua"]=[====[local _,addon=...
+local records = {
+    ["Core/rotation_references.lua"] = [====[local _,addon=...
 local observed,stamp
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
@@ -207,7 +207,7 @@ function addon:HasDisabledRotationDependency(body)
     return false
 end
 ]====],
- ["Core/rotation_library.lua"]=[====[local addon_name, addon = ...
+    ["Core/rotation_library.lua"] = [====[local addon_name, addon = ...
 local data = addon.RotationData
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
@@ -850,7 +850,7 @@ function addon:DeleteCustomRotation(spec,id,expected)
     return true
 end
 ]====],
- ["Core/rotation_scope.lua"]=[====[local addon_name,addon=...
+    ["Core/rotation_scope.lua"] = [====[local addon_name,addon=...
 local data=addon.RotationData
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof
@@ -1532,7 +1532,7 @@ function addon:GetProfileRotationHeaders(profile)
     return finish(result)
 end
 ]====],
- ["Diagnostics/cpu.lua"]=[====[local addon_name,addon=...
+    ["Diagnostics/cpu.lua"] = [====[local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
@@ -2129,40 +2129,55 @@ function addon:OnDisable()
 end
 ]====],
 }
-local patches={
- ["Core/rotation_references.lua"]={
-  {old=[====[]====],current='\n'..[====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+
+local patches = {
+    ["Core/rotation_references.lua"] = {
+        {
+            old = [====[]====],
+            current = '\n'
+                .. [====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
 do
  local bind=addon.BindCPUValidationScopeDiagnostic
  if type(bind)=='function' then bind(addon,'references',ownedValidationStamp,function() return observe,sameEntries,sameItemsets,proofGlobals end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====]},
- },
- ["Core/rotation_library.lua"]={
-  {old=[====[]====],current='\n'..[====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+]====],
+        },
+    },
+    ["Core/rotation_library.lua"] = {
+        {
+            old = [====[]====],
+            current = '\n'
+                .. [====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
 do
  local bind=addon.BindCPUValidationScopeDiagnostic
  if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====]},
- },
- ["Core/rotation_scope.lua"]={
-  {old=[====[]====],current='\n'..[====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+]====],
+        },
+    },
+    ["Core/rotation_scope.lua"] = {
+        {
+            old = [====[]====],
+            current = '\n'
+                .. [====[-- BEGIN PRIVATE VALIDATION CPU HANDOFF
 do
  local bind=addon.BindCPUValidationScopeDiagnostic
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]====]},
- },
- ["Diagnostics/cpu.lua"]={
-  {old=[====[local function finishSample(run,row)
+]====],
+        },
+    },
+    ["Diagnostics/cpu.lua"] = {
+        {
+            old = [====[local function finishSample(run,row)
  if not row.sampled then row.sampled=true;row.current,row.currentReason=snapshot(run,row.fn) end
  return row.current,row.currentReason
 end
-]====],current=[====[-- BEGIN PRIVATE VALIDATION SCOPES
+]====],
+            current = [====[-- BEGIN PRIVATE VALIDATION SCOPES
 local validationEqual,validationSelect=rawequal,select
 local validationSpecs={
  {name='references',anchor='GetRotationValidationStamp',slots={'observe','sameEntries','sameItemsets','proofGlobals'}},
@@ -2310,56 +2325,87 @@ local function finishSample(run,row,guard)
  end
  return row.current,row.currentReason
 end
-]====]},
-  {old=[====[ if active~=run then return end
- active=nil;run.timer=nil]====],current=[====[ if active~=run then return end
+]====],
+        },
+        {
+            old = [====[ if active~=run then return end
+ active=nil;run.timer=nil]====],
+            current = [====[ if active~=run then return end
  -- BEGIN PRIVATE VALIDATION END TOKEN
  validationEnding(run,status)
  -- END PRIVATE VALIDATION END TOKEN
- active=nil;run.timer=nil]====]},
-  {old=[====[   text=table.concat(report,'\n')]====],current=[====[   -- BEGIN PRIVATE VALIDATION APPENDIX
+ active=nil;run.timer=nil]====],
+        },
+        {
+            old = [====[   text=table.concat(report,'\n')]====],
+            current = [====[   -- BEGIN PRIVATE VALIDATION APPENDIX
    local validationState=run.validationScopes
    local validationEntered=validationState and validationState.current()
    appendValidationScopes(report,run,finishSample)
    if validationEntered and not validationState.current() then validationClear(run);return end
    -- END PRIVATE VALIDATION APPENDIX
-   text=table.concat(report,'\n')]====]},
-  {old=[====[ lastReport=text
- local callback=]====],current=[====[ -- BEGIN PRIVATE VALIDATION CLEANUP
+   text=table.concat(report,'\n')]====],
+        },
+        {
+            old = [====[ lastReport=text
+ local callback=]====],
+            current = [====[ -- BEGIN PRIVATE VALIDATION CLEANUP
  validationClear(run)
  -- END PRIVATE VALIDATION CLEANUP
  lastReport=text
- local callback=]====]},
-  {old=[====[function addon:StartCPUProfile(duration)
-]====],current=[====[function addon:StartCPUProfile(duration)
+ local callback=]====],
+        },
+        {
+            old = [====[function addon:StartCPUProfile(duration)
+]====],
+            current = [====[function addon:StartCPUProfile(duration)
  -- BEGIN PRIVATE VALIDATION RETIRE
  validationRetire()
  -- END PRIVATE VALIDATION RETIRE
-]====]},
-  {old=[====[ -- END CPU ACTIVITY START
- local ok,timer=]====],current=[====[ -- END CPU ACTIVITY START
+]====],
+        },
+        {
+            old = [====[ -- END CPU ACTIVITY START
+ local ok,timer=]====],
+            current = [====[ -- END CPU ACTIVITY START
  -- BEGIN PRIVATE VALIDATION START
  local validationEntered=active==run
  validationStart(run)
  if validationEntered and active~=run then validationClear(run);return true end
  -- END PRIVATE VALIDATION START
- local ok,timer=]====]},
-  {old=[====[ if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end]====],current=[====[ -- BEGIN PRIVATE VALIDATION TIMER FAILURE
+ local ok,timer=]====],
+        },
+        {
+            old = [====[ if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end]====],
+            current = [====[ -- BEGIN PRIVATE VALIDATION TIMER FAILURE
  if not ok or not timer then validationClear(run) end
  -- END PRIVATE VALIDATION TIMER FAILURE
- if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end]====]},
- },
+ if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end]====],
+        },
+    },
 }
-return function(text,path,baseline)
- local old=assert(records[path],"unknown validation-scope module")
- if baseline then assert(text==nil);return old end
- assert(type(text)=="string")
- if path=='Diagnostics/cpu.lua' then text=dofile('tests/fixtures/restore_cpu_work_views.lua')(text,path) end
- for _,patch in ipairs(patches[path])do
-  local first,last=text:find(patch.current,1,true);assert(first,"exact validation-scope block missing")
-  assert(not text:find(patch.current,last+1,true),"validation-scope block repeated")
-  text=text:sub(1,first-1)..patch.old..text:sub(last+1)
- end
- assert(text==old,"module changed outside private validation scopes")
- return old
+
+return function(text, path, baseline)
+    local old = assert(records[path], "unknown validation-scope module")
+
+    if baseline then
+        assert(text == nil)
+        return old
+    end
+
+    assert(type(text) == "string")
+
+    if path == 'Diagnostics/cpu.lua' then
+        text = dofile('tests/fixtures/restore_cpu_work_views.lua')(text, path)
+    end
+
+    for _, patch in ipairs(patches[path]) do
+        local first, last = text:find(patch.current, 1, true)
+        assert(first, "exact validation-scope block missing")
+        assert(not text:find(patch.current, last + 1, true), "validation-scope block repeated")
+        text = text:sub(1, first - 1) .. patch.old .. text:sub(last + 1)
+    end
+
+    assert(text == old, "module changed outside private validation scopes")
+    return old
 end

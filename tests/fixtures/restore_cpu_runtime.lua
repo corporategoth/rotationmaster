@@ -1,16 +1,17 @@
 -- Remove only the two native-runtime lifecycle guards before prior CPU proofs.
-local hunks={
-[=[ -- BEGIN NATIVE RUNTIME EXCLUSION
+local hunks = {
+    [=[ -- BEGIN NATIVE RUNTIME EXCLUSION
  if type(self.IsCPURuntimeCaptureRunning)=='function' and self:IsCPURuntimeCaptureRunning() then return false,'native-runtime-capture-running' end
  -- END NATIVE RUNTIME EXCLUSION
 ]=],
-[=[ -- BEGIN NATIVE RUNTIME DISABLE
+    [=[ -- BEGIN NATIVE RUNTIME DISABLE
  if type(self.CancelCPURuntimeCapture)=='function' then self:CancelCPURuntimeCapture() end
  -- END NATIVE RUNTIME DISABLE
 ]=],
 }
-local coldBlocks={
-[====[
+
+local coldBlocks = {
+    [====[
 -- BEGIN COLD STORE STRING SHAPE
 -- Current observations only: cached constructor identities/admission stay private.
 local function storeStringShape()
@@ -39,7 +40,7 @@ local function appendStoreStringShape(report,started,ended)
 end
 -- END COLD STORE STRING SHAPE
 ]====],
-[====[
+    [====[
  -- BEGIN COLD STORE STRING START
  if active==run then
   run.storeStringShape=storeStringShape()
@@ -47,33 +48,63 @@ end
  end
  -- END COLD STORE STRING START
 ]====],
-[====[
+    [====[
    -- BEGIN COLD STORE STRING END
    local shapeEntered=workState and workState.current()
    appendStoreStringShape(report,run.storeStringShape,storeStringShape())
    if shapeEntered and not workState.current() then workClear(run);return end
    -- END COLD STORE STRING END
-]====]
+]====],
 }
-local function coldHash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-return function(text,coldOnly)
- text=dofile("tests/fixtures/restore_performance_commands.lua")(text,"Diagnostics/cpu.lua")
- text=dofile("tests/fixtures/restore_observation_lifecycles.lua")(text,"Diagnostics/cpu.lua")
- if text:find('-- BEGIN COLD STORE STRING SHAPE',1,true) then
-  assert(#text==57837 and coldHash(text)=='0be263f0','unrelated cold store string source')
-  for _,block in ipairs(coldBlocks)do
-   local a,b=text:find(block,1,true);assert(a and not text:find(block,b+1,true),'missing or duplicate cold store string block')
-   text=text:sub(1,a-1)..text:sub(b+1)
-  end
-  assert(#text==55576 and coldHash(text)=='6a4b79c4','cold store string predecessor mismatch')
- elseif coldOnly then error('missing cold store string shape addition') end
- if coldOnly then return text end
- for _,hunk in ipairs(hunks)do
-  local first,last=text:find(hunk,1,true)
-  assert(first and not text:find(hunk,last+1,true),'native runtime inverse missing or duplicate hunk')
-  text=text:sub(1,first-1)..text:sub(last+1)
- end
- local hash=0;for i=1,#text do hash=(hash*33+text:byte(i))%4294967296 end
- assert(#text==55206 and string.format('%08x',hash)=='5eeec9b5','CPU source differs beyond two native runtime guards')
- return text
+
+local function coldHash(s)
+    local n = 0
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+return function(text, coldOnly)
+    text = dofile("tests/fixtures/restore_performance_commands.lua")(text, "Diagnostics/cpu.lua")
+    text = dofile("tests/fixtures/restore_observation_lifecycles.lua")(text, "Diagnostics/cpu.lua")
+
+    if text:find('-- BEGIN COLD STORE STRING SHAPE', 1, true) then
+        assert(#text == 57837 and coldHash(text) == '0be263f0', 'unrelated cold store string source')
+
+        for _, block in ipairs(coldBlocks) do
+            local a, b = text:find(block, 1, true)
+            assert(a and not text:find(block, b + 1, true), 'missing or duplicate cold store string block')
+            text = text:sub(1, a - 1) .. text:sub(b + 1)
+        end
+
+        assert(#text == 55576 and coldHash(text) == '6a4b79c4', 'cold store string predecessor mismatch')
+    elseif coldOnly then
+        error('missing cold store string shape addition')
+    end
+
+    if coldOnly then
+        return text
+    end
+
+    for _, hunk in ipairs(hunks) do
+        local first, last = text:find(hunk, 1, true)
+        assert(first and not text:find(hunk, last + 1, true), 'native runtime inverse missing or duplicate hunk')
+        text = text:sub(1, first - 1) .. text:sub(last + 1)
+    end
+
+    local hash = 0
+
+    for i = 1, #text do
+        hash = (hash * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(
+        #text == 55206 and string.format('%08x', hash) == '5eeec9b5',
+        'CPU source differs beyond two native runtime guards'
+    )
+
+    return text
 end
