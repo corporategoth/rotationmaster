@@ -33,7 +33,11 @@ end
 -- revision or the baseline changes.
 function addon:GetFieldSchemaIndex(model, baseline)
     local cached = model.canvasIndex
-    if cached and cached.revision == model.revision and cached.baseline == baseline then return cached end
+
+    if cached and cached.revision == model.revision and cached.baseline == baseline then
+        return cached
+    end
+
     local index = { revision = model.revision, baseline = baseline, byKey = {}, nodes = {} }
     local stack = { { node = model.root, original = baseline, path = {}, key = '' } }
 
@@ -218,11 +222,20 @@ function addon:GetFieldSchemaViewport(scene, top, bottom)
 
     for i = math.max(1, low - 1), #rows do
         local row = rows[i]
-        if row.y > bottom then break end
+
+        if row.y > bottom then
+            break
+        end
 
         while row do
-            if found[row.key] then break end
-            if row.y + row.height >= top then found[row.key] = row end
+            if found[row.key] then
+                break
+            end
+
+            if row.y + row.height >= top then
+                found[row.key] = row
+            end
+
             row = row.parentKey and scene.byKey[row.parentKey]
         end
     end

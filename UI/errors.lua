@@ -62,17 +62,26 @@ function addon:ShowErrors()
         close:SetSize(70, 24)
         close:SetPoint("TOPRIGHT", -12, -10)
         close:SetText(L["Close"])
-        close:SetScript("OnClick", function() window:Hide() end)
+
+        close:SetScript("OnClick", function()
+            window:Hide()
+        end)
+
         local resize = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
         resize:SetSize(60, 24)
         resize:SetPoint("BOTTOMRIGHT", -12, 12)
         resize:SetText(L["Resize"])
 
         resize:SetScript("OnMouseDown", function(_, mouseButton)
-            if mouseButton == "LeftButton" then window:StartSizing("BOTTOMRIGHT") end
+            if mouseButton == "LeftButton" then
+                window:StartSizing("BOTTOMRIGHT")
+            end
         end)
 
-        resize:SetScript("OnMouseUp", function() window:StopMovingOrSizing() end)
+        resize:SetScript("OnMouseUp", function()
+            window:StopMovingOrSizing()
+        end)
+
         window:SetScript("OnHide", window.StopMovingOrSizing)
 
         local scroll = CreateFrame("ScrollFrame", nil, window, "UIPanelScrollFrameTemplate")
@@ -171,14 +180,23 @@ function addon:ShowErrors()
             window.Refresh()
         end)
 
-        if UISpecialFrames then table.insert(UISpecialFrames, addon_name .. "Errors") end
+        if UISpecialFrames then
+            table.insert(UISpecialFrames, addon_name .. "Errors")
+        end
     end
 
     window.reportIndex = nil
     window.includeOriginal = false
     window.Refresh()
-    if self.ApplyWorkbenchScale then self:ApplyWorkbenchScale(window) end
+
+    if self.ApplyWorkbenchScale then
+        self:ApplyWorkbenchScale(window)
+    end
+
     window:Show()
+
     -- An independent report: a peer window in the shared layering (Escape is its own UISpecialFrames entry).
-    if self.OpenPopup then self:OpenPopup(window, nil, { escape = false, kind = "window" }) end
+    if self.OpenPopup then
+        self:OpenPopup(window, nil, { escape = false, kind = "window" })
+    end
 end

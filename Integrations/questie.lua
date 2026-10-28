@@ -103,7 +103,9 @@ function addon.Integrations.NewQuestie(options)
 
     -- Aborts the current work (with the private "retired" marker) when epoch g is no longer the live one.
     local function guard(g)
-        if disposed or not enabled or epoch ~= g then error(retired, 0) end
+        if disposed or not enabled or epoch ~= g then
+            error(retired, 0)
+        end
     end
 
     -- Aborts the current work with an owned failure; execute turns it into the published state and reason.
@@ -115,10 +117,18 @@ function addon.Integrations.NewQuestie(options)
     -- retired the epoch (a provider calling back into this service) aborts the work.
     local function call(g, fn, reason, ...)
         guard(g)
-        if type(fn) ~= 'function' then fault('error', reason) end
+
+        if type(fn) ~= 'function' then
+            fault('error', reason)
+        end
+
         local ok, result = pcall(fn, ...)
         guard(g)
-        if not ok then fault('error', reason) end
+
+        if not ok then
+            fault('error', reason)
+        end
+
         return result
     end
 
@@ -133,7 +143,10 @@ function addon.Integrations.NewQuestie(options)
             accepted = call(g, platform and platform.CanReadValue, 'readability-error', platform, value)
         end
 
-        if accepted ~= true then fault('client-restricted', 'restricted-value') end
+        if accepted ~= true then
+            fault('client-restricted', 'restricted-value')
+        end
+
         return value
     end
 
@@ -148,7 +161,11 @@ function addon.Integrations.NewQuestie(options)
         local platform = addon.Platform
         local info = call(g, platform and platform.GetClientInfo, 'resolver-error', platform)
         read(g, info)
-        if type(info) ~= 'table' then fault('error', 'resolver-error') end
+
+        if type(info) ~= 'table' then
+            fault('error', 'resolver-error')
+        end
+
         local family = field(g, info, 'family')
         local native = C_AddOns
         local loadedFn = type(native) == 'table' and rawget(native, 'IsAddOnLoaded') or IsAddOnLoaded
@@ -164,7 +181,10 @@ function addon.Integrations.NewQuestie(options)
 
         if loaded == true then
             local provider = read(g, rawget(_G, 'Questie'))
-            if type(provider) == 'table' then api = field(g, provider, 'API') end
+
+            if type(provider) == 'table' then
+                api = field(g, provider, 'API')
+            end
         end
 
         return { loaded = loaded, api = api, version = version, family = family }
@@ -176,7 +196,11 @@ function addon.Integrations.NewQuestie(options)
     local function probe(g)
         local source = resolve and call(g, resolve, 'resolver-error') or defaultResolve(g)
         read(g, source)
-        if type(source) ~= 'table' then fault('incompatible', 'invalid-source') end
+
+        if type(source) ~= 'table' then
+            fault('incompatible', 'invalid-source')
+        end
+
         local loaded = field(g, source, 'loaded')
         local family = field(g, source, 'family')
         local version = field(g, source, 'version')
@@ -185,10 +209,20 @@ function addon.Integrations.NewQuestie(options)
         probeMetadata = { family = family, version = version }
         metadataEpoch = g
         local result = { family = family, version = version, state = 'missing', reason = 'provider-missing' }
-        if loaded == false or loaded == nil then return result end
-        if loaded ~= true then fault('incompatible', 'invalid-loaded') end
+
+        if loaded == false or loaded == nil then
+            return result
+        end
+
+        if loaded ~= true then
+            fault('incompatible', 'invalid-loaded')
+        end
+
         local api = field(g, source, 'api')
-        if api == nil then return result end
+
+        if api == nil then
+            return result
+        end
 
         if not supported[family] then
             result.state = 'incompatible'
@@ -196,7 +230,10 @@ function addon.Integrations.NewQuestie(options)
             return result
         end
 
-        if type(api) ~= 'table' then fault('incompatible', 'invalid-api') end
+        if type(api) ~= 'table' then
+            fault('incompatible', 'invalid-api')
+        end
+
         local readyFn = field(g, api, 'RegisterOnReady')
         local updateFn = field(g, api, 'RegisterForQuestUpdates')
 
@@ -205,14 +242,27 @@ function addon.Integrations.NewQuestie(options)
         end
 
         local ready = field(g, api, 'isReady')
-        if type(ready) ~= 'boolean' then fault('incompatible', 'invalid-readiness') end
+
+        if type(ready) ~= 'boolean' then
+            fault('incompatible', 'invalid-readiness')
+        end
+
         local enums = field(g, api, 'Enums')
-        if type(enums) ~= 'table' then fault('incompatible', 'invalid-enums') end
+
+        if type(enums) ~= 'table' then
+            fault('incompatible', 'invalid-enums')
+        end
+
         local reasons = field(g, enums, 'QuestUpdateTriggerReason')
-        if type(reasons) ~= 'table' then fault('incompatible', 'invalid-enums') end
+
+        if type(reasons) ~= 'table' then
+            fault('incompatible', 'invalid-enums')
+        end
 
         for index, key in ipairs(enumNames) do
-            if field(g, reasons, key) ~= index then fault('incompatible', 'invalid-enums') end
+            if field(g, reasons, key) ~= index then
+                fault('incompatible', 'invalid-enums')
+            end
         end
 
         result.api = api
@@ -243,11 +293,15 @@ function addon.Integrations.NewQuestie(options)
         local changed = false
 
         for key, value in pairs(nextStatus) do
-            if status[key] ~= value then changed = true end
+            if status[key] ~= value then
+                changed = true
+            end
         end
 
         for key, value in pairs(status) do
-            if nextStatus[key] ~= value then changed = true end
+            if nextStatus[key] ~= value then
+                changed = true
+            end
         end
 
         status = nextStatus
@@ -257,14 +311,20 @@ function addon.Integrations.NewQuestie(options)
     -- Calls onChange with a copy of the status, once at a time. A failing notification retires the service into an
     -- "error" status, unless a newer operation or disposal has already replaced this one.
     local function notify(g, owner)
-        if not onChange or notifying then return end
+        if not onChange or notifying then
+            return
+        end
+
         local notificationEpoch = epoch
         notifying = true
         local ok = pcall(onChange, copy(status))
         notifying = false
+
         -- The notification may itself retire this operation. A failing stale
         -- notification cannot overwrite a newer owner or terminal disposal.
-        if disposed or epoch ~= notificationEpoch or (g and epoch ~= g) then return end
+        if disposed or epoch ~= notificationEpoch or (g and epoch ~= g) then
+            return
+        end
 
         if not ok then
             retire()
@@ -276,7 +336,11 @@ function addon.Integrations.NewQuestie(options)
     -- Publishes a new status for epoch g (notifying on change) and returns a copy of it.
     local function publish(g, state, reason, source)
         guard(g)
-        if cache(state, reason, source) then notify(g) end
+
+        if cache(state, reason, source) then
+            notify(g)
+        end
+
         guard(g)
         return copy(status)
     end
@@ -285,8 +349,14 @@ function addon.Integrations.NewQuestie(options)
     -- failure retires the service and publishes its owned state and reason (arbitrary errors become "adapter-error").
     local function execute(g, body)
         local ok, result = pcall(body, g)
-        if ok then return result end
-        if rawequal(result, retired) or epoch ~= g or disposed or not enabled then return nil end
+
+        if ok then
+            return result
+        end
+        if rawequal(result, retired) or epoch ~= g or disposed or not enabled then
+            return nil
+        end
+
         -- Only owned codes leave this boundary. Arbitrary exceptions stay private.
         local state, reason = 'error', 'adapter-error'
 
@@ -364,7 +434,10 @@ function addon.Integrations.NewQuestie(options)
             contracts[api] = contract
         end
 
-        if failedReady[api] or failedUpdates[api] then fault('error', 'registration-failed') end
+        if failedReady[api] or failedUpdates[api] then
+            fault('error', 'registration-failed')
+        end
+
         guard(g)
         return contract
     end
@@ -373,16 +446,31 @@ function addon.Integrations.NewQuestie(options)
     -- call, so a retry after a failure or a refresh never registers a second time).
     attachUpdates = function(g, current, contract)
         guard(g)
-        if seenUpdates[current.api] then return end
+
+        if seenUpdates[current.api] then
+            return
+        end
+
         seenUpdates[current.api] = true
         local api = current.api
-        local callback = function(...) updateCallback(api, contract, ...) end
+
+        local callback = function(...)
+            updateCallback(api, contract, ...)
+        end
+
         local ok = pcall(contract.updateFn, callback)
+
         -- Attempt outcome belongs to this API even if the call retired its
         -- status owner. Record it before guarding publication authority.
-        if not ok then failedUpdates[api] = true end
+        if not ok then
+            failedUpdates[api] = true
+        end
+
         guard(g)
-        if not ok then fault('error', 'update-registration-error') end
+
+        if not ok then
+            fault('error', 'update-registration-error')
+        end
     end
 
     -- Provider callback: Questie became ready. Re-verifies the provider, attaches the update callback and publishes
@@ -406,9 +494,16 @@ function addon.Integrations.NewQuestie(options)
 
         execute(g, function()
             local source = verify(g, current, false)
-            if source.ready ~= true then return end
+
+            if source.ready ~= true then
+                return
+            end
+
             attachUpdates(g, current, contract)
-            if status.state ~= 'available' then publish(g, 'available', 'ready', source) end
+
+            if status.state ~= 'available' then
+                publish(g, 'available', 'ready', source)
+            end
         end)
 
         callbackBusy = false
@@ -437,11 +532,23 @@ function addon.Integrations.NewQuestie(options)
         execute(g, function()
             verify(g, current, true)
             read(g, id)
-            if not positiveInteger(id) then return end
+
+            if not positiveInteger(id) then
+                return
+            end
+
             read(g, index)
-            if index ~= nil and not positiveInteger(index) then return end
+
+            if index ~= nil and not positiveInteger(index) then
+                return
+            end
+
             read(g, reason)
-            if not positiveInteger(reason) or reason > 4 then return end
+
+            if not positiveInteger(reason) or reason > 4 then
+                return
+            end
+
             local stamp = clock(g)
             guard(g)
 
@@ -458,14 +565,19 @@ function addon.Integrations.NewQuestie(options)
                 local oldest, oldSequence
 
                 for key, row in pairs(receipts) do
-                    if not oldSequence or row.sequence < oldSequence then oldest, oldSequence = key, row.sequence end
+                    if not oldSequence or row.sequence < oldSequence then
+                        oldest, oldSequence = key, row.sequence
+                    end
                 end
 
                 receipts[oldest] = nil
                 count = count - 1
             end
 
-            if receipts[id] == nil then count = count + 1 end
+            if receipts[id] == nil then
+                count = count + 1
+            end
+
             sequence = sequence + 1
 
             receipts[id] = {
@@ -496,8 +608,13 @@ function addon.Integrations.NewQuestie(options)
     -- Probes the provider again and (re)binds to it, publishing the outcome. Returns a copy of the status, or nil when
     -- the service is disposed or a newer operation superseded this one.
     function service:Refresh()
-        if disposed then return nil end
-        if not enabled then return copy(status) end
+        if disposed then
+            return nil
+        end
+        if not enabled then
+            return copy(status)
+        end
+
         local old = binding
         epoch = epoch + 1
         local g = epoch
@@ -505,8 +622,15 @@ function addon.Integrations.NewQuestie(options)
 
         local result = execute(g, function()
             local source = probe(g)
-            if not same(source, old) or source.ready ~= true then clear() end
-            if source.api == nil then return publish(g, source.state, source.reason, source) end
+
+            if not same(source, old) or source.ready ~= true then
+                clear()
+            end
+
+            if source.api == nil then
+                return publish(g, source.state, source.reason, source)
+            end
+
             local contract = contractFor(g, source)
             binding = source
 
@@ -515,26 +639,50 @@ function addon.Integrations.NewQuestie(options)
             if not seenReady[source.api] then
                 seenReady[source.api] = true
                 local api = source.api
-                local callback = function() readyCallback(api, contract) end
+
+                local callback = function()
+                    readyCallback(api, contract)
+                end
+
                 local ok = pcall(contract.readyFn, callback)
-                if not ok then failedReady[api] = true end
+
+                if not ok then
+                    failedReady[api] = true
+                end
+
                 guard(g)
-                if not ok then fault('error', 'ready-registration-error') end
+
+                if not ok then
+                    fault('error', 'ready-registration-error')
+                end
             end
 
             source = verify(g, source, false)
             binding = source
-            if source.ready then attachUpdates(g, source, contract) end
+
+            if source.ready then
+                attachUpdates(g, source, contract)
+            end
+
             source = verify(g, source, false)
             binding = source
-            if not source.ready then clear() end
+
+            if not source.ready then
+                clear()
+            end
+
             return publish(g, source.state, source.reason, source)
         end)
 
-        if disposed then return nil end
+        if disposed then
+            return nil
+        end
 
         if epoch ~= g then
-            if failureOwner == g then return copy(status) end
+            if failureOwner == g then
+                return copy(status)
+            end
+
             return nil
         end
 
@@ -544,8 +692,12 @@ function addon.Integrations.NewQuestie(options)
     -- Turns the integration on (which refreshes it) or off (which drops the binding and receipts). Returns true, or
     -- false and a reason code.
     function service:SetEnabled(value)
-        if disposed then return false, 'disposed' end
-        if type(value) ~= 'boolean' then return false, 'invalid-enabled' end
+        if disposed then
+            return false, 'disposed'
+        end
+        if type(value) ~= 'boolean' then
+            return false, 'invalid-enabled'
+        end
 
         if value then
             enabled = true
@@ -564,9 +716,16 @@ function addon.Integrations.NewQuestie(options)
     -- "unavailable" record with the reason ("no-recent-update", "expired", ...). A receipt only says an update
     -- arrived, not what the quest's progress is.
     function service:GetRecentUpdate(id)
-        if disposed then return unavailable('disposed') end
-        if not enabled then return unavailable('disabled') end
-        if not binding or status.state ~= 'available' then return unavailable(status.reason) end
+        if disposed then
+            return unavailable('disposed')
+        end
+        if not enabled then
+            return unavailable('disabled')
+        end
+        if not binding or status.state ~= 'available' then
+            return unavailable(status.reason)
+        end
+
         local current = binding
         local g = epoch
 
@@ -574,9 +733,16 @@ function addon.Integrations.NewQuestie(options)
             verify(g, current, true)
             local stamp = clock(g)
             read(g, id)
-            if not positiveInteger(id) then return unavailable('invalid-quest-id') end
+
+            if not positiveInteger(id) then
+                return unavailable('invalid-quest-id')
+            end
+
             local row = receipts[id]
-            if not row then return unavailable('no-recent-update') end
+
+            if not row then
+                return unavailable('no-recent-update')
+            end
 
             if stamp >= row.expiresAt then
                 receipts[id] = nil
@@ -592,7 +758,10 @@ function addon.Integrations.NewQuestie(options)
 
     -- Retires the service for good; every later call reports "disposed".
     function service:Dispose()
-        if disposed then return end
+        if disposed then
+            return
+        end
+
         disposed = true
         enabled = false
         retire()

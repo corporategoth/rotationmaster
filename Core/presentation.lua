@@ -11,20 +11,36 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 function addon:SpellLabel(spell)
     if self.Platform then
         local link = self.Platform:GetSpellLink(spell)
-        if link then return link end
+
+        if link then
+            return link
+        end
+
         local info = self.Platform:GetSpellInfo(spell)
-        if info then return info.name end
+
+        if info then
+            return info.name
+        end
     end
 
-    if type(spell) == "string" then return spell end
-    if type(spell) == "number" then return string.format(L["Unknown spell (%s)"], spell) end
+    if type(spell) == "string" then
+        return spell
+    end
+    if type(spell) == "number" then
+        return string.format(L["Unknown spell (%s)"], spell)
+    end
+
     return L["<spell>"]
 end
 
 -- Label for an aura condition's spell; an ID matched at any rank is suffixed so the choice is visible.
 function addon:AuraSpellLabel(value)
     local label = self:SpellLabel(value.spell)
-    if type(value.spell) == 'number' and value.anyrank == true then return string.format(L['%s (any rank)'], label) end
+
+    if type(value.spell) == 'number' and value.anyrank == true then
+        return string.format(L['%s (any rank)'], label)
+    end
+
     return label
 end
 
@@ -34,7 +50,10 @@ function addon:CastSpellLabel(value)
 
     if type(value.spell) == 'number' and value.ranked == true and self.SpellCatalog then
         local rank = self.SpellCatalog:SpellRank(value.spell)
-        if type(rank) == 'string' and rank ~= '' then return label .. '|cFF888888 (' .. rank .. ')|r' end
+
+        if type(rank) == 'string' and rank ~= '' then
+            return label .. '|cFF888888 (' .. rank .. ')|r'
+        end
     end
 
     return label
@@ -60,7 +79,10 @@ function addon:InstallSpellHyperlinks(frame)
 
     frame.rmSpellHyperlinks = true
     frame:SetHyperlinksEnabled(true)
-    if frame.EnableMouse then frame:EnableMouse(true) end
+
+    if frame.EnableMouse then
+        frame:EnableMouse(true)
+    end
 
     local function install(event, callback)
         if frame.HookScript then
@@ -78,11 +100,15 @@ function addon:InstallSpellHyperlinks(frame)
     end)
 
     install("OnHyperlinkLeave", function()
-        if GameTooltip then GameTooltip:Hide() end
+        if GameTooltip then
+            GameTooltip:Hide()
+        end
     end)
 
     install("OnHyperlinkClick", function(_, link, text, button)
-        if supportedLink(link) and type(SetItemRef) == "function" then SetItemRef(link, text, button) end
+        if supportedLink(link) and type(SetItemRef) == "function" then
+            SetItemRef(link, text, button)
+        end
     end)
 end
 
@@ -108,7 +134,9 @@ function addon:CreateSpellLabel(parent, spell)
     end)
 
     widget:SetCallback("OnLeave", function()
-        if GameTooltip then GameTooltip:Hide() end
+        if GameTooltip then
+            GameTooltip:Hide()
+        end
     end)
 
     widget:SetCallback("OnClick", function(control, _, button)

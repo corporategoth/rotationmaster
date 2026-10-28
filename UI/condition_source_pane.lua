@@ -8,7 +8,11 @@
 
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Forgets the half-created "new condition" state on the pane.
@@ -22,7 +26,10 @@ end
 -- size, survives a redraw with its unsaved draft, asks before the pane is left with unapplied edits, and is dropped on
 -- release. The originals are captured and called, never replaced outright.
 function addon:InstallInlineConditionNavigation(p)
-    if p.inlineNavigation then return end
+    if p.inlineNavigation then
+        return
+    end
+
     p.inlineNavigation = true
     local leave, release, draw, layout = p.RequestLeave, p.Release, p.Draw, p.Layout
 
@@ -70,7 +77,10 @@ function addon:InstallInlineConditionNavigation(p)
                     callback()
                 end
             end, function()
-                if not self.active or self.profile ~= profile or self.global ~= global then return end
+                if not self.active or self.profile ~= profile or self.global ~= global then
+                    return
+                end
+
                 editor:Close()
                 self.inlineCondition = nil
                 self:DiscardSettingsDraft()
@@ -99,7 +109,10 @@ function addon:OpenInlineCustomCondition(p, key, source)
     self:InstallInlineConditionNavigation(p)
 
     p:RequestLeave(function()
-        if not p.active then return end
+        if not p.active then
+            return
+        end
+
         p.creatingCondition = true
         p.newConditionKey = key
         p.newConditionSource = self:CopySettingsData(source or self.empty_condition)
@@ -116,13 +129,19 @@ function addon:DuplicateInlineCustomCondition(p)
     self:InstallInlineConditionNavigation(p)
 
     p:RequestLeave(function()
-        if not p.active then return end
+        if not p.active then
+            return
+        end
+
         local key = p.condition
 
         local source = self.db.global.custom_conditions[key] or self.GetBuiltinConditionSource
             and self:GetBuiltinConditionSource(key)
 
-        if not source then return end
+        if not source then
+            return
+        end
+
         p.creatingCondition = true
         p.newConditionKey = key:sub(1, 216) .. '_' .. self:uuid():gsub('-', '_')
         p.newConditionSource = self:CopySettingsData(source)
@@ -201,10 +220,15 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         local shell = addon.configWindow
 
         if shell and shell.pane == p then
-            if mouse then shell.rightDown = true end
+            if mouse then
+                shell.rightDown = true
+            end
+
             shell:Hide()
         else
-            p:RequestLeave(function() p:Release() end)
+            p:RequestLeave(function()
+                p:Release()
+            end)
         end
     end
 
@@ -224,24 +248,37 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         local y = form.y
 
         local hidden = form:Check('hidden', L['Hidden'], context.hidden, function(value)
-            d.model:Change(function(model) model.context.hidden = value end)
+            d.model:Change(function(model)
+                model.context.hidden = value
+            end)
+
             d:UpdateActions()
         end)
 
         local switch = form:Check('switch', L['Switch Condition'], context.switch, function(value)
-            d.model:Change(function(model) model.context.switch = value end)
+            d.model:Change(function(model)
+                model.context.switch = value
+            end)
+
             d:UpdateActions()
         end)
 
         local announcement = form:Check('announcement', L['Announcement Condition'], context.announcement, function(
             value
         )
-            d.model:Change(function(model) model.context.announcement = value end)
+            d.model:Change(function(model)
+                model.context.announcement = value
+            end)
+
             d:UpdateActions()
         end)
 
         announcement.tooltip = L['Show this condition in the announcement condition editor.']
-        form.cleanups[#form.cleanups + 1] = function() announcement.tooltip = nil end
+
+        form.cleanups[#form.cleanups + 1] = function()
+            announcement.tooltip = nil
+        end
+
         -- The three flags share their row in thirds (the Enabled pill and
         -- Delete keep the right end) and wrap rather than clip when narrow.
         self:LayoutConditionFlags(hidden, switch, announcement, y, form.width - 148)
@@ -316,7 +353,9 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
         -- Navigation must offer Discard even while a raw source field is invalid.
         self:SetUIScript(category, 'OnClick', function()
-            if valid() then visitCategory() end
+            if valid() then
+                visitCategory()
+            end
         end)
 
         category.categoryIcon = category.categoryIcon or category:CreateTexture(nil, 'ARTWORK')
@@ -340,7 +379,10 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
         local move = form:Choice('move_to', nil, context.category, destinations, function(value)
             if valid() then
-                d.model:Change(function(model) model.context.category = value end)
+                d.model:Change(function(model)
+                    model.context.category = value
+                end)
+
                 form:Draw()
                 d:UpdateActions()
             end
@@ -366,8 +408,9 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     -- draft save fails after the condition was installed, the previous definition and source are put back so a
     -- half-applied save is never left behind.
     options.save = function(identifier, value, expected, expectedSource)
-        if not valid() then return false, { reason = 'definition-changed' } end
-
+        if not valid() then
+            return false, { reason = 'definition-changed' }
+        end
         if InCombatLockdown and InCombatLockdown() then
             return false, { reason = L['Leave combat before applying these settings.'] }
         end
@@ -391,13 +434,18 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         if oldDefinition ~= expected or expectedSource and not self:SettingsDataEqual(previous, expectedSource) then
             return false, { reason = 'definition-changed' }
         end
+        if readOnly and not self:SettingsDataEqual(source, value) then
+            return false, { reason = 'readonly-builtin' }
+        end
 
-        if readOnly and not self:SettingsDataEqual(source, value) then return false, { reason = 'readonly-builtin' } end
         local changed = not readOnly and not self:SettingsDataEqual(previous, value)
 
         if changed then
             local ok, why = self:InstallCustomCondition(identifier, value, expected, expectedSource)
-            if not ok then return false, why end
+
+            if not ok then
+                return false, why
+            end
         end
 
         local saved = self:CopySettingsData(self.db.global.custom_conditions[identifier])
@@ -409,7 +457,9 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
         -- Makes `identifier` a member of `list` exactly when `enabled`.
         local function membership(list, enabled)
-            if self:SettingsContains(list, identifier) ~= enabled then self:SettingsFlag(list, identifier, enabled) end
+            if self:SettingsContains(list, identifier) ~= enabled then
+                self:SettingsFlag(list, identifier, enabled)
+            end
         end
 
         draft.disabled_conditions = draft.disabled_conditions or {}
@@ -437,13 +487,17 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
                 self.db.global.custom_conditions[identifier] = previous
                 self.conditionDefinitions[identifier] = oldDefinition
                 self.conditionRegistryVersion = (self.conditionRegistryVersion or 0) + 1
-                if invalidateDependencies then invalidateDependencies(addon, 'condition', identifier) end
 
+                if invalidateDependencies then
+                    invalidateDependencies(addon, 'condition', identifier)
+                end
                 if oldDefinition and not oldDefinition.disabled and oldDefinition.on_register then
                     pcall(oldDefinition.on_register, identifier)
                 end
+                if self.RefreshConditionConsumers then
+                    self:RefreshConditionConsumers()
+                end
 
-                if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
                 p.draft.global.custom_conditions[identifier] = self:CopySettingsData(previous)
                 p.draftBaseline.global.custom_conditions[identifier] = self:CopySettingsData(previous)
             end
@@ -455,7 +509,10 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     local d, owner = self:condition_edit_box(function(identifier)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         clearNew(p)
         p.condition = identifier
         p.conditionSource = readOnly and 'builtin' or 'custom'
@@ -470,7 +527,10 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
     p.cleanups[#p.cleanups + 1] = function()
         self:CloseCustomConditionEditor(d, owner)
-        if p.inlineCondition == d then p.inlineCondition = nil end
+
+        if p.inlineCondition == d then
+            p.inlineCondition = nil
+        end
     end
 
     p.creationUsed = true

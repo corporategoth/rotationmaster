@@ -87,23 +87,49 @@ end
 function addon:GetConditionNameplateThreatCount(minimum, cache)
     local platform = self.Platform
     local units, why = readField(platform, self, 'nameplateUnits')
-    if why then return nil, why end
-    if type(units) ~= 'table' then return nil, 'unit-snapshot-unavailable' end
+
+    if why then
+        return nil, why
+    end
+    if type(units) ~= 'table' then
+        return nil, 'unit-snapshot-unavailable'
+    end
+
     local observeThreat = platform.GetUnitThreatObservation
-    if type(observeThreat) ~= 'function' then return nil, 'missing-api' end
+
+    if type(observeThreat) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local count = 0
 
     for unit in pairs(units) do
-        if not platform:CanReadValue(unit) then return nil, 'restricted-value' end
-        if type(unit) ~= 'string' or unit == '' then return nil, 'invalid-unit-snapshot' end
+        if not platform:CanReadValue(unit) then
+            return nil, 'restricted-value'
+        end
+        if type(unit) ~= 'string' or unit == '' then
+            return nil, 'invalid-unit-snapshot'
+        end
+
         local status, threatReason = addon.Functions.cache.getCached(cache, observeThreat, platform, unit)
-        if not platform:CanReadValue(status) then return nil, 'restricted-value' end
-        if status == nil then return nil, threatReason or 'threat-data-unavailable' end
+
+        if not platform:CanReadValue(status) then
+            return nil, 'restricted-value'
+        end
+        if status == nil then
+            return nil, threatReason or 'threat-data-unavailable'
+        end
 
         if status ~= false then
             local readable, problem = finite(platform, status)
-            if not readable then return nil, problem end
-            if status >= minimum then count = count + 1 end
+
+            if not readable then
+                return nil, problem
+            end
+
+            if status >= minimum then
+                count = count + 1
+            end
         end
     end
 

@@ -15,8 +15,13 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Short display text for a pending-input value: "None" for nil, "Fields" for a table, otherwise tostring.
 ---@param value any
 local function text(value)
-    if value == nil then return L['None'] end
-    if type(value) == 'table' then return L['Fields'] end
+    if value == nil then
+        return L['None']
+    end
+    if type(value) == 'table' then
+        return L['Fields']
+    end
+
     return tostring(value)
 end
 
@@ -54,8 +59,10 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
     -- turns a value into its text and the optional `icon` returns a texture id for either side.
     local function add(label, a, b, format, icon)
         local changed = not self:UnsavedDataEqual(a, b)
-        if changed then total = total + 1 end
 
+        if changed then
+            total = total + 1
+        end
         if changed or showSame then
             rows[#rows + 1] = {
                 label = label,
@@ -230,8 +237,14 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
             self:DescribeCondition(step.conditions or {}, spec),
         }
 
-        if step.name and step.name ~= '' then table.insert(parts, 1, step.name) end
-        if step.disabled then parts[#parts + 1] = L['Disabled'] end
+        if step.name and step.name ~= '' then
+            table.insert(parts, 1, step.name)
+        end
+
+        if step.disabled then
+            parts[#parts + 1] = L['Disabled']
+        end
+
         local fields = self.RotationData.CopyData(step)
 
         for _, key in ipairs({'id', 'type', 'action', 'name', 'conditions', 'disabled', 'onTrue', 'onFalse', 'mode'}) do
@@ -274,7 +287,9 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
                 end
             end
 
-            if #path > 0 then parts[#parts + 1] = table.concat(path, ' / ') end
+            if #path > 0 then
+                parts[#parts + 1] = table.concat(path, ' / ')
+            end
         end
 
         return table.concat(parts, '\n')

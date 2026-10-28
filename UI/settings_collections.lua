@@ -6,7 +6,11 @@
 -- `addon.db` only through the draft or the explicit delete paths here, never while in combat.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Turns a collection keyed by id into a list of `{ value = id, text = name }` entries sorted by name (then id), for
@@ -21,7 +25,10 @@ function addon:SettingsEntries(values)
     end
 
     table.sort(entries, function(a, b)
-        if a.text == b.text then return tostring(a.value) < tostring(b.value) end
+        if a.text == b.text then
+            return tostring(a.value) < tostring(b.value)
+        end
+
         return a.text < b.text
     end)
 
@@ -30,28 +37,39 @@ end
 
 -- Returns `text` when it holds a non-blank string, otherwise nil.
 function addon:SettingsNonempty(text)
-    if type(text) == 'string' and text:find('%S') then return text end
+    if type(text) == 'string' and text:find('%S') then
+        return text
+    end
 end
 
 -- Parses a positive whole number from user text, or returns nil.
 function addon:SettingsPositiveID(text)
     local n = tonumber(text)
-    if n and n > 0 and n == math.floor(n) then return n end
+
+    if n and n > 0 and n == math.floor(n) then
+        return n
+    end
 end
 
 -- Makes `value` present exactly once (enabled) or absent (disabled) in an array, in place.
 function addon:SettingsFlag(list, value, enabled)
     for i = #list, 1, -1 do
-        if list[i] == value then table.remove(list, i) end
+        if list[i] == value then
+            table.remove(list, i)
+        end
     end
 
-    if enabled then list[#list + 1] = value end
+    if enabled then
+        list[#list + 1] = value
+    end
 end
 
 -- True when the array holds `value`; a nil list counts as empty.
 function addon:SettingsContains(list, value)
     for _, entry in ipairs(list or {}) do
-        if entry == value then return true end
+        if entry == value then
+            return true
+        end
     end
 
     return false
@@ -74,28 +92,36 @@ function addon:SettingsOrderControls(p, prefix, list, i, changed)
             text = L['Move to Top'],
             icon = 'chevron-double-down',
             enabled = i > 1,
-            action = function() move(1) end,
+            action = function()
+                move(1)
+            end,
         },
         {
             key = prefix .. 'up',
             text = L['Move Up'],
             icon = 'up',
             enabled = i > 1,
-            action = function() move(i - 1) end,
+            action = function()
+                move(i - 1)
+            end,
         },
         {
             key = prefix .. 'down',
             text = L['Move Down'],
             icon = 'down',
             enabled = i < #list,
-            action = function() move(i + 1) end,
+            action = function()
+                move(i + 1)
+            end,
         },
         {
             key = prefix .. 'bottom',
             text = L['Move to Bottom'],
             icon = 'chevron-double-down',
             enabled = i < #list,
-            action = function() move(#list) end,
+            action = function()
+                move(#list)
+            end,
         },
         {
             key = prefix .. 'remove',
@@ -127,7 +153,11 @@ function addon:OpenNativeSettings(parent, key, cached)
     }
 
     local build = builders[key]
-    if not build then return end
+
+    if not build then
+        return
+    end
+
     local p = cached or self:CreateSettingsForm(parent)
 
     local scopes = {
@@ -174,7 +204,11 @@ function addon:OpenNativeSettings(parent, key, cached)
     p.transactionKeys = scopes[key]
     p:SetWidth(parent:GetWidth())
     p:SetHeight(parent:GetHeight())
-    p:Open(function(form) build(self, form) end)
+
+    p:Open(function(form)
+        build(self, form)
+    end)
+
     return p
 end
 
@@ -184,7 +218,9 @@ function addon:CollectionFooter(p, kind, values, current, duplicate, transfer, c
     local candidates = {}
 
     for _, entry in ipairs(self:SettingsEntries(values)) do
-        if entry.value ~= current then candidates[#candidates + 1] = entry end
+        if entry.value ~= current then
+            candidates[#candidates + 1] = entry
+        end
     end
 
     p:SetRosterActions({
@@ -285,8 +321,13 @@ function addon:ConfirmSettingsDeletion(p, warning, remove)
             p:DiscardSettingsDraft()
             p.emptyDismissed = true
             p:Draw()
-            if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
-            if self.ButtonFetch then self:ButtonFetch() end
+
+            if self.RemoveAllCurrentGlows then
+                self:RemoveAllCurrentGlows()
+            end
+            if self.ButtonFetch then
+                self:ButtonFetch()
+            end
         end)
     end)
 end
@@ -296,7 +337,11 @@ end
 -- entry had changed), so a failed cleanup hook cannot leave a runtime without its source.
 function addon:DeleteSavedCustomCondition(key)
     local source = (self.db.global.custom_conditions or {})[key]
-    if not source then return false, 'definition-changed' end
+
+    if not source then
+        return false, 'definition-changed'
+    end
+
     -- Unregister can run trusted cleanup hooks. A failure must retain its saved
     -- source and registered definition, rather than leaving an orphaned runtime.
     local definition = self.conditionDefinitions and self.conditionDefinitions[key]
@@ -306,13 +351,20 @@ function addon:DeleteSavedCustomCondition(key)
         if self.conditionDefinitions then
             local changed = not rawequal(self.conditionDefinitions[key], definition)
             self.conditionDefinitions[key] = definition
-            if changed and invalidateDependencies then invalidateDependencies(addon, 'condition', key) end
+
+            if changed and invalidateDependencies then
+                invalidateDependencies(addon, 'condition', key)
+            end
         end
 
         return false, why
     end
 
     self.db.global.custom_conditions[key] = nil
-    if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
+
+    if self.RefreshConditionConsumers then
+        self:RefreshConditionConsumers()
+    end
+
     return true
 end

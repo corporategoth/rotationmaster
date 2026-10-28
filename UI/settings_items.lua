@@ -7,19 +7,33 @@
 -- UI/item_set_binding.lua.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Parses one item field: a positive whole number is an item id, any other non-blank text is kept as a name or link, and
 -- blank or an invalid number returns nil.
 local function itemValue(text)
-    if text:find('[%z\1-\31\127]') then return end
+    if text:find('[%z\1-\31\127]') then
+        return
+    end
+
     local value = text:match('^%s*(.-)%s*$')
-    if value == '' then return end
+
+    if value == '' then
+        return
+    end
+
     local number = tonumber(value)
 
     if number then
-        if number <= 0 or number % 1 ~= 0 then return end
+        if number <= 0 or number % 1 ~= 0 then
+            return
+        end
+
         return number
     end
 
@@ -55,7 +69,9 @@ function addon:BuildItemSettings(p)
         entry.icon = info and info.icon or 'Interface\\Icons\\INV_Misc_Bag_08'
     end
 
-    if not merged[p.selection] and not p.creating then p.selection = entries[1] and entries[1].value end
+    if not merged[p.selection] and not p.creating then
+        p.selection = entries[1] and entries[1].value
+    end
 
     -- Binding: drag a set (its roster row or the Bind pill) onto any action
     -- bar slot, which swaps with what is there, or click Bind and then click
@@ -64,7 +80,9 @@ function addon:BuildItemSettings(p)
     -- changes, or when no item of the set can be read. Shows the reason to the user and returns true only when the item
     -- is on the cursor.
     local function beginBind(setId)
-        if not p:FlushEdits() then return false end
+        if not p:FlushEdits() then
+            return false
+        end
 
         if InCombatLockdown and InCombatLockdown() then
             p:Message(L['Leave combat before changing action bar bindings.'])
@@ -90,7 +108,10 @@ function addon:BuildItemSettings(p)
             ok, why = self:BeginItemSetBind(setId, first)
         else
             local pickup = type(C_Item) == 'table' and C_Item.PickupItem or nil
-            if type(pickup) ~= 'function' then pickup = PickupItem end
+
+            if type(pickup) ~= 'function' then
+                pickup = PickupItem
+            end
 
             if first and type(pickup) == 'function' then
                 self.bindingItemSet = setId
@@ -120,7 +141,9 @@ function addon:BuildItemSettings(p)
             p:Draw()
         end,
         {
-            dragOut = function(setId) beginBind(setId) end,
+            dragOut = function(setId)
+                beginBind(setId)
+            end,
             newText = L['Add item set'],
             new = function()
                 p.previousSelection = p.selection
@@ -132,7 +155,10 @@ function addon:BuildItemSettings(p)
         }
     )
 
-    if p.historyEnabled then p:HistoryActions() end
+    if p.historyEnabled then
+        p:HistoryActions()
+    end
+
     local set = merged[p.selection]
 
     if set then
@@ -154,8 +180,12 @@ function addon:BuildItemSettings(p)
             set.modified = true
 
             p:RunSettingsEffect('items_' .. id, function()
-                if self.UpdateBoundButton then self:UpdateBoundButton(id) end
-                if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end
+                if self.UpdateBoundButton then
+                    self:UpdateBoundButton(id)
+                end
+                if self.UpdateItemSetButtons then
+                    self:UpdateItemSetButtons(id)
+                end
             end)
         end
 
@@ -239,7 +269,15 @@ function addon:BuildItemSettings(p)
                     leading = function(form, y, width)
                         return self:LayoutNewItemField(
                             form,
-                            form:Item('new_item', nil, p.newItem, function(value) p.newItem = value end, true),
+                            form:Item(
+                                'new_item',
+                                nil,
+                                p.newItem,
+                                function(value)
+                                    p.newItem = value
+                                end,
+                                true
+                            ),
                             y,
                             width
                         )
@@ -271,12 +309,19 @@ function addon:BuildItemSettings(p)
             )
 
             binding:SetSelected(#labels > 0)
-            if self.EndHighlightSlot then self:EndHighlightSlot() end
-            if slots and self.HighlightSlots then self:HighlightSlots(slots) end
+
+            if self.EndHighlightSlot then
+                self:EndHighlightSlot()
+            end
+            if slots and self.HighlightSlots then
+                self:HighlightSlots(slots)
+            end
         end
 
         self:SetUIScript(binding, 'OnClick', p:Guard(function()
-            if not p:FlushEdits() then return end
+            if not p:FlushEdits() then
+                return
+            end
 
             if InCombatLockdown and InCombatLockdown() then
                 p:Message(L['Leave combat before changing action bar bindings.'])
@@ -291,7 +336,10 @@ function addon:BuildItemSettings(p)
                     end
                 else
                     bindings[id] = nil
-                    if self.EndHighlightSlot then self:EndHighlightSlot() end
+
+                    if self.EndHighlightSlot then
+                        self:EndHighlightSlot()
+                    end
                 end
 
                 refreshBinding()
@@ -302,12 +350,22 @@ function addon:BuildItemSettings(p)
         end))
 
         binding.tooltip = L['Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.']
-        self:BindWorkbenchDragSource(binding, p:Guard(function() beginBind(id) end), function() end)
+
+        self:BindWorkbenchDragSource(
+            binding,
+            p:Guard(function()
+                beginBind(id)
+            end),
+            function() end
+        )
+
         -- The generation token drops a bind notification that arrives after the page was redrawn or closed.
         local token = p.generation
 
         local callback = function(changedId)
-            if p:Valid(token) and (changedId == nil or changedId == id) then refreshBinding() end
+            if p:Valid(token) and (changedId == nil or changedId == id) then
+                refreshBinding()
+            end
         end
 
         self.itemSetCallback = callback
@@ -316,14 +374,21 @@ function addon:BuildItemSettings(p)
         -- Runs when the page is torn down: releases the notification, cancels an unfinished bind (taking the set's item
         -- off the cursor) and removes the slot highlights.
         p.cleanups[#p.cleanups + 1] = function()
-            if self.itemSetCallback == callback then self.itemSetCallback = nil end
+            if self.itemSetCallback == callback then
+                self.itemSetCallback = nil
+            end
 
             if self.bindingItemSet == id then
                 self.bindingItemSet = nil
-                if self.ClearItemSetBindCursor then self:ClearItemSetBindCursor(id) end
+
+                if self.ClearItemSetBindCursor then
+                    self:ClearItemSetBindCursor(id)
+                end
             end
 
-            if self.EndHighlightSlot then self:EndHighlightSlot() end
+            if self.EndHighlightSlot then
+                self:EndHighlightSlot()
+            end
         end
 
         local actionEntries = {
@@ -365,7 +430,10 @@ function addon:BuildItemSettings(p)
                         text,
                         function(input, settings)
                             local candidate, errorText = self:ParseItemSetImport(input, codec)
-                            if not candidate then return false, errorText end
+
+                            if not candidate then
+                                return false, errorText
+                            end
 
                             if settings.mode == 'replace' then
                                 set.items = self:CopySettingsData(candidate.items)
@@ -383,7 +451,9 @@ function addon:BuildItemSettings(p)
                                 p.creating = false
 
                                 p:RunSettingsEffect('items_' .. generated, function()
-                                    if self.UpdateItemSetButtons then self:UpdateItemSetButtons(generated) end
+                                    if self.UpdateItemSetButtons then
+                                        self:UpdateItemSetButtons(generated)
+                                    end
                                 end)
                             end
 
@@ -433,7 +503,10 @@ function addon:BuildItemSettings(p)
                         function()
                             local profile, global = self.db.profile.itemsets or {}, self.db.global.itemsets or {}
                             local current = profile[id] or global[id]
-                            if not current then return false, 'item-set-changed' end
+
+                            if not current then
+                                return false, 'item-set-changed'
+                            end
 
                             if self.UnbindItemSet then
                                 if self:UnbindItemSet(id, self:CopySettingsData(current.items or {})) == false then
@@ -445,8 +518,14 @@ function addon:BuildItemSettings(p)
 
                             profile[id] = nil
                             global[id] = nil
-                            if invalidateDependencies then invalidateDependencies(addon, 'itemset', id) end
-                            if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end
+
+                            if invalidateDependencies then
+                                invalidateDependencies(addon, 'itemset', id)
+                            end
+                            if self.UpdateItemSetButtons then
+                                self:UpdateItemSetButtons(id)
+                            end
+
                             return true
                         end
                     )
@@ -470,7 +549,9 @@ function addon:BuildItemSettings(p)
         end
 
         self:SetUIScript(reset, 'OnClick', p:Guard(function()
-            if p:FlushEdits() then actionEntries[3].action() end
+            if p:FlushEdits() then
+                actionEntries[3].action()
+            end
         end))
     end
 
@@ -494,7 +575,11 @@ function addon:BuildItemSettings(p)
                         '',
                         function(text, settings)
                             local candidate, why = self:ParseItemSetImport(text, codec)
-                            if not candidate then return false, why end
+
+                            if not candidate then
+                                return false, why
+                            end
+
                             local id = self:uuid()
                             store.profile.itemsets = store.profile.itemsets or {}
 
@@ -523,10 +608,16 @@ function addon:BuildItemSettings(p)
             }
         )
 
-        if not p.creating and not p:CanAutoCreateCollection('profile', 'itemsets') then return end
+        if not p.creating and not p:CanAutoCreateCollection('profile', 'itemsets') then
+            return
+        end
+
         p:Heading(L['Add item set'])
         p.newItemSetName = p.newItemSetName or ''
-        p:Edit('new_name', L['Name'], p.newItemSetName, nil, function(text) p.newItemSetName = text end)
+
+        p:Edit('new_name', L['Name'], p.newItemSetName, nil, function(text)
+            p.newItemSetName = text
+        end)
 
         p:CreationActions(function()
             if not self:SettingsNonempty(p.newItemSetName) then

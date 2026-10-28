@@ -30,8 +30,13 @@ end
 -- else the workspace's copy of the source (its enabled flag).
 local function builtinSwitch(workspace)
     -- An import preview shows the switch the incoming rotation carries; it is nobody's setting.
-    if workspace.preview then return workspace:Snapshot().disabled ~= true end
-    if type(addon.GetBuiltinSwitch) == 'function' then return (addon:GetBuiltinSwitch(workspace.builtin)) end
+    if workspace.preview then
+        return workspace:Snapshot().disabled ~= true
+    end
+    if type(addon.GetBuiltinSwitch) == 'function' then
+        return (addon:GetBuiltinSwitch(workspace.builtin))
+    end
+
     local source = workspace.source
     return type(source) == 'table' and (source.switchedOn == nil and source.enabled or source.switchedOn) or nil
 end
@@ -62,10 +67,19 @@ end
 -- and a reason when no workspace can be made. The closures below share `workspace`, `spec`, `id` and `onSelect` as
 -- upvalues and `pane:Open` reassigns them, so they always describe the rotation currently shown.
 function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
-    if parent.rmRotationEditor then return parent.rmRotationEditor:Open(spec, id, onSelect, detached) end
+    if parent.rmRotationEditor then
+        return parent.rmRotationEditor:Open(spec, id, onSelect, detached)
+    end
+
     local workspace, why = detached, nil
-    if not workspace then workspace, why = self:GetRotationEditWorkspace(spec, id) end
-    if not workspace then return nil, why end
+
+    if not workspace then
+        workspace, why = self:GetRotationEditWorkspace(spec, id)
+    end
+
+    if not workspace then
+        return nil, why
+    end
 
     local pane = {
         frame = self:TrackWorkbenchSize(CreateFrame('Frame', nil, parent)),
@@ -211,7 +225,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
 
             model.pendingProblem = self:PendingFieldProblem(model.id)
-            if model.pendingProblem then model.invalid = true end
+
+            if model.pendingProblem then
+                model.invalid = true
+            end
+
             model.displayName = self:FieldText(model.id, 'name', model.step.name or '')
             model.expanded = not model.compact and self.view.expanded[model.id] == true
             model.unbound = self.view.unbound[model.id]
@@ -256,11 +274,22 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- only when a card's warning changes, and not under a focused input (the
     -- next render picks it up).
     function pane:RefreshBindings()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         local _, signature = self:CollectBindings(self.workspace:Snapshot())
-        if signature == self.bindingSignature then return end
+
+        if signature == self.bindingSignature then
+            return
+        end
+
         local focus = type(GetCurrentKeyBoardFocus) == 'function' and GetCurrentKeyBoardFocus() or nil
-        if focus then return end
+
+        if focus then
+            return
+        end
+
         self:Render()
     end
 
@@ -272,8 +301,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         for _, diagnostic in ipairs(validation.diagnostics) do
             local section = type(diagnostic.path) == 'string' and diagnostic.path:match('^%$%.body%.(%a+)%[')
-            if section ~= 'rotation' and section ~= 'cooldowns' then section = 'record' end
 
+            if section ~= 'rotation' and section ~= 'cooldowns' then
+                section = 'record'
+            end
             if not problems[section] then
                 problems[section] = addon.DescribeRotationIssue and addon:DescribeRotationIssue(diagnostic, snapshot)
                     or tostring(diagnostic.code)
@@ -320,9 +351,16 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Re-validates and repaints card borders in place, without re-rendering the canvas, so typing in a field never
     -- rebinds the card that has focus.
     function pane:RefreshValidation()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         local scene = self:BuildScene()
-        if not scene then return end
+
+        if not scene then
+            return
+        end
+
         local byId = {}
 
         for _, model in ipairs(scene.cards) do
@@ -335,7 +373,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             if model and card.frame:IsShown() then
                 card:SetValidation(model.invalid)
                 card.model.pendingProblem = model.pendingProblem
-                if card.RefreshHighlightPreview then card.RefreshHighlightPreview() end
+
+                if card.RefreshHighlightPreview then
+                    card.RefreshHighlightPreview()
+                end
             end
         end
 
@@ -346,7 +387,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Runs a workspace command and re-renders. Returns the command's results, or nil and a reason (also shown in the
     -- status line) when it was refused or the pane was already released.
     function pane:Command(name, ...)
-        if not self.active then return nil, 'rotation-pane-released' end
+        if not self.active then
+            return nil, 'rotation-pane-released'
+        end
+
         local ok, result = self.workspace:Command(name, ...)
 
         if not ok then
@@ -366,14 +410,16 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Redraws everything that depends on the workspace: name, description (unless being typed), switch summary, scene,
     -- canvas, live bars, buttons and the priority and Enabled controls.
     function pane:Render()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self.viewMode:SetText(self.view.layout == 'list' and L['List view'] or L['Diagram view'])
         local snapshot = self.workspace:Snapshot()
 
         if self.metadataWindow and self.metadataWindow.frame:IsShown() and not self.metadataDirty then
             self.metadataWindow:Sync()
         end
-
         if not self.descriptionDirty then
             self.description:SetText(
                 type(snapshot.description) == 'string' and snapshot.description
@@ -383,7 +429,6 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                         or '')
             )
         end
-
         if not self.nameDirty and self.name:GetText() ~= (snapshot.name or (workspace.fallback and DEFAULT or '')) then
             self.name:SetText(addon:PlainWorkbenchName(
                 type(snapshot.name) == 'string' and snapshot.name or (workspace.fallback and DEFAULT or '')
@@ -553,7 +598,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Returns the text of the switch condition button: the fallback's fixed text, an explanation when there is no
     -- switch condition, or the readable condition.
     function pane:SwitchSummary(snapshot)
-        if workspace.fallback then return addon:PlainWorkbenchName(L['No other rotations match.']) end
+        if workspace.fallback then
+            return addon:PlainWorkbenchName(L['No other rotations match.'])
+        end
 
         -- Nothing to match is not nothing to say: it says what that means.
         if addon.HasSwitchCondition and not addon:HasSwitchCondition(snapshot.switch) then
@@ -593,7 +640,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             self.enable:Disable()
         elseif self.workspace.readOnly then
             local overrides = builtinOverrides(self.workspace) or {}
-            if not self.priority:HasFocus() then self.priority:SetText(tostring(overrides.effectivePriority or 0)) end
+
+            if not self.priority:HasFocus() then
+                self.priority:SetText(tostring(overrides.effectivePriority or 0))
+            end
+
             -- An override colours the value (the priority number, the pill's
             -- text); labels and borders stay as they are.
             local color = overrides.priority ~= nil and amber or white
@@ -641,7 +692,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- A Built In priority or Enabled change is saved now, then selection follows.
     function pane:BuiltinOverrideChanged()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self:RefreshAdvice()
 
         if self.active then
@@ -660,7 +714,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Opens the condition editor on a step's conditions or, for `{ kind = "switch" }`, on the switch condition. The
     -- editor edits a copy; the commit callback applies it through the workspace and only if this pane is still active.
     function pane:EditCondition(target)
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         local editorTarget, reason = self.workspace:ConditionEditorTarget(target)
 
         if not editorTarget then
@@ -714,7 +771,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             spec,
             editorTarget.condition,
             function(applied)
-                if not applied then return end
+                if not applied then
+                    return
+                end
+
                 local ok, problem = editorTarget.commit(editorTarget.condition)
 
                 if self.active then
@@ -755,7 +815,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
     -- Builds the open card's detail fields (UI/rotation_fields.lua) when that file is loaded.
     function pane:BuildFields(card, model, alive)
-        if addon.BuildRotationCardFields then addon:BuildRotationCardFields(self, card, model, alive) end
+        if addon.BuildRotationCardFields then
+            addon:BuildRotationCardFields(self, card, model, alive)
+        end
     end
 
     addon:InstallRotationFieldDrafts(pane)
@@ -784,7 +846,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         L['Undo'],
         24,
         function()
-            if not pane:FlushName() then return end
+            if not pane:FlushName() then
+                return
+            end
+
             local flushed, reason = pane:FlushFieldEdits()
 
             if not flushed then
@@ -847,8 +912,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         local enter = pane.switch:GetScript('OnEnter')
 
         addon:SetUIScript(pane.switch, 'OnEnter', function(control, ...)
-            if enter then enter(control, ...) end
-
+            if enter then
+                enter(control, ...)
+            end
             if pane.switchLiveBar.state then
                 addon:ShowConditionFieldTooltip(control, control.tooltip, pane.switchLiveBar.state)
             end
@@ -860,7 +926,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         126,
         function()
             pane:RequestLeave(function()
-                if addon.ShowRotationComparison then addon:ShowRotationComparison(spec, id) end
+                if addon.ShowRotationComparison then
+                    addon:ShowRotationComparison(spec, id)
+                end
             end)
         end,
         'compare'
@@ -904,14 +972,19 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     pane.clone:Hide()
 
     pane.enable = tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'], 116, function()
-        if workspace.preview then return end
+        if workspace.preview then
+            return
+        end
 
         if workspace.readOnly then
             local current = builtinSwitch(workspace) == true
             local ok, problem = addon:SetDefaultRotationEnabled(workspace.builtin, not current)
 
             if ok then
-                if workspace.source then workspace.source.enabled = not current end
+                if workspace.source then
+                    workspace.source.enabled = not current
+                end
+
                 pane:BuiltinOverrideChanged()
             else
                 pane:Message(problem)
@@ -1040,7 +1113,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.switch.tooltip = note and (self.switchBaseTooltip and self.switchBaseTooltip .. '\n\n' .. note or note)
             or self.switchBaseTooltip
 
-        if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(self.switch, amber, false) end
+        if addon.SetWorkbenchNotice then
+            addon:SetWorkbenchNotice(self.switch, amber, false)
+        end
+
         -- The live bar steps inside the amber overlap edge when that shows.
         local inset = amber and 4 or 0
         local bar = self.switchLiveBar
@@ -1056,7 +1132,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     end
 
     pane.delete = tool(L['Delete'], 24, function()
-        if pane.ConfirmDelete then pane:ConfirmDelete() end
+        if pane.ConfirmDelete then
+            pane:ConfirmDelete()
+        end
     end)
 
     pane.delete:SetText('')
@@ -1105,10 +1183,15 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         bar.buttons[key] = button
         bar.order[#bar.order + 1] = key
         button.editing = entry[4] == true
-        if key == 'remove' then button.icon:SetVertexColor(1, .3, .3, 1) end
+
+        if key == 'remove' then
+            button.icon:SetVertexColor(1, .3, .3, 1)
+        end
 
         addon:SetUIScript(button, 'OnClick', function()
-            if pane.active then pane:BulkCommand(key) end
+            if pane.active then
+                pane:BulkCommand(key)
+            end
         end)
     end
 
@@ -1209,23 +1292,34 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         -- Only a change between the row and the stacked placement moves the canvas.
-        if self.ready and self:LayoutFooter() then self:Resized() end
+        if self.ready and self:LayoutFooter() then
+            self:Resized()
+        end
     end
 
     -- Runs a bulk action on the selected cards (duplicate, enable, disable, remove, or clear the selection) as one
     -- `Batch` command, so a single Undo reverses it. Read-only panes only clear. Branches keep their mode: only steps
     -- are enabled or disabled.
     function pane:BulkCommand(kind)
-        if not self.active then return end
+        if not self.active then
+            return
+        end
 
         if kind == 'clear' then
             self.canvas:ClearSelection()
             return
         end
 
-        if self.workspace.readOnly then return end
+        if self.workspace.readOnly then
+            return
+        end
+
         local index = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
-        if not index then return end
+
+        if not index then
+            return
+        end
+
         local operations = {}
 
         if kind == 'duplicate' or kind == 'remove' then
@@ -1245,9 +1339,16 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
         end
 
-        if #operations == 0 then return end
+        if #operations == 0 then
+            return
+        end
+
         local ok = self:Command('Batch', operations)
-        if ok and kind == 'remove' then self.canvas:ClearSelection() end
+
+        if ok and kind == 'remove' then
+            self.canvas:ClearSelection()
+        end
+
         return ok
     end
 
@@ -1271,11 +1372,18 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         -- refresh may continue.
         local function optional(name, ...)
             local available = addon[name]
-            if not current() then return false end
+
+            if not current() then
+                return false
+            end
 
             if available then
                 local method = addon[name]
-                if not current() then return false end
+
+                if not current() then
+                    return false
+                end
+
                 method(addon, ...)
             end
 
@@ -1291,51 +1399,97 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         then
             -- Removed/changed actions must be cleared using their old identities.
             for _, step in ipairs(previous.cooldowns or {}) do
-                if not current() then return false end
+                if not current() then
+                    return false
+                end
+
                 local available = addon.GetSpellIds and addon.GlowCooldown
-                if not current() then return false end
+
+                if not current() then
+                    return false
+                end
 
                 if available then
                     local get = addon.GetSpellIds
-                    if not current() then return false end
+
+                    if not current() then
+                        return false
+                    end
+
                     local ids = get(addon, step)
-                    if not current() then return false end
+
+                    if not current() then
+                        return false
+                    end
 
                     for _, spell in ipairs(ids) do
-                        if not current() then return false end
+                        if not current() then
+                            return false
+                        end
+
                         local glow = addon.GlowCooldown
-                        if not current() then return false end
+
+                        if not current() then
+                            return false
+                        end
+
                         glow(addon, spell, false)
-                        if not current() then return false end
+
+                        if not current() then
+                            return false
+                        end
                     end
                 end
             end
 
-            if not optional('GlowClear') then return false end
+            if not optional('GlowClear') then
+                return false
+            end
+
             addon.currentSpell = nil
             addon.avail_announced = {}
             addon.announced = {}
             addon.skipAnnounce = true
         end
 
-        if not current() or not optional('UpdateAutoSwitch') then return false end
+        if not current() or not optional('UpdateAutoSwitch') then
+            return false
+        end
+
         local available = addon.SwitchRotation
-        if not current() then return false end
+
+        if not current() then
+            return false
+        end
 
         if available then
             local switch = addon.SwitchRotation
-            if not current() then return false end
+
+            if not current() then
+                return false
+            end
+
             local _, nextChange = switch(addon)
             change = nextChange or change
         end
 
-        if not current() or not optional('EvaluateNextAction') then return false end
+        if not current() or not optional('EvaluateNextAction') then
+            return false
+        end
+
         local saved = self.onSaved
-        if not current() then return false end
+
+        if not current() then
+            return false
+        end
 
         if saved then
             saved = self.onSaved
-            if not current() then return false end
+
+            if not current() then
+                return false
+            end
+
             saved()
         end
 
@@ -1356,7 +1510,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Saves the draft: flushes typed fields and the name, applies the workspace, reopens under the new id when the save
     -- changed it, then refreshes the advice and redraws. Returns the workspace result, or nil and a reason.
     function pane:Apply()
-        if not self.active then return nil, 'rotation-pane-released' end
+        if not self.active then
+            return nil, 'rotation-pane-released'
+        end
+
         local fieldsOk, fieldsError = self:FlushFieldEdits()
 
         if not fieldsOk then
@@ -1365,14 +1522,20 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         local flushed, flushError = self:FlushName()
-        if not flushed then return nil, flushError end
+
+        if not flushed then
+            return nil, flushError
+        end
+
         local previous = workspace.original and data.CopyData(workspace.original)
         local previousId = id
         local profile = addon.db.profile
         local ok, problem = workspace:Apply()
 
         if ok then
-            if not self.active or self.workspace ~= workspace or addon.db.profile ~= profile then return ok, problem end
+            if not self.active or self.workspace ~= workspace or addon.db.profile ~= profile then
+                return ok, problem
+            end
 
             if workspace.id ~= id then
                 self:Open(spec, workspace.id, onSelect)
@@ -1384,8 +1547,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             -- itself succeeded, so the roster and this pane still show the
             -- applied state: Apply and View Changes grey out, marks clear.
             local advised = self:RefreshAdvice(previous, previousId)
-            if not advised and self.active and self.workspace == workspace and self.onSaved then self.onSaved() end
-            if self.active and self.workspace == workspace then self:Render() end
+
+            if not advised and self.active and self.workspace == workspace and self.onSaved then
+                self.onSaved()
+            end
+            if self.active and self.workspace == workspace then
+                self:Render()
+            end
         else
             self:Message(problem)
         end
@@ -1426,7 +1594,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- workspace commands. Returns true, or nil and a reason after marking the offending box red and showing the
     -- message. Read-only and deleted panes have nothing to flush.
     function pane:FlushName()
-        if self.deleted or workspace.readOnly then return true end
+        if self.deleted or workspace.readOnly then
+            return true
+        end
 
         if self.nameDirty and not workspace.fallback then
             local ok, problem = workspace:Command('SetBodyField', 'name', self.name:GetText())
@@ -1439,7 +1609,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             self.nameDirty = false
         end
 
-        if self.identifierDirty and not self:CheckIdentifier() then return nil, 'invalid-identifier' end
+        if self.identifierDirty and not self:CheckIdentifier() then
+            return nil, 'invalid-identifier'
+        end
 
         if
             self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.identifierDirty
@@ -1458,7 +1630,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                     return nil, 'invalid-priority'
                 end
 
-                if snapshot.priority ~= nil or parsed ~= 0 then priority = parsed end
+                if snapshot.priority ~= nil or parsed ~= 0 then
+                    priority = parsed
+                end
             end
 
             if self.tagsDirty then
@@ -1479,7 +1653,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             end
 
             local metadata = self.metadataDirty and self.metadataDraft or snapshot.metadata
-            if snapshot.metadata == nil and type(metadata) == 'table' and next(metadata) == nil then metadata = nil end
+
+            if snapshot.metadata == nil and type(metadata) == 'table' and next(metadata) == nil then
+                metadata = nil
+            end
 
             local details = {
                 description = self.descriptionDirty and self.description:GetText() or snapshot.description,
@@ -1546,7 +1723,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- or Undo and Redo at the left, the ID, Priority, Enabled and Delete cluster flush right), the validation banner,
     -- the switch condition, the view controls, the canvas and the footer. Does nothing before the pane is built.
     function pane:LayoutGeometry()
-        if not self.ready then return end
+        if not self.ready then
+            return
+        end
+
         local width, height = self.frame:GetWidth(), self.frame:GetHeight()
         local reserve = addon:GetWorkbenchHelpReserve(self.frame)
         local frame = self.frame
@@ -1618,7 +1798,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         for _, control in ipairs(self.tools) do
-            if readOnly then control:Hide() end
+            if readOnly then
+                control:Hide()
+            end
         end
 
         local idLabelWidth = sized(self.identifierLabel)
@@ -1659,7 +1841,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         local slotEnd = 8 + KIND_WIDTH
         local clusterLeft = right - clusterWidth
         local clusterLine = first
-        if slotEnd + HEADER_GAP + clusterWidth > right then clusterLine = first + 24 end
+
+        if slotEnd + HEADER_GAP + clusterWidth > right then
+            clusterLine = first + 24
+        end
 
         -- True when Reset to default fits left of the cluster on `line`, between the slot (or the pane edge) and the
         -- cluster.
@@ -1670,7 +1855,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         -- Reset never moves the cluster (it appears when you change a setting):
         -- with no room beside ID it takes the line below, flush right.
         local resetLine = clusterLine
-        if showReset and not resetFits(clusterLine) then resetLine = clusterLine + 24 end
+
+        if showReset and not resetFits(clusterLine) then
+            resetLine = clusterLine + 24
+        end
+
         local y = math.max(clusterLine, resetLine)
         at = clusterLeft
         placeLabel(self.identifierLabel, at, clusterLine)
@@ -1773,11 +1962,22 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Closes the pane: flushes the name, hides prompts and child windows, bumps the generation so queued callbacks go
     -- stale, releases the canvas and stops the live bars. Safe to call on an inactive pane.
     function pane:Release()
-        if self.active then self:FlushName() end
-        if self.leavePrompt then self.leavePrompt.frame:Hide() end
-        if self.deletePrompt then self.deletePrompt.frame:Hide() end
-        if self.metadataWindow then self.metadataWindow:Close(true) end
-        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
+        if self.active then
+            self:FlushName()
+        end
+        if self.leavePrompt then
+            self.leavePrompt.frame:Hide()
+        end
+        if self.deletePrompt then
+            self.deletePrompt.frame:Hide()
+        end
+        if self.metadataWindow then
+            self.metadataWindow:Close(true)
+        end
+        if addon.CancelWorkbenchReflow then
+            addon:CancelWorkbenchReflow(self)
+        end
+
         self.active = false
         self.generation = (self.generation or 0) + 1
         self.canvas:Release()
@@ -1785,10 +1985,20 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.description:ClearFocus()
         self.frame:Hide()
         self.specMenu:Hide()
-        if addon.WatchButtonIndex then addon:WatchButtonIndex(self, nil) end
-        if addon.activeRotationEditor == self then addon.activeRotationEditor = nil end
+
+        if addon.WatchButtonIndex then
+            addon:WatchButtonIndex(self, nil)
+        end
+
+        if addon.activeRotationEditor == self then
+            addon.activeRotationEditor = nil
+        end
+
         self:StopLiveStatus()
-        if addon.liveStatusLastPane == self then addon.liveStatusLastPane = nil end
+
+        if addon.liveStatusLastPane == self then
+            addon.liveStatusLastPane = nil
+        end
     end
 
     -- Shows rotation `nextId` of `nextSpec` in this pane (releasing the current one first). `nextDetached` is a preview
@@ -1796,9 +2006,19 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- fresh generation token (`alive()`), and starts the live bars. Returns the pane, or nil and a reason.
     function pane:Open(nextSpec, nextId, nextSelect, nextDetached)
         local selected, problem = nextDetached, nil
-        if not selected then selected, problem = addon:GetRotationEditWorkspace(nextSpec, nextId) end
-        if not selected then return nil, problem end
-        if self.active then self:Release() end
+
+        if not selected then
+            selected, problem = addon:GetRotationEditWorkspace(nextSpec, nextId)
+        end
+
+        if not selected then
+            return nil, problem
+        end
+
+        if self.active then
+            self:Release()
+        end
+
         workspace = selected
         spec = nextSpec
         id = selected.id
@@ -1840,41 +2060,60 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         if addon.WatchButtonIndex then
             addon:WatchButtonIndex(self, function()
-                if alive() then self:RefreshBindings() end
+                if alive() then
+                    self:RefreshBindings()
+                end
             end)
         end
 
         -- The warnings read the last bar scan. An old one is rescanned now (the
         -- scan is event driven; a missed event must not leave a false warning),
         -- and until it lands nothing is judged.
-        if addon.EnsureFreshButtonIndex then addon:EnsureFreshButtonIndex(10) end
+        if addon.EnsureFreshButtonIndex then
+            addon:EnsureFreshButtonIndex(10)
+        end
+
         -- An import preview is nobody's active editor: refreshes of the profile's rotations never reach it.
-        if not workspace.preview then addon.activeRotationEditor = self end
+        if not workspace.preview then
+            addon.activeRotationEditor = self
+        end
 
         for _, control in ipairs(self.tools) do
             addon:SetUIScript(control, 'OnClick', function()
-                if alive() then control.action() end
+                if alive() then
+                    control.action()
+                end
             end)
         end
 
         addon:SetUIScript(self.compare, 'OnClick', function()
-            if alive() then self.compare.action() end
+            if alive() then
+                self.compare.action()
+            end
         end)
 
         addon:SetUIScript(self.clone, 'OnClick', function()
-            if alive() then self.clone.action() end
+            if alive() then
+                self.clone.action()
+            end
         end)
 
         addon:SetUIScript(self.info, 'OnClick', function()
-            if alive() then self.metadataWindow:Open() end
+            if alive() then
+                self.metadataWindow:Open()
+            end
         end)
 
         addon:SetUIScript(self.enable, 'OnClick', function()
-            if alive() then self.enable.action() end
+            if alive() then
+                self.enable.action()
+            end
         end)
 
         addon:SetUIScript(self.delete, 'OnClick', function()
-            if alive() then self.delete.action() end
+            if alive() then
+                self.delete.action()
+            end
         end)
 
         addon:SetUIScript(self.overrideReset, 'OnClick', function()
@@ -1917,14 +2156,29 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         -- Moves the priority by `delta` within the allowed range: a draft edit on your own rotation, an immediate
         -- override on a Built In. Ignored for the fallback and previews.
         local function stepPriority(delta)
-            if not alive() or workspace.fallback or workspace.preview then return end
+            if not alive() or workspace.fallback or workspace.preview then
+                return
+            end
+
             local text = self.priority:GetText()
             local number = tonumber(text)
-            if text ~= '' and number == nil then return end
+
+            if text ~= '' and number == nil then
+                return
+            end
+
             local value = data.GetRotationPriority(text == '' and nil or number)
-            if value == nil then return end
+
+            if value == nil then
+                return
+            end
+
             value = math.max(-100000, math.min(100000, value + delta))
-            if workspace.readOnly then return setBuiltinPriority(value) end
+
+            if workspace.readOnly then
+                return setBuiltinPriority(value)
+            end
+
             self.priority:SetText(tostring(value))
             self.priorityDirty = true
             self.priority:SetTextColor(1, 1, 1)
@@ -1935,7 +2189,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         -- Opens the specialization menu with the rotation's current choices ticked. Each pick toggles one
         -- specialization (Any clears the list), is saved through the workspace and reopens the menu for the next pick.
         local function openSpecs()
-            if not alive() or workspace.readOnly or workspace.fallback then return end
+            if not alive() or workspace.readOnly or workspace.fallback then
+                return
+            end
+
             local current = data.NormalizeRotationSpecs(workspace:Snapshot().specs) or {}
             local chosen = {}
 
@@ -1959,7 +2216,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                 entries,
                 nil,
                 function(value)
-                    if not alive() then return end
+                    if not alive() then
+                        return
+                    end
+
                     local list
 
                     if value ~= 'any' then
@@ -1967,13 +2227,18 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                         list = {}
 
                         for id, on in pairs(chosen) do
-                            if on then list[#list + 1] = id end
+                            if on then
+                                list[#list + 1] = id
+                            end
                         end
 
                         list = data.NormalizeRotationSpecs(list) or nil
                     end
 
-                    if not self:FlushName() then return end
+                    if not self:FlushName() then
+                        return
+                    end
+
                     local ok, problem = workspace:Command('SetBodyField', 'specs', list)
 
                     if not ok then
@@ -1982,7 +2247,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                     end
 
                     self:Render()
-                    if value ~= 'any' then openSpecs() end
+
+                    if value ~= 'any' then
+                        openSpecs()
+                    end
                 end,
                 function() return alive() and not workspace.readOnly end,
                 true
@@ -1990,12 +2258,21 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         addon:SetUIScript(self.specButton, 'OnClick', openSpecs)
-        addon:SetUIScript(self.priorityDown, 'OnClick', function() stepPriority(-1) end)
-        addon:SetUIScript(self.priorityUp, 'OnClick', function() stepPriority(1) end)
+
+        addon:SetUIScript(self.priorityDown, 'OnClick', function()
+            stepPriority(-1)
+        end)
+
+        addon:SetUIScript(self.priorityUp, 'OnClick', function()
+            stepPriority(1)
+        end)
 
         -- Saves a typed Built In priority when focus leaves the box; a blank box means the pack's shipped value.
         local function commitBuiltinPriority()
-            if not alive() or not workspace.readOnly or workspace.preview then return end
+            if not alive() or not workspace.readOnly or workspace.preview then
+                return
+            end
+
             local text = self.priority:GetText()
             local current = builtinOverrides(workspace)
             local value = text:match('^%s*$') and current and current.shippedPriority or tonumber(text)
@@ -2009,7 +2286,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         addon:SetUIScript(self.priority, 'OnTextChanged', function(_, user)
-            if not alive() or not user or workspace.preview then return end
+            if not alive() or not user or workspace.preview then
+                return
+            end
+
             local text = self.priority:GetText()
 
             if text ~= '' and text ~= '-' and not text:match('^%-?%d+$') then
@@ -2031,24 +2311,37 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             commitBuiltinPriority()
         end)
 
-        addon:SetUIScript(self.priority, 'OnEditFocusLost', function() commitBuiltinPriority() end)
+        addon:SetUIScript(self.priority, 'OnEditFocusLost', function()
+            commitBuiltinPriority()
+        end)
 
         addon:SetUIScript(
             self.priority,
             'OnEditFocusGained',
-            (workspace.fallback or workspace.preview) and function(control) control:ClearFocus() end or nil
+            (workspace.fallback or workspace.preview) and function(control)
+                control:ClearFocus()
+            end or nil
         )
 
         addon:SetUIScript(self.priority, 'OnEnter', function()
-            if not alive() or not GameTooltip then return end
+            if not alive() or not GameTooltip then
+                return
+            end
+
             local text = L['Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.']
-            if self.priority.tooltip then text = self.priority.tooltip .. '\n\n' .. text end
+
+            if self.priority.tooltip then
+                text = self.priority.tooltip .. '\n\n' .. text
+            end
+
             GameTooltip:SetOwner(self.priority, 'ANCHOR_RIGHT')
             GameTooltip:SetText(text, 1, 1, 1, 1, true)
         end)
 
         addon:SetUIScript(self.priority, 'OnLeave', function()
-            if GameTooltip and GameTooltip:IsOwned(self.priority) then GameTooltip:Hide() end
+            if GameTooltip and GameTooltip:IsOwned(self.priority) then
+                GameTooltip:Hide()
+            end
         end)
 
         local identifierLocked = workspace.readOnly or workspace.fallback
@@ -2056,18 +2349,25 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         addon:SetUIScript(
             self.identifier,
             'OnEditFocusGained',
-            identifierLocked and function(control) control:ClearFocus() end or nil
+            identifierLocked and function(control)
+                control:ClearFocus()
+            end or nil
         )
 
         addon:SetUIScript(self.identifier, 'OnTextChanged', function(_, user)
-            if not alive() or not user or identifierLocked then return end
+            if not alive() or not user or identifierLocked then
+                return
+            end
+
             self.identifierDirty = true
             self.identifierEdited = true
             self:CheckIdentifier()
             self:UpdateHistory()
         end)
 
-        addon:SetUIScript(self.identifier, 'OnEnterPressed', function(control) control:ClearFocus() end)
+        addon:SetUIScript(self.identifier, 'OnEnterPressed', function(control)
+            control:ClearFocus()
+        end)
 
         addon:SetUIScript(self.identifier, 'OnEnter', function()
             if alive() and GameTooltip and self.identifier.tooltip then
@@ -2077,11 +2377,16 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end)
 
         addon:SetUIScript(self.identifier, 'OnLeave', function()
-            if GameTooltip and GameTooltip:IsOwned(self.identifier) then GameTooltip:Hide() end
+            if GameTooltip and GameTooltip:IsOwned(self.identifier) then
+                GameTooltip:Hide()
+            end
         end)
 
         addon:SetUIScript(self.validationButton, 'OnClick', function()
-            if not alive() or not addon.ShowConditionText then return end
+            if not alive() or not addon.ShowConditionText then
+                return
+            end
+
             local lines = { L['This rotation cannot run until its incomplete or unavailable data is resolved.'] }
             local snapshot = self.workspace:Snapshot()
 
@@ -2092,7 +2397,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
             for stepId in pairs(self.view.pendingFields or {}) do
                 local reason = self:PendingFieldProblem(stepId)
-                if reason then lines[#lines + 1] = stepId .. ': ' .. reason end
+
+                if reason then
+                    lines[#lines + 1] = stepId .. ': ' .. reason
+                end
             end
 
             addon:ShowConditionText(table.concat(lines, '\n'), L['Rotation validation'])
@@ -2108,15 +2416,21 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         addon:SetUIScript(
             self.description,
             'OnEditFocusGained',
-            workspace.readOnly and function(control) control:ClearFocus() end or nil
+            workspace.readOnly and function(control)
+                control:ClearFocus()
+            end or nil
         )
 
         addon:SetUIScript(self.switchLabel, 'OnClick', function()
-            if alive() then self:EditCondition({ kind = 'switch' }) end
+            if alive() then
+                self:EditCondition({ kind = 'switch' })
+            end
         end)
 
         addon:SetUIScript(self.switch, 'OnClick', function()
-            if alive() then self:EditCondition({ kind = 'switch' }) end
+            if alive() then
+                self:EditCondition({ kind = 'switch' })
+            end
         end)
 
         self.view.section = self.view.section == 'cooldowns' and 'cooldowns' or 'rotation'
@@ -2127,7 +2441,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self:BindViewControls(alive)
 
         addon:SetUIScript(self.name, 'OnTextChanged', function(_, userInput)
-            if not alive() or not userInput or workspace.readOnly or workspace.fallback then return end
+            if not alive() or not userInput or workspace.readOnly or workspace.fallback then
+                return
+            end
+
             self.nameDirty = true
 
             -- A new rotation's identifier follows its name until you edit the identifier.
@@ -2143,22 +2460,31 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         addon:SetUIScript(self.name, 'OnEnterPressed', function(control)
             if alive() then
                 control:ClearFocus()
-                if self:FlushName() then self:Render() end
+
+                if self:FlushName() then
+                    self:Render()
+                end
             end
         end)
 
         addon:SetUIScript(
             self.name,
             'OnEditFocusGained',
-            (workspace.readOnly or workspace.fallback) and function(control) control:ClearFocus() end or nil
+            (workspace.readOnly or workspace.fallback) and function(control)
+                control:ClearFocus()
+            end or nil
         )
 
         addon:SetUIScript(self.apply, 'OnClick', function()
-            if alive() then self:Apply() end
+            if alive() then
+                self:Apply()
+            end
         end)
 
         addon:SetUIScript(self.discard, 'OnClick', function()
-            if not alive() then return end
+            if not alive() then
+                return
+            end
 
             if self:IsNewRotation() then
                 self:DiscardNew()
@@ -2225,10 +2551,15 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- (visible) cards are evaluated; Release, or a tick that finds the editor
     -- hidden, cancels the timer, so a closed editor costs nothing.
     local function onScreen(frame)
-        if type(frame.IsVisible) == 'function' then return frame:IsVisible() end
+        if type(frame.IsVisible) == 'function' then
+            return frame:IsVisible()
+        end
 
         while frame do
-            if not frame:IsShown() then return false end
+            if not frame:IsShown() then
+                return false
+            end
+
             frame = frame.GetParent and frame:GetParent() or nil
         end
 
@@ -2246,10 +2577,15 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         if self.liveTimer then
             local timer = self.liveTimer
             self.liveTimer = nil
-            if addon.CancelTimer then addon:CancelTimer(timer) end
+
+            if addon.CancelTimer then
+                addon:CancelTimer(timer)
+            end
         end
 
-        if addon.liveStatusPane == self then addon.liveStatusPane = nil end
+        if addon.liveStatusPane == self then
+            addon.liveStatusPane = nil
+        end
     end
 
     -- Starts the repeating live bar refresh at the configured interval (an import preview never gets bars, and the
@@ -2276,7 +2612,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
 
         timer = addon:ScheduleRepeatingTimer(function()
             if self.liveTimer ~= timer then
-                if addon.CancelTimer then addon:CancelTimer(timer) end
+                if addon.CancelTimer then
+                    addon:CancelTimer(timer)
+                end
+
                 return
             end
 
@@ -2298,7 +2637,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         self.liveStates = nil
 
         for _, card in ipairs(self.canvas.cards) do
-            if card.token and card.model and card.SetLive then card:SetLive(nil) end
+            if card.token and card.model and card.SetLive then
+                card:SetLive(nil)
+            end
         end
 
         self.switchLiveBar:SetState(nil)
@@ -2308,9 +2649,17 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- (the last recommendation /rm debug glow recorded), for the tooltips.
     function pane:LiveSelection()
         local key = addon.currentRotation
-        if key == nil or addon.currentSpec ~= spec then return false end
+
+        if key == nil or addon.currentSpec ~= spec then
+            return false
+        end
+
         local active = key == self.workspace.id or self.workspace.effectiveFallback and key == DEFAULT
-        if not active then return false end
+
+        if not active then
+            return false
+        end
+
         local recent = addon.GetRecentRecommendations and addon:GetRecentRecommendations()
         local last = type(recent) == 'table' and recent[#recent] or nil
         return true, last and last.rotation == key and last.spell ~= nil and last.id or nil
@@ -2321,9 +2670,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         if type(result) ~= 'table' then
             return { status = 'unavailable', reason = L['the condition could not be evaluated'], at = now }
         end
+        if result.status == 'match' then
+            return { status = 'satisfied', at = now }
+        end
+        if result.status == 'no-match' then
+            return { status = 'unsatisfied', at = now }
+        end
 
-        if result.status == 'match' then return { status = 'satisfied', at = now } end
-        if result.status == 'no-match' then return { status = 'unsatisfied', at = now } end
         return { status = 'unavailable', reason = result.reason, at = now }
     end
 
@@ -2332,10 +2685,20 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- the note that the step or cooldown is showing now.
     function pane:EvaluateLive(model, now, active, chosen)
         local step = model.step
-        if step.type == 'branch' and (step.mode or 'evaluate') ~= 'evaluate' then return nil end
+
+        if step.type == 'branch' and (step.mode or 'evaluate') ~= 'evaluate' then
+            return nil
+        end
+
         local condition = step.conditions
-        if type(condition) ~= 'table' or condition.type == nil then return nil end
-        if type(addon.evaluateConditionResult) ~= 'function' then return nil end
+
+        if type(condition) ~= 'table' or condition.type == nil then
+            return nil
+        end
+        if type(addon.evaluateConditionResult) ~= 'function' then
+            return nil
+        end
+
         local ok, result = pcall(addon.evaluateConditionResult, addon, condition, { stepId = step.id })
         local state = liveResult(ok and result or nil, now)
 
@@ -2355,7 +2718,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- Re-evaluates the live bars of the visible cards and the switch condition. Stops the timer instead when the pane
     -- is no longer on screen.
     function pane:RefreshLiveStatus()
-        if not self.active or not self.liveTimer then return end
+        if not self.active or not self.liveTimer then
+            return
+        end
 
         if not onScreen(self.frame) then
             self:StopLiveStatus()
@@ -2384,7 +2749,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                 or matched == false and { status = 'unsatisfied', at = now }
                 or { status = 'unavailable', reason = L['unreadable right now'], at = now }
 
-            if active then state.chosen = L['This rotation is advising now.'] end
+            if active then
+                state.chosen = L['This rotation is advising now.']
+            end
+
             self.switchLiveBar:SetState(state)
         else
             self.switchLiveBar:SetState(nil)
@@ -2398,7 +2766,10 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- cooldown cards take the viewport width, which rewraps their text, so
     -- once the size has settled they are bound again (measured) in one render.
     function pane:Resized()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self:LayoutGeometry()
         local canvas = self.canvas
 
@@ -2407,8 +2778,13 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
             return canvas.frame:GetWidth() ~= canvas.reflowedWidth or canvas.frame:GetHeight() ~= canvas.reflowedHeight
         end
 
-        if not stale() then return end
-        if not addon.RequestWorkbenchReflow then return self:Render() end
+        if not stale() then
+            return
+        end
+        if not addon.RequestWorkbenchReflow then
+            return self:Render()
+        end
+
         local token = self.generation
 
         -- True while this pane is still open under the same generation.
@@ -2417,7 +2793,9 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
 
         addon:RequestWorkbenchReflow(self, self.frame, function()
-            if not current() or not stale() then return end
+            if not current() or not stale() then
+                return
+            end
 
             if not canvas:IsDiagram() and canvas.frame:GetWidth() ~= canvas.reflowedWidth then
                 canvas:ReleaseExpandedCards()
@@ -2435,11 +2813,15 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         end
     end
 
-    addon:SetUIScript(pane.frame, 'OnSizeChanged', function() pane:Resized() end)
+    addon:SetUIScript(pane.frame, 'OnSizeChanged', function()
+        pane:Resized()
+    end)
 
     -- Shown again without being reopened: the live bars resume.
     addon:SetUIScript(pane.frame, 'OnShow', function()
-        if pane.active and pane.ready and not pane.opening and not pane.liveTimer then pane:StartLiveStatus() end
+        if pane.active and pane.ready and not pane.opening and not pane.liveTimer then
+            pane:StartLiveStatus()
+        end
     end)
 
     addon:InstallRotationMetadata(pane)
@@ -2447,7 +2829,11 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     addon:InstallRotationChangeReview(pane)
     pane.ready = true
     parent.rmRotationEditor = pane
-    if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
+
+    if addon.InstallRotationNavigation then
+        addon:InstallRotationNavigation(pane)
+    end
+
     return pane:Open(spec, id, onSelect, detached)
 end
 
@@ -2455,5 +2841,8 @@ end
 -- restarts its dots at the new interval, or clears them at 0.
 function addon:RestartLiveStatus()
     local pane = self.liveStatusLastPane
-    if pane and pane.active then pane:StartLiveStatus() end
+
+    if pane and pane.active then
+        pane:StartLiveStatus()
+    end
 end

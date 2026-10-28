@@ -15,15 +15,23 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Deep equality of two plain values; tables compare by content (cycles are not expected in saved data).
 local function equal(a, b)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
 
     for key, value in pairs(a) do
-        if not equal(value, b[key]) then return false end
+        if not equal(value, b[key]) then
+            return false
+        end
     end
 
     for key in pairs(b) do
-        if a[key] == nil then return false end
+        if a[key] == nil then
+            return false
+        end
     end
 
     return true
@@ -31,15 +39,25 @@ end
 
 -- Display text for a non-table value: None, Yes/No, a number to four significant digits, or tostring.
 local function scalar(value)
-    if value == nil then return L['None'] end
-    if type(value) == 'boolean' then return value and L['Yes'] or L['No'] end
-    if type(value) == 'number' then return string.format('%.4g', value) end
+    if value == nil then
+        return L['None']
+    end
+    if type(value) == 'boolean' then
+        return value and L['Yes'] or L['No']
+    end
+    if type(value) == 'number' then
+        return string.format('%.4g', value)
+    end
+
     return tostring(value)
 end
 
 -- Display text for an {r, g, b, a} color table (a missing channel reads as 1); other values fall back to scalar.
 local function color(value)
-    if type(value) ~= 'table' then return scalar(value) end
+    if type(value) ~= 'table' then
+        return scalar(value)
+    end
+
     return string.format('R %.3f  G %.3f  B %.3f  A %.3f', value.r or 1, value.g or 1, value.b or 1, value.a or 1)
 end
 
@@ -61,7 +79,10 @@ local function structured(value)
         end
 
         table.sort(keys, function(x, y)
-            if type(x) == type(y) and type(x) ~= 'boolean' then return x < y end
+            if type(x) == type(y) and type(x) ~= 'boolean' then
+                return x < y
+            end
+
             return tostring(x) < tostring(y)
         end)
 
@@ -84,9 +105,16 @@ local function structured(value)
         end
     end
 
-    if value == nil then return L['None'] end
+    if value == nil then
+        return L['None']
+    end
+
     walk(value, '', 0)
-    if #lines == 0 then return L['None'] end
+
+    if #lines == 0 then
+        return L['None']
+    end
+
     return table.concat(lines, '\n')
 end
 
@@ -96,9 +124,12 @@ local CODE_LIMIT = 20000
 -- Display text for a custom condition's source field: the code as text, cut at CODE_LIMIT with a note of how much is
 -- missing. Never compiled or run.
 local function code(value)
-    if value == nil then return L['None'] end
-    if type(value) ~= 'string' then return scalar(value) end
-
+    if value == nil then
+        return L['None']
+    end
+    if type(value) ~= 'string' then
+        return scalar(value)
+    end
     if #value > CODE_LIMIT then
         return value:sub(1, CODE_LIMIT) .. '\n' .. string.format(
             L['... %d more characters not shown.'],
@@ -125,8 +156,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
     -- `format` turns a value into its text (default scalar); `icons` optionally returns a texture for each side.
     local function add(label, a, b, format, icons)
         local changed = not equal(a, b)
-        if changed then total = total + 1 end
 
+        if changed then
+            total = total + 1
+        end
         if changed or showSame then
             rows[#rows + 1] = {
                 label = label,
@@ -227,19 +260,34 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         -- A human label for a settings key: the translated label table first, then the record's own name, a list
         -- index, a condition's description, and last the key with underscores and camel case spaced out.
         local function plain(key, a, b)
-            if labels[key] then return labels[key] end
+            if labels[key] then
+                return labels[key]
+            end
+
             local record = type(a) == 'table' and a or type(b) == 'table' and b
-            if record and type(record.name) == 'string' then return record.name end
-            if type(key) == 'number' then return tostring(key) end
+
+            if record and type(record.name) == 'string' then
+                return record.name
+            end
+            if type(key) == 'number' then
+                return tostring(key)
+            end
+
             local definition = (self.conditionDefinitions or {})[key]
-            if definition then return definition.description or key end
+
+            if definition then
+                return definition.description or key
+            end
+
             return tostring(key):gsub('_', ' '):gsub('(%l)(%u)', '%1 %2')
         end
 
         -- Compares two nodes and adds a row for each differing leaf, labeling it with the path of keys joined by " / ".
         -- A table against a non-table is shown as "Structured settings" on the table side rather than expanded.
         local function walk(a, b, prefix, depth)
-            if equal(a, b) and not showSame then return end
+            if equal(a, b) and not showSame then
+                return
+            end
 
             if depth >= 12 or type(a) ~= 'table' and type(b) ~= 'table' then
                 add(prefix, a, b)
@@ -264,7 +312,9 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             end
 
             for key in pairs(b or {}) do
-                if not seen[key] then keys[#keys + 1] = key end
+                if not seen[key] then
+                    keys[#keys + 1] = key
+                end
             end
 
             table.sort(keys, function(x, y) return tostring(x) < tostring(y) end)
@@ -327,8 +377,14 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
                 end
 
                 local ad, bd
-                if left.outputs and a then ad = a.disabled end
-                if right.outputs and b then bd = b.disabled end
+
+                if left.outputs and a then
+                    ad = a.disabled
+                end
+                if right.outputs and b then
+                    bd = b.disabled
+                end
+
                 add(title .. L['Disabled'], ad, bd)
 
                 add(title .. L['Conditions'], a and a.conditions, b and b.conditions, function(value)
@@ -346,7 +402,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
 
         -- One line per item, as name and id; a name the client has not loaded yet reads as "Item data loading".
         local function items(value)
-            if type(value) ~= 'table' then return scalar(value) end
+            if type(value) ~= 'table' then
+                return scalar(value)
+            end
+
             local parts = {}
             local provider = self:GetReferenceProvider('item')
 
@@ -366,7 +425,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
 
         -- A category's condition list as a count followed by one description per tag.
         local function conditions(list)
-            if type(list) ~= 'table' then return scalar(list) end
+            if type(list) ~= 'table' then
+                return scalar(list)
+            end
+
             local lines = { string.format(L['%d conditions'], #list) }
 
             for _, tag in ipairs(list) do
@@ -408,7 +470,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
 
         -- Item name plus how it is identified (id or reference); "Item data loading" until the client knows the item.
         local function name(value)
-            if value == nil then return L['None'] end
+            if value == nil then
+                return L['None']
+            end
+
             local record = info(value)
             local friendly = record and record.name or L['Item data loading']
 
@@ -450,8 +515,9 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         -- Text for one step of an effect's sequence, shaped by the effect type: a custom step lists its texture, angle,
         -- magnification and color, a dazzle step is a color, anything else is a plain value.
         local function entry(value, kind)
-            if value == nil then return L['None'] end
-
+            if value == nil then
+                return L['None']
+            end
             if kind == 'custom' and type(value) == 'table' then
                 return L['Texture']
                     .. ': '
@@ -467,8 +533,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
                     .. '\n'
                     .. color(value.color)
             end
+            if kind == 'dazzle' then
+                return color(value)
+            end
 
-            if kind == 'dazzle' then return color(value) end
             return scalar(value)
         end
 
@@ -476,8 +544,10 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
 
         for i = 1, math.max(#a, #b) do
             local changed = not equal(a[i], b[i]) or left.type ~= right.type
-            if changed then total = total + 1 end
 
+            if changed then
+                total = total + 1
+            end
             if changed or showSame then
                 rows[#rows + 1] = {
                     label = string.format(L['Step %d'], i),
@@ -527,7 +597,11 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
         d.rightHeading:SetPoint('TOPLEFT', 366, -64)
         d.close = self:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
-        self:SetUIScript(d.close, 'OnClick', function() frame:Hide() end)
+
+        self:SetUIScript(d.close, 'OnClick', function()
+            frame:Hide()
+        end)
+
         d.toggle = self:CreateWorkbenchCheckBox(frame, L['Show unchanged'], 220)
         d.toggle:SetPoint('TOPLEFT', 12, -34)
         d.scroll = self:CreateWorkbenchScrollFrame(frame)
@@ -538,11 +612,15 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
         d.scroll:SetScrollChild(d.child)
 
         self:SetUIScript(frame, 'OnMouseUp', function(_, button)
-            if button == 'RightButton' then frame:Hide() end
+            if button == 'RightButton' then
+                frame:Hide()
+            end
         end)
 
         self:SetUIScript(d.scroll, 'OnMouseUp', function(_, button)
-            if button == 'RightButton' then frame:Hide() end
+            if button == 'RightButton' then
+                frame:Hide()
+            end
         end)
 
         frame:Hide()
@@ -578,7 +656,10 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
     -- Rebuilds the rows and lays out the label and value cells (pooled in d.cells, extra ones hidden), then updates the
     -- changed-field count. Capped by options.maxRows with a "more not shown" line.
     local function draw()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local rows, changes
 
         if options.rows then
@@ -722,7 +803,9 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
     d.rightHeading:SetText(options.rightHeading or right.name or L['Compared entry'])
 
     self:SetUIScript(d.frame, 'OnUpdate', function()
-        if not valid() then d.frame:Hide() end
+        if not valid() then
+            d.frame:Hide()
+        end
     end)
 
     self:SetUIScript(d.toggle, 'OnClick', function()
@@ -732,7 +815,10 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
         end
     end)
 
-    p.cleanups[#p.cleanups + 1] = function() d.frame:Hide() end
+    p.cleanups[#p.cleanups + 1] = function()
+        d.frame:Hide()
+    end
+
     d.frame:Show()
     self:OpenPopup(d, p)
     draw()

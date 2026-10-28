@@ -58,7 +58,10 @@ end
 -- summary heights, definitions). Returns the scene { cards, cardsByKey, connectors, dropTargets, width, height, ... },
 -- or nil and { code = "condition-limit" } when the rows are incomplete or exceed 4096.
 function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
-    if rowsComplete == false or #rows > 4096 then return nil, { code = "condition-limit" } end
+    if rowsComplete == false or #rows > 4096 then
+        return nil, { code = "condition-limit" }
+    end
+
     view = view or {}
     -- NOT is stored as a node, but shown as a property of its operand. Keep
     -- both paths: structural commands act on the outer wrapper; fields act
@@ -95,7 +98,10 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
 
         -- Accumulates the disabled flags and the first group name seen along the folded NOT chain.
         local function flags(current)
-            if current.row.disabled and not disabledPath then disabledPath = copy(current.row.path) end
+            if current.row.disabled and not disabledPath then
+                disabledPath = copy(current.row.path)
+            end
+
             disabled = disabled or current.row.disabled
             invalidDisabled = invalidDisabled or current.row.invalidDisabled
 
@@ -123,7 +129,10 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
         local canMoveUp = type(siblings) == 'table' and siblingIndex > 1 or false
         local canMoveDown = type(siblings) == 'table' and siblingIndex < #siblings or false
         local missing = branch.node.type == "NOT" and #branch.children == 0
-        if missing then count = count + 1 end
+
+        if missing then
+            count = count + 1
+        end
 
         projected[#projected + 1] = {
             path = copy(outer.row.path),
@@ -149,7 +158,10 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
         end
     end
 
-    if tree then project(tree, 0) end
+    if tree then
+        project(tree, 0)
+    end
+
     rows = projected
     local width = math.max(340, dimension(view.width, 1000, 4000))
 
@@ -174,7 +186,10 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
             y = y + 8
             group.width = math.max(group.width, (group.contentRight or group.x + group.width) - group.x + 14)
             local parent = stack[#stack]
-            if parent then parent.contentRight = math.max(parent.contentRight or 0, group.x + group.width) end
+
+            if parent then
+                parent.contentRight = math.max(parent.contentRight or 0, group.x + group.width)
+            end
         end
     end
 
@@ -192,7 +207,9 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
     end
 
     for _, row in ipairs(rows) do
-        if hiddenDepth and row.depth <= hiddenDepth then hiddenDepth = nil end
+        if hiddenDepth and row.depth <= hiddenDepth then
+            hiddenDepth = nil
+        end
 
         if not hiddenDepth then
             finish(row.depth)
@@ -316,7 +333,9 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
                     drop(card, "inside", { path = copy(row.fieldPath) }, card.y + (compact and 8 or 36), 12)
                 end
 
-                if collapsed then hiddenDepth = row.depth end
+                if collapsed then
+                    hiddenDepth = row.depth
+                end
             else
                 if next(node) == nil then
                     drop(card, "inside", { path = copy(row.fieldPath) }, card.y + (compact and 8 or 54), 12)
@@ -350,7 +369,9 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
                 end
             end
 
-            if not collapsed and row.childCount > 0 then stack[#stack + 1] = card end
+            if not collapsed and row.childCount > 0 then
+                stack[#stack + 1] = card
+            end
         end
     end
 
@@ -367,8 +388,12 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
         local card = scene.cardsByKey[target.cardKey]
 
         if card then
-            if target.kind ~= "inside" then target.width = card.width end
-            if target.kind == "after" then target.y = card.y + card.height end
+            if target.kind ~= "inside" then
+                target.width = card.width
+            end
+            if target.kind == "after" then
+                target.y = card.y + card.height
+            end
 
             if target.kind == "inside" and target.destination.field == nil then
                 target.x = card.x + 32
@@ -429,7 +454,10 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
     end
 
     table.sort(scene.dropTargetsByY, function(a, b)
-        if a.y ~= b.y then return a.y < b.y end
+        if a.y ~= b.y then
+            return a.y < b.y
+        end
+
         return a.ordinal < b.ordinal
     end)
 
@@ -464,7 +492,9 @@ function addon:GetConditionCanvasViewport(scene, left, top, right, bottom)
     -- Adds the card and each ancestor that intersects the rectangle; stops at one that is already included.
     local function include(card)
         while card do
-            if wanted[card.key] then break end
+            if wanted[card.key] then
+                break
+            end
 
             if card.x + card.width >= left and card.x <= right and card.y + card.height >= top and card.y <= bottom then
                 wanted[card.key] = card
@@ -476,7 +506,11 @@ function addon:GetConditionCanvasViewport(scene, left, top, right, bottom)
 
     for index = first, #cards do
         local card = cards[index]
-        if card.y > bottom then break end
+
+        if card.y > bottom then
+            break
+        end
+
         include(card)
     end
 

@@ -36,7 +36,10 @@ local function parsedText(key, value)
 
         for item in value:gmatch('[^,]+') do
             item = item:match('^%s*(.-)%s*$')
-            if item ~= '' then items[#items + 1] = tonumber(item) or item end
+
+            if item ~= '' then
+                items[#items + 1] = tonumber(item) or item
+            end
         end
 
         patch.set.action = items
@@ -51,7 +54,11 @@ local function parsedText(key, value)
             unset(key)
         else
             local n = number()
-            if not n or key == 'magnification' and n <= 0 then return nil end
+
+            if not n or key == 'magnification' and n <= 0 then
+                return nil
+            end
+
             patch.set[key] = n
         end
     elseif key == 'color' then
@@ -62,11 +69,18 @@ local function parsedText(key, value)
 
             for part in (value .. ','):gmatch('(.-),') do
                 local n = tonumber(part)
-                if not n or n ~= n or n < 0 or n > 1 then return nil end
+
+                if not n or n ~= n or n < 0 or n > 1 then
+                    return nil
+                end
+
                 values[#values + 1] = n
             end
 
-            if #values ~= 4 then return nil end
+            if #values ~= 4 then
+                return nil
+            end
+
             patch.set.color = { r = values[1], g = values[2], b = values[3], a = values[4] }
         end
     else
@@ -92,7 +106,10 @@ function addon:InstallRotationFieldDrafts(pane)
     -- Records typed text for a step field, or forgets it when it equals the saved `baseline` again. Refreshes history
     -- and validation, and returns whether the text currently parses. Ignored while the pane is closed or read-only.
     function pane:StageField(id, key, value, baseline, label)
-        if not self.active or self.workspace.readOnly then return end
+        if not self.active or self.workspace.readOnly then
+            return
+        end
+
         self.view.pendingFields = self.view.pendingFields or {}
         local fields = self.view.pendingFields
         fields[id] = fields[id] or {}
@@ -113,7 +130,9 @@ function addon:InstallRotationFieldDrafts(pane)
         local fields = self.view.pendingFields or {}
 
         for key, record in pairs(fields[id] or {}) do
-            if not parsedText(key, record.text) then return record.label end
+            if not parsedText(key, record.text) then
+                return record.label
+            end
         end
     end
 
@@ -123,7 +142,9 @@ function addon:InstallRotationFieldDrafts(pane)
         local tree = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
 
         for id in pairs(self.view.pendingFields or {}) do
-            if tree.byId[id] and self:PendingFieldProblem(id) then return true end
+            if tree.byId[id] and self:PendingFieldProblem(id) then
+                return true
+            end
         end
 
         return false
@@ -166,7 +187,9 @@ function addon:InstallRotationFieldDrafts(pane)
         local tree = addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
 
         for id, fields in pairs(self.view.pendingFields or {}) do
-            if tree.byId[id] and next(fields) then return true end
+            if tree.byId[id] and next(fields) then
+                return true
+            end
         end
 
         return false
@@ -204,7 +227,9 @@ function addon:InstallRotationFieldDrafts(pane)
                     end
                 end
 
-                if next(combined.set) or #combined.unset > 0 then edits[#edits + 1] = { id = id, patch = combined } end
+                if next(combined.set) or #combined.unset > 0 then
+                    edits[#edits + 1] = { id = id, patch = combined }
+                end
             end
         end
 
@@ -212,7 +237,11 @@ function addon:InstallRotationFieldDrafts(pane)
 
         for _, edit in ipairs(edits) do
             local ok, why = self.workspace:Command('PatchStep', edit.id, edit.patch)
-            if not ok then return nil, why end
+
+            if not ok then
+                return nil, why
+            end
+
             self.view.pendingFields[edit.id] = nil
         end
 
@@ -246,7 +275,11 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     local function acquire(kind, build)
         counts[kind] = counts[kind] + 1
         local index = counts[kind]
-        if not pool[kind][index] then pool[kind][index] = build() end
+
+        if not pool[kind][index] then
+            pool[kind][index] = build()
+        end
+
         local control = pool[kind][index]
         control:Show()
         return control
@@ -264,7 +297,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     -- Sends one `PatchStep` for this step: `set` fields to write and `unset` field names to clear. Does nothing when
     -- stale or read-only.
     local function patch(set, unset)
-        if active() then return owner:Command('PatchStep', model.id, { set = set or {}, unset = unset or {} }) end
+        if active() then
+            return owner:Command('PatchStep', model.id, { set = set or {}, unset = unset or {} })
+        end
     end
 
     -- Places a wrapped caption at the current row `y` and returns it so the control beside it can take the row height.
@@ -321,7 +356,10 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         end)
 
         addon:SetUIScript(control, 'OnEnterPressed', function(field)
-            if not active() then return end
+            if not active() then
+                return
+            end
+
             owner:StageField(model.id, key, field:GetText(), baseline, caption)
             local ok, why = owner:FlushFieldEdits()
 
@@ -333,9 +371,20 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
             end
         end)
 
-        addon:SetUIScript(control, 'OnEscapePressed', function(field) field:ClearFocus() end)
+        addon:SetUIScript(control, 'OnEscapePressed', function(field)
+            field:ClearFocus()
+        end)
+
         control:EnableMouse(not readOnly)
-        addon:SetUIScript(control, 'OnEditFocusGained', readOnly and function(field) field:ClearFocus() end or nil)
+
+        addon:SetUIScript(
+            control,
+            'OnEditFocusGained',
+            readOnly and function(field)
+                field:ClearFocus()
+            end or nil
+        )
+
         return control
     end
 
@@ -350,14 +399,20 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         controls[key] = button
         controls[#controls + 1] = button
         local rowHeight = math.max(20, rowLabel and rowLabel:GetStringHeight() or 0)
-        if rowLabel then rowLabel:SetHeight(rowHeight) end
+
+        if rowLabel then
+            rowLabel:SetHeight(rowHeight)
+        end
+
         button:ClearAllPoints()
         button:SetPoint('TOPLEFT', caption and valueX or 0, -y - (rowHeight - 20) / 2)
         y = y + rowHeight + 4
         local title = selected
 
         for _, entry in ipairs(entries) do
-            if entry.value == selected then title = entry.text end
+            if entry.value == selected then
+                title = entry.text
+            end
         end
 
         button:SetText(title or L['Choose'])
@@ -368,7 +423,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         menus[#menus + 1] = wrapper
 
         addon:SetUIScript(button, 'OnClick', function()
-            if not active() then return end
+            if not active() then
+                return
+            end
 
             if wrapper.frame:IsShown() then
                 wrapper:Hide()
@@ -378,7 +435,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
                     entries,
                     selected,
                     function(value)
-                        if value ~= selected then commit(value) end
+                        if value ~= selected then
+                            commit(value)
+                        end
                     end,
                     active
                 )
@@ -407,7 +466,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         y = y + 24
 
         addon:SetUIScript(control, 'OnClick', function()
-            if active() then commit(not value) end
+            if active() then
+                commit(not value)
+            end
         end)
 
         if readOnly then
@@ -428,7 +489,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         control:Enable()
 
         addon:SetUIScript(control, 'OnClick', function()
-            if alive() then owner:EditCondition(model.id) end
+            if alive() then
+                owner:EditCondition(model.id)
+            end
         end)
 
         owner.view.detailsHeights[model.id] = 40
@@ -492,7 +555,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         end)
 
         addon:SetUIScript(icon, 'OnLeave', function()
-            if GameTooltip then GameTooltip:Hide() end
+            if GameTooltip then
+                GameTooltip:Hide()
+            end
         end)
 
         addon:SetUIScript(icon, 'OnClick', function()
@@ -524,7 +589,10 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
         field:SetText(step.action and addon.SpellCatalog:SpellName(step.action, not step.ranked) or '')
 
         field:SetCallback('OnEnterPressed', function(_, _, value)
-            if not active() then return end
+            if not active() then
+                return
+            end
+
             local id = tonumber(value)
 
             if id and id > 0 and id % 1 == 0 then
@@ -603,7 +671,10 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
                 field:SetText(item or '')
 
                 field:SetCallback('OnEnterPressed', function(_, _, value)
-                    if not active() then return end
+                    if not active() then
+                        return
+                    end
+
                     local id = tonumber(value)
                     local copy = addon.Functions.collections.deepcopy(items)
 
@@ -665,7 +736,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
             active = active,
             readOnly = readOnly,
             getY = function() return y end,
-            setY = function(value) y = value end,
+            setY = function(value)
+                y = value
+            end,
         })
     end
 
@@ -673,8 +746,13 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
 
     card.releaseFields = function()
         card.RefreshHighlightPreview = nil
-        if card.colorPicker then card.colorPicker.frame:Hide() end
-        if card.effectDemo and addon.HideGlow then addon:HideGlow(card.effectDemo.target, 'rotation-effect-preview') end
+
+        if card.colorPicker then
+            card.colorPicker.frame:Hide()
+        end
+        if card.effectDemo and addon.HideGlow then
+            addon:HideGlow(card.effectDemo.target, 'rotation-effect-preview')
+        end
 
         for _, wrapper in ipairs(menus) do
             wrapper:Release()
@@ -686,7 +764,10 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
 
         for _, control in ipairs(controls) do
             control:Hide()
-            if control.ClearFocus then control:ClearFocus() end
+
+            if control.ClearFocus then
+                control:ClearFocus()
+            end
         end
 
         for _, input in ipairs(pool.inputs) do

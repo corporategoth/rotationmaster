@@ -7,7 +7,10 @@
 -- InvalidateRotationDependencies so the lean engine drops its plan; nothing here may raise on malformed data.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -21,7 +24,6 @@ local function mark_for_remove(toremove, key)
     if type(key) ~= "number" or key < 1 then
         toremove.not_array = true
     end
-
     if not toremove.data then
         toremove.data = {}
     end
@@ -47,7 +49,10 @@ local function apply_remove(toremove, tbl, fix)
         end
     end
 
-    if fix and toremove.data and invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+    if fix and toremove.data and invalidateDependencies then
+        invalidateDependencies(addon, 'all', nil)
+    end
+
     addon.Functions.collections.cleanArray(toremove)
 end
 
@@ -111,7 +116,11 @@ function addon:validate_itemset(prefix, name, itemset, fix)
 
         if fix then
             addon.Functions.collections.cleanArray(itemset)
-            if invalidateDependencies then invalidateDependencies(addon, 'itemset', name) end
+
+            if invalidateDependencies then
+                invalidateDependencies(addon, 'itemset', name)
+            end
+
             return
         end
     end
@@ -134,7 +143,11 @@ function addon:validate_effect(prefix, name, effect, fix)
 
         if fix then
             addon.Functions.collections.cleanArray(effect)
-            if invalidateDependencies then invalidateDependencies(addon, 'effect', name) end
+
+            if invalidateDependencies then
+                invalidateDependencies(addon, 'effect', name)
+            end
+
             return
         end
     end
@@ -144,7 +157,10 @@ function addon:validate_effect(prefix, name, effect, fix)
 
         if fix then
             addon.Functions.collections.cleanArray(effect)
-            if invalidateDependencies then invalidateDependencies(addon, 'effect', name) end
+
+            if invalidateDependencies then
+                invalidateDependencies(addon, 'effect', name)
+            end
         end
 
         return
@@ -214,7 +230,10 @@ function addon:validate_effect(prefix, name, effect, fix)
         return
     end
 
-    if template.texture ~= nil and type(effect.texture) == "number" then template.texture = 1 end
+    if template.texture ~= nil and type(effect.texture) == "number" then
+        template.texture = 1
+    end
+
     template["type"] = "texture"
     template["name"] = "some name"
     validate_basic(prefix .. ":" .. name, effect, template, fix)
@@ -279,11 +298,17 @@ function addon:validate_announce(prefix, idx, announce, fix)
     -- The shared acceptance service covers every current shape (macro
     -- announcements, output series, conditions, emotes); repair leaves those
     -- untouched. Only records it rejects fall through to the legacy template.
-    if addon.IsValidAnnouncement and addon:IsValidAnnouncement(announce) then return end
+    if addon.IsValidAnnouncement and addon:IsValidAnnouncement(announce) then
+        return
+    end
 
     if announce["type"] == "macro" or announce["outputs"] ~= nil then
         addon:warn("Invalid announce %s:%s; preserved and disabled", prefix, tostring(announce["id"]))
-        if fix then announce.disabled = true end
+
+        if fix then
+            announce.disabled = true
+        end
+
         return
     end
 
@@ -308,7 +333,10 @@ function addon:validate_announce(prefix, idx, announce, fix)
 
         -- A record of an unknown type has no template to be checked against: a report-only run stops here too,
         -- instead of reporting its fields against the spell template (which a repair never does, it clears the record).
-        if fix then addon.Functions.collections.cleanArray(announce) end
+        if fix then
+            addon.Functions.collections.cleanArray(announce)
+        end
+
         return
     end
 
@@ -329,7 +357,10 @@ function addon:validate_announce(prefix, idx, announce, fix)
             or L["Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement."]
 
         addon:warn(message, prefix, tostring(announce.id))
-        if fix then announce.disabled = true end
+
+        if fix then
+            announce.disabled = true
+        end
     end
 end
 
@@ -351,7 +382,10 @@ function addon:validate_condition_group(prefix, idx, group, fix)
             or type(group.icon) == "number" and group.icon > 0 and group.icon < math.huge and group.icon % 1 == 0)
     then
         addon:warn("Invalid category icon %s:%s", prefix, tostring(idx))
-        if fix then group.icon = nil end
+
+        if fix then
+            group.icon = nil
+        end
     end
 end
 
@@ -401,7 +435,10 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
                 -- repair. Selection notices this registry version next pass.
                 definition.disabled = true
                 addon.conditionRegistryVersion = (addon.conditionRegistryVersion or 0) + 1
-                if invalidateDependencies then invalidateDependencies(addon, 'condition', name) end
+
+                if invalidateDependencies then
+                    invalidateDependencies(addon, 'condition', name)
+                end
             end
         end
     end
@@ -409,15 +446,22 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     -- Check data contracts only. Repair must not compile callback text, resolve
     -- currently unavailable helper bindings, or execute registration hooks.
     local fields, fieldReason = addon:NormalizeCustomFieldSchema(custom_condition.fields, true)
-    if not fields then invalid("fields", fieldReason) end
-    if not addon:IsCategoryIcon(custom_condition.icon) then invalid("icon", "invalid-icon") end
 
+    if not fields then
+        invalid("fields", fieldReason)
+    end
+    if not addon:IsCategoryIcon(custom_condition.icon) then
+        invalid("icon", "invalid-icon")
+    end
     if custom_condition.disabled ~= nil and type(custom_condition.disabled) ~= "boolean" then
         invalid("disabled", "invalid-disabled-flag")
     end
 
     local parameters, parameterReason = addon:NormalizeCustomConditionParameters(custom_condition.parameters)
-    if not parameters then invalid("parameters", parameterReason) end
+
+    if not parameters then
+        invalid("parameters", parameterReason)
+    end
 
     if custom_condition.bindings ~= nil then
         local arguments = {
@@ -437,7 +481,10 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
         end
 
         local bindings, reason = addon:NormalizeFunctionBindings(custom_condition.bindings, arguments)
-        if not bindings then invalid("bindings", reason) end
+
+        if not bindings then
+            invalid("bindings", reason)
+        end
     end
 
     if
@@ -446,7 +493,6 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     then
         invalid("requiredFields", "invalid-required-fields")
     end
-
     if
         custom_condition.fieldOrder ~= nil
         and not addon:NormalizeCustomFieldOrder(custom_condition.fieldOrder, fields or {})
@@ -483,7 +529,10 @@ local function validate_rotation_condition(prefix, condition, fix)
 
     fields["type"] = "string"
     fields["disabled"] = "boolean"
-    if condition.type == "AND" or condition.type == "OR" or condition.type == "NOT" then fields.name = "string" end
+
+    if condition.type == "AND" or condition.type == "OR" or condition.type == "NOT" then
+        fields.name = "string"
+    end
 
     -- True when cond matches any alternative of an array-style field spec (a list of allowed Lua types or nested
     -- shapes).
@@ -632,7 +681,10 @@ function addon:validate_rotation(prefix, id, rotation, fix)
         and not self.RotationData.GetRotationPriority(rotation.priority)
     then
         self:warn(L['Invalid switch priority for %s:%s; explicit repair resets it to zero.'], prefix, id)
-        if fix then rotation.priority = nil end
+
+        if fix then
+            rotation.priority = nil
+        end
     end
 
     -- The old template fixer knows only flat actions. Use the non-destructive
@@ -712,7 +764,9 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 
     -- Adds the fields that depend on a step's type (the action id or item set, and stop's suppress_attack).
     local function augment_template_type(template, rot)
-        if rot.type == "stop" then template.suppress_attack = false end
+        if rot.type == "stop" then
+            template.suppress_attack = false
+        end
 
         if
             rot.type == "spell"
@@ -777,7 +831,6 @@ function addon:validate_rotation(prefix, id, rotation, fix)
                     fix
                 )
             end
-
             if addon.Functions.collections.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
@@ -801,7 +854,10 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 
             if rot.effect and not is_uuid(rot.effect) then
                 addon:warn(L["Invalid effect ID for rotation step %s:%s:%d."], prefix, id, idx)
-                if fix then rot.effect = nil end
+
+                if fix then
+                    rot.effect = nil
+                end
             end
 
             if rot["type"] == "item" then
@@ -825,7 +881,6 @@ function addon:validate_rotation(prefix, id, rotation, fix)
             if rot["conditions"] then
                 validate_rotation_condition(string.format("%s:%s:rotation:%d", prefix, id, idx), rot["conditions"], fix)
             end
-
             if addon.Functions.collections.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
@@ -848,7 +903,9 @@ end
 -- data. Ownership archives and other records newer code owns are named in the preserved lists and only reported.
 function addon:validate(template, fix)
     if fix then
-        if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+        if invalidateDependencies then
+            invalidateDependencies(addon, 'all', nil)
+        end
     end
 
     local DB = _G[self.savedVariableName or "RotationMasterDB"]
@@ -1020,7 +1077,10 @@ function addon:validate(template, fix)
 
                 if type(value) == "number" and (value ~= value or value == math.huge or value == -math.huge) then
                     addon:warn(L["Non-finite minimap value in profile %s: %s."], profile, key)
-                    if fix then data.minimap[key] = nil end
+
+                    if fix then
+                        data.minimap[key] = nil
+                    end
                 end
             end
         end
@@ -1133,6 +1193,8 @@ function addon:validate(template, fix)
     end
 
     if fix then
-        if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+        if invalidateDependencies then
+            invalidateDependencies(addon, 'all', nil)
+        end
     end
 end

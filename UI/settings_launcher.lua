@@ -12,7 +12,10 @@ local function metadata(key)
 
     if getter then
         local ok, value = pcall(getter, addon_name, key)
-        if ok and type(value) == "string" and value ~= "" then return value end
+
+        if ok and type(value) == "string" and value ~= "" then
+            return value
+        end
     end
 
     return L["Unknown"]
@@ -51,7 +54,11 @@ function addon:CreateSettingsLauncher()
     page.open:SetPoint("TOPLEFT", 24, -182)
     page.open:SetText(L["Open Options"])
     page.open:GetFontString():SetFontObject("GameFontNormalLarge")
-    addon:SetUIScript(page.open, "OnClick", function() addon:ShowConfig("Rotations") end)
+
+    addon:SetUIScript(page.open, "OnClick", function()
+        addon:ShowConfig("Rotations")
+    end)
+
     page.commands = label()
     page.commands:SetPoint("TOPLEFT", 24, -278)
 

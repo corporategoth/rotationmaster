@@ -59,7 +59,10 @@ end
 
 -- pcall wrapper that returns false when `fn` is not a function, so a missing native API reads as a failed call.
 local function call(fn, ...)
-    if type(fn) ~= 'function' then return false end
+    if type(fn) ~= 'function' then
+        return false
+    end
+
     return pcall(fn, ...)
 end
 
@@ -105,12 +108,20 @@ local engravingNotifications = {
 -- arriving only matters while an equipped item's set ID is still pending.
 local function onEvent(_, event, unit)
     local parts = notifications[event] or engravingNotifications[event]
-    if not parts then return end
-    if event == 'UNIT_INVENTORY_CHANGED' and unit ~= nil and unit ~= 'player' then return end
+
+    if not parts then
+        return
+    end
+    if event == 'UNIT_INVENTORY_CHANGED' and unit ~= nil and unit ~= 'player' then
+        return
+    end
 
     if parts[1] == 'pending' then
         -- Item metadata arriving matters only while a set ID is still missing.
-        if snapshot.pending then markDirty('equipment') end
+        if snapshot.pending then
+            markDirty('equipment')
+        end
+
         return
     end
 
@@ -121,13 +132,27 @@ end
 -- guarded so an event this client lacks does not block the others. Returns false when no frame can be made, which makes
 -- every read rebuild.
 local function watch()
-    if watching ~= nil then return watching end
+    if watching ~= nil then
+        return watching
+    end
+
     watching = false
-    if type(CreateFrame) ~= 'function' then return false end
+
+    if type(CreateFrame) ~= 'function' then
+        return false
+    end
+
     local ok, created = pcall(CreateFrame, 'Frame')
-    if not ok or type(created) ~= 'table' then return false end
+
+    if not ok or type(created) ~= 'table' then
+        return false
+    end
+
     frame = created
-    if type(frame.SetScript) == 'function' then frame:SetScript('OnEvent', onEvent) end
+
+    if type(frame.SetScript) == 'function' then
+        frame:SetScript('OnEvent', onEvent)
+    end
 
     for event in pairs(notifications) do
         if event == 'UNIT_INVENTORY_CHANGED' and type(frame.RegisterUnitEvent) == 'function' then
@@ -153,9 +178,16 @@ end
 
 -- Item string fields: itemID:enchantID:gem1:gem2:gem3:gem4:suffixID:...
 local function parseLink(link)
-    if type(link) ~= 'string' or not readable(link) then return nil end
+    if type(link) ~= 'string' or not readable(link) then
+        return nil
+    end
+
     local body = link:match('item:([%-%d:]+)')
-    if not body then return nil end
+
+    if not body then
+        return nil
+    end
+
     local fields, index = {}, 0
 
     for field in (body .. ':'):gmatch('([^:]*):') do
@@ -167,7 +199,10 @@ local function parseLink(link)
 
     for i = 3, 6 do
         local gem = fields[i]
-        if gem and gem > 0 then gems[#gems + 1] = gem end
+
+        if gem and gem > 0 then
+            gems[#gems + 1] = gem
+        end
     end
 
     return {
@@ -181,21 +216,43 @@ end
 -- cached the item).
 local function itemSetID(itemID)
     local info = C_Item and C_Item.GetItemInfo or GetItemInfo
-    if type(info) ~= 'function' then return nil, 'missing-api' end
+
+    if type(info) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local result = { pcall(info, itemID) }
-    if not result[1] then return nil, 'api-error' end
-    if result[2] == nil then return nil, 'item-data-pending' end
+
+    if not result[1] then
+        return nil, 'api-error'
+    end
+    if result[2] == nil then
+        return nil, 'item-data-pending'
+    end
+
     local setID = result[17]
-    if not readable(setID) then return nil, 'restricted-value' end
+
+    if not readable(setID) then
+        return nil, 'restricted-value'
+    end
+
     return positive(setID) or false
 end
 
 -- Number of empty sockets in the item link's stat table, or nil when the stats cannot be read.
 local function socketCount(link)
     local stats = C_Item and C_Item.GetItemStats or GetItemStats
-    if type(stats) ~= 'function' or type(link) ~= 'string' then return nil end
+
+    if type(stats) ~= 'function' or type(link) ~= 'string' then
+        return nil
+    end
+
     local ok, values = pcall(stats, link)
-    if not ok or type(values) ~= 'table' or not readable(values) then return nil end
+
+    if not ok or type(values) ~= 'table' or not readable(values) then
+        return nil
+    end
+
     local count = 0
 
     for key, amount in pairs(values) do
@@ -245,11 +302,22 @@ local function rangedSlot()
 
     -- Forever keeps the global only behind loadDeprecationFallbacks; C_PaperDollInfo first.
     local slotInfo = type(C_PaperDollInfo) == 'table' and C_PaperDollInfo.GetInventorySlotInfo or nil
-    if type(slotInfo) ~= 'function' then slotInfo = GetInventorySlotInfo end
-    if type(slotInfo) ~= 'function' then return nil, 'missing-api' end
+
+    if type(slotInfo) ~= 'function' then
+        slotInfo = GetInventorySlotInfo
+    end
+
+    if type(slotInfo) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local ok, slot = pcall(slotInfo, 'RANGEDSLOT')
     slot = ok and positive(slot)
-    if not slot then return nil, 'no-ranged-slot' end
+
+    if not slot then
+        return nil, 'no-ranged-slot'
+    end
+
     return slot
 end
 
@@ -292,10 +360,16 @@ local function buildEquipment()
                 record.setID = setID
             elseif setID == nil then
                 record.setReason = why
-                if why == 'item-data-pending' then pending = true end
+
+                if why == 'item-data-pending' then
+                    pending = true
+                end
             end
 
-            if WEAPON_SLOTS[slot] then weaponType(record) end
+            if WEAPON_SLOTS[slot] then
+                weaponType(record)
+            end
+
             equipment[slot] = record
         end
     end
@@ -350,7 +424,10 @@ local function buildTalents()
 
     talents.layout = layout
     talents.reason = why
-    if layout == 'tree' or layout == 'grid' then talents.group = activeGroup() end
+
+    if layout == 'tree' or layout == 'grid' then
+        talents.group = activeGroup()
+    end
 
     if layout == 'tree' then
         local count = platform:GetTalentTreeCount()
@@ -360,7 +437,10 @@ local function buildTalents()
             local info = platform:GetTalentTreeInfo(tree, talents.group)
             local points = info and info.pointsSpent
             trees[tree] = { name = info and info.name, points = points }
-            if type(points) == 'number' and points > maximum then best, maximum = tree, points end
+
+            if type(points) == 'number' and points > maximum then
+                best, maximum = tree, points
+            end
         end
 
         talents.trees, talents.primary = trees, best
@@ -376,7 +456,10 @@ local function buildTalents()
 
         for index = 1, 18 do
             local info = platform:GetGridTalentInfo(index, talents.group)
-            if info and info.selected then selected[#selected + 1] = info.talentID end
+
+            if info and info.selected then
+                selected[#selected + 1] = info.talentID
+            end
         end
 
         talents.selected = selected
@@ -520,10 +603,15 @@ end
 -- 'mode:<id>' (C_GameRules game mode record).
 local function seasonName(id)
     local enum = type(Enum) == 'table' and Enum.SeasonID
-    if type(enum) ~= 'table' then return nil end
+
+    if type(enum) ~= 'table' then
+        return nil
+    end
 
     for name, value in pairs(enum) do
-        if value == id and type(name) == 'string' then return name end
+        if value == id and type(name) == 'string' then
+            return name
+        end
     end
 end
 
@@ -553,13 +641,25 @@ local function buildClient()
     if season.id then
         rulesets['season:' .. season.id] = true
         season.name = seasonName(season.id)
-        if season.name then rulesets['season:' .. season.name:lower()] = true end
+
+        if season.name then
+            rulesets['season:' .. season.name:lower()] = true
+        end
     end
 
-    if season.hardcore then rulesets.hardcore = true end
-    if season.selfFound then rulesets['self-found'] = true end
-    if season.gameModeId then rulesets['mode:' .. season.gameModeId] = true end
-    if not season.id and not season.hardcore then rulesets.standard = true end
+    if season.hardcore then
+        rulesets.hardcore = true
+    end
+    if season.selfFound then
+        rulesets['self-found'] = true
+    end
+    if season.gameModeId then
+        rulesets['mode:' .. season.gameModeId] = true
+    end
+    if not season.id and not season.hardcore then
+        rulesets.standard = true
+    end
+
     snapshot.season, snapshot.rulesets = season, rulesets
 end
 
@@ -575,7 +675,10 @@ local function buildRunes()
 
     local engraved, why = platform:GetEngravedRunes()
     snapshot.runes = engraved or { reason = why }
-    if why == 'rune-data-pending' then dirty.runes = true end
+
+    if why == 'rune-data-pending' then
+        dirty.runes = true
+    end
 end
 
 -- ============================================================================
@@ -634,7 +737,11 @@ end
 -- Equipment record for an inventory slot, false when empty, or nil and a reason.
 function addon:GetEquippedSlotInfo(slot)
     local value = refresh('equipment')
-    if value.equipmentReason then return nil, value.equipmentReason end
+
+    if value.equipmentReason then
+        return nil, value.equipmentReason
+    end
+
     return value.equipment[slot] or false
 end
 
@@ -642,15 +749,25 @@ end
 -- metadata is still loading, so a count is never understated.
 function addon:GetEquippedSetPieces(setID)
     local value = refresh('equipment')
-    if value.equipmentReason then return nil, value.equipmentReason end
-    if value.pending then return nil, 'item-data-pending' end
+
+    if value.equipmentReason then
+        return nil, value.equipmentReason
+    end
+    if value.pending then
+        return nil, 'item-data-pending'
+    end
+
     return value.sets[setID] or 0
 end
 
 -- Returns the table of equipped piece counts per set ID and whether any item data is still pending.
 function addon:GetEquippedSets()
     local value = refresh('equipment')
-    if value.equipmentReason then return nil, value.equipmentReason end
+
+    if value.equipmentReason then
+        return nil, value.equipmentReason
+    end
+
     return value.sets, value.pending
 end
 
@@ -658,7 +775,10 @@ end
 function addon:GetItemSetName(setID)
     local fn = C_Item and C_Item.GetItemSetInfo or GetItemSetInfo
     local ok, name = call(fn, setID)
-    if ok and readable(name) and type(name) == 'string' and name ~= '' then return name end
+
+    if ok and readable(name) and type(name) == 'string' and name ~= '' then
+        return name
+    end
 end
 
 -- ============================================================================
@@ -693,15 +813,25 @@ local weaponSlotIDs = { mainhand = 16, offhand = 17 }
 
 function addon:GetEquippedWeaponSlot(kind)
     local value = refresh('equipment')
-    if value.equipmentReason then return nil, value.equipmentReason end
+
+    if value.equipmentReason then
+        return nil, value.equipmentReason
+    end
+
     local slot = weaponSlotIDs[kind]
 
     if kind == 'ranged' then
         slot = value.rangedSlot
-        if not slot then return nil, value.rangedReason or 'no-ranged-slot' end
+
+        if not slot then
+            return nil, value.rangedReason or 'no-ranged-slot'
+        end
     end
 
-    if not slot then return nil, 'invalid-weapon-slot' end
+    if not slot then
+        return nil, 'invalid-weapon-slot'
+    end
+
     return value.equipment[slot] or false
 end
 
@@ -715,9 +845,17 @@ end
 -- reason when engraving cannot be read here.
 function addon:IsRuneEngraved(rune, spell)
     local runes = refresh('runes').runes
-    if runes.reason then return nil, runes.reason end
-    if rune ~= nil then return runes.byRune[rune] ~= nil end
-    if spell ~= nil then return runes.bySpell[spell] ~= nil end
+
+    if runes.reason then
+        return nil, runes.reason
+    end
+    if rune ~= nil then
+        return runes.byRune[rune] ~= nil
+    end
+    if spell ~= nil then
+        return runes.bySpell[spell] ~= nil
+    end
+
     return nil, 'invalid-rune'
 end
 
@@ -741,14 +879,20 @@ local function traitNode(talents, node, withEntries)
         if not state then
             -- A node this config lacks stays lacking until the next talent
             -- notification; anything else is read again next time.
-            if why == 'talent-node-unavailable' then nodes[node] = { reason = why } end
+            if why == 'talent-node-unavailable' then
+                nodes[node] = { reason = why }
+            end
+
             return nil, why
         end
 
         nodes[node] = state
     end
 
-    if state.reason then return nil, state.reason end
+    if state.reason then
+        return nil, state.reason
+    end
+
     return state
 end
 
@@ -769,12 +913,18 @@ local function traitHolds(talents, state, entry, spell)
 
             if known == nil then
                 local found, why = addon.Platform:GetTraitEntrySpell(talents.config, id)
-                if found == nil and why ~= 'talent-entry-unavailable' then return nil, why end
+
+                if found == nil and why ~= 'talent-entry-unavailable' then
+                    return nil, why
+                end
+
                 known = found or false
                 spells[id] = known
             end
 
-            if known == spell then return true end
+            if known == spell then
+                return true
+            end
         end
     end
 
@@ -789,12 +939,20 @@ local function traitSpellAt(talents, spell)
     if not index then
         local why
         index, why = addon.Platform:GetTraitSpellIndex(talents.config, talents.tree)
-        if not index then return nil, why end
+
+        if not index then
+            return nil, why
+        end
+
         talents.spellIndex = index
     end
 
     local at = index[spell]
-    if not at then return nil, 'talent-node-unavailable' end
+
+    if not at then
+        return nil, 'talent-node-unavailable'
+    end
+
     return at
 end
 
@@ -803,31 +961,54 @@ end
 -- by spell.
 function addon:GetTraitNodeRank(node, entry, spell)
     local talents = refresh('talents').talents
-    if talents.layout ~= 'traits' then return nil, 'talent-layout-mismatch' end
-    if not talents.config then return nil, talents.configReason or 'talent-config-unavailable' end
+
+    if talents.layout ~= 'traits' then
+        return nil, 'talent-layout-mismatch'
+    end
+    if not talents.config then
+        return nil, talents.configReason or 'talent-config-unavailable'
+    end
+
     local state, why = traitNode(talents, node, spell ~= nil)
 
     if spell ~= nil then
-        if not state and why ~= 'talent-node-unavailable' then return nil, why end
+        if not state and why ~= 'talent-node-unavailable' then
+            return nil, why
+        end
+
         local holds, reason = false, nil
 
         if state then
             holds, reason = traitHolds(talents, state, entry, spell)
-            if holds == nil then return nil, reason end
+
+            if holds == nil then
+                return nil, reason
+            end
         end
 
         if not holds then
             local at
             at, reason = traitSpellAt(talents, spell)
-            if not at then return nil, reason end
+
+            if not at then
+                return nil, reason
+            end
+
             entry = at.entry
             state, why = traitNode(talents, at.node, false)
         end
     end
 
-    if not state then return nil, why end
-    if entry == nil then return state.rank end
-    if state.entry == entry then return state.rank end
+    if not state then
+        return nil, why
+    end
+    if entry == nil then
+        return state.rank
+    end
+    if state.entry == entry then
+        return state.rank
+    end
+
     return 0
 end
 
@@ -835,18 +1016,36 @@ end
 -- tree (display order) and the unique primary tree.
 function addon:GetTraitTreePoints(tree)
     local talents = refresh('talents').talents
-    if talents.layout ~= 'traits' then return nil, 'talent-layout-mismatch' end
-    if not talents.trees then return nil, talents.treesReason or 'talent-groups-unavailable' end
+
+    if talents.layout ~= 'traits' then
+        return nil, 'talent-layout-mismatch'
+    end
+    if not talents.trees then
+        return nil, talents.treesReason or 'talent-groups-unavailable'
+    end
+
     local record = talents.trees[tree]
-    if not record then return nil, 'talent-tree-unavailable' end
+
+    if not record then
+        return nil, 'talent-tree-unavailable'
+    end
+
     return record.points
 end
 
 -- Index of the unique tree with the most points spent, or nil and the reason ('no-talents-spent' or ambiguous).
 function addon:GetTraitPrimaryTree()
     local talents = refresh('talents').talents
-    if talents.layout ~= 'traits' then return nil, 'talent-layout-mismatch' end
-    if not talents.trees then return nil, talents.treesReason or 'talent-groups-unavailable' end
-    if not talents.primary then return nil, talents.primaryReason end
+
+    if talents.layout ~= 'traits' then
+        return nil, 'talent-layout-mismatch'
+    end
+    if not talents.trees then
+        return nil, talents.treesReason or 'talent-groups-unavailable'
+    end
+    if not talents.primary then
+        return nil, talents.primaryReason
+    end
+
     return talents.primary
 end

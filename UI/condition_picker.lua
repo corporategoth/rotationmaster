@@ -48,7 +48,9 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     local allowed = {}
 
     for _, tag in ipairs(addon:listConditions(scope)) do
-        if addon.conditionDefinitions[tag] then allowed[tag] = true end
+        if addon.conditionDefinitions[tag] then
+            allowed[tag] = true
+        end
     end
 
     local groups = { { name = L["All categories"] } }
@@ -78,7 +80,10 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
 
     -- Records the choice, closes the popup, then reports it; ignored when the owning drawing is gone.
     local function selectType(tag)
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         selectedType = tag
         picker:Dismiss()
         choose(tag)
@@ -88,7 +93,10 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     -- (case-insensitive, plain text), sorted by description. Only the first 200 matches get rows, which bounds the
     -- number of buttons created; self.matches keeps the full list for Enter.
     function picker:Filter(query)
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         query = string.lower(query or "")
         local tags = {}
         local category = groups[selected]
@@ -133,7 +141,11 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", 0, -(index - 1) * 26)
             row:SetText(addon.conditionDefinitions[tag].description or tag)
-            addon:SetUIScript(row, "OnClick", function() selectType(tag) end)
+
+            addon:SetUIScript(row, "OnClick", function()
+                selectType(tag)
+            end)
+
             row:Show()
         end
 
@@ -188,7 +200,11 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
 
         local down = IsMouseButtonDown and IsMouseButtonDown("LeftButton")
         local over = InputUtil and InputUtil.IsMouseOver or MouseIsOver
-        if down and not picker.mouseDown and over and not over(host) then picker:Dismiss() end
+
+        if down and not picker.mouseDown and over and not over(host) then
+            picker:Dismiss()
+        end
+
         picker.mouseDown = down
     end
 
@@ -228,7 +244,9 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     addon:SetUIScript(input, "OnEditFocusGained", open)
 
     addon:SetUIScript(input, "OnMouseDown", function()
-        if not popup:IsShown() then open() end
+        if not popup:IsShown() then
+            open()
+        end
     end)
 
     addon:SetUIScript(input, "OnTextChanged", function(_, userInput)
@@ -239,13 +257,19 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     end)
 
     addon:SetUIScript(input, "OnEnterPressed", function()
-        if alive() and popup:IsShown() and picker.matches and picker.matches[1] then selectType(picker.matches[1]) end
+        if alive() and popup:IsShown() and picker.matches and picker.matches[1] then
+            selectType(picker.matches[1])
+        end
     end)
 
-    addon:SetUIScript(input, "OnEscapePressed", function() picker:Dismiss() end)
+    addon:SetUIScript(input, "OnEscapePressed", function()
+        picker:Dismiss()
+    end)
 
     addon:SetUIScript(input, "OnEditFocusLost", function()
-        if not popup:IsShown() then display() end
+        if not popup:IsShown() then
+            display()
+        end
     end)
 
     if not picker.escape then

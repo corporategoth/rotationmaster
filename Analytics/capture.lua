@@ -58,10 +58,14 @@ local fields = {
 -- True when value is a plain table whose keys are all strings listed in allowed; this is how unknown fields are
 -- refused.
 local function closed(value, allowed)
-    if not plain(value) then return false end
+    if not plain(value) then
+        return false
+    end
 
     for k in next, value do
-        if type(k) ~= 'string' or not rawget(allowed, k) then return false end
+        if type(k) ~= 'string' or not rawget(allowed, k) then
+            return false
+        end
     end
 
     return true
@@ -100,7 +104,10 @@ end
 
 -- Deep copy of plain data, so snapshots handed to callers share nothing with the session.
 local function copy(value)
-    if type(value) ~= 'table' then return value end
+    if type(value) ~= 'table' then
+        return value
+    end
+
     local result = {}
 
     for k, v in next, value do
@@ -124,7 +131,9 @@ end
 -- Ends every pending attempt alias (an epoch change or retire made them unobservable) and zeroes the counter.
 local function finishPending(state)
     for _, alias in next, state.byAlias do
-        if alias.pending then alias.pending = false end
+        if alias.pending then
+            alias.pending = false
+        end
     end
 
     state.pending = 0
@@ -148,11 +157,23 @@ end
 -- adviceMaxAge, a number above 0 and at most 0.5 seconds (default 0.5). Only one session can run at a time, and every
 -- method must be called with the colon on the returned object.
 function analytics.NewCapture(options)
-    if type(replay) ~= 'function' then return nil, 'missing-replay' end
-    if options ~= nil and not closed(options, optionsKeys) then return nil, 'invalid-options' end
+    if type(replay) ~= 'function' then
+        return nil, 'missing-replay'
+    end
+    if options ~= nil and not closed(options, optionsKeys) then
+        return nil, 'invalid-options'
+    end
+
     local age = options and rawget(options, 'adviceMaxAge')
-    if age == nil then age = 0.5 end
-    if not finite(age) or age <= 0 or age > 0.5 then return nil, 'invalid-options' end
+
+    if age == nil then
+        age = 0.5
+    end
+
+    if not finite(age) or age <= 0 or age > 0.5 then
+        return nil, 'invalid-options'
+    end
+
     local active, last, api
 
     -- Ends the running session, stores an unavailable snapshot carrying reason, and returns nil, reason.
@@ -175,15 +196,25 @@ function analytics.NewCapture(options)
 
     -- Returns the active session when self is this object and lease is the live one; otherwise nil and a reason.
     local function owned(self, lease)
-        if not rawequal(self, api) then return nil, 'foreign-receiver' end
-        if not active or not rawequal(lease, active.lease) then return nil, 'retired-lease' end
+        if not rawequal(self, api) then
+            return nil, 'foreign-receiver'
+        end
+        if not active or not rawequal(lease, active.lease) then
+            return nil, 'retired-lease'
+        end
+
         return active
     end
 
     -- Checks a caller-supplied elapsed time: finite, 0 to 600 seconds, and not before the last accepted row.
     local function validTime(state, time)
-        if not finite(time) or time < 0 or time > 600 then return nil, 'invalid-time' end
-        if time < state.time then return nil, 'decreasing-time' end
+        if not finite(time) or time < 0 or time > 600 then
+            return nil, 'invalid-time'
+        end
+        if time < state.time then
+            return nil, 'decreasing-time'
+        end
+
         return true
     end
 
@@ -192,9 +223,12 @@ function analytics.NewCapture(options)
     -- Begins a session for a validated context (family 'tbc', actor 'player', optional evidence modes) and returns its
     -- lease; refuses while another session runs. Any earlier snapshot is discarded.
     function api:Start(context)
-        if not rawequal(self, api) then return nil, 'foreign-receiver' end
-        if active then return nil, 'already-running' end
-
+        if not rawequal(self, api) then
+            return nil, 'foreign-receiver'
+        end
+        if active then
+            return nil, 'already-running'
+        end
         if
             not closed(context, contextKeys)
             or rawget(context, 'family') ~= 'tbc'
@@ -204,9 +238,18 @@ function analytics.NewCapture(options)
         end
 
         local ordinary, presentation = rawget(context, 'ordinaryEvidence'), rawget(context, 'presentationEvidence')
-        if ordinary == nil then ordinary = 'unavailable' end
-        if presentation == nil then presentation = 'unavailable' end
-        if not member(ordinary, modes) or not member(presentation, modes) then return nil, 'invalid-context' end
+
+        if ordinary == nil then
+            ordinary = 'unavailable'
+        end
+        if presentation == nil then
+            presentation = 'unavailable'
+        end
+
+        if not member(ordinary, modes) or not member(presentation, modes) then
+            return nil, 'invalid-context'
+        end
+
         local lease = {}
 
         active = {
@@ -232,14 +275,33 @@ function analytics.NewCapture(options)
     -- limit breach also ends the session. Raw cast keys become numeric aliases here and are never stored on a row.
     function api:Push(lease, time, receipt)
         local state, why = owned(self, lease)
-        if not state then return nil, why end
+
+        if not state then
+            return nil, why
+        end
+
         local ok, issue = validTime(state, time)
-        if not ok then return fail(state, issue) end
-        if not plain(receipt) then return fail(state, 'invalid-receipt') end
+
+        if not ok then
+            return fail(state, issue)
+        end
+        if not plain(receipt) then
+            return fail(state, 'invalid-receipt')
+        end
+
         local kind, allowed = rawget(receipt, 'type'), nil
-        if type(kind) == 'string' then allowed = rawget(fields, kind) end
-        if not allowed or not closed(receipt, allowed) then return fail(state, 'invalid-receipt') end
-        if state.seq >= RECORDS then return fail(state, 'record-limit') end
+
+        if type(kind) == 'string' then
+            allowed = rawget(fields, kind)
+        end
+
+        if not allowed or not closed(receipt, allowed) then
+            return fail(state, 'invalid-receipt')
+        end
+        if state.seq >= RECORDS then
+            return fail(state, 'record-limit')
+        end
+
         local row = { type = kind, seq = state.seq + 1, time = time }
         local alias, key, newAlias, signal
 
@@ -253,7 +315,10 @@ function analytics.NewCapture(options)
             local spell = rawget(receipt, 'spell')
 
             if row.action == 'spell' then
-                if not integer(spell, 1) then return fail(state, 'invalid-receipt') end
+                if not integer(spell, 1) then
+                    return fail(state, 'invalid-receipt')
+                end
+
                 row.spell, row.validUntil = spell, time + age
             elseif spell ~= nil then
                 return fail(state, 'invalid-receipt')
@@ -265,10 +330,15 @@ function analytics.NewCapture(options)
                 return fail(state, 'invalid-receipt')
             end
 
-            if row.state == 'visible' and state.presentation ~= 'trusted-receipt' then row.state = 'unknown' end
+            if row.state == 'visible' and state.presentation ~= 'trusted-receipt' then
+                row.state = 'unknown'
+            end
         elseif kind == 'retire' then
             row.reason = rawget(receipt, 'reason')
-            if not member(row.reason, reasons) then return fail(state, 'invalid-receipt') end
+
+            if not member(row.reason, reasons) then
+                return fail(state, 'invalid-receipt')
+            end
         else
             key = rawget(receipt, 'key')
 
@@ -278,13 +348,19 @@ function analytics.NewCapture(options)
 
             row.actor, row.spell = rawget(receipt, 'actor'), rawget(receipt, 'spell')
             signal = rawget(receipt, 'castKind')
-            if signal == nil then signal = 'unmodeled' end
+
+            if signal == nil then
+                signal = 'unmodeled'
+            end
 
             if not member(row.actor, actors) or not integer(row.spell, 0) or not member(signal, kinds) then
                 return fail(state, 'invalid-receipt')
             end
 
-            if signal == 'ordinary' and state.ordinary ~= 'trusted-receipt' then signal = 'unmodeled' end
+            if signal == 'ordinary' and state.ordinary ~= 'trusted-receipt' then
+                signal = 'unmodeled'
+            end
+
             row.castKind = signal
 
             if kind == 'attempt' then
@@ -295,14 +371,20 @@ function analytics.NewCapture(options)
                 end
             else
                 row.status = rawget(receipt, 'status')
-                if not member(row.status, statuses) then return fail(state, 'invalid-receipt') end
+
+                if not member(row.status, statuses) then
+                    return fail(state, 'invalid-receipt')
+                end
             end
 
             if key then
                 alias = rawget(state.keys, key)
 
                 if not alias then
-                    if state.aliases >= ALIASES then return fail(state, 'alias-limit') end
+                    if state.aliases >= ALIASES then
+                        return fail(state, 'alias-limit')
+                    end
+
                     newAlias = true
                     alias = { id = state.aliases + 1 }
                     row.cast = alias.id
@@ -315,18 +397,28 @@ function analytics.NewCapture(options)
         end
 
         local bytes = state.bytes + rowCharge(row) + (newAlias and 18 + #key or 0)
-        if bytes > BYTES then return fail(state, 'payload-limit') end
+
+        if bytes > BYTES then
+            return fail(state, 'payload-limit')
+        end
+
         expire(state, time)
 
         if kind == 'advice' then
-            if state.epoch ~= nil and state.epoch ~= row.epoch then finishPending(state) end
+            if state.epoch ~= nil and state.epoch ~= row.epoch then
+                finishPending(state)
+            end
+
             state.epoch = row.epoch
         elseif kind == 'retire' then
             state.epoch = nil
             finishPending(state)
         elseif alias then
             if kind == 'attempt' and not alias.started and not alias.resultSeen then
-                if state.pending >= PENDING then return fail(state, 'pending-limit') end
+                if state.pending >= PENDING then
+                    return fail(state, 'pending-limit')
+                end
+
                 alias.started = true
                 alias.pending = true
                 alias.time = time
@@ -346,7 +438,9 @@ function analytics.NewCapture(options)
                 state.aliases = alias.id
             end
 
-            if signal ~= 'unmodeled' then alias[signal] = true end
+            if signal ~= 'unmodeled' then
+                alias[signal] = true
+            end
         end
 
         state.rows[row.seq] = row
@@ -360,7 +454,11 @@ function analytics.NewCapture(options)
     -- the trace and returns a detached snapshot (the unavailable one, plus a reason, if replay refuses it).
     function api:Stop(lease, time, reason)
         local state, why = owned(self, lease)
-        if not state then return nil, why end
+
+        if not state then
+            return nil, why
+        end
+
         local ok, issue = validTime(state, time)
 
         if not ok then
@@ -368,7 +466,9 @@ function analytics.NewCapture(options)
             return copy(last), issue
         end
 
-        if reason == nil then reason = 'stop' end
+        if reason == nil then
+            reason = 'stop'
+        end
 
         if not member(reason, reasons) then
             fail(state, 'invalid-reason')
@@ -382,7 +482,10 @@ function analytics.NewCapture(options)
 
         for i = 1, state.seq do
             local row = copy(state.rows[i])
-            if row.type == 'advice' and row.action == 'spell' then row.validUntil = min(row.validUntil, time) end
+
+            if row.type == 'advice' and row.action == 'spell' then
+                row.validUntil = min(row.validUntil, time)
+            end
 
             if (row.type == 'attempt' or row.type == 'result') and row.cast > 0 then
                 local alias = state.byAlias[row.cast]
@@ -428,7 +531,10 @@ function analytics.NewCapture(options)
 
     -- Discards any running session and the last snapshot.
     function api:Clear()
-        if not rawequal(self, api) then return nil, 'foreign-receiver' end
+        if not rawequal(self, api) then
+            return nil, 'foreign-receiver'
+        end
+
         active = nil
         last = nil
         return true
@@ -436,9 +542,16 @@ function analytics.NewCapture(options)
 
     -- Returns a copy of the last snapshot, or nil and 'running' / 'no-session'.
     function api:GetSnapshot()
-        if not rawequal(self, api) then return nil, 'foreign-receiver' end
-        if active then return nil, 'running' end
-        if not last then return nil, 'no-session' end
+        if not rawequal(self, api) then
+            return nil, 'foreign-receiver'
+        end
+        if active then
+            return nil, 'running'
+        end
+        if not last then
+            return nil, 'no-session'
+        end
+
         return copy(last)
     end
 

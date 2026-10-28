@@ -51,13 +51,20 @@ function addon:CreateWorkbenchSelector()
     end
 
     function menu:Retire(row)
-        if row.colorLease then row.colorLease.active = false end
+        if row.colorLease then
+            row.colorLease.active = false
+        end
+
         row.menuLease = nil
         row.menuEntry = nil
         row.menuIndex = nil
         row.colorOwner = nil
         row.colorLease = nil
-        if self.colorRow == row then self.colorRow = nil end
+
+        if self.colorRow == row then
+            self.colorRow = nil
+        end
+
         addon:SetUIScript(row, 'OnClick', nil)
 
         if row.colorButton then
@@ -82,7 +89,9 @@ function addon:CreateWorkbenchSelector()
             end
         end
 
-        if lease then lease.active = false end
+        if lease then
+            lease.active = false
+        end
 
         if row then
             row.colorOwner = nil
@@ -155,7 +164,9 @@ function addon:CreateWorkbenchSelector()
                     local owner = entry.chooseColor(
                         swatch,
                         function(color)
-                            if alive() then swatch.fill:SetColorTexture(color.r, color.g, color.b, color.a or 1) end
+                            if alive() then
+                                swatch.fill:SetColorTexture(color.r, color.g, color.b, color.a or 1)
+                            end
                         end,
                         colorValid
                     )
@@ -165,7 +176,11 @@ function addon:CreateWorkbenchSelector()
                     then
                         local child = owner.frame
                         local previous = child.rmSelectorColorSession
-                        if previous then previous.active = false end
+
+                        if previous then
+                            previous.active = false
+                        end
+
                         child.rmSelectorColorSession = colorLease
 
                         if not child.rmSelectorColorHook then
@@ -225,7 +240,10 @@ function addon:CreateWorkbenchSelector()
     end
 
     function menu:RefreshViewport()
-        if not self:IsValid() or self.rebuilding or self.refreshing then return end
+        if not self:IsValid() or self.rebuilding or self.refreshing then
+            return
+        end
+
         self.refreshing = true
         local binding
 
@@ -281,25 +299,35 @@ function addon:CreateWorkbenchSelector()
         self.refreshing = nil
 
         if not ok then
-            if binding then pcall(self.Retire, self, binding) end
+            if binding then
+                pcall(self.Retire, self, binding)
+            end
+
             error(why, 0)
         end
     end
 
     function menu:Refilter()
-        if not self:IsValid() then return end
+        if not self:IsValid() then
+            return
+        end
+
         self.rebuilding = true
         self.revision = self.revision + 1
 
         for _, row in ipairs(self.rows) do
-            if row.menuLease and not self:IsPinned(row) then self:Retire(row) end
+            if row.menuLease and not self:IsPinned(row) then
+                self:Retire(row)
+            end
         end
 
         local query = (self.search:GetText() or ''):lower()
         self.matches = {}
 
         for _, entry in ipairs(self.entries) do
-            if tostring(entry.text):lower():find(query, 1, true) then self.matches[#self.matches + 1] = entry end
+            if tostring(entry.text):lower():find(query, 1, true) then
+                self.matches[#self.matches + 1] = entry
+            end
         end
 
         local height = math.max(21, math.min(10, #self.matches) * 21)
@@ -320,7 +348,10 @@ function addon:CreateWorkbenchSelector()
             return
         end
 
-        if frame:IsShown() then self:Hide() end
+        if frame:IsShown() then
+            self:Hide()
+        end
+
         self.serial = self.serial + 1
         self.active = true
         self.valid = valid
@@ -348,7 +379,9 @@ function addon:CreateWorkbenchSelector()
         local serial = self.serial
 
         addon:SetUIScript(self.search, 'OnTextChanged', function()
-            if menu.serial == serial then menu:Refilter() end
+            if menu.serial == serial then
+                menu:Refilter()
+            end
         end)
 
         frame:Show()
@@ -356,7 +389,9 @@ function addon:CreateWorkbenchSelector()
         self.mouseDown = IsMouseButtonDown and IsMouseButtonDown('LeftButton')
 
         addon:SetUIScript(frame, 'OnUpdate', function()
-            if menu.serial ~= serial then return end
+            if menu.serial ~= serial then
+                return
+            end
 
             if not menu:IsValid() then
                 menu:Hide()
@@ -387,16 +422,24 @@ function addon:CreateWorkbenchSelector()
         end)
 
         addon:OpenPopup(self, anchor)
-        if not inline and self:IsValid() then self.search:SetFocus() end
+
+        if not inline and self:IsValid() then
+            self.search:SetFocus()
+        end
     end
 
     function menu:Release()
         self.serial = self.serial + 1
         self:Hide()
-        if self.OnRelease then self:OnRelease() end
+
+        if self.OnRelease then
+            self:OnRelease()
+        end
     end
 
-    self:SetUIScript(menu.search, 'OnEscapePressed', function() menu:Hide() end)
+    self:SetUIScript(menu.search, 'OnEscapePressed', function()
+        menu:Hide()
+    end)
 
     self:SetUIScript(frame, 'OnHide', function()
         menu.active = false
@@ -411,7 +454,10 @@ function addon:CreateWorkbenchSelector()
         addon:SetUIScript(frame, 'OnUpdate', nil)
     end)
 
-    menu.scroll.workbenchBar:HookScript('OnValueChanged', function() menu:RefreshViewport() end)
+    menu.scroll.workbenchBar:HookScript('OnValueChanged', function()
+        menu:RefreshViewport()
+    end)
+
     frame:Hide()
     return menu
 end

@@ -35,9 +35,16 @@ end
 
 -- Deep copy of a data tree that preserves shared and cyclic references. Unlike data.CopyData it does no validation.
 local function clone(v, seen)
-    if type(v) ~= 'table' then return v end
+    if type(v) ~= 'table' then
+        return v
+    end
+
     seen = seen or {}
-    if seen[v] then return seen[v] end
+
+    if seen[v] then
+        return seen[v]
+    end
+
     local result = {}
     seen[v] = result
 
@@ -50,15 +57,23 @@ end
 
 -- Deep equality of two data trees.
 local function same(a, b)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
 
     for k, v in pairs(a) do
-        if not same(v, b[k]) then return false end
+        if not same(v, b[k]) then
+            return false
+        end
     end
 
     for k in pairs(b) do
-        if a[k] == nil then return false end
+        if a[k] == nil then
+            return false
+        end
     end
 
     return true
@@ -68,7 +83,11 @@ end
 -- nil and a reason when the library or any root is not plain data.
 local function legacy(profile)
     local library = profile.rotationLibrary
-    if library ~= nil and not plain(library) then return nil, 'invalid-library-state' end
+
+    if library ~= nil and not plain(library) then
+        return nil, 'invalid-library-state'
+    end
+
     local result = {}
 
     for _, kind in ipairs({ 'rotations', 'origins', 'imports', 'comparisons' }) do
@@ -80,7 +99,10 @@ local function legacy(profile)
             value = library[kind]
         end
 
-        if value ~= nil and not plain(value) then return nil, 'invalid-legacy-state' end
+        if value ~= nil and not plain(value) then
+            return nil, 'invalid-legacy-state'
+        end
+
         result[kind] = value == nil and {} or value
     end
 
@@ -90,13 +112,20 @@ end
 -- Builds the replacement rotationLibrary kept after migration: empty provenance maps plus a detached copy of every
 -- other key. Returns nil and a reason when a value cannot be copied.
 local function retiredLibrary(library)
-    if not library then return nil end
+    if not library then
+        return nil
+    end
+
     local result = { origins = {}, imports = {}, comparisons = {} }
 
     for key, value in pairs(library) do
         if key ~= 'origins' and key ~= 'imports' and key ~= 'comparisons' then
             local detached, why = data.CopyData(value)
-            if why then return nil, why.code end
+
+            if why then
+                return nil, why.code
+            end
+
             result[key] = detached
         end
     end
@@ -106,10 +135,14 @@ end
 
 -- True when a map of per-spec row tables holds any row (or any non-table value).
 local function nonempty(map)
-    if type(map) ~= 'table' then return map ~= nil end
+    if type(map) ~= 'table' then
+        return map ~= nil
+    end
 
     for _, rows in pairs(map) do
-        if type(rows) ~= 'table' or next(rows) ~= nil then return true end
+        if type(rows) ~= 'table' or next(rows) ~= nil then
+            return true
+        end
     end
 
     return false
@@ -123,17 +156,31 @@ end
 -- ({ unchanged = bool }), or nil and a reason ('missing-fallback-configuration', 'conflicting-legacy-rotation-roots',
 -- ...). A profile that already has a store plans as unchanged but must have no legacy rows left over. Writes nothing.
 function addon:PlanRotationProfileMigration(profile, fallbackID)
-    if type(profile) ~= 'table' then return nil, 'invalid-profile' end
+    if type(profile) ~= 'table' then
+        return nil, 'invalid-profile'
+    end
+
     local old, legacyReason = legacy(profile)
-    if not old then return nil, legacyReason end
+
+    if not old then
+        return nil, legacyReason
+    end
 
     if profile.rotationStore ~= nil then
-        if not text(profile.rotationFallbackID) then return nil, 'missing-fallback-configuration' end
+        if not text(profile.rotationFallbackID) then
+            return nil, 'missing-fallback-configuration'
+        end
+
         local valid, why = data.ValidateRotationStore(profile.rotationStore)
-        if not valid then return nil, why end
+
+        if not valid then
+            return nil, why
+        end
 
         for _, map in pairs(old) do
-            if nonempty(map) then return nil, 'conflicting-legacy-rotation-roots' end
+            if nonempty(map) then
+                return nil, 'conflicting-legacy-rotation-roots'
+            end
         end
 
         local public = { unchanged = true }
@@ -141,9 +188,16 @@ function addon:PlanRotationProfileMigration(profile, fallbackID)
         return public
     end
 
-    if not text(fallbackID) then return nil, 'missing-fallback-configuration' end
+    if not text(fallbackID) then
+        return nil, 'missing-fallback-configuration'
+    end
+
     local proposed, planReason = data.PlanRotationStoreMigration(old)
-    if not proposed then return nil, planReason end
+
+    if not proposed then
+        return nil, planReason
+    end
+
     local public = { unchanged = false }
 
     migrations[public] = {
@@ -165,7 +219,11 @@ end
 -- version becomes 3. A plan can be applied once.
 function addon:ApplyRotationProfileMigration(public)
     local plan = migrations[public]
-    if not plan then return nil, 'invalid-migration-plan' end
+
+    if not plan then
+        return nil, 'invalid-migration-plan'
+    end
+
     local profile = plan.profile
 
     if plan.store then
@@ -174,12 +232,21 @@ function addon:ApplyRotationProfileMigration(public)
         end
 
         local valid, why = data.ValidateRotationStore(plan.store)
-        if not valid then return nil, why end
+
+        if not valid then
+            return nil, why
+        end
+
         local old, legacyReason = legacy(profile)
-        if not old then return nil, legacyReason end
+
+        if not old then
+            return nil, legacyReason
+        end
 
         for _, map in pairs(old) do
-            if nonempty(map) then return nil, 'conflicting-legacy-rotation-roots' end
+            if nonempty(map) then
+                return nil, 'conflicting-legacy-rotation-roots'
+            end
         end
 
         migrations[public] = nil
@@ -196,18 +263,36 @@ function addon:ApplyRotationProfileMigration(public)
     end
 
     local old, legacyReason = legacy(profile)
-    if not old then return nil, legacyReason end
+
+    if not old then
+        return nil, legacyReason
+    end
+
     local checked, checkReason = data.PlanRotationStoreMigration(old)
-    if not checked then return nil, checkReason end
-    if not same(checked.legacy, plan.baseline) then return nil, 'stale-migration-plan' end
+
+    if not checked then
+        return nil, checkReason
+    end
+    if not same(checked.legacy, plan.baseline) then
+        return nil, 'stale-migration-plan'
+    end
+
     local replacement, libraryReason = retiredLibrary(profile.rotationLibrary)
-    if libraryReason then return nil, libraryReason end
+
+    if libraryReason then
+        return nil, libraryReason
+    end
+
     -- Archive all four roots before retiring their old active homes. Ownership
     -- remains unknown even when a retained manifest happens to declare a class.
     profile.rotationStore = plan.proposed
     profile.rotationFallbackID = plan.fallback
     profile.rotations = {}
-    if profile.rotationLibrary then profile.rotationLibrary = replacement end
+
+    if profile.rotationLibrary then
+        profile.rotationLibrary = replacement
+    end
+
     profile.version = 3
     migrations[public] = nil
     return true
@@ -223,19 +308,29 @@ end
 -- ============================================================================
 
 local function moveHandle(body)
-    if not plain(body) or body.handle == nil then return end
-    if body.identifier == nil then body.identifier = body.handle end
+    if not plain(body) or body.handle == nil then
+        return
+    end
+
+    if body.identifier == nil then
+        body.identifier = body.handle
+    end
+
     body.handle = nil
 end
 
 -- Renames the handle on the baseline body that a lineage sidecar (origin or import record) retains.
 local function moveSidecar(sidecar)
-    if plain(sidecar) and plain(sidecar.lineage) then moveHandle(sidecar.lineage.baseline) end
+    if plain(sidecar) and plain(sidecar.lineage) then
+        moveHandle(sidecar.lineage.baseline)
+    end
 end
 
 -- Calls visit(value) for every value of every per-spec row table in map; non-plain levels are skipped.
 local function eachRow(map, visit)
-    if not plain(map) then return end
+    if not plain(map) then
+        return
+    end
 
     for _, rows in pairs(map) do
         if plain(rows) then
@@ -248,7 +343,10 @@ end
 
 -- Renames the handle on a stored record's body and on the baselines of its origin and import sidecars.
 local function moveRecord(record)
-    if not plain(record) then return end
+    if not plain(record) then
+        return
+    end
+
     moveHandle(record.body)
     moveSidecar(record.origin)
     moveSidecar(record.imported)
@@ -256,7 +354,10 @@ end
 
 -- Applies the handle rename to every stored body of a profile (see above). Safe to run repeatedly.
 function addon:MoveRotationHandlesToIdentifiers(profile)
-    if not plain(profile) then return end
+    if not plain(profile) then
+        return
+    end
+
     local store = profile.rotationStore
 
     if plain(store) then
@@ -268,7 +369,9 @@ function addon:MoveRotationHandlesToIdentifiers(profile)
 
         if plain(store.characters) then
             for _, bucket in pairs(store.characters) do
-                if plain(bucket) then eachRow(bucket.specs, moveRecord) end
+                if plain(bucket) then
+                    eachRow(bucket.specs, moveRecord)
+                end
             end
         end
 
@@ -322,26 +425,41 @@ end
 -- Returns specs, remainder (remainder {} when nothing is left), or nil when the switch is not one of the movable
 -- shapes. Works on copies; the switch is not modified.
 function addon:SplitSwitchSpecializations(switch)
-    if not plain(switch) or switch.disabled then return nil end
-    if specCondition(switch) then return { switch.spec }, {} end
-    if not plain(switch.value) then return nil end
+    if not plain(switch) or switch.disabled then
+        return nil
+    end
+    if specCondition(switch) then
+        return { switch.spec }, {}
+    end
+    if not plain(switch.value) then
+        return nil
+    end
 
     if switch.type == 'OR' then
         local specs = {}
 
         for i, child in ipairs(switch.value) do
-            if not specCondition(child) then return nil end
+            if not specCondition(child) then
+                return nil
+            end
+
             specs[i] = child.spec
         end
 
-        if #specs == 0 then return nil end
+        if #specs == 0 then
+            return nil
+        end
+
         return data.NormalizeRotationSpecs(specs), {}
     elseif switch.type == 'AND' then
         local spec, rest
 
         for _, child in ipairs(switch.value) do
             if specCondition(child) then
-                if spec and spec ~= child.spec then return nil end
+                if spec and spec ~= child.spec then
+                    return nil
+                end
+
                 spec = child.spec
             else
                 rest = rest or {}
@@ -349,9 +467,16 @@ function addon:SplitSwitchSpecializations(switch)
             end
         end
 
-        if not spec then return nil end
-        if not rest then return { spec }, {} end
-        if #rest == 1 then return { spec }, rest[1] end
+        if not spec then
+            return nil
+        end
+        if not rest then
+            return { spec }, {}
+        end
+        if #rest == 1 then
+            return { spec }, rest[1]
+        end
+
         local remainder = clone(switch)
         remainder.value = rest
         return { spec }, remainder
@@ -362,9 +487,15 @@ end
 -- value) or from its switch condition, removing the part of the switch that moved. A body that already has specs is
 -- left alone.
 local function migrateBody(owner, body, key, kind, keyIsValue)
-    if not plain(body) or body.specs ~= nil then return end
+    if not plain(body) or body.specs ~= nil then
+        return
+    end
+
     local specs, remainder
-    if kind == 'portable' then specs, remainder = owner:SplitSwitchSpecializations(body.switch) end
+
+    if kind == 'portable' then
+        specs, remainder = owner:SplitSwitchSpecializations(body.switch)
+    end
 
     if keyIsValue and key ~= 0 then
         if specs then
@@ -377,7 +508,9 @@ local function migrateBody(owner, body, key, kind, keyIsValue)
                 end
             end
 
-            if found then body.switch = remainder end
+            if found then
+                body.switch = remainder
+            end
         end
 
         body.specs = { key }
@@ -390,23 +523,38 @@ end
 -- Runs the specialization migration once per profile and marks it (rotationSpecsMigrated). Returns true when it ran,
 -- false when it was already done or the store or client kind is not ready. The fallback rotation is never touched.
 function addon:MoveRotationSpecsToProperty(profile)
-    if not plain(profile) or profile.rotationSpecsMigrated then return false end
+    if not plain(profile) or profile.rotationSpecsMigrated then
+        return false
+    end
+
     local platform = self.Platform
     local kind = platform and platform.GetRotationSpecKind and platform:GetRotationSpecKind()
-    if not kind then return false end
+
+    if not kind then
+        return false
+    end
+
     local keyIsValue = platform:RotationKeyIsSpecValue() == true
     local store = profile.rotationStore
-    if not plain(store) then return false end
+
+    if not plain(store) then
+        return false
+    end
+
     local fallback = profile.rotationFallbackID
 
     -- Migrates every body in a map keyed by numeric specialization namespace, skipping the fallback rotation.
     local function each(map)
-        if not plain(map) then return end
+        if not plain(map) then
+            return
+        end
 
         for key, rows in pairs(map) do
             if type(key) == 'number' and plain(rows) then
                 for id, record in pairs(rows) do
-                    if id ~= fallback and plain(record) then migrateBody(self, record.body, key, kind, keyIsValue) end
+                    if id ~= fallback and plain(record) then
+                        migrateBody(self, record.body, key, kind, keyIsValue)
+                    end
                 end
             end
         end
@@ -420,7 +568,9 @@ function addon:MoveRotationSpecsToProperty(profile)
 
     if plain(store.characters) then
         for _, bucket in pairs(store.characters) do
-            if plain(bucket) then each(bucket.specs) end
+            if plain(bucket) then
+                each(bucket.specs)
+            end
         end
     end
 
@@ -451,7 +601,11 @@ function addon:InitializeScopedRotationStorage()
         visited[profile] = true
         local plan, why = self:PlanRotationProfileMigration(profile, profile.rotationFallbackID or DEFAULT)
         local ok
-        if plan then ok, why = self:ApplyRotationProfileMigration(plan) end
+
+        if plan then
+            ok, why = self:ApplyRotationProfileMigration(plan)
+        end
+
         results[#results + 1] = { profile = name, ok = ok == true, reason = why }
     end
 
@@ -459,7 +613,11 @@ function addon:InitializeScopedRotationStorage()
         local p = self.db.profile
         local plan, why = self:PlanRotationProfileMigration(p, p.rotationFallbackID or DEFAULT)
         local ok
-        if plan then ok, why = self:ApplyRotationProfileMigration(plan) end
+
+        if plan then
+            ok, why = self:ApplyRotationProfileMigration(plan)
+        end
+
         results[#results + 1] = { profile = false, ok = ok == true, reason = why }
     end
 
@@ -480,7 +638,11 @@ end
 -- reason when the owner context is unavailable.
 local function currentCharacter(owner)
     local c, why = owner:GetRotationOwnerContext()
-    if not c or not c.character then return nil, why or 'missing-owner-context' end
+
+    if not c or not c.character then
+        return nil, why or 'missing-owner-context'
+    end
+
     local root = owner.db.sv and owner.db.sv.char
     local char = root and root[c.character]
     return char, c, root
@@ -501,7 +663,9 @@ local function validSelection(selection)
     end
 
     for key in pairs(selection) do
-        if key ~= 'kind' and key ~= 'spec' and key ~= 'id' then return false end
+        if key ~= 'kind' and key ~= 'spec' and key ~= 'id' then
+            return false
+        end
     end
 
     return true
@@ -512,30 +676,62 @@ end
 -- Returns a detached record ({ body, ... }) for one unassigned rotation, or nil and a reason such as
 -- 'unknown-rotation'. Read only.
 function addon:GetUnassignedRotationSnapshot(selection)
-    if not validSelection(selection) then return nil, 'invalid-legacy-selection' end
+    if not validSelection(selection) then
+        return nil, 'invalid-legacy-selection'
+    end
+
     local coordinator = self:GetScopedRotationCoordinator()
-    if not coordinator then return nil, 'rotation-profile-not-bound' end
+
+    if not coordinator then
+        return nil, 'rotation-profile-not-bound'
+    end
+
     local ready, why = coordinator:CheckReady()
-    if not ready then return nil, why end
+
+    if not ready then
+        return nil, why
+    end
+
     local context, contextReason = self:GetRotationOwnerContext()
-    if not context then return nil, contextReason end
+
+    if not context then
+        return nil, contextReason
+    end
 
     if selection.kind == 'profile' then
         local rows, reason = coordinator:Unassigned()
-        if not rows then return nil, reason end
+
+        if not rows then
+            return nil, reason
+        end
 
         for _, row in ipairs(rows) do
-            if row.address.spec == selection.spec and row.address.id == selection.id then return row.record end
+            if row.address.spec == selection.spec and row.address.id == selection.id then
+                return row.record
+            end
         end
     else
         local char, c = currentCharacter(self)
-        if not char then return nil, type(c) == 'string' and c or 'unknown-rotation' end
-        if not plain(char) then return nil, 'invalid-legacy-state' end
+
+        if not char then
+            return nil, type(c) == 'string' and c or 'unknown-rotation'
+        end
+        if not plain(char) then
+            return nil, 'invalid-legacy-state'
+        end
+
         local archive, reason = data.PlanRotationStoreMigration({ rotations = char.rotations })
-        if not archive then return nil, reason end
+
+        if not archive then
+            return nil, reason
+        end
+
         local rows = archive.legacy.rotations and archive.legacy.rotations[selection.spec]
         local body = rows and rows[selection.id]
-        if body ~= nil then return { body = body } end
+
+        if body ~= nil then
+            return { body = body }
+        end
     end
 
     return nil, 'unknown-rotation'
@@ -546,11 +742,23 @@ end
 -- nil and a reason. Read only.
 function addon:ListUnassignedRotations()
     local coordinator = self:GetScopedRotationCoordinator()
-    if not coordinator then return nil, 'rotation-profile-not-bound' end
+
+    if not coordinator then
+        return nil, 'rotation-profile-not-bound'
+    end
+
     local ready, readinessReason = coordinator:CheckReady()
-    if not ready then return nil, readinessReason end
+
+    if not ready then
+        return nil, readinessReason
+    end
+
     local rows, why = coordinator:Unassigned()
-    if not rows then return nil, why end
+
+    if not rows then
+        return nil, why
+    end
+
     local result = {}
 
     -- Appends one list row for an unassigned rotation, naming it by its body name or else its id.
@@ -576,7 +784,10 @@ function addon:ListUnassignedRotations()
 
     if char and char.rotations ~= nil then
         local proposed, why = data.PlanRotationStoreMigration({ rotations = char.rotations })
-        if not proposed then return nil, why end
+
+        if not proposed then
+            return nil, why
+        end
 
         for number, map in pairs(proposed.legacy.rotations) do
             for id, body in pairs(map) do
@@ -589,8 +800,13 @@ function addon:ListUnassignedRotations()
     end
 
     table.sort(result, function(a, b)
-        if a.kind ~= b.kind then return a.kind < b.kind end
-        if a.spec ~= b.spec then return a.spec < b.spec end
+        if a.kind ~= b.kind then
+            return a.kind < b.kind
+        end
+        if a.spec ~= b.spec then
+            return a.spec < b.spec
+        end
+
         return a.id < b.id
     end)
 
@@ -601,31 +817,63 @@ end
 -- plan, or nil and a reason. A profile selection is planned by the coordinator; a character-archive selection is
 -- built here against a copy of the store, so nothing is written until ApplyRotationAdoption.
 function addon:PlanRotationAdoption(selection, scope)
-    if not validSelection(selection) then return nil, 'invalid-legacy-selection' end
+    if not validSelection(selection) then
+        return nil, 'invalid-legacy-selection'
+    end
+
     scope = scope or 'class'
     local coordinator = self:GetScopedRotationCoordinator()
-    if not coordinator then return nil, 'rotation-profile-not-bound' end
+
+    if not coordinator then
+        return nil, 'rotation-profile-not-bound'
+    end
+
     local ready, readinessReason = coordinator:CheckReady()
-    if not ready then return nil, readinessReason end
+
+    if not ready then
+        return nil, readinessReason
+    end
 
     if selection.kind == 'profile' then
         local plan, why = coordinator:PlanAdoption(selection, scope or 'class')
-        if not plan then return nil, why end
+
+        if not plan then
+            return nil, why
+        end
+
         adoptions[plan] = { coordinator = coordinator }
         return plan
     end
 
     local char, c, charRoot = currentCharacter(self)
-    if not char then return nil, type(c) == 'string' and c or 'unknown-rotation' end
-    if scope ~= 'class' and scope ~= 'character' then return nil, 'invalid-owner-scope' end
+
+    if not char then
+        return nil, type(c) == 'string' and c or 'unknown-rotation'
+    end
+    if scope ~= 'class' and scope ~= 'character' then
+        return nil, 'invalid-owner-scope'
+    end
+
     local archive, why = data.PlanRotationStoreMigration({ rotations = char.rotations })
-    if not archive then return nil, why end
+
+    if not archive then
+        return nil, why
+    end
+
     local rows = archive.legacy.rotations and archive.legacy.rotations[selection.spec]
     local body = rows and rows[selection.id]
-    if not body then return nil, 'unknown-rotation' end
+
+    if not body then
+        return nil, 'unknown-rotation'
+    end
+
     local original = self.db.profile.rotationStore
     local valid, stateReason = data.ValidateRotationStore(original)
-    if not valid then return nil, stateReason end
+
+    if not valid then
+        return nil, stateReason
+    end
+
     local proposed = clone(original)
 
     local service, storeReason = data.NewRotationStore({
@@ -633,7 +881,9 @@ function addon:PlanRotationAdoption(selection, scope)
         fallbackID = self.db.profile.rotationFallbackID,
     })
 
-    if not service then return nil, storeReason end
+    if not service then
+        return nil, storeReason
+    end
 
     local address = {
         scope = scope,
@@ -644,9 +894,17 @@ function addon:PlanRotationAdoption(selection, scope)
     }
 
     local transaction, planReason = service:PlanCreate(address, { body = body }, c)
-    if not transaction then return nil, planReason end
+
+    if not transaction then
+        return nil, planReason
+    end
+
     local committed, commitReason = service:Commit(transaction, c)
-    if not committed then return nil, commitReason end
+
+    if not committed then
+        return nil, commitReason
+    end
+
     rows[selection.id] = nil
 
     local public = {
@@ -679,13 +937,24 @@ end
 -- since planning). The checks are repeated once the rebind is prepared, in case anything moved meanwhile.
 function addon:ApplyRotationAdoption(public)
     local plan = adoptions[public]
-    if not plan or self:GetScopedRotationCoordinator() ~= plan.coordinator then return nil, 'invalid-adoption-plan' end
+
+    if not plan or self:GetScopedRotationCoordinator() ~= plan.coordinator then
+        return nil, 'invalid-adoption-plan'
+    end
+
     local ready, readinessReason = plan.coordinator:CheckReady()
-    if not ready then return nil, readinessReason end
+
+    if not ready then
+        return nil, readinessReason
+    end
 
     if not plan.profile then
         local ok, reference = plan.coordinator:ApplyAdoption(public)
-        if ok then adoptions[public] = nil end
+
+        if ok then
+            adoptions[public] = nil
+        end
+
         return ok, reference
     end
 
@@ -704,10 +973,16 @@ function addon:ApplyRotationAdoption(public)
     end
 
     local valid, why = data.ValidateRotationStore(plan.original)
-    if not valid then return nil, why end
-    local now, archiveReason = data.PlanRotationStoreMigration({ rotations = char.rotations })
-    if not now then return nil, archiveReason end
 
+    if not valid then
+        return nil, why
+    end
+
+    local now, archiveReason = data.PlanRotationStoreMigration({ rotations = char.rotations })
+
+    if not now then
+        return nil, archiveReason
+    end
     if not same(plan.original, plan.baseline) or not same(now, plan.charBaseline) then
         return nil, 'stale-adoption-plan'
     end
@@ -728,12 +1003,13 @@ function addon:ApplyRotationAdoption(public)
     end
 
     local freshArchive, freshArchiveReason = data.PlanRotationStoreMigration({ rotations = char.rotations })
-    if not freshArchive then return nil, freshArchiveReason end
 
+    if not freshArchive then
+        return nil, freshArchiveReason
+    end
     if not same(plan.original, plan.baseline) or not same(freshArchive, plan.charBaseline) then
         return nil, 'stale-adoption-plan'
     end
-
     if
         self.db.profile ~= plan.profile
         or char.rotations ~= plan.rotations
@@ -746,9 +1022,17 @@ function addon:ApplyRotationAdoption(public)
     plan.profile.rotationStore = plan.proposed
     char.rotations = plan.charReplacement
     adoptions[public] = nil
-    if binding and not activeCurrent(self, binding.token) then return true, clone(plan.reference) end
+
+    if binding and not activeCurrent(self, binding.token) then
+        return true, clone(plan.reference)
+    end
+
     local bind = self.BindRotationProfile
-    if binding and not activeCurrent(self, binding.token) then return true, clone(plan.reference) end
+
+    if binding and not activeCurrent(self, binding.token) then
+        return true, clone(plan.reference)
+    end
+
     local bound, bindReason
 
     if binding and runRootRebind then
@@ -757,7 +1041,12 @@ function addon:ApplyRotationAdoption(public)
         bound, bindReason = bind(self)
     end
 
-    if binding and not activeCurrent(self, binding.token) then return true, clone(plan.reference) end
-    if not bound then return nil, bindReason end
+    if binding and not activeCurrent(self, binding.token) then
+        return true, clone(plan.reference)
+    end
+    if not bound then
+        return nil, bindReason
+    end
+
     return true, clone(plan.reference)
 end

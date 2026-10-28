@@ -48,8 +48,15 @@ function addon:InstallRotationMetadata(pane)
     drag:SetHeight(28)
     drag:EnableMouse(true)
     drag:RegisterForDrag('LeftButton')
-    addon:SetUIScript(drag, 'OnDragStart', function() frame:StartMoving() end)
-    addon:SetUIScript(drag, 'OnDragStop', function() frame:StopMovingOrSizing() end)
+
+    addon:SetUIScript(drag, 'OnDragStart', function()
+        frame:StartMoving()
+    end)
+
+    addon:SetUIScript(drag, 'OnDragStop', function()
+        frame:StopMovingOrSizing()
+    end)
+
     frame:SetMovable(true)
     local scroll = addon:CreateWorkbenchScrollFrame(frame)
     scroll:SetPoint('TOPLEFT', 12, -40)
@@ -85,10 +92,16 @@ function addon:InstallRotationMetadata(pane)
     pane.description:SetTextInsets(4, 4, 4, 4)
     descriptionScroll:SetScrollChild(pane.description)
     dialog.fields.description = pane.description
-    addon:SetUIScript(pane.description, 'OnSizeChanged', function() descriptionScroll:UpdateWorkbenchScroll() end)
+
+    addon:SetUIScript(pane.description, 'OnSizeChanged', function()
+        descriptionScroll:UpdateWorkbenchScroll()
+    end)
 
     addon:SetUIScript(pane.description, 'OnCursorChanged', function(_, _, y, _, height)
-        if not dialog:Valid() then return end
+        if not dialog:Valid() then
+            return
+        end
+
         descriptionScroll:UpdateWorkbenchScroll()
         local bar = descriptionScroll.workbenchBar
         local offset = bar:GetValue()
@@ -110,7 +123,9 @@ function addon:InstallRotationMetadata(pane)
 
     -- Right-click anywhere in the window cancels it; a left click on the description area focuses the editable box.
     local function bodyMouseUp(_, button)
-        if not dialog:Valid() then return end
+        if not dialog:Valid() then
+            return
+        end
 
         if button == 'RightButton' then
             dialog:Close(false)
@@ -123,7 +138,9 @@ function addon:InstallRotationMetadata(pane)
     addon:SetUIScript(descriptionScroll, 'OnMouseUp', bodyMouseUp)
 
     addon:SetUIScript(pane.description, 'OnMouseUp', function(control, button)
-        if button == 'RightButton' then bodyMouseUp(control, button) end
+        if button == 'RightButton' then
+            bodyMouseUp(control, button)
+        end
     end)
 
     dialog.labels.tags = label(child, L['Tags'], 140)
@@ -149,9 +166,13 @@ function addon:InstallRotationMetadata(pane)
             end
         end,
         color = function(tag) return addon:GetRotationTagColor(tag) end,
-        setColor = function(tag, color) addon:SetRotationTagColor(tag, color) end,
+        setColor = function(tag, color)
+            addon:SetRotationTagColor(tag, color)
+        end,
         layout = function()
-            if dialog.source then dialog:Layout(dialog.sourceText or '') end
+            if dialog.source then
+                dialog:Layout(dialog.sourceText or '')
+            end
         end,
     })
 
@@ -191,7 +212,9 @@ function addon:InstallRotationMetadata(pane)
         input:SetMaxLetters(512)
 
         addon:SetUIScript(input, 'OnMouseUp', function(control, button)
-            if button == 'RightButton' then bodyMouseUp(control, button) end
+            if button == 'RightButton' then
+                bodyMouseUp(control, button)
+            end
         end)
     end
 
@@ -234,11 +257,15 @@ function addon:InstallRotationMetadata(pane)
     pane.tags.tooltip = L['Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.']
 
     addon:SetUIScript(frame, 'OnMouseUp', function(control, button)
-        if button == 'RightButton' then bodyMouseUp(control, button) end
+        if button == 'RightButton' then
+            bodyMouseUp(control, button)
+        end
     end)
 
     addon:SetUIScript(scroll, 'OnMouseUp', function(control, button)
-        if button == 'RightButton' then bodyMouseUp(control, button) end
+        if button == 'RightButton' then
+            bodyMouseUp(control, button)
+        end
     end)
 
     scroll:EnableMouse(true)
@@ -334,7 +361,11 @@ function addon:InstallRotationMetadata(pane)
         end
 
         self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {})
-        if not pane.scopeDirty then pane.scopeDraft = pane.workspace.scope end
+
+        if not pane.scopeDirty then
+            pane.scopeDraft = pane.workspace.scope
+        end
+
         self:PaintScope()
 
         if
@@ -361,7 +392,10 @@ function addon:InstallRotationMetadata(pane)
 
     -- Puts the draft back to the values captured when the window opened (Cancel, Escape, or hiding without Apply).
     function dialog:Restore()
-        if not pane.active or self.workspace ~= pane.workspace or self.generation ~= pane.generation then return end
+        if not pane.active or self.workspace ~= pane.workspace or self.generation ~= pane.generation then
+            return
+        end
+
         pane.metadataDraft = data.CopyData(self.startMetadata)
         pane.metadataDirty = self.startMetadataDirty
         pane.description:SetText(self.startDescription)
@@ -380,7 +414,10 @@ function addon:InstallRotationMetadata(pane)
 
     -- Hides the window. keep true keeps the edits (Apply); otherwise the opening values are restored first.
     function dialog:Close(keep)
-        if not keep then self:Restore() end
+        if not keep then
+            self:Restore()
+        end
+
         self.scopeMenu:Hide()
         self.closing = true
         frame:Hide()
@@ -400,7 +437,11 @@ function addon:InstallRotationMetadata(pane)
         self.openToken = (self.openToken or 0) + 1
         self.workspace = pane.workspace
         self.generation = pane.generation
-        if not pane.metadataDirty and not pane.tagsDirty and not pane.scopeDirty then self:Sync() end
+
+        if not pane.metadataDirty and not pane.tagsDirty and not pane.scopeDirty then
+            self:Sync()
+        end
+
         self.startMetadata = data.CopyData(pane.metadataDraft)
         self.startMetadataDirty = pane.metadataDirty
         self.startDescription = pane.description:GetText()
@@ -418,7 +459,9 @@ function addon:InstallRotationMetadata(pane)
         -- Collects unique citation entries (title and URL) from a manifest into lines. Spell and item database links
         -- are left out; they are references to game data, not sources of the rotation.
         local function sources(manifest)
-            if type(manifest) ~= 'table' then return end
+            if type(manifest) ~= 'table' then
+                return
+            end
 
             if type(manifest.sources) == 'table' then
                 for _, entry in ipairs(manifest.sources) do
@@ -442,12 +485,18 @@ function addon:InstallRotationMetadata(pane)
             end
         end
 
-        if source then sources(source.envelope) end
+        if source then
+            sources(source.envelope)
+        end
+
         local reserved = pane.workspace.reserved or {}
 
         for _, kind in ipairs({ 'origins', 'imports', 'comparisons' }) do
             local entry = reserved[kind]
-            if type(entry) == 'table' then sources(entry.manifest) end
+
+            if type(entry) == 'table' then
+                sources(entry.manifest)
+            end
         end
 
         self.note:SetText(
@@ -494,7 +543,9 @@ function addon:InstallRotationMetadata(pane)
         end
 
         addon:SetUIScript(self.scope, 'OnClick', function()
-            if not valid() or not self:HasOwnership() then return end
+            if not valid() or not self:HasOwnership() then
+                return
+            end
 
             local entries = {
                 { value = 'class', text = L['Class'] },
@@ -522,7 +573,10 @@ function addon:InstallRotationMetadata(pane)
             local input = self.fields[key]
 
             addon:SetUIScript(input, 'OnTextChanged', function(_, userInput)
-                if not valid() or readOnly or not userInput then return end
+                if not valid() or readOnly or not userInput then
+                    return
+                end
+
                 pane.metadataDraft = pane.metadataDraft or {}
                 pane.metadataDraft[key] = input:GetText() ~= '' and input:GetText() or nil
                 pane.metadataDirty = true
@@ -532,7 +586,9 @@ function addon:InstallRotationMetadata(pane)
             addon:SetUIScript(
                 input,
                 'OnEditFocusGained',
-                readOnly and function(control) control:ClearFocus() end or nil
+                readOnly and function(control)
+                    control:ClearFocus()
+                end or nil
             )
         end
 
@@ -553,21 +609,29 @@ function addon:InstallRotationMetadata(pane)
         end)
 
         addon:SetUIScript(pane.tags, 'OnLeave', function()
-            if GameTooltip and GameTooltip:IsOwned(pane.tags) then GameTooltip:Hide() end
+            if GameTooltip and GameTooltip:IsOwned(pane.tags) then
+                GameTooltip:Hide()
+            end
         end)
 
         addon:SetUIScript(
             pane.tags,
             'OnEditFocusGained',
-            readOnly and function(control) control:ClearFocus() end or nil
+            readOnly and function(control)
+                control:ClearFocus()
+            end or nil
         )
 
         addon:SetUIScript(pane.tags, 'OnMouseUp', function(_, button)
-            if button == 'RightButton' then bodyMouseUp(nil, button) end
+            if button == 'RightButton' then
+                bodyMouseUp(nil, button)
+            end
         end)
 
         addon:SetUIScript(self.apply, 'OnClick', function()
-            if not valid() or readOnly then return end
+            if not valid() or readOnly then
+                return
+            end
 
             if pane:FlushName() then
                 self:Close(true)
@@ -577,7 +641,10 @@ function addon:InstallRotationMetadata(pane)
 
         -- Cancel and Close both discard the edits made since the window opened.
         local function cancel()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             self:Close(false)
         end
 
@@ -591,13 +658,18 @@ function addon:InstallRotationMetadata(pane)
     end
 
     addon:SetUIScript(frame, 'OnHide', function()
-        if dialog.opened and not dialog.closing then dialog:Restore() end
+        if dialog.opened and not dialog.closing then
+            dialog:Restore()
+        end
+
         dialog.opened = false
         dialog.tagPicker.menu:Hide()
         dialog.scopeMenu:Hide()
 
         for _, input in pairs(dialog.fields) do
-            if input.ClearFocus then input:ClearFocus() end
+            if input.ClearFocus then
+                input:ClearFocus()
+            end
         end
     end)
 

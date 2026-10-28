@@ -47,7 +47,10 @@ local function probeReadable(value)
 
     if type(secret) == 'function' then
         local ok, v = pcall(secret, value)
-        if not ok or type(v) ~= 'boolean' or v then return false end
+
+        if not ok or type(v) ~= 'boolean' or v then
+            return false
+        end
     elseif secret ~= nil then
         return false
     end
@@ -56,7 +59,10 @@ local function probeReadable(value)
 
     if type(access) == 'function' then
         local ok, v = pcall(access, value)
-        if not ok or type(v) ~= 'boolean' or not v then return false end
+
+        if not ok or type(v) ~= 'boolean' or not v then
+            return false
+        end
     elseif access ~= nil then
         return false
     end
@@ -67,8 +73,9 @@ end
 -- Formats one measurement from the profiler record for the report, or the localized "unavailable" when it is secret,
 -- negative, non-finite or malformed. With bytes set, accepts an unsigned 64-bit decimal string or an exact integer.
 local function probeNumber(value, bytes)
-    if not probeReadable(value) then return L['unavailable'] end
-
+    if not probeReadable(value) then
+        return L['unavailable']
+    end
     if
         bytes
         and type(value) == 'string'
@@ -79,11 +86,15 @@ local function probeNumber(value, bytes)
     then
         return value
     end
-
-    if type(value) ~= 'number' or value ~= value or value < 0 or value == math.huge then return L['unavailable'] end
+    if type(value) ~= 'number' or value ~= value or value < 0 or value == math.huge then
+        return L['unavailable']
+    end
 
     if bytes then
-        if value % 1 ~= 0 or value > 9007199254740991 then return L['unavailable'] end
+        if value % 1 ~= 0 or value > 9007199254740991 then
+            return L['unavailable']
+        end
+
         return string.format('%.0f', value)
     end
 
@@ -93,9 +104,16 @@ end
 -- Calls a capture-running getter safely. Returns its boolean, or nil when the getter is missing, restricted, errors
 -- or answers anything but a boolean (callers treat nil as "cannot tell" and refuse to probe).
 local function probeRunning(owner, getter)
-    if not probeReadable(getter) or type(getter) ~= 'function' then return nil end
+    if not probeReadable(getter) or type(getter) ~= 'function' then
+        return nil
+    end
+
     local ok, value = pcall(getter, owner)
-    if not ok or not probeReadable(value) or type(value) ~= 'boolean' then return nil end
+
+    if not ok or not probeReadable(value) or type(value) ~= 'boolean' then
+        return nil
+    end
+
     return value
 end
 
@@ -167,7 +185,9 @@ local function buildNativeProbe(owner, getter)
         return render()
     end
 
-    if provider == nil then return render() end
+    if provider == nil then
+        return render()
+    end
 
     if type(provider) ~= 'table' then
         state.provider = 'malformed'
@@ -183,7 +203,10 @@ local function buildNativeProbe(owner, getter)
 
     -- Classifies one provider field as restricted, absent, present (a function) or malformed.
     local function presence(value)
-        if not probeReadable(value) then return 'restricted' end
+        if not probeReadable(value) then
+            return 'restricted'
+        end
+
         return value == nil and 'absent' or type(value) == 'function' and 'present' or 'malformed'
     end
 
@@ -222,10 +245,18 @@ local function buildNativeProbe(owner, getter)
         return render()
     end
 
-    if not current() then return changed() end
-    if state.enabled ~= 'present' then return render() end
+    if not current() then
+        return changed()
+    end
+    if state.enabled ~= 'present' then
+        return render()
+    end
+
     local ok, value = pcall(enabled)
-    if not current() then return changed() end
+
+    if not current() then
+        return changed()
+    end
 
     if not ok then
         state.enabled = 'call failed'
@@ -237,7 +268,9 @@ local function buildNativeProbe(owner, getter)
         return render()
     end
 
-    if not current() then return changed() end
+    if not current() then
+        return changed()
+    end
 
     if type(value) ~= 'boolean' then
         state.enabled = 'malformed'
@@ -245,7 +278,11 @@ local function buildNativeProbe(owner, getter)
     end
 
     state.enabled = value and 'enabled' or 'disabled'
-    if not value or state.measure ~= 'present' then return render() end
+
+    if not value or state.measure ~= 'present' then
+        return render()
+    end
+
     local calls, arguments, eventOK = 0, true, nil
 
     -- The callback handed to MeasureCall. It touches only local counters, notes whether it received exactly the
@@ -264,7 +301,9 @@ local function buildNativeProbe(owner, getter)
                 and empty == nil
                 and flag == false
 
-            if state.event == 'present' and current() then eventOK = pcall(event, 'RM:probe') end
+            if state.event == 'present' and current() then
+                eventOK = pcall(event, 'RM:probe')
+            end
         end
 
         return 'RM', nil, false
@@ -273,8 +312,14 @@ local function buildNativeProbe(owner, getter)
     local results = probePack(pcall(measure, inert, 'RM', nil, false))
     state.calls = calls == 2 and 'more than one' or calls == 1 and '1' or '0'
     state.arguments = arguments and calls == 1 and 'exact' or 'mismatch'
-    if not current() then return changed() end
-    if eventOK ~= nil then state.event = eventOK and 'call completed' or 'call failed' end
+
+    if not current() then
+        return changed()
+    end
+
+    if eventOK ~= nil then
+        state.event = eventOK and 'call completed' or 'call failed'
+    end
 
     if not results[1] then
         state.measure = 'call failed'
@@ -298,8 +343,13 @@ local function buildNativeProbe(owner, getter)
 
     state.returns = exact and 'exact' or 'mismatch'
     state.measure = calls == 1 and arguments and exact and 'call completed' or 'malformed'
-    if not current() then return changed() end
-    if state.measure ~= 'call completed' then return render() end
+
+    if not current() then
+        return changed()
+    end
+    if state.measure ~= 'call completed' then
+        return render()
+    end
 
     metrics = {
         probeNumber(rawget(record, 'elapsedMilliseconds')),
@@ -307,7 +357,9 @@ local function buildNativeProbe(owner, getter)
         probeNumber(rawget(record, 'deallocatedBytes'), true),
     }
 
-    if not current() then return changed() end
+    if not current() then
+        return changed()
+    end
 
     -- This readonly build-capability call is outside the inert measurement.
     -- Recheck exact captured methods after every callback-capable boundary.
@@ -329,16 +381,26 @@ local function buildNativeProbe(owner, getter)
         and sameEligibility()
     then
         local ok, result = pcall(restrictions)
-        if not current() then return changed() end
+
+        if not current() then
+            return changed()
+        end
+
         local readable = ok and sameEligibility() and probeReadable(result)
-        if not current() then return changed() end
+
+        if not current() then
+            return changed()
+        end
 
         if readable and sameEligibility() and type(result) == 'boolean' then
             restrictionsResult = result and 'true' or 'false'
         end
     end
 
-    if not current() then return changed() end
+    if not current() then
+        return changed()
+    end
+
     return render()
 end
 
@@ -346,7 +408,11 @@ end
 -- is active; shows the report in the text window. Returns true and an empty message, or false and a reason.
 local function runNativeProbe(owner)
     local unavailable = L['Native profiler probe is unavailable.']
-    if not rawequal(owner, addon) or nativeProbeBusy then return false, unavailable end
+
+    if not rawequal(owner, addon) or nativeProbeBusy then
+        return false, unavailable
+    end
+
     nativeProbeBusy = true
 
     local accepted, result, message = pcall(function()
@@ -358,7 +424,10 @@ local function runNativeProbe(owner)
 
         local getter = rawget(owner, 'IsCPUProfileRunning')
         local running = probeRunning(owner, getter)
-        if running == nil then return false, unavailable end
+
+        if running == nil then
+            return false, unavailable
+        end
 
         if running then
             local reason = L['Native profiler probe is unavailable while CPU capture is running.']
@@ -388,7 +457,11 @@ local function runNativeProbe(owner)
     end)
 
     nativeProbeBusy = false
-    if not accepted then return false, unavailable end
+
+    if not accepted then
+        return false, unavailable
+    end
+
     return result, message
 end
 
@@ -401,7 +474,10 @@ end
 -- 'probe', 'report') for the General page buttons and legacy commands. Prints the outcome and returns ok and the
 -- message.
 function addon:RunCPUProfileAction(action)
-    if nativeProbeBusy then return false, L['Native profiler probe is already running.'] end
+    if nativeProbeBusy then
+        return false, L['Native profiler probe is already running.']
+    end
+
     local ok, message
 
     if action == nil or action == '' or action == 'start' then
@@ -471,7 +547,10 @@ function addon:RunCPUProfileAction(action)
             or L['Memory capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
     elseif action == 'memoryreport' then
         local report, reason
-        if type(self.GetMemoryCaptureReport) == 'function' then report, reason = self:GetMemoryCaptureReport() end
+
+        if type(self.GetMemoryCaptureReport) == 'function' then
+            report, reason = self:GetMemoryCaptureReport()
+        end
 
         if report then
             self:ShowConditionText(report, L['Memory capture'])
@@ -532,17 +611,19 @@ local performanceCaptures = {
 -- Localized failure sentence for a capture kind in performanceCaptures, from the reason code a start, stop or report
 -- call returned.
 local function performanceFailure(spec, reason)
-    if reason == 'script-profile-disabled' then return failure(reason) end
-
+    if reason == 'script-profile-disabled' then
+        return failure(reason)
+    end
     if reason == 'running' or reason == 'already-running' then
         return L['%s is running. Stop it or wait for completion.']:format(L[spec.title])
     end
-
     if reason == 'not-captured' then
         return L['No %s report is available. Start a capture first.']:format(L[spec.title])
     end
+    if reason == 'not-running' then
+        return L['No %s is running.']:format(L[spec.title])
+    end
 
-    if reason == 'not-running' then return L['No %s is running.']:format(L[spec.title]) end
     return L['%s is unavailable: %s']:format(L[spec.title], tostring(reason or L['Unknown']))
 end
 
@@ -557,16 +638,31 @@ function addon:HandlePerformanceCommand(text)
         return false, message
     end
 
-    if nativeProbeBusy then return reject(L['Native profiler probe is already running.']) end
-    if type(text) ~= 'string' then return reject(usage) end
+    if nativeProbeBusy then
+        return reject(L['Native profiler probe is already running.'])
+    end
+    if type(text) ~= 'string' then
+        return reject(usage)
+    end
+
     local name, action, extra = text:match('^%s*(%S+)%s*(%S*)%s*(.-)%s*$')
-    if not name then return reject(usage) end
+
+    if not name then
+        return reject(usage)
+    end
+
     name = name:lower()
     action = action:lower()
-    if extra ~= '' then return reject(usage) end
+
+    if extra ~= '' then
+        return reject(usage)
+    end
 
     if name == 'probe' then
-        if action ~= '' then return reject(usage) end
+        if action ~= '' then
+            return reject(usage)
+        end
+
         return self:RunCPUProfileAction('probe')
     end
 
@@ -581,12 +677,18 @@ function addon:HandlePerformanceCommand(text)
     end
 
     local spec = performanceCaptures[name]
-    if not spec then return reject(usage) end
+
+    if not spec then
+        return reject(usage)
+    end
 
     if action == 'report' then
         local method = self[spec.report]
         local report, reason
-        if type(method) == 'function' then report, reason = method(self) end
+
+        if type(method) == 'function' then
+            report, reason = method(self)
+        end
 
         if report then
             self:ShowConditionText(report, L[spec.title])

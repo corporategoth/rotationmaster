@@ -13,7 +13,10 @@ addon.RotationData = data
 -- Literal string metatables and later library patches do not define this API.
 local parserString = string
 local parserSub = type(parserString) == "table" and rawget(parserString, "sub") or nil
-if type(parserSub) ~= "function" then parserSub = nil end
+
+if type(parserSub) ~= "function" then
+    parserSub = nil
+end
 
 -- ============================================================================
 -- Portable data checks and copies
@@ -49,35 +52,67 @@ function data.CheckPortable(value)
     local active, path, nodes, bytes = {}, {}, 0, 0
 
     local function text(value)
-        if #value > maxString then return false, diagnostic("data-string-limit", path) end
+        if #value > maxString then
+            return false, diagnostic("data-string-limit", path)
+        end
+
         bytes = bytes + #value
-        if bytes > maxBytes then return false, diagnostic("data-byte-limit", path) end
+
+        if bytes > maxBytes then
+            return false, diagnostic("data-byte-limit", path)
+        end
+
         return true
     end
 
     local function visit(current, depth)
         nodes = nodes + 1
-        if nodes > maxNodes then return false, diagnostic("data-node-limit", path) end
-        if depth > maxDepth then return false, diagnostic("data-depth-limit", path) end
+
+        if nodes > maxNodes then
+            return false, diagnostic("data-node-limit", path)
+        end
+        if depth > maxDepth then
+            return false, diagnostic("data-depth-limit", path)
+        end
+
         local kind = type(current)
-        if kind == "nil" or kind == "boolean" then return true end
-        if kind == "string" then return text(current) end
+
+        if kind == "nil" or kind == "boolean" then
+            return true
+        end
+        if kind == "string" then
+            return text(current)
+        end
 
         if kind == "number" then
-            if finite(current) then return true end
+            if finite(current) then
+                return true
+            end
+
             return false, diagnostic("non-finite-number", path)
         end
 
-        if kind ~= "table" then return false, diagnostic("non-portable-type", path) end
-        if getmetatable(current) ~= nil then return false, diagnostic("data-metatable", path) end
-        if active[current] then return false, diagnostic("data-cycle", path) end
+        if kind ~= "table" then
+            return false, diagnostic("non-portable-type", path)
+        end
+        if getmetatable(current) ~= nil then
+            return false, diagnostic("data-metatable", path)
+        end
+        if active[current] then
+            return false, diagnostic("data-cycle", path)
+        end
+
         active[current] = true
         local keys = {}
 
         -- Preserve bounded collection and deterministic validation order.
         for key in pairs(current) do
             nodes = nodes + 1
-            if nodes > maxNodes then return false, diagnostic("data-node-limit", path) end
+
+            if nodes > maxNodes then
+                return false, diagnostic("data-node-limit", path)
+            end
+
             local keyType = type(key)
 
             if keyType ~= "string" and not (keyType == "number" and finite(key) and key >= 1 and key % 1 == 0) then
@@ -88,20 +123,29 @@ function data.CheckPortable(value)
         end
 
         table.sort(keys, function(a, b)
-            if type(a) == type(b) then return a < b end
+            if type(a) == type(b) then
+                return a < b
+            end
+
             return type(a) == "number"
         end)
 
         for _, key in ipairs(keys) do
             if type(key) == "string" then
                 local ok, why = text(key)
-                if not ok then return false, why end
+
+                if not ok then
+                    return false, why
+                end
             end
 
             path[#path + 1] = key
             local ok, why = visit(current[key], depth + 1)
             path[#path] = nil
-            if not ok then return false, why end
+
+            if not ok then
+                return false, why
+            end
         end
 
         active[current] = nil
@@ -115,12 +159,21 @@ end
 -- copy; the copy has no metatables.
 function data.CopyData(value)
     local ok, why = data.CheckPortable(value)
-    if not ok then return nil, why end
+
+    if not ok then
+        return nil, why
+    end
+
     local copies = {}
 
     local function copy(current)
-        if type(current) ~= "table" then return current end
-        if copies[current] then return copies[current] end
+        if type(current) ~= "table" then
+            return current
+        end
+        if copies[current] then
+            return copies[current]
+        end
+
         local result = {}
         copies[current] = result
 
@@ -180,7 +233,9 @@ local function portableStatus(namespace)
     local result = { reason = "ready", raw = {} }
 
     local function check(reason, ok)
-        if result.reason == "ready" and not ok then result.reason = reason end
+        if result.reason == "ready" and not ok then
+            result.reason = reason
+        end
     end
 
     local environment = portableType(portableEnvironment) == "table"
@@ -221,7 +276,6 @@ local function portableStatus(namespace)
                 )
             )
         end
-
         if key == "table" then
             check(
                 "table-sort",
@@ -239,6 +293,9 @@ end
 -- One-time handoff to Data/rotation_tree.lua, which calls it at load and then removes the name. Hands bind the proof
 -- function and the status function. Does nothing for any caller other than the addon.
 function addon:BindRotationPortableReader(bind)
-    if self ~= addon or portableType(bind) ~= "function" then return end
+    if self ~= addon or portableType(bind) ~= "function" then
+        return
+    end
+
     bind(portableOwned, portableStatus)
 end

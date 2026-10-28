@@ -69,7 +69,9 @@ function addon:InstallDragPresentation(ghost, decoration)
                     frame:SetFrameStrata(entry.strata)
                 end)
 
-                if not ok then firstError = firstError or why end
+                if not ok then
+                    firstError = firstError or why
+                end
             end
 
             for _, line in ipairs(self.sourceLines or {}) do
@@ -86,7 +88,9 @@ function addon:InstallDragPresentation(ghost, decoration)
                 line:Hide()
             end
 
-            if firstError then error(firstError, 0) end
+            if firstError then
+                error(firstError, 0)
+            end
         end
     end
 
@@ -141,7 +145,11 @@ function addon:InstallDragPresentation(ghost, decoration)
     -- `source` supplies the scale. Returns false for an empty list; on an error it restores the cards and re-raises.
     function ghost:PresentCards(entries, source, edges, sourceLines)
         self:RestoreCards()
-        if type(entries) ~= 'table' or #entries == 0 then return false end
+
+        if type(entries) ~= 'table' or #entries == 0 then
+            return false
+        end
+
         local left, top, right, bottom = math.huge, math.huge, -math.huge, -math.huge
 
         for _, entry in ipairs(entries) do
@@ -196,7 +204,10 @@ function addon:InstallDragPresentation(ghost, decoration)
                 if control.GetPoint then
                     for point = 1, (control.GetNumPoints and control:GetNumPoints() or 1) do
                         local anchor = { control:GetPoint(point) }
-                        if anchor[1] then saved.points[#saved.points + 1] = anchor end
+
+                        if anchor[1] then
+                            saved.points[#saved.points + 1] = anchor
+                        end
                     end
                 end
 
@@ -265,7 +276,10 @@ function addon:InstallDragPresentation(ghost, decoration)
             artwork(false)
             self.label:Hide()
             self.summary:Hide()
-            if self.texture then self.texture:Hide() end
+
+            if self.texture then
+                self.texture:Hide()
+            end
 
             for _, layer in ipairs(self.stack) do
                 layer:Hide()
@@ -285,5 +299,7 @@ function addon:InstallDragPresentation(ghost, decoration)
         return true
     end
 
-    addon:SetUIScript(ghost, 'OnHide', function() ghost:RestoreCards() end)
+    addon:SetUIScript(ghost, 'OnHide', function()
+        ghost:RestoreCards()
+    end)
 end

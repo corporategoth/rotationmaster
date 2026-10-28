@@ -19,8 +19,13 @@ end
 -- Validates the caller's search settings and returns a normalized copy, or nil when anything is out of range. A nil
 -- value means the defaults (limit 30). The checks are strict because settings can come from saved or imported data.
 local function options(value)
-    if value == nil then return { limit = 30 } end
-    if type(value) ~= "table" then return nil end
+    if value == nil then
+        return { limit = 30 }
+    end
+    if type(value) ~= "table" then
+        return nil
+    end
+
     local spec = value.spec
 
     if
@@ -30,9 +35,9 @@ local function options(value)
     then
         return nil
     end
-
-    if value.norank ~= nil and type(value.norank) ~= "boolean" then return nil end
-
+    if value.norank ~= nil and type(value.norank) ~= "boolean" then
+        return nil
+    end
     if
         value.nameContains ~= nil
         and (type(value.nameContains) ~= "string" or #value.nameContains == 0 or #value.nameContains > 128)
@@ -41,16 +46,27 @@ local function options(value)
     end
 
     local limit = value.limit or 30
-    if type(limit) ~= "number" or limit < 1 or limit > 100 or limit % 1 ~= 0 then return nil end
+
+    if type(limit) ~= "number" or limit < 1 or limit > 100 or limit % 1 ~= 0 then
+        return nil
+    end
+
     return { spec = spec, norank = value.norank, limit = limit, nameContains = value.nameContains }
 end
 
 -- Returns the set of spell IDs in the given spellbook (a spec number or the pet book), or nil when spec is nil.
 -- Returns nil and a reason when that book has not finished loading, so callers never treat a partial book as complete.
 local function book(spec)
-    if spec == nil then return nil end
+    if spec == nil then
+        return nil
+    end
+
     local state = addon.spellBookStatus and addon.spellBookStatus[spec == (BOOKTYPE_PET or "pet") and "pet" or "player"]
-    if not state or not state.complete then return nil, state and state.reason or "spellbook-unavailable" end
+
+    if not state or not state.complete then
+        return nil, state and state.reason or "spellbook-unavailable"
+    end
+
     return addon.specSpells and addon.specSpells[spec] or {}
 end
 
@@ -68,8 +84,14 @@ end
 -- Sort order for index entries: by name ignoring case, then higher rank first, then higher spell ID first.
 local function ordered(a, b)
     local left, right = string.lower(a.name), string.lower(b.name)
-    if left ~= right then return left < right end
-    if rank(a) ~= rank(b) then return rank(a) > rank(b) end
+
+    if left ~= right then
+        return left < right
+    end
+    if rank(a) ~= rank(b) then
+        return rank(a) > rank(b)
+    end
+
     return a.id > b.id
 end
 
@@ -87,21 +109,47 @@ end
 -- spells share resolves to the highest rank (or the first by sort order) rather than failing.
 function catalog:ResolveSelection(input, settings)
     local opts = options(settings)
-    if not opts then return nil, "invalid-search-options" end
-    if type(input) ~= "string" and type(input) ~= "number" then return nil, "invalid-search-query" end
+
+    if not opts then
+        return nil, "invalid-search-options"
+    end
+    if type(input) ~= "string" and type(input) ~= "number" then
+        return nil, "invalid-search-query"
+    end
+
     local raw = tostring(input)
-    if #raw > 1024 then return nil, "invalid-search-query" end
+
+    if #raw > 1024 then
+        return nil, "invalid-search-query"
+    end
+
     local text = plain(raw)
-    if #text == 0 or #text > 256 then return nil, "invalid-search-query" end
+
+    if #text == 0 or #text > 256 then
+        return nil, "invalid-search-query"
+    end
+
     local spells, why = book(opts.spec)
-    if opts.spec ~= nil and not spells then return nil, why end
+
+    if opts.spec ~= nil and not spells then
+        return nil, why
+    end
+
     local id = tonumber(text) or tonumber(text:match("|Hspell:(%d+)"))
 
     if id then
         local indexed, problem = self:UpdateSpell(id)
-        if not indexed then return nil, problem or "spell-data-unavailable" end
-        if spells and not spells[id] then return nil, "spell-not-in-book" end
-        if not nameAllowed(self:SpellName(id, true), opts) then return nil, "spell-filter-mismatch" end
+
+        if not indexed then
+            return nil, problem or "spell-data-unavailable"
+        end
+        if spells and not spells[id] then
+            return nil, "spell-not-in-book"
+        end
+        if not nameAllowed(self:SpellName(id, true), opts) then
+            return nil, "spell-filter-mismatch"
+        end
+
         return id
     end
 
@@ -119,14 +167,23 @@ function catalog:ResolveSelection(input, settings)
     end
 
     table.sort(matches, ordered)
+
     -- Scoped name choices come from that book, not a canonical name override
     -- belonging to another rank/spec/pet. Explicit rank labels retain identity.
-    if #matches > 0 and (spells or string.lower(matches[1].name) ~= wanted) then return matches[1].id end
+    if #matches > 0 and (spells or string.lower(matches[1].name) ~= wanted) then
+        return matches[1].id
+    end
+
     id, why = self:GetSpellId(text)
 
     if id then
-        if spells and not spells[id] then return nil, "spell-not-in-book" end
-        if not nameAllowed(self:SpellName(id, true), opts) then return nil, "spell-filter-mismatch" end
+        if spells and not spells[id] then
+            return nil, "spell-not-in-book"
+        end
+        if not nameAllowed(self:SpellName(id, true), opts) then
+            return nil, "spell-filter-mismatch"
+        end
+
         return id
     end
 
@@ -138,8 +195,14 @@ end
 -- spellbook the rows are empty and status.reason says why. Rows are the shared index entries with `display` set.
 function catalog:Search(input, settings)
     local opts = options(settings)
-    if not opts then return nil, "invalid-search-options" end
-    if type(input) ~= "string" or #input > 256 then return nil, "invalid-search-query" end
+
+    if not opts then
+        return nil, "invalid-search-options"
+    end
+    if type(input) ~= "string" or #input > 256 then
+        return nil, "invalid-search-query"
+    end
+
     local text = plain(input)
     local wanted = string.lower(text)
     local spells, why = book(opts.spec)

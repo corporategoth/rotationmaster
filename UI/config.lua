@@ -27,7 +27,10 @@ local sections = {
 
 -- Normalizes a saved UI scale to 0.70 to 1.30 in 0.01 steps; anything else (nil, NaN, out of range) becomes 1.
 local function scale(value)
-    if type(value) ~= "number" or value ~= value or value < .7 or value > 1.3 then return 1 end
+    if type(value) ~= "number" or value ~= value or value < .7 or value > 1.3 then
+        return 1
+    end
+
     return math.floor(value * 100 + .5) / 100
 end
 
@@ -69,9 +72,16 @@ local function contentHasFocus(content)
     end
 
     for _ = 1, 100 do
-        if focus == content then return true end
-        if not focus or type(focus.GetParent) ~= "function" then return false end
-        if focus.rmOwnsRightClick then return false end
+        if focus == content then
+            return true
+        end
+        if not focus or type(focus.GetParent) ~= "function" then
+            return false
+        end
+        if focus.rmOwnsRightClick then
+            return false
+        end
+
         focus = focus:GetParent()
     end
 
@@ -84,7 +94,10 @@ local function metadata(key)
 
     if type(getter) == "function" then
         local ok, value = pcall(getter, addon_name, key)
-        if ok and type(value) == "string" and value ~= "" then return value end
+
+        if ok and type(value) == "string" and value ~= "" then
+            return value
+        end
     end
 end
 
@@ -157,7 +170,11 @@ local function newShell()
     -- Returns true when the size had to change.
     function shell:ApplySizeBounds()
         local scale = window:GetScale() or 1
-        if scale <= 0 then scale = 1 end
+
+        if scale <= 0 then
+            scale = 1
+        end
+
         local screenWidth = UIParent and UIParent.GetWidth and UIParent:GetWidth()
         local screenHeight = UIParent and UIParent.GetHeight and UIParent:GetHeight()
 
@@ -177,8 +194,12 @@ local function newShell()
         if window.SetResizeBounds then
             window:SetResizeBounds(minimumWidth, minimumHeight, maximumWidth or 100000, maximumHeight or 100000)
         else
-            if window.SetMinResize then window:SetMinResize(minimumWidth, minimumHeight) end
-            if window.SetMaxResize then window:SetMaxResize(maximumWidth or 100000, maximumHeight or 100000) end
+            if window.SetMinResize then
+                window:SetMinResize(minimumWidth, minimumHeight)
+            end
+            if window.SetMaxResize then
+                window:SetMaxResize(maximumWidth or 100000, maximumHeight or 100000)
+            end
         end
 
         return self:ClampSize()
@@ -194,7 +215,10 @@ local function newShell()
             self.maximumHeight and math.min(height, self.maximumHeight) or height
         )
 
-        if wantedWidth == width and wantedHeight == height then return false end
+        if wantedWidth == width and wantedHeight == height then
+            return false
+        end
+
         window:SetSize(wantedWidth, wantedHeight)
         return true
     end
@@ -215,7 +239,9 @@ local function newShell()
 
         if not approved and pane and pane.isSettingsForm then
             return pane:RequestLeave(function()
-                if self.pane == pane then self:Hide(true) end
+                if self.pane == pane then
+                    self:Hide(true)
+                end
             end)
         end
 
@@ -266,11 +292,22 @@ local function newShell()
     drag:SetHeight(38)
     drag:EnableMouse(true)
     drag:RegisterForDrag("LeftButton")
-    addon:SetUIScript(drag, "OnDragStart", function() window:StartMoving() end)
-    addon:SetUIScript(drag, "OnDragStop", function() window:StopMovingOrSizing() end)
+
+    addon:SetUIScript(drag, "OnDragStart", function()
+        window:StartMoving()
+    end)
+
+    addon:SetUIScript(drag, "OnDragStop", function()
+        window:StopMovingOrSizing()
+    end)
+
     local close = addon:CreateWorkbenchIconButton(window, "close", L["Close"])
     close:SetPoint("TOPRIGHT", window, "TOPRIGHT", -5, -5)
-    addon:SetUIScript(close, "OnClick", function() shell:Hide() end)
+
+    addon:SetUIScript(close, "OnClick", function()
+        shell:Hide()
+    end)
+
     shell.close = close
     shell.help = addon:CreateWorkbenchHelpButton(window, L["Help"])
     shell.help:SetPoint("TOPRIGHT", -31, -5)
@@ -292,7 +329,11 @@ local function newShell()
     })[client.family] or L["Unknown"]
 
     local version = metadata("Version") or L["Unknown"]
-    if version:find("@", 1, true) then version = L["Development"] end
+
+    if version:find("@", 1, true) then
+        version = L["Development"]
+    end
+
     shell.version:SetText(version)
     shell.edition = text(window)
     shell.edition:SetPoint("TOPRIGHT", -62, -23)
@@ -314,7 +355,9 @@ local function newShell()
     shell.pageHelp.icon:SetSize(18, 18)
 
     addon:SetUIScript(content, "OnMouseDown", function(_, button)
-        if button == "RightButton" and not shell.rightDown and contentHasFocus(content) then shell:Hide() end
+        if button == "RightButton" and not shell.rightDown and contentHasFocus(content) then
+            shell:Hide()
+        end
     end)
 
     addon:SetUIScript(content, "OnUpdate", function()
@@ -326,7 +369,10 @@ local function newShell()
             return
         end
 
-        if down and not shell.rightDown and contentHasFocus(content) then shell:Hide() end
+        if down and not shell.rightDown and contentHasFocus(content) then
+            shell:Hide()
+        end
+
         shell.rightDown = down
     end)
 
@@ -360,7 +406,11 @@ local function newShell()
         local selected = scale(value)
         window:SetScale(selected)
         self:ApplySizeBounds()
-        if persist then addon.db.global.uiScale = selected end
+
+        if persist then
+            addon.db.global.uiScale = selected
+        end
+
         addon:ScaleWorkbenchWindows(selected)
         self.settingScale = true
         self.scaleSlider:SetValue(math.floor(selected * 100 + .5))
@@ -388,7 +438,9 @@ local function newShell()
     end)
 
     addon:SetUIScript(shell.scaleSlider, "OnMouseDown", function(_, button)
-        if button == "LeftButton" then shell.scaleDragging = true end
+        if button == "LeftButton" then
+            shell.scaleDragging = true
+        end
     end)
 
     -- Applies the scale chosen while dragging the slider; during the drag only the number box is updated.
@@ -396,19 +448,29 @@ local function newShell()
         local selected = shell.pendingScale
         shell.pendingScale = nil
         shell.scaleDragging = false
-        if selected then shell:ApplyScale(selected, true) end
+
+        if selected then
+            shell:ApplyScale(selected, true)
+        end
     end
 
     addon:SetUIScript(shell.scaleSlider, "OnMouseUp", function(_, button)
-        if button == "LeftButton" then finishScale() end
+        if button == "LeftButton" then
+            finishScale()
+        end
     end)
 
     addon:SetUIScript(shell.scaleSlider, "OnUpdate", function()
-        if shell.scaleDragging and IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then finishScale() end
+        if shell.scaleDragging and IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+            finishScale()
+        end
     end)
 
     addon:SetUIScript(shell.scaleSlider, "OnValueChanged", function(_, value)
-        if shell.settingScale then return end
+        if shell.settingScale then
+            return
+        end
+
         local selected = math.max(.7, math.min(1.3, value / 100))
 
         if shell.scaleDragging then
@@ -428,11 +490,22 @@ local function newShell()
     shell.linkInput = addon:CreateWorkbenchEditBox(linkPane)
     shell.linkInput:SetPoint("TOPLEFT", 12, -12)
     shell.linkInput:SetSize(496, 24)
-    addon:SetUIScript(shell.linkInput, "OnEscapePressed", function() linkPane:Hide() end)
+
+    addon:SetUIScript(shell.linkInput, "OnEscapePressed", function()
+        linkPane:Hide()
+    end)
+
     local linkClose = flatButton(linkPane, L["Close"], 70)
     linkClose:SetPoint("BOTTOMRIGHT", -12, 4)
-    addon:SetUIScript(linkClose, "OnClick", function() linkPane:Hide() end)
-    addon:SetUIScript(linkPane, "OnHide", function() shell.linkInput:ClearFocus() end)
+
+    addon:SetUIScript(linkClose, "OnClick", function()
+        linkPane:Hide()
+    end)
+
+    addon:SetUIScript(linkPane, "OnHide", function()
+        shell.linkInput:ClearFocus()
+    end)
+
     linkPane:Hide()
     addon:OpenPopup({ frame = linkPane }, window)
 
@@ -455,7 +528,11 @@ local function newShell()
             local link = flatButton(footer, entry.label, 90)
             link:SetSize(link:GetFontString():GetStringWidth() + 12, 18)
             link.tooltip = entry.url
-            addon:SetUIScript(link, "OnClick", function() shell:ShowLink(entry.url) end)
+
+            addon:SetUIScript(link, "OnClick", function()
+                shell:ShowLink(entry.url)
+            end)
+
             shell[entry.key] = link
             links[#links + 1] = link
         end
@@ -480,7 +557,10 @@ local function newShell()
         self.helpRequest = nil
         local dialog = self.helpDialog
         self.helpDialog = nil
-        if dialog then dialog:Hide() end
+
+        if dialog then
+            dialog:Hide()
+        end
     end
 
     -- Opens the help dialog for a page `topic` (nil for the window help). `valid()` lets the page withdraw the request,
@@ -499,12 +579,20 @@ local function newShell()
             sections = function() return topic and addon:WorkbenchPageHelp(topic) or addon:WorkbenchWindowHelp() end,
         })
 
-        if self.helpRequest ~= request then return end
+        if self.helpRequest ~= request then
+            return
+        end
+
         self.helpDialog = dialog
-        if dialog then self.helpPane = dialog.frame end
+
+        if dialog then
+            self.helpPane = dialog.frame
+        end
     end
 
-    addon:SetUIScript(shell.help, 'OnClick', function() shell:ShowHelp() end)
+    addon:SetUIScript(shell.help, 'OnClick', function()
+        shell:ShowHelp()
+    end)
 
     addon:BindWorkbenchHelp(shell.help, {
         brief = L['Help.Brief.window'],
@@ -526,10 +614,15 @@ local function newShell()
     texture:SetTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 
     addon:SetUIScript(grip, "OnMouseDown", function(_, button)
-        if button == "LeftButton" then window:StartSizing("BOTTOMRIGHT") end
+        if button == "LeftButton" then
+            window:StartSizing("BOTTOMRIGHT")
+        end
     end)
 
-    addon:SetUIScript(grip, "OnMouseUp", function() window:StopMovingOrSizing() end)
+    addon:SetUIScript(grip, "OnMouseUp", function()
+        window:StopMovingOrSizing()
+    end)
+
     shell.grip = grip
 
     -- Wires the page "?" button to the pane that was just opened. The captured profile, pane and generation make a
@@ -581,7 +674,11 @@ local function newShell()
         if self.pane then
             local pane = self.pane
             self.pane = nil
-            if self.nativePane then pane:Release() end
+
+            if self.nativePane then
+                pane:Release()
+            end
+
             self.nativePane = nil
         end
     end
@@ -605,7 +702,11 @@ local function newShell()
         end
 
         local top = -y + 28
-        if self.banner then top = top + self.banner:Place(12, y - 28, width - 24) end
+
+        if self.banner then
+            top = top + self.banner:Place(12, y - 28, width - 24)
+        end
+
         content:ClearAllPoints()
         content:SetPoint("TOPLEFT", window, "TOPLEFT", 12, -top)
         local contentWidth, contentHeight = math.max(1, width - 24), math.max(1, height - top - 28)
@@ -661,7 +762,11 @@ local function newShell()
             end
 
             addon:BindWorkbenchHelp(tab, { brief = descriptions[key], valid = current })
-            addon:SetUIScript(tab, "OnClick", function() self:SelectSection(key) end)
+
+            addon:SetUIScript(tab, "OnClick", function()
+                self:SelectSection(key)
+            end)
+
             tab:Show()
             self.tabs[#self.tabs + 1] = tab
         end
@@ -684,7 +789,9 @@ local function newShell()
             local current = self.pane
 
             return current:RequestLeave(function()
-                if self.pane == current and self.frame:IsShown() then self:SelectSection(key, true, after) end
+                if self.pane == current and self.frame:IsShown() then
+                    self:SelectSection(key, true, after)
+                end
             end)
         end
 
@@ -699,7 +806,10 @@ local function newShell()
             end
         end
 
-        if not found then key = "Rotations" end
+        if not found then
+            key = "Rotations"
+        end
+
         self:ReleasePane()
         self.section = key
 
@@ -725,7 +835,11 @@ local function newShell()
             self.nativePane = true
             self.pane = addon:CreateRotationBrowser(content, addon.configRotationSelection)
             self:BindPaneHelp()
-            if after then after(self.pane) end
+
+            if after then
+                after(self.pane)
+            end
+
             return
         end
 
@@ -737,7 +851,11 @@ local function newShell()
                 self.pane = pane
                 self.settingsPanes[key] = pane
                 self:BindPaneHelp()
-                if after then after(self.pane) end
+
+                if after then
+                    after(self.pane)
+                end
+
                 return
             end
         end
@@ -776,12 +894,17 @@ local function newShell()
         self.nativePane = true
         self.pane = pane
         self:BindPaneHelp()
-        if after then after(self.pane) end
+
+        if after then
+            after(self.pane)
+        end
     end
 
     -- The client reports a sizing drag here; lay out with the reported size.
     addon:SetUIScript(window, "OnSizeChanged", function()
-        if not shell:ClampSize() then shell:Layout() end
+        if not shell:ClampSize() then
+            shell:Layout()
+        end
     end)
 
     addon:SetUIScript(window, "OnHide", function()
@@ -807,11 +930,19 @@ end
 function addon:ShowConfig(section, selection)
     self.configRotationSelection = selection
     self:SetupOptions()
-    if not self.configWindow then self.configWindow = newShell() end
+
+    if not self.configWindow then
+        self.configWindow = newShell()
+    end
+
     local shell = self.configWindow
     shell:ApplyScale(self.db.global.uiScale, false)
     shell.rightDown = IsMouseButtonDown and IsMouseButtonDown("RightButton")
-    if shell.banner then shell.banner:Refresh() end
+
+    if shell.banner then
+        shell.banner:Refresh()
+    end
+
     shell:RefreshTabs()
     shell:Show()
     shell:SelectSection(section or "Rotations")
@@ -821,7 +952,10 @@ end
 -- Redraws the open window (tabs and current page) on the next UI update; does nothing when it is closed.
 function addon:RefreshConfiguration()
     local shell = self.configWindow
-    if not shell or not shell.frame:IsShown() then return end
+
+    if not shell or not shell.frame:IsShown() then
+        return
+    end
 
     -- Native controls still use their owner after invoking a field callback.
     -- Rebuild on the next UI update, after that callback has returned.
@@ -840,11 +974,15 @@ local showConfig = addon.ShowConfig
 -- Re-declares ShowConfig so the call runs under the diagnostics wrapper when it exists: an error opening the window is
 -- recorded instead of propagating to the caller (a slash command or button).
 function addon:ShowConfig(...)
-    if not self.Diagnostics then return showConfig(self, ...) end
+    if not self.Diagnostics then
+        return showConfig(self, ...)
+    end
 
     -- Returns the call's results on success and nothing when the protected call failed (the error is already reported).
     local function result(ok, ...)
-        if ok then return ... end
+        if ok then
+            return ...
+        end
     end
 
     return result(self.Diagnostics:Call({ module = 'ui', operation = 'open-config' }, showConfig, self, ...))

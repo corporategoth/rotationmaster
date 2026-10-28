@@ -67,8 +67,9 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         for _, record in ipairs(p.edits) do
             for key, control in pairs(p.fields) do
                 if control == record.control then
-                    if record.dirty then raw[key] = control:GetText() end
-
+                    if record.dirty then
+                        raw[key] = control:GetText()
+                    end
                     if control:HasFocus() then
                         focus = { key = key, cursor = control.GetCursorPosition and control:GetCursorPosition() }
                     end
@@ -97,12 +98,18 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
 
     -- Closes the window, releases its form and the draft, and shows the owner again when it is still open.
     function d:Close()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self.active = false
         p:Release()
         frame:Hide()
         self.model = nil
-        if ownerValid() then owner:Show() end
+
+        if ownerValid() then
+            owner:Show()
+        end
     end
 
     -- True when the draft differs from its baseline, needs Apply to correct required fields, or has unsaved text.
@@ -125,12 +132,19 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
             return
         end
 
-        p:ConfirmPending(function() self:Apply() end, function() self:Close() end)
+        p:ConfirmPending(function()
+            self:Apply()
+        end, function()
+            self:Close()
+        end)
     end
 
     -- Refreshes the card markers and enables Apply, Undo and Redo according to the draft; polled every frame.
     function d:UpdateActions()
-        if self.cardView then self.cardView:UpdateMarkers() end
+        if self.cardView then
+            self.cardView:UpdateMarkers()
+        end
+
         local dirty = self:IsDirty()
 
         if dirty then
@@ -155,7 +169,10 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
     -- Flushes pending text, validates the draft snapshot and passes it to `changed`; closes on success. Returns false
     -- with a message when the schema is invalid.
     function d:Apply()
-        if not valid() or not p:FlushEdits() then return false end
+        if not valid() or not p:FlushEdits() then
+            return false
+        end
+
         local value, order, required = d.model:Snapshot()
 
         if not value then
@@ -188,7 +205,9 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
         end
 
         addon:SetUIScript(b, 'OnClick', function()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
 
             if i == 4 then
                 d:Close()
@@ -205,11 +224,15 @@ function addon:ShowFieldSchemaEditor(owner, fields, fieldOrder, changed, ownerVa
     d.add:SetPoint('TOPRIGHT', -12, -34)
 
     addon:SetUIScript(d.add, 'OnClick', function()
-        if valid() and p:FlushEdits() and d.model:Add({}) then p:Draw() end
+        if valid() and p:FlushEdits() and d.model:Add({}) then
+            p:Draw()
+        end
     end)
 
     addon:SetUIScript(d.close, 'OnClick', function()
-        if valid() then d:Hide() end
+        if valid() then
+            d:Hide()
+        end
     end)
 
     p:SetWidth(d.host:GetWidth())

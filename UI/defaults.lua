@@ -60,7 +60,10 @@ local function referenceContent(row, spec)
 
         for _, source in ipairs(row.envelope and row.envelope.sources or {}) do
             label(root, source.title or source.url)
-            if source.title then label(root, source.url) end
+
+            if source.title then
+                label(root, source.url)
+            end
         end
     end)
 
@@ -160,7 +163,10 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     end
 
     local paused = frame.paused or frame.LayoutPaused
-    if frame.PauseLayout then frame:PauseLayout() end
+
+    if frame.PauseLayout then
+        frame:PauseLayout()
+    end
 
     -- Adds every row of the page; run under pcall so layout is always resumed even when a builder errors.
     local function build()
@@ -190,7 +196,10 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         then
             for _, problem in ipairs(row.validation.diagnostics or {}) do
                 unsupported = addon:DescribeUnsupportedCondition(problem)
-                if unsupported then break end
+
+                if unsupported then
+                    break
+                end
             end
         end
 
@@ -207,9 +216,15 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         enable:SetValue(row.switchedOn == true)
 
         enable:SetCallback('OnValueChanged', function(_, _, value)
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             local ok, reason = addon:SetDefaultRotationEnabled(id, value)
-            if not valid() then return end
+
+            if not valid() then
+                return
+            end
 
             if not ok then
                 status:SetText(string.format(L['Could not update this Built In rotation: %s'], reason))
@@ -222,7 +237,9 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
                 addon:EvaluateNextAction()
             end
 
-            if onRefresh then onRefresh() end
+            if onRefresh then
+                onRefresh()
+            end
         end)
 
         frame:AddChild(enable)
@@ -230,12 +247,20 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         clone:SetText(L['Clone to edit'])
 
         clone:SetCallback('OnClick', function()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             local generated, reason = addon:CloneDefaultRotation(spec, id, string.format(L['Copy of %s'], row.name))
-            if not valid() then return end
+
+            if not valid() then
+                return
+            end
 
             if generated then
-                if onClone then onClone(generated) end
+                if onClone then
+                    onClone(generated)
+                end
             else
                 status:SetText(string.format(L['Could not duplicate this Built In rotation: %s'], reason))
             end
@@ -246,7 +271,9 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         export:SetText(L['Export Built In'])
 
         export:SetCallback('OnClick', function()
-            if valid() then return addon:ShowRotationTransfer(spec, row.runtimeKey) end
+            if valid() then
+                return addon:ShowRotationTransfer(spec, row.runtimeKey)
+            end
         end)
 
         frame:AddChild(export)
@@ -254,8 +281,13 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     end
 
     local ok, why = pcall(build)
-    if not paused and frame.ResumeLayout then frame:ResumeLayout() end
-    if not ok then error(why, 0) end
+
+    if not paused and frame.ResumeLayout then
+        frame:ResumeLayout()
+    end
+    if not ok then
+        error(why, 0)
+    end
 end
 
 -- Opens (or reuses) the standalone Built In window for rotation `id` of `spec` and returns the window table. The window
@@ -293,8 +325,14 @@ function addon:ShowDefaultRotation(spec, id)
             self.frame:Hide()
         end
 
-        addon:SetUIScript(window.close, 'OnClick', function() window:Hide() end)
-        addon:SetUIScript(frame, 'OnHide', function() window:Clear() end)
+        addon:SetUIScript(window.close, 'OnClick', function()
+            window:Hide()
+        end)
+
+        addon:SetUIScript(frame, 'OnHide', function()
+            window:Clear()
+        end)
+
         frame:Hide()
     end
 
@@ -325,14 +363,19 @@ function addon:ShowDefaultRotation(spec, id)
 
     -- A clone succeeded: closes this window and opens the new copy in the Rotations settings page.
     local function cloned(generated)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         window:Hide()
         addon:ShowConfig('Rotations', { spec = spec, id = generated })
     end
 
     -- Rebuilds the page after the enable toggle changes the row's state.
     local function refresh()
-        if valid() then addon:CreateDefaultRotationOptions(root, spec, id, cloned, refresh) end
+        if valid() then
+            addon:CreateDefaultRotationOptions(root, spec, id, cloned, refresh)
+        end
     end
 
     local ok, why = pcall(refresh)
@@ -343,7 +386,9 @@ function addon:ShowDefaultRotation(spec, id)
     end
 
     addon:SetUIScript(window.frame, 'OnUpdate', function()
-        if window.active and window.serial == serial and not valid() then window:Hide() end
+        if window.active and window.serial == serial and not valid() then
+            window:Hide()
+        end
     end)
 
     window.frame:Show()

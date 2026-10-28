@@ -9,7 +9,11 @@ local activeCurrent = addon.IsActiveRotationTransitionCurrent
 local beginActive = addon.BeginActiveRotationTransition
 local retireActive = addon.RetireActiveRotationTransition
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Also called after import overlays: AceDB emits Reset/Copy before the
@@ -17,14 +21,29 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Re-syncs integrations, notifies dependency freshness and rebuilds scoped storage and the library. Returns true, or
 -- nil and the recovery reason (also kept in rotationStorageError).
 function addon:RefreshRotationProfileStorage()
-    if self.SyncQuestieIntegration then self:SyncQuestieIntegration() end
-    if self.SyncEncounterIntegration then self:SyncEncounterIntegration() end
-    if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+    if self.SyncQuestieIntegration then
+        self:SyncQuestieIntegration()
+    end
+    if self.SyncEncounterIntegration then
+        self:SyncEncounterIntegration()
+    end
+    if invalidateDependencies then
+        invalidateDependencies(addon, 'all', nil)
+    end
+
     local ok, why = self:InitializeScopedRotationStorage()
     self.rotationStorageError = not ok and why or nil
-    if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
-    if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy() end
-    if not ok and self.warn then self:warn(L['Rotation data requires recovery: %s'], why) end
+
+    if self.InitializeRotationLibrary then
+        self:InitializeRotationLibrary()
+    end
+    if self.RefreshEvaluationProfilerPolicy then
+        self:RefreshEvaluationProfilerPolicy()
+    end
+    if not ok and self.warn then
+        self:warn(L['Rotation data requires recovery: %s'], why)
+    end
+
     return ok, why
 end
 
@@ -33,7 +52,10 @@ end
 -- foreign code that starts a newer transition, and the check must catch that before the next step.
 function addon:RotationProfileChanged()
     local change = beginActive(self)
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
 
     if (self.rotationProfileChangeDepth or 0) > 0 then
         if not retireActive(self, change) or not activeCurrent(self, change) then
@@ -41,20 +63,38 @@ function addon:RotationProfileChanged()
         end
 
         local refresh = self.RefreshRotationProfileStorage
-        if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         return refresh(self)
     end
 
     local available = self.DisableRotation
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
 
     if available then
         local disable = self.DisableRotation
-        if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         local _, nextChange, stopped = disable(self)
-        if stopped == false then return nil, 'rotation-transition-superseded' end
+
+        if stopped == false then
+            return nil, 'rotation-transition-superseded'
+        end
+
         change = nextChange or change
-        if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
     elseif not retireActive(self, change) or not activeCurrent(self, change) then
         return nil, 'rotation-transition-superseded'
     end
@@ -64,23 +104,44 @@ function addon:RotationProfileChanged()
     self.longtermCache = {}
     self.configRotationSelection = nil
     local refresh = self.RefreshRotationProfileStorage
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local ok, why = refresh(self)
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local configure = self.RefreshConfiguration
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
 
     if configure then
         configure = self.RefreshConfiguration
-        if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         configure(self)
     end
 
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
 
     if ok and self.db.profile.enable and self.EnableRotation then
         local enable = self.EnableRotation
-        if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+
+        if not activeCurrent(self, change) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         enable(self)
     end
 
@@ -92,7 +153,11 @@ function addon:InstallRotationProfileLifecycle()
     local db = self.db
     local previous = self.rotationProfileLifecycleDB
     local previousOwner = self.rotationProfileLifecycleOwner
-    if self.rotationProfileLifecycleInstalled and previous == db and previousOwner then return end
+
+    if self.rotationProfileLifecycleInstalled and previous == db and previousOwner then
+        return
+    end
+
     -- Retire authority before removing callbacks. A callback already captured
     -- by a dispatch must not apply the old database's event to a new active DB.
     self.rotationProfileLifecycleDB = nil

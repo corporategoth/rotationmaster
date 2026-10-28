@@ -40,12 +40,20 @@ end
 -- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
 -- nil and a reason code when the function is missing, throws or returns any restricted value.
 local function call(self, api, ...)
-    if type(api) ~= 'function' then return nil, 'missing-api' end
+    if type(api) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local results = pack(pcall(api, ...))
-    if not results[1] then return nil, 'api-error' end
+
+    if not results[1] then
+        return nil, 'api-error'
+    end
 
     for index = 2, results.n do
-        if not self:CanReadValue(results[index]) then return nil, 'restricted-value' end
+        if not self:CanReadValue(results[index]) then
+            return nil, 'restricted-value'
+        end
     end
 
     return results
@@ -54,18 +62,35 @@ end
 -- nil when this client can resolve the kind, else the reason. Roles exist only
 -- where players can assign them (see 'no-group-roles' in Core/condition_support.lua).
 function platform:GetGroupUnitSupport(kind)
-    if not KINDS[kind] then return 'invalid-group-unit' end
+    if not KINDS[kind] then
+        return 'invalid-group-unit'
+    end
+
     local policy = self:GetCombatDataPolicy()
-    if policy ~= 'probe' and policy ~= 'restricted' then return 'unsupported-policy' end
+
+    if policy ~= 'probe' and policy ~= 'restricted' then
+        return 'unsupported-policy'
+    end
+
     local group = KINDS[kind]
-    if group == 'roster' and type(GetRaidRosterInfo) ~= 'function' then return 'missing-api' end
-    if group == 'leader' and type(UnitIsGroupLeader) ~= 'function' then return 'missing-api' end
+
+    if group == 'roster' and type(GetRaidRosterInfo) ~= 'function' then
+        return 'missing-api'
+    end
+    if group == 'leader' and type(UnitIsGroupLeader) ~= 'function' then
+        return 'missing-api'
+    end
 
     if group == 'role' then
         local info = self:GetClientInfo()
         local family = type(info) == 'table' and info.family
-        if family == 'era' or family == 'tbc' then return 'no-group-roles' end
-        if type(UnitGroupRolesAssigned) ~= 'function' then return 'missing-api' end
+
+        if family == 'era' or family == 'tbc' then
+            return 'no-group-roles'
+        end
+        if type(UnitGroupRolesAssigned) ~= 'function' then
+            return 'missing-api'
+        end
     end
 end
 
@@ -73,7 +98,11 @@ end
 -- and whether it is a raid, or nil and a reason code.
 local function groupTokens(self)
     local count, reason = call(self, GetNumGroupMembers)
-    if not count then return nil, reason end
+
+    if not count then
+        return nil, reason
+    end
+
     local members = count[2]
 
     if type(members) ~= 'number' or members ~= members or members < 0 or members > 40 or members % 1 ~= 0 then
@@ -81,8 +110,14 @@ local function groupTokens(self)
     end
 
     local inRaid, why = call(self, IsInRaid)
-    if not inRaid then return nil, why end
-    if type(inRaid[2]) ~= 'boolean' then return nil, 'invalid-api-result' end
+
+    if not inRaid then
+        return nil, why
+    end
+    if type(inRaid[2]) ~= 'boolean' then
+        return nil, 'invalid-api-result'
+    end
+
     local tokens = {}
 
     if inRaid[2] then
@@ -103,21 +138,41 @@ end
 -- The token of the first member holding the assignment, else nil and a reason.
 function platform:ResolveGroupUnit(kind)
     local unsupported = self:GetGroupUnitSupport(kind)
-    if unsupported then return nil, unsupported end
+
+    if unsupported then
+        return nil, unsupported
+    end
+
     local tokens, raid = groupTokens(self)
-    if not tokens then return nil, raid end
+
+    if not tokens then
+        return nil, raid
+    end
+
     local group = KINDS[kind]
 
     if group == 'roster' then
-        if not raid then return nil, 'no-assigned-unit' end
+        if not raid then
+            return nil, 'no-assigned-unit'
+        end
 
         for index = 1, #tokens do
             local result, reason = call(self, GetRaidRosterInfo, index)
-            if not result then return nil, reason end
+
+            if not result then
+                return nil, reason
+            end
+
             local role = result[11]
-            if role ~= nil and type(role) ~= 'string' then return nil, 'invalid-api-result' end
+
+            if role ~= nil and type(role) ~= 'string' then
+                return nil, 'invalid-api-result'
+            end
+
             -- GetRaidRosterInfo spells the role in capitals; tolerate any case.
-            if role ~= nil and role:upper() == ROSTER_ROLE[kind] then return tokens[index] end
+            if role ~= nil and role:upper() == ROSTER_ROLE[kind] then
+                return tokens[index]
+            end
         end
 
         return nil, 'no-assigned-unit'
@@ -132,12 +187,19 @@ function platform:ResolveGroupUnit(kind)
             result, reason = call(self, UnitIsGroupLeader, token)
         end
 
-        if not result then return nil, reason end
+        if not result then
+            return nil, reason
+        end
+
         local answer = result[2]
 
         if group == 'role' then
-            if type(answer) ~= 'string' then return nil, 'invalid-api-result' end
-            if answer == ASSIGNED_ROLE[kind] then return token end
+            if type(answer) ~= 'string' then
+                return nil, 'invalid-api-result'
+            end
+            if answer == ASSIGNED_ROLE[kind] then
+                return token
+            end
         else
             if answer == 1 then
                 answer = true
@@ -145,8 +207,12 @@ function platform:ResolveGroupUnit(kind)
                 answer = false
             end
 
-            if type(answer) ~= 'boolean' then return nil, 'invalid-api-result' end
-            if answer then return token end
+            if type(answer) ~= 'boolean' then
+                return nil, 'invalid-api-result'
+            end
+            if answer then
+                return token
+            end
         end
     end
 

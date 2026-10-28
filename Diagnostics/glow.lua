@@ -33,15 +33,25 @@ end
 
 -- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
-    if not readable(value) then return 'secret' end
-    if value == nil then return 'nil' end
-    if type(value) == 'number' and value % 1 ~= 0 then return string.format('%.3f', value) end
+    if not readable(value) then
+        return 'secret'
+    end
+    if value == nil then
+        return 'nil'
+    end
+    if type(value) == 'number' and value % 1 ~= 0 then
+        return string.format('%.3f', value)
+    end
+
     return tostring(value)
 end
 
 -- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
 local function protect(fn, ...)
-    if type(fn) ~= 'function' then return false, 'missing' end
+    if type(fn) ~= 'function' then
+        return false, 'missing'
+    end
+
     return pcall(fn, ...)
 end
 
@@ -66,7 +76,11 @@ end
 -- variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
-    if type(saved) ~= 'table' then return nil end
+
+    if type(saved) ~= 'table' then
+        return nil
+    end
+
     local diagnostics = rawget(saved, 'diagnostics')
 
     if type(diagnostics) ~= 'table' then
@@ -93,7 +107,10 @@ local function newReport()
     -- Appends one line (formatted when arguments follow); ignores everything past MAX_LINES.
     function report.add(text, ...)
         if #lines >= MAX_LINES then
-            if #lines == MAX_LINES then lines[#lines + 1] = '... (report capped at ' .. MAX_LINES .. ' lines)' end
+            if #lines == MAX_LINES then
+                lines[#lines + 1] = '... (report capped at ' .. MAX_LINES .. ' lines)'
+            end
+
             return
         end
 
@@ -133,10 +150,20 @@ local function readinessParts(kind, id, itemId, now)
                 or ('nil(' .. show(rangeWhy) .. ')'))
     else
         local bank = kind
-        if bank ~= 'spell' and bank ~= 'pet' and bank ~= 'any' then bank = 'spell' end
+
+        if bank ~= 'spell' and bank ~= 'pet' and bank ~= 'any' then
+            bank = 'spell'
+        end
+
         local known, why
-        if bank ~= 'pet' then known, why = platform:IsSpellKnown(id, false) end
-        if known ~= true and bank ~= 'spell' then known, why = platform:IsSpellKnown(id, true) end
+
+        if bank ~= 'pet' then
+            known, why = platform:IsSpellKnown(id, false)
+        end
+        if known ~= true and bank ~= 'spell' then
+            known, why = platform:IsSpellKnown(id, true)
+        end
+
         parts[#parts + 1] = 'known=' .. show(known) .. (why and ('(' .. why .. ')') or '')
         local usable, power, usableWhy = platform:IsSpellUsable(id)
 
@@ -172,9 +199,16 @@ local function spellRelations(id)
 
     if type(C_Spell) == 'table' then
         local ok, value = protect(C_Spell.GetBaseSpell, id)
-        if ok then base = value end
+
+        if ok then
+            base = value
+        end
+
         ok, value = protect(C_Spell.GetOverrideSpell, id)
-        if ok then override = value end
+
+        if ok then
+            override = value
+        end
     end
 
     local slots
@@ -219,12 +253,20 @@ local function explainNoSpellIds(self, step)
         end
 
         local suggestion, why = platform:GetAssistedSuggestion()
-        if suggestion == false then return 'assisted: Blizzard suggests nothing right now' end
-        if suggestion == nil then return 'assisted: no suggestion (' .. show(why) .. ')' end
+
+        if suggestion == false then
+            return 'assisted: Blizzard suggests nothing right now'
+        end
+        if suggestion == nil then
+            return 'assisted: no suggestion (' .. show(why) .. ')'
+        end
+
         return 'assisted: suggestion ' .. show(suggestion) .. ' gave no candidates'
     end
 
-    if action == nil then return 'the step has no action' end
+    if action == nil then
+        return 'the step has no action'
+    end
 
     if SPELL_STEP[kind] then
         local spellType, petType = rawget(_G, 'BOOKTYPE_SPELL'), rawget(_G, 'BOOKTYPE_PET')
@@ -238,7 +280,9 @@ local function explainNoSpellIds(self, step)
             show(petType)
         )
 
-        if not matched then return text .. '; the step type matches no spell book type' end
+        if not matched then
+            return text .. '; the step type matches no spell book type'
+        end
 
         if
             rawget(_G, 'WOW_PROJECT_ID') ~= rawget(_G, 'WOW_PROJECT_MAINLINE') and not step.ranked and self.SpellCatalog
@@ -259,11 +303,18 @@ local function explainNoSpellIds(self, step)
         if type(items) == 'string' then
             local profile, global = self.db.profile.itemsets or {}, self.db.global.itemsets or {}
             local set = profile[items] or global[items]
-            if type(set) ~= 'table' then return 'item set ' .. show(items) .. ' does not exist' end
+
+            if type(set) ~= 'table' then
+                return 'item set ' .. show(items) .. ' does not exist'
+            end
+
             items = set.items
         end
 
-        if type(items) ~= 'table' or #items == 0 then return 'the item list is empty' end
+        if type(items) ~= 'table' or #items == 0 then
+            return 'the item list is empty'
+        end
+
         local parts = {}
 
         for i, item in ipairs(items) do
@@ -295,10 +346,20 @@ end
 -- rotation, and the rotation body as the third value.
 local function rotationRows(self)
     local spec, id = self.currentSpec, self.currentRotation
-    if id == nil or type(self.GetRotationForCleanup) ~= 'function' then return nil, 'no active rotation' end
+
+    if id == nil or type(self.GetRotationForCleanup) ~= 'function' then
+        return nil, 'no active rotation'
+    end
+
     local ok, rotation = pcall(self.GetRotationForCleanup, self, spec, id)
-    if not ok then return nil, 'rotation read failed: ' .. tostring(rotation) end
-    if type(rotation) ~= 'table' then return nil, 'rotation body unavailable' end
+
+    if not ok then
+        return nil, 'rotation read failed: ' .. tostring(rotation)
+    end
+    if type(rotation) ~= 'table' then
+        return nil, 'rotation body unavailable'
+    end
+
     local data = self.RotationData
 
     if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' then
@@ -306,11 +367,17 @@ local function rotationRows(self)
     end
 
     local indexed, index = pcall(data.IndexRotationSteps, rotation, { allowMissingIds = true })
-    if not indexed or type(index) ~= 'table' or type(index.rows) ~= 'table' then return nil, 'rotation index failed' end
+
+    if not indexed or type(index) ~= 'table' or type(index.rows) ~= 'table' then
+        return nil, 'rotation index failed'
+    end
+
     local rows = {}
 
     for _, row in ipairs(index.rows) do
-        if row.section == 'rotation' and type(row.step) == 'table' then rows[#rows + 1] = row end
+        if row.section == 'rotation' and type(row.step) == 'table' then
+            rows[#rows + 1] = row
+        end
     end
 
     return rows, nil, rotation
@@ -318,11 +385,22 @@ end
 
 -- Evaluates a step's conditions the way the engine would now; returns the status and reason as text.
 local function conditionStatus(self, step)
-    if step.conditions == nil then return 'match' end
-    if type(self.evaluateConditionResult) ~= 'function' then return 'unknown' end
+    if step.conditions == nil then
+        return 'match'
+    end
+    if type(self.evaluateConditionResult) ~= 'function' then
+        return 'unknown'
+    end
+
     local ok, result = pcall(self.evaluateConditionResult, self, step.conditions, { stepId = step.id })
-    if not ok then return 'error: ' .. tostring(result) end
-    if type(result) ~= 'table' then return show(result) end
+
+    if not ok then
+        return 'error: ' .. tostring(result)
+    end
+    if type(result) ~= 'table' then
+        return show(result)
+    end
+
     return show(result.status) .. (result.reason and (' (' .. show(result.reason) .. ')') or '')
 end
 
@@ -334,46 +412,77 @@ local function walkStep(self, report, row, now, verbose)
     local label = string.format('#%s %s', show(row.ordinal), show(step.type))
 
     if step.disabled then
-        if verbose then report.add('  %s disabled', label) end
+        if verbose then
+            report.add('  %s disabled', label)
+        end
+
         return 'disabled'
     end
 
     if row.unreachable then
-        if verbose then report.add('  %s unreachable', label) end
+        if verbose then
+            report.add('  %s unreachable', label)
+        end
+
         return 'disabled'
     end
 
     if step.type == 'branch' then
-        if verbose then report.add('  %s (branch: its steps follow)', label) end
+        if verbose then
+            report.add('  %s (branch: its steps follow)', label)
+        end
+
         return 'branch'
     end
 
     local status = conditionStatus(self, step)
 
     if step.type == 'stop' then
-        if verbose then report.add('  %s stop step, conditions=%s', label, status) end
-        if status:match('^match') or status:match('^unavailable') then return 'stop', nil, 'a stop step matched' end
+        if verbose then
+            report.add('  %s stop step, conditions=%s', label, status)
+        end
+
+        if status:match('^match') or status:match('^unavailable') then
+            return 'stop', nil, 'a stop step matched'
+        end
+
         return 'notmatched'
     end
 
     if step.action == nil and step.type ~= 'assisted' then
-        if verbose then report.add('  %s has no action', label) end
+        if verbose then
+            report.add('  %s has no action', label)
+        end
+
         return 'noaction'
     end
 
-    if verbose then report.add('  %s action=%s conditions=%s', label, step.action, status) end
-    if not status:match('^match') then return 'notmatched', nil, 'conditions ' .. status end
+    if verbose then
+        report.add('  %s action=%s conditions=%s', label, step.action, status)
+    end
+
+    if not status:match('^match') then
+        return 'notmatched', nil, 'conditions ' .. status
+    end
+
     local ok, spellids, itemids = pcall(self.GetSpellIds, self, step)
 
     if not ok then
-        if verbose then report.add('    GetSpellIds error: %s', spellids) end
+        if verbose then
+            report.add('    GetSpellIds error: %s', spellids)
+        end
+
         return 'unmapped', nil, 'spell IDs failed'
     end
 
     if type(spellids) ~= 'table' or #spellids == 0 then
         local okWhy, why = pcall(explainNoSpellIds, self, step)
         why = okWhy and why or ('explanation failed: ' .. tostring(why))
-        if verbose then report.add('    no spell IDs: %s', why) end
+
+        if verbose then
+            report.add('    no spell IDs: %s', why)
+        end
+
         return 'unmapped', nil, 'no spell IDs (' .. why .. ')'
     end
 
@@ -400,8 +509,15 @@ local function walkStep(self, report, row, now, verbose)
         if mapped then
             anyMapped = true
             local parts, ready, err = readinessParts(step.type, id, itemId, now)
-            if verbose then report.add('      ready=%s %s %s', ready, parts, err) end
-            if ready then return 'selected', mapped, nil end
+
+            if verbose then
+                report.add('      ready=%s %s %s', ready, parts, err)
+            end
+
+            if ready then
+                return 'selected', mapped, nil
+            end
+
             firstReason = firstReason or ('spell ' .. show(id) .. ' not ready: ' .. parts)
         else
             if verbose then
@@ -466,16 +582,22 @@ local function scanSection(self, report)
             if type(button) == 'table' then
                 frames = frames + 1
                 local record = self:DiagnoseActionButton(button)
-                if record.kind == 'action' then typed = typed + 1 end
-                if record.indexed then indexed = indexed + 1 end
+
+                if record.kind == 'action' then
+                    typed = typed + 1
+                end
+                if record.indexed then
+                    indexed = indexed + 1
+                end
 
                 if record.error then
                     errors = errors + 1
                     firstError = firstError or (record.name .. ': ' .. record.error)
                 end
 
-                if record.actionKind then withAction = withAction + 1 end
-
+                if record.actionKind then
+                    withAction = withAction + 1
+                end
                 if record.actionKind or record.error then
                     rows[#rows + 1] = string.format(
                         '  %s type=%s slot=%s shown=%s visible=%s action=%s:%s spell=%s indexed=%s%s',
@@ -574,7 +696,10 @@ local function bindingSection(self, report)
         )
     end
 
-    if index.total > #index.spells then report.add('  ... %d more indexed spells', index.total - #index.spells) end
+    if index.total > #index.spells then
+        report.add('  ... %d more indexed spells', index.total - #index.spells)
+    end
+
     local targets = {}
     local pane = self.activeRotationEditor
 
@@ -598,7 +723,9 @@ local function bindingSection(self, report)
         }
     end
 
-    if #targets == 0 then report.add('  no rotation is open in the editor and none is active') end
+    if #targets == 0 then
+        report.add('  no rotation is open in the editor and none is active')
+    end
 
     for _, target in ipairs(targets) do
         local unbound = self:ListUnboundSteps(target.body)
@@ -615,7 +742,9 @@ local function bindingSection(self, report)
                 show(explain.action)
             )
 
-            if explain.error then report.add('    GetSpellIds error: %s', explain.error) end
+            if explain.error then
+                report.add('    GetSpellIds error: %s', explain.error)
+            end
 
             for _, record in ipairs(explain.ids) do
                 report.add(
@@ -727,7 +856,10 @@ function addon:BuildGlowDiagnostic()
 
     section(report, 'Steps the editor warns are not on your action bars')
     local boundOk, boundWhy = pcall(bindingSection, self, report)
-    if not boundOk then add('  report failed: %s', boundWhy) end
+
+    if not boundOk then
+        add('  report failed: %s', boundWhy)
+    end
 
     section(report, 'Rotation steps (top to bottom, as the engine walks them)')
     local rows, rowsWhy, rotation = rotationRows(self)
@@ -952,7 +1084,10 @@ function addon:GetRecentRecommendations()
 
     for n = 0, RECENT - 1 do
         local slot = recent[(recentNext + n - 1) % RECENT + 1]
-        if slot.used then list[#list + 1] = slot end
+
+        if slot.used then
+            list[#list + 1] = slot
+        end
     end
 
     return list
@@ -964,7 +1099,11 @@ local watcher
 -- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
 local function save(lines)
     local reports = store()
-    if not reports then return nil end
+
+    if not reports then
+        return nil
+    end
+
     local entry = { at = type(date) == 'function' and date('%Y-%m-%d %H:%M:%S') or nil, lines = lines }
     reports[#reports + 1] = entry
 
@@ -997,7 +1136,10 @@ local function watchLine(self)
     local sink = newReport()
 
     for n, row in ipairs(rows or {}) do
-        if n > 4 then break end
+        if n > 4 then
+            break
+        end
+
         local verdict, spell, reason = walkStep(self, sink, row, now, false)
 
         parts[#parts + 1] = string.format(
@@ -1021,7 +1163,11 @@ function addon:RunGlowDiagnostic(seconds)
 
     if seconds and seconds >= 1 and entry and type(self.ScheduleRepeatingTimer) == 'function' then
         seconds = math.min(math.floor(seconds), MAX_WATCH)
-        if watcher then self:CancelTimer(watcher.timer) end
+
+        if watcher then
+            self:CancelTimer(watcher.timer)
+        end
+
         lines[#lines + 1] = ''
         lines[#lines + 1] = '== Watch, one line per second for ' .. seconds .. 's'
         local remaining = seconds
@@ -1047,8 +1193,9 @@ function addon:RunGlowDiagnostic(seconds)
         self:print(L['Glow diagnostic saved.'])
     end
 
-    if stop then self:print(L['Glow stops at: %s'], stop) end
-
+    if stop then
+        self:print(L['Glow stops at: %s'], stop)
+    end
     if self.ShowConditionText and not (seconds and seconds >= 1) then
         self:ShowConditionText(table.concat(lines, '\n'), L['Glow diagnostic'])
     end
@@ -1066,7 +1213,9 @@ function addon:ShowGlowDiagnostic()
         return
     end
 
-    if self.ShowConditionText then self:ShowConditionText(table.concat(entry.lines, '\n'), L['Glow diagnostic']) end
+    if self.ShowConditionText then
+        self:ShowConditionText(table.concat(entry.lines, '\n'), L['Glow diagnostic'])
+    end
 end
 
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
@@ -1077,12 +1226,22 @@ function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
 
     if what == 'glow' then
-        if rest == 'show' then return self:ShowGlowDiagnostic() end
+        if rest == 'show' then
+            return self:ShowGlowDiagnostic()
+        end
+
         return self:RunGlowDiagnostic(rest ~= '' and rest or nil)
     end
 
-    if what == 'editor' and self.ShowLuaEditorInputReport then return self:ShowLuaEditorInputReport() end
-    if what == 'talents' and self.RunTalentDiagnostic then return self:RunTalentDiagnostic(rest) end
-    if what == 'timeline' and self.RunTimelineDiagnostic then return self:RunTimelineDiagnostic(rest) end
+    if what == 'editor' and self.ShowLuaEditorInputReport then
+        return self:ShowLuaEditorInputReport()
+    end
+    if what == 'talents' and self.RunTalentDiagnostic then
+        return self:RunTalentDiagnostic(rest)
+    end
+    if what == 'timeline' and self.RunTimelineDiagnostic then
+        return self:RunTimelineDiagnostic(rest)
+    end
+
     self:print(L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'])
 end

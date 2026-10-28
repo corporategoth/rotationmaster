@@ -55,9 +55,16 @@ function addon:FormatRotationComparison(result)
                 return "..."
             end
 
-            if type(current) == "string" then return safe(string.format("%q", current), 160) end
-            if current == nil then return L["absent"] end
-            if type(current) ~= "table" then return safe(current, 160) end
+            if type(current) == "string" then
+                return safe(string.format("%q", current), 160)
+            end
+            if current == nil then
+                return L["absent"]
+            end
+            if type(current) ~= "table" then
+                return safe(current, 160)
+            end
+
             local keys = {}
 
             for key in pairs(current) do
@@ -65,7 +72,10 @@ function addon:FormatRotationComparison(result)
             end
 
             table.sort(keys, function(a, b)
-                if type(a) == type(b) then return a < b end
+                if type(a) == type(b) then
+                    return a < b
+                end
+
                 return type(a) == "number"
             end)
 
@@ -106,7 +116,9 @@ function addon:FormatRotationComparison(result)
             append(L["This comparison is incomplete; some changes are omitted."])
         end
 
-        if part.valid and part.complete and #part.changes == 0 then append(L["No differences."]) end
+        if part.valid and part.complete and #part.changes == 0 then
+            append(L["No differences."])
+        end
 
         for _, change in ipairs(part.changes) do
             local path = safe(change.path, 512)
@@ -122,11 +134,15 @@ function addon:FormatRotationComparison(result)
                 text = string.format(L["Changed %s: %s → %s"], path, value(change.before), value(change.after))
             end
 
-            if not append(text) then break end
+            if not append(text) then
+                break
+            end
         end
 
         for _, diagnostic in ipairs(part.diagnostics or {}) do
-            if not append(safe(diagnostic.code, 100) .. ": " .. safe(diagnostic.path, 512)) then break end
+            if not append(safe(diagnostic.code, 100) .. ": " .. safe(diagnostic.path, 512)) then
+                break
+            end
         end
 
         append("")
@@ -145,10 +161,14 @@ function addon:FormatRotationComparison(result)
         end
 
         for _, conflict in ipairs(result.conflicts) do
-            if not append(safe(conflict.path, 512)) then break end
+            if not append(safe(conflict.path, 512)) then
+                break
+            end
         end
 
-        if not result.complete then append(L["This comparison is incomplete; some changes are omitted."]) end
+        if not result.complete then
+            append(L["This comparison is incomplete; some changes are omitted."])
+        end
 
         for _, diagnostic in ipairs(result.diagnostics or {}) do
             append(safe(diagnostic.code, 100))
@@ -157,7 +177,10 @@ function addon:FormatRotationComparison(result)
         section(L["Selected rotation → your rotation"], result)
     end
 
-    if truncated then lines[#lines + 1] = L["Some display text was truncated. Rotation data has not been changed."] end
+    if truncated then
+        lines[#lines + 1] = L["Some display text was truncated. Rotation data has not been changed."]
+    end
+
     return table.concat(lines, "\n")
 end
 
@@ -199,8 +222,10 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
     end
 
     label(parent, L["Read-only comparison. Rotations are not merged."])
-    if not model.complete then label(parent, L["This comparison is incomplete; some changes are omitted."]) end
 
+    if not model.complete then
+        label(parent, L["This comparison is incomplete; some changes are omitted."])
+    end
     if model.additionalChanges > 0 then
         label(parent, L["Additional settings changed. Copy diagnostic details to inspect all fields."])
     end
@@ -209,11 +234,15 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
 
     for _, rows in pairs(model.groups) do
         for _, row in ipairs(rows) do
-            if not (row.added or row.removed or row.changed or row.moved) then unchanged = unchanged + 1 end
+            if not (row.added or row.removed or row.changed or row.moved) then
+                unchanged = unchanged + 1
+            end
         end
     end
 
-    if model.complete and model.displayChangeCount == 0 then label(parent, L["No differences."]) end
+    if model.complete and model.displayChangeCount == 0 then
+        label(parent, L["No differences."])
+    end
 
     if unchanged > 0 then
         local toggle = addon:CreateConditionCheckBox()
@@ -226,7 +255,10 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
         end)
 
         parent:AddChild(toggle)
-        if not showUnchanged then label(parent, string.format(L["%s unchanged steps hidden."], unchanged)) end
+
+        if not showUnchanged then
+            label(parent, string.format(L["%s unchanged steps hidden."], unchanged))
+        end
     end
 
     local leftTitle = view.key == "source" and L["At cloning"]
@@ -237,7 +269,9 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
         or view.key == "import" and L["Incoming rotation"]
         or L["Your rotation"]
 
-    if view.key == "import" then leftTitle = L["Your rotation"] end
+    if view.key == "import" then
+        leftTitle = L["Your rotation"]
+    end
 
     -- Adds a two-column row, titled with the side names, and calls render(column, entry) for each side that has one.
     local function pair(left, right, render)
@@ -307,14 +341,26 @@ local function renderComparison(self, parent, view, spec, showUnchanged)
 
     for _, kind in ipairs({ "cooldowns", "rotation" }) do
         label(parent, kind == "cooldowns" and L["Optional highlights"] or L["Sequential priority"], "Heading")
-        if #model.groups[kind] == 0 then label(parent, L["No steps in this section."]) end
+
+        if #model.groups[kind] == 0 then
+            label(parent, L["No steps in this section."])
+        end
 
         for _, row in ipairs(model.groups[kind]) do
             local status = {}
-            if row.added then status[#status + 1] = "|cff6fce91" .. L["Added"] .. "|r" end
-            if row.removed then status[#status + 1] = "|cffe58c82" .. L["Removed"] .. "|r" end
-            if row.changed then status[#status + 1] = "|cffcfa04a" .. L["Changed"] .. "|r" end
-            if row.moved then status[#status + 1] = "|cff5bc0eb" .. L["Moved"] .. "|r" end
+
+            if row.added then
+                status[#status + 1] = "|cff6fce91" .. L["Added"] .. "|r"
+            end
+            if row.removed then
+                status[#status + 1] = "|cffe58c82" .. L["Removed"] .. "|r"
+            end
+            if row.changed then
+                status[#status + 1] = "|cffcfa04a" .. L["Changed"] .. "|r"
+            end
+            if row.moved then
+                status[#status + 1] = "|cff5bc0eb" .. L["Moved"] .. "|r"
+            end
 
             if #status > 0 or showUnchanged then
                 pair(row.left, row.right, function(column, entry)
@@ -338,10 +384,19 @@ end
 -- build errors (the error is rethrown afterward).
 function addon:RenderRotationComparison(parent, view, spec, showUnchanged)
     local paused = type(parent.PauseLayout) == 'function' and type(parent.ResumeLayout) == 'function'
-    if paused then parent:PauseLayout() end
+
+    if paused then
+        parent:PauseLayout()
+    end
+
     local ok, why = pcall(renderComparison, self, parent, view, spec, showUnchanged)
-    if paused then parent:ResumeLayout() end
-    if not ok then error(why, 0) end
+
+    if paused then
+        parent:ResumeLayout()
+    end
+    if not ok then
+        error(why, 0)
+    end
 end
 
 -- ============================================================================
@@ -366,9 +421,17 @@ end
 -- window closes itself when the profile, owner or any rotation token it was built on goes stale (see valid()).
 function addon:ShowRotationComparison(spec, id)
     local reference, reason = self:ResolveRotationReference(spec, id)
-    if not reference then return nil, reason end
+
+    if not reference then
+        return nil, reason
+    end
+
     local record, recordToken = self:GetRotationRecordSnapshot(spec, reference)
-    if not record then return nil, recordToken end
+
+    if not record then
+        return nil, recordToken
+    end
+
     local coordinator = self:GetScopedRotationCoordinator()
     local context = self:GetRotationOwnerContext()
     local targetToken
@@ -407,15 +470,23 @@ function addon:ShowRotationComparison(spec, id)
             self.scroll:ReleaseConditionContent()
 
             for _, widget in ipairs(self.children) do
-                if widget ~= self.graph then addon:ReleaseConditionWidget(widget) end
+                if widget ~= self.graph then
+                    addon:ReleaseConditionWidget(widget)
+                end
             end
 
             self.children = {}
             self.graph = nil
         end
 
-        addon:SetUIScript(d.close, 'OnClick', function() d:Hide() end)
-        addon:SetUIScript(d.frame, 'OnHide', function() d:Clear() end)
+        addon:SetUIScript(d.close, 'OnClick', function()
+            d:Hide()
+        end)
+
+        addon:SetUIScript(d.frame, 'OnHide', function()
+            d:Clear()
+        end)
+
         d.frame:Hide()
     end
 
@@ -474,7 +545,10 @@ function addon:ShowRotationComparison(spec, id)
     end
 
     table.sort(rows, function(a, b)
-        if a.name == b.name then return a.key < b.key end
+        if a.name == b.name then
+            return a.key < b.key
+        end
+
         return a.name < b.name
     end)
 
@@ -491,7 +565,6 @@ function addon:ShowRotationComparison(spec, id)
                     .. ' · '
                     .. (row.scope == 'character' and L['This character'] or L['Class'])
             end
-
             if
                 row.kind == 'builtin'
                 and sourced
@@ -530,7 +603,10 @@ function addon:ShowRotationComparison(spec, id)
 
     -- Draws view number `index` of the current comparison result.
     local function show(index)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local view = result and result.views and result.views[index]
 
         if view then
@@ -545,9 +621,16 @@ function addon:ShowRotationComparison(spec, id)
 
     -- Compares against target number `index`: builds the result and report text and repopulates the view selector.
     local function refresh(index)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local target = targets[index]
-        if not target then return end
+
+        if not target then
+            return
+        end
+
         local snapshot, token = addon:GetRotationRecordSnapshot(spec, target)
 
         if not snapshot then
@@ -583,11 +666,19 @@ function addon:ShowRotationComparison(spec, id)
     end
 
     copy:SetCallback('OnClick', function()
-        if valid() then return addon:ShowComparisonReport(report) end
+        if valid() then
+            return addon:ShowComparisonReport(report)
+        end
     end)
 
-    direction:SetCallback('OnValueChanged', function(_, _, index) show(index) end)
-    chooser:SetCallback('OnValueChanged', function(_, _, index) refresh(index) end)
+    direction:SetCallback('OnValueChanged', function(_, _, index)
+        show(index)
+    end)
+
+    chooser:SetCallback('OnValueChanged', function(_, _, index)
+        refresh(index)
+    end)
+
     d.frame:Show()
     self:OpenPopup(d)
 
@@ -601,7 +692,9 @@ function addon:ShowRotationComparison(spec, id)
     end
 
     addon:SetUIScript(d.frame, 'OnUpdate', function()
-        if d.active and d.serial == serial and not valid() then d:Hide() end
+        if d.active and d.serial == serial and not valid() then
+            d:Hide()
+        end
     end)
 
     return d

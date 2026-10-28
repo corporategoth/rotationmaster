@@ -35,12 +35,18 @@ local platformFields = {
 local function readable(value)
     if type(issecretvalue) == "function" then
         local ok, secret = pcall(issecretvalue, value)
-        if not ok or secret then return false end
+
+        if not ok or secret then
+            return false
+        end
     end
 
     if type(canaccessvalue) == "function" then
         local ok, allowed = pcall(canaccessvalue, value)
-        if not ok or not allowed then return false end
+
+        if not ok or not allowed then
+            return false
+        end
     end
 
     return true
@@ -49,18 +55,34 @@ end
 -- Returns value as a string (truncated to limit, default 256) when it is a readable string, boolean or number;
 -- nil for anything else. Reports hold scalars only, never live references.
 local function scalar(value, limit)
-    if not readable(value) then return nil end
+    if not readable(value) then
+        return nil
+    end
+
     local kind = type(value)
-    if kind == "string" then return value:sub(1, limit or 256) end
-    if kind == "boolean" then return value and "true" or "false" end
-    if kind == "number" then return tostring(value) end
+
+    if kind == "string" then
+        return value:sub(1, limit or 256)
+    end
+    if kind == "boolean" then
+        return value and "true" or "false"
+    end
+    if kind == "number" then
+        return tostring(value)
+    end
 end
 
 -- Calls fn under pcall and returns its first result as a scalar string, or nil.
 local function probe(fn, ...)
-    if type(fn) ~= "function" then return nil end
+    if type(fn) ~= "function" then
+        return nil
+    end
+
     local ok, value = pcall(fn, ...)
-    if ok then return scalar(value) end
+
+    if ok then
+        return scalar(value)
+    end
 end
 
 -- Copies the whitelisted fields of an operation context into a table of scalars. A rotation id that is an issued
@@ -118,7 +140,10 @@ local function identifiers()
     -- Adds one name to the list when it is a readable string of at least two characters.
     local function add(value)
         value = scalar(value)
-        if value and #value >= 2 then names[#names + 1] = value end
+
+        if value and #value >= 2 then
+            names[#names + 1] = value
+        end
     end
 
     add(probe(GetRealmName))
@@ -191,7 +216,10 @@ local function recordError(context, message, stack)
         or redact(errorText, names)
 
     local safeStack = stack:gsub("[^\n]+", function(line)
-        if line:find('[string', 1, true) then return "<custom Lua stack frame omitted>" end
+        if line:find('[string', 1, true) then
+            return "<custom Lua stack frame omitted>"
+        end
+
         return redact(line, names)
     end)
 
@@ -204,7 +232,10 @@ local function recordError(context, message, stack)
 
     if type(GetBuildInfo) == "function" then
         local ok, v, b, _, i = pcall(GetBuildInfo)
-        if ok then version, build, interface = scalar(v), scalar(b), scalar(i) end
+
+        if ok then
+            version, build, interface = scalar(v), scalar(b), scalar(i)
+        end
     end
 
     local record = {
@@ -263,8 +294,10 @@ do
         then
             return
         end
+        if event ~= 'ADDON_ACTION_BLOCKED' and event ~= 'ADDON_ACTION_FORBIDDEN' then
+            return
+        end
 
-        if event ~= 'ADDON_ACTION_BLOCKED' and event ~= 'ADDON_ACTION_FORBIDDEN' then return end
         handling = true
 
         pcall(function()
@@ -277,7 +310,10 @@ do
 
             if type(debugstack) == 'function' then
                 local traced, value = pcall(function() return debugstack(2, 30, 20) end)
-                if traced then stack = scalar(value, 8192) or stack end
+
+                if traced then
+                    stack = scalar(value, 8192) or stack
+                end
             end
 
             recordError(
@@ -291,17 +327,28 @@ do
     end
 
     local ok = pcall(function()
-        if type(CreateFrame) ~= 'function' then return end
+        if type(CreateFrame) ~= 'function' then
+            return
+        end
+
         frame = CreateFrame('Frame')
-        if not frame or type(frame.RegisterEvent) ~= 'function' or type(frame.SetScript) ~= 'function' then return end
+
+        if not frame or type(frame.RegisterEvent) ~= 'function' or type(frame.SetScript) ~= 'function' then
+            return
+        end
+
         frame:SetScript('OnEvent', observe)
         frame:RegisterEvent('ADDON_ACTION_BLOCKED')
         frame:RegisterEvent('ADDON_ACTION_FORBIDDEN')
     end)
 
     if not ok and frame then
-        if type(frame.UnregisterAllEvents) == 'function' then pcall(frame.UnregisterAllEvents, frame) end
-        if type(frame.SetScript) == 'function' then pcall(frame.SetScript, frame, 'OnEvent', nil) end
+        if type(frame.UnregisterAllEvents) == 'function' then
+            pcall(frame.UnregisterAllEvents, frame)
+        end
+        if type(frame.SetScript) == 'function' then
+            pcall(frame.SetScript, frame, 'OnEvent', nil)
+        end
     end
 end
 
@@ -309,20 +356,34 @@ end
 -- addon) are recorded; every error is still passed to the original handler. Returns true when a wrapper is installed.
 -- Cheap to call repeatedly: service:Call invokes it so that a handler installed later is wrapped too.
 function service:ObserveReportedErrors()
-    if type(seterrorhandler) ~= 'function' or type(geterrorhandler) ~= 'function' then return false end
+    if type(seterrorhandler) ~= 'function' or type(geterrorhandler) ~= 'function' then
+        return false
+    end
+
     local ok, handler = pcall(geterrorhandler)
-    if not ok or type(handler) ~= 'function' then return false end
-    if observerHandlers[handler] then return true end
+
+    if not ok or type(handler) ~= 'function' then
+        return false
+    end
+    if observerHandlers[handler] then
+        return true
+    end
 
     -- Records message when its stack passes through this addon's files (other than this one), or it is an AceLocale
     -- error for this addon; ignores errors raised while one is already being recorded or forwarded.
     local function observe(message)
-        if handling or forwarding > 0 or not readable(message) or type(message) ~= 'string' then return end
+        if handling or forwarding > 0 or not readable(message) or type(message) ~= 'string' then
+            return
+        end
+
         local stack = ''
 
         if type(debugstack) == 'function' then
             local traced, value = pcall(function() return debugstack(2, 30, 20) end)
-            if traced then stack = scalar(value, 8192) or '' end
+
+            if traced then
+                stack = scalar(value, 8192) or ''
+            end
         end
 
         local owned = message:find('AceLocale-3.0: ' .. addon_name .. ':', 1, true)
@@ -335,7 +396,10 @@ function service:ObserveReportedErrors()
             end
         end
 
-        if not owned then return end
+        if not owned then
+            return
+        end
+
         handling = true
         pcall(recordError, activeContext or { module = 'ui', operation = 'reported-error' }, message, stack)
         handling = false
@@ -349,7 +413,11 @@ function service:ObserveReportedErrors()
         -- Restores the forwarding count and rethrows if the original handler itself errored.
         local function finish(success, ...)
             forwarding = forwarding - 1
-            if not success then error((...), 0) end
+
+            if not success then
+                error((...), 0)
+            end
+
             return ...
         end
 
@@ -369,24 +437,35 @@ end
 -- Records the failure and passes it to the game's error handler. Returns the report id, or 0 when it could not be
 -- recorded (including a failure raised while another is being recorded).
 local function callFailed(message)
-    if handling then return 0 end
+    if handling then
+        return 0
+    end
+
     handling = true
     -- Capture the stack in the error handler, before xpcall unwinds it.
     local stack
 
     if type(debugstack) == "function" then
         local ok, value = pcall(debugstack, 2, 30, 20)
-        if ok then stack = value end
+
+        if ok then
+            stack = value
+        end
     end
 
     local ok, id = pcall(recordError, activeContext, message, stack)
 
     -- Resolve at the error point: a collector may load after RM.
     local handlerOk, handler = pcall(function()
-        if type(geterrorhandler) == "function" then return geterrorhandler() end
+        if type(geterrorhandler) == "function" then
+            return geterrorhandler()
+        end
     end)
 
-    if handlerOk and type(handler) == "function" then pcall(handler, message) end
+    if handlerOk and type(handler) == "function" then
+        pcall(handler, message)
+    end
+
     handling = false
     return ok and id or 0
 end
@@ -408,7 +487,11 @@ function service:Call(context, callback, ...)
     self:ObserveReportedErrors()
     local previous = activeContext
     activeContext = context
-    if xpcallForwards then return restore(previous, xpcall(callback, callFailed, ...)) end
+
+    if xpcallForwards then
+        return restore(previous, xpcall(callback, callFailed, ...))
+    end
+
     local args = { n = select("#", ...), ... }
     return restore(previous, xpcall(function() return callback(unpack(args, 1, args.n)) end, callFailed))
 end
@@ -445,7 +528,10 @@ function service:FormatReport(id, includeOriginal)
 
             for _, key in ipairs(platformFields) do
                 local value = record["platform_" .. key]
-                if value then parts[#parts + 1] = "Platform " .. key .. ": " .. value end
+
+                if value then
+                    parts[#parts + 1] = "Platform " .. key .. ": " .. value
+                end
             end
 
             parts[#parts + 1] = "First/last session time: " .. record.first .. " / " .. record.last
@@ -453,7 +539,9 @@ function service:FormatReport(id, includeOriginal)
             parts[#parts + 1] = includeOriginal == true and record.rawStack or record.stack
 
             for _, key in ipairs(fields) do
-                if record.context[key] then parts[#parts + 1] = key .. ": " .. record.context[key] end
+                if record.context[key] then
+                    parts[#parts + 1] = key .. ": " .. record.context[key]
+                end
             end
 
             parts[#parts + 1] = ""
@@ -475,11 +563,16 @@ function service:Wrap(context, callback)
     local failed = false
 
     return function(...)
-        if failed then return end
+        if failed then
+            return
+        end
 
         -- Passes the callback's results through, or retires the wrapper when it failed.
         local function result(ok, ...)
-            if ok then return ... end
+            if ok then
+                return ...
+            end
+
             failed = true
         end
 

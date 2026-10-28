@@ -17,7 +17,9 @@ function addon:InstallRotationNavigation(pane)
     -- A new rotation nobody has typed into. Its identifier is filled in from
     -- its name on its own, which is not an edit.
     function pane:IsUntouchedNew()
-        if not self:IsNewRotation() or self.workspace:IsDirty() then return false end
+        if not self:IsNewRotation() or self.workspace:IsDirty() then
+            return false
+        end
 
         return not (self.nameDirty
             or self.descriptionDirty
@@ -47,7 +49,10 @@ function addon:InstallRotationNavigation(pane)
     -- Throws away a new, never saved rotation: it leaves the list, and the
     -- editor moves on to the fallback. No confirmation: nothing was saved.
     function pane:DiscardNew()
-        if not self.active or not self:IsNewRotation() then return nil, 'not-a-new-rotation' end
+        if not self.active or not self:IsNewRotation() then
+            return nil, 'not-a-new-rotation'
+        end
+
         local ok, why = addon:DiscardPendingRotation(self.workspace)
 
         if not ok then
@@ -55,7 +60,10 @@ function addon:InstallRotationNavigation(pane)
             return nil, why
         end
 
-        if self.metadataWindow then self.metadataWindow:Close(true) end
+        if self.metadataWindow then
+            self.metadataWindow:Close(true)
+        end
+
         self:ResetDirtyFields()
         self:AfterDelete()
         return true
@@ -65,9 +73,15 @@ function addon:InstallRotationNavigation(pane)
     -- discarded). Built In, read-only and fallback rotations are refused. The prompt frame is created once and reused.
     function pane:ConfirmDelete()
         local workspace = self.workspace
-        if not self.active or workspace.readOnly or workspace.fallback then return end
+
+        if not self.active or workspace.readOnly or workspace.fallback then
+            return
+        end
+
         -- A new rotation was never saved: there is nothing to confirm.
-        if workspace.pending then return self:DiscardNew() end
+        if workspace.pending then
+            return self:DiscardNew()
+        end
 
         if not self.deletePrompt then
             local frame = CreateFrame('Frame', nil, self.frame)
@@ -118,11 +132,16 @@ function addon:InstallRotationNavigation(pane)
         end
 
         addon:SetUIScript(prompt.cancel, 'OnClick', function()
-            if valid() then prompt.frame:Hide() end
+            if valid() then
+                prompt.frame:Hide()
+            end
         end)
 
         addon:SetUIScript(prompt.confirm, 'OnClick', function()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             local ok, why = addon:DeleteCustomRotation(workspace.spec, reference or workspace.id, expected)
 
             if not ok then
@@ -144,10 +163,15 @@ function addon:InstallRotationNavigation(pane)
     -- after the draft is applied or discarded. Returns nil and a reason when the pane is released or callback is not a
     -- function.
     function pane:RequestLeave(callback)
-        if not self.active or type(callback) ~= 'function' then return nil, 'rotation-pane-released' end
+        if not self.active or type(callback) ~= 'function' then
+            return nil, 'rotation-pane-released'
+        end
 
         if self.metadataWindow and self.metadataWindow.frame:IsShown() then
-            if not self:FlushName() then return false, 'invalid-metadata' end
+            if not self:FlushName() then
+                return false, 'invalid-metadata'
+            end
+
             self.metadataWindow:Close(true)
         end
 
@@ -184,7 +208,10 @@ function addon:InstallRotationNavigation(pane)
                 self.leavePrompt[entry[1]] = control
             end
 
-            addon:SetUIScript(frame, 'OnHide', function() pane.pendingLeave = nil end)
+            addon:SetUIScript(frame, 'OnHide', function()
+                pane.pendingLeave = nil
+            end)
+
             frame:Hide()
         end
 
@@ -209,7 +236,10 @@ function addon:InstallRotationNavigation(pane)
         end
 
         addon:SetUIScript(prompt.apply, 'OnClick', function()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             local ok, why = pane:Apply()
 
             if not ok then
@@ -227,7 +257,10 @@ function addon:InstallRotationNavigation(pane)
         end)
 
         addon:SetUIScript(prompt.discard, 'OnClick', function()
-            if not valid() then return end
+            if not valid() then
+                return
+            end
+
             -- Discarding a new rotation that was never saved removes it from the list.
             local ok, why
 
@@ -248,7 +281,9 @@ function addon:InstallRotationNavigation(pane)
         end)
 
         addon:SetUIScript(prompt.cancel, 'OnClick', function()
-            if valid() then prompt.frame:Hide() end
+            if valid() then
+                prompt.frame:Hide()
+            end
         end)
 
         prompt.message:SetText(L['Apply this draft, discard its changes, or keep editing.'])

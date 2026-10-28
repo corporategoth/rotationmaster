@@ -46,7 +46,11 @@ end
 -- Sort order for ids that share a name: higher rank first, then the higher id.
 local function preferred(left, right)
     local a, b = rankNumber(entries[left]), rankNumber(entries[right])
-    if a ~= b then return a > b end
+
+    if a ~= b then
+        return a > b
+    end
+
     return left > right
 end
 
@@ -57,9 +61,16 @@ end
 -- Reads the spell's metadata from the platform into the index and returns true, or nil and a reason when the id is
 -- invalid or unknown. Replaces the entry and re-files it when the name changed. Safe to call repeatedly.
 function catalog:UpdateSpell(id)
-    if type(id) ~= "number" or id < 1 or id == math.huge or id % 1 ~= 0 then return nil end
+    if type(id) ~= "number" or id < 1 or id == math.huge or id % 1 ~= 0 then
+        return nil
+    end
+
     local info, reason = addon.Platform:GetSpellInfo(id)
-    if not info then return nil, reason end
+
+    if not info then
+        return nil, reason
+    end
+
     local old = entries[id]
 
     if old and old.name ~= info.name then
@@ -84,7 +95,11 @@ function catalog:UpdateSpell(id)
     entries[id] = entry
     local key = string.lower(entry.name)
     byName[key] = byName[key] or {}
-    if not byName[key][id] then invalidateGroup(key) end
+
+    if not byName[key][id] then
+        invalidateGroup(key)
+    end
+
     byName[key][id] = true
     memberNames[id] = memberNames[id] or {}
     memberNames[id][key] = true
@@ -97,17 +112,29 @@ function catalog:GetAllSpellIds(spell)
     local name
 
     if type(spell) == "number" then
-        if not entries[spell] then self:UpdateSpell(spell) end
+        if not entries[spell] then
+            self:UpdateSpell(spell)
+        end
+
         name = entries[spell] and entries[spell].name
     elseif type(spell) == "string" then
         name = spell
     end
 
-    if not name then return nil end
+    if not name then
+        return nil
+    end
+
     local key = string.lower(name)
     local group = byName[key]
-    if not group then return nil end
-    if ordered[key] then return copyIDs(ordered[key]) end
+
+    if not group then
+        return nil
+    end
+    if ordered[key] then
+        return copyIDs(ordered[key])
+    end
+
     local version = groupVersion[key]
     local result = {}
 
@@ -116,9 +143,13 @@ function catalog:GetAllSpellIds(spell)
     end
 
     table.sort(result, preferred)
+
     -- Never publish a stale sort, or expose its private storage to the caller
     -- (or a source-owned sorting hook used during this cold construction).
-    if groupVersion[key] == version then ordered[key] = copyIDs(result) end
+    if groupVersion[key] == version then
+        ordered[key] = copyIDs(result)
+    end
+
     return result
 end
 
@@ -145,7 +176,11 @@ function catalog:GetSpellId(spell, rank)
 
         if info and type(info.spellID) == "number" then
             local indexed, problem = self:UpdateSpell(info.spellID)
-            if indexed then return info.spellID end
+
+            if indexed then
+                return info.spellID
+            end
+
             return nil, problem or "spell-data-unavailable"
         elseif why == "restricted-value" or why == "api-error" then
             return nil, why
@@ -154,14 +189,19 @@ function catalog:GetSpellId(spell, rank)
 
     if ids then
         for _, id in ipairs(ids) do
-            if rank == nil or entries[id].rank == rank then return id end
+            if rank == nil or entries[id].rank == rank then
+                return id
+            end
         end
     end
 end
 
 -- Returns the spell's display name, with its rank appended in gray unless norank is set; nil when unknown.
 function catalog:SpellName(id, norank)
-    if not entries[id] then self:UpdateSpell(id) end
+    if not entries[id] then
+        self:UpdateSpell(id)
+    end
+
     local entry = entries[id]
 
     if entry then
@@ -175,19 +215,28 @@ end
 
 -- Returns the spell link, from the index when present, else straight from the platform.
 function catalog:SpellLink(id)
-    if not entries[id] then self:UpdateSpell(id) end
+    if not entries[id] then
+        self:UpdateSpell(id)
+    end
+
     return entries[id] and entries[id].link or addon.Platform:GetSpellLink(id)
 end
 
 -- Returns the rank text of an indexed spell, or nil.
 function catalog:SpellRank(id)
-    if not entries[id] then self:UpdateSpell(id) end
+    if not entries[id] then
+        self:UpdateSpell(id)
+    end
+
     return entries[id] and entries[id].rank
 end
 
 -- Returns the numeric rank of an indexed spell, or 0.
 function catalog:SpellRankNum(id)
-    if not entries[id] then self:UpdateSpell(id) end
+    if not entries[id] then
+        self:UpdateSpell(id)
+    end
+
     return entries[id] and rankNumber(entries[id]) or 0
 end
 
@@ -211,12 +260,26 @@ local function sharedSpecs(self)
     end
 
     local family = platform:GetClientFamily()
-    if family ~= "retail" and family ~= "forever" then return nil end
-    if type(UnitClass) ~= "function" then return nil end
+
+    if family ~= "retail" and family ~= "forever" then
+        return nil
+    end
+    if type(UnitClass) ~= "function" then
+        return nil
+    end
+
     local ok, _, _, classID = pcall(UnitClass, "player")
-    if not ok or not platform:CanReadValue(classID) then return nil end
+
+    if not ok or not platform:CanReadValue(classID) then
+        return nil
+    end
+
     local choices = platform:GetRotationSpecializations(classID)
-    if type(choices) ~= "table" then return nil end
+
+    if type(choices) ~= "table" then
+        return nil
+    end
+
     local list, set = {}, {}
 
     for _, choice in ipairs(choices) do
@@ -228,7 +291,10 @@ local function sharedSpecs(self)
         end
     end
 
-    if #list == 0 then return nil end
+    if #list == 0 then
+        return nil
+    end
+
     return { list = list, set = set }
 end
 
@@ -256,7 +322,10 @@ function addon:RefreshSpellCatalog()
 
         if name then
             local previous = reverse[spec][name]
-            if not previous or preferred(id, previous) then reverse[spec][name] = id end
+
+            if not previous or preferred(id, previous) then
+                reverse[spec][name] = id
+            end
         end
     end
 
@@ -287,13 +356,17 @@ function addon:RefreshSpellCatalog()
                     elseif entry.offSpecID then
                         attribute(entry.offSpecID, entry)
                     elseif not entry.isOffSpec then
-                        if self.currentSpec ~= nil then attribute(self.currentSpec, entry) end
+                        if self.currentSpec ~= nil then
+                            attribute(self.currentSpec, entry)
+                        end
 
                         if
                             shared and (entry.shared or entry.lineSpecID ~= nil and not shared.set[entry.lineSpecID])
                         then
                             for _, spec in ipairs(shared.list) do
-                                if spec ~= self.currentSpec then attribute(spec, entry) end
+                                if spec ~= self.currentSpec then
+                                    attribute(spec, entry)
+                                end
                             end
                         end
                     end
@@ -351,7 +424,10 @@ do
 
         repeat
             key = nextKey(map, key)
-            if key ~= nil then n = n + 1 end
+
+            if key ~= nil then
+                n = n + 1
+            end
         until key == nil or n > 4096
 
         return { n = n > 4096 and 4096 or n, capped = n > 4096 }

@@ -19,11 +19,15 @@ local contextSeeds = {
 
 -- Appends each context seed's tags to its category once, guarded by profile.contextConditionsSeeded.
 local function seedContextConditions(profile)
-    if profile.contextConditionsSeeded then return end
+    if profile.contextConditionsSeeded then
+        return
+    end
 
     -- Adds each tag to `list` unless it is already there.
     local function append(list, tags)
-        if type(list) ~= 'table' then return end
+        if type(list) ~= 'table' then
+            return
+        end
 
         for _, tag in ipairs(tags) do
             local found = false
@@ -35,13 +39,17 @@ local function seedContextConditions(profile)
                 end
             end
 
-            if not found then list[#list + 1] = tag end
+            if not found then
+                list[#list + 1] = tag
+            end
         end
     end
 
     for _, category in ipairs(type(profile.condition_groups) == 'table' and profile.condition_groups or {}) do
         for _, seed in ipairs(contextSeeds) do
-            if category.id == seed.category then append(category.conditions, seed.tags) end
+            if category.id == seed.category then
+                append(category.conditions, seed.tags)
+            end
         end
     end
 
@@ -51,7 +59,9 @@ end
 -- Assisted Combat joins the Spells category once per profile, under its own
 -- flag, so profiles seeded with the context conditions receive it too.
 local function seedAssistedConditions(profile)
-    if profile.assistedConditionsSeeded then return end
+    if profile.assistedConditionsSeeded then
+        return
+    end
 
     for _, category in ipairs(type(profile.condition_groups) == 'table' and profile.condition_groups or {}) do
         if category.id == '8034819e-26f5-4f4e-9153-d8cab5e65f31' and type(category.conditions) == 'table' then
@@ -64,7 +74,9 @@ local function seedAssistedConditions(profile)
                 end
             end
 
-            if not found then category.conditions[#category.conditions + 1] = 'ASSISTED_SUGGESTION' end
+            if not found then
+                category.conditions[#category.conditions + 1] = 'ASSISTED_SUGGESTION'
+            end
         end
     end
 
@@ -74,7 +86,9 @@ end
 -- The Assisted Combat rotation-set and availability conditions follow under
 -- their own flag, since profiles already carry assistedConditionsSeeded.
 local function seedAssistedSignalConditions(profile)
-    if profile.assistedSignalConditionsSeeded then return end
+    if profile.assistedSignalConditionsSeeded then
+        return
+    end
 
     for _, category in ipairs(type(profile.condition_groups) == 'table' and profile.condition_groups or {}) do
         if category.id == '8034819e-26f5-4f4e-9153-d8cab5e65f31' and type(category.conditions) == 'table' then
@@ -88,7 +102,9 @@ local function seedAssistedSignalConditions(profile)
                     end
                 end
 
-                if not found then category.conditions[#category.conditions + 1] = tag end
+                if not found then
+                    category.conditions[#category.conditions + 1] = tag
+                end
             end
         end
     end
@@ -99,14 +115,20 @@ end
 -- Season of Discovery rune engraving joins the Character category and the
 -- Switch picker once per profile, under its own flag.
 local function seedEngravingConditions(profile)
-    if profile.engravingConditionsSeeded then return end
+    if profile.engravingConditionsSeeded then
+        return
+    end
 
     -- Adds RUNE_ENGRAVED to `list` unless it is already there.
     local function append(list)
-        if type(list) ~= 'table' then return end
+        if type(list) ~= 'table' then
+            return
+        end
 
         for _, existing in ipairs(list) do
-            if existing == 'RUNE_ENGRAVED' then return end
+            if existing == 'RUNE_ENGRAVED' then
+                return
+            end
         end
 
         list[#list + 1] = 'RUNE_ENGRAVED'
@@ -115,7 +137,9 @@ local function seedEngravingConditions(profile)
     append(profile.switch_conditions)
 
     for _, category in ipairs(type(profile.condition_groups) == 'table' and profile.condition_groups or {}) do
-        if category.id == 'b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions) end
+        if category.id == 'b8136123-2bda-4230-a77a-89ea2aed3a1a' then
+            append(category.conditions)
+        end
     end
 
     profile.engravingConditionsSeeded = true
@@ -129,7 +153,10 @@ function addon:InitializeUnitStateConditions(_, db)
     seedAssistedConditions(profile)
     seedAssistedSignalConditions(profile)
     seedEngravingConditions(profile)
-    if profile.unitStateSwitchSeeded then return end
+
+    if profile.unitStateSwitchSeeded then
+        return
+    end
 
     -- Adds DEAD and FRIENDLY to `list` unless they are already there.
     local function append(list)
@@ -143,14 +170,18 @@ function addon:InitializeUnitStateConditions(_, db)
                 end
             end
 
-            if not found then list[#list + 1] = tag end
+            if not found then
+                list[#list + 1] = tag
+            end
         end
     end
 
     append(profile.switch_conditions)
 
     for _, category in ipairs(profile.condition_groups) do
-        if category.id == 'b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions) end
+        if category.id == 'b8136123-2bda-4230-a77a-89ea2aed3a1a' then
+            append(category.conditions)
+        end
     end
 
     profile.unitStateSwitchSeeded = true

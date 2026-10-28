@@ -20,15 +20,24 @@ local packagedCategoryIcons = addon.Artwork.category
 -- of its first condition that has one, else the DEFAULT icon. A nil `group` yields the DEFAULT icon.
 function addon:GetConditionCategoryIcon(group)
     if type(group) == 'table' then
-        if self:IsCategoryIcon(group.icon) then return group.icon end
+        if self:IsCategoryIcon(group.icon) then
+            return group.icon
+        end
+
         -- Stable identity survives renames/reordering without inheriting an
         -- indexed AceDB default or changing a saved explicit icon choice.
         local packaged = packagedCategoryIcons[group.id]
-        if packaged then return packaged end
+
+        if packaged then
+            return packaged
+        end
 
         for _, tag in ipairs(group.conditions or {}) do
             local definition = (self.conditionDefinitions or {})[tag]
-            if definition and definition.icon then return definition.icon end
+
+            if definition and definition.icon then
+                return definition.icon
+            end
         end
     end
 
@@ -39,7 +48,10 @@ end
 -- removed, or returns nil and a localized reason. Every tag must name a registered condition or special; the envelope's
 -- `codec` is supplied by the caller.
 function addon:ParseConditionCategoryImport(text, codec)
-    if type(text) ~= 'string' or #text > 131072 then return nil, L['Invalid import.'] end
+    if type(text) ~= 'string' or #text > 131072 then
+        return nil, L['Invalid import.']
+    end
+
     local decoded = codec and codec:Decode(text)
     local value = decoded and decoded.value
     local result = { conditions = {} }
@@ -69,12 +81,18 @@ function addon:ParseConditionCategoryImport(text, codec)
             count = count + 1
         end
 
-        if count ~= #value.conditions or count > 2000 then return nil, L['Invalid import.'] end
+        if count ~= #value.conditions or count > 2000 then
+            return nil, L['Invalid import.']
+        end
+
         result.conditions = value.conditions
     else
         for tag in text:gmatch('[^,%s]+') do
             result.conditions[#result.conditions + 1] = tag
-            if #result.conditions > 2000 then return nil, L['Invalid import.'] end
+
+            if #result.conditions > 2000 then
+                return nil, L['Invalid import.']
+            end
         end
     end
 

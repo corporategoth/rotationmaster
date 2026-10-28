@@ -28,12 +28,20 @@ local function equivalentStepDefault(path, row, stepIndex)
     end
 
     local key = path[stepIndex + 1].key
-    if key ~= "use_name" and key ~= "ranked" and key ~= "disabled" then return false end
+
+    if key ~= "use_name" and key ~= "ranked" and key ~= "disabled" then
+        return false
+    end
 
     -- Resolves the flag on one step, applying the implied default when the field is absent.
     local function flag(step)
-        if step[key] ~= nil then return step[key] end
-        if key == "use_name" then return type(step.name) == "string" and #step.name > 0 end
+        if step[key] ~= nil then
+            return step[key]
+        end
+        if key == "use_name" then
+            return type(step.name) == "string" and #step.name > 0
+        end
+
         return false
     end
 
@@ -110,13 +118,19 @@ function data.BuildVisualComparison(view)
     -- Each snapshot already has its own portable-data budget. Re-counting the
     -- duplicated before/after values in a diff rejects valid large rotations.
     for _, key in ipairs({ "left", "right", "leftOrigins", "rightOrigins" }) do
-        if not data.CheckPortable(view[key]) then return nil, "invalid-comparison" end
+        if not data.CheckPortable(view[key]) then
+            return nil, "invalid-comparison"
+        end
     end
 
-    if type(view.diff.changes) ~= "table" or #view.diff.changes > 500 then return nil, "invalid-comparison" end
+    if type(view.diff.changes) ~= "table" or #view.diff.changes > 500 then
+        return nil, "invalid-comparison"
+    end
 
     for _, change in ipairs(view.diff.changes) do
-        if type(change) ~= "table" or not data.CheckPortable(change) then return nil, "invalid-comparison" end
+        if type(change) ~= "table" or not data.CheckPortable(change) then
+            return nil, "invalid-comparison"
+        end
     end
 
     local model = { groups = {}, complete = view.diff.complete == true, additionalChanges = 0, displayChangeCount = 0 }
@@ -143,7 +157,10 @@ function data.BuildVisualComparison(view)
             local body = side == "left" and a or b
             local origins = view[side .. "Origins"] or {}
             local tree = data.IndexRotationSteps(body)
-            if not tree then return nil, "invalid-comparison" end
+
+            if not tree then
+                return nil, "invalid-comparison"
+            end
 
             for _, entry in ipairs(tree.rows) do
                 if entry.section == kind then
@@ -222,7 +239,9 @@ function data.BuildVisualComparison(view)
             local stepIndex = 3
 
             for i = 4, #path do
-                if path[i].kind == "step" then stepIndex = i end
+                if path[i].kind == "step" then
+                    stepIndex = i
+                end
             end
 
             local row = indexes[kind][locationKey(path, stepIndex)]

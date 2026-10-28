@@ -74,11 +74,17 @@ local scalar = {
 
 -- True when value is a gap-free array (keys 1..n only) and every element passes validate.
 local function dense(value, validate)
-    if type(value) ~= 'table' then return false end
+    if type(value) ~= 'table' then
+        return false
+    end
+
     local n = 0
 
     for key, item in pairs(value) do
-        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 or key > #value or not validate(item) then return false end
+        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 or key > #value or not validate(item) then
+            return false
+        end
+
         n = n + 1
     end
 
@@ -88,10 +94,14 @@ end
 -- True when value is a table and every one of its keys exists in schema with a value of the named type; extra keys
 -- fail.
 local function fields(value, schema)
-    if type(value) ~= 'table' then return false end
+    if type(value) ~= 'table' then
+        return false
+    end
 
     for key, item in pairs(value) do
-        if type(item) ~= schema[key] then return false end
+        if type(item) ~= schema[key] then
+            return false
+        end
     end
 
     return true
@@ -101,21 +111,36 @@ end
 -- decimal string). Returns nil for anything that is not exactly such a number or string.
 local function specKey(key, encode)
     local number = type(key) == 'string' and not encode and key:match('^%d+$') and tonumber(key) or key
-    if type(number) ~= 'number' or number < 0 or number == math.huge or number % 1 ~= 0 then return nil end
+
+    if type(number) ~= 'number' or number < 0 or number == math.huge or number % 1 ~= 0 then
+        return nil
+    end
+
     local text = tostring(number)
-    if not text:match('^%d+$') or type(key) == 'string' and key ~= text then return nil end
+
+    if not text:match('^%d+$') or type(key) == 'string' and key ~= text then
+        return nil
+    end
+
     return encode and text or number
 end
 
 -- Returns a copy of a spec-keyed map with its keys converted by specKey, or nil when it has a metatable, a bad key or
 -- two keys that collapse to one.
 local function specMap(map, encode)
-    if type(map) ~= 'table' or getmetatable(map) then return nil end
+    if type(map) ~= 'table' or getmetatable(map) then
+        return nil
+    end
+
     local result = {}
 
     for key, value in pairs(map) do
         local converted = specKey(key, encode)
-        if converted == nil or result[converted] ~= nil then return nil end
+
+        if converted == nil or result[converted] ~= nil then
+            return nil
+        end
+
         result[converted] = value
     end
 
@@ -141,17 +166,25 @@ local function scopedStore(addon, state, encode)
     if not plain(state) or not plain(state.classes) or not plain(state.characters) or not plain(state.legacy) then
         return nil
     end
+    if encode and not addon.RotationData.ValidateRotationStore(state) then
+        return nil
+    end
 
-    if encode and not addon.RotationData.ValidateRotationStore(state) then return nil end
     local maps = {}
 
     for _, map in pairs(state.classes) do
-        if not plain(map) then return nil end
+        if not plain(map) then
+            return nil
+        end
+
         maps[map] = true
     end
 
     for _, bucket in pairs(state.characters) do
-        if not plain(bucket) or not plain(bucket.specs) then return nil end
+        if not plain(bucket) or not plain(bucket.specs) then
+            return nil
+        end
+
         maps[bucket.specs] = true
     end
 
@@ -159,7 +192,10 @@ local function scopedStore(addon, state, encode)
         local map = state.legacy[kind]
 
         if map ~= nil then
-            if not plain(map) then return nil end
+            if not plain(map) then
+                return nil
+            end
+
             maps[map] = true
         end
     end
@@ -170,20 +206,28 @@ local function scopedStore(addon, state, encode)
     -- Copies a store node, converting the keys of the spec maps and keeping shared tables shared, so aliasing stays
     -- visible to validation. Sets failed when the node is not plain data or a key cannot be converted.
     local function copy(value)
-        if type(value) ~= 'table' then return value end
+        if type(value) ~= 'table' then
+            return value
+        end
 
         if not plain(value) then
             failed = true
             return nil
         end
 
-        if seen[value] then return seen[value] end
+        if seen[value] then
+            return seen[value]
+        end
+
         local result = {}
         seen[value] = result
 
         for key, child in pairs(value) do
             local converted = key
-            if maps[value] then converted = specKey(key, encode) end
+
+            if maps[value] then
+                converted = specKey(key, encode)
+            end
 
             if converted == nil or result[converted] ~= nil then
                 failed = true
@@ -197,7 +241,11 @@ local function scopedStore(addon, state, encode)
     end
 
     local result = copy(state)
-    if failed or not encode and not addon.RotationData.ValidateRotationStore(result) then return nil end
+
+    if failed or not encode and not addon.RotationData.ValidateRotationStore(result) then
+        return nil
+    end
+
     return result
 end
 
@@ -209,7 +257,10 @@ end
 -- is inert data: copies, transfers and validation carry it unread as long as
 -- it is plain table data.
 local function validStockTargets(_, profile)
-    if type(profile) ~= 'table' then return true end
+    if type(profile) ~= 'table' then
+        return true
+    end
+
     local plan = rawget(profile, 'stockTargets')
     return plan == nil or type(plan) == 'table' and getmetatable(plan) == nil
 end
@@ -227,10 +278,18 @@ end
 -- known, each value has the right type and range, and nested rotations, the rotation store and the library are well
 -- formed. Nothing is changed. Returns false at the first problem, with no reason.
 function addon:ValidateProfileTransfer(value)
-    if type(value) ~= 'table' then return false end
-    if not validStockTargets(self, value) or not validRotationChoices(self, value) then return false end
+    if type(value) ~= 'table' then
+        return false
+    end
+    if not validStockTargets(self, value) or not validRotationChoices(self, value) then
+        return false
+    end
+
     local wire = self:ProfileToPortable(value)
-    if not wire or not self.RotationData.CheckPortable(wire) then return false end
+
+    if not wire or not self.RotationData.CheckPortable(wire) then
+        return false
+    end
 
     -- True for a string.
     local function stringValue(v)
@@ -239,9 +298,14 @@ function addon:ValidateProfileTransfer(value)
 
     for key, item in pairs(value) do
         if scalar[key] then
-            if type(item) ~= scalar[key] then return false end
+            if type(item) ~= scalar[key] then
+                return false
+            end
         elseif key == 'rotationTagColors' then
-            if type(item) ~= 'table' then return false end
+            if type(item) ~= 'table' then
+                return false
+            end
+
             local count = 0
 
             for tag, color in pairs(item) do
@@ -258,14 +322,21 @@ function addon:ValidateProfileTransfer(value)
 
                 for _, channel in ipairs({ 'r', 'g', 'b', 'a' }) do
                     local n = color[channel]
-                    if type(n) ~= 'number' or n ~= n or n < 0 or n > 1 then return false end
+
+                    if type(n) ~= 'number' or n ~= n or n < 0 or n > 1 then
+                        return false
+                    end
                 end
             end
         elseif key == 'color' then
-            if not fields(item, { r = 'number', g = 'number', b = 'number', a = 'number' }) then return false end
+            if not fields(item, { r = 'number', g = 'number', b = 'number', a = 'number' }) then
+                return false
+            end
 
             for _, v in pairs(item) do
-                if v < 0 or v > 1 then return false end
+                if v < 0 or v > 1 then
+                    return false
+                end
             end
         elseif key == 'preview_window' then
             if not fields(item, { point = 'string', relpoint = 'string', xoffs = 'number', yoffs = 'number' }) then
@@ -287,7 +358,9 @@ function addon:ValidateProfileTransfer(value)
             or key == 'disabled_conditions'
             or key == 'other_conditions_order'
         then
-            if not dense(item, stringValue) then return false end
+            if not dense(item, stringValue) then
+                return false
+            end
         elseif key == 'condition_groups' then
             if not dense(item, function(group)
                 return type(group) == 'table'
@@ -305,7 +378,10 @@ function addon:ValidateProfileTransfer(value)
             if
                 not self:AreMacroAnnouncementIdentifiersUnique(item)
                 or not dense(item, function(v)
-                    if not self:IsValidAnnouncement(v, true) or seen[v.id] then return false end
+                    if not self:IsValidAnnouncement(v, true) or seen[v.id] then
+                        return false
+                    end
+
                     seen[v.id] = true
                     return true
                 end)
@@ -313,7 +389,10 @@ function addon:ValidateProfileTransfer(value)
                 return false
             end
         elseif key == 'lua_editor_disabled' then
-            if type(item) ~= 'table' or getmetatable(item) ~= nil then return false end
+            if type(item) ~= 'table' or getmetatable(item) ~= nil then
+                return false
+            end
+
             local count = 0
 
             for name, disabled in pairs(item) do
@@ -333,7 +412,9 @@ function addon:ValidateProfileTransfer(value)
             end
         elseif key == 'builtinPreferenceRepairs' then
             -- One-time Built In preference repair, done per class token.
-            if type(item) ~= 'table' or getmetatable(item) ~= nil then return false end
+            if type(item) ~= 'table' or getmetatable(item) ~= nil then
+                return false
+            end
 
             for class, done in pairs(item) do
                 if type(class) ~= 'string' or not class:match('^%u+$') or #class > 32 or done ~= true then
@@ -345,7 +426,9 @@ function addon:ValidateProfileTransfer(value)
         elseif key == 'stockTargets' then
             -- Retired desired-stock data: plain tables only, carried unread.
         elseif key == 'itemsets' then
-            if type(item) ~= 'table' then return false end
+            if type(item) ~= 'table' then
+                return false
+            end
 
             for id, set in pairs(item) do
                 if
@@ -361,7 +444,9 @@ function addon:ValidateProfileTransfer(value)
                 end
             end
         elseif key == 'rotations' then
-            if type(item) ~= 'table' then return false end
+            if type(item) ~= 'table' then
+                return false
+            end
 
             for spec, rotations in pairs(item) do
                 if type(spec) ~= 'number' or spec < 0 or spec % 1 ~= 0 or type(rotations) ~= 'table' then
@@ -369,7 +454,9 @@ function addon:ValidateProfileTransfer(value)
                 end
 
                 for id, body in pairs(rotations) do
-                    if type(id) ~= 'string' then return false end
+                    if type(id) ~= 'string' then
+                        return false
+                    end
 
                     local check = self.RotationData.ValidateBody(body, {
                         conditions = self.conditionDefinitions,
@@ -377,13 +464,19 @@ function addon:ValidateProfileTransfer(value)
                         effects = self.db.global.effects,
                     })
 
-                    if not check.valid then return false end
+                    if not check.valid then
+                        return false
+                    end
                 end
             end
         elseif key == 'rotationStore' then
-            if not self.RotationData.ValidateRotationStore(item) then return false end
+            if not self.RotationData.ValidateRotationStore(item) then
+                return false
+            end
         elseif key == 'rotationLibrary' then
-            if type(item) ~= 'table' then return false end
+            if type(item) ~= 'table' then
+                return false
+            end
 
             -- Library preferences and clone provenance are portable data only;
             -- no global definitions, functions or executable imports are loaded.
@@ -413,15 +506,15 @@ function addon:ValidateProfileTransfer(value)
                         end
 
                         for id, record in pairs(records) do
-                            if type(id) ~= 'string' or type(record) ~= 'table' then return false end
-
+                            if type(id) ~= 'string' or type(record) ~= 'table' then
+                                return false
+                            end
                             if
                                 field == 'origins'
                                 and (type(record.manifest) ~= 'table' or type(record.lineage) ~= 'table')
                             then
                                 return false
                             end
-
                             if
                                 field == 'imports'
                                 and (type(record.manifest) ~= 'table'
@@ -430,7 +523,6 @@ function addon:ValidateProfileTransfer(value)
                             then
                                 return false
                             end
-
                             if
                                 field == 'comparisons'
                                 and (type(record.kind) ~= 'string'
@@ -448,8 +540,9 @@ function addon:ValidateProfileTransfer(value)
         end
     end
 
-    if value.version ~= nil and (value.version < 1 or value.version > 3 or value.version % 1 ~= 0) then return false end
-
+    if value.version ~= nil and (value.version < 1 or value.version > 3 or value.version % 1 ~= 0) then
+        return false
+    end
     if
         value.rotationFallbackID ~= nil
         and (#value.rotationFallbackID == 0
@@ -459,9 +552,9 @@ function addon:ValidateProfileTransfer(value)
     then
         return false
     end
-
-    if value.lua_editor ~= nil and (#value.lua_editor > 128 or not value.lua_editor:find('%S')) then return false end
-
+    if value.lua_editor ~= nil and (#value.lua_editor > 128 or not value.lua_editor:find('%S')) then
+        return false
+    end
     if
         value.encounter_provider ~= nil
         and value.encounter_provider ~= 'DBM-Core'
@@ -469,34 +562,39 @@ function addon:ValidateProfileTransfer(value)
     then
         return false
     end
-
     if value.rotation_view ~= nil and value.rotation_view ~= 'diagram' and value.rotation_view ~= 'list' then
         return false
     end
-
     if
         value.preview_spells ~= nil
         and (value.preview_spells < 0 or value.preview_spells > 5 or value.preview_spells % 1 ~= 0)
     then
         return false
     end
-
-    if value.preview_opacity ~= nil and (value.preview_opacity < 0 or value.preview_opacity > 1) then return false end
-
+    if value.preview_opacity ~= nil and (value.preview_opacity < 0 or value.preview_opacity > 1) then
+        return false
+    end
     if value.preview_icon_size ~= nil and (value.preview_icon_size < 24 or value.preview_icon_size > 160) then
         return false
     end
-
-    if value.poll ~= nil and (value.poll < .01 or value.poll > 5) then return false end
-
-    for _, key in ipairs({ 'idle_poll', 'autoswitch_poll' }) do
-        if value[key] ~= nil and (value[key] ~= value[key] or value[key] < 0 or value[key] > 60) then return false end
+    if value.poll ~= nil and (value.poll < .01 or value.poll > 5) then
+        return false
     end
 
-    if value.magnification ~= nil and (value.magnification < .1 or value.magnification > 10) then return false end
+    for _, key in ipairs({ 'idle_poll', 'autoswitch_poll' }) do
+        if value[key] ~= nil and (value[key] ~= value[key] or value[key] < 0 or value[key] > 60) then
+            return false
+        end
+    end
+
+    if value.magnification ~= nil and (value.magnification < .1 or value.magnification > 10) then
+        return false
+    end
 
     for _, key in ipairs({ 'live_config_update', 'spell_history', 'combat_history', 'damage_history' }) do
-        if value[key] ~= nil and value[key] < 0 then return false end
+        if value[key] ~= nil and value[key] < 0 then
+            return false
+        end
     end
 
     if
@@ -516,7 +614,10 @@ end
 -- intentionally accepts only positive numeric table keys, so profile wire maps
 -- use canonical decimal strings and restore numbers only in these namespaces.
 function addon:ProfileToPortable(profile)
-    if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then return nil end
+    if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then
+        return nil
+    end
+
     local copy = self:CopySettingsData(profile)
 
     -- Converts a spec map's keys to wire form, or returns nil.
@@ -527,21 +628,30 @@ function addon:ProfileToPortable(profile)
     if type(copy) == 'table' then
         if copy.rotations ~= nil then
             copy.rotations = encode(copy.rotations)
-            if not copy.rotations then return nil end
+
+            if not copy.rotations then
+                return nil
+            end
         end
 
         if type(copy.rotationLibrary) == 'table' then
             for _, key in ipairs({ 'origins', 'comparisons', 'imports' }) do
                 if copy.rotationLibrary[key] ~= nil then
                     copy.rotationLibrary[key] = encode(copy.rotationLibrary[key])
-                    if not copy.rotationLibrary[key] then return nil end
+
+                    if not copy.rotationLibrary[key] then
+                        return nil
+                    end
                 end
             end
         end
 
         if copy.rotationStore ~= nil then
             copy.rotationStore = scopedStore(self, profile.rotationStore, true)
-            if not copy.rotationStore then return nil end
+
+            if not copy.rotationStore then
+                return nil
+            end
         end
     end
 
@@ -552,7 +662,10 @@ end
 -- store is malformed. An empty rotation body from an older export gets its missing empty lists unless
 -- options.preserveLegacyBodies is set. The caller still validates the result with ValidateProfileTransfer.
 function addon:ProfileFromPortable(profile, options)
-    if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then return nil end
+    if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then
+        return nil
+    end
+
     local copy = self:CopySettingsData(profile)
 
     -- Converts a spec map's keys back to numbers, or returns nil.
@@ -560,16 +673,24 @@ function addon:ProfileFromPortable(profile, options)
         return specMap(map, false)
     end
 
-    if type(copy) ~= 'table' then return nil end
+    if type(copy) ~= 'table' then
+        return nil
+    end
 
     if copy.rotationStore ~= nil then
         copy.rotationStore = scopedStore(self, profile.rotationStore, false)
-        if not copy.rotationStore then return nil end
+
+        if not copy.rotationStore then
+            return nil
+        end
     end
 
     if copy.rotations ~= nil then
         copy.rotations = decode(copy.rotations)
-        if not copy.rotations then return nil end
+
+        if not copy.rotations then
+            return nil
+        end
     end
 
     -- Older profile exports can retain an entirely empty default placeholder.
@@ -589,12 +710,17 @@ function addon:ProfileFromPortable(profile, options)
     end
 
     if copy.rotationLibrary ~= nil then
-        if type(copy.rotationLibrary) ~= 'table' then return nil end
+        if type(copy.rotationLibrary) ~= 'table' then
+            return nil
+        end
 
         for _, key in ipairs({ 'origins', 'comparisons', 'imports' }) do
             if copy.rotationLibrary[key] ~= nil then
                 copy.rotationLibrary[key] = decode(copy.rotationLibrary[key])
-                if not copy.rotationLibrary[key] then return nil end
+
+                if not copy.rotationLibrary[key] then
+                    return nil
+                end
             end
         end
     end

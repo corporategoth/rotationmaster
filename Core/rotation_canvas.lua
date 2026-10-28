@@ -51,7 +51,11 @@ end
 -- custom printer is involved. Both evaluated arms stay visible while editing.
 function addon:BuildRotationCanvas(body, view)
     local index, why = data.IndexRotationSteps(body)
-    if not index then return nil, why end
+
+    if not index then
+        return nil, why
+    end
+
     view = view or {}
     local section = view.section == 'rotation' and 'rotation' or view.section == 'cooldowns' and 'cooldowns' or nil
     local listView = view.layout == "list" and section ~= 'cooldowns'
@@ -190,7 +194,11 @@ function addon:BuildRotationCanvas(body, view)
 
             node.canMoveUp = position > 1
             node.canMoveDown = position < #list
-            if #result.nodes > 0 then result.height = result.height + result.gap end
+
+            if #result.nodes > 0 then
+                result.height = result.height + result.gap
+            end
+
             result.nodes[#result.nodes + 1] = node
             result.width = math.max(result.width, node.width)
 
@@ -203,7 +211,10 @@ function addon:BuildRotationCanvas(body, view)
             result.height = result.height + node.height
         end
 
-        if #result.nodes == 0 then result.height = 36 end
+        if #result.nodes == 0 then
+            result.height = 36
+        end
+
         return result
     end
 
@@ -257,7 +268,9 @@ function addon:BuildRotationCanvas(body, view)
         local shallow = {}
 
         for key, value in pairs(step) do
-            if not (branch and (key == "onTrue" or key == "onFalse")) then shallow[key] = value end
+            if not (branch and (key == "onTrue" or key == "onFalse")) then
+                shallow[key] = value
+            end
         end
 
         local card = {
@@ -458,7 +471,10 @@ function addon:BuildRotationCanvas(body, view)
             end
 
             local entry, exit = placeNode(node, nx, cursor)
-            if not first then first = entry end
+
+            if not first then
+                first = entry
+            end
 
             if last and section == "rotation" then
                 line(
@@ -532,7 +548,10 @@ function addon:BuildRotationCanvas(body, view)
         cursor = cursor + rowHeight + gap
     end
 
-    if #optional.nodes > 0 then target(optional, #optional.nodes + 1, 0, cursor - 12, gridWidth) end
+    if #optional.nodes > 0 then
+        target(optional, #optional.nodes + 1, 0, cursor - 12, gridWidth)
+    end
+
     scene.separatorY = cursor + 8
 
     scene.sections.rotation.y = section == 'rotation' and -12

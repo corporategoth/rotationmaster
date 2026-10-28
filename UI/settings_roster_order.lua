@@ -23,7 +23,10 @@ local function indices(items)
 
     for index, value in ipairs(items or {}) do
         local id = identity(value)
-        if id ~= nil and result[id] == nil then result[id] = index end
+
+        if id ~= nil and result[id] == nil then
+            result[id] = index
+        end
     end
 
     return result
@@ -66,7 +69,9 @@ function addon:InstallSettingsRosterOrder(p)
             addon:BindWorkbenchDragSource(
                 row,
                 function()
-                    if current() then r.options.dragOut(entry.value) end
+                    if current() then
+                        r.options.dragOut(entry.value)
+                    end
                 end,
                 function() end
             )
@@ -76,7 +81,9 @@ function addon:InstallSettingsRosterOrder(p)
 
                 if handler then
                     addon:SetUIScript(row, event, function(...)
-                        if current() then return handler(...) end
+                        if current() then
+                            return handler(...)
+                        end
                     end)
                 end
             end
@@ -84,7 +91,9 @@ function addon:InstallSettingsRosterOrder(p)
             return
         end
 
-        if not index then return end
+        if not index then
+            return
+        end
 
         if not row.up then
             row.up = addon:CreateWorkbenchIconButton(row, 'up', L['Move Up'])
@@ -134,10 +143,14 @@ function addon:InstallSettingsRosterOrder(p)
         addon:BindWorkbenchDragSource(
             row,
             function()
-                if valid() then r.orderView:Begin(entry.value, entry.text) end
+                if valid() then
+                    r.orderView:Begin(entry.value, entry.text)
+                end
             end,
             function()
-                if valid() then r.orderView:EndDrag() end
+                if valid() then
+                    r.orderView:EndDrag()
+                end
             end
         )
 
@@ -148,7 +161,9 @@ function addon:InstallSettingsRosterOrder(p)
 
             if handler then
                 addon:SetUIScript(row, event, function(...)
-                    if valid() then return handler(...) end
+                    if valid() then
+                        return handler(...)
+                    end
                 end)
             end
         end
@@ -163,7 +178,11 @@ function addon:InstallSettingsRosterOrder(p)
     -- any drag still in flight.
     function p:PrepareRosterOrder(revision)
         local r = self.roster
-        if r.orderView then r.orderView:Cancel() end
+
+        if r.orderView then
+            r.orderView:Cancel()
+        end
+
         r.orderIndex = indices(r.options.order)
         r.logicalGaps = {}
 
@@ -189,7 +208,9 @@ function addon:InstallSettingsRosterOrder(p)
             end
         end
 
-        if last then r.logicalGaps[#r.logicalGaps + 1] = last end
+        if last then
+            r.logicalGaps[#r.logicalGaps + 1] = last
+        end
 
         -- True while this view still belongs to the live roster build.
         local function valid()
@@ -218,7 +239,9 @@ function addon:InstallSettingsRosterOrder(p)
                     zone.marker:Hide()
                 end
 
-                if moving and valid() and not r.rebuilding then p:RefreshRosterViewport() end
+                if moving and valid() and not r.rebuilding then
+                    p:RefreshRosterViewport()
+                end
             end
         end
 
@@ -244,14 +267,25 @@ function addon:InstallSettingsRosterOrder(p)
             local before = items[gap] and identity(items[gap])
             local allowed = self:CanDrop(gap)
             self:Cancel()
-            if not allowed or not p:FlushEdits() or not p:Valid(token) or r.options.order ~= items then return false end
+
+            if not allowed or not p:FlushEdits() or not p:Valid(token) or r.options.order ~= items then
+                return false
+            end
+
             -- A pending rename can refresh the roster while preserving this
             -- command. Resolve both identities again after that flush.
             local current = indices(items)
             local from = current[id]
             gap = before and current[before] or #items + 1
-            if not addon:ReorderWorkbenchRange(items, from, gap, tail) then return false end
-            if r.options.orderChanged then r.options.orderChanged(items) end
+
+            if not addon:ReorderWorkbenchRange(items, from, gap, tail) then
+                return false
+            end
+
+            if r.options.orderChanged then
+                r.options.orderChanged(items)
+            end
+
             p:Draw()
             return true
         end
@@ -297,12 +331,25 @@ function addon:InstallSettingsRosterOrder(p)
         -- Starts dragging entry `id` (with every later entry when `tail`, which defaults to the Ctrl key). Shows the
         -- ghost and the zones that would be legal drops, and polls the pointer until the button is released.
         function view:Begin(id, title, tail)
-            if tail == nil then tail = IsControlKeyDown and IsControlKeyDown() or false end
+            if tail == nil then
+                tail = IsControlKeyDown and IsControlKeyDown() or false
+            end
+
             self:Cancel()
-            if not valid() or not p:FlushEdits() or not p:Valid(token) or r.options.order ~= items then return end
-            if r.orderView ~= self then return r.orderView:Begin(id, title, tail) end
+
+            if not valid() or not p:FlushEdits() or not p:Valid(token) or r.options.order ~= items then
+                return
+            end
+            if r.orderView ~= self then
+                return r.orderView:Begin(id, title, tail)
+            end
+
             local from = r.orderIndex[id]
-            if not from then return end
+
+            if not from then
+                return
+            end
+
             self.drag = id
             self.tail = tail
             self.from = from
@@ -338,7 +385,9 @@ function addon:InstallSettingsRosterOrder(p)
             self.ghost:PresentCards(entries, r.child)
 
             self.ghost:CaptureCancel(function()
-                if r.orderView == self then self:Cancel() end
+                if r.orderView == self then
+                    self:Cancel()
+                end
             end)
 
             for _, zone in ipairs(self.zones) do
@@ -357,11 +406,16 @@ function addon:InstallSettingsRosterOrder(p)
 
                 self.ghost:FollowPointer()
                 self:Hover()
-                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+
+                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                    self:EndDrag()
+                end
             end)
         end
 
-        self.cleanups[#self.cleanups + 1] = function() view:Cancel() end
+        self.cleanups[#self.cleanups + 1] = function()
+            view:Cancel()
+        end
     end
 
     -- ============================================================================
@@ -373,7 +427,11 @@ function addon:InstallSettingsRosterOrder(p)
     function p:BuildRosterOrderZones()
         local r = self.roster
         local view = r.orderView
-        if not view then return end
+
+        if not view then
+            return
+        end
+
         local top = r.scroll.workbenchBar:GetValue() - 102
         local bottom = top + r.scroll:GetHeight() + 204
         local gaps = r.logicalGaps
@@ -393,7 +451,11 @@ function addon:InstallSettingsRosterOrder(p)
 
         for i = low, #gaps do
             local target = gaps[i]
-            if target.y - 6 > bottom then break end
+
+            if target.y - 6 > bottom then
+                break
+            end
+
             used = used + 1
             local zone = r.orderZones[used]
 

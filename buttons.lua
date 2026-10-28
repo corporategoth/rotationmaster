@@ -26,7 +26,11 @@ end
 
 ---@type fun(...): any
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
+
+if type(consumeClientPolicy) == 'function' then
+    readClientPolicy = consumeClientPolicy(addon)
+end
+
 addon.ConsumeClientPolicyReader = nil
 -- The active-plan receiver is consumed before any library callback. Only the
 -- literal cooldown publisher below may qualify its private presentation route.
@@ -43,7 +47,9 @@ local procSupport, procProbe
 -- True when value has a function for every one of names.
 local function methods(value, names)
     for _, name in ipairs(names) do
-        if type(value[name]) ~= 'function' then return false end
+        if type(value[name]) ~= 'function' then
+            return false
+        end
     end
 
     return true
@@ -53,7 +59,9 @@ end
 -- glow; true only if every needed method exists. Call under pcall.
 local function probeProcGlow(atlas)
     for _, name in ipairs({ 'UI-HUD-ActionBar-Proc-Start-Flipbook', 'UI-HUD-ActionBar-Proc-Loop-Flipbook' }) do
-        if type(atlas(name)) ~= 'table' then return false end
+        if type(atlas(name)) ~= 'table' then
+            return false
+        end
     end
 
     if not procProbe then
@@ -63,7 +71,11 @@ local function probeProcGlow(atlas)
     end
 
     local texture = procProbe:CreateTexture(nil, 'ARTWORK')
-    if type(texture.SetAtlas) ~= 'function' then return false end
+
+    if type(texture.SetAtlas) ~= 'function' then
+        return false
+    end
+
     texture:SetAtlas('UI-HUD-ActionBar-Proc-Start-Flipbook')
     texture:SetAtlas('UI-HUD-ActionBar-Proc-Loop-Flipbook')
     procProbe.ProcLoop = texture
@@ -192,7 +204,10 @@ local indexContext = { module = 'ui', operation = 'button-index' }
 
 -- Tells every watcher that the index changed, isolating errors in their callbacks.
 local function announceIndexChange()
-    if next(indexWatchers) == nil then return end
+    if next(indexWatchers) == nil then
+        return
+    end
+
     local diagnostics = addon.Diagnostics
 
     for key, callback in pairs(indexWatchers) do
@@ -207,7 +222,9 @@ end
 -- Registers callback(key) to run after every index change, one callback per key; a nil or non-function callback
 -- removes the key's watcher.
 function addon:WatchButtonIndex(key, callback)
-    if key ~= nil then indexWatchers[key] = type(callback) == 'function' and callback or nil end
+    if key ~= nil then
+        indexWatchers[key] = type(callback) == 'function' and callback or nil
+    end
 end
 
 -- The client data policy the current index was built under (Fetch).
@@ -271,7 +288,10 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     elseif effect.type == 'proc' then
         if self:GetProcGlowSupport() then
             local duration = effect.duration
-            if type(duration) ~= 'number' or duration ~= duration or duration < .1 or duration > 5 then duration = 1 end
+
+            if type(duration) ~= 'number' or duration ~= duration or duration < .1 or duration > 5 then
+                duration = 1
+            end
 
             local ok = pcall(CustomGlow.ProcGlow_Start, frame, {
                 key = tostring(id or ''),
@@ -282,7 +302,10 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
                 yOffset = yoffs or 0,
             })
 
-            if ok then return end
+            if ok then
+                return
+            end
+
             procSupport.available = false
         end
 
@@ -312,7 +335,11 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
     -- registration is covered without an observer or new subscription.
     local sizeScript = frame:GetScript('OnSizeChanged') ~= nil
     local parent = frame:GetParent()
-    if frame.rmOverlayGeneration ~= generation then return false end
+
+    if frame.rmOverlayGeneration ~= generation then
+        return false
+    end
+
     local dirty = frame.rmOverlayDirty ~= false or sizeScript
 
     if
@@ -327,40 +354,72 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
         -- write path; only stable geometry can skip unchanged paint channels.
         dirty = true
         frame:ClearAllPoints()
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         parent = frame:GetParent()
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         frame:SetPoint("CENTER", parent, setp, xoffs, yoffs)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         frame.rmOverlayParent, frame.rmOverlayPoint = parent, setp
         frame.rmOverlayX, frame.rmOverlayY = xoffs, yoffs
         -- Anchor setters can invoke native callbacks which reparent the frame.
         parent = frame:GetParent()
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
     end
 
     local sizeChanged = false
     local width = parent:GetWidth() * (mags or 1.0)
-    if frame.rmOverlayGeneration ~= generation then return false end
+
+    if frame.rmOverlayGeneration ~= generation then
+        return false
+    end
 
     if dirty or frame.rmOverlayWidth ~= width then
         dirty = true
         frame:SetWidth(width)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         sizeChanged = true
         parent = frame:GetParent()
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
     end
 
     -- Size setters can dispatch native OnSizeChanged callbacks. Read later
     -- inputs only after those callbacks, just as the original renderer did.
     local height = parent:GetHeight() * (mags or 1.0)
-    if frame.rmOverlayGeneration ~= generation then return false end
+
+    if frame.rmOverlayGeneration ~= generation then
+        return false
+    end
 
     if dirty or frame.rmOverlayHeight ~= height then
         dirty = true
         frame:SetHeight(height)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         sizeChanged = true
     end
 
@@ -368,27 +427,45 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
         -- A size callback can change either dimension again. Cache the final
         -- native dimensions so the next tick corrects any request disagreement.
         frame.rmOverlayWidth, frame.rmOverlayHeight = frame:GetWidth(), frame:GetHeight()
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
     end
 
     local r, g, b, a = color.r, color.g, color.b, color.a
-    if frame.rmOverlayGeneration ~= generation then return false end
+
+    if frame.rmOverlayGeneration ~= generation then
+        return false
+    end
 
     if dirty or frame.rmOverlayR ~= r or frame.rmOverlayG ~= g or frame.rmOverlayB ~= b or frame.rmOverlayA ~= a then
         frame.texture:SetVertexColor(r, g, b, a)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         frame.rmOverlayR, frame.rmOverlayG, frame.rmOverlayB, frame.rmOverlayA = r, g, b, a
     end
 
     if effect and (dirty or frame.rmOverlayTexture ~= effect) then
         frame.texture:SetTexture(effect)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         frame.rmOverlayTexture = effect
     end
 
     if angle and (dirty or frame.rmOverlayAngle ~= angle) then
         frame.texture:SetRotation(angle)
-        if frame.rmOverlayGeneration ~= generation then return false end
+
+        if frame.rmOverlayGeneration ~= generation then
+            return false
+        end
+
         frame.rmOverlayAngle = angle
     end
 
@@ -414,7 +491,10 @@ local function nativeSteps(effect, color, mags, angle)
 
     if kind == "rotate" then
         local n = effect.steps
-        if type(n) ~= "number" or n < 1 or n % 1 ~= 0 or n > NATIVE_MAX_STEPS then return nil end
+
+        if type(n) ~= "number" or n < 1 or n % 1 ~= 0 or n > NATIVE_MAX_STEPS then
+            return nil
+        end
 
         for i = 1, n do
             local step = effect.reverse and (n - (i - 1)) or (i - 1)
@@ -424,7 +504,9 @@ local function nativeSteps(effect, color, mags, angle)
         return result
     end
 
-    if type(sequence) ~= "table" or #sequence == 0 or #sequence > NATIVE_MAX_STEPS then return nil end
+    if type(sequence) ~= "table" or #sequence == 0 or #sequence > NATIVE_MAX_STEPS then
+        return nil
+    end
 
     for i, value in ipairs(sequence) do
         if kind == "dazzle" and effect.texture then
@@ -447,7 +529,10 @@ end
 
 -- True when the frame and its texture have the animation and rotation methods the native path needs.
 local function nativeSupported(frame)
-    if type(frame.CreateAnimationGroup) ~= "function" or type(frame.CreateTexture) ~= "function" then return false end
+    if type(frame.CreateAnimationGroup) ~= "function" or type(frame.CreateTexture) ~= "function" then
+        return false
+    end
+
     local texture = frame.texture
     return texture and type(texture.SetRotation) == "function" and type(texture.SetAlpha) == "function"
 end
@@ -457,7 +542,11 @@ local function nativeGroup(frame, count, frequency)
     frame.rmNativeGroups = frame.rmNativeGroups or {}
     local key = count .. "@" .. frequency
     local group = frame.rmNativeGroups[key]
-    if group then return group end
+
+    if group then
+        return group
+    end
+
     group = frame:CreateAnimationGroup()
     group:SetLooping("REPEAT")
 
@@ -486,7 +575,11 @@ end
 -- Stops the native animation group, hides the step textures and shows the single overlay texture again.
 local function StopNativeOverlay(frame)
     local native = frame.rmNative
-    if not native then return end
+
+    if not native then
+        return
+    end
+
     frame.rmNative = nil
     native.group:Stop()
 
@@ -500,11 +593,22 @@ end
 -- Plays an animated effect natively: anchors the overlay, lays out one texture per step and plays the shared alpha
 -- animation group. Returns false (nothing changed) when the client or the effect cannot use it.
 local function StartNativeOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
-    if not nativeSupported(frame) then return false end
+    if not nativeSupported(frame) then
+        return false
+    end
+
     local steps = nativeSteps(effect, color, mags, angle)
-    if not steps then return false end
+
+    if not steps then
+        return false
+    end
+
     local frequency = effect.frequency or .25
-    if type(frequency) ~= "number" or frequency <= 0 then return false end
+
+    if type(frequency) ~= "number" or frequency <= 0 then
+        return false
+    end
+
     StopNativeOverlay(frame)
     local parent = frame:GetParent()
     local width, height = parent:GetWidth(), parent:GetHeight()
@@ -547,7 +651,9 @@ local UpdateOverlay
 local function OverlayVisible(frame)
     -- Older external frame stand-ins have no visibility observation. Keep
     -- their legacy timer behavior; ordinary native Frames provide this API.
-    if type(frame.IsVisible) == 'function' then return frame:IsVisible() end
+    if type(frame.IsVisible) == 'function' then
+        return frame:IsVisible()
+    end
 end
 
 -- Stops native playback and cancels the Lua timer. Returns false if stopping invalidated the overlay again.
@@ -558,36 +664,54 @@ local function StopOverlay(frame)
     frame.rmOverlayAnimation = nil
     frame.sequenceTimer = nil
     frame.sequenceIdx = nil
-    if timer then addon:CancelTimer(timer) end
+
+    if timer then
+        addon:CancelTimer(timer)
+    end
+
     return frame.rmOverlayGeneration == generation
 end
 
 -- OnHide handler: cancels the running animation timer but keeps the animation record so ResumeOverlay can restart it.
 local function PauseOverlay(frame)
     local animation, generation = frame.rmOverlayAnimation, frame.rmOverlayGeneration
-    if not animation or OverlayVisible(frame) ~= false then return end
-    if frame.rmOverlayAnimation ~= animation or frame.rmOverlayGeneration ~= generation then return end
+
+    if not animation or OverlayVisible(frame) ~= false then
+        return
+    end
+    if frame.rmOverlayAnimation ~= animation or frame.rmOverlayGeneration ~= generation then
+        return
+    end
+
     InvalidateOverlay(frame)
     animation.generation = frame.rmOverlayGeneration
     animation.paused = true
     animation.ticket = nil
     local timer = frame.sequenceTimer
     frame.sequenceTimer = nil
-    if timer then addon:CancelTimer(timer) end
+
+    if timer then
+        addon:CancelTimer(timer)
+    end
 end
 
 -- Schedules the repeating timer for a Lua-driven animation unless the overlay is hidden (then it is marked paused).
 -- Returns false if the overlay was replaced or stopped while scheduling, true otherwise.
 local function StartOverlay(frame, animation)
     local generation = frame.rmOverlayGeneration
-    if frame.rmOverlayAnimation ~= animation or animation.generation ~= generation then return false end
 
+    if frame.rmOverlayAnimation ~= animation or animation.generation ~= generation then
+        return false
+    end
     if frame.sequenceTimer or animation.scheduling and animation.scheduling.generation == generation then
         return true
     end
 
     local visible = OverlayVisible(frame)
-    if frame.rmOverlayAnimation ~= animation or frame.rmOverlayGeneration ~= generation then return false end
+
+    if frame.rmOverlayAnimation ~= animation or frame.rmOverlayGeneration ~= generation then
+        return false
+    end
 
     if visible == false then
         animation.paused = true
@@ -615,10 +739,15 @@ local function StartOverlay(frame, animation)
         ticket
     )
 
-    if animation.scheduling == ticket then animation.scheduling = nil end
+    if animation.scheduling == ticket then
+        animation.scheduling = nil
+    end
 
     if not ok then
-        if animation.ticket == ticket then animation.ticket = nil end
+        if animation.ticket == ticket then
+            animation.ticket = nil
+        end
+
         error(timer, 0)
     end
 
@@ -628,7 +757,10 @@ local function StartOverlay(frame, animation)
         or animation.ticket ~= ticket
         or animation.paused
     then
-        if timer then addon:CancelTimer(timer) end
+        if timer then
+            addon:CancelTimer(timer)
+        end
+
         return false
     end
 
@@ -639,7 +771,10 @@ end
 -- OnShow handler: restarts a paused animation now that the overlay is visible.
 local function ResumeOverlay(frame)
     local animation = frame.rmOverlayAnimation
-    if animation and OverlayVisible(frame) == true then StartOverlay(frame, animation) end
+
+    if animation and OverlayVisible(frame) == true then
+        StartOverlay(frame, animation)
+    end
 end
 
 -- Removes every glow type that frame shows under key id, and stops its overlay. keepProc leaves the proc glow in
@@ -655,7 +790,10 @@ function addon:HideGlow(frame, id, keepProc)
 
     if id ~= nil and frame.rmOverlays and frame.rmOverlays[id] then
         local overlay = frame.rmOverlays[id]
-        if StopOverlay(overlay) and frame.rmOverlays and frame.rmOverlays[id] == overlay then overlay:Hide() end
+
+        if StopOverlay(overlay) and frame.rmOverlays and frame.rmOverlays[id] == overlay then
+            overlay:Hide()
+        end
     end
 end
 
@@ -812,7 +950,10 @@ local function CreateOverlay(parent)
     InvalidateOverlay(frame)
 
     frame:SetFrameStrata(parent.GetFrameStrata and parent:GetFrameStrata() or 'HIGH')
-    if frame.SetFrameLevel and parent.GetFrameLevel then frame:SetFrameLevel(parent:GetFrameLevel() + 1) end
+
+    if frame.SetFrameLevel and parent.GetFrameLevel then
+        frame:SetFrameLevel(parent:GetFrameLevel() + 1)
+    end
 
     local t = frame.texture
 
@@ -835,7 +976,9 @@ end
 
 -- Stops an overlay, detaches it from its button and returns the frame to the pool for reuse.
 local function DestroyOverlay(frame, id)
-    if not StopOverlay(frame) then return end
+    if not StopOverlay(frame) then
+        return
+    end
 
     if frame:GetParent().rmOverlays ~= nil and frame:GetParent().rmOverlays[id] then
         frame:GetParent().rmOverlays[id] = nil
@@ -859,14 +1002,18 @@ local function DestroyAllOverlay(parent)
             DestroyOverlay(frame, id)
         end
 
-        if parent.rmOverlays == overlays and next(overlays) == nil then parent.rmOverlays = nil end
+        if parent.rmOverlays == overlays and next(overlays) == nil then
+            parent.rmOverlays = nil
+        end
     end
 end
 
 -- True when the overlay this caller saw under id has since been replaced or restarted by someone else, so the caller
 -- must not tear it down.
 local function OverlaySuperseded(button, id, overlay, generation)
-    if (button.rmOverlays and button.rmOverlays[id]) ~= overlay then return true end
+    if (button.rmOverlays and button.rmOverlays[id]) ~= overlay then
+        return true
+    end
 
     return overlay
         and overlay.rmOverlayGeneration ~= generation
@@ -882,7 +1029,10 @@ function addon:DestroyAllGlows()
                 local overlay = button.rmOverlays and button.rmOverlays[spellid]
                 local generation = overlay and overlay.rmOverlayGeneration
                 self:HideGlow(button, spellid)
-                if not OverlaySuperseded(button, spellid, overlay, generation) then DestroyAllOverlay(button) end
+
+                if not OverlaySuperseded(button, spellid, overlay, generation) then
+                    DestroyAllOverlay(button)
+                end
             end
         end
     end
@@ -893,7 +1043,10 @@ function addon:DestroyAllGlows()
                 local overlay = button.rmOverlays and button.rmOverlays.next
                 local generation = overlay and overlay.rmOverlayGeneration
                 self:HideGlow(button, "next")
-                if not OverlaySuperseded(button, 'next', overlay, generation) then DestroyAllOverlay(button) end
+
+                if not OverlaySuperseded(button, 'next', overlay, generation) then
+                    DestroyAllOverlay(button)
+                end
             end
         end
     end
@@ -920,7 +1073,6 @@ function addon:UpdateButtonGlow()
             if ActionBarActionEventsFrame then
                 ActionBarActionEventsFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
-
             if LAB then
                 LAB.eventFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
@@ -934,7 +1086,6 @@ function addon:UpdateButtonGlow()
             if ActionBarActionEventsFrame then
                 ActionBarActionEventsFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
-
             if LAB then
                 LAB.eventFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
             end
@@ -966,13 +1117,15 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 
     local type = effect.type
     addon:HideGlow(button, id, type == 'proc')
-    if OverlaySuperseded(button, id, overlay, generation) then return end
+
+    if OverlaySuperseded(button, id, overlay, generation) then
+        return
+    end
 
     if addon.Functions.collections.index(addon.textured_types, type) then
         if not button.rmOverlays then
             button.rmOverlays = {}
         end
-
         if not button.rmOverlays[id] then
             button.rmOverlays[id] = CreateOverlay(button, id)
         end
@@ -991,14 +1144,19 @@ end
 
 -- Records that button holds spellId (and optionally itemId) in the index, ignoring unreadable or invalid ids.
 local function AddButton(spellId, button, itemId)
-    if not addon.Platform:CanReadValue(spellId) then return end
+    if not addon.Platform:CanReadValue(spellId) then
+        return
+    end
 
     if type(spellId) == "number" and spellId > 0 and spellId < math.huge and spellId % 1 == 0 then
         if Spells[spellId] == nil then
             Spells[spellId] = {}
         end
 
-        if ButtonSpells[button] ~= spellId then tinsert(Spells[spellId], button) end
+        if ButtonSpells[button] ~= spellId then
+            tinsert(Spells[spellId], button)
+        end
+
         ButtonSpells[button] = spellId
         ButtonItems[button] = itemId
     end
@@ -1017,7 +1175,10 @@ end
 -- accessor the client or bar addon provides; nil if none gives a usable slot.
 local function GetActionSlot(button)
     local slot = button:GetAttribute('action')
-    if ValidActionSlot(slot) then return slot end
+
+    if ValidActionSlot(slot) then
+        return slot
+    end
 
     -- Anniversary uses the same button methods as Retail. Older clients and
     -- third-party bars may still expose the global helpers or only action.
@@ -1027,7 +1188,9 @@ local function GetActionSlot(button)
         slot = ActionButton_GetPagedID(button)
     end
 
-    if ValidActionSlot(slot) then return slot end
+    if ValidActionSlot(slot) then
+        return slot
+    end
 
     if button.CalculateAction then
         slot = button:CalculateAction()
@@ -1035,8 +1198,12 @@ local function GetActionSlot(button)
         slot = ActionButton_CalculateAction(button)
     end
 
-    if ValidActionSlot(slot) then return slot end
-    if ValidActionSlot(button.action) then return button.action end
+    if ValidActionSlot(slot) then
+        return slot
+    end
+    if ValidActionSlot(button.action) then
+        return button.action
+    end
 end
 
 -- Retail 12.0 moved the action-slot queries into C_ActionBar. The old
@@ -1050,8 +1217,13 @@ end
 local function actionBarFunction(name, legacy)
     local namespace = C_ActionBar
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) == 'function' then return fn end
-    if type(legacy) == 'function' then return legacy end
+
+    if type(fn) == 'function' then
+        return fn
+    end
+    if type(legacy) == 'function' then
+        return legacy
+    end
 end
 
 -- Reads the kind and action a standard button holds ('spell', 'item', 'macro', or the slot's own contents for an
@@ -1059,20 +1231,39 @@ end
 -- secret.
 local function ReadStandardAction(button)
     local kind = button:GetAttribute('type')
-    if not addon.Platform:CanReadValue(kind) then return end
-    if kind ~= 'action' and kind ~= 'macro' and kind ~= 'item' and kind ~= 'spell' then return end
+
+    if not addon.Platform:CanReadValue(kind) then
+        return
+    end
+    if kind ~= 'action' and kind ~= 'macro' and kind ~= 'item' and kind ~= 'spell' then
+        return
+    end
+
     local action = button:GetAttribute(kind)
 
     if kind == 'action' then
         local slot = GetActionSlot(button)
-        if not slot then return end
+
+        if not slot then
+            return
+        end
+
         local present = actionBarFunction('HasAction', HasAction)(slot)
-        if not addon.Platform:CanReadValue(present) or not present then return end
+
+        if not addon.Platform:CanReadValue(present) or not present then
+            return
+        end
+
         kind, action = GetActionInfo(slot)
     end
 
-    if not addon.Platform:CanReadValue(kind) then return end
-    if not addon.Platform:CanReadValue(action) then return kind end
+    if not addon.Platform:CanReadValue(kind) then
+        return
+    end
+    if not addon.Platform:CanReadValue(action) then
+        return kind
+    end
+
     return kind, action
 end
 
@@ -1080,10 +1271,16 @@ end
 local function ResolveStandardAction(kind, action)
     if kind == 'macro' then
         local observed = addon.Platform:GetMacroAction(action)
-        if observed then return observed.spellID, observed.itemID end
+
+        if observed then
+            return observed.spellID, observed.itemID
+        end
     elseif kind == 'item' then
         local item = addon.Platform:GetItemID(action)
-        if item then return itemUseSpellID(item), item end
+
+        if item then
+            return itemUseSpellID(item), item
+        end
     elseif kind == 'spell' then
         return spellMetadataID(action)
     end
@@ -1095,8 +1292,9 @@ end
 -- while a step names the other, and Blizzard's suggestion may be either.
 -- Only Spells gains the aliases; the button keeps its one identity.
 local function AddAlias(alias, button)
-    if alias == nil or not addon.Platform:CanReadValue(alias) then return end
-
+    if alias == nil or not addon.Platform:CanReadValue(alias) then
+        return
+    end
     if
         type(alias) ~= "number" or alias <= 0 or alias >= math.huge or alias % 1 ~= 0 or ButtonSpells[button] == alias
     then
@@ -1111,7 +1309,9 @@ local function AddAlias(alias, button)
     end
 
     for i = 1, #buttons do
-        if buttons[i] == button then return end
+        if buttons[i] == button then
+            return
+        end
     end
 
     tinsert(buttons, button)
@@ -1121,15 +1321,28 @@ end
 local function SpellRelation(name, spell)
     local namespace = C_Spell
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return nil end
+
+    if type(fn) ~= 'function' then
+        return nil
+    end
+
     local ok, value = pcall(fn, spell)
-    if ok then return value end
+
+    if ok then
+        return value
+    end
 end
 
 -- On restricted clients, also files the button under the slot's own action id and the spell's base and override ids.
 local function AddSpellAliases(button, spell, action)
-    if ButtonSpells[button] ~= spell or fetchedPolicy ~= 'restricted' then return end
-    if type(action) == 'number' then AddAlias(action, button) end
+    if ButtonSpells[button] ~= spell or fetchedPolicy ~= 'restricted' then
+        return
+    end
+
+    if type(action) == 'number' then
+        AddAlias(action, button)
+    end
+
     AddAlias(SpellRelation('GetBaseSpell', spell), button)
     AddAlias(SpellRelation('GetOverrideSpell', spell), button)
 end
@@ -1138,9 +1351,16 @@ end
 local function BookRelation(name, spell)
     local namespace = C_SpellBook
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return nil end
+
+    if type(fn) ~= 'function' then
+        return nil
+    end
+
     local ok, value = pcall(fn, spell)
-    if ok then return value end
+
+    if ok then
+        return value
+    end
 end
 
 -- True for a readable, positive whole-number spell id.
@@ -1156,7 +1376,11 @@ end
 -- base and override by both APIs, and the override of the base.
 function addon:GetSpellIdRelatives(spell)
     local list = {}
-    if not validSpellId(spell) then return list end
+
+    if not validSpellId(spell) then
+        return list
+    end
+
     local seen = {}
 
     local function add(value)
@@ -1185,12 +1409,18 @@ end
 local function spellNameOf(id)
     local info = addon.Platform:GetSpellInfo(id)
     local name = info and info.name
-    if type(name) == 'string' and name ~= '' and addon.Platform:CanReadValue(name) then return name end
+
+    if type(name) == 'string' and name ~= '' and addon.Platform:CanReadValue(name) then
+        return name
+    end
 end
 
 -- Builds (once per scan) a map from spell name to the buttons holding a spell of that name, for the same-name fallback.
 local function nameIndex()
-    if NameIndex then return NameIndex end
+    if NameIndex then
+        return NameIndex
+    end
+
     NameIndex = {}
 
     for button, spell in pairs(ButtonSpells) do
@@ -1229,21 +1459,33 @@ end
 -- Forever) look: the others identify spells by rank through the catalog.
 local function aliasButtons(id)
     local settled = AliasCache[id]
-    if settled ~= nil then return settled or nil end
-    if fetchedPolicy ~= 'restricted' or not validSpellId(id) then return nil end
+
+    if settled ~= nil then
+        return settled or nil
+    end
+    if fetchedPolicy ~= 'restricted' or not validSpellId(id) then
+        return nil
+    end
+
     AliasCache[id] = false
     local found, how
 
     -- Keeps the first non-empty button list found, with the reason it was chosen.
     local function take(buttons, reason)
-        if found or not buttons or #buttons == 0 then return end
+        if found or not buttons or #buttons == 0 then
+            return
+        end
+
         found, how = buttons, reason
     end
 
     for _, relative in ipairs(addon:GetSpellIdRelatives(id)) do
         if relative ~= id and Spells[relative] then
             take(Spells[relative], 'relative ' .. relative)
-            if found then break end
+
+            if found then
+                break
+            end
         end
     end
 
@@ -1264,7 +1506,10 @@ local function aliasButtons(id)
                     end
 
                     take(list, 'client slots of ' .. query)
-                    if found then break end
+
+                    if found then
+                        break
+                    end
                 end
             end
         end
@@ -1272,10 +1517,16 @@ local function aliasButtons(id)
 
     if not found then
         local name = spellNameOf(id)
-        if name then take(nameIndex()[name], 'same name "' .. name .. '"') end
+
+        if name then
+            take(nameIndex()[name], 'same name "' .. name .. '"')
+        end
     end
 
-    if not found then return nil end
+    if not found then
+        return nil
+    end
+
     local buttons = Spells[id]
 
     if buttons == nil then
@@ -1293,7 +1544,9 @@ local function aliasButtons(id)
             end
         end
 
-        if not present then tinsert(buttons, button) end
+        if not present then
+            tinsert(buttons, button)
+        end
     end
 
     AliasCache[id] = buttons
@@ -1304,15 +1557,28 @@ end
 -- Indexes one standard action button: reads its action, files its spell (and aliases on restricted clients) and
 -- remembers macro buttons for RefreshMacroButtons. Errors in reading a foreign button are contained.
 local function AddStandardButton(button)
-    if not button or ButtonSpells[button] then return end
+    if not button or ButtonSpells[button] then
+        return
+    end
+
     local ok, kind, action = pcall(ReadStandardAction, button)
-    if not ok then return end
+
+    if not ok then
+        return
+    end
+
     -- Retain macros whose current observation is unavailable so a later pass
     -- can recover without waiting for a bar-edit event.
-    if kind == 'macro' then MacroButtons[button] = true end
+    if kind == 'macro' then
+        MacroButtons[button] = true
+    end
+
     local spell, item = ResolveStandardAction(kind, action)
     AddButton(spell, button, item)
-    if kind == 'spell' and spell then AddSpellAliases(button, spell, action) end
+
+    if kind == 'spell' and spell then
+        AddSpellAliases(button, spell, action)
+    end
 
     if ButtonSpells[button] and fetchedPolicy == 'restricted' then
         local sloted, slot = pcall(GetActionSlot, button)
@@ -1335,26 +1601,50 @@ end
 -- ability, resolved through spell metadata. Tokens (Attack, Follow, Stay...)
 -- are commands, not spells, and are never indexed.
 local function PetActionSpell(index)
-    if type(GetPetActionInfo) ~= 'function' then return end
+    if type(GetPetActionInfo) ~= 'function' then
+        return
+    end
+
     local ok, name, _, isToken, _, _, _, spellID = pcall(GetPetActionInfo, index)
-    if not ok or not addon.Platform:CanReadValue(name) or not addon.Platform:CanReadValue(spellID) then return end
-    if type(spellID) == 'number' and spellID > 0 then return spellID end
-    if type(name) ~= 'string' or name == '' or isToken == true or isToken == 1 then return end
+
+    if not ok or not addon.Platform:CanReadValue(name) or not addon.Platform:CanReadValue(spellID) then
+        return
+    end
+    if type(spellID) == 'number' and spellID > 0 then
+        return spellID
+    end
+    if type(name) ~= 'string' or name == '' or isToken == true or isToken == 1 then
+        return
+    end
+
     return spellMetadataID(name)
 end
 
 -- Returns the pet action index (1 to 10) for a pet bar button, from the given index or the button's own id.
 local function PetIndex(button, index)
-    if type(index) == 'number' and index >= 1 and index <= 10 and index % 1 == 0 then return index end
+    if type(index) == 'number' and index >= 1 and index <= 10 and index % 1 == 0 then
+        return index
+    end
+
     local id = type(button.GetID) == 'function' and button:GetID() or button.id
-    if type(id) == 'number' and id >= 1 and id <= 10 and id % 1 == 0 then return id end
+
+    if type(id) == 'number' and id >= 1 and id <= 10 and id % 1 == 0 then
+        return id
+    end
 end
 
 -- Indexes one pet bar button under the spell its pet action slot holds.
 local function AddPetButton(button, index)
-    if not button or ButtonSpells[button] then return end
+    if not button or ButtonSpells[button] then
+        return
+    end
+
     index = PetIndex(button, index)
-    if not index then return end
+
+    if not index then
+        return
+    end
+
     PetButtons[button] = index
     AddButton(PetActionSpell(index), button)
 end
@@ -1367,11 +1657,17 @@ function addon:RefreshMacroButtons()
     -- restricted policy macro buttons resolve to nothing; a scan made under
     -- another policy is redone once so no stale macro mapping survives.
     if readClientPolicy(self.Platform) ~= 'probe' then
-        if fetchedPolicy == 'probe' then self:Fetch() end
+        if fetchedPolicy == 'probe' then
+            self:Fetch()
+        end
+
         return
     end
 
-    if next(MacroButtons) == nil then return end
+    if next(MacroButtons) == nil then
+        return
+    end
+
     -- Runs every poll: change lists are only built when a button changed.
     local observations, changes, affected = {}, nil, nil
 
@@ -1392,7 +1688,9 @@ function addon:RefreshMacroButtons()
                     observations[action] = observed
                 end
 
-                if observed then spell, item = observed.spellID, observed.itemID end
+                if observed then
+                    spell, item = observed.spellID, observed.itemID
+                end
             else
                 spell, item = ResolveStandardAction(kind, action)
             end
@@ -1403,12 +1701,19 @@ function addon:RefreshMacroButtons()
         if previous ~= spell or ButtonItems[button] ~= item then
             changes, affected = changes or {}, affected or {}
             changes[#changes + 1] = { button = button, spell = spell, item = item, previous = previous }
-            if previous then affected[previous] = true end
-            if spell then affected[spell] = true end
+
+            if previous then
+                affected[previous] = true
+            end
+            if spell then
+                affected[spell] = true
+            end
         end
     end
 
-    if not changes then return end
+    if not changes then
+        return
+    end
 
     -- Invalidate the affected identities before reindexing. Other buttons for
     -- those spells need their recommendation/cooldown glow reapplied as well.
@@ -1427,10 +1732,14 @@ function addon:RefreshMacroButtons()
 
         if buttons then
             for index = #buttons, 1, -1 do
-                if buttons[index] == change.button then table.remove(buttons, index) end
+                if buttons[index] == change.button then
+                    table.remove(buttons, index)
+                end
             end
 
-            if #buttons == 0 then Spells[change.previous] = nil end
+            if #buttons == 0 then
+                Spells[change.previous] = nil
+            end
         end
 
         ButtonSpells[change.button], ButtonItems[change.button] = nil, nil
@@ -1635,7 +1944,9 @@ local function LibActionButtonLibraries()
     if type(stub) == 'table' and type(stub.IterateLibraries) == 'function' then
         pcall(function()
             for name, lib in stub:IterateLibraries() do
-                if type(name) == 'string' and name:sub(1, #LAB_PREFIX) == LAB_PREFIX then take(lib) end
+                if type(name) == 'string' and name:sub(1, #LAB_PREFIX) == LAB_PREFIX then
+                    take(lib)
+                end
             end
         end)
     end
@@ -1684,7 +1995,10 @@ local DrawnSlots = {}
 
 -- False only when the button positively reports it is not visible.
 local function VisibleButton(button)
-    if type(button.IsVisible) ~= 'function' then return true end
+    if type(button.IsVisible) ~= 'function' then
+        return true
+    end
+
     local ok, visible = pcall(button.IsVisible, button)
     return not ok or visible ~= false
 end
@@ -1699,7 +2013,10 @@ local function FetchEllesmereUI()
 
             if VisibleButton(button) then
                 local ok, drawn = pcall(GetActionSlot, button)
-                if ok and drawn then DrawnSlots[drawn] = true end
+
+                if ok and drawn then
+                    DrawnSlots[drawn] = true
+                end
             end
         end
     end
@@ -1707,7 +2024,10 @@ end
 
 -- A stock button hidden behind a replacement bar that draws its slot.
 local function HiddenDuplicate(button)
-    if not button or next(DrawnSlots) == nil or VisibleButton(button) then return false end
+    if not button or next(DrawnSlots) == nil or VisibleButton(button) then
+        return false
+    end
+
     local ok, slot = pcall(GetActionSlot, button)
     return ok and slot ~= nil and DrawnSlots[slot] == true
 end
@@ -1735,7 +2055,10 @@ local function FetchProviders()
         state.buttons = 0
 
         local function count()
-            if state.buttons >= PROVIDER_LIMIT then return false end
+            if state.buttons >= PROVIDER_LIMIT then
+                return false
+            end
+
             state.buttons = state.buttons + 1
             return true
         end
@@ -1743,33 +2066,55 @@ local function FetchProviders()
         local ok, err = pcall(
             provider,
             function(button)
-                if validProviderButton(button) and count() then AddStandardButton(button) end
+                if validProviderButton(button) and count() then
+                    AddStandardButton(button)
+                end
             end,
             function(button, index)
-                if validProviderButton(button) and count() then AddPetButton(button, index) end
+                if validProviderButton(button) and count() then
+                    AddPetButton(button, index)
+                end
             end
         )
 
-        if not ok then state.error = tostring(err) end
+        if not ok then
+            state.error = tostring(err)
+        end
     end
 end
 
 -- Registers (or replaces) the button provider named id and triggers a rescan. Returns true, or false and a reason.
 function addon:RegisterButtonProvider(id, provider)
-    if type(id) ~= 'string' or id == '' or #id > 128 then return false, 'invalid-id' end
-    if type(provider) ~= 'function' then return false, 'invalid-provider' end
+    if type(id) ~= 'string' or id == '' or #id > 128 then
+        return false, 'invalid-id'
+    end
+    if type(provider) ~= 'function' then
+        return false, 'invalid-provider'
+    end
+
     ButtonProviders[id] = provider
     ProviderState[id] = ProviderState[id] or { buttons = 0 }
-    if type(self.ButtonFetch) == 'function' then self:ButtonFetch() end
+
+    if type(self.ButtonFetch) == 'function' then
+        self:ButtonFetch()
+    end
+
     return true
 end
 
 -- Removes a provider and rescans. Returns false when no provider had that id.
 function addon:UnregisterButtonProvider(id)
-    if ButtonProviders[id] == nil then return false end
+    if ButtonProviders[id] == nil then
+        return false
+    end
+
     ButtonProviders[id] = nil
     ProviderState[id] = nil
-    if type(self.ButtonFetch) == 'function' then self:ButtonFetch() end
+
+    if type(self.ButtonFetch) == 'function' then
+        self:ButtonFetch()
+    end
+
     return true
 end
 
@@ -1805,7 +2150,10 @@ local function FetchBlizzard()
     for _, barName in pairs(BlizzardBars) do
         for i = 1, 12 do
             local button = _G[barName .. 'Button' .. i]
-            if not HiddenDuplicate(button) then AddStandardButton(button) end
+
+            if not HiddenDuplicate(button) then
+                AddStandardButton(button)
+            end
         end
     end
 
@@ -1900,35 +2248,27 @@ function addon:Fetch()
     if IsAddOnLoaded('Bartender4') then
         FetchBartender4()
     end
-
     if IsAddOnLoaded('ElvUI') then
         FetchElvUIPet()
     end
-
     if IsAddOnLoaded('ButtonForge') then
         FetchButtonForge()
     end
-
     if IsAddOnLoaded('LUI') then
         FetchLUI()
     end
-
     if IsAddOnLoaded('Dominos') then
         FetchDominos()
     end
-
     if IsAddOnLoaded('AzeriteUI') then
         FetchAzeriteUI()
     end
-
     if IsAddOnLoaded('AzeriteUI6') then
         FetchAzeriteUI6()
     end
-
     if IsAddOnLoaded('FarmingBar') then
         FetchFarmingBar()
     end
-
     if IsAddOnLoaded('TotemTimers') then
         FetchTotemTimers()
     end
@@ -1948,12 +2288,17 @@ end
 function addon:FindSpell(spellIds, itemIds)
     for index, id in ipairs(spellIds or {}) do
         if Spells[id] or aliasing and not itemIds and aliasButtons(id) then
-            if not itemIds then return id, index end
+            if not itemIds then
+                return id, index
+            end
+
             local wanted = itemIds[index]
 
             if self.Platform:CanReadValue(wanted) and type(wanted) == "number" then
                 for _, button in ipairs(Spells[id]) do
-                    if ButtonItems[button] == wanted then return id, index end
+                    if ButtonItems[button] == wanted then
+                        return id, index
+                    end
                 end
             end
         end
@@ -1964,9 +2309,17 @@ end
 -- button, otherwise false and the list of those that are not; nil when the set is unavailable.
 local function assistedBinding(self)
     local platform = self.Platform
-    if type(platform) ~= 'table' or type(platform.GetAssistedRotationSpells) ~= 'function' then return nil end
+
+    if type(platform) ~= 'table' or type(platform.GetAssistedRotationSpells) ~= 'function' then
+        return nil
+    end
+
     local spells = platform:GetAssistedRotationSpells()
-    if type(spells) ~= 'table' or #spells == 0 then return nil end
+
+    if type(spells) ~= 'table' or #spells == 0 then
+        return nil
+    end
+
     local missing
 
     for _, spell in ipairs(spells) do
@@ -1987,7 +2340,10 @@ local function assistedBinding(self)
         end
     end
 
-    if missing then return false, missing end
+    if missing then
+        return false, missing
+    end
+
     return true
 end
 
@@ -1995,14 +2351,19 @@ end
 -- ran); returns whether one was requested. Out of combat only: the editor
 -- never makes the glows flicker mid-fight.
 function addon:EnsureFreshButtonIndex(maxAge)
-    if type(InCombatLockdown) == 'function' and InCombatLockdown() then return false end
+    if type(InCombatLockdown) == 'function' and InCombatLockdown() then
+        return false
+    end
+
     local now = type(GetTime) == 'function' and GetTime() or nil
 
     if FetchCount > 0 and not self.fetchPending and LastFetchAt and now and now - LastFetchAt <= (maxAge or 10) then
         return false
     end
+    if type(self.ButtonFetch) ~= 'function' then
+        return false
+    end
 
-    if type(self.ButtonFetch) ~= 'function' then return false end
     self:ButtonFetch()
     return true
 end
@@ -2031,15 +2392,24 @@ function addon:GetStepBinding(step)
     then
         return nil
     end
+    if step.type == 'assisted' then
+        return assistedBinding(self)
+    end
+    if step.action == nil or not BINDABLE[step.type] then
+        return nil
+    end
 
-    if step.type == 'assisted' then return assistedBinding(self) end
-    if step.action == nil or not BINDABLE[step.type] then return nil end
     local ok, spellIds, itemIds = pcall(self.GetSpellIds, self, step)
-    if not ok or type(spellIds) ~= 'table' or #spellIds == 0 then return nil end
+
+    if not ok or type(spellIds) ~= 'table' or #spellIds == 0 then
+        return nil
+    end
 
     for index, id in ipairs(spellIds) do
         if step.type == 'item' then
-            if self:FindSpell({ id }, { itemIds and itemIds[index] }) then return true end
+            if self:FindSpell({ id }, { itemIds and itemIds[index] }) then
+                return true
+            end
         elseif self:FindSpell({ id }) then
             return true
         end
@@ -2055,7 +2425,11 @@ end
 -- hold it, and the action slots the client itself reports for it.
 function addon:ExplainStepBinding(step)
     local result = { ids = {}, bound = nil }
-    if type(step) ~= 'table' then return result end
+
+    if type(step) ~= 'table' then
+        return result
+    end
+
     result.type = step.type
     result.action = step.action
     result.pending = self.fetchPending == true
@@ -2151,9 +2525,17 @@ end
 -- For /rm why and /rm debug glow; nothing reads it per poll.
 function addon:ListUnboundSteps(body)
     local data = self.RotationData
-    if type(body) ~= 'table' or type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' then return {} end
+
+    if type(body) ~= 'table' or type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' then
+        return {}
+    end
+
     local ok, index = pcall(data.IndexRotationSteps, body, { allowMissingIds = true })
-    if not ok or type(index) ~= 'table' or type(index.rows) ~= 'table' then return {} end
+
+    if not ok or type(index) ~= 'table' or type(index.rows) ~= 'table' then
+        return {}
+    end
+
     local list = {}
 
     for _, row in ipairs(index.rows) do
@@ -2173,14 +2555,18 @@ end
 
 -- One step's action, named for a report line.
 function addon:DescribeStepAction(step)
-    if type(step) ~= 'table' then return '?' end
+    if type(step) ~= 'table' then
+        return '?'
+    end
 
     local function spellName(id)
         local info = self.Platform and self.Platform:GetSpellInfo(id)
         return info and info.name or tostring(id)
     end
 
-    if step.type == 'assisted' then return L["Blizzard's suggestion"] end
+    if step.type == 'assisted' then
+        return L["Blizzard's suggestion"]
+    end
 
     if step.type == 'item' then
         if type(step.action) == 'string' then
@@ -2229,7 +2615,9 @@ end
 -- True when every argument is a readable (non-secret) value.
 local function readable(...)
     for i = 1, select('#', ...) do
-        if not addon.Platform:CanReadValue((select(i, ...))) then return false end
+        if not addon.Platform:CanReadValue((select(i, ...))) then
+            return false
+        end
     end
 
     return true
@@ -2237,23 +2625,41 @@ end
 
 -- True when a cooldown has finished, or only the global cooldown is left; nil when the inputs are not numbers.
 local function cooldownReady(start, duration, now)
-    if type(start) ~= 'number' or type(duration) ~= 'number' or type(now) ~= 'number' then return nil end
-    if duration == 0 or start + duration <= now then return true end
+    if type(start) ~= 'number' or type(duration) ~= 'number' or type(now) ~= 'number' then
+        return nil
+    end
+    if duration == 0 or start + duration <= now then
+        return true
+    end
+
     local gcd = addon.Platform.GetGlobalCooldown and addon.Platform:GetGlobalCooldown()
-    if type(gcd) ~= 'table' or not gcd.isEnabled or gcd.duration == 0 then return false end
+
+    if type(gcd) ~= 'table' or not gcd.isEnabled or gcd.duration == 0 then
+        return false
+    end
+
     local gcdExpires = gcd.startTime + gcd.duration
     return gcdExpires > now and start + duration <= gcdExpires + 0.001
 end
 
 -- True when the pet action at index is enabled, usable and off cooldown.
 local function petActionReady(index, now)
-    if type(GetPetActionCooldown) ~= 'function' then return false end
+    if type(GetPetActionCooldown) ~= 'function' then
+        return false
+    end
+
     local ok, start, duration, enabled = pcall(GetPetActionCooldown, index)
-    if not ok or not readable(start, duration, enabled) or enabled == 0 or enabled == false then return false end
+
+    if not ok or not readable(start, duration, enabled) or enabled == 0 or enabled == false then
+        return false
+    end
 
     if type(GetPetActionSlotUsable) == 'function' then
         local usableOk, usable = pcall(GetPetActionSlotUsable, index)
-        if usableOk and readable(usable) and (usable == false or usable == nil) then return false end
+
+        if usableOk and readable(usable) and (usable == false or usable == nil) then
+            return false
+        end
     end
 
     return cooldownReady(start, duration, now) == true
@@ -2269,19 +2675,35 @@ local function actionCooldownReady(slot, now)
 
     if type(modern) == 'function' then
         local ok, info = pcall(modern, slot)
-        if not ok or type(info) ~= 'table' then return false end
+
+        if not ok or type(info) ~= 'table' then
+            return false
+        end
+
         local enabled, active = info.isEnabled, info.isActive
-        if readable(enabled) and (enabled == false or enabled == 0) then return false end
+
+        if readable(enabled) and (enabled == false or enabled == 0) then
+            return false
+        end
+
         local start, duration = info.startTime, info.duration
 
         if readable(start, duration) and type(start) == 'number' and type(duration) == 'number' then
             return readable(enabled) and cooldownReady(start, duration, now) == true
         end
+        if not readable(enabled, active) or type(active) ~= 'boolean' then
+            return false
+        end
+        if not active then
+            return true
+        end
+        if not readable(info.isOnGCD) or info.isOnGCD ~= true then
+            return false
+        end
+        if type(addon.Platform.GetGlobalCooldown) ~= 'function' then
+            return false
+        end
 
-        if not readable(enabled, active) or type(active) ~= 'boolean' then return false end
-        if not active then return true end
-        if not readable(info.isOnGCD) or info.isOnGCD ~= true then return false end
-        if type(addon.Platform.GetGlobalCooldown) ~= 'function' then return false end
         local gcd, _, gcdEnabled, gcdActive = addon.Platform:GetGlobalCooldown()
 
         if type(gcd) == 'table' then
@@ -2291,24 +2713,44 @@ local function actionCooldownReady(slot, now)
         return gcdEnabled == true and gcdActive == true
     end
 
-    if type(GetActionCooldown) ~= 'function' then return false end
+    if type(GetActionCooldown) ~= 'function' then
+        return false
+    end
+
     local cdOk, start, duration, enabled = pcall(GetActionCooldown, slot)
-    if not cdOk or not readable(start, duration, enabled) or enabled == 0 or enabled == false then return false end
+
+    if not cdOk or not readable(start, duration, enabled) or enabled == 0 or enabled == false then
+        return false
+    end
+
     return cooldownReady(start, duration, now) == true
 end
 
 -- True when the slot is usable (with enough resources), off cooldown and, if the client says so, not out of range.
 local function actionSlotReady(slot, now)
     local usableFn = actionBarFunction('IsUsableAction', IsUsableAction)
-    if not usableFn then return false end
+
+    if not usableFn then
+        return false
+    end
+
     local ok, usable, noMana = pcall(usableFn, slot)
-    if not ok or not readable(usable, noMana) or not usable or noMana then return false end
-    if not actionCooldownReady(slot, now) then return false end
+
+    if not ok or not readable(usable, noMana) or not usable or noMana then
+        return false
+    end
+    if not actionCooldownReady(slot, now) then
+        return false
+    end
+
     local rangeFn = actionBarFunction('IsActionInRange', IsActionInRange)
 
     if rangeFn then
         local rangeOk, inRange = pcall(rangeFn, slot)
-        if rangeOk and readable(inRange) and (inRange == false or inRange == 0) then return false end
+
+        if rangeOk and readable(inRange) and (inRange == false or inRange == 0) then
+            return false
+        end
     end
 
     return true
@@ -2317,16 +2759,24 @@ end
 -- True when any button holding spellId is ready through the bar itself. False when no button holds it.
 function addon:IsBoundActionReady(spellId, now)
     local buttons = Spells[spellId]
-    if not buttons then return false end
+
+    if not buttons then
+        return false
+    end
 
     for _, button in ipairs(buttons) do
         local index = PetButtons[button]
 
         if index then
-            if petActionReady(index, now) then return true end
+            if petActionReady(index, now) then
+                return true
+            end
         else
             local ok, slot = pcall(GetActionSlot, button)
-            if ok and slot and actionSlotReady(slot, now) then return true end
+
+            if ok and slot and actionSlotReady(slot, now) then
+                return true
+            end
         end
     end
 
@@ -2339,9 +2789,16 @@ end
 -- Auto Shot only (Core/action_policy.lua), whose button must be on the bars.
 function addon:GetBoundActionRange(spellId)
     local buttons = Spells[spellId]
-    if not buttons then return nil end
+
+    if not buttons then
+        return nil
+    end
+
     local rangeFn = actionBarFunction('IsActionInRange', IsActionInRange)
-    if not rangeFn then return nil end
+
+    if not rangeFn then
+        return nil
+    end
 
     for _, button in ipairs(buttons) do
         if not PetButtons[button] then
@@ -2351,8 +2808,12 @@ function addon:GetBoundActionRange(spellId)
                 local rangeOk, inRange = pcall(rangeFn, slot)
 
                 if rangeOk and readable(inRange) then
-                    if inRange == true or inRange == 1 then return true end
-                    if inRange == false or inRange == 0 then return false end
+                    if inRange == true or inRange == 1 then
+                        return true
+                    end
+                    if inRange == false or inRange == 0 then
+                        return false
+                    end
                 end
             end
         end
@@ -2414,7 +2875,11 @@ function addon:GlowCooldown(spellId, condition, cooldown, itemId)
 
     if condition and cooldown and (not previous or previous.id ~= cooldown.id or previous.itemId ~= itemId) then
         changed = true
-        if previous then ClearGlowIndependent(spellId, spellId) end
+
+        if previous then
+            ClearGlowIndependent(spellId, spellId)
+        end
+
         Flags[spellId] = { id = cooldown.id, itemId = itemId }
 
         GlowIndependent(
@@ -2438,7 +2903,10 @@ function addon:GlowCooldown(spellId, condition, cooldown, itemId)
     -- This runs for every cooldown on every poll; tell WeakAuras only when a
     -- cooldown glow actually starts or stops. The payload is unchanged.
     local weakAuras = changed and _G.WeakAuras
-    if weakAuras then weakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags) end
+
+    if weakAuras then
+        weakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags)
+    end
 end
 
 if type(publishActivePresentation) == 'function' then
@@ -2539,7 +3007,10 @@ end
 function addon:ForEachActionButton(callback)
     for button in pairs(ButtonSpells) do
         local ok, kind = pcall(button.GetAttribute, button, 'type')
-        if ok and kind == 'action' then callback(button, GetActionSlot(button)) end
+
+        if ok and kind == 'action' then
+            callback(button, GetActionSlot(button))
+        end
     end
 end
 
@@ -2576,11 +3047,16 @@ end
 -- here runs unless that command does, and every native read is protected.
 -- A printable name for a frame, falling back to tostring.
 local function diagnosticName(frame)
-    if type(frame) ~= 'table' then return tostring(frame) end
+    if type(frame) ~= 'table' then
+        return tostring(frame)
+    end
 
     if type(frame.GetName) == 'function' then
         local ok, name = pcall(frame.GetName, frame)
-        if ok and type(name) == 'string' then return name end
+
+        if ok and type(name) == 'string' then
+            return name
+        end
     end
 
     return tostring(frame)
@@ -2588,9 +3064,15 @@ end
 
 -- Calls frame:method() under pcall and returns the value only when it is readable.
 local function diagnosticRead(frame, method)
-    if type(frame) ~= 'table' or type(frame[method]) ~= 'function' then return nil end
+    if type(frame) ~= 'table' or type(frame[method]) ~= 'function' then
+        return nil
+    end
+
     local ok, value = pcall(frame[method], frame)
-    if ok and addon.Platform:CanReadValue(value) then return value end
+
+    if ok and addon.Platform:CanReadValue(value) then
+        return value
+    end
 end
 
 -- The Blizzard bars a Retail client builds (Blizzard_ActionBar ActionBar.lua
@@ -2666,7 +3148,10 @@ function addon:GetButtonIndexDiagnostic()
 
     for spell in pairs(Spells) do
         spells = spells + 1
-        if #ids < 24 then ids[#ids + 1] = spell end
+
+        if #ids < 24 then
+            ids[#ids + 1] = spell
+        end
     end
 
     table.sort(ids)
@@ -2770,14 +3255,18 @@ do
     -- the LibCustomGlow starters were replaced, since the counts would then mean something else.
     if kind(bind) == 'function' then
         bind(addon, 'visual', function(api)
-            if not equal(raw(addon, 'Glow'), ownedGlow) or not equal(raw(addon, 'Fetch'), ownedFetch) then return end
+            if not equal(raw(addon, 'Glow'), ownedGlow) or not equal(raw(addon, 'Fetch'), ownedFetch) then
+                return
+            end
 
             for name, method in nextKey, starts do
                 local key = name == 'pixel' and 'PixelGlow_Start'
                     or name == 'autocast' and 'AutoCastGlow_Start'
                     or 'ButtonGlow_Start'
 
-                if not equal(raw(CustomGlow, key), method) then return end
+                if not equal(raw(CustomGlow, key), method) then
+                    return
+                end
             end
 
             local result = {
@@ -2830,9 +3319,16 @@ do
                     return
                 end
 
-                if kind(frame) ~= 'table' or seen[frame] then return end
+                if kind(frame) ~= 'table' or seen[frame] then
+                    return
+                end
+
                 local ok, parent = protect(api.GetParent, frame)
-                if not ok or not equal(parent, button) then return end
+
+                if not ok or not equal(parent, button) then
+                    return
+                end
+
                 seen[frame] = true
 
                 if name == 'overlays' and raw(frame, 'sequenceTimer') ~= nil then
@@ -2846,11 +3342,21 @@ do
                     return
                 end
 
-                if shown ~= true then return end
+                if shown ~= true then
+                    return
+                end
+
                 result[name] = result[name] + 1
-                if name == 'overlays' or name == 'proc' then return end
+
+                if name == 'overlays' or name == 'proc' then
+                    return
+                end
+
                 local success, fn = protect(api.GetScript, frame, 'OnUpdate')
-                if not success or kind(fn) ~= 'function' then return end
+
+                if not success or kind(fn) ~= 'function' then
+                    return
+                end
 
                 if result.callbacks[name] and not equal(result.callbacks[name], fn) then
                     result.callbacks[name] = nil
@@ -2869,7 +3375,9 @@ do
                     break
                 end
 
-                if result.capped and result.slots >= 512 then break end
+                if result.capped and result.slots >= 512 then
+                    break
+                end
 
                 if kind(button) == 'table' then
                     local ids = {}
@@ -2878,12 +3386,12 @@ do
                     if glowing and (glowing.itemId == nil or equal(glowing.itemId, ButtonItems[button])) then
                         ids[#ids + 1] = 'next'
                     end
-
                     if flag and (flag.itemId == nil or equal(flag.itemId, ButtonItems[button])) then
                         ids[#ids + 1] = spell
                     end
-
-                    if highlighted[button] then ids[#ids + 1] = 'highlight' end
+                    if highlighted[button] then
+                        ids[#ids + 1] = 'highlight'
+                    end
 
                     for _, id in nextKey, ids do
                         result.logical = result.logical + 1
@@ -2900,7 +3408,9 @@ do
                         end
                     end
 
-                    if #ids > 0 then inspect(raw(button, '_ButtonGlow'), button, 'blizzard') end
+                    if #ids > 0 then
+                        inspect(raw(button, '_ButtonGlow'), button, 'blizzard')
+                    end
                 end
             end
 

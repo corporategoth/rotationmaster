@@ -20,15 +20,26 @@ local function plainCopy(value)
     -- nil.
     local function copy(v, depth)
         nodes = nodes + 1
-        if nodes > 512 or depth > 12 then error('sample-limit', 0) end
+
+        if nodes > 512 or depth > 12 then
+            error('sample-limit', 0)
+        end
+
         local kind = type(v)
 
         if kind == 'string' then
             bytes = bytes + #v
-            if #v > 4096 or bytes > 65536 then error('sample-limit', 0) end
+
+            if #v > 4096 or bytes > 65536 then
+                error('sample-limit', 0)
+            end
+
             return v
         elseif kind == 'number' then
-            if v ~= v or v == math.huge or v == -math.huge then error('sample-number', 0) end
+            if v ~= v or v == math.huge or v == -math.huge then
+                error('sample-number', 0)
+            end
+
             return v
         elseif kind == 'boolean' or kind == 'nil' then
             return v
@@ -40,7 +51,10 @@ local function plainCopy(value)
         local result = {}
 
         for key, child in pairs(v) do
-            if type(key) ~= 'string' and type(key) ~= 'number' then error('sample-key', 0) end
+            if type(key) ~= 'string' and type(key) ~= 'number' then
+                error('sample-key', 0)
+            end
+
             result[copy(key, depth + 1)] = copy(child, depth + 1)
         end
 
@@ -49,7 +63,10 @@ local function plainCopy(value)
     end
 
     local ok, result = pcall(copy, value, 0)
-    if ok then return result end
+
+    if ok then
+        return result
+    end
 end
 
 -- tostring that cannot raise: returns at most 512 characters, or the localized 'Unavailable' when conversion fails.
@@ -60,10 +77,14 @@ end
 
 -- Asks a widget and then every child to commit a pending edit (CommitPending); returns false if any field refuses.
 local function commitFields(widget)
-    if widget.CommitPending and not widget:CommitPending() then return false end
+    if widget.CommitPending and not widget:CommitPending() then
+        return false
+    end
 
     for _, child in ipairs(widget.children or {}) do
-        if not commitFields(child) then return false end
+        if not commitFields(child) then
+            return false
+        end
     end
 
     return true
@@ -72,7 +93,9 @@ end
 -- Builds default test values from a condition's field schema: zero, false or empty string per scalar, an empty AND for
 -- a condition, the first entry's shape for a list. Returns nil beyond depth 12.
 local function sample(schema, depth)
-    if (depth or 0) > 12 then return nil end
+    if (depth or 0) > 12 then
+        return nil
+    end
 
     if schema == 'number' then
         return 0
@@ -86,8 +109,13 @@ local function sample(schema, depth)
         return {}
     end
 
-    if type(schema) ~= 'table' then return nil end
-    if #schema > 0 then return sample(schema[1], (depth or 0) + 1) end
+    if type(schema) ~= 'table' then
+        return nil
+    end
+    if #schema > 0 then
+        return sample(schema[1], (depth or 0) + 1)
+    end
+
     local result = {}
 
     for key, child in pairs(schema) do
@@ -133,7 +161,11 @@ function addon:ConditionTestValues(owner)
     end
 
     local values = plainCopy(state.values)
-    if type(values) ~= 'table' then return nil, why end
+
+    if type(values) ~= 'table' then
+        return nil, why
+    end
+
     return values
 end
 
@@ -148,14 +180,21 @@ end
 function addon:ShowConditionSourceTest(owner, options)
     options = options or {}
     local debugSurface = options.debugSurface == true
-    if not owner.OwnerValid or not owner.OwnerValid() or not owner:Flush() then return end
+
+    if not owner.OwnerValid or not owner.OwnerValid() or not owner:Flush() then
+        return
+    end
+
     local checking = not debugSurface
     local source = owner:PendingSource()
     local key = owner.model.key
     local rootOwner = owner.rmConditionOwner
     local cacheKey = debugSurface and 'sourceDebugSurface' or 'sourcePreview'
     local d = owner[cacheKey]
-    if d and d.active then d:Close() end
+
+    if d and d.active then
+        d:Close()
+    end
 
     if not d then
         d = { frame = CreateFrame('Frame', nil, UIParent) }
@@ -265,8 +304,13 @@ function addon:ShowConditionSourceTest(owner, options)
         local children = {}
 
         for widget, record in pairs(widgets) do
-            if record.setCallback then widget.SetCallback = record.setCallback end
-            if record.addChild then widget.AddChild = record.addChild end
+            if record.setCallback then
+                widget.SetCallback = record.setCallback
+            end
+            if record.addChild then
+                widget.AddChild = record.addChild
+            end
+
             widget.LayoutFinished = record.layoutFinished
 
             for _, child in ipairs(widget.children or {}) do
@@ -275,7 +319,9 @@ function addon:ShowConditionSourceTest(owner, options)
         end
 
         for widget in pairs(widgets) do
-            if not children[widget] then report('release-preview', addon.ReleaseConditionWidget, addon, widget) end
+            if not children[widget] then
+                report('release-preview', addon.ReleaseConditionWidget, addon, widget)
+            end
         end
 
         self.pane = nil
@@ -299,7 +345,10 @@ function addon:ShowConditionSourceTest(owner, options)
     -- Saves the sample as the stored test values for a custom condition (not for the debug surface). Data that is not
     -- bounded plain data is refused with a message instead of being stored.
     function d:Persist()
-        if debugSurface or not addon:IsCustomConditionIdentifier(key, true) then return end
+        if debugSurface or not addon:IsCustomConditionIdentifier(key, true) then
+            return
+        end
+
         local value = plainCopy(self.sample)
 
         if type(value) ~= 'table' then
@@ -316,7 +365,10 @@ function addon:ShowConditionSourceTest(owner, options)
     -- Records the current sample and source as the owner's configured test state so ConditionTestValues can serve them,
     -- then persists them. Returns false (and sets sampleProblem) when the sample is not bounded plain data.
     function d:Configure()
-        if debugSurface then return false end
+        if debugSurface then
+            return false
+        end
+
         local values = plainCopy(self.sample)
         local sourceNow = owner:PendingSource()
 
@@ -341,7 +393,9 @@ function addon:ShowConditionSourceTest(owner, options)
     -- Wraps a widget created by user code so its callbacks and children run only while this preview is attached and go
     -- through Invoke. The wrapped methods are recorded so ReleaseWidgets can undo them.
     function d:Guard(widget)
-        if self.owned[widget] then return end
+        if self.owned[widget] then
+            return
+        end
 
         local record = {
             setCallback = widget.SetCallback,
@@ -360,7 +414,9 @@ function addon:ShowConditionSourceTest(owner, options)
         -- Returns callback wrapped so it is skipped once the widget is detached, and otherwise runs via Invoke.
         local function guarded(callback)
             return function(...)
-                if attached() then return d:Invoke('preview-input', callback, ...) end
+                if attached() then
+                    return d:Invoke('preview-input', callback, ...)
+                end
             end
         end
 
@@ -374,11 +430,15 @@ function addon:ShowConditionSourceTest(owner, options)
             -- Routes every callback the widget registers through guarded(), so it only runs while the preview is
             -- attached.
             widget.SetCallback = function(control, event, callback)
-                if type(callback) == 'function' then return record.setCallback(control, event, guarded(callback)) end
+                if type(callback) == 'function' then
+                    return record.setCallback(control, event, guarded(callback))
+                end
             end
 
             for name, callback in pairs(callbacks) do
-                if type(callback) == 'function' then widget:SetCallback(name, callback) end
+                if type(callback) == 'function' then
+                    widget:SetCallback(name, callback)
+                end
             end
         end
 
@@ -386,7 +446,10 @@ function addon:ShowConditionSourceTest(owner, options)
             -- Guards each child as it is added, so widgets built by user code are tracked and released with the
             -- preview.
             widget.AddChild = function(control, child, ...)
-                if child == nil or not attached() then return end
+                if child == nil or not attached() then
+                    return
+                end
+
                 d:Guard(child)
                 return record.addChild(control, child, ...)
             end
@@ -401,7 +464,10 @@ function addon:ShowConditionSourceTest(owner, options)
     -- preview (returns nil). When an input callback changed the sample while checking, the new values are stored and a
     -- re-test is queued. Returns the callback's first two results.
     function d:Invoke(operation, callback, ...)
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         local before = operation == 'preview-input' and plainCopy(self.sample)
 
         -- Track synchronous allocations as well as attached children so an
@@ -437,11 +503,16 @@ function addon:ShowConditionSourceTest(owner, options)
     -- Closes the window once: commits pending test fields (dropping the configured state if one cannot commit),
     -- releases the widgets, clears the sample and runs the owner's onClose before the owner dialog is shown again.
     function d:Close()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
 
         if self.checking and valid() and self.pane and not self.failed then
             local ok, committed = report('commit-test-fields', commitFields, self.pane)
-            if not ok or not committed then owner.conditionTestState = nil end
+
+            if not ok or not committed then
+                owner.conditionTestState = nil
+            end
         end
 
         self.active = false
@@ -461,9 +532,17 @@ function addon:ShowConditionSourceTest(owner, options)
         self.lastResult = nil
         self.sample = nil
         self.values = nil
-        if rootOwner then rootOwner.widgets[self] = nil end
-        if owner.OwnerValid and owner.OwnerValid() then owner:Show() end
-        if onClose then report('close-test-surface', onClose, self) end
+
+        if rootOwner then
+            rootOwner.widgets[self] = nil
+        end
+
+        if owner.OwnerValid and owner.OwnerValid() then
+            owner:Show()
+        end
+        if onClose then
+            report('close-test-surface', onClose, self)
+        end
     end
 
     -- Window-registry hook: hiding means closing.
@@ -523,17 +602,23 @@ function addon:ShowConditionSourceTest(owner, options)
 
     -- Stores user data from a callback while the preview is alive.
     function top:SetUserData(name, value)
-        if alive() then self.userdata[name] = value end
+        if alive() then
+            self.userdata[name] = value
+        end
     end
 
     -- Shows callback-supplied status text on the window's status line.
     function top:SetStatusText(text)
-        if alive() then d.status:SetText(type(text) == 'string' and text or '') end
+        if alive() then
+            d.status:SetText(type(text) == 'string' and text or '')
+        end
     end
 
     -- Stores a callback registered on the stand-in container.
     function top:SetCallback(event, callback)
-        if alive() then self.userdata[event] = callback end
+        if alive() then
+            self.userdata[event] = callback
+        end
     end
 
     -- A callback asked to hide the container: hides the window but keeps the preview alive (suspended).
@@ -626,7 +711,10 @@ function addon:ShowConditionSourceTest(owner, options)
                         current.parameters
                     )
 
-                    if not chunk then error(why, 0) end
+                    if not chunk then
+                        error(why, 0)
+                    end
+
                     fn = chunk()(addon, L)
                 end
 
@@ -637,10 +725,16 @@ function addon:ShowConditionSourceTest(owner, options)
                 end
 
                 addon:configure_frame(pane)
-                if pane.DoLayout then pane:DoLayout() end
+
+                if pane.DoLayout then
+                    pane:DoLayout()
+                end
             end
 
-            if content.DoLayout then content:DoLayout() end
+            if content.DoLayout then
+                content:DoLayout()
+            end
+
             d.scroll:UpdateWorkbenchScroll()
         end)
     end
@@ -673,7 +767,10 @@ function addon:ShowConditionSourceTest(owner, options)
     -- the Fields UI when the source changed, then calls valid and evaluate with the sample. automatic is the live
     -- timer; it refuses to run until the player has configured values by hand.
     function d:Check(automatic)
-        if not valid() or not self.frame:IsShown() or not self.checking then return end
+        if not valid() or not self.frame:IsShown() or not self.checking then
+            return
+        end
+
         self.failed = false
         self.lastResult = nil
 
@@ -688,7 +785,11 @@ function addon:ShowConditionSourceTest(owner, options)
         end
 
         self.pendingTest = nil
-        if self.failed then return end
+
+        if self.failed then
+            return
+        end
+
         local current = owner:PendingSource()
         local input = { source = current, key = key, revision = addon.functionRegistryVersion or 0 }
 
@@ -740,11 +841,16 @@ function addon:ShowConditionSourceTest(owner, options)
             local defaults = sample(current.fields or {}) or {}
 
             for field, value in pairs(defaults) do
-                if self.sample[field] == nil then self.sample[field] = value end
+                if self.sample[field] == nil then
+                    self.sample[field] = value
+                end
             end
 
             self:Render(current, definition)
-            if self.failed then return end
+
+            if self.failed then
+                return
+            end
         end
 
         if automatic then
@@ -770,7 +876,10 @@ function addon:ShowConditionSourceTest(owner, options)
             )
         end
 
-        if self.failed then return end
+        if self.failed then
+            return
+        end
+
         local matched, reason, status
 
         if not accepted then
@@ -785,7 +894,10 @@ function addon:ShowConditionSourceTest(owner, options)
                 GetTime and GetTime() or 0
             )
 
-            if self.failed then return end
+            if self.failed then
+                return
+            end
+
             status = matched == nil and reason ~= nil and 'unavailable' or matched and 'match' or 'no-match'
         end
 
@@ -802,8 +914,15 @@ function addon:ShowConditionSourceTest(owner, options)
 
     d.frame:Show()
     addon:OpenPopup(d, owner)
-    if not debugSurface then owner:HideForChild() end
-    if rootOwner then rootOwner.widgets[d] = true end
+
+    if not debugSurface then
+        owner:HideForChild()
+    end
+
+    if rootOwner then
+        rootOwner.widgets[d] = true
+    end
+
     local available, unavailable = addon:AreFunctionBindingsAvailable(source.bindings)
 
     if debugSurface or available then
@@ -823,7 +942,9 @@ function addon:ShowConditionSourceTest(owner, options)
         d.status:SetText(L['Unavailable'] .. ': ' .. safeText(unavailable))
     end
 
-    addon:SetUIScript(d.check, 'OnClick', function() d:Check() end)
+    addon:SetUIScript(d.check, 'OnClick', function()
+        d:Check()
+    end)
 
     addon:SetUIScript(d.live, 'OnClick', function()
         if valid() and d.checking then
@@ -833,13 +954,21 @@ function addon:ShowConditionSourceTest(owner, options)
         end
     end)
 
-    addon:SetUIScript(d.close, 'OnClick', function() d:Close() end)
-    addon:SetUIScript(d.xClose, 'OnClick', function() d:Close() end)
+    addon:SetUIScript(d.close, 'OnClick', function()
+        d:Close()
+    end)
+
+    addon:SetUIScript(d.xClose, 'OnClick', function()
+        d:Close()
+    end)
 
     addon:SetUIScript(d.frame, 'OnHide', function()
         d.liveEnabled = false
         d.live:SetChecked(false)
-        if d.active and not d.suspended then d:Close() end
+
+        if d.active and not d.suspended then
+            d:Close()
+        end
     end)
 
     addon:SetUIScript(d.frame, 'OnUpdate', function(_, elapsed)

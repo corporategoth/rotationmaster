@@ -18,7 +18,9 @@ end
 
 -- Advances the shared execution generation, if the owner handed it over, so plans compiled earlier stop being reused.
 local function invalidateExecution()
-    if advanceExecutionGeneration then advanceExecutionGeneration() end
+    if advanceExecutionGeneration then
+        advanceExecutionGeneration()
+    end
 end
 
 -- ============================================================================
@@ -37,17 +39,31 @@ local function detached(value)
 
     local function copy(v, depth)
         nodes = nodes + 1
-        if nodes > 20000 or depth > 64 then return nil end
-        local t = kind(v)
 
-        if t ~= 'table' then
-            if t == 'string' or t == 'boolean' or t == 'nil' then return v end
-            if t == 'number' and v == v and v ~= infinity and v ~= -infinity then return v end
+        if nodes > 20000 or depth > 64 then
             return nil
         end
 
-        if meta(v) ~= nil or stack[v] then return nil end
-        if seen[v] then return seen[v] end
+        local t = kind(v)
+
+        if t ~= 'table' then
+            if t == 'string' or t == 'boolean' or t == 'nil' then
+                return v
+            end
+            if t == 'number' and v == v and v ~= infinity and v ~= -infinity then
+                return v
+            end
+
+            return nil
+        end
+
+        if meta(v) ~= nil or stack[v] then
+            return nil
+        end
+        if seen[v] then
+            return seen[v]
+        end
+
         local result = {}
         seen[v] = result
         stack[v] = true
@@ -61,7 +77,11 @@ local function detached(value)
             end
 
             local child = copy(raw(v, key), depth + 1)
-            if child == nil then return nil end
+
+            if child == nil then
+                return nil
+            end
+
             result[key] = child
         end
 
@@ -74,16 +94,26 @@ end
 
 -- Structural equality for plain data; false for any table with a metatable. Raw reads only.
 local function equal(a, b)
-    if kind(a) ~= kind(b) then return false end
-    if kind(a) ~= 'table' then return a == b end
-    if meta(a) ~= nil or meta(b) ~= nil then return false end
+    if kind(a) ~= kind(b) then
+        return false
+    end
+    if kind(a) ~= 'table' then
+        return a == b
+    end
+    if meta(a) ~= nil or meta(b) ~= nil then
+        return false
+    end
 
     for key, value in iterate, a do
-        if not equal(value, raw(b, key)) then return false end
+        if not equal(value, raw(b, key)) then
+            return false
+        end
     end
 
     for key in iterate, b do
-        if raw(a, key) == nil then return false end
+        if raw(a, key) == nil then
+            return false
+        end
     end
 
     return true
@@ -101,9 +131,16 @@ end
 -- True while `token` belongs to the pending transition and the profile, specialization and current rotation still match
 -- what it recorded. Cheap enough to call after every step that might have run foreign code.
 local function current(self, token)
-    if not owned(self) then return false end
+    if not owned(self) then
+        return false
+    end
+
     local pending = operation
-    if not pending or not identity(pending.token, token) then return false end
+
+    if not pending or not identity(pending.token, token) then
+        return false
+    end
+
     local db = self.db
     local profile = db and db.profile
     local spec, id = self.currentSpec, self.currentRotation
@@ -117,14 +154,21 @@ end
 -- Starts a transition, replacing any pending one (which then fails its checks), and records the profile,
 -- specialization and rotation it began with. Returns its token, or nil and a reason.
 local function begin(self)
-    if not owned(self) then return nil, 'foreign-rotation-owner' end
+    if not owned(self) then
+        return nil, 'foreign-rotation-owner'
+    end
+
     local pending = { token = {} }
     operation = pending
     invalidateExecution()
     local db = self.db
     pending.profile = db and db.profile
     pending.spec, pending.id = self.currentSpec, self.currentRotation
-    if not identity(operation, pending) then return nil, 'rotation-transition-superseded' end
+
+    if not identity(operation, pending) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     return pending.token
 end
 
@@ -141,11 +185,18 @@ end
 -- Moves the transition to a new specialization and sets addon.currentSpec. Returns a fresh token that replaces the
 -- old one and clears any recorded cleanup selection, or nil and 'rotation-transition-superseded'.
 function addon:AdvanceActiveRotationSpecialization(token, spec)
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local pending = operation
     invalidateExecution()
     self.currentSpec = spec
-    if not identity(operation, pending) then return nil, 'rotation-transition-superseded' end
+
+    if not identity(operation, pending) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local db = self.db
     local profile = db and db.profile
     local actualSpec, id = self.currentSpec, self.currentRotation
@@ -175,14 +226,21 @@ end
 -- selection so the caller can release what that rotation held. Returns true, or nil and a reason.
 local function retire(self, token)
     local pending = operation
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local spec, id = self.currentSpec, self.currentRotation
 
     if not identity(operation, pending) or not current(self, token) then
         return nil, 'rotation-transition-superseded'
     end
 
-    if id ~= nil then pending.cleanupSpec, pending.cleanupID = spec, id end
+    if id ~= nil then
+        pending.cleanupSpec, pending.cleanupID = spec, id
+    end
+
     invalidateExecution()
     active = nil
     write(self, 'currentRotation', nil)
@@ -196,7 +254,11 @@ addon.RetireActiveRotationTransition = retire
 -- or nil when there is no current transition.
 function addon:GetActiveRotationCleanupSelection()
     local pending = operation
-    if not owned(self) or not pending or not current(self, pending.token) then return nil end
+
+    if not owned(self) or not pending or not current(self, pending.token) then
+        return nil
+    end
+
     return pending.cleanupSpec, pending.cleanupID, pending.token
 end
 
@@ -205,7 +267,10 @@ end
 -- body keeps the previous handle so consumers do not see a new identity. Returns the handle, or nil and a reason such
 -- as 'invalid-active-rotation' or 'rotation-unavailable'.
 local function commit(self, token, spec, id, body)
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local pending = operation
 
     if
@@ -216,52 +281,123 @@ local function commit(self, token, spec, id, body)
 
     if body == nil then
         local get = self.GetRuntimeRotation
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         body = get(self, spec, id)
     end
 
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local data = self.RotationData
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
-    if kind(body) ~= 'table' or meta(body) ~= nil then return nil, 'rotation-unavailable' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+    if kind(body) ~= 'table' or meta(body) ~= nil then
+        return nil, 'rotation-unavailable'
+    end
+
     local getRevision = data.GetRotationContentRevision
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local revision, why = getRevision(body)
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
-    if not revision then return nil, why end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+    if not revision then
+        return nil, why
+    end
+
     local copy = data.CopyData
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local copied, problem = copy(body)
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
-    if not copied then return nil, problem and problem.code or 'rotation-unavailable' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+    if not copied then
+        return nil, problem and problem.code or 'rotation-unavailable'
+    end
+
     copied = detached(copied)
-    if not copied then return nil, 'rotation-unavailable' end
+
+    if not copied then
+        return nil, 'rotation-unavailable'
+    end
+
     local available = self.GetScopedRotationCoordinator
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local coordinator
 
     if available then
         local get = self.GetScopedRotationCoordinator
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         coordinator = get(self)
     end
 
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local reference
 
     if coordinator then
         local resolve = coordinator.Resolve
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         reference, why = resolve(coordinator, spec, id)
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
-        if not reference then return nil, why end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+        if not reference then
+            return nil, why
+        end
+
         copy = data.CopyData
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+
         reference, problem = copy(reference)
-        if not current(self, token) then return nil, 'rotation-transition-superseded' end
-        if not reference then return nil, problem and problem.code or 'rotation-unavailable' end
+
+        if not current(self, token) then
+            return nil, 'rotation-transition-superseded'
+        end
+        if not reference then
+            return nil, problem and problem.code or 'rotation-unavailable'
+        end
+
         reference = detached(reference)
-        if not reference then return nil, 'rotation-unavailable' end
+
+        if not reference then
+            return nil, 'rotation-unavailable'
+        end
     end
 
     local unchanged = active
@@ -271,7 +407,10 @@ local function commit(self, token, spec, id, body)
         and equal(active.reference, reference)
         and equal(active.body, copied)
 
-    if not current(self, token) then return nil, 'rotation-transition-superseded' end
+    if not current(self, token) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     local handle = unchanged and active.token or {}
     invalidateExecution()
 
@@ -297,14 +436,31 @@ addon.CommitActiveRotationTransition = commit
 -- failed commit retires the rotation rather than leaving a stale body selected. Returns the handle, or nil and a
 -- reason.
 function addon:RefreshActiveRotation(spec, previousKey, nextKey)
-    if not owned(self) then return nil, 'foreign-rotation-owner' end
-    if spec ~= self.currentSpec or self.currentRotation == nil then return true end
+    if not owned(self) then
+        return nil, 'foreign-rotation-owner'
+    end
+    if spec ~= self.currentSpec or self.currentRotation == nil then
+        return true
+    end
+
     local token, why = begin(self)
-    if not token then return nil, why end
+
+    if not token then
+        return nil, why
+    end
+
     local id = self.currentRotation
-    if previousKey and id == previousKey then id = nextKey or id end
+
+    if previousKey and id == previousKey then
+        id = nextKey or id
+    end
+
     local handle, problem = commit(self, token, spec, id)
-    if not handle and current(self, token) then retire(self, token) end
+
+    if not handle and current(self, token) then
+        retire(self, token)
+    end
+
     return handle, problem
 end
 
@@ -318,9 +474,16 @@ end
 -- one and, if so, prepares a detached copy of its new body and reference. Returns a ticket for finishPublication,
 -- or nil when the write must not proceed. All copying happens here, so finishPublication can stay callout-free.
 local function preparePublication(spec, previousKey, previousReference, nextReference, body, original, fallbackKey)
-    if not identity(spec, raw(addon, 'currentSpec')) or raw(addon, 'currentRotation') == nil then return nil end
+    if not identity(spec, raw(addon, 'currentSpec')) or raw(addon, 'currentRotation') == nil then
+        return nil
+    end
+
     local token = begin(addon)
-    if not current(addon, token) then return nil end
+
+    if not current(addon, token) then
+        return nil
+    end
+
     local pending = operation
     local id = pending.id
     local selected = previousKey ~= nil and id == previousKey
@@ -330,24 +493,40 @@ local function preparePublication(spec, previousKey, previousReference, nextRefe
 
         if not reference then
             local available = addon.GetScopedRotationCoordinator
-            if not current(addon, token) then return nil end
+
+            if not current(addon, token) then
+                return nil
+            end
+
             local coordinator
 
             if available then
                 local get = addon.GetScopedRotationCoordinator
-                if not current(addon, token) then return nil end
+
+                if not current(addon, token) then
+                    return nil
+                end
+
                 coordinator = get(addon)
             end
 
-            if not current(addon, token) then return nil end
+            if not current(addon, token) then
+                return nil
+            end
 
             if coordinator then
                 local resolve = coordinator.Resolve
-                if not current(addon, token) then return nil end
+
+                if not current(addon, token) then
+                    return nil
+                end
+
                 reference = resolve(coordinator, spec, id)
             end
 
-            if not current(addon, token) then return nil end
+            if not current(addon, token) then
+                return nil
+            end
         end
 
         selected = selected or equal(reference, previousReference)
@@ -370,10 +549,18 @@ local function preparePublication(spec, previousKey, previousReference, nextRefe
 
     local ticket = {}
     pending.publication = { token = ticket, selected = selected }
-    if not selected then return ticket end
+
+    if not selected then
+        return ticket
+    end
+
     local copied = detached(body)
     local reference = nextReference and detached(nextReference)
-    if not copied or nextReference and not reference then return nil end
+
+    if not copied or nextReference and not reference then
+        return nil
+    end
+
     local revision = raw(copied, 'revision')
 
     if
@@ -407,10 +594,17 @@ end
 -- `nextKey` when the id changed). Returns the handle and transition token, true for a nil ticket, or nil when the
 -- profile, specialization or rotation changed since prepare.
 local function finishPublication(ticket, nextKey)
-    if ticket == nil then return true end
+    if ticket == nil then
+        return true
+    end
+
     local pending = operation
     local prepared = pending and pending.publication
-    if not prepared or not identity(prepared.token, ticket) then return nil end
+
+    if not prepared or not identity(prepared.token, ticket) then
+        return nil
+    end
+
     local db = raw(addon, 'db')
 
     if
@@ -423,9 +617,17 @@ local function finishPublication(ticket, nextKey)
     end
 
     pending.publication = nil
-    if not prepared.selected then return true, pending.token end
+
+    if not prepared.selected then
+        return true, pending.token
+    end
+
     local id = pending.id
-    if nextKey and prepared.previousKey == id then id = nextKey end
+
+    if nextKey and prepared.previousKey == id then
+        id = nextKey
+    end
+
     invalidateExecution()
 
     active = {
@@ -455,10 +657,17 @@ local function prepareRebind(fallbackKey)
     end
 
     local token = begin(addon)
-    if not token or not current(addon, token) then return nil, nil, token end
+
+    if not token or not current(addon, token) then
+        return nil, nil, token
+    end
+
     local pending = operation
     local spec, id = pending.spec, pending.id
-    if id == nil then return nil, nil, token, spec, id end
+
+    if id == nil then
+        return nil, nil, token, spec, id
+    end
 
     -- A managed active selection already owns a detached body/reference.
     -- Re-reading its public getter would expose the canonical body merely to
@@ -471,7 +680,10 @@ local function prepareRebind(fallbackKey)
         protect(commit, addon, token, spec, id)
     end
 
-    if not current(addon, token) then return nil, nil, token, spec, id end
+    if not current(addon, token) then
+        return nil, nil, token, spec, id
+    end
+
     local reference
 
     if active and identity(active.profile, pending.profile) and active.spec == spec and active.id == id then
@@ -487,10 +699,17 @@ end
 -- prepared) or the writer's fallback. An invalid result retires the selection and returns nil. Otherwise returns the
 -- new handle and the transition token.
 local function finishRebind(ticket, key, reference, body)
-    if ticket == nil then return true end
+    if ticket == nil then
+        return true
+    end
+
     local pending = operation
     local prepared = pending and pending.rebind
-    if not prepared or not identity(prepared.token, ticket) then return nil end
+
+    if not prepared or not identity(prepared.token, ticket) then
+        return nil
+    end
+
     local db = raw(addon, 'db')
 
     if
@@ -558,8 +777,9 @@ end
 -- Returns the active handle, its content revision and the pending transition token when the active rotation is for
 -- `spec` and `key` in the current profile; nothing otherwise.
 local function runtimeIdentity(owner, spec, key)
-    if not owned(owner) or not active or kind(raw(owner, 'db')) ~= 'table' then return end
-
+    if not owned(owner) or not active or kind(raw(owner, 'db')) ~= 'table' then
+        return
+    end
     if
         not identity(raw(raw(owner, 'db'), 'profile'), active.profile)
         or not identity(raw(owner, 'currentSpec'), spec)
@@ -579,15 +799,20 @@ local function runtimeBody(owner, handle, expected)
     if not active or not identity(active.token, handle) or not runtimeIdentity(owner, active.spec, active.id) then
         return
     end
+    if expected ~= nil and not equal(active.body, expected) then
+        return
+    end
 
-    if expected ~= nil and not equal(active.body, expected) then return end
     return detached(active.body)
 end
 
 -- One trusted handoff: gives `receiver` the private publication, rebind and runtime-access functions (in that order:
 -- prepare, finish, prepareRebind, finishRebind, runtimeIdentity, runtimeBody). Returns true; nil for a foreign caller.
 function addon:BindActiveRotationPublication(receiver)
-    if not owned(self) or kind(receiver) ~= 'function' then return nil end
+    if not owned(self) or kind(receiver) ~= 'function' then
+        return nil
+    end
+
     receiver(preparePublication, finishPublication, prepareRebind, finishRebind, runtimeIdentity, runtimeBody)
     return true
 end

@@ -36,7 +36,10 @@ local executionIndexDiagnostic
 -- One-time handoff from main.lua: stores the provider function that returns the ownership status of the execution
 -- index reader, then removes this entry point. Only the first provider from the addon itself is accepted.
 function addon:BindCPUExecutionIndexDiagnostic(provider)
-    if self ~= addon or executionIndexDiagnostic or proofType(provider) ~= "function" then return end
+    if self ~= addon or executionIndexDiagnostic or proofType(provider) ~= "function" then
+        return
+    end
+
     executionIndexDiagnostic = provider
     addon.BindCPUExecutionIndexDiagnostic = nil
 end
@@ -62,11 +65,17 @@ local proofRawKeys = { "type", "pairs", "ipairs", "getmetatable", "getfenv", "ma
 -- with rawget under pcall and prints only allow-listed reasons. Returns "probe-unavailable" if there is no provider or
 -- it fails. Called at capture start and end.
 local function executionIndexProof()
-    if not executionIndexDiagnostic then return "probe-unavailable" end
+    if not executionIndexDiagnostic then
+        return "probe-unavailable"
+    end
 
     local ok, text = proofPcall(function()
         local status = executionIndexDiagnostic()
-        if proofType(status) ~= "table" then return "probe-unavailable" end
+
+        if proofType(status) ~= "table" then
+            return "probe-unavailable"
+        end
+
         local parts = {}
 
         for i = 1, 4 do
@@ -134,7 +143,10 @@ local function appendExecutionIndexProof(report, started, ended)
         report[#report + 1] = last
     else
         local omitted = "Execution index proof omitted to keep report bounded."
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -177,12 +189,18 @@ end
 local function readable(value)
     if type(issecretvalue) == 'function' then
         local ok, secret = pcall(issecretvalue, value)
-        if not ok or secret then return false end
+
+        if not ok or secret then
+            return false
+        end
     end
 
     if type(canaccessvalue) == 'function' then
         local ok, allowed = pcall(canaccessvalue, value)
-        if not ok or not allowed then return false end
+
+        if not ok or not allowed then
+            return false
+        end
     end
 
     return true
@@ -196,18 +214,46 @@ end
 local function storeStringShape()
     local ok, text = proofPcall(function()
         local meta = getmetatable('')
-        if not readable(meta) then return 'unavailable' end
+
+        if not readable(meta) then
+            return 'unavailable'
+        end
+
         local index
-        if proofType(meta) == 'table' then index = proofRawget(meta, '__index') end
-        if not readable(index) then return 'unavailable' end
+
+        if proofType(meta) == 'table' then
+            index = proofRawget(meta, '__index')
+        end
+
+        if not readable(index) then
+            return 'unavailable'
+        end
+
         local find
-        if proofType(index) == 'table' then find = proofRawget(index, 'find') end
-        if not readable(find) then return 'unavailable' end
+
+        if proofType(index) == 'table' then
+            find = proofRawget(index, 'find')
+        end
+
+        if not readable(find) then
+            return 'unavailable'
+        end
+
         local repeated = getmetatable('')
-        if not readable(repeated) then return 'unavailable' end
+
+        if not readable(repeated) then
+            return 'unavailable'
+        end
+
         local repeatedIndex
-        if proofType(repeated) == 'table' then repeatedIndex = proofRawget(repeated, '__index') end
-        if not readable(repeatedIndex) then return 'unavailable' end
+
+        if proofType(repeated) == 'table' then
+            repeatedIndex = proofRawget(repeated, '__index')
+        end
+
+        if not readable(repeatedIndex) then
+            return 'unavailable'
+        end
 
         return 'meta='
             .. proofType(meta)
@@ -251,7 +297,10 @@ local function appendStoreStringShape(report, started, ended)
         end
     else
         local omitted = 'Store string shape omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -268,14 +317,21 @@ end
 
 -- Reads owner[key] with rawget, so no metamethod runs; returns nil when owner is not a table.
 local function field(owner, key)
-    if type(owner) == 'table' then return rawget(owner, key) end
+    if type(owner) == 'table' then
+        return rawget(owner, key)
+    end
 end
 
 -- Returns the C_AddOns function of that name if the client has it, else the legacy global passed in, else nil.
 local function addonCPUAPI(name, legacy)
     local candidate = field(C_AddOns, name)
-    if type(candidate) == 'function' then return candidate end
-    if type(legacy) == 'function' then return legacy end
+
+    if type(candidate) == 'function' then
+        return candidate
+    end
+    if type(legacy) == 'function' then
+        return legacy
+    end
 end
 
 -- The function that reads the addon's total CPU time (GetAddOnCPUUsage), or nil.
@@ -299,12 +355,25 @@ end
 -- (missing-script-profile-api, script-profile-query-error, restricted-script-profile, script-profile-disabled,
 -- invalid-script-profile-result). The addon only reads this setting; the player must enable it before a reload.
 local function enabled(fn)
-    if type(fn) ~= 'function' then return false, 'missing-script-profile-api' end
+    if type(fn) ~= 'function' then
+        return false, 'missing-script-profile-api'
+    end
+
     local ok, value = pcall(fn, 'scriptProfile')
-    if not ok then return false, 'script-profile-query-error' end
-    if not readable(value) then return false, 'restricted-script-profile' end
-    if value == '0' then return false, 'script-profile-disabled' end
-    if value ~= '1' then return false, 'invalid-script-profile-result' end
+
+    if not ok then
+        return false, 'script-profile-query-error'
+    end
+    if not readable(value) then
+        return false, 'restricted-script-profile'
+    end
+    if value == '0' then
+        return false, 'script-profile-disabled'
+    end
+    if value ~= '1' then
+        return false, 'invalid-script-profile-result'
+    end
+
     return true
 end
 
@@ -315,10 +384,19 @@ end
 
 -- Reads the clock once. Returns seconds, or nil and a reason (missing-clock-api, clock-error, invalid-clock).
 local function clock(fn)
-    if type(fn) ~= 'function' then return nil, 'missing-clock-api' end
+    if type(fn) ~= 'function' then
+        return nil, 'missing-clock-api'
+    end
+
     local ok, value = pcall(fn)
-    if not ok then return nil, 'clock-error' end
-    if not counter(value) then return nil, 'invalid-clock' end
+
+    if not ok then
+        return nil, 'clock-error'
+    end
+    if not counter(value) then
+        return nil, 'invalid-clock'
+    end
+
     return value
 end
 
@@ -326,10 +404,20 @@ end
 -- counter, or nil and a reason (addon-cpu-update-error, addon-cpu-query-error, invalid-addon-cpu-counter).
 local function total(run)
     local ok = pcall(run.update)
-    if not ok then return nil, 'addon-cpu-update-error' end
+
+    if not ok then
+        return nil, 'addon-cpu-update-error'
+    end
+
     local good, value = pcall(run.total, addon_name)
-    if not good then return nil, 'addon-cpu-query-error' end
-    if not counter(value) then return nil, 'invalid-addon-cpu-counter' end
+
+    if not good then
+        return nil, 'addon-cpu-query-error'
+    end
+    if not counter(value) then
+        return nil, 'invalid-addon-cpu-counter'
+    end
+
     return value
 end
 
@@ -338,11 +426,23 @@ end
 -- invalid-function-cpu-counter). Counters are the client's own and are never reset by this file.
 local function snapshot(run, fn)
     local ok, exclusive, calls = pcall(run.query, fn, false)
-    if not ok then return nil, 'function-cpu-query-error' end
-    if not counter(exclusive) or not counter(calls, true) then return nil, 'invalid-function-cpu-counter' end
+
+    if not ok then
+        return nil, 'function-cpu-query-error'
+    end
+    if not counter(exclusive) or not counter(calls, true) then
+        return nil, 'invalid-function-cpu-counter'
+    end
+
     local good, inclusive, inclusiveCalls = pcall(run.query, fn, true)
-    if not good then return nil, 'function-cpu-query-error' end
-    if not counter(inclusive) or not counter(inclusiveCalls, true) then return nil, 'invalid-function-cpu-counter' end
+
+    if not good then
+        return nil, 'function-cpu-query-error'
+    end
+    if not counter(inclusive) or not counter(inclusiveCalls, true) then
+        return nil, 'invalid-function-cpu-counter'
+    end
+
     return { exclusive = exclusive, inclusive = inclusive, calls = calls, inclusiveCalls = inclusiveCalls }
 end
 
@@ -354,9 +454,16 @@ end
 local function visibility(owner)
     local frame = field(owner, 'frame') or owner
     local method = type(frame) == 'table' and frame.IsShown
-    if type(method) ~= 'function' then return nil end
+
+    if type(method) ~= 'function' then
+        return nil
+    end
+
     local ok, shown = pcall(method, frame)
-    if ok and readable(shown) and type(shown) == 'boolean' then return shown end
+
+    if ok and readable(shown) and type(shown) == 'boolean' then
+        return shown
+    end
 end
 
 -- Returns the one-line state summary printed at capture start and end: whether the configuration window is shown, the
@@ -365,19 +472,30 @@ end
 local function context(owner)
     local config = visibility(field(owner, 'configWindow'))
     local dialog = visibility(field(owner, 'nativeCustomConditionDialog'))
-    if dialog == true then config = true end
+
+    if dialog == true then
+        config = true
+    end
+
     local combat = 'unavailable'
 
     if type(InCombatLockdown) == 'function' then
         local ok, value = pcall(InCombatLockdown)
-        if ok and readable(value) and type(value) == 'boolean' then combat = tostring(value) end
+
+        if ok and readable(value) and type(value) == 'boolean' then
+            combat = tostring(value)
+        end
     end
 
     local profile = field(field(owner, 'db'), 'profile')
 
     local function interval(key)
         local value = field(profile, key)
-        if finite(value) or readable(value) and type(value) == 'boolean' then return tostring(value) end
+
+        if finite(value) or readable(value) and type(value) == 'boolean' then
+            return tostring(value)
+        end
+
         return 'unavailable'
     end
 
@@ -424,11 +542,19 @@ local previewNumbers = { [0] = '0', '1', '2', '3', '4', '5' }
 local function standalonePreviewContext(owner)
     local ok, text = pcall(function()
         local selected, canonical = field(owner, 'nextWindow'), field(owner, 'nativePreviewWindow')
-        if not readable(selected) then return 'selected=unavailable' end
-        if selected == nil then return 'selected=none' end
-        local marker = field(selected, 'nativePreview')
-        if not readable(canonical) or not readable(marker) then return 'selected=unavailable' end
 
+        if not readable(selected) then
+            return 'selected=unavailable'
+        end
+        if selected == nil then
+            return 'selected=none'
+        end
+
+        local marker = field(selected, 'nativePreview')
+
+        if not readable(canonical) or not readable(marker) then
+            return 'selected=unavailable'
+        end
         if type(selected) ~= 'table' or not rawequal(selected, canonical) or marker ~= true then
             return 'selected=custom'
         end
@@ -475,7 +601,10 @@ local function standalonePreviewContext(owner)
         end
 
         local function boolean(value)
-            if readable(value) and type(value) == 'boolean' then return value and '1' or '0' end
+            if readable(value) and type(value) == 'boolean' then
+                return value and '1' or '0'
+            end
+
             return '?'
         end
 
@@ -484,10 +613,15 @@ local function standalonePreviewContext(owner)
         if readable(frame) and type(frame) == 'table' then
             local valid, value = pcall(function()
                 local method = frame.IsShown
-                if readable(method) and type(method) == 'function' and current() then return method(frame) end
+
+                if readable(method) and type(method) == 'function' and current() then
+                    return method(frame)
+                end
             end)
 
-            if valid then shown = boolean(value) end
+            if valid then
+                shown = boolean(value)
+            end
         end
 
         local sameProfile = '?'
@@ -515,7 +649,10 @@ local function standalonePreviewContext(owner)
             .. sameProfile
 
         -- A getter or visibility method may retire/rebind this surface mid-snapshot.
-        if not current() then return 'selected=unavailable' end
+        if not current() then
+            return 'selected=unavailable'
+        end
+
         return result
     end)
 
@@ -538,7 +675,10 @@ local function appendStandalonePreviewContext(report, started, ended)
         report[#report + 1] = last
     else
         local omitted = 'Standalone preview context omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -581,7 +721,11 @@ local function selectFunctions(owner)
 
     local function add(container, key, label, resolve)
         local fn = field(container, key)
-        if type(fn) ~= 'function' then return end
+
+        if type(fn) ~= 'function' then
+            return
+        end
+
         resolve = resolve or reference(container, key)
         local previous = seen[fn]
 
@@ -621,7 +765,9 @@ local function selectFunctions(owner)
             entry[2]
         ))
 
-        if entry[2] == 'IndexRotationSteps' then validationRows.IndexRotationSteps = row end
+        if entry[2] == 'IndexRotationSteps' then
+            validationRows.IndexRotationSteps = row
+        end
     end
 
     for _, name in ipairs({ 'ValidateEnvelope', 'ValidateBody' }) do
@@ -657,14 +803,20 @@ local function selectFunctions(owner)
                 break
             end
 
-            if readable(key) and type(key) == 'string' then keys[#keys + 1] = key end
+            if readable(key) and type(key) == 'string' then
+                keys[#keys + 1] = key
+            end
         end
     end
 
     table.sort(keys, function(a, b)
         local aBuiltin = type(field(catalog, a)) == 'table'
         local bBuiltin = type(field(catalog, b)) == 'table'
-        if aBuiltin ~= bBuiltin then return aBuiltin end
+
+        if aBuiltin ~= bBuiltin then
+            return aBuiltin
+        end
+
         return a < b
     end)
 
@@ -700,7 +852,6 @@ local function cacheFunction(owner, alias)
     if proofType(cacheSourceModules) ~= 'table' or proofType(cacheSourceGetter) ~= 'function' then
         return nil, 'source-reader-unavailable'
     end
-
     if
         not cacheSourceEqual(owner, addon)
         or not cacheSourceEqual(proofRawget(owner, 'builtinSourceModules'), cacheSourceModules)
@@ -710,8 +861,14 @@ local function cacheFunction(owner, alias)
     end
 
     local ok, fn = proofPcall(cacheSourceGetter, alias)
-    if not ok then return nil, 'source-reader-error' end
-    if not readable(fn) or proofType(fn) ~= 'function' then return nil, 'invalid-source-function' end
+
+    if not ok then
+        return nil, 'source-reader-error'
+    end
+    if not readable(fn) or proofType(fn) ~= 'function' then
+        return nil, 'invalid-source-function'
+    end
+
     return fn
 end
 
@@ -807,10 +964,17 @@ validationInstaller = function(self, name, anchor, reader)
         end
     end
 
-    if not found then return false end
+    if not found then
+        return false
+    end
+
     validationGroups[name] = { anchor = anchor, reader = reader }
     validationCount = validationCount + 1
-    if validationCount == 3 then validationRetire() end
+
+    if validationCount == 3 then
+        validationRetire()
+    end
+
     return true
 end
 
@@ -820,9 +984,16 @@ addon.BindCPUValidationScopeDiagnostic = validationInstaller
 -- slot if this run held it.
 local function validationClear(run)
     local state = run.validationScopes
-    if state then state.phase = 'retired' end
+
+    if state then
+        state.phase = 'retired'
+    end
+
     run.validationScopes = nil
-    if validationCapture == run then validationCapture = nil end
+
+    if validationCapture == run then
+        validationCapture = nil
+    end
 end
 
 -- Called as a capture finishes: a completed run moves its validation state to the "end" phase for the final read;
@@ -843,17 +1014,40 @@ end
 -- Same reading as snapshot, but re-proves the capture is still the live one (current()) around every client call, since
 -- a native query can run foreign code. Returns the counters, or nil and a reason such as "capture-retired".
 local function validationSnapshot(run, fn, current)
-    if not current() then return nil, 'capture-retired' end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+
     local ok, exclusive, calls = proofPcall(run.query, fn, false)
-    if not current() then return nil, 'capture-retired' end
-    if not ok then return nil, 'function-cpu-query-error' end
-    if not counter(exclusive) or not counter(calls, true) then return nil, 'invalid-function-cpu-counter' end
-    if not current() then return nil, 'capture-retired' end
+
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not ok then
+        return nil, 'function-cpu-query-error'
+    end
+    if not counter(exclusive) or not counter(calls, true) then
+        return nil, 'invalid-function-cpu-counter'
+    end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+
     local good, inclusive, inclusiveCalls = proofPcall(run.query, fn, true)
-    if not current() then return nil, 'capture-retired' end
-    if not good then return nil, 'function-cpu-query-error' end
-    if not counter(inclusive) or not counter(inclusiveCalls, true) then return nil, 'invalid-function-cpu-counter' end
-    if not current() then return nil, 'capture-retired' end
+
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not good then
+        return nil, 'function-cpu-query-error'
+    end
+    if not counter(inclusive) or not counter(inclusiveCalls, true) then
+        return nil, 'invalid-function-cpu-counter'
+    end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+
     return { exclusive = exclusive, inclusive = inclusive, calls = calls, inclusiveCalls = inclusiveCalls }
 end
 
@@ -862,25 +1056,54 @@ end
 -- and that every slot is a readable function; otherwise nil and a reason (capture-retired, owner-changed, unbound,
 -- provider-unavailable, invalid-source-function).
 local function validationFunctions(run, spec, group, current)
-    if not current() then return nil, 'capture-retired' end
-    if not validationEqual(run.owner, addon) then return nil, 'owner-changed' end
-    if not group then return nil, 'unbound' end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not validationEqual(run.owner, addon) then
+        return nil, 'owner-changed'
+    end
+    if not group then
+        return nil, 'unbound'
+    end
+
     local anchor = proofRawget(addon, spec.anchor)
-    if not readable(anchor) or not validationEqual(anchor, group.anchor) then return nil, 'owner-changed' end
-    if not current() then return nil, 'capture-retired' end
+
+    if not readable(anchor) or not validationEqual(anchor, group.anchor) then
+        return nil, 'owner-changed'
+    end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+
     local values = validationTuple(proofPcall(group.reader))
-    if not current() then return nil, 'capture-retired' end
-    if not values[1] then return nil, 'provider-unavailable' end
-    if values.n ~= #spec.slots + 1 then return nil, 'invalid-source-function' end
+
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not values[1] then
+        return nil, 'provider-unavailable'
+    end
+    if values.n ~= #spec.slots + 1 then
+        return nil, 'invalid-source-function'
+    end
 
     for i = 1, #spec.slots do
         local fn = values[i + 1]
-        if not readable(fn) or proofType(fn) ~= 'function' then return nil, 'invalid-source-function' end
+
+        if not readable(fn) or proofType(fn) ~= 'function' then
+            return nil, 'invalid-source-function'
+        end
     end
 
     anchor = proofRawget(addon, spec.anchor)
-    if not readable(anchor) or not validationEqual(anchor, group.anchor) then return nil, 'owner-changed' end
-    if not current() then return nil, 'capture-retired' end
+
+    if not readable(anchor) or not validationEqual(anchor, group.anchor) then
+        return nil, 'owner-changed'
+    end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+
     return values
 end
 
@@ -888,7 +1111,10 @@ end
 -- sampled elsewhere in the run (counted against MAX_FUNCTIONS). state.current is the fence used for the whole run: true
 -- only while this run is the live capture and in the expected phase.
 local function validationStart(run)
-    if active ~= run then return end
+    if active ~= run then
+        return
+    end
+
     local state = { phase = 'start', views = {}, samples = {}, groups = {} }
     run.validationScopes = state
     validationCapture = run
@@ -999,7 +1225,10 @@ local function appendValidationScopes(report, run, sampleEnd)
 
                 sample = view.sample
                 problem = problem or sample.reason
-                if not problem then current, problem = sampleEnd(run, sample, state.current) end
+
+                if not problem then
+                    current, problem = sampleEnd(run, sample, state.current)
+                end
 
                 if not problem then
                     for _, key in ipairs({ 'exclusive', 'inclusive', 'calls', 'inclusiveCalls' }) do
@@ -1034,7 +1263,9 @@ local function appendValidationScopes(report, run, sampleEnd)
                 tostring(calls)
             )
 
-            if not problem then available = available + 1 end
+            if not problem then
+                available = available + 1
+            end
         end
     end
 
@@ -1063,7 +1294,10 @@ local function appendValidationScopes(report, run, sampleEnd)
         end
     else
         local omitted = 'Private validation scopes omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -1120,10 +1354,18 @@ workInstaller = function(self, name, anchor, reader)
     end
 
     local namespace = addon
-    if name == 'store' then namespace = proofRawget(addon, 'RotationData') end
+
+    if name == 'store' then
+        namespace = proofRawget(addon, 'RotationData')
+    end
+
     workGroups[name] = { anchor = anchor, reader = reader, namespace = namespace }
     workCount = workCount + 1
-    if workCount == 2 then workRetire() end
+
+    if workCount == 2 then
+        workRetire()
+    end
+
     return true
 end
 
@@ -1132,9 +1374,16 @@ addon.BindCPURuntimeWorkDiagnostic = workInstaller
 -- Abandons the runtime-work state of a run and releases the capture slot if this run held it.
 local function workClear(run)
     local state = run.runtimeWork
-    if state then state.phase = 'retired' end
+
+    if state then
+        state.phase = 'retired'
+    end
+
     run.runtimeWork = nil
-    if workCapture == run then workCapture = nil end
+
+    if workCapture == run then
+        workCapture = nil
+    end
 end
 
 -- Counterpart of validationEnding for the runtime-work state.
@@ -1148,7 +1397,10 @@ end
 
 -- The table a work spec's functions live on right now: the named namespace on the addon, or the addon itself.
 local function workNamespace(spec)
-    if spec.namespace then return proofRawget(addon, spec.namespace) end
+    if spec.namespace then
+        return proofRawget(addon, spec.namespace)
+    end
+
     return addon
 end
 
@@ -1157,10 +1409,19 @@ end
 -- after the read, or nil and a reason (capture-retired, owner-changed, unbound, provider-unavailable,
 -- invalid-source-function, function-replaced).
 local function workFunctions(run, source, current)
-    if not current() then return nil, 'capture-retired' end
-    if not workEqual(run.owner, addon) then return nil, 'owner-changed' end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not workEqual(run.owner, addon) then
+        return nil, 'owner-changed'
+    end
+
     local spec, group = source.spec, source.group
-    if spec.anchor and not group then return nil, 'unbound' end
+
+    if spec.anchor and not group then
+        return nil, 'unbound'
+    end
+
     local namespace = workNamespace(spec)
 
     if not readable(namespace) or not workEqual(namespace, source.namespace) or proofType(namespace) ~= 'table' then
@@ -1171,13 +1432,25 @@ local function workFunctions(run, source, current)
 
     if spec.anchor then
         local anchor = proofRawget(namespace, spec.anchor)
-        if not readable(anchor) or not workEqual(anchor, group.anchor) then return nil, 'owner-changed' end
-        if not current() then return nil, 'capture-retired' end
-        values = validationTuple(proofPcall(group.reader))
-        if not current() then return nil, 'capture-retired' end
-        if not values[1] then return nil, 'provider-unavailable' end
-        if values.n ~= #spec.slots + 1 then return nil, 'invalid-source-function' end
 
+        if not readable(anchor) or not workEqual(anchor, group.anchor) then
+            return nil, 'owner-changed'
+        end
+        if not current() then
+            return nil, 'capture-retired'
+        end
+
+        values = validationTuple(proofPcall(group.reader))
+
+        if not current() then
+            return nil, 'capture-retired'
+        end
+        if not values[1] then
+            return nil, 'provider-unavailable'
+        end
+        if values.n ~= #spec.slots + 1 then
+            return nil, 'invalid-source-function'
+        end
         if
             not workEqual(
                 proofRawget(addon, spec.namespace or spec.anchor),
@@ -1197,11 +1470,17 @@ local function workFunctions(run, source, current)
         end
     end
 
-    if not current() then return nil, 'capture-retired' end
-    if not workEqual(workNamespace(spec), namespace) then return nil, 'owner-changed' end
+    if not current() then
+        return nil, 'capture-retired'
+    end
+    if not workEqual(workNamespace(spec), namespace) then
+        return nil, 'owner-changed'
+    end
 
     if spec.anchor then
-        if not workEqual(proofRawget(namespace, spec.anchor), group.anchor) then return nil, 'owner-changed' end
+        if not workEqual(proofRawget(namespace, spec.anchor), group.anchor) then
+            return nil, 'owner-changed'
+        end
     elseif not workEqual(proofRawget(namespace, spec.member), values[2]) then
         return nil, 'function-replaced'
     end
@@ -1212,7 +1491,10 @@ end
 -- Capture-start half for the runtime work views; same shape as validationStart (baseline samples of functions not
 -- already sampled, within MAX_FUNCTIONS).
 local function workStart(run)
-    if active ~= run then return end
+    if active ~= run then
+        return
+    end
+
     local state = { phase = 'start', views = {}, samples = {}, sources = {} }
     run.runtimeWork = state
     workCapture = run
@@ -1245,7 +1527,11 @@ local function workStart(run)
     for _, spec in ipairs(workSpecs) do
         local group = workGroups[spec.name]
         local namespace = workNamespace(spec)
-        if group then namespace = group.namespace end
+
+        if group then
+            namespace = group.namespace
+        end
+
         local source = { spec = spec, group = group, namespace = namespace }
         state.sources[#state.sources + 1] = source
         local funcs, reason = workFunctions(run, source, state.current)
@@ -1311,7 +1597,10 @@ local function appendWorkViews(report, run, sampleEnd)
 
                     sample = view.sample
                     problem = problem or sample.reason
-                    if not problem then current, problem = sampleEnd(run, sample, state.current) end
+
+                    if not problem then
+                        current, problem = sampleEnd(run, sample, state.current)
+                    end
 
                     if not problem then
                         for _, key in ipairs({ 'exclusive', 'inclusive', 'calls', 'inclusiveCalls' }) do
@@ -1347,7 +1636,9 @@ local function appendWorkViews(report, run, sampleEnd)
                 tostring(calls)
             )
 
-            if not problem then available = available + 1 end
+            if not problem then
+                available = available + 1
+            end
         end
     end
 
@@ -1376,7 +1667,10 @@ local function appendWorkViews(report, run, sampleEnd)
         end
     else
         local omitted = 'Runtime work views omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -1409,12 +1703,19 @@ local function appendPrivateCache(report, run)
         if not problem then
             local fn
             fn, problem = cacheFunction(run.owner, view.alias)
-            if not problem and not cacheSourceEqual(fn, sample.fn) then problem = 'function-replaced' end
+
+            if not problem and not cacheSourceEqual(fn, sample.fn) then
+                problem = 'function-replaced'
+            end
+
             problem = problem or sample.reason
         end
 
         local current
-        if not problem then current, problem = finishSample(run, sample) end
+
+        if not problem then
+            current, problem = finishSample(run, sample)
+        end
 
         if not problem then
             for _, key in ipairs({ 'exclusive', 'inclusive', 'calls', 'inclusiveCalls' }) do
@@ -1446,7 +1747,9 @@ local function appendPrivateCache(report, run)
             tostring(calls)
         )
 
-        if not problem then available = available + 1 end
+        if not problem then
+            available = available + 1
+        end
     end
 
     lines[#lines + 1] = string.format(
@@ -1476,7 +1779,10 @@ local function appendPrivateCache(report, run)
         end
     else
         local omitted = 'Private cache helpers omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -1524,7 +1830,10 @@ local function activityRead()
 
         if reader then
             local ok, value = proofPcall(reader, activityAPI)
-            if ok and proofType(value) == 'table' then result[name] = value end
+
+            if ok and proofType(value) == 'table' then
+                result[name] = value
+            end
         end
     end
 
@@ -1553,7 +1862,10 @@ end
 -- rather than disturbed.
 local function activityStop(run)
     local state = run.activity
-    if not state then return end
+
+    if not state then
+        return
+    end
 
     if state.lease then
         state.lease.run = nil
@@ -1607,7 +1919,11 @@ local function activityEnsureAPI()
                 'IsVisible',
             }) do
                 local method = frame[name]
-                if proofType(method) ~= 'function' then valid = false end
+
+                if proofType(method) ~= 'function' then
+                    valid = false
+                end
+
                 api[name] = method
             end
 
@@ -1636,7 +1952,10 @@ local function activityStart(run)
 
         state.handler = function(_, event, ...)
             local current = lease.run
-            if not current or active ~= current then return end
+
+            if not current or active ~= current then
+                return
+            end
 
             if not proofPcall(activityEvent, current, event, ...) then
                 current.activity.events.unknown = current.activity.events.unknown + 1
@@ -1708,7 +2027,9 @@ local memoryActivityPrepared = false
 -- at most 4096 and with a "...Capped" flag), or nothing for any caller other than the addon. Does not need a capture
 -- to be running.
 function addon:GetRetainedMemoryDiagnostic()
-    if self ~= addon then return end
+    if self ~= addon then
+        return
+    end
 
     if not memoryActivityPrepared then
         memoryActivityPrepared = true
@@ -1758,14 +2079,22 @@ end
 -- Does nothing if the run has no activity state.
 local function appendActivity(report, run)
     local state = run.activity
-    if not state then return end
+
+    if not state then
+        return
+    end
+
     local lines = { 'Retained catalogs and animation activity (capture only):' }
 
     local function retained(root, key)
         local object = field(root, key)
         local n = field(object, 'n')
         local capped = field(object, 'capped')
-        if not counter(n, true) or n > 4096 or proofType(capped) ~= 'boolean' then return 'unavailable' end
+
+        if not counter(n, true) or n > 4096 or proofType(capped) ~= 'boolean' then
+            return 'unavailable'
+        end
+
         return (capped and '>=' or '') .. tostring(n), not capped and n or nil
     end
 
@@ -1799,7 +2128,10 @@ local function appendActivity(report, run)
         or 'metadata successes: unavailable'
 
     local function visual(label, value)
-        if proofType(value) ~= 'table' then return label .. ' visuals: unavailable' end
+        if proofType(value) ~= 'table' then
+            return label .. ' visuals: unavailable'
+        end
+
         local parts = { label .. ' visuals:' }
 
         for _, key in ipairs({
@@ -1810,7 +2142,11 @@ local function appendActivity(report, run)
         end
 
         parts[#parts + 1] = 'capped=' .. (field(value, 'capped') == true and 'true' or 'false')
-        if field(value, 'unsupported') == true then parts[#parts + 1] = 'native-observation=unavailable' end
+
+        if field(value, 'unsupported') == true then
+            parts[#parts + 1] = 'native-observation=unavailable'
+        end
+
         return table.concat(parts, ' ')
     end
 
@@ -1828,10 +2164,17 @@ local function appendActivity(report, run)
 
     for _, view in ipairs(state.views) do
         local sample, problem = view.sample, view.reason
-        if not field(state.ended, 'visual') then problem = problem or 'source-reader-changed' end
+
+        if not field(state.ended, 'visual') then
+            problem = problem or 'source-reader-changed'
+        end
+
         problem = problem or sample and sample.reason
         local current
-        if not problem then current, problem = finishSample(run, sample) end
+
+        if not problem then
+            current, problem = finishSample(run, sample)
+        end
 
         if not problem then
             for _, key in ipairs({ 'exclusive', 'inclusive', 'calls', 'inclusiveCalls' }) do
@@ -1863,7 +2206,9 @@ local function appendActivity(report, run)
             tostring(calls)
         )
 
-        if not problem then available = available + 1 end
+        if not problem then
+            available = available + 1
+        end
     end
 
     lines[#lines + 1] = string.format(
@@ -1896,7 +2241,10 @@ local function appendActivity(report, run)
         end
     else
         local omitted = 'Retained activity omitted to keep report bounded.'
-        if bytes + 1 + #omitted < 16000 then report[#report + 1] = omitted end
+
+        if bytes + 1 + #omitted < 16000 then
+            report[#report + 1] = omitted
+        end
     end
 end
 
@@ -1913,7 +2261,10 @@ end
 -- The text (or a one-line status for a run that did not complete) becomes lastReport and is passed to the owner's
 -- OnCPUProfileFinished callback. Does nothing if this run is no longer the active one.
 local function finish(run, status, reason)
-    if active ~= run then return end
+    if active ~= run then
+        return
+    end
+
     -- BEGIN PRIVATE VALIDATION END TOKEN
     validationEnding(run, status)
     -- END PRIVATE VALIDATION END TOKEN
@@ -1930,7 +2281,10 @@ local function finish(run, status, reason)
     if status == 'complete' then
         local now, why = clock(run.clock)
         local elapsed = now and now - run.started
-        if not elapsed or not finite(elapsed) or elapsed <= 0 then status, reason = 'invalid', why or 'clock-reset' end
+
+        if not elapsed or not finite(elapsed) or elapsed <= 0 then
+            status, reason = 'invalid', why or 'clock-reset'
+        end
 
         if status == 'complete' then
             local allowed, problem = enabled(run.cvar)
@@ -1957,18 +2311,27 @@ local function finish(run, status, reason)
                 status, reason = 'invalid', problem or 'addon-cpu-counter-reset'
             else
                 used = value - run.initialTotal
-                if not finite(used) then status, reason = 'invalid', 'invalid-addon-cpu-delta' end
+
+                if not finite(used) then
+                    status, reason = 'invalid', 'invalid-addon-cpu-delta'
+                end
             end
         end
 
         if status == 'complete' then
             rate = used / elapsed
-            if not finite(rate) then status, reason = 'invalid', 'invalid-cpu-rate' end
+
+            if not finite(rate) then
+                status, reason = 'invalid', 'invalid-cpu-rate'
+            end
         end
 
         if status == 'complete' then
             -- BEGIN CPU ACTIVITY END
-            if run.activity then run.activity.ended = activityRead() end
+            if run.activity then
+                run.activity.ended = activityRead()
+            end
+
             -- END CPU ACTIVITY END
             local ranked, unavailable = {}, {}
 
@@ -1983,7 +2346,10 @@ local function finish(run, status, reason)
                 end
 
                 local current
-                if not problem then current, problem = finishSample(run, row) end
+
+                if not problem then
+                    current, problem = finishSample(run, row)
+                end
 
                 if not problem then
                     for _, key in ipairs({ 'exclusive', 'inclusive', 'calls', 'inclusiveCalls' }) do
@@ -2012,12 +2378,19 @@ local function finish(run, status, reason)
                     end
                 end
 
-                if problem then unavailable[#unavailable + 1] = { label = row.label, reason = problem } end
+                if problem then
+                    unavailable[#unavailable + 1] = { label = row.label, reason = problem }
+                end
             end
 
             table.sort(ranked, function(a, b)
-                if a.exclusive ~= b.exclusive then return a.exclusive > b.exclusive end
-                if a.inclusive ~= b.inclusive then return a.inclusive > b.inclusive end
+                if a.exclusive ~= b.exclusive then
+                    return a.exclusive > b.exclusive
+                end
+                if a.inclusive ~= b.inclusive then
+                    return a.inclusive > b.inclusive
+                end
+
                 return a.label < b.label
             end)
 
@@ -2073,7 +2446,10 @@ local function finish(run, status, reason)
                 report[#report + 1] = row.label .. ' | unavailable: ' .. row.reason
             end
 
-            if #unavailable > 10 then report[#report + 1] = 'Additional unavailable rows omitted.' end
+            if #unavailable > 10 then
+                report[#report + 1] = 'Additional unavailable rows omitted.'
+            end
+
             -- BEGIN INCLUSIVE CPU SCOPES
             -- Existing lines are complete before this second view of the same rows.
             local reportBytes = #report - 1
@@ -2090,8 +2466,13 @@ local function finish(run, status, reason)
                 reportBytes = reportBytes + 1 + #title
 
                 table.sort(ranked, function(a, b)
-                    if a.inclusive ~= b.inclusive then return a.inclusive > b.inclusive end
-                    if a.exclusive ~= b.exclusive then return a.exclusive > b.exclusive end
+                    if a.inclusive ~= b.inclusive then
+                        return a.inclusive > b.inclusive
+                    end
+                    if a.exclusive ~= b.exclusive then
+                        return a.exclusive > b.exclusive
+                    end
+
                     return a.label < b.label
                 end)
 
@@ -2175,9 +2556,16 @@ local function finish(run, status, reason)
     workClear(run)
     -- END RUNTIME WORK CLEANUP
     lastReport = text
-    if status == 'complete' and run.stopRequested then status = 'stopped' end
+
+    if status == 'complete' and run.stopRequested then
+        status = 'stopped'
+    end
+
     local callback = field(run.owner, 'OnCPUProfileFinished')
-    if type(callback) == 'function' then pcall(callback, run.owner, text, status) end
+
+    if type(callback) == 'function' then
+        pcall(callback, run.owner, text, status)
+    end
 end
 
 -- ============================================================================
@@ -2202,16 +2590,32 @@ function addon:StartCPUProfile(duration)
     -- END PRIVATE VALIDATION RETIRE
     -- BEGIN RUNTIME WORK RETIRE
     workRetire()
+
     -- END RUNTIME WORK RETIRE
-    if active then return false, 'already-running' end
-    if duration == nil then duration = 10 end
-    if not finite(duration) or duration < 1 or duration > 60 then return false, 'invalid-duration' end
+    if active then
+        return false, 'already-running'
+    end
+
+    if duration == nil then
+        duration = 10
+    end
+
+    if not finite(duration) or duration < 1 or duration > 60 then
+        return false, 'invalid-duration'
+    end
+
     local cvar = cvarAPI()
     local allowed, reason = enabled(cvar)
-    if not allowed then return false, reason end
-    if type(GetFunctionCPUUsage) ~= 'function' then return false, 'missing-function-cpu-api' end
-    if not totalAPI() or not updateAPI() then return false, 'missing-addon-cpu-api' end
 
+    if not allowed then
+        return false, reason
+    end
+    if type(GetFunctionCPUUsage) ~= 'function' then
+        return false, 'missing-function-cpu-api'
+    end
+    if not totalAPI() or not updateAPI() then
+        return false, 'missing-addon-cpu-api'
+    end
     if type(self.ScheduleTimer) ~= 'function' or type(self.CancelTimer) ~= 'function' then
         return false, 'missing-timer-api'
     end
@@ -2228,19 +2632,33 @@ function addon:StartCPUProfile(duration)
     }
 
     run.started, reason = clock(run.clock)
-    if run.started == nil then return false, reason end
+
+    if run.started == nil then
+        return false, reason
+    end
+
     run.initialTotal, reason = total(run)
-    if run.initialTotal == nil then return false, reason end
+
+    if run.initialTotal == nil then
+        return false, reason
+    end
+
     run.rows, run.truncated, run.validationRows = selectFunctions(self)
     run.context = context(self)
     local available = 0
 
     for _, row in ipairs(run.rows) do
         row.before, row.reason = snapshot(run, row.fn)
-        if row.before then available = available + 1 end
+
+        if row.before then
+            available = available + 1
+        end
     end
 
-    if available == 0 then return false, 'function-cpu-unavailable' end
+    if available == 0 then
+        return false, 'function-cpu-unavailable'
+    end
+
     -- BEGIN PRIVATE CACHE START
     run.privateCache = privateCacheSelection(self, run.rows)
 
@@ -2279,31 +2697,57 @@ function addon:StartCPUProfile(duration)
     end
 
     -- END RUNTIME WORK START
-    local ok, timer = pcall(self.ScheduleTimer, self, function() finish(run, 'complete') end, duration)
+    local ok, timer = pcall(
+        self.ScheduleTimer,
+        self,
+        function()
+            finish(run, 'complete')
+        end,
+        duration
+    )
+
     -- BEGIN PRIVATE VALIDATION TIMER FAILURE
-    if not ok or not timer then validationClear(run) end
+    if not ok or not timer then
+        validationClear(run)
+    end
+
     -- END PRIVATE VALIDATION TIMER FAILURE
     -- BEGIN RUNTIME WORK TIMER FAILURE
-    if not ok or not timer then workClear(run) end
+    if not ok or not timer then
+        workClear(run)
+    end
 
     -- END RUNTIME WORK TIMER FAILURE
     if not ok or not timer then
-        if active == run then active = nil end
+        if active == run then
+            active = nil
+        end
+
         activityStop(run)
         return false, 'timer-error'
     end
 
     run.timer = timer
-    if active == run then run.executionIndexProof = executionIndexProof() end
+
+    if active == run then
+        run.executionIndexProof = executionIndexProof()
+    end
+
     lastReport = nil
+
     -- BEGIN STANDALONE PREVIEW START
-    if active == run then run.previewContext = standalonePreviewContext(self) end
+    if active == run then
+        run.previewContext = standalonePreviewContext(self)
+    end
 
     -- END STANDALONE PREVIEW START
     -- BEGIN COLD STORE STRING START
     if active == run then
         run.storeStringShape = storeStringShape()
-        if active ~= run then return true end
+
+        if active ~= run then
+            return true
+        end
     end
 
     -- END COLD STORE STRING START
@@ -2314,19 +2758,34 @@ end
 -- "not-running".
 function addon:StopCPUProfile()
     local run = active
-    if not run then return false, 'not-running' end
+
+    if not run then
+        return false, 'not-running'
+    end
+
     local timer = run.timer
     run.stopRequested = true
     finish(run, 'complete')
-    if timer then pcall(run.cancel, run.owner, timer) end
+
+    if timer then
+        pcall(run.cancel, run.owner, timer)
+    end
+
     return true
 end
 
 -- Abandons the running capture without a report. Returns true, or false and "not-running".
 function addon:CancelCPUProfile()
     local run = active
-    if not run then return false, 'not-running' end
-    if run.timer then pcall(run.cancel, run.owner, run.timer) end
+
+    if not run then
+        return false, 'not-running'
+    end
+
+    if run.timer then
+        pcall(run.cancel, run.owner, run.timer)
+    end
+
     finish(run, 'cancelled')
     return true
 end
@@ -2339,8 +2798,13 @@ end
 -- Returns the text of the last finished capture, a one-line "running" status while one is in progress, or nil and
 -- "not-captured". The report is only kept in memory for this session.
 function addon:GetCPUProfileReport()
-    if active then return string.format('Rotation Master CPU profile: running (requested %.3f s)', active.duration) end
-    if lastReport then return lastReport end
+    if active then
+        return string.format('Rotation Master CPU profile: running (requested %.3f s)', active.duration)
+    end
+    if lastReport then
+        return lastReport
+    end
+
     return nil, 'not-captured'
 end
 
@@ -2350,7 +2814,10 @@ end
 -- no report), a running memory capture (stopped so it still reports) and the cast capture's data, whichever are loaded.
 function addon:OnDisable()
     -- BEGIN NATIVE RUNTIME DISABLE
-    if type(self.CancelCPURuntimeCapture) == 'function' then self:CancelCPURuntimeCapture() end
+    if type(self.CancelCPURuntimeCapture) == 'function' then
+        self:CancelCPURuntimeCapture()
+    end
+
     -- END NATIVE RUNTIME DISABLE
     self:CancelCPUProfile()
 
@@ -2361,6 +2828,7 @@ function addon:OnDisable()
     then
         self:StopMemoryCapture()
     end
-
-    if type(self.ClearCastCaptureForDisable) == 'function' then self:ClearCastCaptureForDisable() end
+    if type(self.ClearCastCaptureForDisable) == 'function' then
+        self:ClearCastCaptureForDisable()
+    end
 end

@@ -17,7 +17,10 @@ local executionClassEnvironment
 
 if type(executionGetfenv) == 'function' then
     local ok, value = executionProtect(executionGetfenv, isClass)
-    if ok and type(value) == 'table' then executionClassEnvironment = value end
+
+    if ok and type(value) == 'table' then
+        executionClassEnvironment = value
+    end
 end
 
 -- These are source witnesses only. The private runtime guard never executes
@@ -60,10 +63,14 @@ end
 
 -- Returns true when v is a plain table whose keys are all in the allowed set.
 local function fields(v, allowed)
-    if not plain(v) then return false end
+    if not plain(v) then
+        return false
+    end
 
     for key in pairs(v) do
-        if not allowed[key] then return false end
+        if not allowed[key] then
+            return false
+        end
     end
 
     return true
@@ -82,23 +89,38 @@ end
 -- Returns true when the address belongs to the caller's owner context { class, character }: the same class, and for
 -- character scope the same character. Otherwise nil and 'missing-owner-context' or 'foreign-owner'.
 local function visible(a, c)
-    if not plain(c) or not isClass(c.class) then return nil, 'missing-owner-context' end
-    if a.scope == 'character' and not text(c.character, 512) then return nil, 'missing-owner-context' end
-    if c.class ~= a.class or a.scope == 'character' and a.owner ~= c.character then return nil, 'foreign-owner' end
+    if not plain(c) or not isClass(c.class) then
+        return nil, 'missing-owner-context'
+    end
+    if a.scope == 'character' and not text(c.character, 512) then
+        return nil, 'missing-owner-context'
+    end
+    if c.class ~= a.class or a.scope == 'character' and a.owner ~= c.character then
+        return nil, 'foreign-owner'
+    end
+
     return true
 end
 
 -- Deep structural equality over plain data.
 local function equal(a, b)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
 
     for key, value in pairs(a) do
-        if not equal(value, b[key]) then return false end
+        if not equal(value, b[key]) then
+            return false
+        end
     end
 
     for key in pairs(b) do
-        if a[key] == nil then return false end
+        if a[key] == nil then
+            return false
+        end
     end
 
     return true
@@ -114,7 +136,9 @@ local function copyRecord(record)
     local result = {}
 
     for _, key in ipairs(components) do
-        if record[key] ~= nil then result[key] = copied(record[key]) end
+        if record[key] ~= nil then
+            result[key] = copied(record[key])
+        end
     end
 
     return result
@@ -122,10 +146,14 @@ end
 
 -- Returns true for a map of step id to origin step id (both non-blank strings of at most 128 bytes).
 local function originMap(value)
-    if not plain(value) then return false end
+    if not plain(value) then
+        return false
+    end
 
     for key, origin in pairs(value) do
-        if not text(key, 128) or not text(origin, 128) then return false end
+        if not text(key, 128) or not text(origin, 128) then
+            return false
+        end
     end
 
     return true
@@ -159,9 +187,9 @@ local function validRecord(record, address)
         if not plain(manifest) or manifest.body ~= nil or manifest.id ~= address.id then
             return nil, 'invalid-record'
         end
-
-        if manifest.applicability ~= nil and not plain(manifest.applicability) then return nil, 'invalid-record' end
-
+        if manifest.applicability ~= nil and not plain(manifest.applicability) then
+            return nil, 'invalid-record'
+        end
         if
             manifest.applicability and manifest.applicability.class and manifest.applicability.class ~= address.class
         then
@@ -171,7 +199,10 @@ local function validRecord(record, address)
         -- Validate manifest structure independently of an incomplete current body.
         local envelope = copied(manifest)
         envelope.body = { rotation = {}, cooldowns = {} }
-        if not data.ValidateEnvelope(envelope).valid then return nil, 'invalid-record' end
+
+        if not data.ValidateEnvelope(envelope).valid then
+            return nil, 'invalid-record'
+        end
 
         if record.origin then
             if not fields(provenance, { manifest = true, lineage = true }) or not plain(provenance.lineage) then
@@ -183,7 +214,10 @@ local function validRecord(record, address)
             })
 
             local view = catalog and catalog:Get({ kind = 'custom', id = address.id })
-            if not view or view.lineageError then return nil, 'invalid-record' end
+
+            if not view or view.lineageError then
+                return nil, 'invalid-record'
+            end
         elseif
             not fields(provenance, { manifest = true, sourceId = true, sourceRevision = true, stepOrigins = true })
             or not text(provenance.sourceId, 128)
@@ -217,15 +251,25 @@ end
 -- Walks a map of specialization key to { id = value } rows, requiring valid keys and ids, and calls visit(value, id,
 -- spec) for each entry; the first failure is returned as nil and its reason.
 local function validSpecMap(map, visit)
-    if not plain(map) then return nil, 'invalid-store' end
+    if not plain(map) then
+        return nil, 'invalid-store'
+    end
 
     for number, rows in pairs(map) do
-        if not spec(number) or not plain(rows) then return nil, 'invalid-store' end
+        if not spec(number) or not plain(rows) then
+            return nil, 'invalid-store'
+        end
 
         for id, value in pairs(rows) do
-            if not text(id, 128) then return nil, 'invalid-store' end
+            if not text(id, 128) then
+                return nil, 'invalid-store'
+            end
+
             local ok, why = visit(value, id, number)
-            if not ok then return nil, why end
+
+            if not ok then
+                return nil, why
+            end
         end
     end
 
@@ -248,21 +292,33 @@ local function validLegacy(legacy)
     for kind in pairs(legacyKinds) do
         if legacy[kind] ~= nil then
             local ok = validSpecMap(legacy[kind], function(value) return data.CheckPortable(value) end)
-            if not ok then return nil, 'invalid-legacy-state' end
+
+            if not ok then
+                return nil, 'invalid-legacy-state'
+            end
         end
     end
 
-    if legacy.evidence ~= nil and not data.CheckPortable(legacy.evidence) then return nil, 'invalid-legacy-state' end
+    if legacy.evidence ~= nil and not data.CheckPortable(legacy.evidence) then
+        return nil, 'invalid-legacy-state'
+    end
+
     return true
 end
 
 -- Returns true when no table reachable from the value is one of the store's own owner containers (the owned set).
 local function detachedPayload(value, owned)
-    if type(value) ~= 'table' then return true end
-    if owned[value] then return false end
+    if type(value) ~= 'table' then
+        return true
+    end
+    if owned[value] then
+        return false
+    end
 
     for _, child in pairs(value) do
-        if not detachedPayload(child, owned) then return false end
+        if not detachedPayload(child, owned) then
+            return false
+        end
     end
 
     return true
@@ -275,23 +331,34 @@ local function distinctStructure(state)
 
     -- Registers a container as owned; false if it was already registered (an alias).
     local function claim(value)
-        if owned[value] then return false end
+        if owned[value] then
+            return false
+        end
+
         owned[value] = true
         return true
     end
 
     -- Claims a spec map, its rows and records, and collects each record's components as payloads to check later.
     local function maps(map)
-        if not claim(map) then return false end
+        if not claim(map) then
+            return false
+        end
 
         for _, rows in pairs(map) do
-            if not claim(rows) then return false end
+            if not claim(rows) then
+                return false
+            end
 
             for _, record in pairs(rows) do
-                if not claim(record) then return false end
+                if not claim(record) then
+                    return false
+                end
 
                 for _, component in ipairs(components) do
-                    if record[component] ~= nil then payloads[#payloads + 1] = record[component] end
+                    if record[component] ~= nil then
+                        payloads[#payloads + 1] = record[component]
+                    end
                 end
             end
         end
@@ -304,20 +371,29 @@ local function distinctStructure(state)
     end
 
     for _, map in pairs(state.classes) do
-        if not maps(map) then return false end
+        if not maps(map) then
+            return false
+        end
     end
 
     for _, bucket in pairs(state.characters) do
-        if not claim(bucket) or not maps(bucket.specs) then return false end
+        if not claim(bucket) or not maps(bucket.specs) then
+            return false
+        end
     end
 
     for kind in pairs(legacyKinds) do
         if state.legacy[kind] ~= nil then
             local map = state.legacy[kind]
-            if not claim(map) then return false end
+
+            if not claim(map) then
+                return false
+            end
 
             for _, rows in pairs(map) do
-                if not claim(rows) then return false end
+                if not claim(rows) then
+                    return false
+                end
 
                 for _, value in pairs(rows) do
                     payloads[#payloads + 1] = value
@@ -326,12 +402,16 @@ local function distinctStructure(state)
         end
     end
 
-    if state.legacy.evidence ~= nil then payloads[#payloads + 1] = state.legacy.evidence end
+    if state.legacy.evidence ~= nil then
+        payloads[#payloads + 1] = state.legacy.evidence
+    end
 
     -- Repeated data references are legal; owner containers must never be data.
     -- Otherwise a later plain table write could mutate another owner's body.
     for _, value in ipairs(payloads) do
-        if not detachedPayload(value, owned) then return false end
+        if not detachedPayload(value, owned) then
+            return false
+        end
     end
 
     return true
@@ -351,13 +431,17 @@ local function validState(state)
     end
 
     for class, map in pairs(state.classes) do
-        if not isClass(class) then return nil, 'invalid-store' end
+        if not isClass(class) then
+            return nil, 'invalid-store'
+        end
 
         local ok, why = validSpecMap(map, function(record, id, number)
             return validRecord(record, { id = id, class = class, spec = number })
         end)
 
-        if not ok then return nil, why end
+        if not ok then
+            return nil, why
+        end
     end
 
     for owner, bucket in pairs(state.characters) do
@@ -369,12 +453,20 @@ local function validState(state)
             return validRecord(record, { id = id, class = bucket.class, spec = number })
         end)
 
-        if not ok then return nil, why end
+        if not ok then
+            return nil, why
+        end
     end
 
     local ok, why = validLegacy(state.legacy)
-    if not ok then return nil, why end
-    if not distinctStructure(state) then return nil, 'aliased-store' end
+
+    if not ok then
+        return nil, why
+    end
+    if not distinctStructure(state) then
+        return nil, 'aliased-store'
+    end
+
     return true
 end
 
@@ -402,7 +494,10 @@ local function copyLegacy(legacy)
         end
     end
 
-    if legacy.evidence ~= nil then result.evidence = copied(legacy.evidence) end
+    if legacy.evidence ~= nil then
+        result.evidence = copied(legacy.evidence)
+    end
+
     return result
 end
 
@@ -411,7 +506,11 @@ end
 -- nil and a reason when the archive is not valid.
 function data.PlanRotationStoreMigration(legacy)
     local ok, why = validState({ version = 1, classes = {}, characters = {}, legacy = legacy })
-    if not ok then return nil, why end
+
+    if not ok then
+        return nil, why
+    end
+
     return { version = 1, classes = {}, characters = {}, legacy = copyLegacy(legacy) }
 end
 
@@ -430,9 +529,17 @@ function data.NewRotationStore(options)
     end
 
     local state = options.state
-    if not text(options.fallbackID, 128) then return nil, 'invalid-fallback-id' end
+
+    if not text(options.fallbackID, 128) then
+        return nil, 'invalid-fallback-id'
+    end
+
     local ok, why = validState(state)
-    if not ok then return nil, why end
+
+    if not ok then
+        return nil, why
+    end
+
     local service = {}
     local tokens = setmetatable({}, { __mode = 'k' })
     local plans = setmetatable({}, { __mode = 'k' })
@@ -531,12 +638,20 @@ function data.NewRotationStore(options)
 
     -- Returns true while a lease still holds: same roots, same record object with equal content, same container chain.
     local function alive(lease)
-        if not sameRoots(lease.roots) then return false end
+        if not sameRoots(lease.roots) then
+            return false
+        end
+
         local current, chain = locate(lease.address)
-        if current ~= lease.record or not equal(current, lease.baseline) then return false end
+
+        if current ~= lease.record or not equal(current, lease.baseline) then
+            return false
+        end
 
         for i = 1, 4 do
-            if chain[i] ~= lease.chain[i] then return false end
+            if chain[i] ~= lease.chain[i] then
+                return false
+            end
         end
 
         return true
@@ -545,13 +660,28 @@ function data.NewRotationStore(options)
     -- Checks that a write may target the address: a valid address visible to the caller, a valid whole store, and a
     -- Character bucket of the same class. Returns true, or nil and a reason.
     local function target(a, c)
-        if not validAddress(a) then return nil, 'invalid-address' end
+        if not validAddress(a) then
+            return nil, 'invalid-address'
+        end
+
         local allowed, reason = visible(a, c)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
+
         local valid, problem = validState(state)
-        if not valid then return nil, problem end
+
+        if not valid then
+            return nil, problem
+        end
+
         local bucket = a.scope == 'character' and state.characters[a.owner]
-        if bucket and bucket.class ~= a.class then return nil, 'foreign-owner' end
+
+        if bucket and bucket.class ~= a.class then
+            return nil, 'foreign-owner'
+        end
+
         return true
     end
 
@@ -561,10 +691,16 @@ function data.NewRotationStore(options)
     -- is not an error (true with no rows).
     local function readRows(a, c, source)
         source = source or index
-        if not validAddress(a) then return nil, 'invalid-address' end
-        local allowed, reason = visible(a, c)
-        if not allowed then return nil, reason end
 
+        if not validAddress(a) then
+            return nil, 'invalid-address'
+        end
+
+        local allowed, reason = visible(a, c)
+
+        if not allowed then
+            return nil, reason
+        end
         if
             not fields(state, stateFields)
             or state.version ~= 1
@@ -574,33 +710,66 @@ function data.NewRotationStore(options)
         then
             return nil, 'invalid-store'
         end
+        if not sameRoots(source.roots) then
+            return nil, 'stale-store-index'
+        end
 
-        if not sameRoots(source.roots) then return nil, 'stale-store-index' end
         local root = a.scope == 'class' and state.classes or state.characters
         local indexed = (a.scope == 'class' and source.classes or source.characters)[a.owner]
         local bucket = root[a.owner]
-        if bucket ~= nil and not plain(bucket) then return nil, 'invalid-store' end
-        if a.scope == 'character' and bucket and bucket.class ~= a.class then return nil, 'foreign-owner' end
-        if bucket ~= (indexed and indexed.bucket) then return nil, 'stale-store-index' end
-        if not indexed then return true end
-        if a.scope == 'character' and bucket.class ~= indexed.class then return nil, 'stale-store-index' end
-        if a.scope == 'character' and not fields(bucket, characterBucketFields) then return nil, 'invalid-store' end
+
+        if bucket ~= nil and not plain(bucket) then
+            return nil, 'invalid-store'
+        end
+        if a.scope == 'character' and bucket and bucket.class ~= a.class then
+            return nil, 'foreign-owner'
+        end
+        if bucket ~= (indexed and indexed.bucket) then
+            return nil, 'stale-store-index'
+        end
+        if not indexed then
+            return true
+        end
+        if a.scope == 'character' and bucket.class ~= indexed.class then
+            return nil, 'stale-store-index'
+        end
+        if a.scope == 'character' and not fields(bucket, characterBucketFields) then
+            return nil, 'invalid-store'
+        end
+
         local map = a.scope == 'class' and bucket or bucket.specs
-        if not plain(map) then return nil, 'invalid-store' end
-        if map ~= indexed.map then return nil, 'stale-store-index' end
+
+        if not plain(map) then
+            return nil, 'invalid-store'
+        end
+        if map ~= indexed.map then
+            return nil, 'stale-store-index'
+        end
+
         local rows, scope = map[a.spec], indexed.specs[a.spec]
-        if rows ~= (scope and scope.rows) then return nil, 'stale-store-index' end
-        if rows ~= nil and not plain(rows) then return nil, 'invalid-store' end
+
+        if rows ~= (scope and scope.rows) then
+            return nil, 'stale-store-index'
+        end
+        if rows ~= nil and not plain(rows) then
+            return nil, 'invalid-store'
+        end
+
         return true, rows, scope
     end
 
     -- Validates the one record being read and checks its payload does not alias a store container.
     local function selected(record, a)
         local valid, reason = validRecord(record, a)
-        if not valid then return nil, reason end
+
+        if not valid then
+            return nil, reason
+        end
 
         for _, component in ipairs(components) do
-            if not detachedPayload(record[component], index.owned) then return nil, 'aliased-store' end
+            if not detachedPayload(record[component], index.owned) then
+                return nil, 'aliased-store'
+            end
         end
 
         return true
@@ -610,13 +779,23 @@ function data.NewRotationStore(options)
     -- the index is stale or the record is invalid. Callers copy before handing anything out.
     local function readRecord(a, c)
         local allowed, rows, scope = readRows(a, c)
-        if not allowed then return nil, rows end
+
+        if not allowed then
+            return nil, rows
+        end
+
         local record = rows and rows[a.id]
-        if record ~= (scope and scope.records[a.id]) then return nil, 'stale-store-index' end
+
+        if record ~= (scope and scope.records[a.id]) then
+            return nil, 'stale-store-index'
+        end
 
         if record then
             local valid, reason = selected(record, a)
-            if not valid then return nil, reason end
+
+            if not valid then
+                return nil, reason
+            end
         end
 
         return true, record
@@ -626,15 +805,21 @@ function data.NewRotationStore(options)
     -- address and is still alive. Otherwise nil and 'stale-rotation-record'.
     local function checkExpected(a, expected)
         local lease = tokens[expected]
-        if not lease or not equal(lease.address, a) or not alive(lease) then return nil, 'stale-rotation-record' end
+
+        if not lease or not equal(lease.address, a) or not alive(lease) then
+            return nil, 'stale-rotation-record'
+        end
+
         return lease
     end
 
     -- Validates a record for writing (and its body too when requireValidWrites is set) and returns a detached copy.
     local function prepare(record, a)
         local valid, reason = validRecord(record, a)
-        if not valid then return nil, reason end
 
+        if not valid then
+            return nil, reason
+        end
         if options.requireValidWrites and not data.ValidateBody(record.body, options.validation).valid then
             return nil, 'invalid-rotation-body'
         end
@@ -676,13 +861,20 @@ function data.NewRotationStore(options)
     local function invalidateExecutionWatch()
         local watch = executionWatch
         executionWatch = nil
-        if watch then watch.notify() end
+
+        if watch then
+            watch.notify()
+        end
     end
 
     -- Returns true when the address is the record the execution watch is following.
     local function watchedAddress(a)
         local watch = executionWatch
-        if not watch or not a then return false end
+
+        if not watch or not a then
+            return false
+        end
+
         local selected = watch.meta.address
 
         return a.scope == selected.scope
@@ -718,9 +910,16 @@ function data.NewRotationStore(options)
     -- Returns true when the reader is active (and, with checkBusy, not inside a projector call); otherwise nil and
     -- 'retired-rotation-reader', 'rotation-reader-not-ready' or 'reentrant-rotation-read'.
     local function readerReady(checkBusy)
-        if readerState == 'retired' then return nil, 'retired-rotation-reader' end
-        if readerState ~= 'active' then return nil, 'rotation-reader-not-ready' end
-        if checkBusy and readerBusy then return nil, 'reentrant-rotation-read' end
+        if readerState == 'retired' then
+            return nil, 'retired-rotation-reader'
+        end
+        if readerState ~= 'active' then
+            return nil, 'rotation-reader-not-ready'
+        end
+        if checkBusy and readerBusy then
+            return nil, 'reentrant-rotation-read'
+        end
+
         return true
     end
 
@@ -830,21 +1029,41 @@ function data.NewRotationStore(options)
     -- containers, same component tables, plain data). Otherwise nil and a reason such as 'stale-store-index'.
     local function privateRecord(a, c)
         local allowed, rows, scope = readRows(a, c, readIndex)
-        if not allowed then return nil, rows end
+
+        if not allowed then
+            return nil, rows
+        end
+
         local record = rows and rows[a.id]
-        if record ~= (scope and scope.records[a.id]) then return nil, 'stale-store-index' end
-        if not record then return nil, 'unknown-rotation' end
+
+        if record ~= (scope and scope.records[a.id]) then
+            return nil, 'stale-store-index'
+        end
+        if not record then
+            return nil, 'unknown-rotation'
+        end
+
         local meta = scope.metadata[a.id]
-        if not fields(record, recordFields) or not plain(record.body) then return nil, 'invalid-record' end
+
+        if not fields(record, recordFields) or not plain(record.body) then
+            return nil, 'invalid-record'
+        end
+
         local _, chain = locate(a)
 
         for i = 1, 4 do
-            if chain[i] ~= meta.chain[i] then return nil, 'stale-store-index' end
+            if chain[i] ~= meta.chain[i] then
+                return nil, 'stale-store-index'
+            end
         end
 
         for _, component in ipairs(components) do
-            if record[component] ~= meta.payload[component] then return nil, 'stale-store-index' end
-            if record[component] ~= nil and not plain(record[component]) then return nil, 'invalid-record' end
+            if record[component] ~= meta.payload[component] then
+                return nil, 'stale-store-index'
+            end
+            if record[component] ~= nil and not plain(record[component]) then
+                return nil, 'invalid-record'
+            end
         end
 
         return meta
@@ -854,7 +1073,11 @@ function data.NewRotationStore(options)
     -- opaque token the reader later accepts as proof that the record has not changed since it was read.
     local function recordSeal(meta, c)
         local key = c.character
-        if key == nil then key = nilCharacter end
+
+        if key == nil then
+            key = nilCharacter
+        end
+
         local seal = meta.seals[key]
 
         if not seal then
@@ -872,27 +1095,46 @@ function data.NewRotationStore(options)
     -- Returns the reader metadata of every record of the class owner and the caller's character owner, in a stable
     -- order, or nil and a reason.
     local function privateRows(number, c)
-        if not spec(number) then return nil, 'invalid-specialization' end
-        if not privateContext(c) then return nil, 'missing-owner-context' end
+        if not spec(number) then
+            return nil, 'invalid-specialization'
+        end
+        if not privateContext(c) then
+            return nil, 'missing-owner-context'
+        end
+
         local result = {}
 
         -- Appends the metadata of every record in one owner and specialization, checking the index counts as it goes.
         local function partition(kind, name, value)
             local a = { scope = kind, class = c.class, owner = name, spec = value, id = options.fallbackID }
             local allowed, rows, scope = readRows(a, c, readIndex)
-            if not allowed then return nil, rows end
+
+            if not allowed then
+                return nil, rows
+            end
+
             local count = 0
 
             for id, record in pairs(rows or {}) do
-                if not text(id, 128) or scope.records[id] ~= record then return nil, 'stale-store-index' end
+                if not text(id, 128) or scope.records[id] ~= record then
+                    return nil, 'stale-store-index'
+                end
+
                 a.id = id
                 local meta, reason = privateRecord(a, c)
-                if not meta then return nil, reason end
+
+                if not meta then
+                    return nil, reason
+                end
+
                 count = count + 1
                 result[#result + 1] = meta
             end
 
-            if count ~= (scope and scope.count or 0) then return nil, 'stale-store-index' end
+            if count ~= (scope and scope.count or 0) then
+                return nil, 'stale-store-index'
+            end
+
             return true
         end
 
@@ -900,7 +1142,11 @@ function data.NewRotationStore(options)
         -- state or in the index.
         local function add(kind, name)
             local allowed, reason = partition(kind, name, number)
-            if not allowed then return nil, reason end
+
+            if not allowed then
+                return nil, reason
+            end
+
             local root = kind == 'class' and state.classes or state.characters
             local bucket = root[name]
             local map = kind == 'class' and bucket or plain(bucket) and bucket.specs
@@ -922,30 +1168,52 @@ function data.NewRotationStore(options)
             end
 
             for _, value in ipairs(numbers) do
-                if not spec(value) then return nil, 'invalid-store' end
+                if not spec(value) then
+                    return nil, 'invalid-store'
+                end
+
                 allowed, reason = partition(kind, name, value)
-                if not allowed then return nil, reason end
+
+                if not allowed then
+                    return nil, reason
+                end
             end
 
             return true
         end
 
         local allowed, reason = add('class', c.class)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
+
         local character = type(c.character) == 'string' and state.characters[c.character]
-        if character ~= nil and character ~= false and not plain(character) then return nil, 'invalid-store' end
+
+        if character ~= nil and character ~= false and not plain(character) then
+            return nil, 'invalid-store'
+        end
 
         if not character or character.class == c.class then
             if text(c.character, 512) then
                 allowed, reason = add('character', c.character)
-                if not allowed then return nil, reason end
+
+                if not allowed then
+                    return nil, reason
+                end
             end
         end
 
         table.sort(result, function(a, b)
             local x, y = a.address, b.address
-            if x.scope ~= y.scope then return x.scope < y.scope end
-            if x.id ~= y.id then return x.id < y.id end
+
+            if x.scope ~= y.scope then
+                return x.scope < y.scope
+            end
+            if x.id ~= y.id then
+                return x.id < y.id
+            end
+
             return x.spec < y.spec
         end)
 
@@ -956,22 +1224,43 @@ function data.NewRotationStore(options)
     -- the record (or the whole list) unchanged. Otherwise nil and a reason such as 'stale-rotation-read-seal'.
     function reader:IsCurrent(seal, c)
         local ready, reason = readerReady()
-        if not ready then return nil, reason end
+
+        if not ready then
+            return nil, reason
+        end
+
         local entry = readSeals[seal]
-        if not entry then return nil, 'invalid-rotation-read-seal' end
-        if not privateContext(c) then return nil, 'missing-owner-context' end
-        if not sameContext(entry.context, c) then return nil, 'foreign-owner' end
-        if entry.epoch ~= readEpoch then return nil, 'stale-rotation-read-seal' end
+
+        if not entry then
+            return nil, 'invalid-rotation-read-seal'
+        end
+        if not privateContext(c) then
+            return nil, 'missing-owner-context'
+        end
+        if not sameContext(entry.context, c) then
+            return nil, 'foreign-owner'
+        end
+        if entry.epoch ~= readEpoch then
+            return nil, 'stale-rotation-read-seal'
+        end
 
         if entry.kind == 'record' then
             local meta = privateRecord(entry.meta.address, c)
-            if meta ~= entry.meta then return nil, 'stale-rotation-read-seal' end
+
+            if meta ~= entry.meta then
+                return nil, 'stale-rotation-read-seal'
+            end
         else
             local current = privateRows(entry.spec, c)
-            if not current or #current ~= #entry.items then return nil, 'stale-rotation-read-seal' end
+
+            if not current or #current ~= #entry.items then
+                return nil, 'stale-rotation-read-seal'
+            end
 
             for i, meta in ipairs(current) do
-                if meta ~= entry.items[i] then return nil, 'stale-rotation-read-seal' end
+                if meta ~= entry.items[i] then
+                    return nil, 'stale-rotation-read-seal'
+                end
             end
         end
 
@@ -988,7 +1277,11 @@ function data.NewRotationStore(options)
     -- notify function it also starts the single execution watch. Returns nil for a seal that is not a record seal.
     local function makePublicationGuard(_, seal, c, notify)
         local entry = readSeals[seal]
-        if not entry or entry.kind ~= 'record' then return nil end
+
+        if not entry or entry.kind ~= 'record' then
+            return nil
+        end
+
         local meta = entry.meta
         local a = meta.address
         c = c or entry.context
@@ -1014,11 +1307,18 @@ function data.NewRotationStore(options)
             end
 
             -- Preserve public-reader admission and its actual string receivers.
-            if readerState ~= 'active' then return false end
-            if not privateContext(c) or not sameContext(entry.context, c) then return false end
-            if readEpoch ~= epoch then return false end
-            if not validAddress(a) or not visible(a, c) then return false end
-
+            if readerState ~= 'active' then
+                return false
+            end
+            if not privateContext(c) or not sameContext(entry.context, c) then
+                return false
+            end
+            if readEpoch ~= epoch then
+                return false
+            end
+            if not validAddress(a) or not visible(a, c) then
+                return false
+            end
             if
                 readerState ~= 'active'
                 or readEpoch ~= epoch
@@ -1032,7 +1332,10 @@ function data.NewRotationStore(options)
             -- Preserve all raw state/header/container/component witnesses checked
             -- by readRows/privateRecord, without allocating a locate chain or
             -- repeating plain checks of the same class map/body.
-            if not fields(state, stateFields) or state.version ~= 1 then return false end
+            if not fields(state, stateFields) or state.version ~= 1 then
+                return false
+            end
+
             local classes, characters, legacy = state.classes, state.characters, state.legacy
 
             if
@@ -1047,9 +1350,17 @@ function data.NewRotationStore(options)
             end
 
             local root = a.scope == 'class' and classes or characters
-            if root ~= chain[1] then return false end
+
+            if root ~= chain[1] then
+                return false
+            end
+
             local bucket = root[a.owner]
-            if bucket ~= chain[2] or not plain(bucket) then return false end
+
+            if bucket ~= chain[2] or not plain(bucket) then
+                return false
+            end
+
             local map = bucket
 
             if a.scope == 'character' then
@@ -1060,17 +1371,31 @@ function data.NewRotationStore(options)
                 end
 
                 map = bucket.specs
-                if not plain(map) then return false end
+
+                if not plain(map) then
+                    return false
+                end
             end
 
-            if map ~= chain[3] then return false end
+            if map ~= chain[3] then
+                return false
+            end
+
             local rows = map[a.spec]
-            if rows ~= chain[4] or not plain(rows) or rows[a.id] ~= record then return false end
-            if not fields(record, recordFields) then return false end
+
+            if rows ~= chain[4] or not plain(rows) or rows[a.id] ~= record then
+                return false
+            end
+            if not fields(record, recordFields) then
+                return false
+            end
 
             for _, component in ipairs(components) do
                 local value = record[component]
-                if value ~= payload[component] or value ~= nil and not plain(value) then return false end
+
+                if value ~= payload[component] or value ~= nil and not plain(value) then
+                    return false
+                end
             end
 
             return true
@@ -1089,7 +1414,6 @@ function data.NewRotationStore(options)
             then
                 return false
             end
-
             if
                 guardRawget(state, 'version') ~= 1
                 or guardRawget(state, 'classes') ~= expectedRoots[1]
@@ -1098,28 +1422,35 @@ function data.NewRotationStore(options)
             then
                 return false
             end
-
-            if guardRawget(chain[1], a.owner) ~= chain[2] then return false end
-
+            if guardRawget(chain[1], a.owner) ~= chain[2] then
+                return false
+            end
             if
                 a.scope == 'character'
                 and (guardRawget(chain[2], 'class') ~= a.class or guardRawget(chain[2], 'specs') ~= chain[3])
             then
                 return false
             end
-
-            if guardRawget(chain[3], a.spec) ~= chain[4] or guardRawget(chain[4], a.id) ~= record then return false end
+            if guardRawget(chain[3], a.spec) ~= chain[4] or guardRawget(chain[4], a.id) ~= record then
+                return false
+            end
 
             for index = 1, #components do
                 local component = components[index]
-                if guardRawget(record, component) ~= payload[component] then return false end
+
+                if guardRawget(record, component) ~= payload[component] then
+                    return false
+                end
             end
 
             return true
         end
 
         if notify ~= nil then
-            if type(notify) ~= 'function' or not fullCurrent() then return nil end
+            if type(notify) ~= 'function' or not fullCurrent() then
+                return nil
+            end
+
             executionWatch = { meta = meta, notify = notify }
         end
 
@@ -1144,7 +1475,11 @@ function data.NewRotationStore(options)
         end
 
         local full, continuation = makePublicationGuard(reader, seal, c)
-        if not full or full() ~= true then return end
+
+        if not full or full() ~= true then
+            return
+        end
+
         local entry = readSeals[seal]
         local meta = entry.meta
         c = c or entry.context
@@ -1180,8 +1515,10 @@ function data.NewRotationStore(options)
         -- involved table, the same owner context, and the continuation check.
         local function current()
             local classReadable, classEnvironment = executionProtect(executionGetfenv, isClass)
-            if not classReadable or classEnvironment ~= executionClassEnvironment then return false end
 
+            if not classReadable or classEnvironment ~= executionClassEnvironment then
+                return false
+            end
             if
                 reader.IsCurrent ~= ownedReaderIsCurrent
                 or type ~= guardType
@@ -1196,10 +1533,15 @@ function data.NewRotationStore(options)
             end
 
             local findSource = executionStringIndex or executionStringLibrary
-            if guardRawget(findSource, 'find') ~= executionFind then return false end
+
+            if guardRawget(findSource, 'find') ~= executionFind then
+                return false
+            end
 
             for i = 1, #tables do
-                if guardGetmetatable(tables[i]) ~= nil then return false end
+                if guardGetmetatable(tables[i]) ~= nil then
+                    return false
+                end
             end
 
             if guardRawget(c, 'class') ~= expectedClass or guardRawget(c, 'character') ~= expectedCharacter then
@@ -1209,10 +1551,15 @@ function data.NewRotationStore(options)
             return continuation() == true
         end
 
-        if not current() then return end
+        if not current() then
+            return
+        end
 
         if notify ~= nil then
-            if guardType(notify) ~= 'function' then return end
+            if guardType(notify) ~= 'function' then
+                return
+            end
+
             executionWatch = { meta = meta, notify = notify }
         end
 
@@ -1223,9 +1570,17 @@ function data.NewRotationStore(options)
     -- detached addresses with record seals, plus a seal for the whole list. Returns nil and a reason when not ready.
     function reader:ListOwned(number, c)
         local ready, reason = readerReady(true)
-        if not ready then return nil, reason end
+
+        if not ready then
+            return nil, reason
+        end
+
         local items, problem = privateRows(number, c)
-        if not items then return nil, problem end
+
+        if not items then
+            return nil, problem
+        end
+
         local rows = {}
 
         for _, meta in ipairs(items) do
@@ -1242,25 +1597,56 @@ function data.NewRotationStore(options)
     -- seal is checked again afterward and the read fails if the record changed meanwhile.
     function reader:Read(a, c, project)
         local ready, reason = readerReady(true)
-        if not ready then return nil, reason end
-        if coroutine.running() ~= nil then return nil, 'invalid-rotation-read-context' end
-        if type(project) ~= 'function' then return nil, 'invalid-rotation-read-callback' end
+
+        if not ready then
+            return nil, reason
+        end
+        if coroutine.running() ~= nil then
+            return nil, 'invalid-rotation-read-context'
+        end
+        if type(project) ~= 'function' then
+            return nil, 'invalid-rotation-read-callback'
+        end
+
         -- Validate before copying the small address/context; never copy payload.
-        if not validAddress(a) then return nil, 'invalid-address' end
-        if not privateContext(c) then return nil, 'missing-owner-context' end
+        if not validAddress(a) then
+            return nil, 'invalid-address'
+        end
+        if not privateContext(c) then
+            return nil, 'missing-owner-context'
+        end
+
         local allowed, problem = visible(a, c)
-        if not allowed then return nil, problem end
+
+        if not allowed then
+            return nil, problem
+        end
+
         local address, context = detachedAddress(a), contextCopy(c)
         local meta, errorText = privateRecord(address, context)
-        if not meta then return nil, errorText end
+
+        if not meta then
+            return nil, errorText
+        end
+
         local seal = recordSeal(meta, context)
         readerBusy = true
         local ok, value = pcall(project, meta.record, seal)
         readerBusy = false
-        if not ok then return nil, 'rotation-read-callback-failed' end
-        if not sameContext(context, c) then return nil, 'rotation-read-context-changed' end
+
+        if not ok then
+            return nil, 'rotation-read-callback-failed'
+        end
+        if not sameContext(context, c) then
+            return nil, 'rotation-read-context-changed'
+        end
+
         ready, reason = self:IsCurrent(seal, context)
-        if not ready then return nil, reason end
+
+        if not ready then
+            return nil, reason
+        end
+
         return true, value, seal
     end
 
@@ -1275,8 +1661,14 @@ function data.NewRotationStore(options)
     -- and the body's validation result; or nil and a reason ('unknown-rotation' when absent).
     function service:Get(a, c)
         local allowed, record = readRecord(a, c)
-        if not allowed then return nil, record end
-        if not record then return nil, 'unknown-rotation' end
+
+        if not allowed then
+            return nil, record
+        end
+        if not record then
+            return nil, 'unknown-rotation'
+        end
+
         local lease = capture(a)
         local token = {}
         tokens[token] = lease
@@ -1298,10 +1690,15 @@ function data.NewRotationStore(options)
             local x, y = a.address, b.address
 
             for _, key in ipairs({ 'scope', 'class', 'owner' }) do
-                if x[key] ~= y[key] then return (x[key] or '') < (y[key] or '') end
+                if x[key] ~= y[key] then
+                    return (x[key] or '') < (y[key] or '')
+                end
             end
 
-            if x.spec ~= y.spec then return x.spec < y.spec end
+            if x.spec ~= y.spec then
+                return x.spec < y.spec
+            end
+
             return x.id < y.id
         end)
 
@@ -1311,40 +1708,72 @@ function data.NewRotationStore(options)
     -- Lists the rows saved under one specialization key for the caller's class owner and character owner (detached
     -- copies with validation), sorted. Work is proportional to those two partitions, not to the whole store.
     function service:ListVisible(number, c)
-        if not spec(number) then return nil, 'invalid-specialization' end
-        if not plain(c) or not isClass(c.class) then return nil, 'missing-owner-context' end
+        if not spec(number) then
+            return nil, 'invalid-specialization'
+        end
+        if not plain(c) or not isClass(c.class) then
+            return nil, 'missing-owner-context'
+        end
+
         local result = {}
 
         -- Appends the rows of one owner at the requested specialization key, checking the index count.
         local function add(kind, owner)
             local a = { scope = kind, class = c.class, owner = owner, spec = number, id = options.fallbackID }
             local allowed, rows, scope = readRows(a, c)
-            if not allowed then return nil, rows end
+
+            if not allowed then
+                return nil, rows
+            end
+
             local count = 0
 
             for id, record in pairs(rows or {}) do
-                if not text(id, 128) or scope.records[id] ~= record then return nil, 'stale-store-index' end
+                if not text(id, 128) or scope.records[id] ~= record then
+                    return nil, 'stale-store-index'
+                end
+
                 count = count + 1
                 a.id = id
                 local valid, reason = selected(record, a)
-                if not valid then return nil, reason end
+
+                if not valid then
+                    return nil, reason
+                end
+
                 result[#result + 1] = row(a, record)
             end
 
-            if count ~= (scope and scope.count or 0) then return nil, 'stale-store-index' end
+            if count ~= (scope and scope.count or 0) then
+                return nil, 'stale-store-index'
+            end
+
             return true
         end
 
         local allowed, reason = add('class', c.class)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
+
         local character
-        if type(c.character) == 'string' then character = state.characters[c.character] end
-        if character ~= nil and not plain(character) then return nil, 'invalid-store' end
+
+        if type(c.character) == 'string' then
+            character = state.characters[c.character]
+        end
+
+        if character ~= nil and not plain(character) then
+            return nil, 'invalid-store'
+        end
 
         if not character or character.class == c.class then
             if text(c.character, 512) then
                 allowed, reason = add('character', c.character)
-                if not allowed then return nil, reason end
+
+                if not allowed then
+                    return nil, reason
+                end
             end
         end
 
@@ -1358,8 +1787,10 @@ function data.NewRotationStore(options)
         if not plain(c) or not isClass(c.class) or not text(c.character, 512) then
             return nil, 'missing-owner-context'
         end
+        if not spec(number) then
+            return nil, 'invalid-specialization'
+        end
 
-        if not spec(number) then return nil, 'invalid-specialization' end
         local found
 
         for _, kind in ipairs({ 'character', 'class' }) do
@@ -1372,7 +1803,10 @@ function data.NewRotationStore(options)
             }
 
             local allowed, record = readRecord(a, c)
-            if not allowed then return nil, record end
+
+            if not allowed then
+                return nil, record
+            end
 
             if record then
                 found = row(a, record)
@@ -1380,9 +1814,16 @@ function data.NewRotationStore(options)
             end
         end
 
-        if not found then return nil, 'unknown-rotation' end
-        if not found.validation.valid then return found, 'invalid-fallback' end
-        if not found.validation.supported or not found.validation.resolved then return found, 'unavailable-fallback' end
+        if not found then
+            return nil, 'unknown-rotation'
+        end
+        if not found.validation.valid then
+            return found, 'invalid-fallback'
+        end
+        if not found.validation.supported or not found.validation.resolved then
+            return found, 'unavailable-fallback'
+        end
+
         return found
     end
 
@@ -1390,12 +1831,20 @@ function data.NewRotationStore(options)
     -- every outstanding token and plan, and if validation fails nothing is replaced.
     function service:Refresh()
         local valid, reason = validState(state)
-        if not valid then return nil, reason end
+
+        if not valid then
+            return nil, reason
+        end
+
         local replacement = buildIndex()
         index = replacement
         tokens = setmetatable({}, { __mode = 'k' })
         plans = setmetatable({}, { __mode = 'k' })
-        if readIndex then resetReaderIndex() end
+
+        if readIndex then
+            resetReaderIndex()
+        end
+
         return true
     end
 
@@ -1403,7 +1852,11 @@ function data.NewRotationStore(options)
     -- sorted. Validates the whole store, so it is the expensive full inventory.
     function service:AllStored()
         local valid, reason = validState(state)
-        if not valid then return nil, reason end
+
+        if not valid then
+            return nil, reason
+        end
+
         local result = {}
 
         -- Appends rows for every record in one owner's spec map.
@@ -1460,10 +1913,20 @@ function data.NewRotationStore(options)
     -- 'rotation-id-collision'. Nothing is written until Commit.
     function service:PlanCreate(a, record, c)
         local allowed, reason = target(a, c)
-        if not allowed then return nil, reason end
-        if locate(a) ~= nil then return nil, 'rotation-id-collision' end
+
+        if not allowed then
+            return nil, reason
+        end
+        if locate(a) ~= nil then
+            return nil, 'rotation-id-collision'
+        end
+
         local payload, problem = prepare(record, a)
-        if not payload then return nil, problem end
+
+        if not payload then
+            return nil, problem
+        end
+
         return plan('create', a, c, nil, payload)
     end
 
@@ -1471,20 +1934,40 @@ function data.NewRotationStore(options)
     -- 'stale-rotation-record' if the record changed since.
     function service:PlanReplace(a, record, c, expected)
         local allowed, reason = target(a, c)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
+
         local lease, problem = checkExpected(a, expected)
-        if not lease then return nil, problem end
+
+        if not lease then
+            return nil, problem
+        end
+
         local payload, errorText = prepare(record, a)
-        if not payload then return nil, errorText end
+
+        if not payload then
+            return nil, errorText
+        end
+
         return plan('replace', a, c, lease, payload)
     end
 
     -- Plans deleting the record at an address, guarded by the token from Get.
     function service:PlanDelete(a, c, expected)
         local allowed, reason = target(a, c)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
+
         local lease, problem = checkExpected(a, expected)
-        if not lease then return nil, problem end
+
+        if not lease then
+            return nil, problem
+        end
+
         return plan('delete', a, c, lease)
     end
 
@@ -1492,10 +1975,16 @@ function data.NewRotationStore(options)
     -- class. The record keeps its content unless a replacement is given; the destination must be free.
     function service:PlanMove(a, destination, c, expected, replacement)
         local allowed, reason = target(a, c)
-        if not allowed then return nil, reason end
-        allowed, reason = target(destination, c)
-        if not allowed then return nil, reason end
 
+        if not allowed then
+            return nil, reason
+        end
+
+        allowed, reason = target(destination, c)
+
+        if not allowed then
+            return nil, reason
+        end
         if
             a.id ~= destination.id
             or a.spec ~= destination.spec
@@ -1506,10 +1995,20 @@ function data.NewRotationStore(options)
         end
 
         local lease, problem = checkExpected(a, expected)
-        if not lease then return nil, problem end
-        if locate(destination) ~= nil then return nil, 'rotation-id-collision' end
+
+        if not lease then
+            return nil, problem
+        end
+        if locate(destination) ~= nil then
+            return nil, 'rotation-id-collision'
+        end
+
         local payload, errorText = prepare(replacement or lease.baseline, destination)
-        if not payload then return nil, errorText end
+
+        if not payload then
+            return nil, errorText
+        end
+
         return plan('move', a, c, lease, payload, destination)
     end
 
@@ -1536,13 +2035,21 @@ function data.NewRotationStore(options)
 
     -- Returns true while a legacy lease still holds (same roots, same containers, equal content).
     local function legacyAlive(lease)
-        if not sameRoots(lease.roots) then return false end
+        if not sameRoots(lease.roots) then
+            return false
+        end
+
         local current = legacyCapture(lease.selection)
-        if not equal(current.record, lease.baseline) then return false end
+
+        if not equal(current.record, lease.baseline) then
+            return false
+        end
 
         for kind, chain in pairs(lease.chain) do
             for i = 1, 3 do
-                if chain[i] ~= current.chain[kind][i] then return false end
+                if chain[i] ~= current.chain[kind][i] then
+                    return false
+                end
             end
         end
 
@@ -1559,17 +2066,29 @@ function data.NewRotationStore(options)
         end
 
         local allowed, reason = target(destination, c)
-        if not allowed then return nil, reason end
 
+        if not allowed then
+            return nil, reason
+        end
         if selection.id ~= destination.id or selection.spec ~= destination.spec then
             return nil, 'invalid-move-destination'
         end
+        if locate(destination) ~= nil then
+            return nil, 'rotation-id-collision'
+        end
 
-        if locate(destination) ~= nil then return nil, 'rotation-id-collision' end
         local lease = legacyCapture(selection)
-        if lease.record.body == nil then return nil, 'unknown-rotation' end
+
+        if lease.record.body == nil then
+            return nil, 'unknown-rotation'
+        end
+
         local payload, problem = prepare(lease.record, destination)
-        if not payload then return nil, problem end
+
+        if not payload then
+            return nil, problem
+        end
+
         return plan('adopt', destination, c, lease, payload, destination)
     end
 
@@ -1600,22 +2119,32 @@ function data.NewRotationStore(options)
     -- and the destination address, or nil and a reason ('invalid-plan', 'stale-rotation-record', ...).
     function service:Commit(public, c)
         local pending = plans[public]
-        if not pending then return nil, 'invalid-plan' end
+
+        if not pending then
+            return nil, 'invalid-plan'
+        end
+
         local destination = pending.destination or pending.address
         local allowed, reason = target(destination, c)
-        if not allowed then return nil, reason end
+
+        if not allowed then
+            return nil, reason
+        end
 
         if pending.operation ~= 'adopt' then
             allowed, reason = target(pending.address, c)
-            if not allowed then return nil, reason end
+
+            if not allowed then
+                return nil, reason
+            end
         end
 
         if c.class ~= pending.context.class or c.character ~= pending.context.character then
             return nil, 'foreign-owner'
         end
-
-        if not sameRoots(pending.roots) then return nil, 'stale-rotation-record' end
-
+        if not sameRoots(pending.roots) then
+            return nil, 'stale-rotation-record'
+        end
         if
             pending.source
             and not (pending.operation == 'adopt' and legacyAlive(pending.source) or pending.operation ~= 'adopt'
@@ -1625,22 +2154,32 @@ function data.NewRotationStore(options)
         end
 
         if pending.operation == 'create' or pending.operation == 'move' or pending.operation == 'adopt' then
-            if locate(destination) ~= nil then return nil, 'rotation-id-collision' end
-            if not alive(pending.target) then return nil, 'stale-rotation-record' end
+            if locate(destination) ~= nil then
+                return nil, 'rotation-id-collision'
+            end
+            if not alive(pending.target) then
+                return nil, 'stale-rotation-record'
+            end
         end
 
         local payload
 
         if pending.record then
             payload, reason = prepare(pending.record, destination)
-            if not payload then return nil, reason end
+
+            if not payload then
+                return nil, reason
+            end
         end
 
         local advanceDestination, advanceSource
 
         if readIndex then
             advanceDestination = readRows(destination, c, readIndex)
-            if pending.operation == 'move' then advanceSource = readRows(pending.address, c, readIndex) end
+
+            if pending.operation == 'move' then
+                advanceSource = readRows(pending.address, c, readIndex)
+            end
         end
 
         -- A successful write with an unadvanceable stale
@@ -1651,7 +2190,9 @@ function data.NewRotationStore(options)
             publicationWriteVersion = publicationWriteVersion + 1
         end
 
-        if watchedAddress(destination) or watchedAddress(pending.address) then invalidateExecutionWatch() end
+        if watchedAddress(destination) or watchedAddress(pending.address) then
+            invalidateExecutionWatch()
+        end
 
         -- All checks and copies precede plain table assignments; no callbacks run.
         if pending.operation == 'delete' then
@@ -1665,14 +2206,23 @@ function data.NewRotationStore(options)
                 for kind in pairs(legacyKinds) do
                     local map = state.legacy[kind]
                     local rows = map and map[pending.source.selection.spec]
-                    if rows then rows[pending.source.selection.id] = nil end
+
+                    if rows then
+                        rows[pending.source.selection.id] = nil
+                    end
                 end
             end
         end
 
         index = buildIndex()
-        if advanceDestination then advanceReaderAddress(destination) end
-        if advanceSource then advanceReaderAddress(pending.address) end
+
+        if advanceDestination then
+            advanceReaderAddress(destination)
+        end
+        if advanceSource then
+            advanceReaderAddress(pending.address)
+        end
+
         plans[public] = nil
         return true, copied(destination)
     end
@@ -1685,7 +2235,10 @@ function data.NewRotationStore(options)
             return nil, 'internal-reader-bind-failed'
         end
 
-        if readerState == 'retired' then return nil, 'retired-rotation-reader' end
+        if readerState == 'retired' then
+            return nil, 'retired-rotation-reader'
+        end
+
         local valid, reason = validState(state)
 
         if not valid then
@@ -1708,7 +2261,9 @@ local storeFactoryEnvironment = type(getfenv) == 'function' and getfenv(1) or ni
 -- Hands the owned store factory (and the environment it was loaded in) to a trusted binder. Core/rotation_scope.lua
 -- captures both at load and then removes this public name, so it can tell the original factory from a replacement.
 function data.BindOwnedRotationStoreFactory(bind)
-    if type(bind) == 'function' then bind(ownedRotationStoreFactory, storeFactoryEnvironment) end
+    if type(bind) == 'function' then
+        bind(ownedRotationStoreFactory, storeFactoryEnvironment)
+    end
 end
 
 -- BEGIN CPU RUNTIME WORK HANDOFF

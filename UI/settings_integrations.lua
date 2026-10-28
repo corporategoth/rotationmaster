@@ -24,7 +24,10 @@ end
 -- The draft's syntax-highlighting setting; when it was never saved, highlighting is on unless the editor choice is
 -- plain text.
 local function highlighting(profile)
-    if profile.lua_native_highlighting ~= nil then return profile.lua_native_highlighting == true end
+    if profile.lua_native_highlighting ~= nil then
+        return profile.lua_native_highlighting == true
+    end
+
     return profile.lua_editor ~= 'plain'
 end
 
@@ -41,7 +44,10 @@ local versionStates = { loaded = true, connected = true, disabled = true, incomp
 local function versionFor(entry)
     if entry then
         local loaded = entry.loaded
-        if loaded == true or loaded == nil and versionStates[entry.state] then return entry.version or '' end
+
+        if loaded == true or loaded == nil and versionStates[entry.state] then
+            return entry.version or ''
+        end
     end
 
     return ''
@@ -78,25 +84,47 @@ function addon:BuildIntegrationSettings(p)
 
     local ok, value = pcall(function()
         local platform = self.Platform
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         local get = platform and platform.GetClientInfo
-        if not current() then return end
-        if type(get) == 'function' then return get(platform) end
+
+        if not current() then
+            return
+        end
+        if type(get) == 'function' then
+            return get(platform)
+        end
     end)
 
-    if not current() then return end
-    if ok then client = value end
+    if not current() then
+        return
+    end
+
+    if ok then
+        client = value
+    end
 
     -- False only when the catalog says addon `id` is explicitly unsupported on this client; an unknown or failed lookup
     -- keeps the row visible.
     local function supported(id)
         local success, state = pcall(function()
             local check = self.GetIntegrationClientSupport
-            if not current() then return end
-            if type(check) == 'function' then return check(self, id, client) end
+
+            if not current() then
+                return
+            end
+            if type(check) == 'function' then
+                return check(self, id, client)
+            end
         end)
 
-        if not current() then return end
+        if not current() then
+            return
+        end
+
         return not (success and state == 'unsupported')
     end
 
@@ -104,26 +132,43 @@ function addon:BuildIntegrationSettings(p)
     -- unsupported on this client are left out; LuaWorkbench is listed as unavailable when the addon is not present.
     local function editors()
         local list = self.ListLuaEditorProviders
-        if not current() or type(list) ~= 'function' then return end
+
+        if not current() or type(list) ~= 'function' then
+            return
+        end
+
         local entries = list(self)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         local rows, byID = {}, {}
 
         for _, entry in ipairs(entries) do
             local id = entry.value
             local allowed = supported(id == 'LuaWorkbench' and '!!!LuaWorkbench' or id)
-            if not current() then return end
+
+            if not current() then
+                return
+            end
 
             if allowed and id ~= 'auto' and id ~= 'plain' and id ~= 'native' then
                 local available = true
 
                 if id == 'LuaWorkbench' then
                     local check = self.IsLuaWorkbenchIntegrationAvailable
-                    if not current() then return end
+
+                    if not current() then
+                        return
+                    end
+
                     available = type(check) == 'function' and check(self) == true
                 end
 
-                if not current() then return end
+                if not current() then
+                    return
+                end
 
                 if not byID[id] then
                     local row = { id = id, name = safeName(entry.text), available = available == true }
@@ -135,7 +180,10 @@ function addon:BuildIntegrationSettings(p)
 
         table.sort(rows, function(a, b) return a.id < b.id end)
         local workbenchAllowed = supported('!!!LuaWorkbench')
-        if not current() then return end
+
+        if not current() then
+            return
+        end
 
         if workbenchAllowed and not byID.LuaWorkbench then
             local row = { id = 'LuaWorkbench', name = L['LuaWorkbench'], available = false }
@@ -155,20 +203,29 @@ function addon:BuildIntegrationSettings(p)
 
         if selected == 'auto' then
             for _, row in ipairs(rows) do
-                if row.available and not disabled(profile, row.id) then return row.id end
+                if row.available and not disabled(profile, row.id) then
+                    return row.id
+                end
             end
         elseif selected ~= 'native' and selected ~= 'plain' then
             local row = byID[selected]
-            if row and row.available and not disabled(profile, selected) then return selected end
+
+            if row and row.available and not disabled(profile, selected) then
+                return selected
+            end
         end
 
-        if not disabled(profile, 'native') then return 'native' end
+        if not disabled(profile, 'native') then
+            return 'native'
+        end
     end
 
     -- Stores the current highlighting choice the first time an editor change is made, so switching to a provider and
     -- back does not lose it.
     local function rememberHighlight(value)
-        if profile.lua_native_highlighting == nil then profile.lua_native_highlighting = value end
+        if profile.lua_native_highlighting == nil then
+            profile.lua_native_highlighting = value
+        end
     end
 
     -- The lua_editor value for choosing `id`: Native stands for "native" or "plain" depending on the highlighting
@@ -189,7 +246,9 @@ function addon:BuildIntegrationSettings(p)
             end
         end
 
-        if value and not map[id] then n = n + 1 end
+        if value and not map[id] then
+            n = n + 1
+        end
 
         if n > 64 then
             p:Message(L['Unavailable'])
@@ -203,9 +262,17 @@ function addon:BuildIntegrationSettings(p)
     -- Selects an available, enabled provider as the Lua editor and redraws.
     local function choose(id)
         local rows, byID = editors()
-        if not rows or not current() then return end
+
+        if not rows or not current() then
+            return
+        end
+
         local row = byID[id]
-        if not row or not row.available or disabled(profile, id) then return end
+
+        if not row or not row.available or disabled(profile, id) then
+            return
+        end
+
         local value = highlighting(profile)
         rememberHighlight(value)
         profile.lua_editor = selection(id, value)
@@ -215,13 +282,25 @@ function addon:BuildIntegrationSettings(p)
     -- Re-enables a disabled provider; if no editor was usable, it also becomes the selected one.
     local function enable(id)
         local rows, byID = editors()
-        if not rows or not current() then return end
+
+        if not rows or not current() then
+            return
+        end
+
         local row = byID[id]
-        if not row or not row.available or not disabled(profile, id) then return end
+
+        if not row or not row.available or not disabled(profile, id) then
+            return
+        end
+
         local selected = effective(rows, byID)
         local value = highlighting(profile)
         local map = mapWith(id, false)
-        if not map then return end
+
+        if not map then
+            return
+        end
+
         profile.lua_editor_disabled = next(map) and map or nil
 
         if not selected then
@@ -237,28 +316,52 @@ function addon:BuildIntegrationSettings(p)
     -- card showed.
     local function disable(id, replacement, wasSelected)
         local rows, byID = editors()
-        if not rows or not current() then return end
+
+        if not rows or not current() then
+            return
+        end
+
         local row = byID[id]
-        if not row or not row.available or disabled(profile, id) then return end
+
+        if not row or not row.available or disabled(profile, id) then
+            return
+        end
+
         local selected = effective(rows, byID)
-        if wasSelected and selected ~= id or not wasSelected and selected == id then return end
+
+        if wasSelected and selected ~= id or not wasSelected and selected == id then
+            return
+        end
 
         if replacement then
             local target = byID[replacement]
-            if not target or replacement == id or not target.available or disabled(profile, replacement) then return end
+
+            if not target or replacement == id or not target.available or disabled(profile, replacement) then
+                return
+            end
         elseif wasSelected then
             -- A new enabled alternative requires a fresh explicit handoff choice.
             for other, target in pairs(byID) do
-                if other ~= id and target.available and not disabled(profile, other) then return end
+                if other ~= id and target.available and not disabled(profile, other) then
+                    return
+                end
             end
         end
 
         local value = highlighting(profile)
         local map = mapWith(id, true)
-        if not map then return end
+
+        if not map then
+            return
+        end
+
         rememberHighlight(value)
         profile.lua_editor_disabled = map
-        if wasSelected then profile.lua_editor = replacement and selection(replacement, value) or 'plain' end
+
+        if wasSelected then
+            profile.lua_editor = replacement and selection(replacement, value) or 'plain'
+        end
+
         p:Draw()
     end
 
@@ -266,9 +369,16 @@ function addon:BuildIntegrationSettings(p)
     -- the selected one asks which alternative takes over before disabling it.
     local function editorAction(id, anchor)
         local rows, byID = editors()
-        if not rows or not current() then return end
+
+        if not rows or not current() then
+            return
+        end
+
         local row = byID[id]
-        if not row or not row.available then return end
+
+        if not row or not row.available then
+            return
+        end
 
         if disabled(profile, id) then
             enable(id)
@@ -309,28 +419,56 @@ function addon:BuildIntegrationSettings(p)
         elseif #alternatives == 1 then
             disable(id, alternatives[1].value, true)
         else
-            p:ShowChoices(anchor, alternatives, function(other) disable(id, other, true) end, true)
+            p:ShowChoices(
+                anchor,
+                alternatives,
+                function(other)
+                    disable(id, other, true)
+                end,
+                true
+            )
         end
     end
 
     -- Fetches the catalog status rows once for this drawing; nil if the drawing went stale.
     local function inventoryRows()
         local list = self.ListIntegrationStatus
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         local result = type(list) == 'function' and list(self) or {}
-        if current() then return result end
+
+        if current() then
+            return result
+        end
     end
 
     local rows, byID, native = editors()
-    if not rows or not current() then return end
+
+    if not rows or not current() then
+        return
+    end
+
     local inventory = inventoryRows()
-    if not inventory then return end
+
+    if not inventory then
+        return
+    end
+
     local metadata = {}
 
     for _, entry in ipairs(inventory) do
         local allowed = supported(entry.id)
-        if not current() then return end
-        if allowed then metadata[entry.id] = entry end
+
+        if not current() then
+            return
+        end
+
+        if allowed then
+            metadata[entry.id] = entry
+        end
     end
 
     local selected = effective(rows, byID)
@@ -351,7 +489,9 @@ function addon:BuildIntegrationSettings(p)
                 or disabled(profile, row.id) and 'disabled'
                 or selected == row.id and 'selected'
                 or 'enabled',
-            action = row.available and function(anchor) editorAction(row.id, anchor) end or nil,
+            action = row.available and function(anchor)
+                editorAction(row.id, anchor)
+            end or nil,
             entry = entry,
             help = row.id == 'native' and 'Help.Integrations.native_highlighting' or nil,
             native = row.id == 'native',
@@ -391,7 +531,9 @@ function addon:BuildIntegrationSettings(p)
         local list = {}
 
         for _, id in ipairs(ids) do
-            if metadata[id] then list[#list + 1] = readonly(metadata[id]) end
+            if metadata[id] then
+                list[#list + 1] = readonly(metadata[id])
+            end
         end
 
         groups[#groups + 1] = { key = key, title = title, rows = list }
@@ -400,7 +542,10 @@ function addon:BuildIntegrationSettings(p)
     group('integrations_conditions', L['Condition data'], { 'ExtendedCharacterStats', 'MobInfo2' })
     group('integrations_notifications', L['Recommendation notifications'], { 'WeakAuras', 'ForeverAuras' })
     local questieAllowed = supported('Questie')
-    if not current() then return end
+
+    if not current() then
+        return
+    end
 
     if questieAllowed then
         local questie = metadata.Questie or { id = 'Questie', name = L['Questie'], state = 'missing' }
@@ -410,18 +555,34 @@ function addon:BuildIntegrationSettings(p)
             questieRow.state = profile.questie_enabled == true and 'enabled' or 'disabled'
 
             questieRow.action = function()
-                if not supported('Questie') or not current() then return end
+                if not supported('Questie') or not current() then
+                    return
+                end
+
                 local fresh = inventoryRows()
-                if not fresh then return end
+
+                if not fresh then
+                    return
+                end
+
                 local loaded = false
 
                 for _, entry in ipairs(fresh) do
-                    if entry.id == 'Questie' then loaded = entry.state ~= 'missing' and entry.state ~= 'unknown' end
+                    if entry.id == 'Questie' then
+                        loaded = entry.state ~= 'missing' and entry.state ~= 'unknown'
+                    end
                 end
 
-                if not loaded then return end
+                if not loaded then
+                    return
+                end
+
                 profile.questie_enabled = not (profile.questie_enabled == true)
-                p:RunSettingsEffect('questie', function() self:SyncQuestieIntegration() end)
+
+                p:RunSettingsEffect('questie', function()
+                    self:SyncQuestieIntegration()
+                end)
+
                 p:Draw()
             end
         end
@@ -434,7 +595,10 @@ function addon:BuildIntegrationSettings(p)
 
     for _, id in ipairs({ 'DBM-Core', 'BigWigs' }) do
         local allowed = supported(id)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
 
         if allowed then
             local entry = metadata[id] or { id = id, name = L[id == 'DBM-Core' and 'DBM' or id], state = 'missing' }
@@ -448,9 +612,16 @@ function addon:BuildIntegrationSettings(p)
 
             if row.state ~= 'missing' or chosen then
                 row.action = function()
-                    if not supported(id) or not current() then return end
+                    if not supported(id) or not current() then
+                        return
+                    end
+
                     profile.encounter_provider = profile.encounter_provider ~= id and id or nil
-                    p:RunSettingsEffect('encounter_provider', function() self:SyncEncounterIntegration() end)
+
+                    p:RunSettingsEffect('encounter_provider', function()
+                        self:SyncEncounterIntegration()
+                    end)
+
                     p:Draw()
                 end
             end
@@ -464,7 +635,10 @@ function addon:BuildIntegrationSettings(p)
     end
 
     local masqueAllowed = supported('Masque')
-    if not current() then return end
+
+    if not current() then
+        return
+    end
 
     if masqueAllowed then
         local entry = metadata.Masque or { id = 'Masque', name = L['Masque'], state = 'missing' }
@@ -478,9 +652,16 @@ function addon:BuildIntegrationSettings(p)
 
         if row.state ~= 'missing' or enabled then
             row.action = function()
-                if not supported('Masque') or not current() then return end
+                if not supported('Masque') or not current() then
+                    return
+                end
+
                 profile.preview_masque = not (profile.preview_masque == true)
-                p:RunSettingsEffect('preview_masque', function() self:RefreshPreviewWindow() end)
+
+                p:RunSettingsEffect('preview_masque', function()
+                    self:RefreshPreviewWindow()
+                end)
+
                 p:Draw()
             end
         end
@@ -558,8 +739,14 @@ function addon:BuildIntegrationSettings(p)
         c:SetPoint('TOPLEFT', x, -y)
         c:SetWidth(math.max(1, w))
         c:SetWordWrap(true)
-        if c.SetNonSpaceWrap then c:SetNonSpaceWrap(true) end
-        if c.SetMaxLines then c:SetMaxLines(0) end
+
+        if c.SetNonSpaceWrap then
+            c:SetNonSpaceWrap(true)
+        end
+        if c.SetMaxLines then
+            c:SetMaxLines(0)
+        end
+
         c:SetText(text or '')
         c:SetTextColor(.9, .92, .94)
         c:SetHeight(0)
@@ -617,7 +804,10 @@ function addon:BuildIntegrationSettings(p)
 
             addon:SetUIScript(name, 'OnClick', p:Guard(function()
                 local show = self.ShowIntegrationProjectLink
-                if current() and type(show) == 'function' then show(self, id) end
+
+                if current() and type(show) == 'function' then
+                    show(self, id)
+                end
             end))
         end
 
@@ -643,7 +833,9 @@ function addon:BuildIntegrationSettings(p)
             pill,
             'OnClick',
             row.action and p:Guard(function()
-                if p:FlushEdits() and current() then row.action(pill) end
+                if p:FlushEdits() and current() then
+                    row.action(pill)
+                end
             end) or nil
         )
 
@@ -695,10 +887,18 @@ function addon:BuildIntegrationSettings(p)
                 value
             )
                 local liveRows, liveByID = editors()
-                if not liveRows or not current() then return end
+
+                if not liveRows or not current() then
+                    return
+                end
+
                 local active = effective(liveRows, liveByID)
                 profile.lua_native_highlighting = value == true
-                if active == 'native' then profile.lua_editor = value and 'native' or 'plain' end
+
+                if active == 'native' then
+                    profile.lua_editor = value and 'native' or 'plain'
+                end
+
                 p:Draw()
             end)
 

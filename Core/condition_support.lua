@@ -46,7 +46,10 @@ local function lookup(path)
     local value = env
 
     for part in path:gmatch('[^.]+') do
-        if type(value) ~= 'table' then return nil end
+        if type(value) ~= 'table' then
+            return nil
+        end
+
         value = value[part]
     end
 
@@ -57,7 +60,11 @@ end
 -- without the predicate, or one whose answer is unreadable, is restricted.
 local function secretRestrictions()
     local secrets = lookup('C_Secrets')
-    if type(secrets) ~= 'table' or type(secrets.HasSecretRestrictions) ~= 'function' then return true end
+
+    if type(secrets) ~= 'table' or type(secrets.HasSecretRestrictions) ~= 'function' then
+        return true
+    end
+
     local ok, restricted = pcall(secrets.HasSecretRestrictions)
     local platform = addon.Platform
 
@@ -73,11 +80,22 @@ end
 local function whileRestricted(reason, secret)
     return function(value)
         local platform = addon.Platform
-        if not platform then return nil end
+
+        if not platform then
+            return nil
+        end
+
         local policy = platform:GetCombatDataPolicy()
-        if policy == 'probe' then return nil end
-        if policy ~= 'restricted' then return 'unsupported-policy' end
-        if secretRestrictions() and secret(value) then return reason end
+
+        if policy == 'probe' then
+            return nil
+        end
+        if policy ~= 'restricted' then
+            return 'unsupported-policy'
+        end
+        if secretRestrictions() and secret(value) then
+            return reason
+        end
     end
 end
 
@@ -94,10 +112,18 @@ local SECRET_HEALTH = whileRestricted('secret-health', function() return true en
 -- the never-secret point resources Blizzard named (Platform/points.lua).
 local function neverSecretPower(name)
     local enum = lookup('Enum.PowerType')
-    if type(enum) ~= 'table' then return false end
+
+    if type(enum) ~= 'table' then
+        return false
+    end
+
     local id = rawget(enum, name)
     local platform = addon.Platform
-    if not platform:CanReadValue(id) or type(id) ~= 'number' then return false end
+
+    if not platform:CanReadValue(id) or type(id) ~= 'number' then
+        return false
+    end
+
     local query = lookup('C_Secrets.GetPowerTypeSecrecy')
 
     if type(query) ~= 'function' then
@@ -105,9 +131,17 @@ local function neverSecretPower(name)
     end
 
     local ok, level = pcall(query, id)
-    if not ok or not platform:CanReadValue(level) or type(level) ~= 'number' then return false end
+
+    if not ok or not platform:CanReadValue(level) or type(level) ~= 'number' then
+        return false
+    end
+
     local never = lookup('Enum.SecrecyLevel.NeverSecret')
-    if not platform:CanReadValue(never) or type(never) ~= 'number' then never = 0 end
+
+    if not platform:CanReadValue(never) or type(never) ~= 'number' then
+        never = 0
+    end
+
     return level == never
 end
 
@@ -121,7 +155,9 @@ local primaryPowers = {
 
 local SECRET_POWER = whileRestricted('secret-power', function()
     for _, name in ipairs(primaryPowers) do
-        if neverSecretPower(name) then return false end
+        if neverSecretPower(name) then
+            return false
+        end
     end
 
     return true
@@ -133,18 +169,30 @@ end)
 
 -- Value-dependent permanent gates.
 local function talentLayout(value)
-    if type(value) ~= 'table' then return nil end
-
+    if type(value) ~= 'table' then
+        return nil
+    end
     if value.layout == nil and value.tree == nil and value.talent == nil and type(value.value) == 'number' then
         return 'historical-talent-layout'
     end
 
     local platform = addon.Platform
-    if not platform or type(platform.GetTalentLayout) ~= 'function' then return nil end
+
+    if not platform or type(platform.GetTalentLayout) ~= 'function' then
+        return nil
+    end
+
     local current, reason = platform:GetTalentLayout()
-    if current == nil then return reason or 'unsupported-talent-layout' end
+
+    if current == nil then
+        return reason or 'unsupported-talent-layout'
+    end
+
     local wanted = (value.layout == 'grid' or value.layout == 'traits') and value.layout or 'tree'
-    if current ~= wanted then return 'talent-layout-mismatch' end
+
+    if current ~= wanted then
+        return 'talent-layout-mismatch'
+    end
 end
 
 -- Classic talent trees: the tree layout, and Forever, whose three classic
@@ -152,17 +200,32 @@ end
 -- Retail's trait tree has no such groups.
 local function treeLayout()
     local platform = addon.Platform
-    if not platform or type(platform.GetTalentLayout) ~= 'function' then return nil end
+
+    if not platform or type(platform.GetTalentLayout) ~= 'function' then
+        return nil
+    end
+
     local current, reason = platform:GetTalentLayout()
-    if current == nil then return reason or 'unsupported-talent-layout' end
-    if current == 'traits' and platform:GetClientFamily() == 'forever' then return nil end
-    if current ~= 'tree' then return 'talent-layout-mismatch' end
+
+    if current == nil then
+        return reason or 'unsupported-talent-layout'
+    end
+    if current == 'traits' and platform:GetClientFamily() == 'forever' then
+        return nil
+    end
+    if current ~= 'tree' then
+        return 'talent-layout-mismatch'
+    end
 end
 
 -- Reason code when this progression expansion has no known point resource map, else nil.
 local function pointEdition()
     local platform = addon.Platform
-    if not platform or type(platform.GetClientInfo) ~= 'function' then return nil end
+
+    if not platform or type(platform.GetClientInfo) ~= 'function' then
+        return nil
+    end
+
     local info = platform:GetClientInfo()
 
     if
@@ -178,9 +241,16 @@ end
 
 -- Mists removed the ranged slot and Retail followed (Core/build_context.lua).
 local function weaponSlot(value)
-    if type(value) ~= 'table' or value.slot ~= 'ranged' then return nil end
+    if type(value) ~= 'table' or value.slot ~= 'ranged' then
+        return nil
+    end
+
     local platform = addon.Platform
-    if not platform or type(platform.GetClientInfo) ~= 'function' then return nil end
+
+    if not platform or type(platform.GetClientInfo) ~= 'function' then
+        return nil
+    end
+
     local info = platform:GetClientInfo()
 
     if
@@ -195,8 +265,13 @@ end
 -- Reason code when the client's glyph layout is not supported, else nil.
 local function glyphLayout()
     local platform = addon.Platform
-    if not platform or type(platform.IsGlyphLayoutSupported) ~= 'function' then return nil end
-    if not platform:IsGlyphLayoutSupported() then return 'unsupported-glyph-layout' end
+
+    if not platform or type(platform.IsGlyphLayoutSupported) ~= 'function' then
+        return nil
+    end
+    if not platform:IsGlyphLayoutSupported() then
+        return 'unsupported-glyph-layout'
+    end
 end
 
 -- Mechanics that exist only in some editions. `test` receives the client info
@@ -205,10 +280,19 @@ end
 local function editionRule(reason, test)
     return function()
         local platform = addon.Platform
-        if not platform or type(platform.GetClientInfo) ~= 'function' then return nil end
+
+        if not platform or type(platform.GetClientInfo) ~= 'function' then
+            return nil
+        end
+
         local info = platform:GetClientInfo()
-        if type(info) ~= 'table' then return nil end
-        if not test(info) then return reason end
+
+        if type(info) ~= 'table' then
+            return nil
+        end
+        if not test(info) then
+            return reason
+        end
     end
 end
 
@@ -305,11 +389,17 @@ local PLAYER_STATE_API = {
 -- Requirement for PLAYER_STATE: checks the API that the chosen state reads.
 local function playerState(value)
     local needs = type(value) == 'table' and PLAYER_STATE_API[value.state]
-    if not needs then return nil end
+
+    if not needs then
+        return nil
+    end
 
     for _, path in ipairs(needs) do
         local reason = check(path, value)
-        if reason then return reason end
+
+        if reason then
+            return reason
+        end
     end
 end
 
@@ -322,7 +412,11 @@ local function groupCount(value)
 
     if measure == 'TANK' or measure == 'HEALER' or measure == 'DAMAGER' then
         local reason = GROUP_ROLE_EDITION()
-        if reason then return reason end
+
+        if reason then
+            return reason
+        end
+
         return check({ 'UnitGroupRolesAssigned' }, value)
     elseif measure == 'dead' then
         return check({ 'UnitIsDeadOrGhost' }, value)
@@ -331,13 +425,19 @@ end
 
 -- ITEM_COOLDOWN with a trinket slot reads the equipped item from the slot.
 local function itemCooldownSlot(value)
-    if type(value) ~= 'table' or value.slot == nil then return nil end
+    if type(value) ~= 'table' or value.slot == nil then
+        return nil
+    end
+
     return check({ 'GetInventoryItemID' }, value)
 end
 
 -- DISTANCE_COUNT with `incombat` also asks whether each counted unit is in combat.
 local function distanceCountCombat(value)
-    if type(value) ~= 'table' or not value.incombat then return nil end
+    if type(value) ~= 'table' or not value.incombat then
+        return nil
+    end
+
     return check({ 'UnitAffectingCombat' }, value)
 end
 
@@ -349,7 +449,11 @@ local function eclipse(value)
         return check({ 'GetEclipseDirection' }, value)
     elseif measure == 'energy' then
         local reason = check({ 'UnitPower' }, value)
-        if reason then return reason end
+
+        if reason then
+            return reason
+        end
+
         return check({ 'Enum.PowerType' }, value)
     end
 end
@@ -540,7 +644,10 @@ local bossmodFamilies = { era = true, tbc = true, progression = true }
 -- FAMILY, LISTED, BOSSMOD and LOG markers.
 function check(requirement, value)
     local kind = type(requirement)
-    if kind == 'function' then return requirement(value) end
+
+    if kind == 'function' then
+        return requirement(value)
+    end
 
     if kind == 'table' then
         for _, path in ipairs(requirement) do
@@ -555,7 +662,10 @@ function check(requirement, value)
     end
 
     local platform = addon.Platform
-    if not platform then return nil end
+
+    if not platform then
+        return nil
+    end
 
     if requirement == LOG then
         -- Retail and Forever deliver COMBAT_LOG_EVENT_UNFILTERED's payload only
@@ -563,17 +673,31 @@ function check(requirement, value)
         -- Blizzard's generated documentation; Blizzard's own combat log reads it
         -- there. Without the payload this history is never recorded.
         local policy = platform:GetCombatDataPolicy()
-        if policy == 'restricted' then return 'combat-log-unavailable' end
-        if policy ~= 'probe' then return 'unsupported-policy' end
+
+        if policy == 'restricted' then
+            return 'combat-log-unavailable'
+        end
+        if policy ~= 'probe' then
+            return 'unsupported-policy'
+        end
     elseif requirement == POLICY then
         local policy = platform:GetCombatDataPolicy()
-        if policy ~= 'probe' and policy ~= 'restricted' then return 'unsupported-policy' end
+
+        if policy ~= 'probe' and policy ~= 'restricted' then
+            return 'unsupported-policy'
+        end
     elseif requirement == FAMILY then
-        if platform:GetClientFamily() == 'unknown' then return 'unsupported-client' end
+        if platform:GetClientFamily() == 'unknown' then
+            return 'unsupported-client'
+        end
     elseif requirement == LISTED then
-        if not listedFamilies[platform:GetClientFamily()] then return 'unsupported-policy' end
+        if not listedFamilies[platform:GetClientFamily()] then
+            return 'unsupported-policy'
+        end
     elseif requirement == BOSSMOD then
-        if not bossmodFamilies[platform:GetClientFamily()] then return 'unsupported-client' end
+        if not bossmodFamilies[platform:GetClientFamily()] then
+            return 'unsupported-client'
+        end
     end
 end
 
@@ -596,7 +720,10 @@ local function groupUnitSupport(value)
 
         if kinds[kind] then
             local reason = platform:GetGroupUnitSupport(kind)
-            if reason then return reason end
+
+            if reason then
+                return reason
+            end
         end
     end
 end
@@ -605,23 +732,42 @@ end
 -- definition's own `supported(value)` wins, custom conditions are always supported here, and a group unit kind in a
 -- unit field is checked first. A support check that errors answers 'support-check-error'.
 function addon:GetConditionSupport(tag, definition, value)
-    if type(definition) ~= 'table' then return nil end
+    if type(definition) ~= 'table' then
+        return nil
+    end
 
     if type(definition.supported) == 'function' then
         local ok, reason = pcall(definition.supported, value)
-        if not ok then return 'support-check-error' end
+
+        if not ok then
+            return 'support-check-error'
+        end
+
         return type(reason) == 'string' and reason or nil
     end
 
-    if definition.customCode then return nil end
+    if definition.customCode then
+        return nil
+    end
+
     local unitReason = groupUnitSupport(value)
-    if unitReason then return unitReason end
+
+    if unitReason then
+        return unitReason
+    end
+
     local list = requirements[tag]
-    if not list then return nil end
+
+    if not list then
+        return nil
+    end
 
     for _, requirement in ipairs(list) do
         local reason = check(requirement, value)
-        if reason then return reason end
+
+        if reason then
+            return reason
+        end
     end
 end
 
@@ -649,7 +795,10 @@ local reasonText = {
 -- "X is not supported on this client (reason)." for an unsupported-condition
 -- validation issue; nil for any other issue.
 function addon:DescribeUnsupportedCondition(problem)
-    if type(problem) ~= 'table' or problem.code ~= 'unsupported-condition' then return nil end
+    if type(problem) ~= 'table' or problem.code ~= 'unsupported-condition' then
+        return nil
+    end
+
     local definition = self.conditionDefinitions and self.conditionDefinitions[problem.condition]
 
     local name = type(definition) == 'table' and type(definition.description) == 'string' and definition.description

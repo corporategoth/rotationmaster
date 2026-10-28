@@ -60,7 +60,10 @@ function addon:BindEditorFunction(owner, id, alias)
     end
 
     local source = owner.model and owner.model.value or owner.value
-    if not source then return reject('function-binding-conflict') end
+
+    if not source then
+        return reject('function-binding-conflict')
+    end
 
     local arguments = source.args or {
         { name = 'value' },
@@ -73,11 +76,23 @@ function addon:BindEditorFunction(owner, id, alias)
     }
 
     local bindings = self:CopySettingsData(source.bindings or {})
-    if bindings[alias] and bindings[alias] ~= id then return reject('function-binding-conflict') end
+
+    if bindings[alias] and bindings[alias] ~= id then
+        return reject('function-binding-conflict')
+    end
+
     bindings[alias] = id
-    if not self:NormalizeFunctionBindings(bindings, arguments) then return reject('invalid-function-bindings') end
+
+    if not self:NormalizeFunctionBindings(bindings, arguments) then
+        return reject('invalid-function-bindings')
+    end
+
     local available, why = self:FunctionAvailable(id)
-    if not available then return reject(why or 'missing-function') end
+
+    if not available then
+        return reject(why or 'missing-function')
+    end
+
     local before = source.bindings
     local previous = before and before[alias]
     local text = owner.code:GetText()
@@ -96,11 +111,17 @@ function addon:BindEditorFunction(owner, id, alias)
 
     -- Restores the bindings saved before the call and puts the code text back; idempotent.
     function transaction:rollback()
-        if self.finished then return end
+        if self.finished then
+            return
+        end
+
         self.finished = true
         source.bindings = before
         local current = valid()
-        if owner.pendingFunctionBinding == transaction then owner.pendingFunctionBinding = nil end
+
+        if owner.pendingFunctionBinding == transaction then
+            owner.pendingFunctionBinding = nil
+        end
 
         if current then
             owner:SetCode(text)
@@ -111,7 +132,9 @@ function addon:BindEditorFunction(owner, id, alias)
     -- Pushes a 'function-completion' undo entry (bounded to 100 entries, and 4 MiB of text for model-backed editors)
     -- and keeps the new binding. Returns false and rolls back if the editor changed meanwhile.
     function transaction:commit()
-        if self.finished then return false end
+        if self.finished then
+            return false
+        end
 
         if not valid() then
             self:rollback()
@@ -146,7 +169,10 @@ function addon:BindEditorFunction(owner, id, alias)
 
         while #state.undo > 100 or owner.model and bytes > 4194304 do
             local removed = table.remove(state.undo, 1)
-            if owner.model then bytes = bytes - length(removed) end
+
+            if owner.model then
+                bytes = bytes - length(removed)
+            end
         end
 
         if owner.model then
@@ -186,7 +212,11 @@ function addon:TravelFunctionCompletion(owner, entry)
     bindings = self:CopySettingsData(bindings or {})
     bindings[entry.alias] = entry.binding
     source.bindings = bindings
-    if entry.bindingsMissing and next(bindings) == nil then source.bindings = nil end
+
+    if entry.bindingsMissing and next(bindings) == nil then
+        source.bindings = nil
+    end
+
     owner:SetCode(entry.text)
     return inverse
 end
@@ -230,7 +260,10 @@ function addon:FunctionBindingChoices()
     end
 
     table.sort(entries, function(a, b)
-        if a.text == b.text then return a.value < b.value end
+        if a.text == b.text then
+            return a.value < b.value
+        end
+
         return a.text < b.text
     end)
 
@@ -242,7 +275,9 @@ function addon:FunctionBindingChoices()
     end
 
     for _, entry in ipairs(entries) do
-        if counts[entry.text] > 1 then entry.text = entry.text .. ' (' .. entry.value .. ')' end
+        if counts[entry.text] > 1 then
+            entry.text = entry.text .. ' (' .. entry.value .. ')'
+        end
     end
 
     return entries
@@ -307,7 +342,9 @@ function addon:BuildFunctionBindingFields(form, owner, options)
 
     -- Applies `change(bindings)` to the editor's bindings table; ignored while the editor is read-only.
     local function mutate(change)
-        if owner.readOnly then return end
+        if owner.readOnly then
+            return
+        end
 
         if owner.model then
             owner.model:Change(function(model)
@@ -335,7 +372,10 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         form.y = math.max(y, header.y + 28)
     end
 
-    if not owner.bindingExpanded then return end
+    if not owner.bindingExpanded then
+        return
+    end
+
     local targets = self:FunctionBindingChoices()
     local aliasWidth = math.max(80, form.width * .28)
     local labelY = form.y
@@ -363,8 +403,12 @@ function addon:BuildFunctionBindingFields(form, owner, options)
             nil,
             alias,
             function(text)
-                if text ~= alias and bindings[text] then return nil end
-                if self:NormalizeFunctionBindings({ [text] = id }, source.args) then return text end
+                if text ~= alias and bindings[text] then
+                    return nil
+                end
+                if self:NormalizeFunctionBindings({ [text] = id }, source.args) then
+                    return text
+                end
             end,
             function(value)
                 if value ~= alias then
@@ -395,10 +439,15 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         local found = false
 
         for _, entry in ipairs(choices) do
-            if entry.value == id then found = true end
+            if entry.value == id then
+                found = true
+            end
         end
 
-        if not found then choices[#choices + 1] = { value = id, text = id } end
+        if not found then
+            choices[#choices + 1] = { value = id, text = id }
+        end
+
         local caption = id
 
         for _, entry in ipairs(choices) do
@@ -409,7 +458,9 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         end
 
         local target = form:Button('binding_target_' .. index, caption, function()
-            if self.ShowFunctionSource then self:ShowFunctionSource(id) end
+            if self.ShowFunctionSource then
+                self:ShowFunctionSource(id)
+            end
         end)
 
         target:ClearAllPoints()
@@ -419,7 +470,9 @@ function addon:BuildFunctionBindingFields(form, owner, options)
 
         -- Navigation must permit Discard even while a raw alias is invalid.
         self:SetUIScript(target, 'OnClick', form:Guard(function()
-            if self.ShowFunctionSource then self:ShowFunctionSource(id) end
+            if self.ShowFunctionSource then
+                self:ShowFunctionSource(id)
+            end
         end))
 
         if self.FunctionSource and self:FunctionSource(id) and self.ShowFunctionSource then
@@ -443,7 +496,10 @@ function addon:BuildFunctionBindingFields(form, owner, options)
                     remap,
                     choices,
                     function(value)
-                        mutate(function(values) values[alias] = value end)
+                        mutate(function(values)
+                            values[alias] = value
+                        end)
+
                         refresh()
                     end,
                     true
@@ -461,7 +517,10 @@ function addon:BuildFunctionBindingFields(form, owner, options)
                 'binding_remove_' .. index,
                 L['Remove dependency'],
                 function()
-                    mutate(function(values) values[alias] = nil end)
+                    mutate(function(values)
+                        values[alias] = nil
+                    end)
+
                     refresh()
                 end,
                 'trash'
@@ -497,7 +556,10 @@ function addon:BuildFunctionBindingFields(form, owner, options)
                     n = n + 1
                 end
 
-                mutate(function(values) values[alias] = id end)
+                mutate(function(values)
+                    values[alias] = id
+                end)
+
                 refresh()
             end,
             'plus'

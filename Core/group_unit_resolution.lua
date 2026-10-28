@@ -17,7 +17,11 @@ function addon:ResolveConditionUnits(value, cache)
     local kinds = self.groupUnitKinds
     local unit, other = value.unit, value.otherunit
     local unitKind, otherKind = kinds[unit], kinds[other]
-    if not unitKind and not otherKind then return value end
+
+    if not unitKind and not otherKind then
+        return value
+    end
+
     local platform = self.Platform
     local resolved = {}
 
@@ -27,13 +31,21 @@ function addon:ResolveConditionUnits(value, cache)
 
     if unitKind then
         local token, reason = self.Functions.cache.getCached(cache, platform.ResolveGroupUnit, platform, unit)
-        if not token then return nil, reason end
+
+        if not token then
+            return nil, reason
+        end
+
         resolved.unit = token
     end
 
     if otherKind then
         local token, reason = self.Functions.cache.getCached(cache, platform.ResolveGroupUnit, platform, other)
-        if not token then return nil, reason end
+
+        if not token then
+            return nil, reason
+        end
+
         resolved.otherunit = token
     end
 

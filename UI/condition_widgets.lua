@@ -26,7 +26,10 @@ end
 function addon:ObserveConditionWidgets(callback)
     local token = { callback = callback }
     observers[token] = true
-    return function() observers[token] = nil end
+
+    return function()
+        observers[token] = nil
+    end
 end
 
 -- Notifies the observers of a newly acquired widget. Snapshots the observer list first so a callback may unsubscribe
@@ -39,7 +42,9 @@ local function observed(widget)
     end
 
     for _, token in ipairs(callbacks) do
-        if observers[token] then token.callback(widget) end
+        if observers[token] then
+            token.callback(widget)
+        end
     end
 end
 
@@ -99,7 +104,11 @@ end
 -- Runs the callback registered for `event` (if any) with the widget and the event name first, and returns its result.
 function base:Fire(event, ...)
     local callback = self.events[event]
-    if not callback then return end
+
+    if not callback then
+        return
+    end
+
     return callback(self, event, ...)
 end
 
@@ -124,21 +133,31 @@ function base:SetParent(parent)
     if not addon:IsConditionWidget(self) or not self.rmActive or self:IsReleasing() then
         error('inactive-condition-widget', 0)
     end
-
     if not addon:IsConditionWidget(parent) or not parent.rmActive or parent:IsReleasing() then
         error('foreign-condition-widget-parent', 0)
     end
+    if self.parent and self.parent ~= parent then
+        error('condition-child-already-owned', 0)
+    end
 
-    if self.parent and self.parent ~= parent then error('condition-child-already-owned', 0) end
     local current = parent
 
     for _ = 1, 128 do
-        if not current then break end
-        if current == self then error('condition-widget-parent-cycle', 0) end
+        if not current then
+            break
+        end
+
+        if current == self then
+            error('condition-widget-parent-cycle', 0)
+        end
+
         current = current.parent
     end
 
-    if current then error('condition-widget-parent-cycle', 0) end
+    if current then
+        error('condition-widget-parent-cycle', 0)
+    end
+
     self.parent = parent
     self.frame:SetParent(parent.content or parent.frame)
 end
@@ -150,7 +169,10 @@ function base:SetWidth(width)
     self.frame:SetWidth(width)
     self.frame.width = width
     self.sizing = false
-    if self.OnWidthSet then self:OnWidthSet(width) end
+
+    if self.OnWidthSet then
+        self:OnWidthSet(width)
+    end
 end
 
 -- Sets the frame height and records it on the frame; `sizing` stops the OnSizeChanged hook from reporting our own
@@ -160,7 +182,10 @@ function base:SetHeight(height)
     self.frame:SetHeight(height)
     self.frame.height = height
     self.sizing = false
-    if self.OnHeightSet then self:OnHeightSet(height) end
+
+    if self.OnHeightSet then
+        self:OnHeightSet(height)
+    end
 end
 
 -- Asks the parent layout to stretch the widget across its width.
@@ -226,8 +251,13 @@ function base:IsReleasing()
     local current = self
 
     for _ = 1, 128 do
-        if not current then return false end
-        if current.isQueuedForRelease then return true end
+        if not current then
+            return false
+        end
+        if current.isQueuedForRelease then
+            return true
+        end
+
         current = current.parent
     end
 
@@ -251,10 +281,15 @@ function addon:RegisterConditionWidget(widget)
     w.events = {}
     w.frame.obj = w
     w.rmWidget = true
-    if w.content then w.content.obj = w end
+
+    if w.content then
+        w.content.obj = w
+    end
 
     for name, method in pairs(base) do
-        if w[name] == nil then w[name] = method end
+        if w[name] == nil then
+            w[name] = method
+        end
     end
 
     local acquire, release = w.OnAcquire, w.OnRelease
@@ -269,14 +304,20 @@ function addon:RegisterConditionWidget(widget)
         self.userdata = {}
         self.events = {}
         self.isQueuedForRelease = nil
-        if acquire then acquire(self) end
+
+        if acquire then
+            acquire(self)
+        end
     end
 
     -- Wraps the kind's own OnRelease: marks the widget inactive first so every callback guarded by the lease goes
     -- quiet.
     function w:OnRelease()
         self.rmActive = false
-        if release then return release(self) end
+
+        if release then
+            return release(self)
+        end
     end
 
     addon:SetUIScript(w.frame, 'OnSizeChanged', function(_, width, height)
@@ -285,8 +326,12 @@ function addon:RegisterConditionWidget(widget)
         w.frame.height = height
 
         if not w.sizing and w.rmActive then
-            if width ~= oldWidth and w.OnWidthSet then w:OnWidthSet(width) end
-            if height ~= oldHeight and w.OnHeightSet then w:OnHeightSet(height) end
+            if width ~= oldWidth and w.OnWidthSet then
+                w:OnWidthSet(width)
+            end
+            if height ~= oldHeight and w.OnHeightSet then
+                w:OnHeightSet(height)
+            end
         end
     end)
 
@@ -309,7 +354,9 @@ function addon:AcquireConditionWidget(kind, constructor)
         end
     end
 
-    if not widget then widget = constructor() end
+    if not widget then
+        widget = constructor()
+    end
 
     if not self:IsConditionWidget(widget) or widget.type ~= kind or widget.rmActive then
         error('condition-widget-construction-failed', 0)
@@ -335,19 +382,38 @@ end
 -- frame to UIParent. Each step runs under pcall so one failure cannot strand the rest; the first failure quarantines
 -- the widget and is rethrown after cleanup. Returns false when it was already released.
 function addon:ReleaseConditionWidget(widget)
-    if widget == nil then return false end
-    if not self:IsConditionWidget(widget) then error('foreign-condition-widget', 0) end
-    if widget.isQueuedForRelease or not widget.rmActive then return false end
+    if widget == nil then
+        return false
+    end
+
+    if not self:IsConditionWidget(widget) then
+        error('foreign-condition-widget', 0)
+    end
+
+    if widget.isQueuedForRelease or not widget.rmActive then
+        return false
+    end
+
     widget.isQueuedForRelease = true
-    if available[widget.type] then available[widget.type][widget] = nil end
+
+    if available[widget.type] then
+        available[widget.type][widget] = nil
+    end
+
     local problem
 
     -- Runs one cleanup step under pcall and remembers the first failure, so a failing step cannot skip the ones after
     -- it.
     local function perform(callback, ...)
-        if type(callback) ~= 'function' then return end
+        if type(callback) ~= 'function' then
+            return
+        end
+
         local ok, why = pcall(callback, ...)
-        if not ok then problem = problem or why end
+
+        if not ok then
+            problem = problem or why
+        end
     end
 
     perform(widget.PauseLayout, widget)

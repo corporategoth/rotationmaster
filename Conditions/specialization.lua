@@ -191,7 +191,9 @@ end
 
 -- Returns the class token that owns a specialization ID, or nil when the value is not an ID or the class is unknown.
 function addon:GetSpecializationClassToken(id)
-    if specID(id) then return specClass(id) end
+    if specID(id) then
+        return specClass(id)
+    end
 end
 
 -- ============================================================================
@@ -309,13 +311,20 @@ local loadoutSeeds = {
 -- first argument is the callback event name and is unused. A malformed profile is skipped rather than repaired.
 function addon:InitializeLoadoutConditions(_, db)
     local profile = db and db.profile
-    if type(profile) ~= "table" or profile.loadoutConditionsSeeded then return end
+
+    if type(profile) ~= "table" or profile.loadoutConditionsSeeded then
+        return
+    end
 
     local function append(list, tag)
-        if type(list) ~= "table" then return end
+        if type(list) ~= "table" then
+            return
+        end
 
         for _, existing in ipairs(list) do
-            if existing == tag then return end
+            if existing == tag then
+                return
+            end
         end
 
         list[#list + 1] = tag
@@ -325,7 +334,9 @@ function addon:InitializeLoadoutConditions(_, db)
         append(profile.switch_conditions, seed.tag)
 
         for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
-            if type(category) == "table" and category.id == seed.category then append(category.conditions, seed.tag) end
+            if type(category) == "table" and category.id == seed.category then
+                append(category.conditions, seed.tag)
+            end
         end
     end
 
@@ -338,7 +349,9 @@ local seedOwner = {}
 -- Seeds the current profile now and again whenever a profile is created, reset, switched or copied, so every profile
 -- gets the loadout conditions exactly once. Called once from addon:init with the AceDB object.
 function addon:InstallLoadoutConditions(db)
-    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
+    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
+        return
+    end
 
     for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
         db.RegisterCallback(seedOwner, event, function(_, currentDB)

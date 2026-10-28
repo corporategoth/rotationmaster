@@ -17,7 +17,10 @@ local data = addon.RotationData
 -- condition cannot also edit a sibling that reused the same source table.
 -- Returns a deep copy of plain data (non-tables are returned as they are).
 local function detach(value)
-    if type(value) ~= 'table' then return value end
+    if type(value) ~= 'table' then
+        return value
+    end
+
     local result = {}
 
     for key, child in pairs(value) do
@@ -29,14 +32,20 @@ end
 
 -- Returns true when two paths are dense lists with the same keys in the same order.
 local function samePath(a, b)
-    if #a ~= #b then return false end
+    if #a ~= #b then
+        return false
+    end
 
     for key in pairs(b) do
-        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 or key > #a then return false end
+        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 or key > #a then
+            return false
+        end
     end
 
     for i, key in ipairs(a) do
-        if key ~= b[i] then return false end
+        if key ~= b[i] then
+            return false
+        end
     end
 
     return true
@@ -44,10 +53,14 @@ end
 
 -- Returns true when path a is a prefix of (or equal to) path b, i.e. a step at a contains or is the step at b.
 local function prefix(a, b)
-    if #a > #b then return false end
+    if #a > #b then
+        return false
+    end
 
     for i, key in ipairs(a) do
-        if key ~= b[i] then return false end
+        if key ~= b[i] then
+            return false
+        end
     end
 
     return true
@@ -61,11 +74,16 @@ end
 -- Asks the injected allocator for an unused valid id and marks it used. Gives up after 100 tries. Returns the id,
 -- or nil and 'missing-id-allocator', 'id-allocation-error' or 'id-allocation-exhausted'.
 local function fresh(newId, used)
-    if type(newId) ~= 'function' then return nil, 'missing-id-allocator' end
+    if type(newId) ~= 'function' then
+        return nil, 'missing-id-allocator'
+    end
 
     for _ = 1, 100 do
         local ok, id = pcall(newId)
-        if not ok then return nil, 'id-allocation-error' end
+
+        if not ok then
+            return nil, 'id-allocation-error'
+        end
 
         if identifier(id) and not used[id] then
             used[id] = true
@@ -92,27 +110,52 @@ end
 -- draft (Snapshot, Restore, Command), or nil and a reason code.
 function data.NewRotationDraft(original, newId, reserved)
     local portable, why = data.CheckPortable(original)
-    if not portable then return nil, why.code end
-    if type(original) ~= 'table' then return nil, 'expected-rotation-object' end
+
+    if not portable then
+        return nil, why.code
+    end
+    if type(original) ~= 'table' then
+        return nil, 'expected-rotation-object'
+    end
+
     local used = {}
     local ok, problem = data.ReserveRotationIdentities(original, used)
-    if not ok then return nil, problem.code end
+
+    if not ok then
+        return nil, problem.code
+    end
 
     if reserved ~= nil then
         ok, problem = data.ReserveRotationIdentities(reserved, used)
-        if not ok then return nil, problem.code end
+
+        if not ok then
+            return nil, problem.code
+        end
     end
 
     local root = detach(original)
-    if root.rotation == nil then root.rotation = {} end
-    if root.cooldowns == nil then root.cooldowns = {} end
+
+    if root.rotation == nil then
+        root.rotation = {}
+    end
+    if root.cooldowns == nil then
+        root.cooldowns = {}
+    end
+
     local tree, errorCode = inspect(root, true)
-    if not tree then return nil, errorCode end
+
+    if not tree then
+        return nil, errorCode
+    end
 
     for _, row in ipairs(tree.rows) do
         if not row.step.id then
             local id, reason = fresh(newId, used)
-            if not id then return nil, reason end
+
+            if not id then
+                return nil, reason
+            end
+
             row.step.id = id
         end
     end
@@ -130,7 +173,11 @@ function data.NewRotationDraft(original, newId, reserved)
     -- undo is never handed out again. Returns true, or nil and a reason code.
     function draft:Restore(snapshot)
         local valid, reason = inspect(snapshot)
-        if not valid then return nil, reason end
+
+        if not valid then
+            return nil, reason
+        end
+
         local allocated = detach(used)
 
         for _, row in ipairs(valid.rows) do
@@ -146,13 +193,18 @@ function data.NewRotationDraft(original, newId, reserved)
     -- affected step id), or nil and a reason code with the draft unchanged. 'Batch' applies a list of
     -- { name, first, second } operations as one edit.
     function draft:Command(name, first, second)
-        if not data.CheckPortable(first) or not data.CheckPortable(second) then return nil, 'non-portable-edit' end
+        if not data.CheckPortable(first) or not data.CheckPortable(second) then
+            return nil, 'non-portable-edit'
+        end
 
         -- Several commands as one edit (one undo step): every operation
         -- applies in order to the result of the previous one, and when any
         -- fails the draft is left exactly as it was.
         if name == 'Batch' then
-            if type(first) ~= 'table' or #first < 1 or #first > 512 then return nil, 'invalid-batch' end
+            if type(first) ~= 'table' or #first < 1 or #first > 512 then
+                return nil, 'invalid-batch'
+            end
+
             local savedRoot, savedUsed = root, used
             local results = {}
 
@@ -192,8 +244,13 @@ function data.NewRotationDraft(original, newId, reserved)
 
             for _, list in ipairs(index.lists) do
                 if samePath(list.path, value.path) then
-                    if value.parentId ~= list.parentId then return nil, 'stale-rotation-destination' end
-                    if value.index < 1 or value.index > #list.list + 1 then return nil, 'invalid-destination-index' end
+                    if value.parentId ~= list.parentId then
+                        return nil, 'stale-rotation-destination'
+                    end
+                    if value.index < 1 or value.index > #list.list + 1 then
+                        return nil, 'invalid-destination-index'
+                    end
+
                     return list
                 end
             end
@@ -203,7 +260,10 @@ function data.NewRotationDraft(original, newId, reserved)
 
         -- Looks up a step's index entry by id, or nil and 'missing-rotation-step'.
         local function row(id)
-            if type(id) ~= 'string' or not index.byId[id] then return nil, 'missing-rotation-step' end
+            if type(id) ~= 'string' or not index.byId[id] then
+                return nil, 'missing-rotation-step'
+            end
+
             return index.byId[id]
         end
 
@@ -223,11 +283,18 @@ function data.NewRotationDraft(original, newId, reserved)
         local function reidentify(step)
             local wrapper = { rotation = { step }, cooldowns = {} }
             local nodes, reason = inspect(wrapper, true)
-            if not nodes then return nil, reason end
+
+            if not nodes then
+                return nil, reason
+            end
 
             for _, entry in ipairs(nodes.rows) do
                 local id, allocationError = fresh(newId, allocated)
-                if not id then return nil, allocationError end
+
+                if not id then
+                    return nil, allocationError
+                end
+
                 entry.step.id = id
             end
 
@@ -238,11 +305,20 @@ function data.NewRotationDraft(original, newId, reserved)
 
         if name == 'Insert' then
             local list, reason = destination(first)
-            if not list then return nil, reason end
-            if type(second) ~= 'table' then return nil, 'invalid-rotation-step' end
+
+            if not list then
+                return nil, reason
+            end
+            if type(second) ~= 'table' then
+                return nil, 'invalid-rotation-step'
+            end
+
             local step = detach(second)
             local assigned, allocationError = reidentify(step)
-            if not assigned then return nil, allocationError end
+
+            if not assigned then
+                return nil, allocationError
+            end
 
             -- A Branch inserted mid-list takes every step below it into its true arm.
             if step.type == 'branch' then
@@ -263,7 +339,11 @@ function data.NewRotationDraft(original, newId, reserved)
             or name == 'PatchStep'
         then
             local entry, reason = row(first)
-            if not entry then return nil, reason end
+
+            if not entry then
+                return nil, reason
+            end
+
             local list = parent(entry)
 
             if name == 'Remove' then
@@ -272,13 +352,22 @@ function data.NewRotationDraft(original, newId, reserved)
             elseif name == 'Duplicate' then
                 local step = detach(entry.step)
                 local assigned, allocationError = reidentify(step)
-                if not assigned then return nil, allocationError end
+
+                if not assigned then
+                    return nil, allocationError
+                end
+
                 table.insert(list, entry.index + 1, step)
                 result = step.id
             elseif name == 'Move' or name == 'MoveTail' then
                 local target, targetError = destination(second)
-                if not target then return nil, targetError end
-                if prefix(entry.path, target.path) then return nil, 'rotation-cycle' end
+
+                if not target then
+                    return nil, targetError
+                end
+                if prefix(entry.path, target.path) then
+                    return nil, 'rotation-cycle'
+                end
 
                 if name == 'MoveTail' then
                     if entry.section ~= target.section or target.list == list and second.index >= entry.index then
@@ -293,7 +382,10 @@ function data.NewRotationDraft(original, newId, reserved)
                         end
 
                         carriedPath[#entry.path] = i
-                        if prefix(carriedPath, target.path) then return nil, 'rotation-cycle' end
+
+                        if prefix(carriedPath, target.path) then
+                            return nil, 'rotation-cycle'
+                        end
                     end
 
                     local at = second.index
@@ -311,7 +403,11 @@ function data.NewRotationDraft(original, newId, reserved)
                     result = first
                 else
                     local at = second.index
-                    if target.list == list and entry.index < at then at = at - 1 end
+
+                    if target.list == list and entry.index < at then
+                        at = at - 1
+                    end
+
                     table.remove(list, entry.index)
                     table.insert(target.list, at, entry.step)
                     result = first
@@ -330,13 +426,19 @@ function data.NewRotationDraft(original, newId, reserved)
                 entry.step[second] = nil
                 result = first
             else
-                if type(second) ~= 'table' then return nil, 'invalid-step-patch' end
+                if type(second) ~= 'table' then
+                    return nil, 'invalid-step-patch'
+                end
+
                 local fields = second
 
                 if name == 'PatchStep' then
                     fields = second.set or {}
                     local unset = second.unset or {}
-                    if type(fields) ~= 'table' or type(unset) ~= 'table' then return nil, 'invalid-step-patch' end
+
+                    if type(fields) ~= 'table' or type(unset) ~= 'table' then
+                        return nil, 'invalid-step-patch'
+                    end
 
                     for key, field in pairs(unset) do
                         if
@@ -344,7 +446,6 @@ function data.NewRotationDraft(original, newId, reserved)
                         then
                             return nil, 'invalid-step-patch'
                         end
-
                         if field == 'id' or field == 'onTrue' or field == 'onFalse' or field == 'type' then
                             return nil, 'protected-step-field'
                         end
@@ -354,8 +455,9 @@ function data.NewRotationDraft(original, newId, reserved)
                 end
 
                 for key, value in pairs(fields) do
-                    if key == 'id' or key == 'onTrue' or key == 'onFalse' then return nil, 'protected-step-field' end
-
+                    if key == 'id' or key == 'onTrue' or key == 'onFalse' then
+                        return nil, 'protected-step-field'
+                    end
                     if
                         key == 'type'
                         and (entry.step.type == 'branch' or value == 'branch')
@@ -372,14 +474,25 @@ function data.NewRotationDraft(original, newId, reserved)
         elseif name == 'MoveMany' then
             -- Carries several cards to one gap, in document order. A card
             -- nested in another carried card travels with it.
-            if type(first) ~= 'table' or #first < 1 then return nil, 'invalid-selection' end
+            if type(first) ~= 'table' or #first < 1 then
+                return nil, 'invalid-selection'
+            end
+
             local target, targetError = destination(second)
-            if not target then return nil, targetError end
+
+            if not target then
+                return nil, targetError
+            end
+
             local chosen = {}
 
             for _, id in ipairs(first) do
                 local entry, reason = row(id)
-                if not entry then return nil, reason end
+
+                if not entry then
+                    return nil, reason
+                end
+
                 chosen[id] = entry
             end
 
@@ -396,18 +509,24 @@ function data.NewRotationDraft(original, newId, reserved)
                         end
                     end
 
-                    if not nested then carried[#carried + 1] = entry end
+                    if not nested then
+                        carried[#carried + 1] = entry
+                    end
                 end
             end
 
             for _, entry in ipairs(carried) do
-                if prefix(entry.path, target.path) then return nil, 'rotation-cycle' end
+                if prefix(entry.path, target.path) then
+                    return nil, 'rotation-cycle'
+                end
             end
 
             local at = second.index
 
             for _, entry in ipairs(carried) do
-                if parent(entry) == target.list and entry.index < second.index then at = at - 1 end
+                if parent(entry) == target.list and entry.index < second.index then
+                    at = at - 1
+                end
             end
 
             -- Later cards first: removing one never moves an earlier card.
@@ -423,19 +542,27 @@ function data.NewRotationDraft(original, newId, reserved)
 
             result = first
         elseif name == 'SetCondition' then
-            if type(second) ~= 'table' then return nil, 'invalid-condition' end
+            if type(second) ~= 'table' then
+                return nil, 'invalid-condition'
+            end
 
             if type(first) == 'table' and first.kind == 'switch' then
                 candidate.switch = detach(second)
             else
                 local entry, reason = row(first)
-                if not entry then return nil, reason end
+
+                if not entry then
+                    return nil, reason
+                end
+
                 entry.step.conditions = detach(second)
             end
 
             result = first
         elseif name == 'SetDetails' then
-            if type(first) ~= 'table' then return nil, 'invalid-metadata' end
+            if type(first) ~= 'table' then
+                return nil, 'invalid-metadata'
+            end
 
             for key in pairs(first) do
                 if
@@ -451,8 +578,13 @@ function data.NewRotationDraft(original, newId, reserved)
 
             candidate.description = detach(first.description)
             candidate.metadata = detach(first.metadata)
-            if first.tags ~= nil then candidate.tags = detach(first.tags) end
-            if first.priority ~= nil then candidate.priority = detach(first.priority) end
+
+            if first.tags ~= nil then
+                candidate.tags = detach(first.tags)
+            end
+            if first.priority ~= nil then
+                candidate.priority = detach(first.priority)
+            end
 
             -- An identifier string replaces the stored one; false removes it.
             if first.identifier == false then
@@ -484,7 +616,10 @@ function data.NewRotationDraft(original, newId, reserved)
         end
 
         local valid, reason = inspect(candidate)
-        if not valid then return nil, reason end
+
+        if not valid then
+            return nil, reason
+        end
 
         -- Only declared card identities are newly reserved. Opaque condition
         -- strings are not IDs and must not accumulate outside bounded history.

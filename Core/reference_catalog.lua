@@ -21,9 +21,15 @@ end
 
 -- Normalizes a number or numeric string to a positive whole number id, or returns nil.
 local function id(value)
-    if not readable(value) or (type(value) ~= 'number' and type(value) ~= 'string') then return end
+    if not readable(value) or (type(value) ~= 'number' and type(value) ~= 'string') then
+        return
+    end
+
     local n = tonumber(value)
-    if n and n > 0 and n < math.huge and n % 1 == 0 then return n end
+
+    if n and n > 0 and n < math.huge and n % 1 == 0 then
+        return n
+    end
 end
 
 -- Strips color escapes from a string so names and queries compare as plain text.
@@ -34,16 +40,25 @@ end
 -- Returns the search text for a typed value: '' for nil, the digits of a valid id, or the plain text of a short string;
 -- nil for anything else or unreadable input.
 local function queryText(value)
-    if not readable(value) then return end
-    if value == nil then return '' end
-    if type(value) == 'number' and id(value) then return tostring(value) end
-    if type(value) == 'string' and #value <= 256 then return plain(value) end
+    if not readable(value) then
+        return
+    end
+    if value == nil then
+        return ''
+    end
+    if type(value) == 'number' and id(value) then
+        return tostring(value)
+    end
+    if type(value) == 'string' and #value <= 256 then
+        return plain(value)
+    end
 end
 
 -- True when the optional icon (texture id or path) and link are readable and well formed.
 local function optionalFields(icon, link)
-    if not readable(icon) or not readable(link) then return false end
-
+    if not readable(icon) or not readable(link) then
+        return false
+    end
     if
         icon ~= nil
         and not (type(icon) == 'string' and icon ~= ''
@@ -51,15 +66,22 @@ local function optionalFields(icon, link)
     then
         return false
     end
+    if link ~= nil and (type(link) ~= 'string' or link == '') then
+        return false
+    end
 
-    if link ~= nil and (type(link) ~= 'string' or link == '') then return false end
     return true
 end
 
 -- Builds the row the pickers show for an item, or returns nil when the name or optional fields are not usable.
 local function presentation(key, name, icon, link)
-    if not readable(name) or not optionalFields(icon, link) then return end
-    if type(name) ~= 'string' or name == '' then return end
+    if not readable(name) or not optionalFields(icon, link) then
+        return
+    end
+    if type(name) ~= 'string' or name == '' then
+        return
+    end
+
     return { id = key, name = name, display = name, icon = icon, link = link }
 end
 
@@ -93,7 +115,10 @@ local function inventory()
         for slot = 1, 19 do
             local ok, value = pcall(GetInventoryItemID, 'player', slot)
             local item = ok and id(value)
-            if item then result[item] = true end
+
+            if item then
+                result[item] = true
+            end
         end
     end
 
@@ -105,13 +130,21 @@ end
 -- item whose data has not loaded keeps any earlier readable index entry.
 local function itemInfo(value)
     local key = id(value)
-    if not key then return end
+
+    if not key then
+        return
+    end
+
     local info, reason = addon.Platform:GetItemDisplayInfo(key)
     local record = info and presentation(key, info.name, info.iconID, info.link)
     local invalid = info and not record or not info and reason ~= 'item-data-unavailable' and reason ~= 'missing-api'
+
     -- A failed/restricted observation cannot revive the old cached record or a
     -- same-ID indexed row. Unloaded metadata may use a prior readable index.
-    if record then indexed[key] = record end
+    if record then
+        indexed[key] = record
+    end
+
     items[key] = record
     blocked[key] = invalid or nil
     return record and presentation(key, record.name, record.icon, record.link)
@@ -135,7 +168,9 @@ local function indexedItems(owned)
     -- Nonowned indexed candidates need a fresh opportunity after transient
     -- native failures too; do not leave them hidden until an exact-ID lookup.
     for key in pairs(blocked) do
-        if not owned[key] then itemInfo(key) end
+        if not owned[key] then
+            itemInfo(key)
+        end
     end
 
     for key, value in pairs(items) do
@@ -156,8 +191,12 @@ end
 
 -- Returns the settings table (an empty one for nil), or nil when it is unreadable or not a table.
 local function options(settings)
-    if settings == nil then return {} end
-    if readable(settings) and type(settings) == 'table' then return settings end
+    if settings == nil then
+        return {}
+    end
+    if readable(settings) and type(settings) == 'table' then
+        return settings
+    end
 end
 
 -- Resolves typed text (id, item link, item: string, or exact name) to an item id. `accept` may veto an id by returning
@@ -166,12 +205,20 @@ end
 local function itemResolve(input, settings, accept)
     settings = options(settings)
     local text = queryText(input)
-    if not settings or not text then return end
+
+    if not settings or not text then
+        return
+    end
+
     local key = id(text) or id(text:match('|Hitem:(%d+)')) or id(text:match('^item:(%d+)'))
 
     if not key then
         local value, reason = addon.Platform:GetItemID(input)
-        if reason and reason ~= 'missing-api' and reason ~= 'item-data-unavailable' then return end
+
+        if reason and reason ~= 'missing-api' and reason ~= 'item-data-unavailable' then
+            return
+        end
+
         key = id(value)
     end
 
@@ -184,12 +231,17 @@ local function itemResolve(input, settings, accept)
         end
     end
 
-    if key and settings.inventory and not inventory()[key] then return nil, 'item-not-in-inventory' end
+    if key and settings.inventory and not inventory()[key] then
+        return nil, 'item-not-in-inventory'
+    end
 
     if key then
         if accept then
             local allowed, reason = accept(key)
-            if not allowed then return nil, reason end
+
+            if not allowed then
+                return nil, reason
+            end
         end
 
         itemInfo(key)
@@ -202,7 +254,11 @@ end
 -- already loaded can match, hence the coverage tag.
 local function itemSearch(input, settings, accept)
     settings = options(settings)
-    if not settings then return nil, 'invalid-search-options' end
+
+    if not settings then
+        return nil, 'invalid-search-options'
+    end
+
     local limit = settings.limit or 30
 
     if not readable(limit) or type(limit) ~= 'number' or limit < 1 or limit > 100 or limit % 1 ~= 0 then
@@ -210,10 +266,18 @@ local function itemSearch(input, settings, accept)
     end
 
     local query = queryText(input)
-    if not query then return nil, 'invalid-search-query' end
+
+    if not query then
+        return nil, 'invalid-search-query'
+    end
+
     query = query:lower()
     local exact = id(query) or id(query:match('|Hitem:(%d+)'))
-    if exact then itemInfo(exact) end
+
+    if exact then
+        itemInfo(exact)
+    end
+
     local owned = settings.inventory and inventory()
     local matches = {}
 
@@ -228,7 +292,10 @@ local function itemSearch(input, settings, accept)
     end
 
     table.sort(matches, function(a, b)
-        if a.name == b.name then return a.id < b.id end
+        if a.name == b.name then
+            return a.id < b.id
+        end
+
         return a.name:lower() < b.name:lower()
     end)
 
@@ -250,9 +317,17 @@ end
 -- Like itemInfo, but only for glyph items; returns the row, or nil and the platform's reason.
 local function glyphInfo(value)
     local key = id(value)
-    if not key then return end
+
+    if not key then
+        return
+    end
+
     local accepted, reason = glyphItem(key)
-    if not accepted then return nil, reason end
+
+    if not accepted then
+        return nil, reason
+    end
+
     return itemInfo(key)
 end
 
@@ -278,7 +353,6 @@ function addon:GetReferenceProvider(kind)
             missing = L['Item data loading'],
         }
     end
-
     if kind == 'Item_EditBox' or kind == 'Inventory_EditBox' or kind == 'item' then
         return {
             kind = 'item',
@@ -323,7 +397,10 @@ do
 
         repeat
             key = nextKey(map, key)
-            if key ~= nil then n = n + 1 end
+
+            if key ~= nil then
+                n = n + 1
+            end
         until key == nil or n > 4096
 
         return { n = n > 4096 and 4096 or n, capped = n > 4096 }

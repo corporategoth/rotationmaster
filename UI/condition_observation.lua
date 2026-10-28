@@ -16,7 +16,11 @@ function addon:WithConditionWidgetObservation(guard, invoke, callback, ...)
     local unsubscribe = self:ObserveConditionWidgets(guard)
     local result = pack(pcall(invoke or pcall, callback, ...))
     unsubscribe()
-    if not result[1] then error(result[2], 0) end
+
+    if not result[1] then
+        error(result[2], 0)
+    end
+
     return unpack(result, 2, result.n)
 end
 
@@ -27,6 +31,9 @@ function addon:ClearConditionWidgetFocus()
 
     if type(getter) == 'function' then
         local ok, focus = pcall(getter)
-        if ok and focus and type(focus.ClearFocus) == 'function' then focus:ClearFocus() end
+
+        if ok and focus and type(focus.ClearFocus) == 'function' then
+            focus:ClearFocus()
+        end
     end
 end

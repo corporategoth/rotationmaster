@@ -13,7 +13,9 @@ local readExecutionGeneration
 local bindExecutionGeneration = addon.BindRotationExecutionGeneration
 
 if type(bindExecutionGeneration) == 'function' then
-    bindExecutionGeneration(addon, function(read) readExecutionGeneration = read end)
+    bindExecutionGeneration(addon, function(read)
+        readExecutionGeneration = read
+    end)
 end
 
 local kind, raw, identity = type, rawget, rawequal
@@ -25,7 +27,10 @@ local source, readActive, dispatch, dispatchEnvironment
 local bind = addon.BindScopedActiveRuntimePlan
 
 if kind(bind) == 'function' then
-    bind(addon, function(value, read) source, readActive = value, read end)
+    bind(addon, function(value, read)
+        source, readActive = value, read
+    end)
+
     addon.BindScopedActiveRuntimePlan = nil
 end
 
@@ -42,7 +47,10 @@ local glowCooldown, presentationEnvironment
 -- buttons.lua consumes this receiver before its library callbacks, then sends
 -- the literal method immediately after definition. Never recapture a live field.
 function addon:BindActiveRuntimePresentationSource(method, env)
-    if self ~= addon or glowCooldown ~= nil or kind(method) ~= 'function' or kind(env) ~= 'table' then return end
+    if self ~= addon or glowCooldown ~= nil or kind(method) ~= 'function' or kind(env) ~= 'table' then
+        return
+    end
+
     glowCooldown, presentationEnvironment = method, env
 end
 
@@ -100,7 +108,9 @@ end
 -- dispatchLease` when the plan manages the poll; `body` is nil when the rotation is not allowed now. With handled=true
 -- and a nil body, the guard (`retired`) says the request was superseded.
 local function acquire(owner, spec, key)
-    if owner ~= addon then return nil, nil, nil, false end
+    if owner ~= addon then
+        return nil, nil, nil, false
+    end
 
     if not identity(raw(owner, 'currentSpec'), spec) or not identity(raw(owner, 'currentRotation'), key) then
         declined = declined + 1
@@ -113,13 +123,21 @@ local function acquire(owner, spec, key)
     local ticket = {}
     request = ticket
     local handle, revision, operation
-    if kind(readActive) == 'function' then handle, revision, operation = readActive(owner, spec, key) end
+
+    if kind(readActive) == 'function' then
+        handle, revision, operation = readActive(owner, spec, key)
+    end
 
     -- A newer acquire replaces `request`, which retires this one; the active handle, revision and operation must also
     -- be unchanged since the plan was read.
     local function requestCurrent()
-        if not identity(request, ticket) then return false end
-        if not handle then return true end
+        if not identity(request, ticket) then
+            return false
+        end
+        if not handle then
+            return true
+        end
+
         local nextHandle, nextRevision, nextOperation = readActive(owner, spec, key)
         return identity(nextHandle, handle) and nextRevision == revision and identity(nextOperation, operation)
     end
@@ -213,7 +231,10 @@ local function acquire(owner, spec, key)
     -- Full guard returned to main.lua: the scalar proof plus the consumers' identity and the scope's own proof that the
     -- active handle, revision and operation are the ones read at acquire time.
     local function current()
-        if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then return false end
+        if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then
+            return false
+        end
+
         -- Scope's full proof ends with one callback-free active snapshot. Use
         -- it for both request and scope authority, then reject late reentry.
         local valid, activeHandle, activeRevision, activeOperation = selected.current(state)
@@ -231,7 +252,10 @@ local function acquire(owner, spec, key)
         return nil, current, nil, true
     end
 
-    if not built then reused = reused + 1 end
+    if not built then
+        reused = reused + 1
+    end
+
     currentRoute = state.allowed and 'managed' or 'unavailable'
 
     -- Lease for condition evaluation: the request and plan are still ours and the plan's own condition proof still
@@ -256,8 +280,9 @@ local function acquire(owner, spec, key)
         -- Completed scalar/detached output follows the managed mutation clock.
         -- Raw profile/spec/selection remain immediate ownership boundaries;
         -- unnotified table edits are re-proved by the next full acquisition.
-        if not continuationCurrent() then return false end
-
+        if not continuationCurrent() then
+            return false
+        end
         if
             not identity(raw(owner, 'GlowCooldown'), glowCooldown)
             or not identity(environment(glowCooldown), presentationEnvironment)
@@ -276,13 +301,19 @@ local function acquire(owner, spec, key)
     -- proves the functions that receiver uses and the globals they read are unchanged. After one failure it answers
     -- false.
     local function dispatchCurrent(receiver)
-        if dispatchFailed then return false end
+        if dispatchFailed then
+            return false
+        end
 
         -- These scalar ownership checks have no source lookup or callout.
         -- The graph retains its actual provider certificates at private handoff.
         if receiver == 'condition' or receiver == 'resume' then
             local valid = continuationCurrent()
-            if not valid then dispatchFailed = true end
+
+            if not valid then
+                dispatchFailed = true
+            end
+
             return valid
         end
 
@@ -309,7 +340,11 @@ local function acquire(owner, spec, key)
         end
 
         valid = valid and selected.executionSource(receiver) and continuationCurrent()
-        if not valid then dispatchFailed = true end
+
+        if not valid then
+            dispatchFailed = true
+        end
+
         return valid
     end
 
@@ -331,12 +366,18 @@ end
 -- One-time handoff to main.lua, which keeps `acquire` and `register` locally and clears this public name; any other
 -- caller gets nothing.
 function addon:ConsumeActiveRuntimePlan()
-    if self ~= addon then return end
+    if self ~= addon then
+        return
+    end
+
     return acquire, register
 end
 
 -- Scalar snapshots only; collection does not prepare or inspect a plan.
 function addon:GetActiveRuntimePlanDiagnostic()
-    if self ~= addon then return end
+    if self ~= addon then
+        return
+    end
+
     return { plansBuilt = plansBuilt, reused = reused, declined = declined, currentRoute = currentRoute }
 end

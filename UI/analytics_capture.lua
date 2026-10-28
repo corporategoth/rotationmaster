@@ -31,10 +31,14 @@ local generation, lease, busy = 0, nil, false
 -- True only while addon.Analytics.NativeCasts is still the service captured at load with all five methods unchanged.
 -- Every action checks it first.
 local function owned()
-    if not service or not addon.Analytics or not rawequal(addon.Analytics.NativeCasts, service) then return false end
+    if not service or not addon.Analytics or not rawequal(addon.Analytics.NativeCasts, service) then
+        return false
+    end
 
     for name, fn in pairs(methods) do
-        if type(fn) ~= 'function' or not rawequal(service[name], fn) then return false end
+        if type(fn) ~= 'function' or not rawequal(service[name], fn) then
+            return false
+        end
     end
 
     return true
@@ -49,14 +53,21 @@ end
 -- failure.
 local function invoke(name, ...)
     local ok, value = pcall(methods[name], service, ...)
-    if not ok then return nil end
+
+    if not ok then
+        return nil
+    end
+
     return value
 end
 
 -- Returns the capture phase ("starting", "running", "idle", ...) from GetStatus, or nil when the service is not owned
 -- or the status is malformed.
 local function phase()
-    if not owned() then return nil end
+    if not owned() then
+        return nil
+    end
+
     local status = invoke('GetStatus')
     return type(status) == 'table' and rawget(status, 'phase') or nil
 end
@@ -67,21 +78,39 @@ end
 
 -- Returns the localized one-line status shown beside the capture buttons.
 function addon:GetCastCaptureStatusText()
-    if not rawequal(self, addon) then return available() end
+    if not rawequal(self, addon) then
+        return available()
+    end
+
     local p = phase()
-    if p == 'running' or p == 'starting' then return L['Cast capture status: running'] end
-    if p == 'idle' then return L['Cast capture status: idle'] end
+
+    if p == 'running' or p == 'starting' then
+        return L['Cast capture status: running']
+    end
+    if p == 'idle' then
+        return L['Cast capture status: idle']
+    end
+
     return available()
 end
 
 -- Running state is cheap. The report check copies the last snapshot, so
 -- callers ask for it only when the running state changes.
 function addon:GetCastCaptureState(withReport)
-    if not rawequal(self, addon) then return nil end
+    if not rawequal(self, addon) then
+        return nil
+    end
+
     local p = phase()
     local running = p == 'running' or p == 'starting'
-    if not withReport then return running end
-    if running or not owned() then return running, false end
+
+    if not withReport then
+        return running
+    end
+    if running or not owned() then
+        return running, false
+    end
+
     return running, type(invoke('GetSnapshot')) == 'table'
 end
 
@@ -104,7 +133,10 @@ end
 -- Called when the addon is disabled (Diagnostics/cpu.lua, after the CPU and memory captures stop): drops any capture and
 -- returns whether the service cleared.
 function addon:ClearCastCaptureForDisable()
-    if not rawequal(self, addon) then return false end
+    if not rawequal(self, addon) then
+        return false
+    end
+
     return retire()
 end
 
@@ -114,15 +146,23 @@ end
 
 -- Formats a finite number for the report; NaN, infinities and non-numbers become "?" so nothing unreadable is printed.
 local function number(v)
-    if type(v) == 'number' and v == v and v ~= math.huge and v ~= -math.huge then return tostring(v) end
+    if type(v) == 'number' and v == v and v ~= math.huge and v ~= -math.huge then
+        return tostring(v)
+    end
+
     return '?'
 end
 
 -- Formats client metadata for the report: numbers through number(), strings cut to 64 characters with control
 -- characters and pipes made safe, anything else as "unavailable".
 local function metadata(v)
-    if type(v) == 'number' then return number(v) end
-    if type(v) ~= 'string' then return L['unavailable'] end
+    if type(v) == 'number' then
+        return number(v)
+    end
+    if type(v) ~= 'string' then
+        return L['unavailable']
+    end
+
     return (v:sub(1, 64):gsub('[%c]', ' '):gsub('|', '||'))
 end
 
@@ -251,7 +291,9 @@ local function report(snapshot)
             signal = row.status
         end
 
-        if type(signal) == 'string' and signals[signal] then counts[signal] = counts[signal] + 1 end
+        if type(signal) == 'string' and signals[signal] then
+            counts[signal] = counts[signal] + 1
+        end
 
         if row.castKind == 'channel' then
             counts.channel = counts.channel + 1
@@ -334,7 +376,9 @@ local function report(snapshot)
         end
     end
 
-    if #rows > 200 then lines[#lines + 1] = string.format(L['Rows omitted: %d'], #rows - 200) end
+    if #rows > 200 then
+        lines[#lines + 1] = string.format(L['Rows omitted: %d'], #rows - 200)
+    end
 
     -- BEGIN ANALYTICS START WITNESS REPORT
     if type(snapshot.startWitness) == 'table' then
@@ -375,15 +419,25 @@ end
 -- action that finishes after a Clear or shutdown reports not-current (third value false) so the caller does not act on
 -- it. A start lasts 30 seconds and survives closing the settings window.
 function addon:RunCastCaptureAction(action)
-    if not rawequal(self, addon) then return false, available() end
+    if not rawequal(self, addon) then
+        return false, available()
+    end
 
     if action == 'clear' then
-        if not owned() then return false, available() end
+        if not owned() then
+            return false, available()
+        end
+
         return retire(), L['Cast capture cleared.']
     end
 
-    if action ~= 'start' and action ~= 'stop' and action ~= 'report' then return false, available() end
-    if busy or not owned() then return false, available() end
+    if action ~= 'start' and action ~= 'stop' and action ~= 'report' then
+        return false, available()
+    end
+    if busy or not owned() then
+        return false, available()
+    end
+
     local operation = {}
     busy = operation
     local ticket = generation
@@ -436,7 +490,13 @@ function addon:RunCastCaptureAction(action)
         end
     end
 
-    if rawequal(busy, operation) then busy = nil end
-    if ticket ~= generation then return false, '', false end
+    if rawequal(busy, operation) then
+        busy = nil
+    end
+
+    if ticket ~= generation then
+        return false, '', false
+    end
+
     return ok, message, true
 end

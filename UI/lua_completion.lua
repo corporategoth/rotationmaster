@@ -14,9 +14,16 @@ local _, addon = ...
 -- c.AcquireCompletion and c.completionEngine to it. Returns nothing, and leaves `c` untouched when the LuaWorkbench
 -- engine is unavailable.
 function addon:InstallRMCodeCompletion(c)
-    if not self.CreateLuaWorkbenchEngine or not self.ApplyLuaContextSymbols then return end
+    if not self.CreateLuaWorkbenchEngine or not self.ApplyLuaContextSymbols then
+        return
+    end
+
     local ok, engine = pcall(self.CreateLuaWorkbenchEngine, self, { id = 'RM-native', limited = true })
-    if not ok or not engine then return end
+
+    if not ok or not engine then
+        return
+    end
+
     engine.APIHelp.index = {}
     engine.APIHelp.catalog = {}
     engine.APIHelp.ready = true
@@ -53,7 +60,11 @@ function addon:InstallRMCodeCompletion(c)
     -- string. Skips the work when the text is unchanged since the last call.
     local function updateHoverGeometry(text)
         local state = input.queryEditor
-        if state.renderSource == text then return end
+
+        if state.renderSource == text then
+            return
+        end
+
         state.renderSource = text
         state.overlay = c.measure
         state.renderSpans = {}
@@ -84,7 +95,10 @@ function addon:InstallRMCodeCompletion(c)
         c:SetText(text)
         c.edit:SetCursorPosition(cursor or #text)
         input.queryEditor.source = text
-        if not c.released and c.valid() and c.changed then c.changed(text) end
+
+        if not c.released and c.valid() and c.changed then
+            c.changed(text)
+        end
     end
 
     -- Autocomplete is live only for this editor while it is held, writable and the owner still considers itself valid.
@@ -106,18 +120,28 @@ function addon:InstallRMCodeCompletion(c)
     -- Installs the key, mouse and update wrappers once per acquisition. Each wrapper lets autocomplete consume the
     -- event first and otherwise falls through to the control's own handler.
     local function attachedHandler()
-        if attached then return end
+        if attached then
+            return
+        end
+
         attached = true
 
         wrap('OnKeyDown', function(original, frame, key)
-            if A:Enabled(input) and A:Key(input, key) then return end
-            if original then return original(frame, key) end
+            if A:Enabled(input) and A:Key(input, key) then
+                return
+            end
+            if original then
+                return original(frame, key)
+            end
         end)
 
         wrap('OnKeyUp', function(original, frame, key)
             A:RestoreCursor(input)
             A.keySource, A.keyCursor, A.arrowKey, A.arrowOrigin = nil, nil, nil, nil
-            if original then return original(frame, key) end
+
+            if original then
+                return original(frame, key)
+            end
         end)
 
         wrap('OnChar', function(original, frame, char)
@@ -131,16 +155,24 @@ function addon:InstallRMCodeCompletion(c)
                 end
             end
 
-            if original then return original(frame, char) end
+            if original then
+                return original(frame, char)
+            end
         end)
 
         wrap('OnArrowPressed', function(original, frame, key)
-            if A:Enabled(input) and A:Arrow(input, key) then return true end
-            if original then return original(frame, key) end
+            if A:Enabled(input) and A:Arrow(input, key) then
+                return true
+            end
+            if original then
+                return original(frame, key)
+            end
         end)
 
         wrap('OnTabPressed', function(original, frame)
-            if A:Enabled(input) and A:Accept(input) then return end
+            if A:Enabled(input) and A:Accept(input) then
+                return
+            end
 
             if original then
                 original(frame)
@@ -150,9 +182,16 @@ function addon:InstallRMCodeCompletion(c)
         end)
 
         wrap('OnEnterPressed', function(original, frame)
-            if A:Enabled(input) and A:Accept(input) then return true end
-            if original then return original(frame) end
-            if not c.readOnly then frame:Insert('\n') end
+            if A:Enabled(input) and A:Accept(input) then
+                return true
+            end
+            if original then
+                return original(frame)
+            end
+
+            if not c.readOnly then
+                frame:Insert('\n')
+            end
         end)
 
         wrap('OnEscapePressed', function(original, frame)
@@ -163,11 +202,15 @@ function addon:InstallRMCodeCompletion(c)
                 return
             end
 
-            if original then return original(frame) end
+            if original then
+                return original(frame)
+            end
         end)
 
         wrap('OnUpdate', function(original, frame, elapsed)
-            if original then original(frame, elapsed) end
+            if original then
+                original(frame, elapsed)
+            end
 
             if c.context then
                 engine.Query.Console.source = c:GetText()
@@ -179,12 +222,16 @@ function addon:InstallRMCodeCompletion(c)
 
         wrap('OnCursorChanged', function(original, frame, x, y, width, height)
             input.cursorX, input.cursorY = x, y
-            if original then return original(frame, x, y, width, height) end
+
+            if original then
+                return original(frame, x, y, width, height)
+            end
         end)
 
         wrap('OnMouseUp', function(original, frame, button)
-            if original then original(frame, button) end
-
+            if original then
+                original(frame, button)
+            end
             if button == 'LeftButton' and IsControlKeyDown and IsControlKeyDown() then
                 addon:NavigateLuaSymbol(engine, input, c:GetText(), frame:GetCursorPosition())
             end
@@ -192,7 +239,10 @@ function addon:InstallRMCodeCompletion(c)
 
         wrap('OnEditFocusLost', function(original, ...)
             A:Hide()
-            if original then return original(...) end
+
+            if original then
+                return original(...)
+            end
         end)
     end
 
@@ -214,7 +264,10 @@ function addon:InstallRMCodeCompletion(c)
             revision = addon.functionRegistryVersion,
         }
 
-        if addon:SettingsDataEqual(signature, self.symbolSignature) then return end
+        if addon:SettingsDataEqual(signature, self.symbolSignature) then
+            return
+        end
+
         self.symbolSignature = addon:CopySettingsData(signature)
         engine.Workspace.current = context and context.id or 'RM-native'
         addon:ApplyLuaContextSymbols(engine, context, true)
@@ -229,7 +282,10 @@ function addon:InstallRMCodeCompletion(c)
 
         local function attempt(callback, ...)
             local ok, result = pcall(callback, ...)
-            if not ok and not failed then failed, why = true, result end
+
+            if not ok and not failed then
+                failed, why = true, result
+            end
         end
 
         attempt(A.Hide, A)
@@ -243,7 +299,10 @@ function addon:InstallRMCodeCompletion(c)
         end
 
         attempt(engine.ResetLease, engine)
-        if failed then error(why, 0) end
+
+        if failed then
+            error(why, 0)
+        end
     end
 
     -- Takes the engine lease again and reattaches the wrappers; used on first install and when a released editor is
@@ -251,7 +310,10 @@ function addon:InstallRMCodeCompletion(c)
     function c:AcquireCompletion()
         engine:Acquire()
         attachedHandler()
-        if self.context then self:UpdateSymbols(self.context) end
+
+        if self.context then
+            self:UpdateSymbols(self.context)
+        end
     end
 
     c.completionEngine = engine

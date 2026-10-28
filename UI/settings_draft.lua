@@ -7,21 +7,33 @@
 -- `addon.db`.
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Deep structural equality for plain saved-data tables (no metatables, no cycles); used to compare a draft with its
 -- baseline.
 local function equal(a, b)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
 
     for key, value in pairs(a) do
-        if not equal(value, b[key]) then return false end
+        if not equal(value, b[key]) then
+            return false
+        end
     end
 
     for key in pairs(b) do
-        if a[key] == nil then return false end
+        if a[key] == nil then
+            return false
+        end
     end
 
     return true
@@ -35,9 +47,16 @@ end
 -- Deep-copies saved data. `seen` maps source tables to their copies so shared and cyclic references survive; scalar
 -- values are returned as is.
 function addon:CopySettingsData(value, seen)
-    if type(value) ~= 'table' then return value end
+    if type(value) ~= 'table' then
+        return value
+    end
+
     seen = seen or {}
-    if seen[value] then return seen[value] end
+
+    if seen[value] then
+        return seen[value]
+    end
+
     local copy = {}
     seen[value] = copy
 
@@ -78,10 +97,14 @@ function addon:InstallSettingsDraft(p)
     -- True when the creation form was used for a new entry and differs from its baseline, or any open text edit is
     -- dirty.
     function p:IsCreationDirty()
-        if not self.creationUsedForNew then return false end
+        if not self.creationUsedForNew then
+            return false
+        end
 
         for _, record in ipairs(self.edits) do
-            if record.dirty then return true end
+            if record.dirty then
+                return true
+            end
         end
 
         return not equal(self:CreationState(), self.creationBaseline or {})
@@ -90,7 +113,10 @@ function addon:InstallSettingsDraft(p)
     -- Drops the draft, its baseline, queued effects and every creation field without touching `addon.db`. Marks the
     -- empty state as dismissed so the page does not reopen the creation form on the next draw.
     function p:DiscardSettingsDraft()
-        if self.ClearSettingsHistory then self:ClearSettingsHistory() end
+        if self.ClearSettingsHistory then
+            self:ClearSettingsHistory()
+        end
+
         self.draft = nil
         self.draftBaseline = nil
         self.draftEffects = nil
@@ -112,11 +138,20 @@ function addon:InstallSettingsDraft(p)
     -- false right after the action, without saving or redrawing; otherwise it saves the draft (a failed save returns
     -- false) and redraws the page.
     function p:ApplyCreation()
-        if not self:FlushEdits() or not self.creationApply then return false end
+        if not self:FlushEdits() or not self.creationApply then
+            return false
+        end
+
         local apply = self.creationApply
         apply()
-        if self.creationUsedForNew then return false end
-        if self.transactionKeys and not self:SaveSettingsDraft() then return false end
+
+        if self.creationUsedForNew then
+            return false
+        end
+        if self.transactionKeys and not self:SaveSettingsDraft() then
+            return false
+        end
+
         self.creationBaseline = nil
         self:Draw()
         return true
@@ -125,7 +160,9 @@ function addon:InstallSettingsDraft(p)
     -- Returns the table the page should read and write: `addon.db` for pages without a transaction, otherwise the
     -- draft, created lazily as a copy of the profile, global and char scopes with a baseline of the declared keys.
     function p:SettingsData()
-        if not self.transactionKeys then return addon.db end
+        if not self.transactionKeys then
+            return addon.db
+        end
 
         if not self.draft then
             self.draft = {
@@ -161,15 +198,21 @@ function addon:InstallSettingsDraft(p)
 
     -- True when a text edit is dirty or any declared key of the draft differs from its baseline.
     function p:IsSettingsDraftDirty()
-        if not self.draft then return false end
+        if not self.draft then
+            return false
+        end
 
         for _, record in ipairs(self.edits) do
-            if record.dirty then return true end
+            if record.dirty then
+                return true
+            end
         end
 
         for scope, keys in pairs(self.transactionKeys) do
             for _, key in ipairs(keys) do
-                if not equal(self.draft[scope][key], self.draftBaseline[scope][key]) then return true end
+                if not equal(self.draft[scope][key], self.draftBaseline[scope][key]) then
+                    return true
+                end
             end
         end
 
@@ -181,8 +224,12 @@ function addon:InstallSettingsDraft(p)
     -- it copies the changed keys into `addon.db`, bumps the lean-engine dependency revision for item sets and effects,
     -- runs the queued effects and refreshes glows and buttons. Returns true when there is nothing to save.
     function p:SaveSettingsDraft()
-        if not self.draft then return true end
-        if not self:Valid(self.generation) then return false end
+        if not self.draft then
+            return true
+        end
+        if not self:Valid(self.generation) then
+            return false
+        end
 
         for scope, keys in pairs(self.transactionKeys) do
             for _, key in ipairs(keys) do
@@ -196,7 +243,9 @@ function addon:InstallSettingsDraft(p)
         local ownsEffects = false
 
         for _, key in ipairs(self.transactionKeys.global or {}) do
-            if key == 'effects' then ownsEffects = true end
+            if key == 'effects' then
+                ownsEffects = true
+            end
         end
 
         if ownsEffects and self.draft.global.effects then
@@ -217,7 +266,9 @@ function addon:InstallSettingsDraft(p)
                     return false
                 end
 
-                if effect.name then names[effect.name] = true end
+                if effect.name then
+                    names[effect.name] = true
+                end
             end
         end
 
@@ -253,16 +304,24 @@ function addon:InstallSettingsDraft(p)
                     addon.db[scope][key] = addon:CopySettingsData(self.draft[scope][key])
 
                     if key == 'itemsets' and (scope == 'profile' or scope == 'global') then
-                        if invalidateDependencies then invalidateDependencies(addon, 'itemset', nil) end
+                        if invalidateDependencies then
+                            invalidateDependencies(addon, 'itemset', nil)
+                        end
                     elseif key == 'effects' and scope == 'global' then
-                        if invalidateDependencies then invalidateDependencies(addon, 'effect', nil) end
+                        if invalidateDependencies then
+                            invalidateDependencies(addon, 'effect', nil)
+                        end
                     end
                 end
             end
         end
 
         local effects = self.draftEffects
-        if self.ClearSettingsHistory then self:ClearSettingsHistory() end
+
+        if self.ClearSettingsHistory then
+            self:ClearSettingsHistory()
+        end
+
         self.draft = nil
         self.draftBaseline = nil
         self.draftEffects = nil
@@ -271,19 +330,28 @@ function addon:InstallSettingsDraft(p)
             callback()
         end
 
-        if addon.RemoveAllCurrentGlows then addon:RemoveAllCurrentGlows() end
-        if addon.ButtonFetch then addon:ButtonFetch() end
+        if addon.RemoveAllCurrentGlows then
+            addon:RemoveAllCurrentGlows()
+        end
+        if addon.ButtonFetch then
+            addon:ButtonFetch()
+        end
+
         return true
     end
 
     -- Shows the Apply and Cancel actions for a transactional page and enables Apply only while the draft is dirty.
     -- Skipped when a sub-form already owns the action row.
     function p:DraftActions()
-        if not self.transactionKeys or self.creationUsed then return end
+        if not self.transactionKeys or self.creationUsed then
+            return
+        end
 
         self:CreationActions(
             function()
-                if self:SaveSettingsDraft() then self:Draw() end
+                if self:SaveSettingsDraft() then
+                    self:Draw()
+                end
             end,
             function()
                 self:DiscardSettingsDraft()

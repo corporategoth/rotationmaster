@@ -18,7 +18,11 @@ local data = addon.RotationData
 -- rotation is not found. Source order: scoped store, Built In pack, then the profile's saved rotation.
 function addon:GetRotationTagView(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:TagView(spec, id) or {} end
+
+    if scoped then
+        return scoped:TagView(spec, id) or {}
+    end
+
     local default = self:GetDefaultIdForRuntime(spec, id)
 
     if default then
@@ -39,7 +43,11 @@ function addon:GetRotationTagView(spec, id)
     local root = self.db.profile.rotations
     local rows = type(root) == 'table' and root[spec]
     local body = type(rows) == 'table' and rows[id]
-    if type(body) ~= 'table' then return {} end
+
+    if type(body) ~= 'table' then
+        return {}
+    end
+
     local manifest
     local state = self.db.profile.rotationLibrary
 
@@ -83,7 +91,10 @@ function addon:GetAllRotationTags(spec)
     if scoped then
         local result, seen = {}, {}
         local headers, why = scoped:Headers(spec)
-        if not headers then return {}, why end
+
+        if not headers then
+            return {}, why
+        end
 
         for _, row in ipairs(headers) do
             for _, tag in ipairs(row.tags) do
@@ -136,12 +147,20 @@ end
 -- false and writes nothing when either is invalid.
 function addon:SetRotationTagColor(tag, color)
     local tags = data.NormalizeRotationTags({ tag })
-    if not tags or type(color) ~= 'table' then return false end
+
+    if not tags or type(color) ~= 'table' then
+        return false
+    end
+
     local copy = {}
 
     for _, key in ipairs({ 'r', 'g', 'b', 'a' }) do
         local n = color[key]
-        if type(n) ~= 'number' or n ~= n or n < 0 or n > 1 then return false end
+
+        if type(n) ~= 'number' or n ~= n or n < 0 or n > 1 then
+            return false
+        end
+
         copy[key] = n
     end
 

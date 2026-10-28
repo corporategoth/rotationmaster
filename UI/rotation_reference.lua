@@ -23,7 +23,10 @@ end
 -- Returns a display name for an item id or name, falling back to 'Item <id>' when the item is not cached or its name
 -- is a restricted value that must not be read.
 local function itemName(item)
-    if type(item) ~= "number" and type(item) ~= "string" then return L["Unknown item"] end
+    if type(item) ~= "number" and type(item) ~= "string" then
+        return L["Unknown item"]
+    end
+
     local fn = C_Item and C_Item.GetItemInfo or GetItemInfo
 
     if type(fn) == "function" then
@@ -80,7 +83,11 @@ function addon:CreateRotationStepCard(parent, step, spec, position, kind, status
     end
 
     local title = kind == "cooldowns" and L["Optional highlight"] or string.format(L["Priority %s"], position)
-    if status then title = status .. " · " .. title end
+
+    if status then
+        title = status .. " · " .. title
+    end
+
     label(card, title, "Heading")
 
     if step.type == "spell" or step.type == "pet" or step.type == "any" then
@@ -120,7 +127,9 @@ function addon:CreateRotationStepCard(parent, step, spec, position, kind, status
                 or L["Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop."]
         )
     elseif step.type == "item" then
-        if step.name and step.name ~= "" then label(card, step.name) end
+        if step.name and step.name ~= "" then
+            label(card, step.name)
+        end
 
         if type(step.action) == "table" then
             for _, item in ipairs(step.action) do
@@ -135,10 +144,19 @@ function addon:CreateRotationStepCard(parent, step, spec, position, kind, status
         label(card, L["Unknown action type"])
     end
 
-    if step.use_name ~= nil then label(card, step.use_name and L["Custom step name"] or L["Automatic step name"]) end
-    if step.disabled then label(card, L["Disabled"]) end
-    if step.ranked and addon:ClientHasSpellRanks() then label(card, L["Use this exact spell rank"]) end
-    if step.name and step.name ~= "" and step.type ~= "item" then label(card, step.name) end
+    if step.use_name ~= nil then
+        label(card, step.use_name and L["Custom step name"] or L["Automatic step name"])
+    end
+    if step.disabled then
+        label(card, L["Disabled"])
+    end
+    if step.ranked and addon:ClientHasSpellRanks() then
+        label(card, L["Use this exact spell rank"])
+    end
+    if step.name and step.name ~= "" and step.type ~= "item" then
+        label(card, step.name)
+    end
+
     self:CreateConditionReference(card, step.conditions, spec)
     return card
 end
@@ -153,7 +171,9 @@ function addon:CreateRotationBranchBreadcrumb(parent, path)
         parts[#parts + 1] = entry.arm == "true" and L["True"] or L["False"]
     end
 
-    if #parts > 0 then return label(parent, table.concat(parts, " → ")) end
+    if #parts > 0 then
+        return label(parent, table.concat(parts, " → "))
+    end
 end
 
 -- Builds the whole reference view for a rotation body into parent: switch, optional highlights, the priority list and
@@ -178,7 +198,10 @@ local function renderReference(self, parent, body, spec)
         label(parent, title, "Heading")
         label(parent, explanation)
         local list = body[kind] or {}
-        if #list == 0 then label(parent, L["No steps in this section."]) end
+
+        if #list == 0 then
+            label(parent, L["No steps in this section."])
+        end
 
         for _, entry in ipairs(tree.rows) do
             if entry.section == kind then
@@ -228,8 +251,17 @@ end
 -- is rethrown unchanged so callers see the original failure.
 function addon:CreateRotationReference(parent, body, spec)
     local paused = type(parent.PauseLayout) == 'function' and type(parent.ResumeLayout) == 'function'
-    if paused then parent:PauseLayout() end
+
+    if paused then
+        parent:PauseLayout()
+    end
+
     local ok, why = pcall(renderReference, self, parent, body, spec)
-    if paused then parent:ResumeLayout() end
-    if not ok then error(why, 0) end
+
+    if paused then
+        parent:ResumeLayout()
+    end
+    if not ok then
+        error(why, 0)
+    end
 end

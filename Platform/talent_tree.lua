@@ -71,7 +71,9 @@ function platform:GetTalentTreeProviders()
                 available = ok and value == true
             end
 
-            if available then list[#list + 1] = provider end
+            if available then
+                list[#list + 1] = provider
+            end
         end
     end
 
@@ -89,7 +91,11 @@ function platform:GetTalentTreeProviders()
 
     table.sort(list, function(a, b)
         local ra, rb = rank(a), rank(b)
-        if ra ~= rb then return ra < rb end
+
+        if ra ~= rb then
+            return ra < rb
+        end
+
         return (a.order or 0) < (b.order or 0)
     end)
 
@@ -120,10 +126,20 @@ end
 -- "api-error" or "restricted-value").
 local function call(namespace, name, ...)
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return false, 'missing-api' end
+
+    if type(fn) ~= 'function' then
+        return false, 'missing-api'
+    end
+
     local ok, value = pcall(fn, ...)
-    if not ok then return false, 'api-error' end
-    if not readable(value) then return false, 'restricted-value' end
+
+    if not ok then
+        return false, 'api-error'
+    end
+    if not readable(value) then
+        return false, 'restricted-value'
+    end
+
     return true, value
 end
 
@@ -142,10 +158,14 @@ local SELECTION, SUBTREE_SELECTION = 2, 3  -- Enum.TraitNodeType
 -- Whether the client has the trait API a provider needs (a cheap feature test;
 -- nothing is read). The names are looked up by string, as in Platform/talents.lua.
 local function has(namespace, names)
-    if type(namespace) ~= 'table' then return false end
+    if type(namespace) ~= 'table' then
+        return false
+    end
 
     for _, name in ipairs(names) do
-        if type(namespace[name]) ~= 'function' then return false end
+        if type(namespace[name]) ~= 'function' then
+            return false
+        end
     end
 
     return true
@@ -168,11 +188,16 @@ end
 -- Blizzard's PlayerUtil answers for the character.
 function platform:GetTraitViewSpec(specID)
     if self:GetClientFamily() == 'retail' then
-        if traitID(specID) then return specID end
+        if traitID(specID) then
+            return specID
+        end
 
         if self.GetPlayerSpecializationID then
             local id = self:GetPlayerSpecializationID()
-            if traitID(id) then return id end
+
+            if traitID(id) then
+                return id
+            end
         end
     end
 
@@ -180,7 +205,10 @@ function platform:GetTraitViewSpec(specID)
 
     if type(util) == 'table' and type(util.GetCurrentSpecID) == 'function' then
         local ok, id = pcall(util.GetCurrentSpecID)
-        if ok and traitID(id) then return id end
+
+        if ok and traitID(id) then
+            return id
+        end
     end
 
     return nil, 'specialization-unsupported'
@@ -210,17 +238,29 @@ function platform:GetTraitView(specID, options)
         then
             local okShown, shown = pcall(frame.IsShown, frame)
             local okInspecting, inspecting = pcall(frame.IsInspecting, frame)
-            if okShown and okInspecting and shown and inspecting then return nil, 'talent-window-inspecting' end
+
+            if okShown and okInspecting and shown and inspecting then
+                return nil, 'talent-window-inspecting'
+            end
         end
     end
 
     local config, tree, source = self:GetTraitSpecTree(specID, { ignoreInspect = true })
-    if not config then return nil, tree end
+
+    if not config then
+        return nil, tree
+    end
+
     -- Only a loadout string needs the specialization; the tree can be read without it.
     local header, headerWhy = self:GetTraitViewSpec(source == 'view' and specID or nil)
     local ok, list = traits('GetTreeNodes', tree)
-    if not ok then return nil, list end
-    if type(list) ~= 'table' or #list == 0 then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, list
+    end
+    if type(list) ~= 'table' or #list == 0 then
+        return nil, 'invalid-api-result'
+    end
 
     local view = {
         spec = header,
@@ -237,18 +277,26 @@ function platform:GetTraitView(specID, options)
     local failure
 
     for position, node in ipairs(list) do
-        if not traitID(node) then return nil, 'invalid-api-result' end
+        if not traitID(node) then
+            return nil, 'invalid-api-result'
+        end
+
         view.order[position] = node
         view.index[node] = position
         local okNode, info = traits('GetNodeInfo', config, node)
-        if not okNode then failure = failure or info end
+
+        if not okNode then
+            failure = failure or info
+        end
 
         if okNode and type(info) == 'table' and readable(info.ID) and info.ID == node then
             local entries = {}
 
             if readable(info.entryIDs) and type(info.entryIDs) == 'table' then
                 for _, entry in ipairs(info.entryIDs) do
-                    if traitID(entry) then entries[#entries + 1] = entry end
+                    if traitID(entry) then
+                        entries[#entries + 1] = entry
+                    end
                 end
             end
 
@@ -295,7 +343,9 @@ function platform:GetTraitView(specID, options)
                 end
             end
 
-            if not any then allowed = nil end
+            if not any then
+                allowed = nil
+            end
         end
     end
 
@@ -334,7 +384,9 @@ function platform:GetTraitView(specID, options)
                 end
             end
 
-            if #view.heroes > 0 then break end
+            if #view.heroes > 0 then
+                break
+            end
         end
     end
 
@@ -346,7 +398,10 @@ function platform:GetTraitView(specID, options)
         count = count + 1
     end
 
-    if count == 0 then return nil, failure or 'talent-tree-unavailable' end
+    if count == 0 then
+        return nil, failure or 'talent-tree-unavailable'
+    end
+
     return view
 end
 
@@ -360,13 +415,19 @@ end
 -- way evaluation does (GetTraitSpellIndex).
 -- Returns { node, entry, position, hero } or nil when the selection cannot be placed in the view.
 function platform:FindTraitViewSelection(view, selection)
-    if type(view) ~= 'table' or type(selection) ~= 'table' then return nil end
+    if type(view) ~= 'table' or type(selection) ~= 'table' then
+        return nil
+    end
+
     local node, entry = selection.node, selection.entry
     local record = traitID(node) and view.nodes[node] or nil
 
     if record and traitID(selection.spell) then
         local spell = self:GetTraitEntrySpell(view.config, entry or record.entries[1])
-        if spell and spell ~= selection.spell then record = nil end
+
+        if spell and spell ~= selection.spell then
+            record = nil
+        end
     end
 
     if not record and traitID(selection.spell) then
@@ -382,19 +443,29 @@ function platform:FindTraitViewSelection(view, selection)
                 end
             end
 
-            if record then break end
+            if record then
+                break
+            end
         end
     end
 
-    if not record then return nil end
+    if not record then
+        return nil
+    end
+
     local position
 
     for index, id in ipairs(record.entries) do
-        if id == entry then position = index end
+        if id == entry then
+            position = index
+        end
     end
 
     local choice = record.kind == SELECTION
-    if not position and not choice then position = 1 end
+
+    if not position and not choice then
+        position = 1
+    end
 
     return {
         node = record.id,
@@ -436,7 +507,10 @@ local function pack(values)
 
         for offset = 0, 5 do
             local bit = bits[first + offset]
-            if bit == 1 then char = char + 2 ^ offset end
+
+            if bit == 1 then
+                char = char + 2 ^ offset
+            end
         end
 
         out[#out + 1] = BASE64:sub(char + 1, char + 1)
@@ -449,20 +523,29 @@ end
 -- Returns the loadout string for the picked nodes of a view built by GetTraitView, or nil and a reason (no
 -- specialization in the view, a node or entry that is not in the view, or an unreadable serialization version).
 function platform:EncodeTraitView(view, picks)
-    if type(view) ~= 'table' or type(picks) ~= 'table' then return nil, 'invalid-talent-query' end
+    if type(view) ~= 'table' or type(picks) ~= 'table' then
+        return nil, 'invalid-talent-query'
+    end
+
     local okVersion, version = traits('GetLoadoutSerializationVersion')
 
     if not okVersion or type(version) ~= 'number' or version < 0 or version > 255 or version % 1 ~= 0 then
         return nil, okVersion and 'invalid-api-result' or version
     end
+    if not traitID(view.spec) or view.spec > 65535 then
+        return nil, view.specReason or 'invalid-talent-query'
+    end
 
-    if not traitID(view.spec) or view.spec > 65535 then return nil, view.specReason or 'invalid-talent-query' end
     local chosen = {}
 
     for _, pick in ipairs(picks) do
         local position = view.index[pick.node]
         local record = view.nodes[pick.node]
-        if not position or not record then return nil, 'talent-node-unavailable' end
+
+        if not position or not record then
+            return nil, 'talent-node-unavailable'
+        end
+
         local choice = record.kind == SELECTION or record.kind == SUBTREE_SELECTION
         local entry
 
@@ -494,7 +577,10 @@ function platform:EncodeTraitView(view, picks)
             values[#values + 1] = { 1, 1 }
             values[#values + 1] = { 1, 0 }
             values[#values + 1] = { 1, pick.choice and 1 or 0 }
-            if pick.choice then values[#values + 1] = { 2, pick.entry - 1 } end
+
+            if pick.choice then
+                values[#values + 1] = { 2, pick.entry - 1 }
+            end
         end
     end
 

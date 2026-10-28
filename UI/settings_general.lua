@@ -52,7 +52,9 @@ function addon:BuildGeneralSettings(p)
         profile.disable_buttons = v
 
         p:RunSettingsEffect('buttons', function()
-            if v then self:GlowClear() end
+            if v then
+                self:GlowClear()
+            end
         end)
     end)
 
@@ -103,7 +105,10 @@ function addon:BuildGeneralSettings(p)
         function(v)
             profile.autoswitch_poll = v
             profile.disable_autoswitch = nil
-            p:RunSettingsEffect('autoswitch_poll', function() self:StartAutoSwitchTimer() end)
+
+            p:RunSettingsEffect('autoswitch_poll', function()
+                self:StartAutoSwitchTimer()
+            end)
         end
     )
 
@@ -115,7 +120,10 @@ function addon:BuildGeneralSettings(p)
         60,
         1,
         function(v)
-            if profile.live_config_update == v then return end
+            if profile.live_config_update == v then
+                return
+            end
+
             profile.live_config_update = v
 
             p:RunSettingsEffect('conditionTimer', function()
@@ -124,7 +132,9 @@ function addon:BuildGeneralSettings(p)
                     self.conditionEvalTimer = nil
                 end
 
-                if self.RestartLiveStatus then self:RestartLiveStatus() end
+                if self.RestartLiveStatus then
+                    self:RestartLiveStatus()
+                end
             end)
         end
     )
@@ -134,13 +144,22 @@ function addon:BuildGeneralSettings(p)
         L['Default rotation view'],
         profile.rotation_view or 'diagram',
         { { value = 'diagram', text = L['Diagram view'] }, { value = 'list', text = L['List view'] } },
-        function(v) profile.rotation_view = v end
+        function(v)
+            profile.rotation_view = v
+        end
     )
 
     -- Both options only change what counts as ready for advice (Core/action_policy.lua reads them each poll).
     local readinessY = p.y
-    p:Check('ignore_mana', L['Ignore Mana'], profile.ignore_mana == true, function(v) profile.ignore_mana = v end)
-    p:Check('ignore_range', L['Ignore Range'], profile.ignore_range == true, function(v) profile.ignore_range = v end)
+
+    p:Check('ignore_mana', L['Ignore Mana'], profile.ignore_mana == true, function(v)
+        profile.ignore_mana = v
+    end)
+
+    p:Check('ignore_range', L['Ignore Range'], profile.ignore_range == true, function(v)
+        profile.ignore_range = v
+    end)
+
     self:LayoutWorkbenchRow({ p.fields.ignore_mana, p.fields.ignore_range }, 0, readinessY, p.width, { text = 22 })
     p.y = readinessY + 30
     p:Heading(L['History'])
@@ -151,7 +170,10 @@ function addon:BuildGeneralSettings(p)
         { 'damage_history', 'Damage History Memory (seconds)' },
     }) do
         local key = entry[1]
-        p:Slider(key, L[entry[2]], profile[key], 0, 300, 1, function(v) profile[key] = v end)
+
+        p:Slider(key, L[entry[2]], profile[key], 0, 300, 1, function(v)
+            profile[key] = v
+        end)
     end
 
     p:Heading(L['Preview'])
@@ -203,21 +225,32 @@ function addon:BuildGeneralSettings(p)
         end
 
         locked:SetChecked(value)
-        if p.BindUnsaved then p:BindUnsaved('preview_locked', locked, value, 'Check') end
+
+        if p.BindUnsaved then
+            p:BindUnsaved('preview_locked', locked, value, 'Check')
+        end
     end
 
     self:SetUIScript(locked, 'OnClick', p:Guard(function()
         syncLocked(self.db.profile.preview_locked ~= true)
-        if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
+
+        if self.RefreshPreviewWindow then
+            self:RefreshPreviewWindow()
+        end
     end))
 
     -- The preview's right-click menu locks too; keep this page's field and
     -- draft in step so a later Apply cannot write the old value back.
-    local lockChanged = p:Guard(function(value) syncLocked(value == true) end)
+    local lockChanged = p:Guard(function(value)
+        syncLocked(value == true)
+    end)
+
     self.previewLockChanged = lockChanged
 
     p.cleanups[#p.cleanups + 1] = function()
-        if self.previewLockChanged == lockChanged then self.previewLockChanged = nil end
+        if self.previewLockChanged == lockChanged then
+            self.previewLockChanged = nil
+        end
     end
 
     local orientation = p:Toggle(
@@ -239,7 +272,9 @@ function addon:BuildGeneralSettings(p)
     -- Moving the preview is immediate, like dragging the window. Synchronize
     -- only these baselines so an unrelated staged setting stays staged.
     self:SetUIScript(reset, 'OnClick', function()
-        if not p:Valid(resetToken) then return end
+        if not p:Valid(resetToken) then
+            return
+        end
 
         for _, settings in ipairs({ self.db.profile, profile, p.draftBaseline and p.draftBaseline.profile or {} }) do
             settings.preview_window = nil
@@ -247,7 +282,10 @@ function addon:BuildGeneralSettings(p)
         end
 
         if self.nextWindow then
-            if self.nextWindow.Configure then self.nextWindow:Configure() end
+            if self.nextWindow.Configure then
+                self.nextWindow:Configure()
+            end
+
             self.nextWindow:ClearAllPoints()
             self.nextWindow:SetPoint('CENTER', UIParent, 'CENTER', 0, 0)
         end
@@ -260,7 +298,9 @@ function addon:BuildGeneralSettings(p)
             end
         end
 
-        if p.RefreshUnsaved then p:RefreshUnsaved() end
+        if p.RefreshUnsaved then
+            p:RefreshUnsaved()
+        end
     end)
 
     reset.tooltip = L['Reset preview position']
@@ -292,12 +332,19 @@ function addon:BuildGeneralSettings(p)
     -- Returns the skin choices and whether skinning is available: Masque's list when the Masque option is on and the
     -- addon is present, otherwise the single built-in skin and false (the chooser is then disabled).
     local function skinChoices()
-        if not currentSkinPage() then return end
+        if not currentSkinPage() then
+            return
+        end
 
         if self.db.profile.preview_masque == true and self.GetPreviewSkinChoices then
             local choices, available = self:GetPreviewSkinChoices()
-            if not currentSkinPage() then return end
-            if available then return choices, true end
+
+            if not currentSkinPage() then
+                return
+            end
+            if available then
+                return choices, true
+            end
         end
 
         return { { value = 'Blizzard Classic', text = L['Blizzard Classic'] } }, false
@@ -307,9 +354,17 @@ function addon:BuildGeneralSettings(p)
     -- or nothing when the page is no longer current.
     local function paintSkin()
         local choices, available = skinChoices()
-        if not currentSkinPage() or not choices then return end
+
+        if not currentSkinPage() or not choices then
+            return
+        end
+
         local value = available and self.GetPreviewSkin and self:GetPreviewSkin() or 'Blizzard Classic'
-        if not currentSkinPage() then return end
+
+        if not currentSkinPage() then
+            return
+        end
+
         local selected
 
         for _, entry in ipairs(choices) do
@@ -330,17 +385,28 @@ function addon:BuildGeneralSettings(p)
         return choices
     end
 
-    if not paintSkin() then return end
-    local skinChanged = p:Guard(function() paintSkin() end)
+    if not paintSkin() then
+        return
+    end
+
+    local skinChanged = p:Guard(function()
+        paintSkin()
+    end)
+
     self.previewSkinChanged = skinChanged
 
     p.cleanups[#p.cleanups + 1] = function()
-        if self.previewSkinChanged == skinChanged then self.previewSkinChanged = nil end
+        if self.previewSkinChanged == skinChanged then
+            self.previewSkinChanged = nil
+        end
     end
 
     self:SetUIScript(skin, 'OnClick', p:Guard(function()
         local choices = paintSkin()
-        if not choices or not currentSkinPage() or not skin:IsEnabled() then return end
+
+        if not choices or not currentSkinPage() or not skin:IsEnabled() then
+            return
+        end
 
         p:ShowChoices(skin, choices, function(value)
             local ok = self.SetPreviewSkin and self:SetPreviewSkin(value)
@@ -408,8 +474,13 @@ function addon:BuildGeneralSettings(p)
 
     -- Redraws the sample glow on the preview icon from the draft's effect, color, magnification and position.
     local function refresh()
-        if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
-        if self.HideGlow then self:HideGlow(preview, 'settings-preview') end
+        if self.RemoveAllCurrentGlows then
+            self:RemoveAllCurrentGlows()
+        end
+        if self.HideGlow then
+            self:HideGlow(preview, 'settings-preview')
+        end
+
         local effect = (store.global.effects or {})[profile.effect]
 
         if effect and self.Glow then
@@ -478,7 +549,11 @@ function addon:BuildGeneralSettings(p)
         function(x, y, center)
             profile.xoffs = x
             profile.yoffs = y
-            if center then profile.setpoint = 'CENTER' end
+
+            if center then
+                profile.setpoint = 'CENTER'
+            end
+
             refresh()
         end,
         true
@@ -500,7 +575,10 @@ function addon:BuildGeneralSettings(p)
             modes,
             function(v)
                 profile.assisted_highlight = v
-                p:RunSettingsEffect('assisted_highlight', function() self:RefreshAssistedHighlight(true) end)
+
+                p:RunSettingsEffect('assisted_highlight', function()
+                    self:RefreshAssistedHighlight(true)
+                end)
             end
         )
 
@@ -517,7 +595,9 @@ function addon:BuildGeneralSettings(p)
     -- Re-applies the tooltip integration after any tooltip option changes.
     local function tooltipsChanged()
         p:RunSettingsEffect('tooltips', function()
-            if self.RefreshTooltipIntegration then self:RefreshTooltipIntegration() end
+            if self.RefreshTooltipIntegration then
+                self:RefreshTooltipIntegration()
+            end
         end)
     end
 
@@ -566,7 +646,9 @@ function addon:BuildGeneralSettings(p)
         p:Heading(L['Specialization Names'])
 
         for i, caption in ipairs({ PRIMARY, SECONDARY }) do
-            p:Edit('spec' .. i, caption, store.char.specs[i], nil, function(v) store.char.specs[i] = v end)
+            p:Edit('spec' .. i, caption, store.char.specs[i], nil, function(v)
+                store.char.specs[i] = v
+            end)
         end
     end
 
@@ -585,7 +667,9 @@ function addon:BuildGeneralSettings(p)
         profile.loglevel = v
 
         p:RunSettingsEffect('loglevel', function()
-            if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy() end
+            if self.RefreshEvaluationProfilerPolicy then
+                self:RefreshEvaluationProfilerPolicy()
+            end
         end)
 
         p:Draw()
@@ -595,7 +679,10 @@ function addon:BuildGeneralSettings(p)
         profile.detailed_profiling = v
     end)
 
-    if (profile.loglevel or 2) < 3 then detail:Disable() end
+    if (profile.loglevel or 2) < 3 then
+        detail:Disable()
+    end
+
     -- Detailed Profiling follows Log Level on its row, only as wide as its
     -- box and caption.
     local detailText = detail:GetFontString()
@@ -648,7 +735,11 @@ function addon:BuildGeneralSettings(p)
     -- Calls addon method `method` under pcall; returns its first result, or false when it is missing or errors.
     local function call(method, ...)
         local fn = self[method]
-        if type(fn) ~= 'function' then return false end
+
+        if type(fn) ~= 'function' then
+            return false
+        end
+
         local ok, value = pcall(fn, self, ...)
         return ok and value
     end
@@ -670,7 +761,11 @@ function addon:BuildGeneralSettings(p)
     local function stored(method)
         return function()
             local fn = self[method]
-            if type(fn) ~= 'function' then return false end
+
+            if type(fn) ~= 'function' then
+                return false
+            end
+
             local ok, value = pcall(fn, self)
             return ok and type(value) == 'string'
         end
@@ -704,7 +799,6 @@ function addon:BuildGeneralSettings(p)
                 open = function() return self:RunCPUProfileAction('runtimereport') end,
             }
         end
-
         if type(self.StartMemoryCapture) == 'function' then
             captures[#captures + 1] = {
                 key = 'memory_capture',
@@ -735,7 +829,10 @@ function addon:BuildGeneralSettings(p)
                 return type(self.GetCastCaptureState) == 'function' and self:GetCastCaptureState() == true
             end,
             hasReport = function()
-                if type(self.GetCastCaptureState) ~= 'function' then return true end
+                if type(self.GetCastCaptureState) ~= 'function' then
+                    return true
+                end
+
                 local _, available = self:GetCastCaptureState(true)
                 return available == true
             end,
@@ -762,7 +859,10 @@ function addon:BuildGeneralSettings(p)
                 entry.age = 0
             end
 
-            if running then has = false end
+            if running then
+                has = false
+            end
+
             entry.wasRunning = running
             entry.has = has
             entry.button:SetText(running and entry.stop or entry.start)
@@ -796,14 +896,25 @@ function addon:BuildGeneralSettings(p)
             self:SetUIScript(button, 'OnClick', p:Guard(function()
                 local action = entry.running() and entry.finish or entry.begin
                 local ok, message, current = action()
-                if current == false or not p:Valid(token) then return end
-                if message and message ~= '' then p:Message(message, ok) end
+
+                if current == false or not p:Valid(token) then
+                    return
+                end
+
+                if message and message ~= '' then
+                    p:Message(message, ok)
+                end
+
                 repaint(true)
             end))
 
             self:SetUIScript(reportButton, 'OnClick', p:Guard(function()
                 local ok, message, current = entry.open()
-                if current == false or not p:Valid(token) then return end
+
+                if current == false or not p:Valid(token) then
+                    return
+                end
+
                 p:Message(message or '', ok)
                 repaint(true)
             end))
@@ -836,7 +947,10 @@ function addon:BuildGeneralSettings(p)
             end
 
             elapsed = elapsed + (delta or 0)
-            if elapsed < .25 then return end
+
+            if elapsed < .25 then
+                return
+            end
 
             for _, entry in ipairs(captures) do
                 entry.age = (entry.age or 0) + elapsed
@@ -863,6 +977,8 @@ function addon:BuildGeneralSettings(p)
     p:EndColumns()
 
     p.cleanups[#p.cleanups + 1] = function()
-        if self.HideGlow then self:HideGlow(preview, 'settings-preview') end
+        if self.HideGlow then
+            self:HideGlow(preview, 'settings-preview')
+        end
     end
 end

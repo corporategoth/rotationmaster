@@ -66,7 +66,10 @@ end
 -- Raises 'condition-table-work-limit' when a Table group has too many columns, children or span cells to lay out
 -- cheaply. Runs before any geometry work so an oversized descriptor cannot freeze the client.
 local function guardWork(group)
-    if group.layout ~= 'Table' then return end
+    if group.layout ~= 'Table' then
+        return
+    end
+
     local settings = group:GetUserData('table')
     local columns = type(settings) == 'table' and settings.columns
 
@@ -80,7 +83,10 @@ local function guardWork(group)
         if type(cell) == 'table' then
             for _, key in ipairs({ 'rowspan', 'colspan' }) do
                 local value = cell[key]
-                if value ~= nil and (not span(value) or value > 4096) then error('condition-table-work-limit', 0) end
+
+                if value ~= nil and (not span(value) or value > 4096) then
+                    error('condition-table-work-limit', 0)
+                end
             end
         end
     end
@@ -89,9 +95,15 @@ end
 -- Decides which route lays the group out. Returns true when the group uses a rich feature (spans, spacing, alignment,
 -- table columns), false for the plain compact numeric Table, and raises on malformed settings, columns or cells.
 local function supported(group)
-    if group.layout ~= 'Table' then return false end
+    if group.layout ~= 'Table' then
+        return false
+    end
+
     local settings = group:GetUserData('table')
-    if settings == nil and #group.children == 0 then return false end
+
+    if settings == nil and #group.children == 0 then
+        return false
+    end
 
     if type(settings) ~= 'table' or type(settings.columns) ~= 'table' or not alignments(settings) then
         error('invalid-condition-table-settings', 0)
@@ -108,13 +120,22 @@ local function supported(group)
         entries = entries + 1
     end
 
-    if entries ~= length or length == 0 and #group.children > 0 then error('invalid-condition-table-columns', 0) end
-    if length == 0 then return false end
+    if entries ~= length or length == 0 and #group.children > 0 then
+        error('invalid-condition-table-columns', 0)
+    end
+
+    if length == 0 then
+        return false
+    end
+
     local advanced = settings.align ~= nil or settings.alignH ~= nil or settings.alignV ~= nil
 
     for _, key in ipairs({ 'space', 'spaceH', 'spaceV' }) do
         if settings[key] ~= nil then
-            if not finite(settings[key]) then error('invalid-condition-table-settings', 0) end
+            if not finite(settings[key]) then
+                error('invalid-condition-table-settings', 0)
+            end
+
             advanced = true
         end
     end
@@ -122,13 +143,20 @@ local function supported(group)
     for _, column in ipairs(settings.columns) do
         if type(column) == 'table' then
             advanced = true
-            if not alignments(column) then error('invalid-condition-table-settings', 0) end
 
-            for _, key in ipairs({ 'width', 'weight', 'min', 'max', 1, 2 }) do
-                if column[key] ~= nil and not finite(column[key]) then error('invalid-condition-table-settings', 0) end
+            if not alignments(column) then
+                error('invalid-condition-table-settings', 0)
             end
 
-            if column.weight and column.weight < 0 then error('invalid-condition-table-settings', 0) end
+            for _, key in ipairs({ 'width', 'weight', 'min', 'max', 1, 2 }) do
+                if column[key] ~= nil and not finite(column[key]) then
+                    error('invalid-condition-table-settings', 0)
+                end
+            end
+
+            if column.weight and column.weight < 0 then
+                error('invalid-condition-table-settings', 0)
+            end
         elseif not finite(column) then
             error('invalid-condition-table-settings', 0)
         end
@@ -142,7 +170,9 @@ local function supported(group)
                 error('invalid-condition-table-settings', 0)
             end
 
-            if cell.colspan or cell.rowspan or cell.align or cell.alignH then advanced = true end
+            if cell.colspan or cell.rowspan or cell.align or cell.alignH then
+                advanced = true
+            end
 
             -- Preserve the existing compact numeric Table's simple alignV path.
             if cell.alignV ~= nil then
@@ -156,7 +186,9 @@ local function supported(group)
                         or value:sub(1, 6) == 'bottom'
                         or value:sub(1, 6) == 'center')
 
-                if not compact then advanced = true end
+                if not compact then
+                    advanced = true
+                end
             end
         end
     end
@@ -213,7 +245,10 @@ local function offset(direction, settings, column, cell, available, size)
         result = method
     end
 
-    if not finite(result) then error('invalid-condition-table-alignment', 0) end
+    if not finite(result) then
+        error('invalid-condition-table-alignment', 0)
+    end
+
     return method, math.max(0, math.min(result, available))
 end
 
@@ -261,15 +296,24 @@ local function layout(group)
                     spanning[column] = across
                 end
 
-                if across and index == #children then across.to = row end
+                if across and index == #children then
+                    across.to = row
+                end
+
                 position = position + math.max(0, math.min((cell and cell.colspan or 1) - 1, count - column))
-                if position > 65536 then error('condition-table-work-limit', 0) end
+
+                if position > 65536 then
+                    error('condition-table-work-limit', 0)
+                end
 
                 if not across or across.to == row then
                     grid[position] = current
                     firstRow[current] = across and across.from or row
                     firstColumn[current] = column
-                    if across then spanning[column] = nil end
+
+                    if across then
+                        spanning[column] = nil
+                    end
                 end
             until found
         end
@@ -320,7 +364,9 @@ local function layout(group)
     local scale = weight > 0 and remaining / weight or 0
 
     for index, column in ipairs(columns) do
-        if column.weight then widths[index] = scale * column.weight end
+        if column.weight then
+            widths[index] = scale * column.weight
+        end
     end
 
     for row = 1, rows do
@@ -343,8 +389,9 @@ local function layout(group)
                 if child:IsFullWidth() or method == 'fill' or size > available then
                     frame:SetPoint('RIGHT', content, 'LEFT', left + align + available, 0)
                 end
-
-                if child.DoLayout then child:DoLayout() end
+                if child.DoLayout then
+                    child:DoLayout()
+                end
 
                 height = math.max(
                     height,
@@ -374,7 +421,10 @@ local function layout(group)
                     frame:GetHeight() or 0
                 )
 
-                if child:IsFullHeight() or method == 'fill' then frame:SetHeight(available) end
+                if child:IsFullHeight() or method == 'fill' then
+                    frame:SetHeight(available)
+                end
+
                 frame:SetPoint('TOP', content, 0, -(top + align))
             end
         end
@@ -395,10 +445,17 @@ function addon:PrepareNativeConditionTable(group)
         group.rmNativeTableOriginal = original
 
         function group:DoLayout()
-            if self.paused or self.layingOut or self.isQueuedForRelease then return end
+            if self.paused or self.layingOut or self.isQueuedForRelease then
+                return
+            end
+
             -- Reject unsafe work before compact or rich geometry mutates frames.
             guardWork(self)
-            if not supported(self) then return original(self) end
+
+            if not supported(self) then
+                return original(self)
+            end
+
             self.layingOut = true
             local ok, why = pcall(layout, self)
             self.layingOut = false
@@ -408,7 +465,9 @@ function addon:PrepareNativeConditionTable(group)
                 error(why, 0)
             end
 
-            if self.parent and self.parent.DoLayout then self.parent:DoLayout() end
+            if self.parent and self.parent.DoLayout then
+                self.parent:DoLayout()
+            end
         end
     end
 end

@@ -30,13 +30,27 @@ local neverSecretPointPowers = { 'ComboPoints', 'Runes', 'SoulShards', 'HolyPowe
 -- Returns true when powerType is one of the secondary resources Blizzard no longer makes secret (see the list above).
 -- Matches by Enum.PowerType name so a client that renumbers the enum still works; any unreadable input is false.
 function platform:IsNeverSecretPointPower(powerType)
-    if not self:CanReadValue(powerType) then return false end
-    if canaccessvalue and not canaccessvalue(powerType) then return false end
-    if type(powerType) ~= 'number' then return false end
+    if not self:CanReadValue(powerType) then
+        return false
+    end
+    if canaccessvalue and not canaccessvalue(powerType) then
+        return false
+    end
+    if type(powerType) ~= 'number' then
+        return false
+    end
+
     local enum = Enum
-    if not self:CanReadValue(enum) or type(enum) ~= 'table' then return false end
+
+    if not self:CanReadValue(enum) or type(enum) ~= 'table' then
+        return false
+    end
+
     local types = rawget(enum, 'PowerType')
-    if not self:CanReadValue(types) or type(types) ~= 'table' then return false end
+
+    if not self:CanReadValue(types) or type(types) ~= 'table' then
+        return false
+    end
 
     for _, name in ipairs(neverSecretPointPowers) do
         local id = rawget(types, name)

@@ -130,7 +130,11 @@ function addon:CreateConditionCard(parent)
         self.fields:ClearAllPoints()
         self.fields:SetPoint('TOPLEFT', 26, -header)
         self.fields:SetSize(contentWidth, math.max(1, model.ownHeight - header - 4))
-        if not editingName then self.name:Hide() end
+
+        if not editingName then
+            self.name:Hide()
+        end
+
         self.typeButton:SetWidth(model.width - 186)
         self.label:SetWidth(model.width - 192)
         self.nameButton:ClearAllPoints()
@@ -219,7 +223,9 @@ function addon:CreateConditionCard(parent)
             self.icon:Show()
 
             for key, control in pairs(self.controls) do
-                if key ~= 'operator' and key ~= 'ungroup' or model.group then control:Show() end
+                if key ~= 'operator' and key ~= 'ungroup' or model.group then
+                    control:Show()
+                end
             end
         end
 
@@ -240,7 +246,10 @@ function addon:CreateConditionCard(parent)
             self.nameButton:Hide()
         end
 
-        if self.pane and self.pane.frame:GetWidth() ~= contentWidth then self.pane:SetWidth(contentWidth) end
+        if self.pane and self.pane.frame:GetWidth() ~= contentWidth then
+            self.pane:SetWidth(contentWidth)
+        end
+
         frame:Show()
     end
 
@@ -248,8 +257,13 @@ function addon:CreateConditionCard(parent)
     -- canvas attached, so a pooled card never acts on the previous condition.
     function card:Release()
         self.token = nil
-        if self.helpText then self.helpText:Hide() end
-        if self.picker then self.picker:Release() end
+
+        if self.helpText then
+            self.helpText:Hide()
+        end
+        if self.picker then
+            self.picker:Release()
+        end
 
         if self.releaseFields then
             self.releaseFields()

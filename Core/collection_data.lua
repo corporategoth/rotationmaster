@@ -9,7 +9,11 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Linear trim: '^%s*(.-)%s*$' is quadratic on a long run of spaces in pasted text.
 local function trim(s)
     local a = s:find('%S')
-    if not a then return '' end
+
+    if not a then
+        return ''
+    end
+
     return s:sub(a, s:match('^.*()%S'))
 end
 
@@ -17,7 +21,10 @@ end
 -- list of item ids and names separated by commas or newlines. Returns { name = ..., items = ... } (name is nil for a
 -- plain list), or nil and the localized "Invalid item list." message when the size, shape or any item is out of bounds.
 function addon:ParseItemSetImport(text, codec)
-    if type(text) ~= 'string' or #text > 131072 then return nil, L['Invalid item list.'] end
+    if type(text) ~= 'string' or #text > 131072 then
+        return nil, L['Invalid item list.']
+    end
+
     local decoded = codec:Decode(text)
     local result
 
@@ -42,7 +49,10 @@ function addon:ParseItemSetImport(text, codec)
 
         for line in (text:gsub(',', '\n') .. '\n'):gmatch('(.-)\n') do
             local value = trim(line)
-            if value ~= '' then result.items[#result.items + 1] = tonumber(value) or value end
+
+            if value ~= '' then
+                result.items[#result.items + 1] = tonumber(value) or value
+            end
         end
     end
 
@@ -67,6 +77,9 @@ function addon:ParseItemSetImport(text, codec)
         count = count + 1
     end
 
-    if count ~= #result.items or count > 256 then return nil, L['Invalid item list.'] end
+    if count ~= #result.items or count > 256 then
+        return nil, L['Invalid item list.']
+    end
+
     return result
 end

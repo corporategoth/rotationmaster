@@ -31,13 +31,20 @@ local function suggestionNames(missing)
     local names = {}
 
     for i, id in ipairs(missing) do
-        if i > SUGGESTION_LIST then break end
+        if i > SUGGESTION_LIST then
+            break
+        end
+
         local info = addon.Platform and addon.Platform:GetSpellInfo(id)
         names[i] = info and info.name or tostring(id)
     end
 
     local text = table.concat(names, ', ')
-    if #missing > SUGGESTION_LIST then text = string.format(L['%s, and %d more'], text, #missing - SUGGESTION_LIST) end
+
+    if #missing > SUGGESTION_LIST then
+        text = string.format(L['%s, and %d more'], text, #missing - SUGGESTION_LIST)
+    end
+
     return text
 end
 
@@ -64,7 +71,6 @@ local function unboundTooltip(model)
             .. '\n\n'
             .. L["Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them."]
     end
-
     if model.section == 'cooldowns' then
         return L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."]
     end
@@ -97,13 +103,18 @@ function addon:GetAssistedStepIcon()
         or nil
 
     local icon = type(info) == 'table' and info.iconID or nil
-    if type(icon) == 'number' and icon > 0 or type(icon) == 'string' and icon ~= '' then return icon end
+
+    if type(icon) == 'number' and icon > 0 or type(icon) == 'string' and icon ~= '' then
+        return icon
+    end
 end
 
 -- The icon a rotation card shows for a step; fallback is what it showed
 -- before (the spell's icon, else its condition's).
 function addon:GetStepIcon(step, fallback)
-    if type(step) ~= 'table' then return fallback end
+    if type(step) ~= 'table' then
+        return fallback
+    end
 
     if step.type == 'stop' then
         local art = self.StepArtwork and self.StepArtwork.stop
@@ -149,8 +160,10 @@ function addon:DescribeLiveStatus(state)
     end
 
     local details = {}
-    if state.chosen then details[#details + 1] = state.chosen end
 
+    if state.chosen then
+        details[#details + 1] = state.chosen
+    end
     if type(state.at) == 'number' and type(GetTime) == 'function' then
         details[#details + 1] = string.format(L['Checked %d seconds ago.'], math.max(0, math.floor(
             GetTime() - state.at + .5
@@ -163,7 +176,10 @@ end
 -- A condition field's tooltip: the live headline on its own line, coloured
 -- like the bar, then the field's text, then when it was checked.
 function addon:ShowConditionFieldTooltip(owner, text, state)
-    if not GameTooltip then return end
+    if not GameTooltip then
+        return
+    end
+
     GameTooltip:SetOwner(owner, 'ANCHOR_RIGHT')
 
     if type(state) ~= 'table' then
@@ -174,7 +190,10 @@ function addon:ShowConditionFieldTooltip(owner, text, state)
     local headline, details = self:DescribeLiveStatus(state)
     local color = self:LiveStatusColor(state.status)
     GameTooltip:SetText(headline, color[1], color[2], color[3], 1, true)
-    if text then GameTooltip:AddLine(text, 1, 1, 1, true) end
+
+    if text then
+        GameTooltip:AddLine(text, 1, 1, 1, true)
+    end
 
     for _, line in ipairs(details) do
         GameTooltip:AddLine(line, .85, .85, .85, true)
@@ -319,9 +338,15 @@ function addon:CreateRotationCard(parent)
             end
         end
 
-        if not branch then self.defaultTitle = addon:PlainWorkbenchName(self.defaultTitle):gsub('^%[(.*)%]$', '%1') end
+        if not branch then
+            self.defaultTitle = addon:PlainWorkbenchName(self.defaultTitle):gsub('^%[(.*)%]$', '%1')
+        end
+
         local suppliedName = model.displayName
-        if suppliedName == nil then suppliedName = step.name end
+
+        if suppliedName == nil then
+            suppliedName = step.name
+        end
 
         self.title:SetText(addon:PlainWorkbenchName(
             suppliedName and suppliedName ~= '' and suppliedName or self.defaultTitle
@@ -578,7 +603,10 @@ function addon:CreateRotationCard(parent)
 
     -- Stores a new live state and repaints the stripe, without a full re-place of the card.
     function card:SetLive(state)
-        if self.model then self.model.live = state end
+        if self.model then
+            self.model.live = state
+        end
+
         self.liveBar:SetState(state)
     end
 
@@ -602,8 +630,13 @@ function addon:CreateRotationCard(parent)
         self.frame:Hide()
         self.name:ClearFocus()
         self:SetSelected(false)
-        if addon.HideGlow then addon:HideGlow(self.preview, 'rotation-card-preview') end
-        if self.fieldSpellIcon then self.fieldSpellIcon:Hide() end
+
+        if addon.HideGlow then
+            addon:HideGlow(self.preview, 'rotation-card-preview')
+        end
+        if self.fieldSpellIcon then
+            self.fieldSpellIcon:Hide()
+        end
 
         if self.releaseFields then
             self.releaseFields()
@@ -632,7 +665,9 @@ function addon:CreateRotationCard(parent)
                 'OnEnter',
                 'OnLeave',
             }) do
-                if control:HasScript(event) then addon:SetUIScript(control, event, nil) end
+                if control:HasScript(event) then
+                    addon:SetUIScript(control, event, nil)
+                end
             end
         end
 

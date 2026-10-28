@@ -15,8 +15,12 @@ local _, addon = ...
 ---@type fun(owner:table):table,function,function,function,function,function
 local consumeEngine = addon.ConsumeConditionRuntimeEngine
 local definitions, runLeaf, outcome, engineCurrent, isQuarantined, quarantineVersion = consumeEngine(addon)
+
 -- Without the engine handoff from Core/conditions.lua this module does nothing and the ordinary evaluator stays in use.
-if not definitions then return end
+if not definitions then
+    return
+end
+
 addon.ConsumeConditionRuntimeEngine = nil
 
 local type, pairs, ipairs, getmetatable, pcall, setmetatable, rawget, next =
@@ -34,7 +38,10 @@ local sourceWitnesses = {}
 -- Called once per Built In source module as it loads. Returns a function that records each registered definition and
 -- its original `valid` and `evaluate`, so DeclareOwnedConditionRuntime can later prove the definition was not replaced.
 function addon:CreateConditionRuntimeWitness(module)
-    if self ~= addon or sourceWitnesses[module] then return end
+    if self ~= addon or sourceWitnesses[module] then
+        return
+    end
+
     local witnesses = {}
     sourceWitnesses[module] = witnesses
 
@@ -54,7 +61,9 @@ local ownedHelpers = {}
 -- Records the original public helper `method` under `name` (first declaration wins) so a declaration can prove the
 -- helper is still the shipped one.
 function addon:DeclareConditionRuntimeHelper(name, method)
-    if self == addon and ownedHelpers[name] == nil and type(method) == 'function' then ownedHelpers[name] = method end
+    if self == addon and ownedHelpers[name] == nil and type(method) == 'function' then
+        ownedHelpers[name] = method
+    end
 end
 
 local stats = {
@@ -75,7 +84,10 @@ local environment = getfenv(1)
 -- with the live values.
 local function references(object, names, host)
     local result = {}
-    if type(object) ~= 'table' then return result end
+
+    if type(object) ~= 'table' then
+        return result
+    end
 
     for _, name in ipairs(names or {}) do
         local value = rawget(object, name)
@@ -101,7 +113,10 @@ local enrolled = {}
 -- recorded by the witness and matches the packaged source catalog; anything else keeps the ordinary evaluation path.
 -- Advances the generation so plans compiled earlier are discarded.
 function addon:DeclareOwnedConditionRuntime(module, descriptors)
-    if self ~= addon or enrolled[module] then return end
+    if self ~= addon or enrolled[module] then
+        return
+    end
+
     enrolled[module] = true
 
     for tag, descriptor in pairs(descriptors) do
@@ -170,7 +185,10 @@ local function clearLevel()
     if type(cache) == 'table' then
         cache.conditionPlayerLevel = nil
         local native = cache[UnitLevel]
-        if type(native) == 'table' then native.player = nil end
+
+        if type(native) == 'table' then
+            native.player = nil
+        end
     end
 end
 
@@ -227,7 +245,9 @@ local function subscribe(plan)
     local wanted = false
 
     for fact in pairs(plan.dependencies) do
-        if plan.support[fact] then wanted = true end
+        if plan.support[fact] then
+            wanted = true
+        end
     end
 
     -- Marks every fact as unsupported, so its nodes are evaluated fresh on each poll.
@@ -237,7 +257,9 @@ local function subscribe(plan)
         end
     end
 
-    if not wanted then return end
+    if not wanted then
+        return
+    end
 
     if type(CreateFrame) ~= 'function' then
         unavailable()
@@ -270,7 +292,10 @@ local function subscribe(plan)
             for _, event in ipairs(fact == 'level' and levelEvents or auraEvents) do
                 local registered = pcall(frame.RegisterEvent, frame, event)
                 local checked, present = pcall(frame.IsEventRegistered, frame, event)
-                if not registered or not checked or not present then supported = false end
+
+                if not registered or not checked or not present then
+                    supported = false
+                end
             end
 
             plan.support[fact] = plan.support[fact] and supported
@@ -278,7 +303,9 @@ local function subscribe(plan)
     end
 
     frame:SetScript('OnEvent', function(_, event, unit)
-        if active ~= plan or plan.retired then return end
+        if active ~= plan or plan.retired then
+            return
+        end
 
         if event == 'UNIT_LEVEL' or event == 'UNIT_AURA' then
             local ok, readable = pcall(platform.CanReadValue, platform, unit)
@@ -294,7 +321,9 @@ local function subscribe(plan)
                 return
             end
 
-            if unit ~= 'player' then return end
+            if unit ~= 'player' then
+                return
+            end
         end
 
         if
@@ -322,7 +351,10 @@ local function subscribe(plan)
 
             if type(addon.ScheduleTimer) == 'function' then
                 addon:ScheduleTimer(function()
-                    if active ~= plan or plan.retired then return end
+                    if active ~= plan or plan.retired then
+                        return
+                    end
+
                     clearLevel()
                     invalidate(plan, 'level')
                     plan.levelPending = false
@@ -336,12 +368,19 @@ end
 -- secret value API either absent or reporting no restrictions. Returns true and the client family, or false. Written to
 -- avoid the full client classifier, which allocates on every call.
 local function securityAllowsFacts()
-    if addon.Platform ~= platform or platform.GetClientInfo ~= clientInfo then return false end
+    if addon.Platform ~= platform or platform.GetClientInfo ~= clientInfo then
+        return false
+    end
+
     -- The stock client classifier's policy depends on project identity. Avoid
     -- allocating its complete build/locale/season metadata each polling pass.
     local project = WOW_PROJECT_ID
     local readOk, readable = pcall(platform.CanReadValue, platform, project)
-    if not readOk or not readable or type(project) ~= 'number' then return false end
+
+    if not readOk or not readable or type(project) ~= 'number' then
+        return false
+    end
+
     local family
 
     if project == WOW_PROJECT_MAINLINE or project == WOW_PROJECT_CAMELOT then
@@ -362,11 +401,21 @@ local function securityAllowsFacts()
 
     -- No cross-poll gameplay fact reuse on restricted or unproven clients.
     if type(issecretvalue) == 'function' or type(canaccessvalue) == 'function' or C_Secrets ~= nil then
-        if type(C_Secrets) ~= 'table' or type(C_Secrets.HasSecretRestrictions) ~= 'function' then return false end
+        if type(C_Secrets) ~= 'table' or type(C_Secrets.HasSecretRestrictions) ~= 'function' then
+            return false
+        end
+
         local ok, restricted = pcall(C_Secrets.HasSecretRestrictions)
-        if not ok then return false end
+
+        if not ok then
+            return false
+        end
+
         local known, accessible = pcall(platform.CanReadValue, platform, restricted)
-        if not known or not accessible or restricted ~= false then return false end
+
+        if not known or not accessible or restricted ~= false then
+            return false
+        end
     end
 
     return true, family
@@ -386,7 +435,6 @@ local function declarationCurrent(declaration)
     if not declaration.helpers or definitions[declaration.tag] ~= d or getmetatable(d) ~= nil or isQuarantined(d) then
         return false
     end
-
     if
         d.disabled
         or d.functionUnavailable
@@ -422,7 +470,9 @@ local function authority(plan)
     end
 
     for _, declaration in ipairs(plan.declarations) do
-        if not declarationCurrent(declaration) then return false end
+        if not declarationCurrent(declaration) then
+            return false
+        end
     end
 
     return true
@@ -454,8 +504,13 @@ local function compile(body, token, levelSafe, auraSafe)
 
     -- Compiles one condition tree into the plan; returns false if any node cannot be compiled.
     local function root(value)
-        if value == nil then return true end
-        if plan.roots[value] then return true end
+        if value == nil then
+            return true
+        end
+        if plan.roots[value] then
+            return true
+        end
+
         local stack, count = {}, 0
 
         -- Compiles one condition node (constant, AND/OR, NOT or a Built In leaf) with its parents, fact dependency and
@@ -466,8 +521,9 @@ local function compile(body, token, levelSafe, auraSafe)
             if count > 4096 or depth > 64 or type(value) ~= 'table' or getmetatable(value) ~= nil or stack[value] then
                 return
             end
-
-            if value.disabled ~= nil and type(value.disabled) ~= 'boolean' then return end
+            if value.disabled ~= nil and type(value.disabled) ~= 'boolean' then
+                return
+            end
 
             local n = {
                 value = value,
@@ -483,39 +539,71 @@ local function compile(body, token, levelSafe, auraSafe)
             end
 
             local kind = value.type
-            if type(kind) ~= 'string' then return end
+
+            if type(kind) ~= 'string' then
+                return
+            end
+
             n.kind = kind
             stack[value] = true
 
             if kind == 'AND' or kind == 'OR' then
                 local children = value.value
-                if children == nil then children = {} end
-                if type(children) ~= 'table' or getmetatable(children) ~= nil then return end
+
+                if children == nil then
+                    children = {}
+                end
+
+                if type(children) ~= 'table' or getmetatable(children) ~= nil then
+                    return
+                end
+
                 local length, largest = 0, 0
 
                 for key in pairs(children) do
-                    if type(key) ~= 'number' or key % 1 ~= 0 or key < 1 then return end
+                    if type(key) ~= 'number' or key % 1 ~= 0 or key < 1 then
+                        return
+                    end
+
                     length = length + 1
-                    if key > largest then largest = key end
+
+                    if key > largest then
+                        largest = key
+                    end
                 end
 
-                if length ~= largest or length > 4096 - count then return end
+                if length ~= largest or length > 4096 - count then
+                    return
+                end
+
                 n.children = {}
 
                 for i = 1, length do
                     local child = node(children[i], n, depth + 1, path .. '.value[' .. i .. ']')
-                    if not child then return end
+
+                    if not child then
+                        return
+                    end
+
                     n.children[i] = child
                     n.stable = n.stable and child.stable
                 end
             elseif kind == 'NOT' then
                 local child = node(value.value, n, depth + 1, path .. '.value')
-                if not child then return end
+
+                if not child then
+                    return
+                end
+
                 n.children = { child }
                 n.stable = child.stable
             else
                 local declaration = declarations[kind]
-                if not declaration or not declarationCurrent(declaration) then return end
+
+                if not declaration or not declarationCurrent(declaration) then
+                    return
+                end
+
                 n.definition = declaration.definition
                 n.providers = { declaration }
 
@@ -524,10 +612,19 @@ local function compile(body, token, levelSafe, auraSafe)
                     plan.declarations[#plan.declarations + 1] = declaration
                 end
 
-                if declaration.pure then n.validation = {} end
+                if declaration.pure then
+                    n.validation = {}
+                end
+
                 local fact = declaration.fact
-                if fact == 'level' and (value.unit ~= 'player' or value.relative) then fact = nil end
-                if fact == 'aura' and value.unit ~= 'player' then fact = nil end
+
+                if fact == 'level' and (value.unit ~= 'player' or value.relative) then
+                    fact = nil
+                end
+                if fact == 'aura' and value.unit ~= 'player' then
+                    fact = nil
+                end
+
                 n.fact = fact
                 n.stable = fact ~= nil and plan.support[fact] == true
 
@@ -542,7 +639,11 @@ local function compile(body, token, levelSafe, auraSafe)
         end
 
         local compiled = node(value, nil, 0, 'condition')
-        if not compiled then return false end
+
+        if not compiled then
+            return false
+        end
+
         plan.roots[value] = compiled
         return true
     end
@@ -551,12 +652,16 @@ local function compile(body, token, levelSafe, auraSafe)
 
     -- Compiles the conditions of a step list and, recursively, of every branch in it.
     local function steps(list, depth)
-        if type(list) ~= 'table' or depth > 64 or seen[list] then return false end
+        if type(list) ~= 'table' or depth > 64 or seen[list] then
+            return false
+        end
+
         seen[list] = true
 
         for _, step in ipairs(list) do
-            if type(step) ~= 'table' or not root(step.conditions) then return false end
-
+            if type(step) ~= 'table' or not root(step.conditions) then
+                return false
+            end
             if
                 step.type == 'branch'
                 and (not steps(step.onTrue or {}, depth + 1) or not steps(step.onFalse or {}, depth + 1))
@@ -569,7 +674,10 @@ local function compile(body, token, levelSafe, auraSafe)
         return true
     end
 
-    if type(body) ~= 'table' or not steps(body.rotation or {}, 0) or not steps(body.cooldowns or {}, 0) then return end
+    if type(body) ~= 'table' or not steps(body.rotation or {}, 0) or not steps(body.cooldowns or {}, 0) then
+        return
+    end
+
     return plan
 end
 
@@ -580,13 +688,20 @@ end
 -- Certificates describe only providers consulted for the cached result. In
 -- particular an OR prefix never certifies an unreached sibling's producer.
 local function providersCurrent(node, session)
-    if not session:IsCurrent() or not engineCurrent() then return false end
-
-    for _, declaration in ipairs(node.providers) do
-        if not declarationCurrent(declaration) then return false end
+    if not session:IsCurrent() or not engineCurrent() then
+        return false
     end
 
-    if session.dispatchGuard and not session:CheckDispatch('condition') then return false end
+    for _, declaration in ipairs(node.providers) do
+        if not declarationCurrent(declaration) then
+            return false
+        end
+    end
+
+    if session.dispatchGuard and not session:CheckDispatch('condition') then
+        return false
+    end
+
     return session:IsCurrent()
 end
 
@@ -614,7 +729,10 @@ local function evaluate(node, plan, cache, start, context, session)
 
     local epoch = plan.epoch
     local result, consulted, seen
-    if node.stable and (node.kind == 'AND' or node.kind == 'OR') then consulted, seen = {}, {} end
+
+    if node.stable and (node.kind == 'AND' or node.kind == 'OR') then
+        consulted, seen = {}, {}
+    end
 
     if node.kind == 'constant' then
         result = outcome('match')
@@ -623,7 +741,10 @@ local function evaluate(node, plan, cache, start, context, session)
 
         for _, child in ipairs(node.children) do
             local current = evaluate(child, plan, cache, start, context, session)
-            if consulted then addProviders(consulted, seen, child.providers) end
+
+            if consulted then
+                addProviders(consulted, seen, child.providers)
+            end
 
             if current.status == 'unavailable' then
                 result = current
@@ -644,8 +765,13 @@ local function evaluate(node, plan, cache, start, context, session)
         result = result or outcome(matched and 'match' or 'no-match')
     elseif node.kind == 'NOT' then
         result = evaluate(node.children[1], plan, cache, start, context, session)
-        if node.stable then consulted = node.children[1].providers end
-        if result.status ~= 'unavailable' then result = outcome(result.status == 'match' and 'no-match' or 'match') end
+
+        if node.stable then
+            consulted = node.children[1].providers
+        end
+        if result.status ~= 'unavailable' then
+            result = outcome(result.status == 'match' and 'no-match' or 'match')
+        end
     else
         result = runLeaf(
             node.value,
@@ -665,10 +791,15 @@ local function evaluate(node, plan, cache, start, context, session)
     end
 
     if node.stable and result.status ~= 'unavailable' and epoch == plan.epoch and not plan.levelPending then
-        if consulted then node.providers = consulted end
+        if consulted then
+            node.providers = consulted
+        end
+
         -- A provider callback may have replaced its own method while returning.
         -- Never promote that old producer to a reusable fact certificate.
-        if providersCurrent(node, session) then node.result = result end
+        if providersCurrent(node, session) then
+            node.result = result
+        end
     end
 
     return result
@@ -692,7 +823,9 @@ end
 
 -- Runs the owner's full proof; a failure marks the session failed for the rest of the poll.
 function Session:CheckFull()
-    if not self:IsCurrent() then return false end
+    if not self:IsCurrent() then
+        return false
+    end
 
     if not self.fullCurrent() or not self:IsCurrent() then
         self.failed = true
@@ -705,7 +838,9 @@ end
 -- Optional managed dispatch certifies only this actual input consumer. The
 -- five-argument path keeps its original full postcallback proof unchanged.
 function Session:CheckDispatch(kind)
-    if not self:IsCurrent() then return false end
+    if not self:IsCurrent() then
+        return false
+    end
 
     if not self.dispatchGuard(kind) or not self:IsCurrent() then
         self.failed = true
@@ -718,7 +853,10 @@ end
 -- Proof asked before continuing after an outside callback: the dispatch guard when the owner gave one, else the full
 -- proof.
 function Session:CheckResume()
-    if self.dispatchGuard then return self:CheckDispatch('resume') end
+    if self.dispatchGuard then
+        return self:CheckDispatch('resume')
+    end
+
     return self:CheckFull()
 end
 
@@ -726,11 +864,23 @@ end
 -- current before or after the evaluation.
 local function rootResult(session, root, context)
     local plan = session.plan
-    if not session:IsCurrent() then return outcome('unavailable', 'condition-owner-changed', 'condition') end
+
+    if not session:IsCurrent() then
+        return outcome('unavailable', 'condition-owner-changed', 'condition')
+    end
+
     local node = root ~= nil and plan.roots[root]
-    if root ~= nil and not node then return outcome('unavailable', 'condition-root-not-in-plan', 'condition') end
+
+    if root ~= nil and not node then
+        return outcome('unavailable', 'condition-root-not-in-plan', 'condition')
+    end
+
     local result = node and evaluate(node, plan, {}, GetTime(), context, session) or outcome('match')
-    if not session:IsCurrent() then return outcome('unavailable', 'condition-owner-changed', 'condition') end
+
+    if not session:IsCurrent() then
+        return outcome('unavailable', 'condition-owner-changed', 'condition')
+    end
+
     return result
 end
 
@@ -750,16 +900,27 @@ end
 -- observations and unchanged primitive-only publication preserve event facts.
 -- A stale continuation cannot retire a newer activation or nested invocation.
 function Session:AfterOpaque()
-    if not self:IsCurrent() then return false end
-    if not self.dispatchGuard and not self:CheckFull() then return false end
-    local plan = self.plan
-
-    if not authority(plan) then
-        if active == plan then retire() end
+    if not self:IsCurrent() then
+        return false
+    end
+    if not self.dispatchGuard and not self:CheckFull() then
         return false
     end
 
-    if self.dispatchGuard and not self:CheckResume() then return false end
+    local plan = self.plan
+
+    if not authority(plan) then
+        if active == plan then
+            retire()
+        end
+
+        return false
+    end
+
+    if self.dispatchGuard and not self:CheckResume() then
+        return false
+    end
+
     return self:IsCurrent()
 end
 
@@ -771,7 +932,9 @@ end
 -- from a compiled plan, otherwise nil (counted as a legacy fallback when the engine itself is unusable). Recompiles
 -- when the body, token or fact support changed and retires the plan whenever a proof fails.
 local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGuard)
-    if owner ~= addon then return end
+    if owner ~= addon then
+        return
+    end
 
     if token == nil or type(leaseCurrent) ~= 'function' then
         stats.legacyFallback = stats.legacyFallback + 1
@@ -779,7 +942,9 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
         return
     end
 
-    if not leaseCurrent() then return end
+    if not leaseCurrent() then
+        return
+    end
 
     if addon.enabledState == false then
         retire()
@@ -793,9 +958,13 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
     end
 
     local levelSafe, auraSafe = supportedFacts()
+
     -- Capability providers may invoke reentrant addon work. Never retire the
     -- newer graph from the superseded acquisition.
-    if not leaseCurrent() then return end
+    if not leaseCurrent() then
+        return
+    end
+
     local plan = active
 
     if
@@ -824,7 +993,10 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
                 plan.frame:SetScript('OnEvent', nil)
             end
 
-            if active == plan then retire() end
+            if active == plan then
+                retire()
+            end
+
             return
         end
 
@@ -848,11 +1020,17 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
         end
     end
 
-    if not leaseCurrent() then return end
+    if not leaseCurrent() then
+        return
+    end
 
     if not authority(plan) then
         stats.legacyFallback = stats.legacyFallback + 1
-        if active == plan then retire() end
+
+        if active == plan then
+            retire()
+        end
+
         return
     end
 
@@ -867,11 +1045,16 @@ local function prepare(owner, body, token, leaseCurrent, fullCurrent, dispatchGu
     end
 
     if not accepted then
-        if leaseCurrent() and active == plan and latestSession == previous then retire() end
+        if leaseCurrent() and active == plan and latestSession == previous then
+            retire()
+        end
+
         return
     end
 
-    if not leaseCurrent() then return end
+    if not leaseCurrent() then
+        return
+    end
 
     local session = setmetatable({
         plan = plan,
@@ -887,14 +1070,20 @@ end
 -- One-time handoff to main.lua (a second call gets nothing). Returns `prepare`, a retire function that ends the active
 -- plan only when the caller's prior session is still the latest one, and the after-opaque-callback proof for a session.
 function addon:ConsumeConditionRuntime()
-    if self ~= addon or consumed then return end
+    if self ~= addon or consumed then
+        return
+    end
+
     consumed = true
 
     return prepare,
         function(owner, priorSession)
-            if owner ~= addon then return false end
-            if active == nil and latestSession == nil then return true end
-
+            if owner ~= addon then
+                return false
+            end
+            if active == nil and latestSession == nil then
+                return true
+            end
             if
                 priorSession ~= nil
                 and (priorSession == false and latestSession ~= nil
@@ -907,7 +1096,10 @@ function addon:ConsumeConditionRuntime()
             return true
         end,
         function(owner, session)
-            if owner ~= addon or type(session) ~= 'table' then return false end
+            if owner ~= addon or type(session) ~= 'table' then
+                return false
+            end
+
             return session:AfterOpaque()
         end
 end

@@ -36,10 +36,14 @@ end
 
 -- True when path `a` is `b` or an ancestor of it.
 local function prefix(a, b)
-    if #a > #b then return false end
+    if #a > #b then
+        return false
+    end
 
     for i, v in ipairs(a) do
-        if b[i] ~= v then return false end
+        if b[i] ~= v then
+            return false
+        end
     end
 
     return true
@@ -97,16 +101,25 @@ function addon:BuildFieldSchemaCards(form, owner)
             zone.marker:Hide()
         end
 
-        if moving and not self.releasing and valid() then self:Refresh() end
+        if moving and not self.releasing and valid() then
+            self:Refresh()
+        end
     end
 
     -- True when the dragged field may be dropped into gap `gap` of the container at `path`. Answers are cached for the
     -- drag, since the pointer asks every frame.
     function view:CanDrop(path, gap)
-        if not valid() or not self.drag then return false end
+        if not valid() or not self.drag then
+            return false
+        end
+
         local id = key(path) .. ':' .. gap
         local cache = self.drag.allowed
-        if cache[id] == nil then cache[id] = model:CanTransfer(self.drag.path, path, gap, self.drag.tail) == true end
+
+        if cache[id] == nil then
+            cache[id] = model:CanTransfer(self.drag.path, path, gap, self.drag.tail) == true
+        end
+
         return cache[id]
     end
 
@@ -167,10 +180,18 @@ function addon:BuildFieldSchemaCards(form, owner)
     -- while pending text is invalid.
     function view:BeginDrag(path)
         self:CancelDrag()
-        if not valid() or not form:FlushEdits() then return end
+
+        if not valid() or not form:FlushEdits() then
+            return
+        end
+
         local node = model:Node(path)
         local parent = model:Node(parentPath(path))
-        if not node or not parent then return end
+
+        if not node or not parent then
+            return
+        end
+
         local tail = IsControlKeyDown and IsControlKeyDown() or false
         self.drag = { path = addon:CopySettingsData(path), tail = tail, allowed = {}, carried = {} }
         local entries = {}
@@ -221,7 +242,10 @@ function addon:BuildFieldSchemaCards(form, owner)
         )
 
         ghost:PresentCards(entries, form.child)
-        ghost:CaptureCancel(function() self:CancelDrag() end)
+
+        ghost:CaptureCancel(function()
+            self:CancelDrag()
+        end)
 
         -- Gaps that would leave the carried field where it is are not offered.
         for _, zone in ipairs(self.zones) do
@@ -240,7 +264,10 @@ function addon:BuildFieldSchemaCards(form, owner)
 
             ghost:FollowPointer()
             self:Hover()
-            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+
+            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                self:EndDrag()
+            end
         end)
     end
 
@@ -361,7 +388,9 @@ function addon:BuildFieldSchemaCards(form, owner)
             local generation = self.generation
 
             return function(...)
-                if self:Valid(generation) then return callback(...) end
+                if self:Valid(generation) then
+                    return callback(...)
+                end
             end
         end
 
@@ -395,10 +424,15 @@ function addon:BuildFieldSchemaCards(form, owner)
             nil,
             parent.kind == 'record' and child.name or tostring(geometry.index),
             function(text)
-                if parent.kind ~= 'record' or text:match('^[%a_][%w_]*$') then return text end
+                if parent.kind ~= 'record' or text:match('^[%a_][%w_]*$') then
+                    return text
+                end
             end,
             function(text)
-                model:Change(function() child.name = text end)
+                model:Change(function()
+                    child.name = text
+                end)
+
                 owner:UpdateActions()
             end
         )
@@ -415,7 +449,10 @@ function addon:BuildFieldSchemaCards(form, owner)
 
         addon:SetUIScript(name, 'OnTextChanged', p:Guard(function(input, user)
             textChanged(input, user)
-            if user then owner:UpdateActions() end
+
+            if user then
+                owner:UpdateActions()
+            end
         end))
 
         local kind = p:Choice('type_' .. id, nil, child.kind, types, function(value)
@@ -513,15 +550,23 @@ function addon:BuildFieldSchemaCards(form, owner)
             end
         end))
 
-        addon:BindWorkbenchDragSource(row.frame, p:Guard(function() view:BeginDrag(path) end), p:Guard(function()
-            view:EndDrag()
-        end))
+        addon:BindWorkbenchDragSource(
+            row.frame,
+            p:Guard(function()
+                view:BeginDrag(path)
+            end),
+            p:Guard(function()
+                view:EndDrag()
+            end)
+        )
 
         if geometry.addY then
             local add = p:Button(
                 'add_' .. id,
                 L['Add field'],
-                function() command(function() return model:Add(path) end) end,
+                function()
+                    command(function() return model:Add(path) end)
+                end,
                 'plus'
             )
 
@@ -573,7 +618,9 @@ function addon:BuildFieldSchemaCards(form, owner)
         end
 
         for _, record in ipairs(row.form.edits) do
-            if record.dirty then return true end
+            if record.dirty then
+                return true
+            end
         end
 
         return false
@@ -605,7 +652,10 @@ function addon:BuildFieldSchemaCards(form, owner)
     -- zones for visible gaps and restores pending focus. Runs on every scroll change; re-entry is blocked and a failure
     -- releases the half-bound card before rethrowing.
     function view:Refresh()
-        if not valid() or self.refreshing then return end
+        if not valid() or self.refreshing then
+            return
+        end
+
         self.refreshing = true
         local binding
 
@@ -633,16 +683,22 @@ function addon:BuildFieldSchemaCards(form, owner)
                 retain(id)
             end
 
-            if owner.pendingFocus then retain(owner.pendingFocus.key) end
+            if owner.pendingFocus then
+                retain(owner.pendingFocus.key)
+            end
 
             for _, row in ipairs(self.rows) do
-                if row.lease and not wanted[key(row.path)] and not self:IsPinned(row) then self:ReleaseRow(row) end
+                if row.lease and not wanted[key(row.path)] and not self:IsPinned(row) then
+                    self:ReleaseRow(row)
+                end
             end
 
             local bound = {}
 
             for _, row in ipairs(self.rows) do
-                if row.lease then bound[key(row.path)] = true end
+                if row.lease then
+                    bound[key(row.path)] = true
+                end
             end
 
             local free = 1
@@ -684,7 +740,11 @@ function addon:BuildFieldSchemaCards(form, owner)
 
             for i = low, #gaps do
                 local target = gaps[i]
-                if target.y > bottom then break end
+
+                if target.y > bottom then
+                    break
+                end
+
                 count = count + 1
                 local zone = self.zones[count]
 
@@ -732,7 +792,10 @@ function addon:BuildFieldSchemaCards(form, owner)
 
             if input then
                 input:SetFocus()
-                if focus.cursor and input.SetCursorPosition then input:SetCursorPosition(focus.cursor) end
+
+                if focus.cursor and input.SetCursorPosition then
+                    input:SetCursorPosition(focus.cursor)
+                end
             end
 
             owner.pendingRaw = nil
@@ -742,7 +805,10 @@ function addon:BuildFieldSchemaCards(form, owner)
         self.refreshing = nil
 
         if not ok then
-            if binding then pcall(self.ReleaseRow, self, binding) end
+            if binding then
+                pcall(self.ReleaseRow, self, binding)
+            end
+
             self:CollectRecords()
             error(why, 0)
         end
@@ -756,7 +822,9 @@ function addon:BuildFieldSchemaCards(form, owner)
             view:ReleaseRow(row)
         end
 
-        if form.schemaViewport == view then form.schemaViewport = nil end
+        if form.schemaViewport == view then
+            form.schemaViewport = nil
+        end
     end
 
     form.schemaViewport = view
@@ -765,7 +833,9 @@ function addon:BuildFieldSchemaCards(form, owner)
         form.schemaViewportHook = true
 
         form.scroll.workbenchBar:HookScript('OnValueChanged', function()
-            if form.schemaViewport then form.schemaViewport:Refresh() end
+            if form.schemaViewport then
+                form.schemaViewport:Refresh()
+            end
         end)
     end
 

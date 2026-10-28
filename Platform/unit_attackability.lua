@@ -17,7 +17,10 @@ end
 -- the addon table alone; buttons.lua removes that method once the consumers have loaded.
 ---@type fun(...): any
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
+
+if type(consumeClientPolicy) == 'function' then
+    readClientPolicy = consumeClientPolicy(addon)
+end
 
 -- Attackability keeps the native player attacker and selected unit. A known
 -- false at either early stage needs no later fact; unknown data cannot match.

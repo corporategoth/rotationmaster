@@ -19,9 +19,16 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- without a body (orphan source components) are not rotations and are not
 -- counted. Returns nil, reason while the rotation store is not ready.
 function addon:GetLegacyArchiveSummary()
-    if not self.ListUnassignedRotations then return nil, 'missing-archive-reader' end
+    if not self.ListUnassignedRotations then
+        return nil, 'missing-archive-reader'
+    end
+
     local rows, why = self:ListUnassignedRotations()
-    if not rows then return nil, why end
+
+    if not rows then
+        return nil, why
+    end
+
     local summary = { total = 0, profile = 0, character = 0 }
 
     for _, row in ipairs(rows) do
@@ -39,9 +46,17 @@ end
 -- (an old profile imported or copied in) is still announced once.
 function addon:ShowLegacyArchiveNotice()
     local profile = self.db and self.db.profile
-    if type(profile) ~= 'table' or profile.legacyArchiveNoticed == true then return false end
+
+    if type(profile) ~= 'table' or profile.legacyArchiveNoticed == true then
+        return false
+    end
+
     local summary = self:GetLegacyArchiveSummary()
-    if not summary or summary.total == 0 then return false end
+
+    if not summary or summary.total == 0 then
+        return false
+    end
+
     profile.legacyArchiveNoticed = true
 
     self:print(
@@ -56,9 +71,17 @@ end
 -- dismisses it. Dismissing hides the banner only; the archive stays.
 function addon:GetLegacyArchiveBanner()
     local profile = self.db and self.db.profile
-    if type(profile) ~= 'table' or profile.legacyArchiveBannerDismissed == true then return nil end
+
+    if type(profile) ~= 'table' or profile.legacyArchiveBannerDismissed == true then
+        return nil
+    end
+
     local summary = self:GetLegacyArchiveSummary()
-    if not summary or summary.total == 0 then return nil end
+
+    if not summary or summary.total == 0 then
+        return nil
+    end
+
     return summary.total
 end
 
@@ -66,7 +89,10 @@ end
 -- unaffected.
 function addon:DismissLegacyArchiveBanner()
     local profile = self.db and self.db.profile
-    if type(profile) == 'table' then profile.legacyArchiveBannerDismissed = true end
+
+    if type(profile) == 'table' then
+        profile.legacyArchiveBannerDismissed = true
+    end
 end
 
 -- Adopt every unassigned rotation that has a body, as `scope` ('class' or
@@ -77,9 +103,16 @@ end
 --   {adopted=n, skipped=n, failed={{spec=,id=,name=,reason=},...}, references={...}}
 -- or nil, reason when the archive cannot be read.
 function addon:AdoptAllUnassignedRotations(scope, options)
-    if scope ~= 'class' and scope ~= 'character' then return nil, 'invalid-owner-scope' end
+    if scope ~= 'class' and scope ~= 'character' then
+        return nil, 'invalid-owner-scope'
+    end
+
     local rows, why = self:ListUnassignedRotations()
-    if not rows then return nil, why end
+
+    if not rows then
+        return nil, why
+    end
+
     local only = options and options.spec
     local result = { adopted = 0, skipped = 0, failed = {}, references = {} }
 
@@ -93,7 +126,10 @@ function addon:AdoptAllUnassignedRotations(scope, options)
 
                 if plan then
                     ok, reference = self:ApplyRotationAdoption(plan)
-                    if not ok then reason = reference end
+
+                    if not ok then
+                        reason = reference
+                    end
                 end
 
                 if ok then
@@ -129,7 +165,11 @@ if type(CreateFrame) == 'function' then
         and type(created.SetScript) == 'function'
     then
         frame = created
-        created:SetScript('OnEvent', function() addon:ShowLegacyArchiveNotice() end)
+
+        created:SetScript('OnEvent', function()
+            addon:ShowLegacyArchiveNotice()
+        end)
+
         pcall(created.RegisterEvent, created, 'PLAYER_ENTERING_WORLD')
     end
 end

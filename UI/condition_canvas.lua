@@ -25,10 +25,14 @@ end
 
 -- True when path `a` is `b` itself or an ancestor of it.
 local function prefix(a, b)
-    if #a > #b then return false end
+    if #a > #b then
+        return false
+    end
 
     for i, p in ipairs(a) do
-        if b[i] ~= p then return false end
+        if b[i] ~= p then
+            return false
+        end
     end
 
     return true
@@ -36,10 +40,14 @@ end
 
 -- True when two paths are numbered entries of the same parent list (the only case a range selection spans).
 local function sibling(a, b)
-    if #a ~= #b or type(a[#a]) ~= "number" or type(b[#b]) ~= "number" then return false end
+    if #a ~= #b or type(a[#a]) ~= "number" or type(b[#b]) ~= "number" then
+        return false
+    end
 
     for i = 1, #a - 1 do
-        if a[i] ~= b[i] then return false end
+        if a[i] ~= b[i] then
+            return false
+        end
     end
 
     return true
@@ -48,15 +56,23 @@ end
 -- True when a field widget (or any child) holds typed-but-uncommitted input or keyboard focus. Such a card must not be
 -- recycled, or the typing would be lost.
 local function pendingOrFocused(widget)
-    if not widget then return false end
-    if widget.IsPending and widget:IsPending() then return true end
+    if not widget then
+        return false
+    end
+    if widget.IsPending and widget:IsPending() then
+        return true
+    end
 
     for _, input in pairs({ widget.frame, widget.editbox, widget.edit }) do
-        if input.HasFocus and input:HasFocus() then return true end
+        if input.HasFocus and input:HasFocus() then
+            return true
+        end
     end
 
     for _, child in ipairs(widget.children or {}) do
-        if pendingOrFocused(child) then return true end
+        if pendingOrFocused(child) then
+            return true
+        end
     end
 
     return false
@@ -85,10 +101,15 @@ function addon:CreateConditionCanvas(parent, owner)
     -- Returns the selected condition paths in tree order; empty when no condition is open.
     function canvas:Selection()
         local result = {}
-        if not owner.active then return result end
+
+        if not owner.active then
+            return result
+        end
 
         for _, row in ipairs(owner.active.session:Rows(4096)) do
-            if owner.view.selection[addon.ConditionPathKey(row.path)] then result[#result + 1] = pathCopy(row.path) end
+            if owner.view.selection[addon.ConditionPathKey(row.path)] then
+                result[#result + 1] = pathCopy(row.path)
+            end
         end
 
         return result
@@ -97,13 +118,19 @@ function addon:CreateConditionCanvas(parent, owner)
     -- Applies a click to the selection: shift extends a range among siblings (with ctrl, adds to it), ctrl toggles one
     -- entry (an entry and its ancestors or descendants are never selected together), a plain click replaces it.
     function canvas:Select(path, control, shift)
-        if not owner.active or not owner:SyncWorking() then return end
+        if not owner.active or not owner:SyncWorking() then
+            return
+        end
+
         local key = addon.ConditionPathKey(path)
         local selection = owner.view.selection
         local rows = owner.active.session:Rows(4096)
 
         if shift and self.anchor and sibling(path, self.anchor) then
-            if not control then selection = {} end
+            if not control then
+                selection = {}
+            end
+
             local low, high = math.min(path[#path], self.anchor[#path]), math.max(path[#path], self.anchor[#path])
             local parent = pathCopy(path)
             table.remove(parent)
@@ -113,8 +140,13 @@ function addon:CreateConditionCanvas(parent, owner)
                 local key = addon.ConditionPathKey(row.path)
                 local index = row.path[#path]
                 local within = prefix(parent, row.path) and type(index) == 'number' and index >= low and index <= high
-                if prefix(row.path, parent) or within then selection[key] = nil end
-                if sibling(path, row.path) and within then added[key] = true end
+
+                if prefix(row.path, parent) or within then
+                    selection[key] = nil
+                end
+                if sibling(path, row.path) and within then
+                    added[key] = true
+                end
             end
 
             for key in pairs(added) do
@@ -160,7 +192,11 @@ function addon:CreateConditionCanvas(parent, owner)
         local moving = self.drag
         self.drag = nil
         self.box = nil
-        if self.boxFrame then self.boxFrame:Hide() end
+
+        if self.boxFrame then
+            self.boxFrame:Hide()
+        end
+
         ghost:Hide()
         addon:SetUIScript(self.frame, "OnUpdate", nil)
 
@@ -202,7 +238,11 @@ function addon:CreateConditionCanvas(parent, owner)
             .. tostring(destination.relation)
 
         drag.valid = drag.valid or {}
-        if drag.valid[key] ~= nil then return drag.valid[key] end
+
+        if drag.valid[key] ~= nil then
+            return drag.valid[key]
+        end
+
         local draft = addon.RotationData.NewConditionDraft(owner.active.session:Snapshot(), addon.conditionDefinitions)
         local ok, locations
 
@@ -222,7 +262,9 @@ function addon:CreateConditionCanvas(parent, owner)
                         end
                     end
 
-                    if same then ok = false end
+                    if same then
+                        ok = false
+                    end
                 end
             end
         end
@@ -260,7 +302,10 @@ function addon:CreateConditionCanvas(parent, owner)
     -- Starts a drag. `state` is { paths, tail } to move conditions, or { insert, source } to insert a new node. Shows
     -- the ghost, reveals the drop zones and polls the pointer, ending the drag when the mouse button is released.
     function canvas:BeginDrag(state)
-        if owner.active and owner.active.readOnly then return end
+        if owner.active and owner.active.readOnly then
+            return
+        end
+
         self:CancelDrag()
         self.drag = state
         local preview = state.insert or owner.active.session:Snapshot()
@@ -321,7 +366,10 @@ function addon:CreateConditionCanvas(parent, owner)
                     }
 
                     local texture = self.linesByEdge and self.linesByEdge[edge]
-                    if texture then lines[#lines + 1] = texture end
+
+                    if texture then
+                        lines[#lines + 1] = texture
+                    end
                 end
             end
 
@@ -330,7 +378,9 @@ function addon:CreateConditionCanvas(parent, owner)
             ghost:PresentSource(state.source)
         end
 
-        ghost:CaptureCancel(function() self:CancelDrag() end)
+        ghost:CaptureCancel(function()
+            self:CancelDrag()
+        end)
 
         for _, zone in ipairs(self.zones) do
             zone:Show()
@@ -338,7 +388,9 @@ function addon:CreateConditionCanvas(parent, owner)
         end
 
         addon:SetUIScript(self.frame, "OnUpdate", function()
-            if not self.drag then return end
+            if not self.drag then
+                return
+            end
 
             if
                 self.drag.generation ~= self.generation or not owner.active or self.drag.session ~= owner.active.session
@@ -349,19 +401,28 @@ function addon:CreateConditionCanvas(parent, owner)
 
             ghost:FollowPointer()
             self:HoverTarget()
-            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then self:EndDrag() end
+
+            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+                self:EndDrag()
+            end
         end)
     end
 
     -- Drag-source callback for a card. `token` is the generation the card was bound under; a stale token (the canvas
     -- rendered since) is ignored. Ctrl drags this entry and every later sibling ("tail"), else the selection.
     function canvas:StartDrag(path, token)
-        if token ~= self.generation or not owner.active then return end
+        if token ~= self.generation or not owner.active then
+            return
+        end
+
         local paths
         local tail = IsControlKeyDown and IsControlKeyDown() or false
 
         if tail then
-            if not owner:SyncWorking() then return end
+            if not owner:SyncWorking() then
+                return
+            end
+
             paths = {}
 
             for _, row in ipairs(owner.active.session:Rows(4096)) do
@@ -370,10 +431,16 @@ function addon:CreateConditionCanvas(parent, owner)
                 end
             end
 
-            if #paths == 0 then paths = { pathCopy(path) } end
+            if #paths == 0 then
+                paths = { pathCopy(path) }
+            end
         else
             local key = addon.ConditionPathKey(path)
-            if not owner.view.selection[key] then self:Select(path, false, false) end
+
+            if not owner.view.selection[key] then
+                self:Select(path, false, false)
+            end
+
             paths = self:Selection()
         end
 
@@ -382,7 +449,9 @@ function addon:CreateConditionCanvas(parent, owner)
 
     -- Starts a drag that inserts a copy of `node` (from the condition picker) instead of moving existing entries.
     function canvas:StartInsert(node, source)
-        if not owner.active or not owner:SyncWorking() then return end
+        if not owner.active or not owner:SyncWorking() then
+            return
+        end
 
         self:BeginDrag({
             generation = self.generation,
@@ -407,16 +476,25 @@ function addon:CreateConditionCanvas(parent, owner)
         then
             return
         end
+        if drag.insert then
+            return owner:Command("Insert", target.destination, drag.insert)
+        end
 
-        if drag.insert then return owner:Command("Insert", target.destination, drag.insert) end
         return owner:Command("Transfer", drag.paths, target.destination)
     end
 
     -- Mouse released: drops on the hovered zone if there is one, otherwise cancels.
     function canvas:EndDrag()
-        if not self.drag then return end
+        if not self.drag then
+            return
+        end
+
         local selected = self:HoverTarget()
-        if selected then return self:Drop(selected.target) end
+
+        if selected then
+            return self:Drop(selected.target)
+        end
+
         self:CancelDrag()
     end
 
@@ -428,7 +506,10 @@ function addon:CreateConditionCanvas(parent, owner)
     -- (Ctrl+Shift adds to the selection); a card inside another touched card
     -- travels with it, as with Ctrl-click. Coordinates are in canvas child space.
     function canvas:SelectBox(left, top, right, bottom, additive)
-        if not owner.active or not self.scene or not owner:SyncWorking() then return end
+        if not owner.active or not self.scene or not owner:SyncWorking() then
+            return
+        end
+
         local touched = {}
 
         for _, model in ipairs(self.scene.cards) do
@@ -482,9 +563,16 @@ function addon:CreateConditionCanvas(parent, owner)
     -- Starts a rubber-band selection at the pointer; returns false when a drag is active or the pointer is off the
     -- canvas.
     function canvas:BeginBoxSelect()
-        if not owner.active or self.drag then return false end
+        if not owner.active or self.drag then
+            return false
+        end
+
         local x, y = addon:WorkbenchPointerIn(self.child)
-        if not x then return false end
+
+        if not x then
+            return false
+        end
+
         self:CancelDrag()
 
         local box = {
@@ -499,7 +587,9 @@ function addon:CreateConditionCanvas(parent, owner)
         self.boxFrame:Place(x, y, x, y)
 
         addon:SetUIScript(self.frame, "OnUpdate", function()
-            if self.box ~= box then return end
+            if self.box ~= box then
+                return
+            end
 
             if not owner.active or box.generation ~= self.generation then
                 self:CancelDrag()
@@ -513,7 +603,9 @@ function addon:CreateConditionCanvas(parent, owner)
                 self.boxFrame:Place(box.x, box.y, cx, cy)
             end
 
-            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then self:EndBoxSelect() end
+            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then
+                self:EndBoxSelect()
+            end
         end)
 
         return true
@@ -522,7 +614,11 @@ function addon:CreateConditionCanvas(parent, owner)
     -- Finishes the rubber band and applies it as a selection.
     function canvas:EndBoxSelect()
         local box = self.box
-        if not box then return end
+
+        if not box then
+            return
+        end
+
         local cx, cy = box.cx or box.x, box.cy or box.y
         self:CancelDrag()
         self:SelectBox(math.min(box.x, cx), math.min(box.y, cy), math.max(box.x, cx), math.max(box.y, cy), box.additive)
@@ -532,11 +628,15 @@ function addon:CreateConditionCanvas(parent, owner)
         surface:EnableMouse(true)
 
         addon:SetUIScript(surface, "OnMouseDown", function(_, button)
-            if button == "LeftButton" and IsShiftKeyDown and IsShiftKeyDown() then canvas:BeginBoxSelect() end
+            if button == "LeftButton" and IsShiftKeyDown and IsShiftKeyDown() then
+                canvas:BeginBoxSelect()
+            end
         end)
 
         addon:SetUIScript(surface, "OnMouseUp", function(_, button)
-            if button == "LeftButton" and canvas.box then canvas:EndBoxSelect() end
+            if button == "LeftButton" and canvas.box then
+                canvas:EndBoxSelect()
+            end
         end)
     end
 
@@ -589,7 +689,10 @@ function addon:CreateConditionCanvas(parent, owner)
         end
 
         addon:SetUIScript(card.header, "OnClick", function()
-            if not alive() then return end
+            if not alive() then
+                return
+            end
+
             local control, shift = IsControlKeyDown and IsControlKeyDown(), IsShiftKeyDown and IsShiftKeyDown()
 
             if control or shift then
@@ -608,15 +711,22 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.header, "OnDragStart", function()
-            if alive() then self:StartDrag(model.path, token.generation) end
+            if alive() then
+                self:StartDrag(model.path, token.generation)
+            end
         end)
 
         addon:SetUIScript(card.header, "OnDragStop", function()
-            if alive() then self:EndDrag() end
+            if alive() then
+                self:EndDrag()
+            end
         end)
 
         addon:SetUIScript(card.expand, "OnClick", function()
-            if not alive() or not owner:SyncWorking() then return end
+            if not alive() or not owner:SyncWorking() then
+                return
+            end
+
             owner.view.cardStates = owner.view.cardStates or {}
             owner.view.help[model.key] = nil
             owner.view.cardStates[model.key] = model.compact and 'normal' or model.expanded and 'normal' or 'compact'
@@ -624,7 +734,9 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.typeButton, "OnClick", function()
-            if not alive() or model.compact then return end
+            if not alive() or model.compact then
+                return
+            end
 
             if IsControlKeyDown and IsControlKeyDown() or IsShiftKeyDown and IsShiftKeyDown() then
                 self:Select(model.path, IsControlKeyDown and IsControlKeyDown(), IsShiftKeyDown and IsShiftKeyDown())
@@ -634,11 +746,15 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.typeButton, "OnDragStart", function()
-            if alive() then self:StartDrag(model.path, token.generation) end
+            if alive() then
+                self:StartDrag(model.path, token.generation)
+            end
         end)
 
         addon:SetUIScript(card.typeButton, "OnDragStop", function()
-            if alive() then self:EndDrag() end
+            if alive() then
+                self:EndDrag()
+            end
         end)
 
         card.name:SetText(addon:PlainWorkbenchName(model.name or ""))
@@ -656,7 +772,9 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.nameButton, "OnClick", function()
-            if not alive() then return end
+            if not alive() then
+                return
+            end
 
             if model.compact then
                 owner.view.cardStates[model.key] = 'normal'
@@ -676,15 +794,22 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.nameButton, "OnDragStart", function()
-            if alive() then self:StartDrag(model.path, token.generation) end
+            if alive() then
+                self:StartDrag(model.path, token.generation)
+            end
         end)
 
         addon:SetUIScript(card.nameButton, "OnDragStop", function()
-            if alive() then self:EndDrag() end
+            if alive() then
+                self:EndDrag()
+            end
         end)
 
         addon:SetUIScript(card.name, 'OnTextChanged', function(input, userInput)
-            if not alive() or owner.active.readOnly or not userInput then return end
+            if not alive() or owner.active.readOnly or not userInput then
+                return
+            end
+
             local node = owner.active.working
 
             for _, part in ipairs(model.namePath) do
@@ -719,35 +844,51 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.controls.up, "OnClick", function()
-            if alive() then owner:Command("Move", model.path, -1) end
+            if alive() then
+                owner:Command("Move", model.path, -1)
+            end
         end)
 
         addon:SetUIScript(card.controls.down, "OnClick", function()
-            if alive() then owner:Command("Move", model.path, 1) end
+            if alive() then
+                owner:Command("Move", model.path, 1)
+            end
         end)
 
         addon:SetUIScript(card.controls.remove, "OnClick", function()
-            if alive() then owner:Command("RemoveSelection", { model.path }) end
+            if alive() then
+                owner:Command("RemoveSelection", { model.path })
+            end
         end)
 
         addon:SetUIScript(card.controls.duplicate, "OnClick", function()
-            if alive() then owner:Command("Duplicate", model.path) end
+            if alive() then
+                owner:Command("Duplicate", model.path)
+            end
         end)
 
         addon:SetUIScript(card.controls.negate, "OnClick", function()
-            if alive() then owner:Command("NegateSelection", { model.path }) end
+            if alive() then
+                owner:Command("NegateSelection", { model.path })
+            end
         end)
 
         addon:SetUIScript(card.controls.disable, "OnClick", function()
-            if alive() then owner:Command("SetProjectedDisabled", model.path, not model.disabled) end
+            if alive() then
+                owner:Command("SetProjectedDisabled", model.path, not model.disabled)
+            end
         end)
 
         addon:SetUIScript(card.controls.operator, "OnClick", function()
-            if alive() then owner:Command("SetGroupType", model.fieldPath, model.type == "AND" and "OR" or "AND") end
+            if alive() then
+                owner:Command("SetGroupType", model.fieldPath, model.type == "AND" and "OR" or "AND")
+            end
         end)
 
         addon:SetUIScript(card.controls.ungroup, "OnClick", function()
-            if alive() then owner:Command("Unwrap", model.fieldPath) end
+            if alive() then
+                owner:Command("Unwrap", model.fieldPath)
+            end
         end)
 
         card.controls.help.tooltip = L['Help.Conditions.subject_brief']
@@ -757,19 +898,27 @@ function addon:CreateConditionCanvas(parent, owner)
         end
 
         addon:SetUIScript(card.controls.help, "OnClick", function()
-            if alive() then owner:ShowSubjectHelp(model, alive) end
+            if alive() then
+                owner:ShowSubjectHelp(model, alive)
+            end
         end)
 
-        if model.expanded then owner:BuildFields(card, model, alive) end
+        if model.expanded then
+            owner:BuildFields(card, model, alive)
+        end
 
         for _, source in ipairs({ card.header, card.typeButton, card.nameButton, card.frame }) do
             addon:BindWorkbenchDragSource(
                 source,
                 function()
-                    if alive() then self:StartDrag(model.path, token.generation) end
+                    if alive() then
+                        self:StartDrag(model.path, token.generation)
+                    end
                 end,
                 function()
-                    if alive() then self:EndDrag() end
+                    if alive() then
+                        self:EndDrag()
+                    end
                 end
             )
         end
@@ -809,14 +958,27 @@ function addon:CreateConditionCanvas(parent, owner)
     -- True when a card must stay bound even though it scrolled out of view: a name or field being edited, a card being
     -- dragged, an open picker, keyboard focus inside it, or the editor closing with unsaved input.
     function canvas:IsPinned(card)
-        if card.name:HasFocus() or pendingOrFocused(card.pane) or card.frame:GetParent() == ghost then return true end
-        if owner.closeOverride and not owner.frame:IsShown() then return true end
-        if card.picker and card.picker.frame:IsShown() then return true end
+        if card.name:HasFocus() or pendingOrFocused(card.pane) or card.frame:GetParent() == ghost then
+            return true
+        end
+        if owner.closeOverride and not owner.frame:IsShown() then
+            return true
+        end
+        if card.picker and card.picker.frame:IsShown() then
+            return true
+        end
+
         local keyboard = type(GetCurrentKeyBoardFocus) == 'function' and GetCurrentKeyBoardFocus()
 
         for _ = 1, 128 do
-            if not keyboard then break end
-            if keyboard == card.frame then return true end
+            if not keyboard then
+                break
+            end
+
+            if keyboard == card.frame then
+                return true
+            end
+
             keyboard = keyboard.GetParent and keyboard:GetParent()
         end
 
@@ -887,7 +1049,11 @@ function addon:CreateConditionCanvas(parent, owner)
 
             for index = low, #sorted do
                 local target = sorted[index]
-                if target.y > bottom then break end
+
+                if target.y > bottom then
+                    break
+                end
+
                 targets[#targets + 1] = target
             end
         end
@@ -932,7 +1098,9 @@ function addon:CreateConditionCanvas(parent, owner)
             local token = self.generation
 
             addon:SetUIScript(zone, "OnReceiveDrag", function()
-                if token == self.generation and zone.target == target then self:Drop(target) end
+                if token == self.generation and zone.target == target then
+                    self:Drop(target)
+                end
             end)
 
             zone.marker:Hide()
@@ -955,7 +1123,10 @@ function addon:CreateConditionCanvas(parent, owner)
     -- then draws decorations. Runs on every scroll; re-entrancy guarded by self.refreshing and self.reflowing. If a
     -- bind changed a measured size it schedules a Reflow (deferred until a drag ends).
     function canvas:RefreshVisibleCards()
-        if not owner.active or not self.scene or self.refreshing or self.reflowing then return end
+        if not owner.active or not self.scene or self.refreshing or self.reflowing then
+            return
+        end
+
         self.refreshing = true
         self.building = true
         local measured = false
@@ -1029,7 +1200,10 @@ function addon:CreateConditionCanvas(parent, owner)
         self.refreshing = nil
 
         if not ok then
-            if constructing then pcall(constructing.Release, constructing) end
+            if constructing then
+                pcall(constructing.Release, constructing)
+            end
+
             error(why, 0)
         end
 
@@ -1049,7 +1223,9 @@ function addon:CreateConditionCanvas(parent, owner)
     -- rebinds cards. A call made while a refresh is running only flags needsMeasure, so layout never nests inside
     -- binding.
     function canvas:Reflow()
-        if not owner.active then return end
+        if not owner.active then
+            return
+        end
 
         if self.reflowing or self.refreshing then
             self.needsMeasure = true
@@ -1120,13 +1296,20 @@ function addon:CreateConditionCanvas(parent, owner)
         end)
 
         self.reflowing = nil
-        if not ok then error(why, 0) end
+
+        if not ok then
+            error(why, 0)
+        end
+
         self:RefreshVisibleCards()
     end
 
     -- Full redraw: invalidates every bound card (new generation, so old handlers die) and lays out again.
     function canvas:Render()
-        if owner.active and not owner:SyncWorking() then return end
+        if owner.active and not owner:SyncWorking() then
+            return
+        end
+
         self.rendering = true
         self:CancelDrag()
         self.generation = self.generation + 1
@@ -1138,7 +1321,10 @@ function addon:CreateConditionCanvas(parent, owner)
         self.rendering = nil
         self.needsMeasure = nil
         self.deferredMeasure = nil
-        if owner.active then self:Reflow() end
+
+        if owner.active then
+            self:Reflow()
+        end
     end
 
     -- Tears the canvas down when the editor closes: cancels drags, releases every card and drops the scene.
@@ -1161,7 +1347,9 @@ function addon:CreateConditionCanvas(parent, owner)
 
     for _, bar in ipairs({ horizontal, canvas.frame.workbenchBar }) do
         bar:HookScript('OnValueChanged', function()
-            if canvas.reflowing then return end
+            if canvas.reflowing then
+                return
+            end
 
             if addon.Diagnostics then
                 addon.Diagnostics:Call({

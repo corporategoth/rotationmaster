@@ -24,7 +24,10 @@ end
 -- Encodes a byte string as standard padded Base64. Returns nil and 'encoded-size-limit' for a non-string or one over
 -- the compressed-stream limit.
 function data.EncodeBase64(raw)
-    if type(raw) ~= "string" or #raw > maxCompressed then return nil, "encoded-size-limit" end
+    if type(raw) ~= "string" or #raw > maxCompressed then
+        return nil, "encoded-size-limit"
+    end
+
     local chunks = {}
 
     for i = 1, #raw, 3 do
@@ -44,7 +47,11 @@ end
 -- a result over the compressed-stream limit. Returns the bytes, or nil and the reason code.
 local function base64(text)
     local clean = text:gsub("[ \t\r\n]", "")
-    if #clean == 0 or #clean % 4 ~= 0 or clean:find("[^A-Za-z0-9+/=]") then return nil, "invalid-base64" end
+
+    if #clean == 0 or #clean % 4 ~= 0 or clean:find("[^A-Za-z0-9+/=]") then
+        return nil, "invalid-base64"
+    end
+
     local chunks = {}
 
     for i = 1, #clean, 4 do
@@ -63,13 +70,23 @@ local function base64(text)
 
         local code = x * 262144 + y * 4096 + z * 64 + w
         local piece = string.char(math.floor(code / 65536))
-        if c ~= "=" then piece = piece .. string.char(math.floor(code / 256) % 256) end
-        if d ~= "=" then piece = piece .. string.char(code % 256) end
+
+        if c ~= "=" then
+            piece = piece .. string.char(math.floor(code / 256) % 256)
+        end
+        if d ~= "=" then
+            piece = piece .. string.char(code % 256)
+        end
+
         chunks[#chunks + 1] = piece
     end
 
     local raw = table.concat(chunks)
-    if #raw > maxCompressed then return nil, "compressed-size-limit" end
+
+    if #raw > maxCompressed then
+        return nil, "compressed-size-limit"
+    end
+
     return raw
 end
 
@@ -97,12 +114,20 @@ local function lzwSize(stream)
 
         if marker > 249 then
             local digits = 256 - marker
-            if position + digits - 1 > #stream then return nil, "invalid-lzw-code" end
+
+            if position + digits - 1 > #stream then
+                return nil, "invalid-lzw-code"
+            end
+
             code = 0
 
             for index = position + digits - 1, position, -1 do
                 local digit = stream:byte(index)
-                if digit == 0 then return nil, "invalid-lzw-code" end
+
+                if digit == 0 then
+                    return nil, "invalid-lzw-code"
+                end
+
                 code = code * 255 + digit - 1
             end
 
@@ -112,16 +137,24 @@ local function lzwSize(stream)
         local length = lengths[code]
 
         if not previous then
-            if code > 255 or code < 0 then return nil, "invalid-lzw-code" end
+            if code > 255 or code < 0 then
+                return nil, "invalid-lzw-code"
+            end
         elseif code == nextCode then
             length = previous + 1
         elseif not length then
             return nil, "invalid-lzw-code"
         end
 
-        if not length then return nil, "invalid-lzw-code" end
+        if not length then
+            return nil, "invalid-lzw-code"
+        end
+
         total = total + length
-        if total > maxSerialized then return nil, "decompressed-size-limit" end
+
+        if total > maxSerialized then
+            return nil, "decompressed-size-limit"
+        end
 
         if previous then
             lengths[nextCode] = previous + 1
@@ -131,7 +164,10 @@ local function lzwSize(stream)
         previous = length
     end
 
-    if not previous then return nil, "empty-lzw-stream" end
+    if not previous then
+        return nil, "empty-lzw-stream"
+    end
+
     return total
 end
 
@@ -145,7 +181,11 @@ local function huffmanMap(stream)
     -- Reads the next bit in wire order (least significant first), or nil past the end of the stream.
     local function bit()
         local byte = stream:byte(math.floor(position / 8) + 1)
-        if not byte then return nil end
+
+        if not byte then
+            return nil
+        end
+
         local value = math.floor(byte / 2 ^ (position % 8)) % 2
         position = position + 1
         return value
@@ -153,21 +193,32 @@ local function huffmanMap(stream)
 
     for _ = 1, stream:byte(2) + 1 do
         for _ = 1, 8 do
-            if bit() == nil then return false end
+            if bit() == nil then
+                return false
+            end
         end
 
         local escaped = 0
 
         while true do
             local first = bit()
-            if first == nil then return false end
+
+            if first == nil then
+                return false
+            end
 
             if first == 1 then
                 local second = bit()
-                if second == nil then return false end
+
+                if second == nil then
+                    return false
+                end
 
                 if second == 1 then
-                    if escaped == 0 then return false end
+                    if escaped == 0 then
+                        return false
+                    end
+
                     break
                 end
 
@@ -176,7 +227,9 @@ local function huffmanMap(stream)
                 escaped = escaped + 1
             end
 
-            if escaped > 32 then return false end
+            if escaped > 32 then
+                return false
+            end
         end
     end
 
@@ -190,16 +243,28 @@ local function decompressedSize(stream)
     local codec = stream:byte(1)
 
     if codec == 1 then
-        if #stream - 1 > maxSerialized then return nil, "decompressed-size-limit" end
+        if #stream - 1 > maxSerialized then
+            return nil, "decompressed-size-limit"
+        end
+
         return #stream - 1
     elseif codec == 2 then
         return lzwSize(stream)
     elseif codec == 3 then
-        if #stream < 5 then return nil, "invalid-huffman-header" end
+        if #stream < 5 then
+            return nil, "invalid-huffman-header"
+        end
+
         local a, b, c = stream:byte(3, 5)
         local size = a + b * 256 + c * 65536
-        if size > maxSerialized then return nil, "decompressed-size-limit" end
-        if size > 0 and not huffmanMap(stream) then return nil, "invalid-huffman-codebook" end
+
+        if size > maxSerialized then
+            return nil, "decompressed-size-limit"
+        end
+        if size > 0 and not huffmanMap(stream) then
+            return nil, "invalid-huffman-codebook"
+        end
+
         return size
     end
 
@@ -216,30 +281,51 @@ local function serializerShape(raw)
     -- Match the bundled parser's whitespace normalization before inspecting its
     -- structural control tokens, then bound its recursive table construction.
     local clean = raw:gsub("[%c ]", "")
-    if clean:sub(1, 2) ~= "^1" then return false, "unsupported-serializer" end
+
+    if clean:sub(1, 2) ~= "^1" then
+        return false, "unsupported-serializer"
+    end
+
     local depth, tokens, root, closed, terminated = 0, 0, false, false, false
 
     for control in clean:gmatch("(^.)([^^]*)") do
         tokens = tokens + 1
-        if tokens > 20000 then return false, "serializer-token-limit" end
+
+        if tokens > 20000 then
+            return false, "serializer-token-limit"
+        end
 
         if tokens == 1 then
-            if control ~= "^1" then return false, "unsupported-serializer" end
+            if control ~= "^1" then
+                return false, "unsupported-serializer"
+            end
         elseif terminated then
             return false, "serializer-trailing-data"
         elseif not root then
-            if control ~= "^T" then return false, "expected-root-table" end
+            if control ~= "^T" then
+                return false, "expected-root-table"
+            end
+
             root = true
             depth = 1
         elseif closed then
-            if control ~= "^^" then return false, "serializer-multiple-values" end
+            if control ~= "^^" then
+                return false, "serializer-multiple-values"
+            end
+
             terminated = true
         elseif control == "^T" then
             depth = depth + 1
-            if depth > 64 then return false, "serializer-depth-limit" end
+
+            if depth > 64 then
+                return false, "serializer-depth-limit"
+            end
         elseif control == "^t" then
             depth = depth - 1
-            if depth == 0 then closed = true end
+
+            if depth == 0 then
+                closed = true
+            end
         elseif control == "^^" then
             return false, "serializer-unclosed-table"
         elseif
@@ -255,7 +341,10 @@ local function serializerShape(raw)
         end
     end
 
-    if not terminated then return false, "serializer-missing-terminator" end
+    if not terminated then
+        return false, "serializer-missing-terminator"
+    end
+
     return true
 end
 
@@ -264,10 +353,14 @@ end
 -- Returns a codec with Encode and Decode methods bound to the injected serialize, deserialize, compress and decompress
 -- functions, or nil and a reason when one is missing.
 function data.NewCodec(dependencies)
-    if type(dependencies) ~= "table" then return nil, "missing-codec-dependencies" end
+    if type(dependencies) ~= "table" then
+        return nil, "missing-codec-dependencies"
+    end
 
     for _, key in ipairs({ "serialize", "deserialize", "compress", "decompress" }) do
-        if type(dependencies[key]) ~= "function" then return nil, "missing-codec-dependency" end
+        if type(dependencies[key]) ~= "function" then
+            return nil, "missing-codec-dependency"
+        end
     end
 
     local codec = {}
@@ -276,19 +369,47 @@ function data.NewCodec(dependencies)
     -- legacy body is unmarked. Returns the string, or nil and a reason code (size limits, shape, compression mismatch).
     function codec:Encode(value)
         local portable, why = data.CheckPortable(value)
-        if not portable then return nil, why.code end
-        if type(value) ~= "table" then return nil, "expected-root-table" end
+
+        if not portable then
+            return nil, why.code
+        end
+        if type(value) ~= "table" then
+            return nil, "expected-root-table"
+        end
+
         local ok, raw = pcall(dependencies.serialize, value)
-        if not ok or type(raw) ~= "string" then return nil, "serialize-error" end
-        if #raw > maxSerialized then return nil, "serialized-size-limit" end
+
+        if not ok or type(raw) ~= "string" then
+            return nil, "serialize-error"
+        end
+        if #raw > maxSerialized then
+            return nil, "serialized-size-limit"
+        end
+
         local shape, shapeError = serializerShape(raw)
-        if not shape then return nil, shapeError end
+
+        if not shape then
+            return nil, shapeError
+        end
+
         local compressedOk, stream = pcall(dependencies.compress, raw)
-        if not compressedOk or type(stream) ~= "string" then return nil, "compress-error" end
-        if #stream > maxCompressed then return nil, "compressed-size-limit" end
+
+        if not compressedOk or type(stream) ~= "string" then
+            return nil, "compress-error"
+        end
+        if #stream > maxCompressed then
+            return nil, "compressed-size-limit"
+        end
+
         local expected, errorCode = decompressedSize(stream)
-        if not expected then return nil, errorCode end
-        if expected ~= #raw then return nil, "compression-size-mismatch" end
+
+        if not expected then
+            return nil, errorCode
+        end
+        if expected ~= #raw then
+            return nil, "compression-size-mismatch"
+        end
+
         local encoded = data.EncodeBase64(stream)
         return (value.format == "RotationMaster" and "RM1:" or "") .. encoded
     end
@@ -297,25 +418,61 @@ function data.NewCodec(dependencies)
     -- the serializer shape, and only then deserializes. Returns { value, kind = "envelope" | "legacy", original,
     -- transportVersion }, or nil and a reason code. Nothing is executed or saved.
     function codec:Decode(text)
-        if type(text) ~= "string" then return nil, "expected-import-string" end
-        if #text > maxInput then return nil, "import-size-limit" end
+        if type(text) ~= "string" then
+            return nil, "expected-import-string"
+        end
+        if #text > maxInput then
+            return nil, "import-size-limit"
+        end
+
         local payload = addon:NormalizeImportText(text)
         local transport = payload:match("^RM%d+:")
-        if transport and transport ~= "RM1:" then return nil, "unsupported-transport-version" end
+
+        if transport and transport ~= "RM1:" then
+            return nil, "unsupported-transport-version"
+        end
+
         local stream, errorCode = base64(transport and payload:sub(#transport + 1) or payload)
-        if not stream then return nil, errorCode end
+
+        if not stream then
+            return nil, errorCode
+        end
+
         local expected, why = decompressedSize(stream)
-        if not expected then return nil, why end
+
+        if not expected then
+            return nil, why
+        end
+
         local ok, raw = pcall(dependencies.decompress, stream)
-        if not ok or type(raw) ~= "string" then return nil, "decompress-error" end
-        if #raw ~= expected then return nil, "decompression-size-mismatch" end
+
+        if not ok or type(raw) ~= "string" then
+            return nil, "decompress-error"
+        end
+        if #raw ~= expected then
+            return nil, "decompression-size-mismatch"
+        end
+
         local shape, shapeError = serializerShape(raw)
-        if not shape then return nil, shapeError end
+
+        if not shape then
+            return nil, shapeError
+        end
+
         local parsed, success, value = pcall(dependencies.deserialize, raw)
-        if not parsed or not success or type(value) ~= "table" then return nil, "deserialize-error" end
+
+        if not parsed or not success or type(value) ~= "table" then
+            return nil, "deserialize-error"
+        end
+
         local portable, problem = data.CheckPortable(value)
-        if not portable then return nil, problem.code end
-        if transport and value.format ~= "RotationMaster" then return nil, "envelope-marker-mismatch" end
+
+        if not portable then
+            return nil, problem.code
+        end
+        if transport and value.format ~= "RotationMaster" then
+            return nil, "envelope-marker-mismatch"
+        end
 
         return {
             value = value,

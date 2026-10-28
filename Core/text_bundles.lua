@@ -23,7 +23,10 @@ local ace = LibStub("AceLocale-3.0")
 local L = ace:GetLocale(addon_name)
 local mainMeta = getmetatable(L)
 local reportMissing = mainMeta and mainMeta.__index
-if type(reportMissing) ~= "function" then return end
+
+if type(reportMissing) ~= "function" then
+    return
+end
 
 local bundles = addon.textBundleIndex or {}
 local HEX = 8
@@ -64,7 +67,9 @@ local function ownerOf(english)
     local wanted = keyHash(english)
 
     for _, bundle in ipairs(bundles) do
-        if owns(bundle, wanted) then return bundle end
+        if owns(bundle, wanted) then
+            return bundle
+        end
     end
 end
 
@@ -75,17 +80,30 @@ local loadedTexts = {}
 -- LoadAddOn.
 local function loader(self)
     local custom = self.textBundleLoader
-    if type(custom) == "function" then return custom end
+
+    if type(custom) == "function" then
+        return custom
+    end
+
     return (C_AddOns and C_AddOns.LoadAddOn) or LoadAddOn
 end
 
 -- Loads the add-on of one bundle (once). Returns true when its text is available.
 local function attach(bundle)
-    if bundle.state == "loaded" then return true end
-    if bundle.state == "failed" then return false end
+    if bundle.state == "loaded" then
+        return true
+    end
+    if bundle.state == "failed" then
+        return false
+    end
+
     local load = loader(addon)
     local ok, loaded, reason = false, false, "no-loader"
-    if type(load) == "function" then ok, loaded, reason = pcall(load, bundle.module) end
+
+    if type(load) == "function" then
+        ok, loaded, reason = pcall(load, bundle.module)
+    end
+
     local text = ok and ace:GetLocale(bundle.module, true) or nil
 
     if text then
@@ -103,7 +121,10 @@ setmetatable(L, {
         if type(key) == "string" then
             for i = 1, #loadedTexts do
                 local value = rawget(loadedTexts[i], key)
-                if value ~= nil then return value end
+
+                if value ~= nil then
+                    return value
+                end
             end
 
             local bundle = ownerOf(key)
@@ -111,7 +132,10 @@ setmetatable(L, {
             if bundle then
                 if attach(bundle) then
                     local value = rawget(bundle.text, key)
-                    if value ~= nil then return value end
+
+                    if value ~= nil then
+                        return value
+                    end
                 elseif bundle.state == "failed" then
                     -- The English text is the key itself.
                     return key
@@ -126,7 +150,9 @@ setmetatable(L, {
 --- Loads a text bundle ahead of its first read, by id ("help", "conditions", ...). Returns true when it is available.
 function addon:LoadTextBundle(id)
     for _, bundle in ipairs(bundles) do
-        if bundle.id == id then return attach(bundle) end
+        if bundle.id == id then
+            return attach(bundle)
+        end
     end
 
     return false, "unknown-bundle"
@@ -135,7 +161,10 @@ end
 --- Which bundle holds this English text, and whether it is loaded: nil for a key of the main table.
 function addon:GetTextBundleOf(key)
     local bundle = type(key) == "string" and ownerOf(key) or nil
-    if bundle then return bundle.id, bundle.state or "idle" end
+
+    if bundle then
+        return bundle.id, bundle.state or "idle"
+    end
 end
 
 --- The state of every bundle: { id = "idle" | "loaded" | "failed" }, for diagnostics and tests.

@@ -18,19 +18,29 @@ local profiles = {}
 
 -- True when two plain-data trees are equal by value. Non-portable data is never equal, so it always reads as changed.
 local function equal(a, b)
-    if not data.CheckPortable(a) or not data.CheckPortable(b) then return false end
+    if not data.CheckPortable(a) or not data.CheckPortable(b) then
+        return false
+    end
 
     -- Recursive by-value comparison of two plain values.
     local function compare(x, y)
-        if type(x) ~= type(y) then return false end
-        if type(x) ~= 'table' then return x == y end
+        if type(x) ~= type(y) then
+            return false
+        end
+        if type(x) ~= 'table' then
+            return x == y
+        end
 
         for key, value in pairs(x) do
-            if not compare(value, y[key]) then return false end
+            if not compare(value, y[key]) then
+                return false
+            end
         end
 
         for key in pairs(y) do
-            if x[key] == nil then return false end
+            if x[key] == nil then
+                return false
+            end
         end
 
         return true
@@ -55,7 +65,10 @@ local function retained(profile, spec, id)
         for _, kind in ipairs({ 'origins', 'comparisons', 'imports' }) do
             local all = library[kind]
             local scope = type(all) == 'table' and all[spec]
-            if type(scope) == 'table' then result[kind] = scope[id] end
+
+            if type(scope) == 'table' then
+                result[kind] = scope[id]
+            end
         end
     end
 
@@ -77,7 +90,10 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         reference, why = coordinator:LegacyDraft(spec, value)
     end
 
-    if not reference then return nil, why end
+    if not reference then
+        return nil, why
+    end
+
     local profile = owner.db.profile
     local key = coordinator:Key(reference)
     local cache = profiles[profile]
@@ -88,7 +104,9 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     end
 
     for _, w in ipairs(cache) do
-        if w.spec == spec and w.id == key and w:ValidTarget() then return w end
+        if w.spec == spec and w.id == key and w:ValidTarget() then
+            return w
+        end
     end
 
     local pending = coordinator:IsPending(reference)
@@ -96,7 +114,10 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
     if not pending then
         record, expected, status = coordinator:Snapshot(spec, reference)
-        if not record then return nil, expected end
+
+        if not record then
+            return nil, expected
+        end
     end
 
     local builtin = reference.kind == 'builtin' and reference.id or nil
@@ -144,7 +165,10 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
         if workspace.pending and workspace.session then
             local staged = coordinator:StagePending(sourceReference, workspace.scope)
-            if staged then workspace.reference = staged end
+
+            if staged then
+                workspace.reference = staged
+            end
         end
 
         local effective = coordinator:Resolve(spec, DEFAULT)
@@ -154,9 +178,12 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     -- True while this workspace still edits what it was opened on: not discarded, the same coordinator, and the stored
     -- rotation unchanged since the snapshot (or, for a new rotation, still pending).
     function workspace:ValidTarget()
-        if self.discarded or owner:GetScopedRotationCoordinator() ~= coordinator then return false end
-        if builtin then return coordinator:Resolve(spec, sourceReference) ~= nil end
-
+        if self.discarded or owner:GetScopedRotationCoordinator() ~= coordinator then
+            return false
+        end
+        if builtin then
+            return coordinator:Resolve(spec, sourceReference) ~= nil
+        end
         if self.pending then
             return coordinator:IsPending(sourceReference) and coordinator:Resolve(spec, sourceReference) ~= nil
         end
@@ -178,7 +205,10 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
         for _, component in pairs(workspace.reserved) do
             local ok, problem = data.ReserveRotationIdentities(component, used)
-            if not ok then return nil, problem.code end
+
+            if not ok then
+                return nil, problem.code
+            end
         end
 
         -- Returns an unused uuid, or nil after 100 collisions.
@@ -208,14 +238,22 @@ local function scopedWorkspace(owner, coordinator, spec, value)
                 }
 
                 local saved, problem = coordinator:Commit(sourceReference, expected, replacement, scope)
-                if not saved then return nil, problem end
+
+                if not saved then
+                    return nil, problem
+                end
+
                 return true, saved
             end,
         })
     end
 
     local session, problem = sessionFor(baseline)
-    if not session then return nil, problem end
+
+    if not session then
+        return nil, problem
+    end
+
     workspace.session = session
     flags()
 
@@ -230,9 +268,16 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     -- player's class). Tree conditions are named for it (Data/talent_trees.lua).
     function workspace:RotationClass()
         local address = self.reference and self.reference.address
-        if type(address) == 'table' and data.IsRotationClassToken(address.class) then return address.class end
+
+        if type(address) == 'table' and data.IsRotationClassToken(address.class) then
+            return address.class
+        end
+
         local scope = type(self.source) == 'table' and self.source.applicability
-        if type(scope) == 'table' and data.IsRotationClassToken(scope.class) then return scope.class end
+
+        if type(scope) == 'table' and data.IsRotationClassToken(scope.class) then
+            return scope.class
+        end
     end
 
     -- Returns the reference this workspace would be saved under, using the chosen scope and the current owner, or nil
@@ -242,10 +287,17 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
         if not self.readOnly then
             local c = owner:GetRotationOwnerContext()
-            if not c then return nil, 'missing-owner-context' end
+
+            if not c then
+                return nil, 'missing-owner-context'
+            end
+
             result.address.scope = self.session:Ownership()
             result.address.owner = result.address.scope == 'class' and c.class or c.character
-            if not result.address.owner then return nil, 'missing-owner-context' end
+
+            if not result.address.owner then
+                return nil, 'missing-owner-context'
+            end
         end
 
         return result
@@ -273,12 +325,19 @@ local function scopedWorkspace(owner, coordinator, spec, value)
     -- Runs one edit command on the session. Refuses when the target changed underneath, protects the fallback's name,
     -- and refuses a character scope with no character context.
     function workspace:Command(name, ...)
-        if not self:ValidTarget() then return nil, 'rotation-target-missing' end
-        if self.fallback and name == 'SetBodyField' and (...) == 'name' then return nil, 'protected-rotation-name' end
+        if not self:ValidTarget() then
+            return nil, 'rotation-target-missing'
+        end
+        if self.fallback and name == 'SetBodyField' and (...) == 'name' then
+            return nil, 'protected-rotation-name'
+        end
 
         if name == 'SetOwnership' and (...) == 'character' then
             local c = owner:GetRotationOwnerContext()
-            if not c or not c.character then return nil, 'missing-owner-context' end
+
+            if not c or not c.character then
+                return nil, 'missing-owner-context'
+            end
         end
 
         local ok, result = self.session:Command(name, ...)
@@ -299,7 +358,11 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         end
 
         local ok, why, saved = self.session:Apply()
-        if not ok then return nil, why, saved end
+
+        if not ok then
+            return nil, why, saved
+        end
+
         sourceReference = data.CopyData(saved)
         self.reference = data.CopyData(saved)
         self.id = coordinator:Key(saved)
@@ -311,7 +374,11 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         self.title = record.body.name or self.canonicalId
         self.description = record.body.description or ''
         local nextSession, problem = sessionFor(baseline)
-        if not nextSession then return nil, problem end
+
+        if not nextSession then
+            return nil, problem
+        end
+
         self.session = nextSession
         flags()
         return true, nil, data.CopyData(saved)
@@ -319,9 +386,16 @@ local function scopedWorkspace(owner, coordinator, spec, value)
 
     -- Throws away the unsaved edits by swapping in a session over the baseline; the saved rotation is untouched.
     function workspace:Discard()
-        if not self:ValidTarget() then return nil, 'rotation-target-missing' end
+        if not self:ValidTarget() then
+            return nil, 'rotation-target-missing'
+        end
+
         local replacement, why = sessionFor(baseline)
-        if not replacement then return nil, why end
+
+        if not replacement then
+            return nil, why
+        end
+
         self.session:Cancel()
         self.session = replacement
         flags()
@@ -337,14 +411,22 @@ local function scopedWorkspace(owner, coordinator, spec, value)
         -- Reads the targeted condition tree from the captured session's current snapshot.
         local function condition()
             local body = captured:Snapshot()
-            if type(target) == 'table' and target.kind == 'switch' then return body.switch or {} end
+
+            if type(target) == 'table' and target.kind == 'switch' then
+                return body.switch or {}
+            end
+
             local tree = data.IndexRotationSteps(body)
             local row = tree and tree.byId[target]
             return row and (row.step.conditions or {})
         end
 
         local baselineCondition = condition()
-        if not baselineCondition then return nil, 'missing-rotation-step' end
+
+        if not baselineCondition then
+            return nil, 'missing-rotation-step'
+        end
+
         local committed = false
 
         -- True while the editor's target is still the same session, unchanged and not yet committed.
@@ -360,10 +442,19 @@ local function scopedWorkspace(owner, coordinator, spec, value)
             readOnly = self.readOnly,
             valid = valid,
             commit = function(edited)
-                if workspace.readOnly then return nil, 'readonly-rotation' end
-                if not valid() then return nil, 'condition-target-changed' end
+                if workspace.readOnly then
+                    return nil, 'readonly-rotation'
+                end
+                if not valid() then
+                    return nil, 'condition-target-changed'
+                end
+
                 local ok, why = workspace:Command('SetCondition', target, edited)
-                if ok then committed = true end
+
+                if ok then
+                    committed = true
+                end
+
                 return ok, why
             end,
         }
@@ -382,14 +473,20 @@ end
 -- rotation is saved into the profile table on Apply. Returns nil and a reason code when the target is invalid.
 function addon:GetRotationEditWorkspace(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scopedWorkspace(self, scoped, spec, id) end
 
+    if scoped then
+        return scopedWorkspace(self, scoped, spec, id)
+    end
     if type(spec) ~= 'number' or spec < 0 or spec % 1 ~= 0 or type(id) ~= 'string' or id == '' then
         return nil, 'invalid-rotation-target'
     end
 
     local profile = self.db.profile
-    if type(profile.rotations) ~= 'table' then return nil, 'invalid-rotation-storage' end
+
+    if type(profile.rotations) ~= 'table' then
+        return nil, 'invalid-rotation-storage'
+    end
+
     local builtin = self:GetDefaultIdForRuntime(spec, id)
     local source, original
 
@@ -401,7 +498,9 @@ function addon:GetRotationEditWorkspace(spec, id)
             end
         end
 
-        if not source or not source.envelope then return nil, 'unknown-default-rotation' end
+        if not source or not source.envelope then
+            return nil, 'unknown-default-rotation'
+        end
     else
         original = originalAt(profile, spec, id)
     end
@@ -445,14 +544,20 @@ function addon:GetRotationEditWorkspace(spec, id)
     if not value then
         value = { name = id == DEFAULT and DEFAULT or NEW, switch = {}, rotation = {}, cooldowns = {} }
     end
-
-    if builtin then value.name = source.name end
+    if builtin then
+        value.name = source.name
+    end
 
     -- True while the profile and its rotation table are the ones this workspace was opened on and the rotation is
     -- unchanged.
     function workspace:ValidTarget()
-        if self.discarded or addon.db.profile ~= profile or profile.rotations ~= capturedRoot then return false end
-        if self.builtin then return addon:GetDefaultIdForRuntime(spec, id) == self.builtin end
+        if self.discarded or addon.db.profile ~= profile or profile.rotations ~= capturedRoot then
+            return false
+        end
+        if self.builtin then
+            return addon:GetDefaultIdForRuntime(spec, id) == self.builtin
+        end
+
         return originalAt(profile, spec, id) == self.original and not addon:GetDefaultIdForRuntime(spec, id)
     end
 
@@ -468,10 +573,18 @@ function addon:GetRotationEditWorkspace(spec, id)
     end
 
     local reservations, copyError = data.CopyData(retained(profile, spec, id))
-    if not reservations then return nil, copyError.code end
+
+    if not reservations then
+        return nil, copyError.code
+    end
+
     workspace.reserved = reservations
     local session, why = sessionFor(value)
-    if not session then return nil, why end
+
+    if not session then
+        return nil, why
+    end
+
     workspace.session = session
 
     -- Returns a copy of the body as edited so far.
@@ -497,8 +610,13 @@ function addon:GetRotationEditWorkspace(spec, id)
 
     -- Runs one edit command on the session, refusing it when the target changed or when it would rename the fallback.
     function workspace:Command(name, ...)
-        if not self:ValidTarget() then return nil, 'rotation-target-missing' end
-        if id == DEFAULT and name == 'SetBodyField' and (...) == 'name' then return nil, 'protected-rotation-name' end
+        if not self:ValidTarget() then
+            return nil, 'rotation-target-missing'
+        end
+        if id == DEFAULT and name == 'SetBodyField' and (...) == 'name' then
+            return nil, 'protected-rotation-name'
+        end
+
         return self.session:Command(name, ...)
     end
 
@@ -514,7 +632,10 @@ function addon:GetRotationEditWorkspace(spec, id)
         end
 
         local ok, reason, details = self.session:Apply()
-        if not ok then return nil, reason, details end
+
+        if not ok then
+            return nil, reason, details
+        end
 
         if self.pending then
             local list = profile.rotations[spec] or {}
@@ -526,16 +647,27 @@ function addon:GetRotationEditWorkspace(spec, id)
 
         self.title = value.name or id
         local replacement, problem = sessionFor(value)
-        if not replacement then return nil, problem end
+
+        if not replacement then
+            return nil, problem
+        end
+
         self.session = replacement
         return true
     end
 
     -- Throws away the unsaved edits by swapping in a session over the stored body.
     function workspace:Discard()
-        if not self:ValidTarget() then return nil, 'rotation-target-missing' end
+        if not self:ValidTarget() then
+            return nil, 'rotation-target-missing'
+        end
+
         local replacement, problem = sessionFor(value)
-        if not replacement then return nil, problem end
+
+        if not replacement then
+            return nil, problem
+        end
+
         self.session:Cancel()
         self.session = replacement
         return true
@@ -548,14 +680,22 @@ function addon:GetRotationEditWorkspace(spec, id)
         -- Reads the targeted condition tree from the captured session's current snapshot.
         local function condition()
             local snapshot = sessionToken:Snapshot()
-            if type(target) == 'table' and target.kind == 'switch' then return snapshot.switch or {} end
+
+            if type(target) == 'table' and target.kind == 'switch' then
+                return snapshot.switch or {}
+            end
+
             local tree = data.IndexRotationSteps(snapshot)
             local row = tree and tree.byId[target]
             return row and (row.step.conditions or {})
         end
 
         local baseline = condition()
-        if not baseline then return nil, 'missing-rotation-step' end
+
+        if not baseline then
+            return nil, 'missing-rotation-step'
+        end
+
         local committed = false
 
         -- True while the editor's target is still the same session, unchanged and not yet committed.
@@ -571,10 +711,19 @@ function addon:GetRotationEditWorkspace(spec, id)
             readOnly = self.readOnly,
             valid = valid,
             commit = function(edited)
-                if workspace.readOnly then return nil, 'readonly-rotation' end
-                if not valid() then return nil, 'condition-target-changed' end
+                if workspace.readOnly then
+                    return nil, 'readonly-rotation'
+                end
+                if not valid() then
+                    return nil, 'condition-target-changed'
+                end
+
                 local ok, reason = workspace:Command('SetCondition', target, edited)
-                if ok then committed = true end
+
+                if ok then
+                    committed = true
+                end
+
                 return ok, reason
             end,
         }
@@ -599,16 +748,26 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
     end
 
     local body, why = data.CopyData(preview.body)
-    if not body then return nil, why.code end
+
+    if not body then
+        return nil, why.code
+    end
+
     local manifest
 
     if preview.manifest ~= nil then
         manifest, why = data.CopyData(preview.manifest)
-        if not manifest then return nil, why.code end
+
+        if not manifest then
+            return nil, why.code
+        end
     end
 
     local session, problem = self:NewRotationEditSession(spec, body, { readOnly = true, newId = self.uuid })
-    if not session then return nil, problem end
+
+    if not session then
+        return nil, problem
+    end
 
     local workspace = {
         spec = spec,
@@ -678,14 +837,21 @@ function addon:NewRotationPreviewWorkspace(spec, preview)
         -- Reads the targeted condition tree from the preview's current snapshot.
         local function condition()
             local snapshot = self.session:Snapshot()
-            if type(target) == 'table' and target.kind == 'switch' then return snapshot.switch or {} end
+
+            if type(target) == 'table' and target.kind == 'switch' then
+                return snapshot.switch or {}
+            end
+
             local tree = data.IndexRotationSteps(snapshot)
             local row = tree and tree.byId[target]
             return row and (row.step.conditions or {})
         end
 
         local baseline = condition()
-        if not baseline then return nil, 'missing-rotation-step' end
+
+        if not baseline then
+            return nil, 'missing-rotation-step'
+        end
 
         return {
             condition = data.CopyData(baseline),
@@ -719,24 +885,40 @@ end
 -- cannot be selected or applied any more. Saved rotations, Built Ins and the
 -- fallback are refused. Safe to repeat.
 function addon:DiscardPendingRotation(workspace)
-    if type(workspace) ~= 'table' then return nil, 'invalid-rotation-target' end
-    if workspace.discarded then return true end
-    if not workspace.pending or workspace.readOnly or workspace.fallback then return nil, 'not-a-new-rotation' end
+    if type(workspace) ~= 'table' then
+        return nil, 'invalid-rotation-target'
+    end
+    if workspace.discarded then
+        return true
+    end
+    if not workspace.pending or workspace.readOnly or workspace.fallback then
+        return nil, 'not-a-new-rotation'
+    end
+
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
     if scoped and workspace.reference then
         local ok, why = scoped:DiscardPending(workspace.reference)
-        if not ok and why ~= 'unknown-rotation' then return nil, why end
+
+        if not ok and why ~= 'unknown-rotation' then
+            return nil, why
+        end
     end
 
     local list = profiles[self.db.profile]
 
     for index = #(list or {}), 1, -1 do
-        if list[index] == workspace then table.remove(list, index) end
+        if list[index] == workspace then
+            table.remove(list, index)
+        end
     end
 
     workspace.discarded = true
-    if workspace.session and workspace.session.Cancel then workspace.session:Cancel() end
+
+    if workspace.session and workspace.session.Cancel then
+        workspace.session:Cancel()
+    end
+
     return true
 end
 

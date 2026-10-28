@@ -33,12 +33,20 @@ end
 -- Calls api under pcall and returns the packed results (the pcall flag is at index 1, the native returns follow), or
 -- nil and a reason code when the function is missing, throws or returns any restricted value.
 local function call(self, api, ...)
-    if type(api) ~= 'function' then return nil, 'missing-api' end
+    if type(api) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local results = pack(pcall(api, ...))
-    if not results[1] then return nil, 'api-error' end
+
+    if not results[1] then
+        return nil, 'api-error'
+    end
 
     for index = 2, results.n do
-        if not self:CanReadValue(results[index]) then return nil, 'restricted-value' end
+        if not self:CanReadValue(results[index]) then
+            return nil, 'restricted-value'
+        end
     end
 
     return results
@@ -47,9 +55,17 @@ end
 -- Returns the player's class token (for example "DRUID"), or nil and a reason code.
 local function playerClass(self)
     local results, reason = call(self, UnitClass, 'player')
-    if not results then return nil, reason end
+
+    if not results then
+        return nil, reason
+    end
+
     local class = results[3]
-    if type(class) ~= 'string' or class == '' then return nil, 'invalid-api-result' end
+
+    if type(class) ~= 'string' or class == '' then
+        return nil, 'invalid-api-result'
+    end
+
     return class
 end
 
@@ -57,12 +73,26 @@ end
 -- hunter pet (no pet, or a pet that has no happiness).
 function platform:GetPetHappinessObservation()
     local policy = self:GetCombatDataPolicy()
-    if policy ~= 'probe' then return nil, 'unsupported-policy' end
+
+    if policy ~= 'probe' then
+        return nil, 'unsupported-policy'
+    end
+
     local results, reason = call(self, GetPetHappiness)
-    if not results then return nil, reason end
+
+    if not results then
+        return nil, reason
+    end
+
     local happiness = results[2]
-    if happiness == nil then return false end
-    if happiness ~= 1 and happiness ~= 2 and happiness ~= 3 then return nil, 'invalid-api-result' end
+
+    if happiness == nil then
+        return false
+    end
+    if happiness ~= 1 and happiness ~= 2 and happiness ~= 3 then
+        return nil, 'invalid-api-result'
+    end
+
     return happiness
 end
 
@@ -71,18 +101,45 @@ end
 -- secret on Retail and Forever, so the percentage is unavailable there.
 function platform:GetStaggerObservation(asPercent)
     local policy = self:GetCombatDataPolicy()
-    if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
-    if not self:CanReadValue(asPercent) then return nil, 'restricted-value' end
+
+    if policy ~= 'probe' and policy ~= 'restricted' then
+        return nil, 'unsupported-policy'
+    end
+    if not self:CanReadValue(asPercent) then
+        return nil, 'restricted-value'
+    end
+
     local results, reason = call(self, UnitStagger, 'player')
-    if not results then return nil, reason end
+
+    if not results then
+        return nil, reason
+    end
+
     local amount = results[2]
-    if amount == nil then amount = 0 end
-    if not finite(amount) or amount < 0 then return nil, 'invalid-api-result' end
-    if not asPercent then return amount end
+
+    if amount == nil then
+        amount = 0
+    end
+
+    if not finite(amount) or amount < 0 then
+        return nil, 'invalid-api-result'
+    end
+    if not asPercent then
+        return amount
+    end
+
     local maximum, why = call(self, UnitHealthMax, 'player')
-    if not maximum then return nil, why end
+
+    if not maximum then
+        return nil, why
+    end
+
     local health = maximum[2]
-    if not finite(health) or health <= 0 then return nil, 'invalid-api-result' end
+
+    if not finite(health) or health <= 0 then
+        return nil, 'invalid-api-result'
+    end
+
     return amount / health * 100
 end
 
@@ -92,34 +149,81 @@ end
 -- reads as unavailable, never as a confident zero.
 function platform:GetEclipseObservation(kind)
     local policy = self:GetCombatDataPolicy()
-    if policy ~= 'probe' then return nil, 'unsupported-policy' end
-    if not self:CanReadValue(kind) then return nil, 'restricted-value' end
-    if kind ~= 'energy' and kind ~= 'direction' then return nil, 'invalid-eclipse-query' end
+
+    if policy ~= 'probe' then
+        return nil, 'unsupported-policy'
+    end
+    if not self:CanReadValue(kind) then
+        return nil, 'restricted-value'
+    end
+    if kind ~= 'energy' and kind ~= 'direction' then
+        return nil, 'invalid-eclipse-query'
+    end
+
     local class, reason = playerClass(self)
-    if not class then return nil, reason end
-    if class ~= 'DRUID' then return nil, 'eclipse-unavailable' end
+
+    if not class then
+        return nil, reason
+    end
+    if class ~= 'DRUID' then
+        return nil, 'eclipse-unavailable'
+    end
 
     if kind == 'direction' then
         local results, why = call(self, GetEclipseDirection)
-        if not results then return nil, why end
+
+        if not results then
+            return nil, why
+        end
+
         local direction = results[2]
-        if direction == nil then return 'none' end
-        if direction ~= 'sun' and direction ~= 'moon' and direction ~= 'none' then return nil, 'invalid-api-result' end
+
+        if direction == nil then
+            return 'none'
+        end
+        if direction ~= 'sun' and direction ~= 'moon' and direction ~= 'none' then
+            return nil, 'invalid-api-result'
+        end
+
         return direction
     end
 
     local enum = Enum
-    if not self:CanReadValue(enum) then return nil, 'restricted-value' end
+
+    if not self:CanReadValue(enum) then
+        return nil, 'restricted-value'
+    end
+
     local types = type(enum) == 'table' and rawget(enum, 'PowerType') or nil
-    if not self:CanReadValue(types) then return nil, 'restricted-value' end
+
+    if not self:CanReadValue(types) then
+        return nil, 'restricted-value'
+    end
+
     local balance = type(types) == 'table' and rawget(types, 'Balance') or nil
-    if not self:CanReadValue(balance) then return nil, 'restricted-value' end
-    if type(balance) ~= 'number' then return nil, 'power-type-unavailable' end
+
+    if not self:CanReadValue(balance) then
+        return nil, 'restricted-value'
+    end
+    if type(balance) ~= 'number' then
+        return nil, 'power-type-unavailable'
+    end
+
     local results, why = call(self, UnitPower, 'player', balance)
-    if not results then return nil, why end
+
+    if not results then
+        return nil, why
+    end
+
     local power = results[2]
-    if power == nil then return nil, 'power-data-unavailable' end
-    if not finite(power) then return nil, 'invalid-api-result' end
+
+    if power == nil then
+        return nil, 'power-data-unavailable'
+    end
+    if not finite(power) then
+        return nil, 'invalid-api-result'
+    end
+
     return power
 end
 
@@ -131,11 +235,25 @@ function platform:GetRangedSwingSpeed()
     -- The time remaining also needs the combat log; that is declared in
     -- Core/condition_support.lua.
     local policy = self:GetCombatDataPolicy()
-    if policy ~= 'probe' and policy ~= 'restricted' then return nil, 'unsupported-policy' end
+
+    if policy ~= 'probe' and policy ~= 'restricted' then
+        return nil, 'unsupported-policy'
+    end
+
     local results, reason = call(self, UnitRangedDamage, 'player')
-    if not results then return nil, reason end
+
+    if not results then
+        return nil, reason
+    end
+
     local speed = results[2]
-    if speed == nil or speed == 0 then return false end
-    if not finite(speed) or speed < 0 then return nil, 'invalid-api-result' end
+
+    if speed == nil or speed == 0 then
+        return false
+    end
+    if not finite(speed) or speed < 0 then
+        return nil, 'invalid-api-result'
+    end
+
     return speed
 end

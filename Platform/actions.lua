@@ -15,7 +15,10 @@ end
 
 ---@type fun(...): any
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
+
+if type(consumeClientPolicy) == 'function' then
+    readClientPolicy = consumeClientPolicy(addon)
+end
 
 -- Validates a spell id argument: returns true for a positive whole number, otherwise nil and a reason code.
 local function spellID(id)
@@ -38,13 +41,29 @@ end
 -- to cast. On failure returns nil, nil and a reason code (the reason is the third value).
 function platform:IsSpellUsable(id)
     local valid, reason = spellID(id)
-    if not valid then return nil, nil, reason end
+
+    if not valid then
+        return nil, nil, reason
+    end
+
     local fn = C_Spell and C_Spell.IsSpellUsable or IsUsableSpell
-    if type(fn) ~= "function" then return nil, nil, "missing-api" end
+
+    if type(fn) ~= "function" then
+        return nil, nil, "missing-api"
+    end
+
     local ok, usable, power = pcall(fn, id)
-    if not ok then return nil, nil, "api-error" end
-    if not self:CanReadValue(usable) or not self:CanReadValue(power) then return nil, nil, "restricted-value" end
-    if type(usable) ~= "boolean" or type(power) ~= "boolean" then return nil, nil, "invalid-api-result" end
+
+    if not ok then
+        return nil, nil, "api-error"
+    end
+    if not self:CanReadValue(usable) or not self:CanReadValue(power) then
+        return nil, nil, "restricted-value"
+    end
+    if type(usable) ~= "boolean" or type(power) ~= "boolean" then
+        return nil, nil, "invalid-api-result"
+    end
+
     return usable, power
 end
 
@@ -128,10 +147,20 @@ function platform:NewSpellRangeReader()
 
     return function(id, unit, bank)
         local valid, reason = spellID(id)
-        if not valid then return nil, reason end
-        if not self:CanReadValue(unit) or not self:CanReadValue(bank) then return nil, "restricted-value" end
-        if unit ~= nil and (type(unit) ~= "string" or unit == "") then return nil, "invalid-unit" end
-        if bank ~= "spell" and bank ~= "pet" and bank ~= "any" then return nil, "invalid-spell-bank" end
+
+        if not valid then
+            return nil, reason
+        end
+        if not self:CanReadValue(unit) or not self:CanReadValue(bank) then
+            return nil, "restricted-value"
+        end
+        if unit ~= nil and (type(unit) ~= "string" or unit == "") then
+            return nil, "invalid-unit"
+        end
+        if bank ~= "spell" and bank ~= "pet" and bank ~= "any" then
+            return nil, "invalid-spell-bank"
+        end
+
         local key = native and "native" or bank
         observations[key] = observations[key] or {}
         local units = observations[key]
@@ -151,7 +180,9 @@ function platform:NewSpellRangeReader()
 
         return record.value, record.reason
     end,
-        function() stamp = stamp + 1 end
+        function()
+            stamp = stamp + 1
+        end
 end
 
 -- This is only a suggestion to start ordinary weapon attacks. It cannot
@@ -163,13 +194,23 @@ end
 -- and a reason code. Only the probe policy answers: the combat and target facts it needs are secret on restricted
 -- clients.
 function platform:IsMeleeAttackNeeded(unit)
-    if not self:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then return nil, "invalid-unit" end
-    if readClientPolicy(self) ~= "probe" then return nil, "unsupported-policy" end
+    if not self:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then
+        return nil, "invalid-unit"
+    end
+    if readClientPolicy(self) ~= "probe" then
+        return nil, "unsupported-policy"
+    end
 
     local function boolean(fn, ...)
         local value, reason = call(fn, ...)
-        if reason then return nil, reason end
-        if type(value) ~= "boolean" then return nil, "invalid-api-result" end
+
+        if reason then
+            return nil, reason
+        end
+        if type(value) ~= "boolean" then
+            return nil, "invalid-api-result"
+        end
+
         return value
     end
 
@@ -183,27 +224,69 @@ function platform:IsMeleeAttackNeeded(unit)
         UnitHasVehicleUI or UnitInVehicle
 
     local result, reason = boolean(combat, "player")
-    if result == nil then return nil, reason end
-    if not result then return false end
+
+    if result == nil then
+        return nil, reason
+    end
+    if not result then
+        return false
+    end
+
     result, reason = boolean(exists, unit)
-    if result == nil then return nil, reason end
-    if not result then return false end
+
+    if result == nil then
+        return nil, reason
+    end
+    if not result then
+        return false
+    end
+
     result, reason = boolean(attackable, "player", unit)
-    if result == nil then return nil, reason end
-    if not result then return false end
+
+    if result == nil then
+        return nil, reason
+    end
+    if not result then
+        return false
+    end
+
     result, reason = boolean(dead, unit)
-    if result == nil then return nil, reason end
-    if result then return false end
+
+    if result == nil then
+        return nil, reason
+    end
+    if result then
+        return false
+    end
+
     result, reason = boolean(vehicle, "player")
-    if result == nil then return nil, reason end
-    if result then return false end
+
+    if result == nil then
+        return nil, reason
+    end
+    if result then
+        return false
+    end
+
     local active
     active, reason = self:IsCurrentSpell(6603)
-    if active == nil then return nil, reason end
-    if active then return false, nil, "attack-active" end
+
+    if active == nil then
+        return nil, reason
+    end
+    if active then
+        return false, nil, "attack-active"
+    end
+
     local beyond, why = self:IsBeyondMeleeRange(unit)
-    if beyond == nil then return nil, why end
-    if beyond then return false, nil, "beyond-melee" end
+
+    if beyond == nil then
+        return nil, why
+    end
+    if beyond then
+        return false, nil, "beyond-melee"
+    end
+
     return true
 end
 

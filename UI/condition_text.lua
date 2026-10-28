@@ -10,7 +10,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Shows value (a string; anything else is ignored) under heading, or under the default condition title when heading is
 -- nil, and returns the dialog table. A heading switches the button to "Copy report".
 function addon:ShowConditionText(value, heading)
-    if type(value) ~= 'string' then return end
+    if type(value) ~= 'string' then
+        return
+    end
+
     local dialog = self.conditionTextWindow
 
     if not dialog then
@@ -71,9 +74,18 @@ function addon:ShowConditionText(value, heading)
         addon:SetUIScript(dialog.copy, 'OnClick', copy)
         dialog.close = addon:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         dialog.close:SetPoint('TOPRIGHT', -6, -6)
-        addon:SetUIScript(dialog.close, 'OnClick', function() frame:Hide() end)
-        addon:SetUIScript(edit, 'OnEscapePressed', function() frame:Hide() end)
-        addon:SetUIScript(frame, 'OnHide', function() edit:ClearFocus() end)
+
+        addon:SetUIScript(dialog.close, 'OnClick', function()
+            frame:Hide()
+        end)
+
+        addon:SetUIScript(edit, 'OnEscapePressed', function()
+            frame:Hide()
+        end)
+
+        addon:SetUIScript(frame, 'OnHide', function()
+            edit:ClearFocus()
+        end)
 
         -- Window-registry interface: addon:OpenPopup and addon.HideOnEscape call Show and Hide on the dialog table.
         function dialog:Show()

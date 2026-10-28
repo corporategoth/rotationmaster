@@ -93,12 +93,18 @@ end
 local function channelScan(self, current)
     local query = GetChannelName
     local readable = self.CanReadValue
-    if type(query) ~= 'function' or type(readable) ~= 'function' then return nil, 'missing-api' end
+
+    if type(query) ~= 'function' or type(readable) ~= 'function' then
+        return nil, 'missing-api'
+    end
 
     local function owned()
         if current then
             local ok, live = pcall(current)
-            if not ok or live ~= true then return false end
+
+            if not ok or live ~= true then
+                return false
+            end
         end
 
         return query == GetChannelName and readable == self.CanReadValue
@@ -111,9 +117,15 @@ local function channelScan(self, current)
     local rows = {}
 
     for slot = 1, 20 do
-        if not owned() then return nil, 'announcement-retired' end
+        if not owned() then
+            return nil, 'announcement-retired'
+        end
+
         local ok, id, name = pcall(query, slot)
-        if not ok or not read(id) or not read(name) or not owned() then return nil, 'channel-unavailable' end
+
+        if not ok or not read(id) or not read(name) or not owned() then
+            return nil, 'channel-unavailable'
+        end
 
         if id ~= 0 and id ~= nil then
             if
@@ -133,7 +145,10 @@ local function channelScan(self, current)
         end
     end
 
-    if not owned() then return nil, 'announcement-retired' end
+    if not owned() then
+        return nil, 'announcement-retired'
+    end
+
     return rows
 end
 
@@ -141,7 +156,11 @@ end
 -- nil and a reason code.
 function platform:GetJoinedAnnouncementChannels(current)
     local rows, why = channelScan(self, current)
-    if not rows then return nil, why end
+
+    if not rows then
+        return nil, why
+    end
+
     local result = {}
 
     for _, row in ipairs(rows) do
@@ -164,37 +183,64 @@ function platform:ResolveAnnouncementChannel(name, current)
     local query, readable = GetChannelName, self.CanReadValue
 
     local function resolve()
-        if query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
+        if query ~= GetChannelName or readable ~= self.CanReadValue then
+            return nil
+        end
+
         local rows = channelScan(self, current)
-        if not rows then return nil end
+
+        if not rows then
+            return nil
+        end
+
         local selected
 
         for _, row in ipairs(rows) do
             if row.value == name then
-                if selected then return nil end
+                if selected then
+                    return nil
+                end
+
                 selected = row.id
             end
         end
 
-        if not selected or query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
+        if not selected or query ~= GetChannelName or readable ~= self.CanReadValue then
+            return nil
+        end
 
         if current then
             local ok, live = pcall(current)
-            if not ok or live ~= true then return nil end
+
+            if not ok or live ~= true then
+                return nil
+            end
         end
 
         -- A later slot or owner callback can change an earlier address. Finish
         -- with that selected slot, not the old row from the complete scan.
         local ok, id, fresh = pcall(query, selected)
-        if not ok or not readable(self, id) or not readable(self, fresh) then return nil end
-        if query ~= GetChannelName or readable ~= self.CanReadValue then return nil end
+
+        if not ok or not readable(self, id) or not readable(self, fresh) then
+            return nil
+        end
+        if query ~= GetChannelName or readable ~= self.CanReadValue then
+            return nil
+        end
+
         -- Readability is an extension boundary too. The final native read has
         -- only native restricted-value guards before its exact comparison.
         local got, finalID, finalName = pcall(query, selected)
-        if not got then return nil end
-        if canaccessvalue and (not canaccessvalue(finalID) or not canaccessvalue(finalName)) then return nil end
-        if issecretvalue and (issecretvalue(finalID) or issecretvalue(finalName)) then return nil end
 
+        if not got then
+            return nil
+        end
+        if canaccessvalue and (not canaccessvalue(finalID) or not canaccessvalue(finalName)) then
+            return nil
+        end
+        if issecretvalue and (issecretvalue(finalID) or issecretvalue(finalName)) then
+            return nil
+        end
         if query ~= GetChannelName or readable ~= self.CanReadValue or finalID ~= selected or finalName ~= name then
             return nil
         end
@@ -203,7 +249,11 @@ function platform:ResolveAnnouncementChannel(name, current)
     end
 
     local id = resolve()
-    if not id then return nil, nil, 'channel-unavailable' end
+
+    if not id then
+        return nil, nil, 'channel-unavailable'
+    end
+
     return id, function() return resolve() == id end
 end
 

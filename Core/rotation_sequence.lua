@@ -42,7 +42,10 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
 
     -- Returns true while the managed caller still owns this walk; otherwise marks the result unavailable.
     local function permitted(receiver)
-        if managed(receiver) then return true end
+        if managed(receiver) then
+            return true
+        end
+
         result.status = "unavailable"
         result.suppressAttack = true
         return false
@@ -53,17 +56,28 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
         local observation
 
         if managed then
-            if not permitted('pathcopy') then return "unavailable" end
+            if not permitted('pathcopy') then
+                return "unavailable"
+            end
+
             local conditions, stepId = step.conditions, step.id
             local path = managedPath(row.path)
             observation = evaluate(conditions, { stepId = stepId, stepPath = path })
-            if not permitted('resume') then return "unavailable" end
+
+            if not permitted('resume') then
+                return "unavailable"
+            end
         else
             observation = evaluate(step.conditions, { stepId = step.id, stepPath = data.CopyData(row.path) })
         end
 
-        if kind(observation) ~= "table" then return "unavailable" end
-        if observation.status == "match" or observation.status == "no-match" then return observation.status end
+        if kind(observation) ~= "table" then
+            return "unavailable"
+        end
+        if observation.status == "match" or observation.status == "no-match" then
+            return observation.status
+        end
+
         return "unavailable"
     end
 
@@ -72,7 +86,9 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
     -- Visits a step list in order and recurses into the chosen Branch arm. Returns false when the walk has ended (a
     -- selection, a Stop or an unavailable result, recorded in `result`) and true to continue with the next sibling.
     walk = function(list)
-        if managed and not permitted('iterator') then return false end
+        if managed and not permitted('iterator') then
+            return false
+        end
 
         for _, step in each(list) do
             local row = rows[step]
@@ -87,7 +103,9 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
                     return false
                 end
 
-                if not walk(status == "match" and step.onTrue or step.onFalse) then return false end
+                if not walk(status == "match" and step.onTrue or step.onFalse) then
+                    return false
+                end
             elseif not step.disabled then
                 if step.type == "stop" then
                     local status = check(step, row)
@@ -103,7 +121,10 @@ local function execute(body, evaluate, visit, rows, ordinal, kind, each, managed
                         return false
                     end
                 else
-                    if not permitted('pathcopy') then return false end
+                    if not permitted('pathcopy') then
+                        return false
+                    end
+
                     local position = row.ordinal
                     local path = managedPath(row.path)
                     local keepGoing = visit(step, position, path)
@@ -133,8 +154,10 @@ end
 -- observation table with status 'match' or 'no-match'; `visit(step, ordinal, path)` returns false to select the step.
 function addon:EvaluateRotationSequence(body, evaluate, visit)
     local index, why = data.IndexRotationSteps(body, { allowMissingIds = true })
-    if not index then return unavailable(why) end
 
+    if not index then
+        return unavailable(why)
+    end
     if type(evaluate) ~= "function" or type(visit) ~= "function" then
         return unavailable({ code = "invalid-sequence-callback", path = "$", severity = "error" })
     end
@@ -176,7 +199,10 @@ local bindIndex = addon.BindRotationExecutionIndexReader
 
 if sequenceType(bindIndex) == "function" then
     ---@cast bindIndex function
-    bindIndex(addon, function(read, retire, status) readIndex, retireIndex, indexStatus = read, retire, status end)
+    bindIndex(addon, function(read, retire, status)
+        readIndex, retireIndex, indexStatus = read, retire, status
+    end)
+
     addon.BindRotationExecutionIndexReader = nil
 end
 
@@ -188,7 +214,9 @@ local function sequenceStatus(owner)
 
     -- Records the first failed check as the status reason; later failures do not overwrite it.
     local function check(reason, ok)
-        if result.reason == "ready" and not ok then result.reason = reason end
+        if result.reason == "ready" and not ok then
+            result.reason = reason
+        end
     end
 
     local ownerTable = sequenceType(owner) == "table"
@@ -228,7 +256,9 @@ end
 -- the guarded run function, the status function and the original EvaluateRotationSequence. Does nothing for any
 -- caller other than the addon.
 function addon:BindRotationSequenceReader(bind)
-    if self ~= addon or sequenceType(bind) ~= "function" then return end
+    if self ~= addon or sequenceType(bind) ~= "function" then
+        return
+    end
 
     -- Reads the owner's EvaluateRotationSequence without metamethods, so main.lua can detect a replaced method.
     local function rawMethod(owner)
@@ -244,7 +274,10 @@ function addon:BindRotationSequenceReader(bind)
     -- caller, is unavailable). Otherwise rows come from the cached map (managed only) or a fresh index read. Returns
     -- the execute() result.
     local function run(owner, before, method, body, evaluate, visit, managed)
-        if managed and not managed('sequence') then return unavailable({ code = "retired-managed-sequence" }) end
+        if managed and not managed('sequence') then
+            return unavailable({ code = "retired-managed-sequence" })
+        end
+
         local db = sequenceType(owner) == "table" and sequenceRawget(owner, "db") or nil
         local profile = sequenceType(db) == "table" and sequenceRawget(db, "profile") or nil
 
@@ -259,8 +292,14 @@ function addon:BindRotationSequenceReader(bind)
             and sequenceEqual(sequenceRawget(sequenceEnvironment, "type"), sequenceType)
             and sequenceEqual(sequenceRawget(sequenceEnvironment, "ipairs"), sequenceIpairs)
             and sequenceEqual(sequenceRawget(sequenceEnvironment, "getfenv"), sequenceGetfenv)) then
-            if retireIndex then retireIndex() end
-            if managed then return unavailable({ code = "unowned-managed-sequence" }) end
+            if retireIndex then
+                retireIndex()
+            end
+
+            if managed then
+                return unavailable({ code = "unowned-managed-sequence" })
+            end
+
             return method(owner, body, evaluate, visit)
         end
 
@@ -278,14 +317,22 @@ function addon:BindRotationSequenceReader(bind)
             rows, ordinal = cached.rows, cached.ordinal
         else
             local eligible, index, why = readIndex(body, profile, data, db)
-            if managed and not managed('resume') then return unavailable({ code = "retired-managed-sequence" }) end
+
+            if managed and not managed('resume') then
+                return unavailable({ code = "retired-managed-sequence" })
+            end
 
             if not eligible then
-                if managed then return unavailable({ code = "unowned-managed-index" }) end
+                if managed then
+                    return unavailable({ code = "unowned-managed-index" })
+                end
+
                 return method(owner, body, evaluate, visit)
             end
 
-            if not index then return unavailable(why) end
+            if not index then
+                return unavailable(why)
+            end
 
             -- Preserve the ordinary reader's callback validation before any
             -- row-map iteration, including its original error ordering.
@@ -305,7 +352,10 @@ function addon:BindRotationSequenceReader(bind)
             if managed then
                 -- A failed older invocation must not erase or replace a map
                 -- published by a nested, newer managed continuation.
-                if not managed('resume') then return unavailable({ code = "retired-managed-sequence" }) end
+                if not managed('resume') then
+                    return unavailable({ code = "retired-managed-sequence" })
+                end
+
                 managedEntry = { body = body, db = db, profile = profile, rows = rows, ordinal = ordinal }
             end
         end

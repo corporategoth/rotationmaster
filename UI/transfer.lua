@@ -42,7 +42,11 @@ function addon:ShowNativeImportPreview(p, view, spec)
         d.chrome = self:CreateWorkbenchDialogChrome(d.frame, d.title)
         d.close = self:CreateWorkbenchIconButton(d.frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
-        self:SetUIScript(d.close, 'OnClick', function() d.frame:Hide() end)
+
+        self:SetUIScript(d.close, 'OnClick', function()
+            d.frame:Hide()
+        end)
+
         d.scroll = self:CreateWorkbenchGroupViewport(d.frame)
         d.scroll:SetPoint('TOPLEFT', 12, -34)
         d.scroll:SetSize(898, 560)
@@ -53,7 +57,10 @@ function addon:ShowNativeImportPreview(p, view, spec)
             self.graph = nil
         end
 
-        self:SetUIScript(d.frame, 'OnHide', function() d:Clear() end)
+        self:SetUIScript(d.frame, 'OnHide', function()
+            d:Clear()
+        end)
+
         d.frame:Hide()
     end
 
@@ -73,7 +80,9 @@ function addon:ShowNativeImportPreview(p, view, spec)
     end
 
     p.cleanups[#p.cleanups + 1] = function()
-        if d.serial == serial then d.frame:Hide() end
+        if d.serial == serial then
+            d.frame:Hide()
+        end
     end
 
     d.frame:Show()
@@ -129,7 +138,11 @@ function addon:ShowNativeImportContent(p, preview, spec)
         d.chrome = self:CreateWorkbenchDialogChrome(d.frame, d.title)
         d.close = self:CreateWorkbenchIconButton(d.frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
-        self:SetUIScript(d.close, 'OnClick', function() d.frame:Hide() end)
+
+        self:SetUIScript(d.close, 'OnClick', function()
+            d.frame:Hide()
+        end)
+
         d.host = CreateFrame('Frame', nil, d.frame)
         d.host:SetPoint('TOPLEFT', 12, -34)
         d.host:SetSize(916, 562)
@@ -140,11 +153,19 @@ function addon:ShowNativeImportContent(p, preview, spec)
             local pane, workspace = self.pane, self.workspace
             self.pane = nil
             self.workspace = nil
-            if pane and pane.active then pane:Release() end
-            if workspace then workspace:Close() end
+
+            if pane and pane.active then
+                pane:Release()
+            end
+            if workspace then
+                workspace:Close()
+            end
         end
 
-        self:SetUIScript(d.frame, 'OnHide', function() d:Clear() end)
+        self:SetUIScript(d.frame, 'OnHide', function()
+            d:Clear()
+        end)
+
         d.frame:Hide()
     end
 
@@ -152,7 +173,11 @@ function addon:ShowNativeImportContent(p, preview, spec)
     d.serial = (d.serial or 0) + 1
     local serial = d.serial
     local workspace, why = self:NewRotationPreviewWorkspace(spec, preview)
-    if not workspace then return nil, why end
+
+    if not workspace then
+        return nil, why
+    end
+
     local pane, problem = self:CreateRotationEditor(d.host, spec, workspace.id, nil, workspace)
 
     if not pane then
@@ -165,7 +190,9 @@ function addon:ShowNativeImportContent(p, preview, spec)
     d.chrome:SetContext(L['Import preview'], L['Read-only'], self.pretty_name)
 
     p.cleanups[#p.cleanups + 1] = function()
-        if d.serial == serial then d.frame:Hide() end
+        if d.serial == serial then
+            d.frame:Hide()
+        end
     end
 
     d.frame:Show()
@@ -210,7 +237,11 @@ function addon:ShowRotationTransfer(spec, id)
     local codec = self:NewRotationCodec()
     local source, exportError = self:GetRotationExportData(spec, id)
     local exported
-    if source then exported, exportError = codec:Encode(source) end
+
+    if source then
+        exported, exportError = codec:Encode(source)
+    end
+
     local session = self.RotationData.NewImportSession(codec, self:GetImportValidationOptions())
     local p = self.rotationTransferForm
 
@@ -227,10 +258,17 @@ function addon:ShowRotationTransfer(spec, id)
     p:Open(function() end)
     local reference = self:ResolveRotationReference(spec, id)
     local record, recordToken
-    if reference then record, recordToken = self:GetRotationRecordSnapshot(spec, reference) end
+
+    if reference then
+        record, recordToken = self:GetRotationRecordSnapshot(spec, reference)
+    end
+
     -- A snapshot that failed answers (nil, reason): the reason is a string, not a token. A selection with no saved
     -- record (a new rotation not applied yet, a Default never saved) has nothing to replace.
-    if type(record) ~= 'table' or type(recordToken) ~= 'table' then recordToken = nil end
+    if type(record) ~= 'table' or type(recordToken) ~= 'table' then
+        recordToken = nil
+    end
+
     local original = record and record.body
     local profile = self.db.profile
     local coordinator = self:GetScopedRotationCoordinator()
@@ -293,13 +331,19 @@ function addon:ShowRotationTransfer(spec, id)
     options.originalName = function(text)
         local decoded = codec:Decode(text)
         local value = decoded and decoded.value
-        if type(value) == 'table' then return self:RotationDisplayName(value) end
+
+        if type(value) == 'table' then
+            return self:RotationDisplayName(value)
+        end
     end
 
     -- The pasted text changed: drops the staged candidate, disables Apply and Inspect and closes both previews, so
     -- what is applied is always what was previewed.
     options.invalidate = function(d)
-        if not valid() or dialog and (d ~= dialog or d.options ~= options) then return end
+        if not valid() or dialog and (d ~= dialog or d.options ~= options) then
+            return
+        end
+
         candidate = nil
         session:Clear()
         d.apply:Disable()
@@ -310,14 +354,21 @@ function addon:ShowRotationTransfer(spec, id)
                 or L['Text changed. Preview again before importing.']
         )
 
-        if p.importPreview then p.importPreview.frame:Hide() end
-        if p.importContent then p.importContent.frame:Hide() end
+        if p.importPreview then
+            p.importPreview.frame:Hide()
+        end
+        if p.importContent then
+            p.importContent.frame:Hide()
+        end
     end
 
     -- Stages the pasted text and opens the matching preview: a comparison when replacing, the full content for a copy.
     -- Apply is enabled only when the session reports the candidate ready.
     options.preview = function(d)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local why
         candidate, why = session:Stage(d.input:GetText())
         d.apply:Disable()
@@ -338,16 +389,24 @@ function addon:ShowRotationTransfer(spec, id)
             )
         )
 
-        if ready then d.apply:Enable() end
-
-        if p.importPreview then p.importPreview.frame:Hide() end
-        if p.importContent then p.importContent.frame:Hide() end
+        if ready then
+            d.apply:Enable()
+        end
+        if p.importPreview then
+            p.importPreview.frame:Hide()
+        end
+        if p.importContent then
+            p.importContent.frame:Hide()
+        end
 
         if d.mode == 'replace' and canReplace then
             -- Replacing: what would change in the selected rotation.
             local own = original or source and (source.body or source) or { rotation = {}, cooldowns = {} }
             local view = session:Compare(candidate.token, own, self.RotationData.GetRotationTags(source))
-            if view then self:ShowNativeImportPreview(p, view, spec) end
+
+            if view then
+                self:ShowNativeImportPreview(p, view, spec)
+            end
         else
             -- A new copy: nothing to compare with, so everything that would be created.
             local incoming, missing = session:Preview(candidate.token)
@@ -378,7 +437,10 @@ function addon:ShowRotationTransfer(spec, id)
 
     -- Opens the check-import report: the diagnostics and diff of the staged candidate.
     options.inspect = function()
-        if not valid() or not candidate then return end
+        if not valid() or not candidate then
+            return
+        end
+
         local object = candidate.kind == 'envelope' and candidate.value or { body = candidate.value }
         local report = self.RotationData.DiffRotations({}, object)
 
@@ -393,7 +455,10 @@ function addon:ShowRotationTransfer(spec, id)
     options.onClose = function()
         active = false
         session:Clear()
-        if p.active and p.generation == generation then p:Release() end
+
+        if p.active and p.generation == generation then
+            p:Release()
+        end
     end
 
     dialog = self:ShowSettingsTextTransfer(
@@ -401,7 +466,10 @@ function addon:ShowRotationTransfer(spec, id)
         L['Import/Export Rotation'],
         exported or '',
         function(_, settings)
-            if not candidate then return false, L['Preview a pasted rotation before importing it.'] end
+            if not candidate then
+                return false, L['Preview a pasted rotation before importing it.']
+            end
+
             local target = settings.mode == 'replace' and reference or nil
 
             local generated, why, saved = self:ApplyRotationImport(
@@ -417,9 +485,16 @@ function addon:ShowRotationTransfer(spec, id)
                 }
             )
 
-            if not generated then return false, string.format(L['Could not import this rotation: %s'], why) end
+            if not generated then
+                return false, string.format(L['Could not import this rotation: %s'], why)
+            end
+
             local workspace, problem = self:GetRotationEditWorkspace(spec, saved)
-            if not workspace then return false, problem end
+
+            if not workspace then
+                return false, problem
+            end
+
             self:ShowConfig('Rotations', { spec = spec, id = workspace.id })
             return true
         end,
@@ -464,11 +539,23 @@ function addon:ShowRotationTransfer(spec, id)
     self:SetUIScript(dialog.destination, 'OnClick', function(...)
         if dialog.options == options then
             destination(...)
-            if not valid() then return end
-            if dialog.mode == 'new' then dialog.scope:SetChecked(false) end
+
+            if not valid() then
+                return
+            end
+
+            if dialog.mode == 'new' then
+                dialog.scope:SetChecked(false)
+            end
+
             scopeState()
-            if p.importPreview then p.importPreview.frame:Hide() end
-            if p.importContent then p.importContent.frame:Hide() end
+
+            if p.importPreview then
+                p.importPreview.frame:Hide()
+            end
+            if p.importContent then
+                p.importContent.frame:Hide()
+            end
         end
     end)
 
@@ -493,7 +580,9 @@ function addon:ShowRotationTransfer(spec, id)
     dialog.input:SetHeight(200)
     scopeState()
 
-    if exportError then dialog.status:SetText(string.format(L['Export unavailable: %s'], exportError)) end
+    if exportError then
+        dialog.status:SetText(string.format(L['Export unavailable: %s'], exportError))
+    end
 
     return dialog
 end

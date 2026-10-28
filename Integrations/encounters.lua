@@ -57,8 +57,13 @@ end
 
 -- Returns v as a positive whole spell id below 2^31 (a short numeric string is converted), or nil.
 local function spellID(v)
-    if type(v) == 'string' and #v <= 12 then v = tonumber(v) end
-    if finite(v) and v > 0 and v % 1 == 0 and v < 2 ^ 31 then return v end
+    if type(v) == 'string' and #v <= 12 then
+        v = tonumber(v)
+    end
+
+    if finite(v) and v > 0 and v % 1 == 0 and v < 2 ^ 31 then
+        return v
+    end
 end
 
 -- Returns v when it is a positive whole number below 2^31, else nil.
@@ -69,7 +74,10 @@ end
 -- Returns v as a display label: at most 96 characters, with control characters and "|" replaced by "?" so that a
 -- boss-mod string can never carry a hyperlink or color escape; nil for a non-string.
 local function label(v)
-    if type(v) ~= 'string' then return nil end
+    if type(v) ~= 'string' then
+        return nil
+    end
+
     return (v:sub(1, 96):gsub('[%c|]', '?'))
 end
 
@@ -110,7 +118,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- True when v may be compared (not a secret value), through the injected check when there is one.
     local function canRead(v)
-        if readable then return readable(v) == true end
+        if readable then
+            return readable(v) == true
+        end
+
         local platform = addon.Platform
         return not platform or platform:CanReadValue(v) == true
     end
@@ -125,7 +136,9 @@ function addon.Integrations.NewEncounterTimers(options)
             value = GetTime()
         end
 
-        if finite(value) then return value end
+        if finite(value) then
+            return value
+        end
     end
 
     -- Forgets the current encounter and every timer.
@@ -147,19 +160,29 @@ function addon.Integrations.NewEncounterTimers(options)
             version = extra and extra.version or (state ~= 'disabled' and status.version or nil),
         }
 
-        if extra and extra.family then fresh.family = extra.family end
+        if extra and extra.family then
+            fresh.family = extra.family
+        end
+
         local changed = false
 
         for k, v in pairs(fresh) do
-            if status[k] ~= v then changed = true end
+            if status[k] ~= v then
+                changed = true
+            end
         end
 
         for k, v in pairs(status) do
-            if fresh[k] ~= v then changed = true end
+            if fresh[k] ~= v then
+                changed = true
+            end
         end
 
         status = fresh
-        if changed and onChange then pcall(onChange, copy(status)) end
+
+        if changed and onChange then
+            pcall(onChange, copy(status))
+        end
     end
 
     -- Describes a provider addon from the live client: client family, whether it is loaded, its version and the
@@ -172,9 +195,17 @@ function addon.Integrations.NewEncounterTimers(options)
         local native = C_AddOns
         local loadedFn = type(native) == 'table' and native.IsAddOnLoaded or IsAddOnLoaded
         local versionFn = type(native) == 'table' and native.GetAddOnMetadata or GetAddOnMetadata
-        if type(loadedFn) == 'function' then info.loaded = loadedFn(id) end
-        if type(versionFn) == 'function' then info.version = versionFn(id, 'Version') end
-        if info.loaded then info.api = rawget(_G, id == 'BigWigs' and 'BigWigsLoader' or 'DBM') end
+
+        if type(loadedFn) == 'function' then
+            info.loaded = loadedFn(id)
+        end
+        if type(versionFn) == 'function' then
+            info.version = versionFn(id, 'Version')
+        end
+        if info.loaded then
+            info.api = rawget(_G, id == 'BigWigs' and 'BigWigsLoader' or 'DBM')
+        end
+
         return info
     end
 
@@ -183,7 +214,10 @@ function addon.Integrations.NewEncounterTimers(options)
         local b = binding
         binding = nil
         generation = generation + 1
-        if not b then return end
+
+        if not b then
+            return
+        end
 
         if b.kind == 'DBM-Core' then
             for _, event in ipairs(dbmEvents) do
@@ -201,7 +235,10 @@ function addon.Integrations.NewEncounterTimers(options)
     local function fault(reason)
         -- Stay registered (detaching inside the provider's own dispatch loop can
         -- skip a sibling callback); the generation check silences this handler.
-        if binding then binding.faulted = true end
+        if binding then
+            binding.faulted = true
+        end
+
         clear()
         publish('error', reason)
     end
@@ -223,7 +260,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
                 for k, t in pairs(timers) do
                     local ends = t.paused and (at + t.paused) or t.expiresAt
-                    if not soonest or ends < soonest then victim, soonest = k, ends end
+
+                    if not soonest or ends < soonest then
+                        victim, soonest = k, ends
+                    end
                 end
 
                 removeTimer(victim)
@@ -263,13 +303,18 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- A pull starts an encounter for the module.
     function dbm.DBM_Pull(_, mod)
-        if type(mod) ~= 'table' then return end
+        if type(mod) ~= 'table' then
+            return
+        end
+
         engage('DBM-Core', mod, rawget(mod, 'encounterId'), dbmName(mod), rawget(mod, 'id'))
     end
 
     -- A kill or wipe of the current encounter's module ends it.
     function dbm.DBM_Kill(_, mod)
-        if same(mod) then encounter = nil end
+        if same(mod) then
+            encounter = nil
+        end
     end
 
     dbm.DBM_Wipe = dbm.DBM_Kill
@@ -277,10 +322,15 @@ function addon.Integrations.NewEncounterTimers(options)
     -- A stage change; also starts the encounter when this addon loaded mid-fight and missed the pull (only if the
     -- module reports being in combat).
     function dbm.DBM_SetStage(_, mod, _, stage, encounterId)
-        if type(mod) ~= 'table' or not finite(stage) then return end
+        if type(mod) ~= 'table' or not finite(stage) then
+            return
+        end
 
         if not same(mod) then
-            if rawget(mod, 'inCombat') ~= true then return end
+            if rawget(mod, 'inCombat') ~= true then
+                return
+            end
+
             engage('DBM-Core', mod, encounterId or rawget(mod, 'encounterId'), dbmName(mod), rawget(mod, 'id'))
         end
 
@@ -289,7 +339,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- A timer starts; kept only when it has a spell id and a sane duration (a bad restart removes the old timer).
     function dbm.DBM_TimerBegin(at, id, _, duration, _, _, spell)
-        if type(id) ~= 'string' or #id > 512 then return end
+        if type(id) ~= 'string' or #id > 512 then
+            return
+        end
+
         spell = spellID(spell)
 
         if not spell or not finite(duration) or duration <= 0 or duration > MAX_DURATION then
@@ -302,13 +355,18 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- A timer was stopped by the provider.
     function dbm.DBM_TimerStop(_, id)
-        if type(id) == 'string' then removeTimer(id) end
+        if type(id) == 'string' then
+            removeTimer(id)
+        end
     end
 
     -- The provider re-reports a timer's progress; the remaining time is recomputed (and kept frozen while paused).
     function dbm.DBM_TimerUpdate(at, id, elapsed, total)
         local t = type(id) == 'string' and timers[id]
-        if not t then return end
+
+        if not t then
+            return
+        end
 
         if not finite(elapsed) or not finite(total) then
             removeTimer(id)
@@ -332,7 +390,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
         if t and not t.paused then
             t.paused = t.expiresAt - at
-            if t.paused <= 0 then removeTimer(id) end
+
+            if t.paused <= 0 then
+                removeTimer(id)
+            end
         end
     end
 
@@ -350,17 +411,24 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- A boss module engaged starts an encounter for it.
     function bigwigs.BigWigs_OnBossEngage(_, module)
-        if type(module) ~= 'table' then return end
+        if type(module) ~= 'table' then
+            return
+        end
+
         local ok, name = pcall(function() return module.displayName or module.moduleName end)
         engage('BigWigs', module, rawget(module, 'engageId'), ok and name or nil, rawget(module, 'moduleName'))
     end
 
     -- A win, wipe or disable ends the module's encounter and removes every bar it owned.
     local function bossEnd(_, module)
-        if same(module) then encounter = nil end
+        if same(module) then
+            encounter = nil
+        end
 
         for k, t in pairs(timers) do
-            if rawequal(t.source, module) then removeTimer(k) end
+            if rawequal(t.source, module) then
+                removeTimer(k)
+            end
         end
     end
 
@@ -371,16 +439,23 @@ function addon.Integrations.NewEncounterTimers(options)
     -- Removes every bar owned by the module.
     function bigwigs.BigWigs_StopBars(_, module)
         for k, t in pairs(timers) do
-            if rawequal(t.source, module) then removeTimer(k) end
+            if rawequal(t.source, module) then
+                removeTimer(k)
+            end
         end
     end
 
     -- A stage change; also starts the encounter when the module is engaged but its engage message was missed.
     function bigwigs.BigWigs_SetStage(_, module, stage)
-        if type(module) ~= 'table' or not finite(stage) then return end
+        if type(module) ~= 'table' or not finite(stage) then
+            return
+        end
 
         if not same(module) then
-            if rawget(module, 'isEngaged') ~= true then return end
+            if rawget(module, 'isEngaged') ~= true then
+                return
+            end
+
             bigwigs.BigWigs_OnBossEngage(nil, module)
         end
 
@@ -390,12 +465,18 @@ function addon.Integrations.NewEncounterTimers(options)
     -- Bars are named per module by their display text; the key (an option
     -- key, normally the ability's spell ID) is the only stable identity.
     function bigwigs.BigWigs_StartBar(at, module, key, text, duration)
-        if type(text) ~= 'string' or #text > 512 then return end
+        if type(text) ~= 'string' or #text > 512 then
+            return
+        end
+
         local spell = spellID(key)
         local existing = timers[text]
 
         if not spell or not finite(duration) or duration <= 0 or duration > MAX_DURATION then
-            if existing and rawequal(existing.source, module) then removeTimer(text) end
+            if existing and rawequal(existing.source, module) then
+                removeTimer(text)
+            end
+
             return
         end
 
@@ -405,7 +486,10 @@ function addon.Integrations.NewEncounterTimers(options)
     -- Removes one bar, only if the same module owns it.
     function bigwigs.BigWigs_StopBar(_, module, text)
         local t = type(text) == 'string' and timers[text]
-        if t and rawequal(t.source, module) then removeTimer(text) end
+
+        if t and rawequal(t.source, module) then
+            removeTimer(text)
+        end
     end
 
     -- Pauses one bar (freezing its remaining time), only if the same module owns it.
@@ -414,7 +498,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
         if t and rawequal(t.source, module) and not t.paused then
             t.paused = t.expiresAt - at
-            if t.paused <= 0 then removeTimer(text) end
+
+            if t.paused <= 0 then
+                removeTimer(text)
+            end
         end
     end
 
@@ -434,25 +521,43 @@ function addon.Integrations.NewEncounterTimers(options)
     local function makeHandler(kind, routes, g)
         return function(event, ...)
             local b = binding
-            if disposed or not b or b.faulted or generation ~= g then return end
+
+            if disposed or not b or b.faulted or generation ~= g then
+                return
+            end
+
             local route = routes[event]
-            if not route then return end
+
+            if not route then
+                return
+            end
 
             local ok, err = pcall(function(...)
                 -- Only the leading payload fields are consumed (DBM spellId is 6th).
                 local n = select('#', ...)
-                if n > 7 then n = 7 end
+
+                if n > 7 then
+                    n = 7
+                end
 
                 for i = 1, n do
-                    if not canRead((select(i, ...))) then error('restricted', 0) end
+                    if not canRead((select(i, ...))) then
+                        error('restricted', 0)
+                    end
                 end
 
                 local at = clock()
-                if not at then error('invalid-clock', 0) end
+
+                if not at then
+                    error('invalid-clock', 0)
+                end
+
                 route(at, ...)
             end, ...)
 
-            if not ok and generation == g then fault(err == 'restricted' and 'restricted-value' or 'callback-error') end
+            if not ok and generation == g then
+                fault(err == 'restricted' and 'restricted-value' or 'callback-error')
+            end
         end
     end
 
@@ -550,9 +655,16 @@ function addon.Integrations.NewEncounterTimers(options)
     -- Selects the provider ("DBM-Core", "BigWigs" or nil to disable), replacing any previous binding. Returns true,
     -- or false and a reason code.
     function service:SetProvider(id)
-        if disposed then return false, 'disposed' end
-        if id ~= nil and not providers[id] then return false, 'invalid-provider' end
-        if id == provider and (id == nil or binding and not binding.faulted) then return true end
+        if disposed then
+            return false, 'disposed'
+        end
+        if id ~= nil and not providers[id] then
+            return false, 'invalid-provider'
+        end
+        if id == provider and (id == nil or binding and not binding.faulted) then
+            return true
+        end
+
         detach()
         clear()
         provider = id
@@ -568,8 +680,13 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- Retry a selected provider that was not yet loaded (ADDON_LOADED).
     function service:Refresh()
-        if disposed or provider == nil then return self:GetStatus() end
-        if binding and not binding.faulted then return self:GetStatus() end
+        if disposed or provider == nil then
+            return self:GetStatus()
+        end
+        if binding and not binding.faulted then
+            return self:GetStatus()
+        end
+
         detach()
         clear()
         attach()
@@ -588,9 +705,16 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- Returns true when readings are available, otherwise nil and the reason they are not.
     local function current()
-        if disposed then return nil, 'disposed' end
-        if provider == nil then return nil, 'integration-disabled' end
-        if not binding or binding.faulted or status.state ~= 'available' then return nil, status.reason end
+        if disposed then
+            return nil, 'disposed'
+        end
+        if provider == nil then
+            return nil, 'integration-disabled'
+        end
+        if not binding or binding.faulted or status.state ~= 'available' then
+            return nil, status.reason
+        end
+
         return true
     end
 
@@ -598,9 +722,17 @@ function addon.Integrations.NewEncounterTimers(options)
     -- active (true/false or nil when unavailable), encounterId, stage, name/reason.
     function service:GetEncounter()
         local ok, why = current()
-        if not ok then return nil, nil, nil, why end
+
+        if not ok then
+            return nil, nil, nil, why
+        end
+
         local e = encounter
-        if not e then return false end
+
+        if not e then
+            return false
+        end
+
         local alive = rawget(e.handle, e.provider == 'DBM-Core' and 'inCombat' or 'isEngaged') == true
 
         if not alive then
@@ -615,9 +747,17 @@ function addon.Integrations.NewEncounterTimers(options)
     -- running, or nil and a reason when the integration is unavailable. Expired timers are dropped on the way.
     function service:GetTimerRemaining(spell, at)
         local ok, why = current()
-        if not ok then return nil, why end
+
+        if not ok then
+            return nil, why
+        end
+
         at = finite(at) and at or clock()
-        if not at then return nil, 'invalid-clock' end
+
+        if not at then
+            return nil, 'invalid-clock'
+        end
+
         local best
 
         for key, t in pairs(timers) do
@@ -636,9 +776,16 @@ function addon.Integrations.NewEncounterTimers(options)
     -- Authoring aid only: bounded, detached rows sorted by time remaining.
     function service:ListTimers(limit)
         local rows = {}
-        if not current() then return rows end
+
+        if not current() then
+            return rows
+        end
+
         local at = clock()
-        if not at then return rows end
+
+        if not at then
+            return rows
+        end
 
         for key, t in pairs(timers) do
             local remaining = t.paused or (t.expiresAt - at)
@@ -651,7 +798,10 @@ function addon.Integrations.NewEncounterTimers(options)
         end
 
         table.sort(rows, function(a, b)
-            if a.remaining ~= b.remaining then return a.remaining < b.remaining end
+            if a.remaining ~= b.remaining then
+                return a.remaining < b.remaining
+            end
+
             return a.spellId < b.spellId
         end)
 
@@ -664,7 +814,10 @@ function addon.Integrations.NewEncounterTimers(options)
 
     -- Detaches from the provider for good; every later call reports "disposed".
     function service:Dispose()
-        if disposed then return end
+        if disposed then
+            return
+        end
+
         detach()
         clear()
         provider = nil
@@ -686,14 +839,24 @@ local service, events, selected
 local function profileProvider(self)
     local profile = self.db and self.db.profile
     local value = profile and profile.encounter_provider
-    if type(value) == 'string' and providers[value] then return value end
+
+    if type(value) == 'string' and providers[value] then
+        return value
+    end
 end
 
 -- Creates the session's service once and applies the saved provider selection.
 function addon:InitializeEncounterIntegration()
-    if service then return end
+    if service then
+        return
+    end
+
     local factory = self.Integrations and self.Integrations.NewEncounterTimers
-    if type(factory) ~= 'function' then return end
+
+    if type(factory) ~= 'function' then
+        return
+    end
+
     service = factory()
     self:SyncEncounterIntegration()
 end
@@ -702,13 +865,22 @@ end
 local function watchLoads(self, on)
     if on then
         if not events then
-            if type(CreateFrame) ~= 'function' then return end
+            if type(CreateFrame) ~= 'function' then
+                return
+            end
+
             events = CreateFrame('Frame')
 
             events:SetScript('OnEvent', function(_, event, name)
-                if event ~= 'ADDON_LOADED' or not service or not selected or name ~= selected then return end
+                if event ~= 'ADDON_LOADED' or not service or not selected or name ~= selected then
+                    return
+                end
+
                 service:Refresh()
-                if service:IsBound() then events:UnregisterEvent('ADDON_LOADED') end
+
+                if service:IsBound() then
+                    events:UnregisterEvent('ADDON_LOADED')
+                end
             end)
         end
 
@@ -720,9 +892,16 @@ end
 
 -- Applies the saved provider selection to the service. Safe to call repeatedly; returns false before initialization.
 function addon:SyncEncounterIntegration()
-    if not service then return false end
+    if not service then
+        return false
+    end
+
     local wanted = profileProvider(self)
-    if wanted == selected and (wanted == nil or service:IsBound()) then return true end
+
+    if wanted == selected and (wanted == nil or service:IsBound()) then
+        return true
+    end
+
     selected = wanted
     service:SetProvider(wanted)
     -- Only a selected, not-yet-loaded provider listens for its own load.
@@ -732,24 +911,36 @@ end
 
 -- Returns the integration status table for the settings page ("unavailable" before initialization).
 function addon:GetEncounterIntegrationStatus()
-    if service then return service:GetStatus() end
+    if service then
+        return service:GetStatus()
+    end
+
     return { state = 'unavailable', reason = 'adapter-unavailable', nativeAcceptance = 'unverified' }
 end
 
 -- Condition reader: returns active, encounterId, stage and name (see service:GetEncounter), or nil and a reason.
 function addon:GetBossModEncounter()
-    if not service then return nil, nil, nil, 'adapter-unavailable' end
+    if not service then
+        return nil, nil, nil, 'adapter-unavailable'
+    end
+
     return service:GetEncounter()
 end
 
 -- Condition reader: seconds until the next boss-mod timer for spell, false when none, or nil and a reason.
 function addon:GetBossModTimerRemaining(spell, at)
-    if not service then return nil, 'adapter-unavailable' end
+    if not service then
+        return nil, 'adapter-unavailable'
+    end
+
     return service:GetTimerRemaining(spell, at)
 end
 
 -- Authoring aid: the soonest boss-mod timers as { spellId, remaining, paused } rows (empty when unavailable).
 function addon:ListBossModTimers(limit)
-    if not service then return {} end
+    if not service then
+        return {}
+    end
+
     return service:ListTimers(limit)
 end

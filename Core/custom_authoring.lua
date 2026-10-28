@@ -7,7 +7,11 @@
 
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- ============================================================================
@@ -89,7 +93,11 @@ addon.CustomConditionCallbackDocs = docs
 -- Returns the colored help text (description, arguments, return) for one callback, or '' for an unknown name.
 function addon:CustomConditionDocumentation(name)
     local doc = docs[name]
-    if not doc then return '' end
+
+    if not doc then
+        return ''
+    end
+
     local lines = { doc.description, '|cffffcc55' .. L['Arguments'] .. '|r' }
 
     for _, arg in ipairs(doc.args) do
@@ -111,11 +119,17 @@ local kinds = { string = true, number = true, boolean = true, condition = true, 
 -- Returns nil and a reason when the schema does not normalize. Parsing the result gives back an equal schema.
 function addon:FormatCustomFieldSchema(fields)
     local normalized, why = self:NormalizeCustomFieldSchema(fields, true)
-    if not normalized then return nil, why end
+
+    if not normalized then
+        return nil, why
+    end
 
     -- Writes one schema node: a leaf type name, or a braced list of (optionally named) children in sorted key order.
     local function format(value)
-        if type(value) == 'string' then return value end
+        if type(value) == 'string' then
+            return value
+        end
+
         local keys = {}
 
         for key in pairs(value) do
@@ -144,7 +158,10 @@ end
 function addon:ParseCustomFieldSchema(text)
     -- 512 nodes with valid 64-byte field names can exceed 32 KiB. Keep
     -- byte work bounded while allowing every newly supported graph to roundtrip.
-    if type(text) ~= 'string' or #text > 65536 then return nil, 'schema-limit' end
+    if type(text) ~= 'string' or #text > 65536 then
+        return nil, 'schema-limit'
+    end
+
     local cursor, nodes = 1, 0
 
     -- Moves the cursor past whitespace.
@@ -171,11 +188,17 @@ function addon:ParseCustomFieldSchema(text)
     -- carrying the reason code.
     parse = function(depth)
         nodes = nodes + 1
-        if depth > 16 or nodes > 512 then error('schema-limit', 0) end
+
+        if depth > 16 or nodes > 512 then
+            error('schema-limit', 0)
+        end
 
         if token('{') then
             local result, index = {}, 1
-            if token('}') then return result end
+
+            if token('}') then
+                return result
+            end
 
             repeat
                 local start = cursor
@@ -184,7 +207,11 @@ function addon:ParseCustomFieldSchema(text)
 
                 if not name and token('%[') then
                     local quote = token('"') or token("'")
-                    if not quote then error('invalid-field-name', 0) end
+
+                    if not quote then
+                        error('invalid-field-name', 0)
+                    end
+
                     local pieces = {}
                     local closed = false
 
@@ -200,13 +227,19 @@ function addon:ParseCustomFieldSchema(text)
                         if ch == '\\' then
                             ch = text:sub(cursor, cursor)
                             cursor = cursor + 1
-                            if ch ~= quote and ch ~= '\\' then error('invalid-field-name', 0) end
+
+                            if ch ~= quote and ch ~= '\\' then
+                                error('invalid-field-name', 0)
+                            end
                         end
 
                         pieces[#pieces + 1] = ch
                     end
 
-                    if not closed or not token('%]') then error('invalid-field-name', 0) end
+                    if not closed or not token('%]') then
+                        error('invalid-field-name', 0)
+                    end
+
                     name = table.concat(pieces)
                 end
 
@@ -218,22 +251,43 @@ function addon:ParseCustomFieldSchema(text)
                     index = index + 1
                 end
 
-                if result[key] ~= nil then error('duplicate-field', 0) end
+                if result[key] ~= nil then
+                    error('duplicate-field', 0)
+                end
+
                 result[key] = parse(depth + 1)
-                if token('}') then return result end
-                if not token(',') then error('expected-comma', 0) end
+
+                if token('}') then
+                    return result
+                end
+
+                if not token(',') then
+                    error('expected-comma', 0)
+                end
             until false
         end
 
         local kind = token('[%a_][%w_]*%[%]') or token('[%a_][%w_]*')
-        if not kinds[kind] then error('unknown-field-type', 0) end
+
+        if not kinds[kind] then
+            error('unknown-field-type', 0)
+        end
+
         return kind
     end
 
     local ok, value = pcall(parse, 0)
-    if not ok then return nil, value end
+
+    if not ok then
+        return nil, value
+    end
+
     skip()
-    if cursor <= #text then return nil, 'unexpected-schema-text' end
+
+    if cursor <= #text then
+        return nil, 'unexpected-schema-text'
+    end
+
     return self:NormalizeCustomFieldSchema(value, true)
 end
 
@@ -244,8 +298,13 @@ end
 -- Validates the per-callback parameter name lists of a source and returns a detached copy ({} when absent), or nil and
 -- 'invalid-callback-parameters'. Names must be identifiers; '...' is allowed only as the last one.
 function addon:NormalizeCustomConditionParameters(parameters)
-    if parameters == nil then return {} end
-    if type(parameters) ~= 'table' or getmetatable(parameters) then return nil, 'invalid-callback-parameters' end
+    if parameters == nil then
+        return {}
+    end
+    if type(parameters) ~= 'table' or getmetatable(parameters) then
+        return nil, 'invalid-callback-parameters'
+    end
+
     local result = {}
 
     for name, args in pairs(parameters) do
@@ -263,7 +322,9 @@ function addon:NormalizeCustomConditionParameters(parameters)
             end
         end
 
-        if count ~= #args then return nil, 'invalid-callback-parameters' end
+        if count ~= #args then
+            return nil, 'invalid-callback-parameters'
+        end
 
         for index, arg in ipairs(args) do
             if
@@ -283,19 +344,30 @@ end
 -- Returns a clean list of required field names, or nil when it is not a dense list of distinct names that the schema
 -- declares.
 function addon:NormalizeCustomConditionRequiredFields(required, fields)
-    if type(required) ~= 'table' or getmetatable(required) or #required > 128 then return nil end
+    if type(required) ~= 'table' or getmetatable(required) or #required > 128 then
+        return nil
+    end
+
     local result, seen = {}, {}
     local count = 0
 
     for index in pairs(required) do
         count = count + 1
-        if type(index) ~= 'number' or index % 1 ~= 0 or index < 1 or index > #required then return nil end
+
+        if type(index) ~= 'number' or index % 1 ~= 0 or index < 1 or index > #required then
+            return nil
+        end
     end
 
-    if count ~= #required then return nil end
+    if count ~= #required then
+        return nil
+    end
 
     for _, name in ipairs(required) do
-        if type(name) ~= 'string' or fields[name] == nil or seen[name] then return nil end
+        if type(name) ~= 'string' or fields[name] == nil or seen[name] then
+            return nil
+        end
+
         seen[name] = true
         result[#result + 1] = name
     end
@@ -315,7 +387,10 @@ function addon:CustomConditionParameterAliases(source, name)
 
     for index, original in ipairs(source.parameters and source.parameters[name] or {}) do
         local canonical = doc and doc.args[index] and doc.args[index][1]
-        if canonical and original ~= '...' and original ~= canonical then aliases[original] = canonical end
+
+        if canonical and original ~= '...' and original ~= canonical then
+            aliases[original] = canonical
+        end
     end
 
     return aliases
@@ -330,7 +405,11 @@ end
 -- the condition key and callback so error reports can say where the code came from.
 function addon:CompileCustomConditionCallback(key, name, code, bindings, parameters)
     local params = callbacks[name]
-    if not params or type(code) ~= 'string' then return nil, 'invalid-callback' end
+
+    if not params or type(code) ~= 'string' then
+        return nil, 'invalid-callback'
+    end
+
     local names, values = {}, {}
 
     for alias, canonical in pairs(self:CustomConditionParameterAliases({ parameters = parameters }, name)) do
@@ -357,12 +436,12 @@ end
 -- failing field or callback and a reason. `compatibility` relaxes limits for already-saved sources; `allowUnavailable`
 -- accepts bindings that cannot be resolved right now and reports them in `unavailable`.
 function addon:ValidateCustomConditionSource(key, source, compatibility, allowUnavailable)
-    if type(loadstring) ~= 'function' then return nil, { field = 'compiler', reason = 'compiler-unavailable' } end
-
+    if type(loadstring) ~= 'function' then
+        return nil, { field = 'compiler', reason = 'compiler-unavailable' }
+    end
     if not self:IsCustomConditionIdentifier(key, compatibility) then
         return nil, { field = 'identifier', reason = 'invalid-identifier' }
     end
-
     if
         type(source) ~= 'table'
         or type(source.description) ~= 'string'
@@ -372,7 +451,6 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
     then
         return nil, { field = 'description', reason = 'incomplete-definition' }
     end
-
     if source.disabled ~= nil and type(source.disabled) ~= 'boolean' then
         return nil, { field = 'disabled', reason = 'invalid-disabled-flag' }
     end
@@ -396,14 +474,20 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
     end
 
     local fields, why = self:NormalizeCustomFieldSchema(source.fields, true)
-    if not fields then return nil, { field = 'fields', reason = why } end
 
+    if not fields then
+        return nil, { field = 'fields', reason = why }
+    end
     if source.fieldOrder ~= nil and not self:NormalizeCustomFieldOrder(source.fieldOrder, fields) then
         return nil, { field = 'fields', reason = 'invalid-field-order' }
     end
 
     local parameters, parameterError = self:NormalizeCustomConditionParameters(source.parameters)
-    if not parameters then return nil, { field = 'parameters', reason = parameterError } end
+
+    if not parameters then
+        return nil, { field = 'parameters', reason = parameterError }
+    end
+
     local bindings, unavailable
 
     if source.bindings ~= nil then
@@ -425,11 +509,18 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
 
         local why
         bindings, why = self:NormalizeFunctionBindings(source.bindings, arguments)
-        if not bindings then return nil, { field = 'bindings', reason = why } end
+
+        if not bindings then
+            return nil, { field = 'bindings', reason = why }
+        end
+
         local available, problem = self:AreFunctionBindingsAvailable(bindings)
 
         if not available then
-            if not allowUnavailable then return nil, { field = 'bindings', reason = problem } end
+            if not allowUnavailable then
+                return nil, { field = 'bindings', reason = problem }
+            end
+
             unavailable = problem
         end
     end
@@ -438,7 +529,10 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
 
     if source.requiredFields then
         required = self:NormalizeCustomConditionRequiredFields(source.requiredFields, fields)
-        if not required then return nil, { field = 'requiredFields', reason = 'invalid-required-fields' } end
+
+        if not required then
+            return nil, { field = 'requiredFields', reason = 'invalid-required-fields' }
+        end
     end
 
     local compiled, total = {}, 0
@@ -451,9 +545,17 @@ function addon:ValidateCustomConditionSource(key, source, compatibility, allowUn
         end
 
         total = total + #code
-        if not compatibility and total > 262144 then return nil, { callback = name, reason = 'code-limit' } end
+
+        if not compatibility and total > 262144 then
+            return nil, { callback = name, reason = 'code-limit' }
+        end
+
         local fn, errorText = self:CompileCustomConditionCallback(key, name, code, bindings, parameters)
-        if not fn then return nil, { callback = name, reason = 'syntax-error', detail = errorText } end
+
+        if not fn then
+            return nil, { callback = name, reason = 'syntax-error', detail = errorText }
+        end
+
         compiled[name] = fn
     end
 
@@ -487,7 +589,10 @@ function addon:CompileCustomCondition(key, source, compatibility)
     end
 
     local checked, why = self:ValidateCustomConditionSource(key, source, compatibility, true)
-    if not checked then return nil, why end
+
+    if not checked then
+        return nil, why
+    end
 
     local definition = {
         description = source.description,
@@ -502,9 +607,17 @@ function addon:CompileCustomCondition(key, source, compatibility)
 
     for name, chunk in pairs(checked.compiled) do
         local ok, binder = pcall(chunk)
-        if not ok or type(binder) ~= 'function' then return nil, { callback = name, reason = 'compile-failed' } end
+
+        if not ok or type(binder) ~= 'function' then
+            return nil, { callback = name, reason = 'compile-failed' }
+        end
+
         local bound, fn = pcall(binder, self, L)
-        if not bound or type(fn) ~= 'function' then return nil, { callback = name, reason = 'compile-failed' } end
+
+        if not bound or type(fn) ~= 'function' then
+            return nil, { callback = name, reason = 'compile-failed' }
+        end
+
         definition[name] = fn
     end
 
@@ -532,7 +645,11 @@ function addon:InstallCustomCondition(key, source, expected, expectedSource)
     end
 
     local definition, why = self:CompileCustomCondition(key, source, expectedSource ~= nil)
-    if not definition then return false, why end
+
+    if not definition then
+        return false, why
+    end
+
     local ok
 
     if self.Diagnostics then
@@ -550,12 +667,18 @@ function addon:InstallCustomCondition(key, source, expected, expectedSource)
         if registry then
             local changed = not rawequal(registry[key], previous)
             registry[key] = previous
-            if changed and invalidateDependencies then invalidateDependencies(addon, 'condition', key) end
+
+            if changed and invalidateDependencies then
+                invalidateDependencies(addon, 'condition', key)
+            end
         end
 
         -- Trusted hooks can have arbitrary external effects. Restore registry
         -- and saved source; restoring the prior hook's setup is best effort.
-        if previous and not previous.disabled and previous.on_register then pcall(previous.on_register, key) end
+        if previous and not previous.disabled and previous.on_register then
+            pcall(previous.on_register, key)
+        end
+
         return false, { field = 'registration', reason = 'registration-failed' }
     end
 
@@ -607,7 +730,11 @@ function addon:NewCustomConditionDraft(key, source)
     function d:Change(change)
         local before = self:Snapshot()
         change(self)
-        if addon:SettingsDataEqual(before, self:Snapshot()) then return false end
+
+        if addon:SettingsDataEqual(before, self:Snapshot()) then
+            return false
+        end
+
         self.undo[#self.undo + 1] = before
         self.redo = {}
         self.bytes = 0
@@ -625,15 +752,24 @@ function addon:NewCustomConditionDraft(key, source)
 
     -- Sets one callback's source text as an undoable change; unknown callback names are refused.
     function d:SetFunction(name, code)
-        if not callbacks[name] then return false end
-        return self:Change(function(state) state.value[name] = code end)
+        if not callbacks[name] then
+            return false
+        end
+
+        return self:Change(function(state)
+            state.value[name] = code
+        end)
     end
 
     -- Moves one step through history (undo, or redo when `redo` is true). Returns true when a step was taken.
     function d:Travel(redo)
         local from = redo and self.redo or self.undo
         local to = redo and self.undo or self.redo
-        if #from == 0 then return false end
+
+        if #from == 0 then
+            return false
+        end
+
         to[#to + 1] = self:Snapshot()
         local state = table.remove(from)
         self.key = state.key
