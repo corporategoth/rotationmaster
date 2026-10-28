@@ -87,7 +87,7 @@ python3 tools/package_release.py --parity                                  # com
 ```
 
 The builder reproduces the packager from `.pkgmeta` without a network, a token or a `zip` binary, and `--check` fails if
-the package holds anything the game client cannot load (only `.lua .xml .toc .tga .blp .ttf` and licence or notice files
+the package holds anything the game client cannot load (only `.lua .xml .toc .tga .blp .ttf` and license or notice files
 may ship; the failure names the file), code no TOC or XML include loads, or a texture or font no loaded code names, or
 lacks something that is needed. The ignore rules for that live in `tools/generate_artwork_catalog.py` (`.pkgmeta` is its output). It packages tracked files from the
 working tree. `--parity` clones HEAD into a scratch directory, runs the vendored `tools/vendor/bigwigs-packager/release.sh`

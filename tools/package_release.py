@@ -21,7 +21,7 @@ changelog. Nothing outside the checkout is read.
 `--check` fails when the package holds a path that is not for the game (tests, tools, docs, .claude,
 sources, secrets), lacks a required file, has a TOC that disagrees with the supported clients or lists
 a file that is missing, or has a file or zip over the size limits. A package may hold only what the
-client loads (.lua .xml .toc .tga .blp .ttf) and licence or notice files; it fails on any other file,
+client loads (.lua .xml .toc .tga .blp .ttf) and license or notice files; it fails on any other file,
 on code no TOC or XML include loads, and on a texture or font no loaded code names.
 """
 import argparse
@@ -65,8 +65,8 @@ FORBIDDEN_SUFFIXES = ('.py', '.sh', '.svg', '.psd', '.xcf', '.png', '.jpg', '.jp
 REQUIRED = ['RotationMaster/RotationMaster.toc', 'RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt',
             'RotationMaster/THIRD_PARTY_NOTICES.md', 'RotationMaster/embeds.xml', 'RotationMaster/locales.xml']
 NOTICE = 'Copyright (c) 2022 wowsims team'
-# What a package may hold: the files the game client reads, plus licence and notice files it cannot read but the
-# licences of the code, font and data in the package require. Anything else is not for the game.
+# What a package may hold: the files the game client reads, plus license and notice files it cannot read but the
+# licenses of the code, font and data in the package require. Anything else is not for the game.
 CODE_SUFFIXES = ('.lua', '.xml')
 ASSET_SUFFIXES = ('.tga', '.blp', '.ttf')
 LOADABLE_SUFFIXES = CODE_SUFFIXES + ('.toc',) + ASSET_SUFFIXES
@@ -384,7 +384,7 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
         elif base.endswith(FORBIDDEN_SUFFIXES):
             problems.append(f'file type that is not for the game: {name}')
         elif not (base.endswith(LOADABLE_SUFFIXES) or NOTICE_FILE.fullmatch(base)):
-            problems.append(f'neither a file the game loads nor a licence or notice: {name}')
+            problems.append(f'neither a file the game loads nor a license or notice: {name}')
         if len(layout[name]) > max_file_kb * 1024:
             problems.append(f'{name} is {len(layout[name]) // 1024} KB (limit {max_file_kb} KB)')
     folders = {}

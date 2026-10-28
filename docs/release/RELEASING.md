@@ -101,7 +101,7 @@ Push the tag to **Gitea** only. Do not move or delete a published tag; fix forwa
       site that should receive the file has no secret;
    3. `tools/release_notes.py` writes `CHANGELOG.md` (sent to CurseForge; `.pkgmeta` keeps it out of the zip) and the Gitea release body;
    4. verifies the vendored `release.sh` checksum, builds the package with it (`-d`, no secrets in the environment);
-   5. `tools/package_release.py --check-zip` on that exact zip (only files the client loads plus licence and notice files, every TOC lists files that exist, supported
+   5. `tools/package_release.py --check-zip` on that exact zip (only files the client loads plus license and notice files, every TOC lists files that exist, supported
       Interface numbers, no oversize file);
    6. creates or updates the **Gitea release** (prerelease for beta and alpha) with the zip attached (`tools/gitea_release.py`);
    7. runs the packager again with the secrets to upload to CurseForge, Wago and (per the table above) WoWInterface.
