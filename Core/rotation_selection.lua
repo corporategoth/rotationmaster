@@ -127,6 +127,10 @@ local refusalText = {
     ['unsupported-context-selector'] = L['it needs context Rotation Master cannot read yet'],
 }
 
+-- The breadcrumb separator between the parts of a location ("Rotation step 1 > Yes 2"): U+203A, written as its UTF-8
+-- bytes so the source stays ASCII (editors and the forge flag the glyph as confusable with a colon).
+local SEPARATOR = ' \226\128\186 '
+
 -- Walk a validation path ("$.body.rotation[2].onTrue[1].conditions.type").
 -- Returns the names and numeric indexes in order ('rotation', 2, 'onTrue', 1, ...), or nil for a path outside the body.
 local function tokens(path)
@@ -166,7 +170,7 @@ local function stepName(step)
 end
 
 -- Where a diagnostic is, in words: "Cooldown 2 (Touch of Death)",
--- "Rotation step 1 › Yes 2 (Stop)", "Switch condition". body is optional.
+-- "Rotation step 1 > Yes 2 (Stop)" (parts joined by SEPARATOR), "Switch condition". body is optional.
 function addon:DescribeRotationIssueLocation(path, body)
     local list = tokens(path)
     if not list then return L['Rotation'] end
@@ -187,7 +191,7 @@ function addon:DescribeRotationIssueLocation(path, body)
         i = i + 2
     end
 
-    local text = table.concat(parts, ' › ')
+    local text = table.concat(parts, SEPARATOR)
     local name = stepName(node)
 
     if name then

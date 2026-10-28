@@ -185,7 +185,7 @@ test('a refused rotation names the step and the reason in plain words, for set b
     local nested={name='Nested',priority=1,switch={},cooldowns={},rotation={{id='b',type='branch',conditions={},onTrue={},
         onFalse={{id='inner',type='spell',action=324,conditions={type='HEALTHPCT',unit='player',operator='LESSTHAN',value=0.5}}}}}}
     save(a,0,'nested',nested)
-    why=a:ExplainRotationRefusal(0,'nested');assert(why and why:find('Rotation step 1 › No 1 (Spell 324)',1,true),tostring(why))
+    why=a:ExplainRotationRefusal(0,'nested');assert(why and why:find('Rotation step 1 \226\128\186 No 1 (Spell 324)',1,true),tostring(why))
     -- Disabled is not a validation issue, and says so.
     local disabled=assisted();disabled.name='Off';disabled.disabled=true;save(a,0,'off',disabled)
     assert(a:ExplainRotationRefusal(0,'off')=='it is disabled')
@@ -268,7 +268,7 @@ test('editor: a broken Branch or Stop child marks Rotation red from either tab a
     local a,parent=editor({mine={name='Mine',switch={},cooldowns={},rotation={{id='branch',type='branch',conditions={},
         onTrue={{id='fine',type='stop',conditions={}}},onFalse={{id='stop',type='stop',conditions=health('player')}}}}}})
     local pane=assert(a:CreateRotationEditor(parent,0,'mine'))
-    assert(marked(pane.contentTabs.rotation) and pane.contentTabs.rotation.tooltip:find('Rotation step 1 › No 1 (Stop)',1,true),tostring(pane.contentTabs.rotation.tooltip))
+    assert(marked(pane.contentTabs.rotation) and pane.contentTabs.rotation.tooltip:find('Rotation step 1 \226\128\186 No 1 (Stop)',1,true),tostring(pane.contentTabs.rotation.tooltip))
     assert(not marked(pane.contentTabs.cooldowns))
     assert(cardFor(pane,'stop').model.invalid and cardFor(pane,'branch').model.invalid and not cardFor(pane,'fine').model.invalid)
     pane:SelectContent('cooldowns');assert(marked(pane.contentTabs.rotation),'the mark left with the rotation list')

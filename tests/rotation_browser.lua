@@ -315,7 +315,7 @@ test('a rotation that cannot be selected wears a red row naming its first blocki
     for _,control in ipairs(browser.rowButtons) do if control:IsShown() and control.browserEntry then
         if control.browserEntry.key=='one' then one=control elseif control.browserEntry.key=='two' then two=control end
     end end
-    assert(one and one.problemText and one.problemText:find('Rotation step 1 › No 2: uses a highlight effect that no longer exists',1,true),tostring(one and one.problemText))
+    assert(one and one.problemText and one.problemText:find('Rotation step 1 \226\128\186 No 2: uses a highlight effect that no longer exists',1,true),tostring(one and one.problemText))
     -- The tooltip leads with the blocking issue, then the selection order note.
     assert(one.tooltip:sub(1,#one.problemText)==one.problemText and one.problemEdges[1]:IsShown())
     assert(two and two.problemText==nil and (two.problemEdges==nil or not two.problemEdges[1]:IsShown()))
