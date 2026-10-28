@@ -85,6 +85,11 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         end,
         review = {
             kind = 'customcondition',
+            -- Review parser: turns pasted text into the record shown in the comparison (the condition with its name).
+            -- @param input string  The pasted text.
+            -- @return table|nil  The record; nil when the text is not a custom condition.
+            -- @return string|nil  The reason when the text could not be parsed (a dependency bundle gets its own
+            --   message).
             parse = function(input)
                 local parsed, why = self:ParseCustomConditionImport(input, codec)
 
@@ -105,6 +110,10 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
                 record.name = key
                 return record
             end,
+            -- Review check: lists why the chosen destination identifier cannot be used.
+            -- @param record table  The parsed record.
+            -- @param dialog table  The transfer dialog (mode and name).
+            -- @return string[]  The localized problems; empty when the destination is acceptable.
             problems = function(record, dialog)
                 local list = {}
                 local destination = dialog.mode == 'replace' and key or dialog.name:GetText()
@@ -123,6 +132,8 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
                 }
             end,
         },
+        -- Window close: forgets the dialog, releases the transfer form and shows the condition dialog again if it can
+        -- still be resumed.
         onClose = function()
             if dialog then
                 owner.widgets[dialog] = nil

@@ -888,6 +888,9 @@ local function createShell()
             window,
             self.userdata.announcement and "ANNOUNCEMENT" or active.index and active.index > 0 and "ALL" or "SWITCH",
             node and node.type,
+            -- Picker choice: stages the chosen type as an Add (missing operand) or Replace command on the card's
+            -- condition; ignored when the card is gone or the type is unchanged.
+            -- @param tag string  The chosen condition type tag.
             function(tag)
                 if not alive() then
                     return

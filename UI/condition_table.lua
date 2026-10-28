@@ -478,6 +478,8 @@ function addon:PrepareNativeConditionTable(group)
         group.rmNativeTableOriginal = original
 
         -- Lays the group out: rich Table groups go through layout(), everything else through the original DoLayout.
+        -- @return any  What the original compact DoLayout returns for a group that is not a rich table; nothing
+        --   otherwise.
         --
         -- Does nothing while paused, already laying out or queued for release; raises after clearing the pause when
         -- layout fails, then lays out the parent.

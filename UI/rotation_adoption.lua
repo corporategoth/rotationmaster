@@ -12,25 +12,34 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- ============================================================================
 
 -- Stable identity string for one archived record, used as the roster value.
+-- @param selection table{kind=string,spec=string,id=string}  The record's selection.
+-- @return string  The kind, spec and id joined by NUL characters.
 local function key(selection)
     return selection.kind .. '\0' .. selection.spec .. '\0' .. selection.id
 end
 
 -- Localized class name for display, falling back to the raw token (or empty) when the client has no name table.
+-- @param class string|nil  The class token.
+-- @return string  The name.
 local function className(class)
     local names = type(LOCALIZED_CLASS_NAMES_MALE) == 'table' and LOCALIZED_CLASS_NAMES_MALE
     return names and names[class] or class or ''
 end
 
--- Archival inspection is text only. Bounds apply to the report, never to the
--- saved record or the complete recovery roster.
 -- Serializes an archived record to indented text for the copyable report, capped at 64 KB, 20,000 nodes or keys and 32
 -- levels of depth; cycles print as <cycle>. Appends a notice when anything was cut. Read-only on `value`.
+-- @param value any  The archived record.
+-- @return string  The report text, at most 65536 characters.
+--
+-- Archival inspection is text only. Bounds apply to the report, never to the saved record or the complete recovery
+-- roster.
 local function describe(value)
     local parts, bytes, nodes, active = {}, 0, 0, {}
     local truncated = false
 
-    -- Appends a piece of text; returns false (and marks the report truncated) when the byte budget is exhausted.
+    -- Appends a piece of text.
+    -- @param text string  The text.
+    -- @return boolean  False (and marks the report truncated) when the byte budget is exhausted.
     local function put(text)
         if bytes + #text > 65500 then
             truncated = true
@@ -43,6 +52,8 @@ local function describe(value)
     end
 
     -- Writes one value recursively, with keys sorted by type then value so the report is stable between runs.
+    -- @param current any  The value.
+    -- @param depth number  The nesting depth; 0 at the root.
     local function visit(current, depth)
         nodes = nodes + 1
 
@@ -119,9 +130,12 @@ end
 -- Adoption window
 -- ============================================================================
 
--- Opens the recovery window. `owner` is the window that opened it (its generation, lease and serial are captured so
--- the window closes if that owner goes away; may be nil), and `onApplied(reference)` is called with a copy of the last
--- adopted rotation's reference after a successful adoption, only if the owner is still current. Returns the window.
+-- Opens the recovery window.
+-- @param owner table|nil  The window that opened it; its generation, lease and serial are captured so the window closes
+--   if that owner goes away.
+-- @param onApplied function|nil  Called with a copy of the last adopted rotation's reference after a successful
+--   adoption, only if the owner is still current.
+-- @return table  The window.
 function addon:ShowRotationAdoption(owner, onApplied)
     local window = self.rotationAdoptionWindow
 
@@ -182,8 +196,9 @@ function addon:ShowRotationAdoption(owner, onApplied)
     local ownerLease = owner and owner.rmLease
     local ownerSerial = owner and owner.serial
 
-    -- True when there is no owner, or the owner window is still shown, with the same generation, lease and serial
-    -- it had when this window opened.
+    -- True when there is no owner, or the owner window is still shown, with the same generation, lease and serial it
+    -- had when this window opened.
+    -- @return boolean  True when the owner is still the one that opened the window.
     local function ownerValid()
         return not owner
             or (not owner.frame or owner.frame:IsShown())
@@ -195,6 +210,7 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
     -- True while the profile and the class and character that the window opened under are unchanged and the owner is
     -- still valid; adoption writes to that profile and owner, so a switch must stop it.
+    -- @return boolean  True when adoption may still write.
     local function identityCurrent()
         local now = addon:GetRotationOwnerContext()
 
@@ -205,6 +221,7 @@ function addon:ShowRotationAdoption(owner, onApplied)
     end
 
     -- True while this opening is current: window active, same serial, shown, same identity and same coordinator.
+    -- @return boolean  True when callbacks may act.
     local function valid()
         return window.active
             and window.serial == serial
@@ -218,6 +235,9 @@ function addon:ShowRotationAdoption(owner, onApplied)
     window.chrome:SetContext(L['Recover unassigned rotations'], L['Ownership required'], addon.pretty_name)
     window.frame:Show()
 
+    -- Builds the window form: the roster of archived records, the selected record's report, the Applies to choice, the
+    -- adopt button and the bulk adoption buttons.
+    -- @param p table  The window's settings form.
     window.form:Open(function(p)
         p:Message('')
         p:Heading(L['Recover unassigned rotations'])
@@ -318,6 +338,7 @@ function addon:ShowRotationAdoption(owner, onApplied)
         p:Text(L['Applies to'])
 
         -- Switches the adoption owner between 'class' and 'character' and redraws the page.
+        -- @param value string  'class' or 'character'.
         local function choose(value)
             if valid() then
                 scope = value
@@ -352,6 +373,8 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
         local adopt
 
+        -- Adopt button: applies the planned adoption, then closes the window and reports the new rotation's reference;
+        -- on failure disables the button and shows the reason.
         adopt = p:Button('adopt', L['Adopt rotation'], function()
             if not valid() or not plan then
                 return
@@ -398,6 +421,12 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
             -- Confirms, then adopts `count` records for the chosen owner (optionally limited to one specialization).
             -- Records that cannot be adopted stay in the archive and are named in a message.
+            -- @param count number  The number of records announced in the confirmation.
+            -- @param options table|nil  { spec = specialization } to limit the adoption; nil adopts every listed
+            --   record.
+            --
+            -- Several at once: the choice above names the owner; every record is still planned and applied on its own,
+            -- and one that is refused stays in the archive.
             local function run(count, options)
                 p:Confirm(
                     string.format(
@@ -405,6 +434,8 @@ function addon:ShowRotationAdoption(owner, onApplied)
                         count,
                         target
                     ),
+                    -- Confirmed: adopts the records, closes the window when all succeeded, otherwise redraws and names
+                    -- the ones that stay in the archive.
                     function()
                         if not valid() then
                             return

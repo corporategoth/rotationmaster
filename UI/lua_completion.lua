@@ -8,11 +8,13 @@
 
 local _, addon = ...
 
--- The reduced editor uses the same released parser/completion component, but
--- only RM's declared arguments, fields and functions enter its knowledge index.
--- Called once while a native editor control `c` is built; adds c.UpdateSymbols, c.ReleaseCompletion,
--- c.AcquireCompletion and c.completionEngine to it. Returns nothing, and leaves `c` untouched when the LuaWorkbench
--- engine is unavailable.
+-- Attaches completion, hover and navigation to a native editor control. Called once while the control is built; adds
+-- c.UpdateSymbols, c.ReleaseCompletion, c.AcquireCompletion and c.completionEngine to it, and leaves it untouched when
+-- the LuaWorkbench engine is unavailable.
+-- @param c table  The native editor control made by UI/lua_editor.lua.
+--
+-- The reduced editor uses the same released parser/completion component, but only RM's declared arguments, fields and
+-- functions enter its knowledge index.
 function addon:InstallRMCodeCompletion(c)
     if not self.CreateLuaWorkbenchEngine or not self.ApplyLuaContextSymbols then
         return
@@ -48,6 +50,7 @@ function addon:InstallRMCodeCompletion(c)
     engine.Query.Console.input = input
 
     -- Source text the engine reads for this editor, taken from the control so it matches what the user sees.
+    -- @return string  The control's text.
     function input:GetText()
         return c:GetText()
     end
@@ -58,6 +61,7 @@ function addon:InstallRMCodeCompletion(c)
 
     -- Rebuilds the identifier and call spans the engine uses for hover hit-testing, from the control's hidden measuring
     -- string. Skips the work when the text is unchanged since the last call.
+    -- @param text string  The current source text.
     local function updateHoverGeometry(text)
         local state = input.queryEditor
 
@@ -91,6 +95,9 @@ function addon:InstallRMCodeCompletion(c)
     -- Called by the engine when it rewrites the source (for example after accepting a completion). Writes it back to
     -- the control, restores the cursor and reports the change to the owner like a keystroke, unless the control is
     -- released or the owner says it is no longer valid.
+    -- @param _ any  Unused.
+    -- @param text string  The new source text.
+    -- @param cursor number|nil  The cursor position; defaults to the end of the text.
     function E:SetSource(_, text, cursor)
         c:SetText(text)
         c.edit:SetCursorPosition(cursor or #text)
@@ -102,6 +109,8 @@ function addon:InstallRMCodeCompletion(c)
     end
 
     -- Autocomplete is live only for this editor while it is held, writable and the owner still considers itself valid.
+    -- @param value table  The editor input being asked about.
+    -- @return boolean|nil  Truthy when autocomplete may act.
     function A:Enabled(value)
         return value == input and not c.released and not c.readOnly and c.valid()
     end
@@ -111,6 +120,9 @@ function addon:InstallRMCodeCompletion(c)
 
     -- Replaces the EditBox script for `event` with callback(original, ...), remembering the previous script (or false)
     -- so ReleaseCompletion can restore it exactly.
+    -- @param event string  The script name.
+    -- @param callback function  Called as callback(original, ...) with the previous script (or nil) and the script's
+    --   arguments.
     local function wrap(event, callback)
         local original = c.edit:GetScript(event)
         originals[event] = original or false
@@ -248,6 +260,7 @@ function addon:InstallRMCodeCompletion(c)
 
     -- Pushes the owner's context (kind, id, callback, args, returns, bindings, fields) into the engine. Does nothing
     -- when that signature and the function registry revision are unchanged.
+    -- @param context table|nil  The owner's context { kind, id, name, source, callback, ... }.
     function c:UpdateSymbols(context)
         self.context = context
         local source = context and context.source or {}
@@ -280,6 +293,9 @@ function addon:InstallRMCodeCompletion(c)
         self.symbolSignature = nil
         local failed, why
 
+        -- Runs one cleanup step under pcall and remembers the first failure.
+        -- @param callback function  The step.
+        -- @param ... any  The arguments passed to the step.
         local function attempt(callback, ...)
             local ok, result = pcall(callback, ...)
 

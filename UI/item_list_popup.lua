@@ -6,8 +6,9 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Pool constructor for the RM-ItemListPopup widget: builds the frame and embedded settings form once, overrides the
--- form's dirty, history and review hooks to work on the popup's draft (w.draft) instead of saved settings, and returns
--- the registered widget. Per-use state is set later in OnAcquire and addon:OpenItemListPopup.
+-- form's dirty, history and review hooks to work on the popup's draft (w.draft) instead of saved settings. Per-use
+-- state is set later in OnAcquire and addon:OpenItemListPopup.
+-- @return table  The registered widget.
 local function constructor()
     local w = { type = 'RM-ItemListPopup' }
     local frame = CreateFrame('Frame', nil, UIParent)
@@ -31,6 +32,7 @@ local function constructor()
 
     -- True while the popup is active and the profile, global and character tables it was opened against are still the
     -- live ones (a profile switch invalidates it), and the caller's options.valid, if any, still passes.
+    -- @return boolean  True when the popup may act.
     function w:Valid()
         if
             not self.rmActive
@@ -54,11 +56,15 @@ local function constructor()
     local formValid = p.Valid
 
     -- Form validity token check, narrowed by the popup's own validity.
+    -- @param token number  The form's generation token.
+    -- @return boolean  True when the form drawing and the popup are both current.
     function p:Valid(token)
         return formValid(self, token) and w:Valid()
     end
 
     -- Returns whether item resolves through the reference provider and passes the caller's isvalid test.
+    -- @param item string|number  The item as typed or stored.
+    -- @return boolean  True when the item may be kept.
     function w:Accept(item)
         if not self:Valid() then
             return false
@@ -76,6 +82,7 @@ local function constructor()
     end
 
     -- True when a field has an uncommitted edit or the draft differs from the list as it was opened.
+    -- @return boolean  True when there is something to apply.
     function p:IsSettingsDraftDirty()
         for _, record in ipairs(self.edits) do
             if record.dirty then
@@ -87,6 +94,7 @@ local function constructor()
     end
 
     -- The popup has no creation state; only the draft can be dirty.
+    -- @return boolean  Always false.
     function p:IsCreationDirty()
         return false
     end
@@ -94,12 +102,14 @@ local function constructor()
     p.historyEnabled = true
 
     -- Snapshot recorded in the undo history: a copy of the whole draft list.
+    -- @return table  The copy.
     function p:HistorySnapshot()
         return addon:CopySettingsData(w.draft)
     end
 
     -- Undo (or redo) one step: swaps the draft with the previous (next) snapshot and redraws. No-op when a pending
     -- field edit cannot be flushed or the stack is empty.
+    -- @param redo boolean|nil  True to redo, otherwise undo.
     function p:TravelSettingsHistory(redo)
         if not self:FlushEdits() then
             return
@@ -119,6 +129,7 @@ local function constructor()
     end
 
     -- Opens the View changes comparison of the opened list against the draft, plus any item field still being edited.
+    -- @return any  What addon:ShowWorkbenchDraftChanges returns.
     function p:ReviewSettingsChanges()
         local pending = {}
 
@@ -200,9 +211,10 @@ local function constructor()
         addon:ReleaseConditionWidget(self)
     end
 
-    -- Writes the draft into the caller's list in place and closes. Refuses (returning false with a message) when the
-    -- list was changed elsewhere since opening or any item no longer validates. A failing update callback is rethrown
-    -- after the popup closes.
+    -- Writes the draft into the caller's list in place and closes. Refuses when the list was changed elsewhere since
+    -- opening or any item no longer validates (a message is shown). A failing update callback is rethrown after the
+    -- popup closes.
+    -- @return boolean  True when applied; false when refused.
     function w:Apply()
         if not self:Valid() or self.applying or not p:FlushEdits() then
             return false
@@ -340,9 +352,15 @@ local function constructor()
     return addon:RegisterConditionWidget(w)
 end
 
--- Opens the popup for items (the caller's list, edited only on Apply) titled name. editbox names the reference provider
--- that resolves and displays items (default the item editbox), isvalid(resolved) vets each entry, update() runs after a
--- successful Apply and onclose(widget) after release. options.valid() may revoke the popup. Returns the widget.
+-- Opens the popup for an item list. The caller's list is edited only on Apply.
+-- @param name string  The title shown on the popup.
+-- @param editbox string|nil  Names the reference provider that resolves and displays items; defaults to 'Item_EditBox'.
+-- @param items table|nil  The caller's list; nil opens a popup that asks to choose an item list.
+-- @param isvalid function|nil  isvalid(resolved) vets each entry; defaults to accepting everything.
+-- @param update function|nil  Runs after a successful Apply.
+-- @param onclose function|nil  Runs as onclose(widget) after release.
+-- @param options table|nil  options.valid() may revoke the popup.
+-- @return table  The popup widget.
 function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose, options)
     local w = self:AcquireConditionWidget('RM-ItemListPopup', constructor)
     w.target = items
@@ -358,6 +376,9 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
     w.form:ClearSettingsHistory()
     w.form.newItem = ''
 
+    -- Builds the popup form: heading, history actions, the ordered item cards with the new-item row, and the Apply and
+    -- Cancel actions.
+    -- @param p table  The popup's settings form.
     w.form:Open(function(p)
         p:Heading(name)
         p:Text(L['Apply changes to this selected item list. Other settings keep their own Apply action.'])
@@ -379,8 +400,9 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
         p:HistoryActions()
         local items = w.draft
 
-        -- The new-item field and Add share the row above the item cards. Inserts the typed item at gap (clamped to the
-        -- list) after validating it; the field is cleared and the form redrawn.
+        -- Inserts the typed item at gap (clamped to the list) after validating it; the field is cleared and the form
+        -- redrawn. The new-item field and Add share the row above the item cards.
+        -- @param gap number  The position to insert at.
         local function insertItem(gap)
             if p.newItem == '' or not w:Accept(p.newItem) then
                 p:Message(L['Choose an item first.'])
@@ -399,6 +421,10 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
                 local provider = self:GetReferenceProvider(w.editbox)
                 return provider.name(tonumber(items[i]) or provider.resolve(items[i])) or L['Item data loading']
             end,
+            -- Builds one item card: a reference field bound to the draft entry.
+            -- @param form table  The form.
+            -- @param i number  The entry's position in the list.
+            -- @param item string|number  The entry.
             function(form, i, item)
                 local field = form:Reference(
                     'item' .. i,
@@ -425,6 +451,11 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
                     key = 'add_item',
                     text = L['Add item'],
                     insert = insertItem,
+                    -- Builds the new-item field that shares the Add row, and lays it out.
+                    -- @param form table  The form.
+                    -- @param y number  The row's vertical offset.
+                    -- @param width number  The row width.
+                    -- @return any  What addon:LayoutNewItemField returns.
                     leading = function(form, y, width)
                         return self:LayoutNewItemField(
                             form,

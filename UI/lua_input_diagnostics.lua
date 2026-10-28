@@ -12,9 +12,11 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Report helpers
 -- ============================================================================
 
--- Calls `object:method()` under pcall and returns the result as a string, or 'unavailable' when the object or method is
--- missing, the call fails, or the result is not a string, number or boolean (so a secret or userdata value never leaks
--- into a report).
+-- Calls `object:method()` under pcall and returns the result as a string.
+-- @param object table|nil  The object to ask.
+-- @param method string  The method name.
+-- @return string  The result as text, or 'unavailable' when the object or method is missing, the call fails, or the
+--   result is not a string, number or boolean (so a secret or userdata value never leaks into a report).
 local function read(object, method)
     if not object or type(object[method]) ~= 'function' then
         return 'unavailable'
@@ -30,7 +32,10 @@ local function read(object, method)
 end
 
 -- Names what a focused frame is in the editor's terms (code EditBox, ScrollFrame, container, none), or else walks up to
--- 12 parents and returns a "Type[name] > ..." path so an unexpected focus owner can be identified from the report.
+-- 12 parents so an unexpected focus owner can be identified from the report.
+-- @param frame table|nil  The focused frame.
+-- @param control table  The Lua editor control.
+-- @return string  The role, or a "Type[name] > ..." path.
 local function focusRole(frame, control)
     if frame == control.edit then
         return 'code EditBox'
@@ -70,6 +75,9 @@ local function focusRole(frame, control)
 end
 
 -- True when `code` is `control` or wraps it through the `.inner` chain (bounded at 8 levels, cycle-safe).
+-- @param code any  The candidate wrapper.
+-- @param control table  The control to look for.
+-- @return boolean  True when it is the control or wraps it.
 local function ownsControl(code, control)
     local seen = {}
 
@@ -89,14 +97,20 @@ local function ownsControl(code, control)
 end
 
 -- Finds which source editor (inline function, inline condition, custom condition dialog or Test owner) hosts `control`.
--- Returns owner, kind and whether it is an open owner that really holds the control; falls back to a closed owner so
--- the report can still say which editor the trace came from.
+-- Falls back to a closed owner so the report can still say which editor the trace came from.
+-- @param addon table  The addon.
+-- @param control table  The Lua editor control.
+-- @return table|nil  The owner; nil when none is found.
+-- @return string|nil  The kind: 'function' or 'condition'.
+-- @return boolean  True when it is an open owner that really holds the control.
 local function sourceOwner(addon, control)
     local shell = addon.configWindow
     local pane = shell and shell.pane
     local candidates = {}
 
     -- Adds a candidate source editor owner of the given kind, ignoring a missing one.
+    -- @param owner table|nil  The candidate.
+    -- @param kind string  'function' or 'condition'.
     local function add(owner, kind)
         if owner then
             candidates[#candidates + 1] = { owner = owner, kind = kind }
@@ -146,8 +160,10 @@ end
 -- Input trace
 -- ============================================================================
 
--- Reports contain counts, never source. Keep explicit diagnostic commands available without adding temporary test
--- controls to the editor chrome.
+-- Attaches the input trace to a Lua editor control and remembers it as the one the report describes. Reports contain
+-- counts, never source. Keep explicit diagnostic commands available without adding temporary test controls to the
+-- editor chrome.
+-- @param control table  The Lua editor control.
 function addon:InstallLuaInputDiagnostics(control)
     self.luaInputEditor = control
 
@@ -162,6 +178,8 @@ function addon:InstallLuaInputDiagnostics(control)
 
     -- Appends one event to the 32-entry trace with the cursor, byte length and focus state. Consecutive identical polls
     -- are collapsed so the trace shows changes, not time passing. Records only key names, never typed text.
+    -- @param event string  The event name, or 'poll'.
+    -- @param ... any  The event's arguments.
     function control:ObserveInput(event, ...)
         if self.released then
             return
@@ -239,8 +257,8 @@ end
 
 -- Builds the multi-line diagnostics report for the most recent Lua editor control (open or closed): frame state, who
 -- has mouse and keyboard focus, layout and gutter counters, the LuaWorkbench render state when that provider is in use,
--- the event counts and the trace. Returns the report text, or a notice when no editor was opened this session. Contains
--- no source text.
+-- the event counts and the trace. Contains no source text.
+-- @return string  The report text, or a notice when no editor was opened this session.
 function addon:LuaEditorInputReport()
     local control = self.luaInputEditor
 
@@ -380,6 +398,8 @@ function addon:LuaEditorInputReport()
         end
 
         -- Returns the byte length of a string, or -1 when the value is not a string (never the text itself).
+        -- @param value any  The value to measure.
+        -- @return number  The length in bytes, or -1.
         local function bytes(value)
             return type(value) == 'string' and #value or -1
         end
@@ -454,6 +474,8 @@ function addon:LuaEditorInputReport()
 
     -- Appends one line of size, scale, level, mouse and bounds for a gutter-related frame (all values read through
     -- `read`).
+    -- @param label string  The frame's label in the report.
+    -- @param frame table|nil  The frame.
     local function frameInfo(label, frame)
         lines[#lines + 1] = 'gutter '
             .. label
@@ -477,7 +499,10 @@ function addon:LuaEditorInputReport()
             .. read(frame, 'GetBottom')
     end
 
-    -- Returns the result of `frame:method()` or nil when the method is missing or fails.
+    -- Returns the result of `frame:method()`.
+    -- @param frame table|nil  The frame.
+    -- @param method string  The method name.
+    -- @return any  The result; nil when the method is missing or fails.
     local function object(frame, method)
         if not frame or type(frame[method]) ~= 'function' then
             return nil

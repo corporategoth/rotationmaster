@@ -12,6 +12,9 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- ============================================================================
 
 -- Builds one help section record from a title and body text.
+-- @param title string  The section title.
+-- @param text string  The section body text.
+-- @return table{title=string,text=string}  The section.
 local function section(title, text)
     return { title = title, text = text }
 end
@@ -21,7 +24,11 @@ end
 local helpRequest = 0
 
 -- Calls `callback` under Diagnostics with a help render context (or a plain pcall when diagnostics are absent).
--- Returns ok followed by the callback's results.
+-- @param context table|nil  The Diagnostics context; nil means { module = 'help', operation = 'render' }.
+-- @param callback function  The function to call.
+-- @param ... any  The arguments passed to the callback.
+-- @return boolean  True when the callback did not raise.
+-- @return any  The callback's results after the success flag.
 ---@return boolean, any
 local function callHelpContext(context, callback, ...)
     if addon.Diagnostics then
@@ -32,11 +39,17 @@ local function callHelpContext(context, callback, ...)
 end
 
 -- callHelpContext with the default render context.
+-- @param callback function  The function to call.
+-- @param ... any  The arguments passed to the callback.
+-- @return boolean  True when the callback did not raise.
+-- @return any  The callback's results after the success flag.
 local function callHelp(callback, ...)
     return callHelpContext(nil, callback, ...)
 end
 
 -- True when there is no validity callback, or it runs cleanly and returns exactly true. An error counts as invalid.
+-- @param valid function|nil  The validity callback.
+-- @return boolean  True when the help subject is current.
 local function validHelp(valid)
     if not valid then
         return true
@@ -47,6 +60,9 @@ local function validHelp(valid)
 end
 
 -- Wraps `callback` so it runs only while `valid` still reports the help subject as current.
+-- @param valid function|nil  The validity callback.
+-- @param callback function  The function to guard.
+-- @return function  The guarded function; it returns what the callback returns, or nothing when the subject is stale.
 function addon:GuardWorkbenchHelp(valid, callback)
     return function(...)
         if validHelp(valid) then
@@ -59,9 +75,13 @@ end
 -- Opening the window
 -- ============================================================================
 
--- Opens Help for a request { valid, sections (table or function), heading, owner, render, renderContext }. Sections
--- may be a function, which is called safely. Returns a handle with Hide, or nothing when the request is invalid or was
--- superseded by a newer one while it was being prepared.
+-- Opens Help for a request. Sections may be a function, which is called safely.
+-- @param request table  { valid, sections (table or function), heading, owner, render, renderContext }.
+-- @return table|nil  A handle { frame, heading, sections, Hide() }; nil when the request is invalid or was superseded
+--   by a newer one while it was being prepared.
+--
+-- Help owns a document lease, never an edit/history transaction. The request counter is bumped by each open request and
+-- each hide, so a stale request can tell it was superseded.
 function addon:OpenWorkbenchHelp(request)
     local valid = request.valid
     local previous = helpRequest
@@ -74,6 +94,7 @@ function addon:OpenWorkbenchHelp(request)
     local token = helpRequest
 
     -- True while this request is still the newest and its subject is still valid.
+    -- @return boolean  True when the request may continue.
     local function current()
         if token ~= helpRequest then
             return false
@@ -157,6 +178,7 @@ end
 -- ============================================================================
 
 -- Help sections for the shared window chrome (navigation, scale, controls, drafts, help).
+-- @return table[]  Sections shaped { title, text }.
 function addon:WorkbenchWindowHelp()
     return {
         section(L['Navigation'], L['Help.Window.navigation']),
@@ -167,9 +189,10 @@ function addon:WorkbenchWindowHelp()
     }
 end
 
--- Some bound controls are Lua wrappers (editor objects), not frames; the
--- tooltip's owner APIs reject those with "Wrong object type".
--- True when GameTooltip is currently owned by `control`; false when it is not, or when the owner check rejects it.
+-- True when GameTooltip is currently owned by `control`. Some bound controls are Lua wrappers (editor objects), not
+-- frames; the tooltip's owner APIs reject those with "Wrong object type".
+-- @param control table  The control to check.
+-- @return boolean  False when it is not owned, or when the owner check rejects it.
 local function tooltipOwned(control)
     if not GameTooltip then
         return false
@@ -183,10 +206,12 @@ end
 -- Tooltip binding
 -- ============================================================================
 
--- Descriptors are held only by their owning control and retired on pool reuse.
--- Chains a hover tooltip onto `control`: descriptor.brief (text or a function read at hover time) is shown after the
--- control's own OnEnter, and descriptor.valid retires it. Returns a clear function that restores the previous scripts;
--- binding a control again clears its earlier binding first.
+-- Chains a hover tooltip onto `control`: descriptor.brief is shown after the control's own OnEnter, and
+-- descriptor.valid retires it. Binding a control again clears its earlier binding first.
+-- @param control table  The control to bind.
+-- @param descriptor table  { brief (text, or a function read at hover time), valid (function) }. Descriptors are held
+--   only by their owning control and retired on pool reuse.
+-- @return function  A clear function that restores the previous scripts.
 function addon:BindWorkbenchHelp(control, descriptor)
     if control.rmHelpBinding then
         control.rmHelpBinding.clear()
@@ -198,11 +223,13 @@ function addon:BindWorkbenchHelp(control, descriptor)
 
     -- True while this binding is still the control's binding. The binding is checked on both sides of the validity
     -- callback because that callback may rebind the control.
+    -- @return boolean  True when the binding is current.
     local function current()
         return control.rmHelpBinding == binding and validHelp(descriptor.valid) and control.rmHelpBinding == binding
     end
 
     -- Hover handler: runs the control's original OnEnter first, then adds or sets the tooltip text.
+    -- @param ... any  The arguments of OnEnter.
     local function onEnter(...)
         if not current() then
             return
@@ -240,6 +267,7 @@ function addon:BindWorkbenchHelp(control, descriptor)
     end
 
     -- Leave handler: runs the original OnLeave, then hides the tooltip if this control still owns it.
+    -- @param ... any  The arguments of OnLeave.
     local function onLeave(...)
         if not current() then
             return
@@ -258,8 +286,8 @@ function addon:BindWorkbenchHelp(control, descriptor)
     addon:SetUIScript(control, 'OnLeave', onLeave)
     local installedLeave = control:GetScript('OnLeave')
 
-    -- Restores the control's original scripts, but only the ones still installed by this binding so a later
-    -- replacement by someone else is left alone.
+    -- Restores the control's original scripts, but only the ones still installed by this binding so a later replacement
+    -- by someone else is left alone.
     function binding.clear()
         if control.rmHelpBinding ~= binding then
             return
@@ -281,7 +309,8 @@ function addon:BindWorkbenchHelp(control, descriptor)
     return binding.clear
 end
 
--- Per-option help entries for the Profiles page (id, title, text).
+-- Per-option help entries for the Profiles page.
+-- @return table[]  Entries shaped { id, title, text }.
 function addon:GetProfileOptionHelp()
     return {
         { id = 'activate', title = L['Activate profile'], text = L['Help.Profiles.activate'] },
@@ -293,7 +322,8 @@ function addon:GetProfileOptionHelp()
     }
 end
 
--- Per-option help entries for the Integrations page (id, title, text).
+-- Per-option help entries for the Integrations page.
+-- @return table[]  Entries shaped { id, title, text }.
 function addon:GetIntegrationOptionHelp()
     return {
         { id = 'lua_editor', title = L['Editor'], text = L['Help.Integrations.lua_editor'] },
@@ -319,8 +349,10 @@ function addon:GetIntegrationOptionHelp()
     }
 end
 
--- Help sections for the card editors. `kind` is 'condition' for the condition editor; 'branch', 'cooldown' or any
--- other value for the rotation editor, which adds the matching branch, bar and effect sections.
+-- Help sections for the card editors.
+-- @param kind string  'condition' for the condition editor; 'branch', 'cooldown' or any other value for the rotation
+--   editor, which adds the matching branch, bar and effect sections.
+-- @return table[]  Sections shaped { title, text }.
 function addon:WorkbenchInteractionHelp(kind)
     local result = {
         section(
@@ -388,9 +420,11 @@ function addon:WorkbenchInteractionHelp(kind)
     return result
 end
 
--- Full help for one settings page, by topic name ('General', 'Conditions', 'Effects', 'ItemSets', 'Announces',
--- 'Profiles', 'About', 'Rotations', 'Integrations' or 'Functions'): an intro, the shared Apply / Discard note, the
--- page's authored option entries and the window controls. Returns a list of sections.
+-- Full help for one settings page: an intro, the shared Apply / Discard note, the page's authored option entries and
+-- the window controls.
+-- @param topic string  'General', 'Conditions', 'Effects', 'ItemSets', 'Announces', 'Profiles', 'About', 'Rotations',
+--   'Integrations' or 'Functions'.
+-- @return table[]  A list of sections shaped { title, text } (or authored option entries).
 function addon:WorkbenchPageHelp(topic)
     if topic == 'Functions' then
         return {
@@ -507,13 +541,19 @@ end
 -- ============================================================================
 
 -- Fills and shows the single shared Help window with `sections` under `heading`, optionally mounting a rendered
--- document below them (request.render). `request.current` retires the call if a newer one starts; with no request a
--- private one is made. Returns the window record, or nothing when the call was superseded or the mounted document
--- failed validation.
+-- document below them (request.render).
+-- @param heading string  The window heading.
+-- @param sections table[]|nil  The sections { title, text }.
+-- @param owner string|nil  The owner label shown on the chrome; defaults to the addon name.
+-- @param request table|nil  { current, render, renderContext }: `current` retires the call if a newer one starts; with
+--   no request a private one is made.
+-- @return table|nil  The window record; nil when the call was superseded or the mounted document failed validation.
 function addon:ShowWorkbenchHelp(heading, sections, owner, request)
     if not request then
         helpRequest = helpRequest + 1
         local token = helpRequest
+        -- True while no newer help request has started.
+        -- @return boolean  True when this private request is still the newest.
         request = { current = function() return token == helpRequest end }
     end
 
@@ -544,6 +584,7 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
         d.close = addon:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
 
+        -- Hides the help window.
         local function hide()
             frame:Hide()
         end
@@ -696,11 +737,13 @@ end
 -- Integration project links
 -- ============================================================================
 
--- Release pages use their own small, pooled table; ordinary diagnostic reports
--- retain the full copyable report window and its independent selection.
 -- Shows the provider, URL and copy buttons for integration `id` (links come from GetIntegrationProjectLinks). The URL
 -- boxes are read-only in effect: any edit is reverted so the player can select and copy but never change a link.
--- Returns the window record, or nothing when the integration has no links.
+-- @param id string  The integration ID.
+-- @return table|nil  The window record; nil when the integration has no links.
+--
+-- Release pages use their own small, pooled table; ordinary diagnostic reports retain the full copyable report window
+-- and its independent selection.
 function addon:ShowIntegrationProjectLink(id)
     if type(self.GetIntegrationProjectLinks) ~= 'function' then
         return
@@ -726,6 +769,10 @@ function addon:ShowIntegrationProjectLink(id)
         d.chrome = self:CreateWorkbenchDialogChrome(frame, d.title)
 
         -- Creates one column heading label at x across the top of the link table.
+        -- @param text string  The heading text.
+        -- @param x number  The left offset.
+        -- @param width number  The label width.
+        -- @return FontString  The label.
         local function heading(text, x, width)
             local label = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
             label:SetPoint('TOPLEFT', x, -36)
@@ -776,11 +823,12 @@ function addon:ShowIntegrationProjectLink(id)
             d:Retire()
         end)
 
-        -- Registry-facing hide and show for the window.
+        -- Registry-facing hide for the window.
         function d:Hide()
             self.frame:Hide()
         end
 
+        -- Registry-facing show for the window.
         function d:Show()
             self.frame:Show()
         end
@@ -793,11 +841,14 @@ function addon:ShowIntegrationProjectLink(id)
     local token = d.generation
 
     -- True while this row still belongs to the call that populated it and is visible.
+    -- @param row table  A link row.
+    -- @return boolean  True when the row's handlers may act.
     local function current(row)
         return d.active and d.generation == token and row.url ~= nil and row.frame:IsShown()
     end
 
     -- Selects the whole URL of one row so Ctrl+C copies it, and drops the selection from every other row.
+    -- @param row table  A link row.
     local function selectRow(row)
         if not current(row) then
             return

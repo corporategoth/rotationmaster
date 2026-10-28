@@ -11,9 +11,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Icon catalog
 -- ============================================================================
 
--- Builds the list of icon groups for one picker opening: { name, icons = { { texture, name } } }. Sources are fixed
--- sets, the addon artwork, the player's indexed spells, and the client macro icon lists (included only when the
--- client exposes them and the icon passes IsCategoryIcon). Rebuilt on every open so newly learned spells appear.
+-- Builds the list of icon groups for one picker opening. Sources are fixed sets, the addon artwork, the player's
+-- indexed spells, and the client macro icon lists (included only when the client exposes them and the icon passes
+-- IsCategoryIcon). Rebuilt on every open so newly learned spells appear.
+-- @return table[]  Groups shaped { name = string, icons = { { texture = string|number, name = string } } }.
 local function catalogs()
     local groups = {}
     local labels = {}
@@ -172,9 +173,12 @@ end
 -- Picker window
 -- ============================================================================
 
--- Opens (or reuses) the single icon picker window. `current` is the texture to mark as selected, `choose(texture)` is
--- called once on a click and the window then closes, and `ownerValid()` says whether the opener is still alive; every
--- callback is dropped once it returns false or the window is reopened. Returns the window record.
+-- Opens (or reuses) the single icon picker window.
+-- @param current string|number|nil  The texture to mark as selected.
+-- @param choose function  Called once as choose(texture) on a click; the window then closes.
+-- @param ownerValid function  Returns whether the opener is still alive; every callback is dropped once it returns
+--   false or the window is reopened.
+-- @return table  The window record.
 function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
     local d = self.iconPicker
 
@@ -230,6 +234,7 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
     d.search:SetText('')
 
     -- True while this opening is current, the window is shown and the opener is still valid.
+    -- @return boolean  True when callbacks may act.
     local function valid()
         return d.serial == serial and d.frame:IsShown() and ownerValid()
     end

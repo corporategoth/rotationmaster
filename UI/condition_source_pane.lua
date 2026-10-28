@@ -309,6 +309,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         form.y = y + hidden.rmFlagRowsHeight + 2
 
         if key and not readOnly then
+            -- Delete button: asks for confirmation, then removes the saved custom condition and clears the selection.
             self:SettingsTopDelete(form, function()
                 self:ConfirmSettingsDeletion(
                     p,
