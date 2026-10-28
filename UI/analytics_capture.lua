@@ -31,6 +31,8 @@ end
 local generation, lease, busy = 0, nil, false
 
 -- True only while addon.Analytics.NativeCasts is still the service captured at load with all five methods unchanged.
+-- @return boolean  True when the captured service and every captured method are still the live, unreplaced ones.
+--
 -- Every action checks it first.
 local function owned()
     if not service or not addon.Analytics or not rawequal(addon.Analytics.NativeCasts, service) then
@@ -47,12 +49,15 @@ local function owned()
 end
 
 -- The standard text for every refused or unavailable action.
+-- @return string  The localized "Cast capture is unavailable." text.
 local function available()
     return L['Cast capture is unavailable.']
 end
 
--- Calls a captured service method under pcall. Returns its first result, or nil if it raised; the caller treats nil as
--- failure.
+-- Calls a captured service method under pcall; the caller treats a nil result as failure.
+-- @param name string  The captured method to call: 'Start', 'Stop', 'Clear', 'GetStatus' or 'GetSnapshot'.
+-- @param ... any  The arguments passed after the service itself.
+-- @return any|nil  The method's first result, or nil when the call raised (or returned nothing).
 local function invoke(name, ...)
     local ok, value = pcall(methods[name], service, ...)
 
@@ -63,8 +68,8 @@ local function invoke(name, ...)
     return value
 end
 
--- Returns the capture phase ("starting", "running", "idle", ...) from GetStatus, or nil when the service is not owned
--- or the status is malformed.
+-- Reads the capture phase ("starting", "running", "idle", ...) from GetStatus.
+-- @return string|nil  The phase, or nil when the service is not owned or the status is malformed.
 local function phase()
     if not owned() then
         return nil
@@ -79,6 +84,7 @@ end
 -- ============================================================================
 
 -- Returns the localized one-line status shown beside the capture buttons.
+-- @return string  The running, idle or unavailable status text; unavailable when called with a self other than addon.
 function addon:GetCastCaptureStatusText()
     if not rawequal(self, addon) then
         return available()
@@ -96,8 +102,14 @@ function addon:GetCastCaptureStatusText()
     return available()
 end
 
--- Running state is cheap. The report check copies the last snapshot, so
--- callers ask for it only when the running state changes.
+-- Reports whether a cast capture is running and, on request, whether a report can be opened.
+-- @param withReport boolean|nil  When true, also check that a snapshot exists.
+-- @return boolean|nil  True while the capture is starting or running; nil when called with a self other than addon.
+-- @return boolean|nil  Only when withReport is set: true when the service is idle, owned and holds a snapshot table;
+--   false while running or unowned; nil otherwise.
+--
+-- Running state is cheap. The report check copies the last snapshot, so callers ask for it only when the running state
+-- changes.
 function addon:GetCastCaptureState(withReport)
     if not rawequal(self, addon) then
         return nil
@@ -116,8 +128,11 @@ function addon:GetCastCaptureState(withReport)
     return running, type(invoke('GetSnapshot')) == 'table'
 end
 
--- Ends the current capture generation and clears the service. Returns true when the service reported a clear. It only
--- ever calls the originally captured Clear, so shutdown never runs a replacement.
+-- Ends the current capture generation and clears the service.
+-- @return boolean  True when the service reported a clear.
+--
+-- It only ever calls the originally captured Clear, so shutdown never runs a replacement. Clear is the strict inverse
+-- for a pending Start too.
 local function retire()
     generation = generation + 1
     lease = nil
@@ -132,8 +147,9 @@ local function retire()
     return false
 end
 
--- Called when the addon is disabled (Diagnostics/cpu.lua, after the CPU and memory captures stop): drops any capture and
--- returns whether the service cleared.
+-- Drops any capture when the addon is disabled; called from Diagnostics/cpu.lua after the CPU and memory captures stop.
+-- @return boolean  True when the service cleared; false when called with a self other than addon or nothing was
+--   cleared.
 function addon:ClearCastCaptureForDisable()
     if not rawequal(self, addon) then
         return false
@@ -146,7 +162,10 @@ end
 -- Report text
 -- ============================================================================
 
--- Formats a finite number for the report; NaN, infinities and non-numbers become "?" so nothing unreadable is printed.
+-- Formats a finite number for the report.
+-- @param v any  The value to format.
+-- @return string  tostring(v) for a finite number; "?" for NaN, infinities and non-numbers, so nothing unreadable is
+--   printed.
 local function number(v)
     if type(v) == 'number' and v == v and v ~= math.huge and v ~= -math.huge then
         return tostring(v)
@@ -155,8 +174,10 @@ local function number(v)
     return '?'
 end
 
--- Formats client metadata for the report: numbers through number(), strings cut to 64 characters with control
--- characters and pipes made safe, anything else as "unavailable".
+-- Formats client metadata for the report.
+-- @param v any  The metadata value.
+-- @return string  A number through number(); a string cut to 64 characters with control characters made spaces and
+--   pipes doubled; "unavailable" (localized) for anything else.
 local function metadata(v)
     if type(v) == 'number' then
         return number(v)
@@ -168,7 +189,10 @@ local function metadata(v)
     return (v:sub(1, 64):gsub('[%c]', ' '):gsub('|', '||'))
 end
 
--- Returns `value` when it is in the allowed set, otherwise "unknown", so only fixed vocabulary reaches the report.
+-- Restricts a report field to a fixed vocabulary.
+-- @param value any  The candidate token.
+-- @param allowed table<string,boolean>  The set of accepted strings.
+-- @return string  The value when it is a string in the allowed set, otherwise "unknown".
 local function token(value, allowed)
     return type(value) == 'string' and allowed[value] and value or 'unknown'
 end
@@ -212,9 +236,14 @@ local reasons = {
     ['decreasing-time'] = true,
 }
 
--- Builds the copyable cast report text from a detached snapshot. Counts describe receipt rows only and are never
--- scores; the detail list is capped at 200 rows with an omitted count, and the START witness block between its marker
--- comments is checked by tests.
+-- Builds the copyable cast report text from a detached snapshot.
+-- @param snapshot table  The detached snapshot from the capture service (status, reason, advice, client, capture.trace,
+--   startWitness).
+-- @return string  The multi-line report; a short "Capture: unavailable" report when the snapshot is not complete or has
+--   no trace.
+--
+-- Counts describe receipt rows only and are never scores; the detail list is capped at 200 rows with an omitted count,
+-- and the START witness block between its marker comments is checked by tests.
 local function report(snapshot)
     local client = type(snapshot.client) == 'table' and snapshot.client or {}
 
@@ -386,6 +415,9 @@ local function report(snapshot)
     if type(snapshot.startWitness) == 'table' then
         local counts = snapshot.startWitness
 
+        -- Formats one START witness counter.
+        -- @param value any  The counter value.
+        -- @return string  The integer as text when it is a whole number from 0 to 4096; "?" otherwise.
         local function count(value)
             return type(value) == 'number'
                 and value == value
@@ -417,9 +449,14 @@ end
 -- Actions
 -- ============================================================================
 
--- Runs "start", "stop", "report" or "clear" and returns ok, message, current. At most one action runs at a time, and an
--- action that finishes after a Clear or shutdown reports not-current (third value false) so the caller does not act on
--- it. A start lasts 30 seconds and survives closing the settings window.
+-- Runs one capture action from the settings page.
+-- @param action string  One of "start", "stop", "report" or "clear".
+-- @return boolean  True when the action succeeded.
+-- @return string  The localized message to show; empty when the report window opened, or "" when the result is stale.
+-- @return boolean|nil  False when a Clear or shutdown happened while the action ran, so the caller must not act on it;
+--   true otherwise; nil on the early refusals (bad self, bad action, busy, not owned) and after "clear".
+--
+-- At most one action runs at a time. A start lasts 30 seconds and survives closing the settings window.
 function addon:RunCastCaptureAction(action)
     if not rawequal(self, addon) then
         return false, available()

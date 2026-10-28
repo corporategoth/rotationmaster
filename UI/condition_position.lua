@@ -8,9 +8,14 @@
 -- bindings at the end), so no comment may be added inside a function body in this file.
 local _, addon = ...
 
+-- Builds one position pad widget for the pool. The widget fires OnOffsetChanged(dx, dy, center, amount) from the
+-- wrapped pad.
+-- @return RMConditionPositionPad  The new widget, registered with the widget registry.
+--
 -- Condition/Help adapter for the same arrow block used by settings and cards. The pool constructor builds the frame,
 -- the wrapped pad and the widget methods once per pooled instance; OnAcquire rebinds the pad to the current lease so a
--- click from a released widget is ignored, and OnRelease unbinds it and disables the pad.
+-- click from a released widget is ignored, and OnRelease unbinds it and disables the pad. A recorded Built In helper,
+-- so its body is frozen.
 ---@class RMConditionPositionPad: RMConditionWidget
 ---@field pad any
 ---@field disabled boolean
@@ -42,6 +47,7 @@ local function constructor()
 end
 
 -- Returns a pooled position pad widget (48x48) from the condition widget registry.
+-- @return RMConditionPositionPad  The pooled position pad widget.
 ---@return RMConditionPositionPad
 function addon:CreateConditionPositionPad()
     return self:AcquireConditionWidget('RM-ConditionPositionPad',constructor)

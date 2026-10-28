@@ -21,6 +21,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local actionLabels = { codeUndo = L['Undo'], codeRedo = L['Redo'], codeReset = L['Reset'], syntax = L['Check syntax'] }
 
 -- Enables or disables a control from a boolean.
+-- @param control Button  The control to change.
+-- @param enabled boolean|nil  True to enable, otherwise disable.
 local function enable(control, enabled)
     if enabled then
         control:Enable()
@@ -29,8 +31,10 @@ local function enable(control, enabled)
     end
 end
 
--- Splits a documented type such as "string | nil" into its base type and a nullable flag. Returns the normalized base
--- ("any" when empty, "nil" when only nil) and whether nil was listed.
+-- Splits a documented type such as "string | nil" into its base type and a nullable flag.
+-- @param value string|nil  The documented type; nil reads as "any".
+-- @return string  The normalized base ("any" when empty, "nil" when only nil).
+-- @return boolean  Whether nil was listed alongside another type.
 local function splitType(value)
     local parts, nullable = {}, false
 
@@ -53,6 +57,9 @@ end
 
 -- Builds the sorted dropdown entries for a type: the Lua basic types plus every type already used by a Built In or
 -- custom function, and `current` so an unusual saved type stays selectable.
+-- @param addon table  The addon (its builtinFunctions and saved custom functions are scanned).
+-- @param current string  The type currently selected.
+-- @return table[]  Entries shaped { value = name, text = name }.
 local function typeChoices(addon, current)
     local names = {}
 
@@ -60,6 +67,8 @@ local function typeChoices(addon, current)
         names[name] = true
     end
 
+    -- Adds every base type and union member used by a function source's arguments and returns to the set of names.
+    -- @param source table|nil  A function source.
     local function collect(source)
         for _, field in ipairs({ 'args', 'returns' }) do
             for _, record in ipairs(source and source[field] or {}) do
@@ -103,6 +112,7 @@ end
 -- ============================================================================
 
 -- Forgets the half-created "new function" state and any saved resume data on the page.
+-- @param p table  The settings page.
 local function clearNew(p)
     p.newFunctionID = nil
     p.newFunctionSource = nil
@@ -112,6 +122,7 @@ end
 -- Wraps the page's Draw, RequestLeave, Layout and Release once, so a redraw keeps the unsaved draft, leaving with
 -- changes asks to Apply or Discard, the editor follows the pane size and release drops it. The original methods are
 -- captured and called, never replaced outright.
+-- @param p table  The settings page to wrap; a second call on the same page does nothing.
 function addon:InstallInlineFunctionNavigation(p)
     if p.functionNavigation then
         return
@@ -121,6 +132,7 @@ function addon:InstallInlineFunctionNavigation(p)
     local draw, leave, release, layout = p.Draw, p.RequestLeave, p.Release, p.Layout
 
     -- Captures the open draft before the redraw so BuildInlineFunction can resume it.
+    -- @return any  What the page's original Draw returns.
     function p:Draw()
         local d = self.inlineFunction
 
@@ -136,6 +148,9 @@ function addon:InstallInlineFunctionNavigation(p)
 
     -- If the editor has unsaved changes, asks the user to Apply or Discard before leaving and returns false; otherwise
     -- defers to the original.
+    -- @param callback function  Called when the page may be left.
+    -- @return boolean|any  False when it deferred to the confirmation; otherwise what the original RequestLeave
+    --   returns.
     function p:RequestLeave(callback)
         local d = self.inlineFunction
 
@@ -188,6 +203,9 @@ end
 
 -- Returns the one-line display signature "namespace.name(arg: type, ...) -> returns" for a function source.
 -- Documentation only; it is not Lua.
+-- @param id string  The function ID.
+-- @param source table  The function source (args, returns).
+-- @return string  The signature text.
 function addon:FunctionSignature(id, source)
     local args, returns = {}, {}
 
@@ -206,10 +224,14 @@ function addon:FunctionSignature(id, source)
         .. (#returns > 0 and ' -> ' .. table.concat(returns, ', ') or '')
 end
 
--- Builds (or rebuilds, reusing the cached dialog) the editor for function `key` inside page `p` and returns it.
--- `source` is copied into the draft; a read-only editor shows a Built In helper unchanged. When the page captured a
--- draft before a redraw (p.functionResume), the draft, undo history and raw field text are restored from it. The
--- returned dialog has Apply, Close, IsDirty, CaptureDraft and the code and form controls.
+-- Builds (or rebuilds, reusing the cached dialog) the editor for function `key` inside page `p`. `source` is copied
+-- into the draft; a read-only editor shows a Built In helper unchanged. When the page captured a draft before a redraw
+-- (p.functionResume), the draft, undo history and raw field text are restored from it.
+-- @param p table  The settings page.
+-- @param key string  The function ID.
+-- @param source table  The function source to edit.
+-- @param readOnly boolean|nil  True shows a Built In helper unchanged.
+-- @return table  The editor dialog `d`, with Apply, Close, IsDirty, CaptureDraft and the code and form controls.
 function addon:BuildInlineFunction(p, key, source, readOnly)
     local d = p.functionEditorCache or { frame = self:TrackWorkbenchSize(CreateFrame('Frame', nil, p.frame)) }
     p.functionEditorCache = d
@@ -250,6 +272,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     -- True while this opening is live: not closed, the same session, and the page generation unchanged. Every callback
     -- checks it first.
+    -- @return boolean  True when the editor may act.
     local function valid()
         return not d.closed and d.session == session and p:Valid(token)
     end
@@ -272,6 +295,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     form:SetHeight(d.frame:GetHeight())
 
     -- Returns a copy of the draft with the code text taken from the code control.
+    -- @return table  The pending source.
     function d:PendingSource()
         local value = addon:CopySettingsData(self.value)
 
@@ -283,6 +307,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     end
 
     -- Snapshots the draft, undo history and the raw text of edited fields so the editor can be rebuilt and resumed.
+    -- @return table  { value, baseline, expected, isNew, undo, redo, pendingRaw, codeExpanded, metadataCollapsed }.
     function d:CaptureDraft()
         local raw = {}
 
@@ -311,6 +336,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     -- True when the draft differs from the baseline: a new function, a changed source or an uncommitted field. Always
     -- false for a read-only function.
+    -- @return boolean  True when there is something to apply.
     function d:IsDirty()
         if self.readOnly then
             return false
@@ -328,7 +354,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         return false
     end
 
-    -- Commits pending field edits; false when the session is invalid or a field rejects its value.
+    -- Commits pending field edits.
+    -- @return boolean  False when the session is invalid or a field rejects its value.
     function d:Flush()
         return valid() and form:FlushEdits()
     end
@@ -359,6 +386,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     end
 
     -- Loads `text` into the code control without recording an edit; a read-only view shows formatted display text.
+    -- @param text string  The function body.
     function d:SetCode(text)
         self.loading = true
         self.code:SetText(self.readOnly and addon.FormatLuaSourceDisplay and addon:FormatLuaSourceDisplay(text) or text)
@@ -367,6 +395,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     end
 
     -- Undo (or redo) of the code body, including function-completion entries that restore binding changes.
+    -- @param redo boolean|nil  True to redo, otherwise undo.
     function d:TravelCode(redo)
         if not valid() or self.readOnly then
             return
@@ -518,8 +547,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         addon:SetWorkbenchInvalid(self.code.frame, not self.validationChecked, self.validationProblem)
     end
 
-    -- The Functions draft owns its source baseline; generic profile bindings
-    -- would otherwise reset metadata rails after each guarded callback.
+    -- Refreshes the editor's actions instead of the generic profile bindings. The Functions draft owns its source
+    -- baseline; generic profile bindings would otherwise reset metadata rails after each guarded callback.
     function form:RefreshUnsaved()
         if valid() then
             d:UpdateActions()
@@ -554,8 +583,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     end
 
     -- Saves the draft through InstallCustomFunction. Refuses in combat, for a read-only function and when installation
-    -- fails (the reason is shown). On success it clears the draft, selects the function and redraws the page. Returns
-    -- true when saved.
+    -- fails (the reason is shown). On success it clears the draft, selects the function and redraws the page.
+    -- @return boolean  True when saved.
     function d:Apply()
         if not valid() or self.readOnly or not self:Flush() then
             return false
@@ -598,6 +627,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     end
 
     -- Places a pooled caption at the left of a row.
+    -- @param text string  The caption.
+    -- @param y number  The row's vertical offset.
+    -- @param width number|nil  The caption width; defaults to 66.
+    -- @return FontString  The caption.
     local function fieldLabel(text, y, width)
         local label = form:Acquire('functionMetadataLabels', function()
             return form.child:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
@@ -613,8 +646,15 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         return label
     end
 
-    -- Adds a multi-line description box sized to its text. `left` and `width` place it beside a caption; `compact` uses
-    -- tighter padding for card rows.
+    -- Adds a multi-line description box sized to its text.
+    -- @param key string  The form field key.
+    -- @param caption string|nil  The row caption.
+    -- @param value string|nil  The current text.
+    -- @param changed function  Called with the new text when it is committed.
+    -- @param left number|nil  Places the box beside a caption at this left offset.
+    -- @param width number|nil  The box width when `left` is set.
+    -- @param compact boolean|nil  True uses tighter padding for card rows.
+    -- @return EditBox  The box.
     local function description(key, caption, value, changed, left, width, compact)
         local y = form.y
         local input = form:Edit(key, caption, value, nil, changed)
@@ -648,8 +688,12 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- Builds the Arguments or Returns section: a collapsible, reorderable list of cards with type, nullable, name
     -- (arguments), description, help, duplicate and remove. Reordering or inserting before the last entry of a saved
     -- function asks first, because callers are not rewritten.
+    -- @param field string  'args' or 'returns'.
+    -- @param caption string  The section title.
+    -- @param values table[]  The draft's list of argument or return records.
     local function metadata(field, caption, values)
         -- Returns a new empty entry: a "return" record, or an argument with the first unused name "argumentN".
+        -- @return table  The new entry.
         local function factory()
             if field == 'returns' then
                 return { type = 'any', description = '' }
@@ -672,6 +716,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
         -- Runs `apply` at once for a new function, otherwise after a confirmation that existing callers are not
         -- rewritten.
+        -- @param apply function  The change to run.
         local function confirmOrderChange(apply)
             if d.isNew then
                 apply()
@@ -694,6 +739,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                 gap = #values
             end
 
+            -- Inserts a new entry at the gap and redraws; does nothing if the editor is invalid or read-only.
             local function apply()
                 if not valid() or d.readOnly then
                     return
@@ -759,6 +805,12 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             function(index)
                 return field == 'args' and (values[index].name or L['Argument']) or (values[index].type or L['Return'])
             end,
+            -- Builds the controls of one card: type, nullable, name (arguments), description, help, duplicate and
+            -- remove.
+            -- @param rowForm table  The form the card is drawn in.
+            -- @param index number  The entry's position in the list.
+            -- @param record table  The argument or return record.
+            -- @param row table  The card's buttons (up, down, remove, help, duplicate).
             function(rowForm, index, record, row)
                 local prefix = (field == 'args' and 'arg_' or 'return_') .. index .. '_'
                 form.fields[field .. '_up_' .. index] = row.up
@@ -770,6 +822,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                 local base, nullable = splitType(record.type)
 
                 -- Stores a type chosen from the dropdown or the Nullable box ("base | nil" when nullable) and redraws.
+                -- @param nextBase string  The base type.
+                -- @param nextNullable boolean|nil  True to add "| nil".
                 local function setType(nextBase, nextNullable)
                     record.type = nextBase .. (nextNullable and nextBase ~= 'nil' and ' | nil' or '')
                     refresh()
@@ -874,6 +928,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
                 form.fields[prefix .. 'help'] = row.help
 
+                -- Help button of the card: shows the help for type, description, name and card controls.
                 addon:SetUIScript(row.help, 'OnClick', form:Guard(function()
                     local sections = {
                         {
@@ -909,6 +964,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
                 form.fields[prefix .. 'duplicate'] = row.duplicate
 
+                -- Duplicate button of the card: copies the record (an argument gets a unique name; a trailing "..."
+                -- stays last) and redraws.
                 addon:SetUIScript(row.duplicate, 'OnClick', form:Guard(function()
                     if d.readOnly or not d:Flush() then
                         return
@@ -977,6 +1034,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         form.functionMetadataViews[field] = view
     end
 
+    -- Builds the editor form: the heading, enable pill and delete button, the namespace, name, description, arguments
+    -- and returns, the dependency fields, the action buttons, the signature and the code control.
+    -- @param f table  The settings form being drawn.
     form:Open(function(f)
         f.functionTypeFields = {}
         f.functionMetadataViews = {}
@@ -1012,12 +1072,16 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             end))
 
             if not d.isNew then
+                -- Delete button: asks for confirmation, then removes the saved custom function.
                 addon:SettingsTopDelete(f, function()
                     local id = d.key
 
                     addon:ConfirmSettingsDeletion(
                         p,
                         L['Delete this function? Existing dependents will become unavailable.'],
+                        -- Confirmed deletion: removes the saved function through addon:RemoveCustomFunction.
+                        -- @return boolean  True when removed.
+                        -- @return string|nil  The reason when it failed.
                         function()
                             local current = (addon.db.global.custom_functions or {})[id]
 
@@ -1041,6 +1105,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
         if not d.codeExpanded then
             -- Stores the namespace edit, except when it only re-selects the displayed legacy default.
+            -- @param value string  The chosen namespace.
             local function setNamespace(value)
                 -- Choosing the displayed legacy default does not materialize
                 -- absent metadata and create an otherwise empty edit.
@@ -1142,6 +1207,8 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             button:SetWidth(index == 4 and 120 or 68)
             button:SetText(actionLabels[entry[1]])
 
+            -- Action button click (Undo, Redo, Reset or Check syntax): travels the code history, restores the saved
+            -- body, or compiles the pending source and shows the result. No custom code is executed.
             addon:SetUIScript(button, 'OnClick', function()
                 if not valid() then
                     return
@@ -1288,6 +1355,7 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         end
     end)
 
+    -- View changes button: opens the draft diff of the saved function against the pending source and dirty field edits.
     self:SetUIScript(d.viewChanges, 'OnClick', function()
         if valid() then
             local pending = {}

@@ -10,9 +10,16 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Builds a condition dropdown that edits value[field] (default "unit") from the choice table units, and returns it.
--- When the owning window is an announcement editor (or the value already holds "announcementtarget") the list gains
--- an "Announcement target" choice. The list is rebuilt by unit.configure each time the editor lays the widget out.
+-- Builds a condition dropdown that edits value[field] from the choice table `units`.
+-- @param value table  The condition's saved table; the chosen unit is written to value[field].
+-- @param units table<string,string>  The unit choices, token to localized label.
+-- @param update function  Called after the value changed.
+-- @param field string|nil  The key in `value` to edit; defaults to "unit".
+-- @return RMConditionSelector  The dropdown widget.
+--
+-- When the owning window is an announcement editor (or the value already holds "announcementtarget") the list gains an
+-- "Announcement target" choice. The list is rebuilt by unit.configure each time the editor lays the widget out. A
+-- recorded Built In helper, so its body is frozen.
 function addon:Widget_UnitWidget(value, units, update, field)
     if field == nil then
         field = "unit"

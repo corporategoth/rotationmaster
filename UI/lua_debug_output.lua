@@ -10,9 +10,11 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Opens (building on first use) the debug output window for a code-editor control and returns it. Does nothing once
--- the control has been released or is no longer valid. Per the in-game probe rule the text is selectable and the
--- Copy button focuses and highlights it.
+-- Opens (building on first use) the debug output window for a code-editor control. Does nothing once the control has
+-- been released or is no longer valid. Per the in-game probe rule the text is selectable and the Copy button focuses
+-- and highlights it.
+-- @param control table  The code-editor control; the window is cached on control.outputWindow.
+-- @return table|nil  The window; nil when the control is released or invalid.
 function addon:ShowLuaDebugOutput(control)
     if control.released or not control.valid() then
         return

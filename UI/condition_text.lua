@@ -7,10 +7,14 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Oversized expressions remain fully inspectable/copyable without letting a
--- footer displace the condition tree or adding a scrollbar to that footer.
--- Shows value (a string; anything else is ignored) under heading, or under the default condition title when heading is
--- nil, and returns the dialog table. A heading switches the button to "Copy report".
+-- Shows a full condition expression or a copyable report in the read-only text window.
+-- @param value string  The text to show; anything else is ignored.
+-- @param heading string|nil  The window heading; nil uses the default condition title. A heading switches the button to
+--   "Copy report".
+-- @return table|nil  The dialog table; nil when value is not a string.
+--
+-- Oversized expressions remain fully inspectable/copyable without letting a footer displace the condition tree or
+-- adding a scrollbar to that footer.
 function addon:ShowConditionText(value, heading)
     if type(value) ~= 'string' then
         return
@@ -100,6 +104,7 @@ function addon:ShowConditionText(value, heading)
         end
 
         -- Replaces the stored text and selects it for copying; the programmatic SetText is guarded by the setting flag.
+        -- @param text string  The text to show.
         function dialog:SetText(text)
             self.text = text
             setting = true

@@ -17,7 +17,8 @@ local _, addon = ...
 -- non-secure post hooks. A pending bind lasts only while its item rides the
 -- cursor; nothing here touches secure attributes or replaces a script.
 
--- Returns the item the cursor is carrying (id or link as the client reports it), or nil when it carries anything else.
+-- Returns the item the cursor is carrying.
+-- @return number|string|nil  The item (id or link as the client reports it); nil when the cursor carries anything else.
 local function cursorItem()
     if type(GetCursorInfo) ~= 'function' then
         return
@@ -31,11 +32,15 @@ local function cursorItem()
 end
 
 -- True while the client is in combat lockdown, when action slots must not be read or hooked.
+-- @return boolean|nil  Truthy in combat.
 local function inCombat()
     return InCombatLockdown and InCombatLockdown()
 end
 
--- Records slot for set id once. Returns true when the slot was new.
+-- Records slot for set id once.
+-- @param id string|number  The item set ID.
+-- @param slot number  The action slot.
+-- @return boolean  True when the slot was new.
 function addon:RecordItemSetBinding(id, slot)
     local bindings = self.db.char.bindings
     local slots = bindings[id] or {}
@@ -51,8 +56,11 @@ function addon:RecordItemSetBinding(id, slot)
     return true
 end
 
--- Completes a pending bind on slot when that slot now holds a member of the
--- pending set; the same bookkeeping as a reported slot change.
+-- Completes a pending bind on slot when that slot now holds a member of the pending set; the same bookkeeping as a
+-- reported slot change.
+-- @param slot number  The action slot that changed.
+-- @return boolean  True when the bind completed; false when nothing was pending, the call came in combat or the slot
+--   holds something else.
 function addon:CompletePendingItemSetBind(slot)
     local pending = self.bindingItemSet
 
@@ -83,7 +91,9 @@ function addon:CompletePendingItemSetBind(slot)
 end
 
 -- Hooks one action button (once) so dropping or clicking the pending item onto a slot that already holds it still
--- completes the bind. `slot` is the fallback when the button cannot be resolved to a slot at event time.
+-- completes the bind.
+-- @param button Button|nil  The action button.
+-- @param slot number|nil  The fallback slot when the button cannot be resolved to a slot at event time.
 local function observe(button, slot)
     if not button or button.rmItemSetBindHooked or type(button.HookScript) ~= 'function' then
         return
@@ -93,6 +103,7 @@ local function observe(button, slot)
 
     -- Hook body: resolves which slot `frame` is now (falling back to the slot captured when hooked) and completes the
     -- pending bind if that slot holds a member of the set.
+    -- @param frame Button  The action button the hook ran for.
     local function placed(frame)
         if not addon.bindingItemSet then
             return
@@ -118,6 +129,9 @@ local watcher
 
 -- Hooks the action buttons for the pending bind (outside combat) and starts a per-frame watcher that cancels it once
 -- the item leaves the cursor; a no-op when no bind is pending. Calling it again restarts the watcher's miss counter.
+--
+-- Keeps the pending bind only while its item is still on the cursor. Two frames' grace lets the slot-change path or a
+-- button hook finish first.
 function addon:WatchItemSetBind()
     if not self.bindingItemSet then
         return
@@ -134,6 +148,9 @@ function addon:WatchItemSetBind()
     watcher = watcher or CreateFrame('Frame')
     local misses = 0
 
+    -- Per-frame watcher: counts the frames in which the cursor no longer carries a member of the set and cancels the
+    -- pending bind after two.
+    -- @param frame Frame  The watcher frame.
     watcher:SetScript('OnUpdate', function(frame)
         local pending = addon.bindingItemSet
 
@@ -158,8 +175,11 @@ function addon:WatchItemSetBind()
     end)
 end
 
--- Starts a bind for set id: same preconditions for click and drag. Returns
--- true, or false and a reason key: 'combat', 'unavailable'.
+-- Starts a bind for set id: same preconditions for click and drag.
+-- @param id string|number  The item set ID.
+-- @param first number|string  The item to pick up (the set's first available item).
+-- @return boolean  True when the bind started.
+-- @return string|nil  The reason key when false: 'combat' or 'unavailable'.
 function addon:BeginItemSetBind(id, first)
     if inCombat() then
         return false, 'combat'
@@ -183,8 +203,10 @@ function addon:BeginItemSetBind(id, first)
     return true
 end
 
--- Clears the cursor only when it still holds a member of set id: after a
--- swap the cursor holds the user's previous action, which must survive.
+-- Clears the cursor only when it still holds a member of set id: after a swap the cursor holds the user's previous
+-- action, which must survive.
+-- @param id string|number  The item set ID.
+-- @return boolean  True when the cursor was cleared.
 function addon:ClearItemSetBindCursor(id)
     local item = cursorItem()
 

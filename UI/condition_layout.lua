@@ -20,9 +20,13 @@ local _, addon = ...
 ---@field ResumeLayout fun(self: RMConditionGroup)
 ---@field ReleaseChildren fun(self: RMConditionGroup)
 
--- Native compact rows share rich Table and spell-field geometry with RM controls.
--- Maps a table cell's alignV option ('start'/'top', 'middle'/'center', 'end'/'bottom') to a 0, .5 or 1 fraction of the
--- row's spare height; nil means unset (top), and an unrecognized string returns nil as well.
+-- Maps a table cell's alignV option to a fraction of the row's spare height.
+-- @param value string|nil  'start'/'top', 'middle'/'center' or 'end'/'bottom' (any case, and any longer word starting
+--   with top, bottom or center); nil means unset (top).
+-- @return number|nil  0, .5 or 1; nil for a non-string or an unrecognized string.
+--
+-- Native compact rows share rich Table and spell-field geometry with RM controls. A recorded Built In helper, so its
+-- body is frozen.
 local function verticalAlignment(value)
     if value==nil then return 0 end
     if type(value)~='string' then return nil end
@@ -40,8 +44,15 @@ end
 local ICON_ROWS_GAP = 4
 local ICON_ROWS_MINIMUM = 190
 
--- Lays the children out as described above inside `content` at `width` and returns the total height used, or 0 when
--- there is no icon or no row. Called by the group's DoLayout for the RM-IconRows layout only.
+-- Lays the children out as an icon spanning the rows of the controls beside it. Called by the group's DoLayout for the
+-- RM-IconRows layout only.
+-- @param content Frame  The frame the children are positioned in.
+-- @param children table[]  The group's children: children[1] is the icon, the rest are its rows (a child with user data
+--   "side" is the side button).
+-- @param width number  The width available.
+-- @return number  The total height used; 0 when there is no icon or no row.
+--
+-- A recorded Built In helper, so its body is frozen.
 local function layoutIconRows(content, children, width)
     local icon,side,rows=children[1],nil,{}
     for index=2,#children do
@@ -81,6 +92,9 @@ end
 -- Constructor for a pooled group. The methods defined inside are the whole widget contract: DoLayout is re-entrancy
 -- guarded (layingOut) and pausable, children must be live widgets owned by no other parent (cycles are rejected), and
 -- ReleaseChildren hands every child back to the pool and reports the first release error after releasing them all.
+-- @return RMConditionGroup  The new widget, registered with the widget registry.
+--
+-- A recorded Built In helper, so its body is frozen.
 local function constructor()
     local group={type='RM-ConditionGroup',children={}}
     local frame=CreateFrame('Frame',nil,UIParent);group.frame=frame;group.content=frame
@@ -192,6 +206,7 @@ local function constructor()
 end
 
 -- Acquires a group from the pool. The caller owns it and its children until it is released.
+-- @return RMConditionGroup  The pooled group widget.
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
     local group=addon:AcquireConditionWidget('RM-ConditionGroup',constructor)

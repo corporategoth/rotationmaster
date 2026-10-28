@@ -9,9 +9,15 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Opens the transfer dialog for condition `key` over its editor `parent`; `update` is the editor's refresh callback.
--- Returns the dialog widget, or nil and a reason when the parent is not a native custom editor. While it is open the
--- parent editor is hidden, and it is shown again on close only if the editor is still resumable.
+-- Opens the transfer dialog for one custom condition over its editor. While it is open the parent editor is hidden, and
+-- it is shown again on close only if the editor is still resumable.
+-- @param parent table  The native custom condition editor dialog.
+-- @param update function  The editor's refresh callback, update(identifier).
+-- @param key string|nil  The condition key; nil for a condition that was never saved.
+-- @param condition table  The condition source to export.
+-- @return table|nil  The dialog widget, or what addon:ShowConditionFunctionBundleTransfer returns for a condition with
+--   function bindings; nil when the parent is not a native custom editor, the editor has no owner or encoding failed.
+-- @return string|nil  The reason when the parent is not a native custom editor or encoding failed.
 function addon:ShowCustomConditionTransfer(parent, update, key, condition)
     if not parent or parent.nativeCustomEditor ~= true then
         return nil, L['Native custom condition editor required.']
@@ -63,6 +69,7 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
     end
 
     -- True while the parent editor and its owner window are still the ones this dialog was opened over.
+    -- @return boolean  True when the editor can still be resumed.
     local function valid()
         return addon:CanResumeCustomConditionDialog(parent, owner)
     end
@@ -80,6 +87,11 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         end,
         review = {
             kind = 'customcondition',
+            -- Review parser: turns pasted text into the record shown in the comparison (the condition with its name).
+            -- @param input string  The pasted text.
+            -- @return table|nil  The record; nil when the text is not a custom condition.
+            -- @return string|nil  The reason when the text could not be parsed (a dependency bundle gets its own
+            --   message).
             parse = function(input)
                 local parsed, why = self:ParseCustomConditionImport(input, codec)
 
@@ -100,6 +112,10 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
                 record.name = key
                 return record
             end,
+            -- Review check: lists why the chosen destination identifier cannot be used.
+            -- @param record table  The parsed record.
+            -- @param dialog table  The transfer dialog (mode and name).
+            -- @return string[]  The localized problems; empty when the destination is acceptable.
             problems = function(record, dialog)
                 local list = {}
                 local destination = dialog.mode == 'replace' and key or dialog.name:GetText()
@@ -118,6 +134,8 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
                 }
             end,
         },
+        -- Window close: forgets the dialog, releases the transfer form and shows the condition dialog again if it can
+        -- still be resumed.
         onClose = function()
             if dialog then
                 owner.widgets[dialog] = nil
@@ -137,6 +155,12 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         p,
         L['Import/Export Condition'],
         text,
+        -- Import handler: parses the pasted text, routes a dependency bundle to its review, checks the destination
+        -- identifier and asks the player to confirm the Lua code before the editor loads it.
+        -- @param input string  The pasted text.
+        -- @param settings table  The dialog settings: mode ('new' or 'replace') and name.
+        -- @return boolean  Always false (the dialog stays open until the confirmation is answered).
+        -- @return string|nil  The message to show.
         function(input, settings)
             local parsed, errorText = self:ParseCustomConditionImport(input, codec)
 

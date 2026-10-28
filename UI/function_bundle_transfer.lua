@@ -17,8 +17,9 @@ local actions = {
     { value = 'create', text = L['Create'] },
 }
 
--- Formats an import failure (a record with callback or field, and detail or reason, or a plain value) as one status
--- line.
+-- Formats an import failure as one status line.
+-- @param why table|any  A record with callback or field, and detail or reason; or a plain value.
+-- @return string  The status text.
 local function problemText(why)
     if type(why) == 'table' then
         return (why.callback or why.field or L['Definition']) .. ': ' .. tostring(
@@ -34,8 +35,14 @@ end
 -- ============================================================================
 
 -- Opens (creating once per owner) the read-only source review window for one import row: description, identifiers,
--- signature or callback chooser, binding aliases and the code in a read-only Lua editor. It closes itself as soon as
--- ownerValid() fails or the owner's plan or row changes, so it can never show source for a different import.
+-- signature or callback chooser, binding aliases and the code in a read-only Lua editor.
+-- @param owner table  The bundle transfer dialog; its plan and rows are what the review is checked against.
+-- @param row table  The plan row (kind, originalID, destinationID, originalName, source) to review.
+-- @param ownerValid function  Returns true while the owning transfer window is valid.
+-- @return table  The review window.
+--
+-- It closes itself as soon as ownerValid() fails or the owner's plan or row changes, so it can never show source for a
+-- different import.
 function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local view = owner.sourceReview
 
@@ -77,6 +84,7 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local serial = view.serial
 
     -- True while this review window is the current one, still shown and its owner (the transfer window) is still valid.
+    -- @return boolean|nil  Truthy while the review may stay open.
     local function valid()
         return view.serial == serial and view.frame:IsShown() and ownerValid()
     end
@@ -85,6 +93,9 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local source = row.originalSource or row.source
     view.selected = row.kind == 'function' and 'code' or 'evaluate'
 
+    -- Builds the review form: description, identifiers, signature or callback chooser, binding aliases and the
+    -- read-only code editor.
+    -- @param form table  The settings form being drawn.
     view.form:Open(function(form)
         form.width = 830
         form.child:SetWidth(form.width)
@@ -162,6 +173,7 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     local originalID, destinationID, kind = row.originalID, row.destinationID, row.kind
 
     -- Help is bound only while the very same row, plan and source evidence are still on screen.
+    -- @return boolean  True when the help may stay open.
     local function helpValid()
         if
             not valid()
@@ -229,10 +241,17 @@ end
 -- ============================================================================
 
 -- Shows the bundle window for the settings pane p: exports (source, id) as bundle text and lets the player paste
--- another bundle to import. options.kind is 'function' (default) or 'condition'; options.text pre-fills and reviews an
--- incoming bundle; options.valid() ties the window to its caller; options.onApplied(rootId) replaces the default
--- refresh of the function editor and options.onClose runs when the window hides. Returns the dialog. Any change of the
--- pasted text or of a choice invalidates the plan, so Apply import only ever applies exactly what was reviewed.
+-- another bundle to import.
+-- @param p table  The settings pane the window belongs to.
+-- @param id string|nil  The ID of the exported function or condition.
+-- @param source table|nil  The exported definition; nil when only importing.
+-- @param options table|nil  kind ('function' (default) or 'condition'); text (pre-fills and reviews an incoming
+--   bundle); valid() (ties the window to its caller); onApplied(rootId) (replaces the default refresh of the function
+--   editor); onClose() (runs when the window hides).
+-- @return table  The dialog.
+--
+-- Any change of the pasted text or of a choice invalidates the plan, so Apply import only ever applies exactly what was
+-- reviewed.
 function addon:ShowFunctionBundleTransfer(p, id, source, options)
     options = options or {}
     local kind = options.kind or 'function'
@@ -300,6 +319,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
 
     -- True while this window is the current one for the pane and the profile and global tables it opened against, and
     -- the caller's own validity test (or the pane's generation token) still holds. Gates every button and refresh.
+    -- @return boolean  True when the window may act.
     local function valid()
         return d.serial == serial
             and d.frame:IsShown()
@@ -318,6 +338,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     )
 
     -- Writes a warning-colored message to the dialog's status line.
+    -- @param message string|nil  The message; nil clears the line.
     local function status(message)
         d.status:SetText(message or '')
         d.status:SetTextColor(1, .75, .35)
@@ -359,7 +380,8 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     end
 
     -- Parses the pasted bundle and plans the import with the current conflict choices; enables Apply import only for a
-    -- valid plan of the expected kind. Choices reset when the pasted text changes. Returns whether the plan is valid.
+    -- valid plan of the expected kind. Choices reset when the pasted text changes.
+    -- @return boolean  True when the plan is valid.
     function d:Review()
         if not valid() or not self.form:FlushEdits() then
             return false
@@ -417,6 +439,9 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         return plan.valid
     end
 
+    -- Builds the review form: one block per bundle entry (conflict action, destination, name, source review,
+    -- comparison) and the required function list.
+    -- @param form table  The settings form being drawn.
     d.form:Open(function(form)
         form.width = math.max(240, d.body:GetWidth() - 34)
         form.child:SetWidth(form.width)
@@ -592,6 +617,8 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         end
     end)
 
+    -- Apply import: re-reviews when anything is pending or the text changed, otherwise applies the reviewed plan and
+    -- hands the destination ID of the bundle root to options.onApplied (or refreshes the function editor).
     addon:SetUIScript(d.apply, 'OnClick', function()
         if not valid() then
             return
@@ -654,6 +681,7 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         end
     end)
 
+    -- Pane cleanup: hides this window if it is still the one this call opened.
     p.cleanups[#p.cleanups + 1] = function()
         if d.serial == serial then
             d.frame:Hide()
@@ -707,8 +735,13 @@ end
 -- ============================================================================
 
 -- Shows the bundle window for a custom condition dialog (parent), hiding the dialog while it is open and tracking the
--- window as one of its child widgets. update(identifier) runs after a successful import of the condition. Returns the
--- bundle dialog, or nil when the parent has no form or no owner to return to.
+-- window as one of its child widgets.
+-- @param parent table  The custom condition dialog.
+-- @param update function  Called as update(identifier) after a successful import of the condition.
+-- @param key string|nil  The condition key; nil or empty exports as IMPORTED_CONDITION.
+-- @param source table  The condition definition to export.
+-- @param incomingText string|nil  Bundle text to review straight away.
+-- @return table|nil  The bundle dialog; nil when the parent has no form or no owner to return to.
 function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, incomingText)
     local owner = parent.rmConditionOwner
 
@@ -717,6 +750,7 @@ function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, 
     end
 
     -- True while the condition dialog can still be resumed, so a closed or replaced dialog is never reopened.
+    -- @return boolean  True when it can be resumed.
     local function valid()
         return addon:CanResumeCustomConditionDialog(parent, owner)
     end
@@ -727,6 +761,7 @@ function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, 
         kind = 'condition',
         text = incomingText,
         valid = valid,
+        -- Window close: forgets the dialog and shows the condition dialog again if it can still be resumed.
         onClose = function()
             if dialog then
                 owner.widgets[dialog] = nil
@@ -737,6 +772,8 @@ function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, 
                 parent:Show()
             end
         end,
+        -- After an import: closes the condition dialog and reports the identifier of the imported condition.
+        -- @param identifier string  The destination identifier.
         onApplied = function(identifier)
             if valid() then
                 parent:Close()

@@ -9,12 +9,17 @@
 
 local _, addon = ...
 -- True only for a real, finite number (rejects nil, NaN and both infinities); used to validate typed and slider values.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a finite number.
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
--- Native visuals and pending-input protocol shared by condition fields.
--- Builds one widget; `numeric` selects the slider-plus-percent variant, otherwise it is a plain text field. The
--- widget's value is a number (numeric) or its text; events are OnValueChanged / OnEnterPressed on commit and
--- OnPendingChanged while typing.
+-- Builds one input widget for the widget pool. The widget's value is a number (numeric) or its text; events are
+-- OnValueChanged / OnEnterPressed on commit and OnPendingChanged while typing.
+-- @param numeric boolean|nil  True selects the slider-plus-percent variant; otherwise it is a plain text field.
+-- @return RMConditionInput  The new widget, registered with the widget registry.
+--
+-- Native visuals and pending-input protocol shared by condition fields. A recorded Built In helper, so its body is
+-- frozen.
 ---@class RMConditionInput: RMConditionWidget
 ---@field editbox EditBox
 ---@field SetFocus fun(self: RMConditionInput)
@@ -142,6 +147,7 @@ local function constructor(numeric)
 end
 
 -- Returns a pooled text input acquired from the widget registry.
+-- @return RMConditionInput  The pooled text input.
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
     local w=addon:AcquireConditionWidget('RM-ConditionEditBox',function() return constructor(false) end)
@@ -150,6 +156,7 @@ function addon:CreateConditionEditBox()
 end
 
 -- Returns a pooled slider-with-number-box acquired from the widget registry.
+-- @return RMConditionInput  The pooled slider input.
 ---@return RMConditionInput
 function addon:CreateConditionSlider()
     local w=addon:AcquireConditionWidget('RM-ConditionSlider',function() return constructor(true) end)

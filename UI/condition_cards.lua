@@ -10,6 +10,8 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Creates a left-justified, word-wrapping small label on `parent`.
+-- @param parent Frame  The frame that owns the font string.
+-- @return FontString  The new label.
 local function text(parent)
     local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     label:SetJustifyH('LEFT')
@@ -17,8 +19,11 @@ local function text(parent)
     return label
 end
 
--- Builds one card parented to `parent` (the canvas child frame) and returns it. The caller wires the click, drag and
--- edit scripts after Place(); Release() clears them again before the card goes back to the pool.
+-- Builds one card parented to `parent`. The caller wires the click, drag and edit scripts after Place(); Release()
+-- clears them again before the card goes back to the pool.
+-- @param parent Frame  The canvas child frame the card is placed in.
+-- @return table  The card { frame, controls, header, name, nameButton, typeButton, fields, Place(model, title,
+--   summary), Release() }.
 function addon:CreateConditionCard(parent)
     local card = { frame = CreateFrame('Frame', nil, parent), controls = {} }
     local frame = card.frame
@@ -93,8 +98,12 @@ function addon:CreateConditionCard(parent)
     card.controls.operator.tooltip = L['Switch All / Any']
     card.fields = CreateFrame('Frame', nil, frame)
 
-    -- Positions and restyles the card from a canvas layout `model` (x, y, width, height, group, expanded, compact,
-    -- negated, disabled, invalid, ...). Safe to call repeatedly on the same card; keeps an in-progress name edit open.
+    -- Positions and restyles the card from a canvas layout `model`. Safe to call repeatedly on the same card; keeps an
+    -- in-progress name edit open.
+    -- @param model table  The canvas layout model (x, y, width, height, ownHeight, group, expanded, compact, negated,
+    --   disabled, invalid, ...).
+    -- @param title string  The caption shown on the type button.
+    -- @param summary string|nil  The summary text shown under the header; nil reads as empty.
     function card:Place(model, title, summary)
         -- Re-placing the card must not cancel a name edit in progress; the edit box is restored at the end of Place.
         local editingName = self.name:HasFocus()

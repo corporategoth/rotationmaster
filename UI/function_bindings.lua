@@ -14,9 +14,14 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Naming and completion
 -- ============================================================================
 
+-- Returns the call text for function `id` (for example `functions.double(value)`), built from `source.args`.
+-- @param id string  The function ID.
+-- @param source table  The function source; source.args lists its arguments.
+-- @param original boolean|nil  True makes a Built In method keep its own `addon:Name(...)` form instead of the
+--   dependency-qualified one.
+-- @return string  The call text.
+--
 -- IDs remain explicit even when two modules capture the same local name.
--- Returns the call text for function `id` (for example `functions.double(value)`), built from `source.args`. With
--- `original` true a Built In method keeps its own `addon:Name(...)` form instead of the dependency-qualified one.
 function addon:FunctionInvocation(id, source, original)
     local builtin = self.builtinFunctions and self.builtinFunctions[id]
     local callable = original and builtin and builtin.callName or self:FunctionQualifiedName(id, source)
@@ -35,14 +40,21 @@ function addon:FunctionInvocation(id, source, original)
     return callable .. '(' .. table.concat(args, ', ') .. ')'
 end
 
--- Completion adds a stable dependency only after the user accepts a suggestion.
--- Source insertion then updates actions/context; avoid re-entering completion here.
--- Starts binding function `id` under `alias` for the editor `owner`. Returns false (after showing the reason in the
--- form) when the editor is read-only, busy or the alias conflicts; otherwise returns a transaction. The caller inserts
--- the completion text, then calls transaction:commit() (records an undo entry) or transaction:rollback() (restores the
--- previous bindings and code). The transaction goes stale if the editor session changes, and then rolls itself back.
+-- Starts binding function `id` under `alias` for the editor `owner`. The caller inserts the completion text, then calls
+-- transaction:commit() (records an undo entry) or transaction:rollback() (restores the previous bindings and code). The
+-- transaction goes stale if the editor session changes, and then rolls itself back.
+-- @param owner table  The custom condition or function editor.
+-- @param id string  The function ID to bind.
+-- @param alias string  The name the code will use for it.
+-- @return table|boolean  A transaction { commit(), rollback() }; false (after showing the reason in the form) when the
+--   editor is read-only, busy or the alias conflicts.
+--
+-- Completion adds a stable dependency only after the user accepts a suggestion. Source insertion then updates
+-- actions/context; avoid re-entering completion here.
 function addon:BindEditorFunction(owner, id, alias)
     -- Shows `reason` in the form and returns false, the uniform failure result of this function.
+    -- @param reason string  The reason code.
+    -- @return boolean  Always false.
     local function reject(reason)
         if owner.form and owner.form.Message then
             owner.form:Message(string.format(L['Function unavailable: %s'], reason))
@@ -104,6 +116,7 @@ function addon:BindEditorFunction(owner, id, alias)
     source.bindings = bindings
 
     -- True while this transaction is still the editor's current one in the same session.
+    -- @return boolean|nil  Truthy while the transaction may still act.
     local function valid()
         return owner.session == session
             and owner.OwnerValid
@@ -132,7 +145,9 @@ function addon:BindEditorFunction(owner, id, alias)
     end
 
     -- Pushes a 'function-completion' undo entry (bounded to 100 entries, and 4 MiB of text for model-backed editors)
-    -- and keeps the new binding. Returns false and rolls back if the editor changed meanwhile.
+    -- and keeps the new binding.
+    -- @return boolean  True when kept; false (after rolling back) if the editor changed meanwhile, or when the
+    --   transaction already finished.
     function transaction:commit()
         if self.finished then
             return false
@@ -157,6 +172,8 @@ function addon:BindEditorFunction(owner, id, alias)
         state.redo = {}
 
         -- Byte size of an undo entry: a code-completion entry carries its text, a plain entry is the text itself.
+        -- @param value string|table  An undo entry.
+        -- @return number  Its size in bytes.
         local function length(value)
             return #(type(value) == 'table' and value.text or value)
         end
@@ -196,8 +213,11 @@ end
 -- History
 -- ============================================================================
 
--- Undo or redo of a 'function-completion' entry: restores its code text and its alias binding, and returns the inverse
--- entry for the opposite stack. Removes the whole bindings table again when the entry says it did not exist before.
+-- Undo or redo of a 'function-completion' entry: restores its code text and its alias binding. Removes the whole
+-- bindings table again when the entry says it did not exist before.
+-- @param owner table  The editor.
+-- @param entry table  The function-completion entry to travel.
+-- @return table  The inverse entry for the opposite stack.
 function addon:TravelFunctionCompletion(owner, entry)
     local source = owner.model and owner.model.value or owner.value
     local bindings = source.bindings
@@ -225,6 +245,9 @@ end
 
 -- True when the newest function-completion entry in the code undo (or redo) stack must be travelled before any model
 -- step: the model has not moved past the depth recorded in that entry. Keeps the two histories in their original order.
+-- @param owner table  The editor with a model.
+-- @param redo boolean|nil  True to look at the redo stack, otherwise the undo stack.
+-- @return boolean  True when the code history goes first.
 function addon:PreferFunctionCodeHistory(owner, redo)
     local state = owner:CodeState()
     local history = redo and state.redo or state.undo
@@ -244,8 +267,9 @@ end
 -- Dependency rows
 -- ============================================================================
 
--- Returns the sorted { value = functionId, text = label } list of every function a binding may target (Built In and
--- custom). Labels that still collide get the id appended so every entry is distinguishable in a search.
+-- Returns the sorted list of every function a binding may target (Built In and custom). Labels that still collide get
+-- the id appended so every entry is distinguishable in a search.
+-- @return table[]  Entries shaped { value = functionId, text = label }.
 function addon:FunctionBindingChoices()
     local entries = {}
 
@@ -286,6 +310,8 @@ function addon:FunctionBindingChoices()
 end
 
 -- Marks the Dependencies button and every alias/target control as unsaved when the bindings differ from the baseline.
+-- @param form table  The settings form.
+-- @param owner table  The editor.
 function addon:RefreshFunctionBindingMarkers(form, owner)
     local source = owner.model and owner.model.value or owner.value
     local baseline = owner.model and owner.model.baseline.value or owner.baseline or {}
@@ -299,9 +325,12 @@ function addon:RefreshFunctionBindingMarkers(form, owner)
     end
 end
 
--- One compact geometry contract for condition and utility-function toolbars. Returns the Dependencies button rectangle
--- and the syntax button origin for a toolbar `width`, dropping to a second row when the toolbar is too narrow; `top` is
--- the toolbar's Y offset. `button` is measured for its label width.
+-- One compact geometry contract for condition and utility-function toolbars: the Dependencies button rectangle and the
+-- syntax button origin, dropping to a second row when the toolbar is too narrow.
+-- @param width number  The toolbar width.
+-- @param button Button  The Dependencies button, measured for its label width.
+-- @param top number  The toolbar's Y offset.
+-- @return table  { x, y, width, syntaxX, syntaxY, bottom }.
 function addon:GetFunctionBindingToolbarGeometry(width, button, top)
     local bindingWidth = math.max(90, math.ceil(button:GetFontString():GetStringWidth()) + 24)
     local narrow = width < 348 + bindingWidth
@@ -311,9 +340,12 @@ function addon:GetFunctionBindingToolbarGeometry(width, button, top)
     return { x = x, y = y, width = bindingWidth, syntaxX = x + bindingWidth + 6, syntaxY = y, bottom = y + 28 }
 end
 
--- Adds the Dependencies button and, when expanded, one row per alias to `form` for the editor `owner`. `options.header`
--- (a rectangle or a function of the button) places the button in a toolbar instead of its own row. Edits go through
+-- Adds the Dependencies button and, when expanded, one row per alias to `form` for the editor `owner`. Edits go through
 -- owner.model:Change when the editor has a model, else straight to the working source, then redraw the form.
+-- @param form table  The settings form.
+-- @param owner table  The editor.
+-- @param options table|nil  options.header (a rectangle or a function of the button) places the button in a toolbar
+--   instead of its own row.
 function addon:BuildFunctionBindingFields(form, owner, options)
     options = options or {}
     local source = owner.model and owner.model.value or owner.value
@@ -343,6 +375,7 @@ function addon:BuildFunctionBindingFields(form, owner, options)
     end
 
     -- Applies `change(bindings)` to the editor's bindings table; ignored while the editor is read-only.
+    -- @param change function  Called with the bindings table to modify.
     local function mutate(change)
         if owner.readOnly then
             return
@@ -492,6 +525,7 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         remap:SetSize(24, 24)
         form.fields['binding_remap_' .. index] = remap
 
+        -- Change source helper button: lets the player pick another function for this alias.
         self:SetUIScript(remap, 'OnClick', form:Guard(function()
             if form:FlushEdits() then
                 form:ShowChoices(
@@ -540,6 +574,7 @@ function addon:BuildFunctionBindingFields(form, owner, options)
         form:Button(
             'add_binding',
             L['Add dependency'],
+            -- Add dependency button: binds the first available function under a fresh, unused alias.
             function()
                 local id = targets[1] and targets[1].value or 'MISSING'
                 local record = self.builtinFunctions and self.builtinFunctions[id]

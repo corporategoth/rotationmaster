@@ -16,8 +16,11 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- adoption, never in layout.
 local HEIGHT, GAP = 32, 4
 
--- Builds the banner for the settings shell and returns it with Refresh and Place methods. The caller (UI/config.lua)
--- owns the shell and must call banner:Refresh when the window opens; the banner starts hidden.
+-- Builds the banner for the settings shell, hidden at first. The caller (UI/config.lua) owns the shell and must call
+-- banner:Refresh when the window opens.
+-- @param shell table  The settings shell.
+-- @param window Frame  The settings window frame.
+-- @return table  The banner { frame, Refresh(), Place(x, y, width) }.
 function addon:CreateLegacyArchiveBanner(shell, window)
     local banner = { frame = CreateFrame('Frame', nil, window), count = nil }
     local frame = banner.frame
@@ -35,6 +38,7 @@ function addon:CreateLegacyArchiveBanner(shell, window)
 
     -- Opens Recover on the Rotations page. Leaving a page with unsaved edits asks first, so the window opens when the
     -- switch completes (never when the player keeps the edits).
+    -- @param pane table|nil  The Rotations pane.
     local function openRecovery(pane)
         if pane and pane.OpenRecovery then
             pane:OpenRecovery()
@@ -55,7 +59,7 @@ function addon:CreateLegacyArchiveBanner(shell, window)
         shell:Layout()
     end)
 
-    -- Reads the archive; layout only asks Place.
+    -- Reads the archive and shows or hides the banner; layout only asks Place.
     function banner:Refresh()
         self.count = addon.GetLegacyArchiveBanner and addon:GetLegacyArchiveBanner() or nil
 
@@ -71,8 +75,11 @@ function addon:CreateLegacyArchiveBanner(shell, window)
         end
     end
 
-    -- Anchor under the tabs at `y` (negative, from the window's top) and
-    -- return the vertical space it takes, 0 when hidden.
+    -- Anchors the banner under the tabs.
+    -- @param x number  The left offset.
+    -- @param y number  The offset from the window's top (negative).
+    -- @param width number  The width.
+    -- @return number  The vertical space it takes; 0 when hidden.
     function banner:Place(x, y, width)
         if not self.count then
             return 0

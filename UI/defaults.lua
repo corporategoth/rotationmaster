@@ -33,7 +33,11 @@ local reasons = {
 
 addon.BuiltinEligibilityReasons = reasons
 
--- Adds a full-width text label to `parent`; kind 'Heading' uses the workbench header font and color. Returns it.
+-- Adds a full-width text label to `parent`.
+-- @param parent table  The group widget that receives the label.
+-- @param text string  The label text.
+-- @param kind string|nil  'Heading' uses the workbench header font and color.
+-- @return table  The new label widget.
 local function label(parent, text, kind)
     local widget = addon:CreateConditionLabel()
 
@@ -48,8 +52,11 @@ local function label(parent, text, kind)
     return widget
 end
 
--- Builds the scrollable body for one Built In row: the rotation reference followed by its Sources. Returns the group
--- widget; if building fails the half-built group is released before the error is rethrown, so no widget leaks.
+-- Builds the scrollable body for one Built In row: the rotation reference followed by its Sources.
+-- @param row table  The Built In row from addon:ListDefaultRotations (envelope with body and sources).
+-- @param spec string  The class spec the rotation belongs to.
+-- @return table  The group widget; if building fails the half-built group is released before the error is rethrown, so
+--   no widget leaks.
 local function referenceContent(row, spec)
     local root = addon:CreateConditionGroup()
     root:SetFullWidth(true)
@@ -78,10 +85,13 @@ local function referenceContent(row, spec)
     return root
 end
 
--- Legacy option containers still need an inner scroll area. Borrow a normal
--- native group as its lease and restore every decorated method on release.
 -- Adds `root` (the reference content) to `frame`, inside a viewport sized to the frame, unless the frame was tagged
 -- 'defaultWholeScroll' (the standalone window, which scrolls the whole page itself).
+-- @param frame table  The group widget that receives the content.
+-- @param root table  The reference content group from referenceContent.
+--
+-- Legacy option containers still need an inner scroll area. Borrow a normal native group as its lease and restore every
+-- decorated method on release.
 local function addReference(frame, root)
     if frame:GetUserData('defaultWholeScroll') then
         frame:AddChild(root)
@@ -102,15 +112,23 @@ local function addReference(frame, root)
     viewport:Show()
     local layout, releaseChildren, release = holder.DoLayout, holder.ReleaseChildren, holder.OnRelease
 
+    -- Sizes the viewport to the holder's frame.
+    -- @param self table  The holder group.
     holder.DoLayout = function(self)
         viewport:SetSize(math.max(1, self.frame:GetWidth() - 24), math.max(1, self.frame:GetHeight()))
     end
 
+    -- Forgets the holder's children and detaches the viewport's content.
+    -- @param self table  The holder group.
     holder.ReleaseChildren = function(self)
         self.children = {}
         viewport:ReleaseConditionContent()
     end
 
+    -- Hides the viewport and restores the holder's own methods before running its original OnRelease.
+    -- @param self table  The holder group.
+    -- @param ... any  Arguments passed to the original OnRelease.
+    -- @return any  What the original OnRelease returns.
     holder.OnRelease = function(self, ...)
         viewport:Hide()
         self.DoLayout = layout
@@ -130,9 +148,14 @@ end
 -- Options page and window
 -- ============================================================================
 
--- Fills `frame` with the Built In page for rotation `id` of `spec`. `onClone(newId)` runs after a successful clone and
--- `onRefresh()` after the enable toggle changes. Every callback re-checks valid(), so a profile change, release or a
--- newer call on the same frame turns a late click into a no-op instead of a write to the wrong profile.
+-- Fills `frame` with the Built In page for rotation `id` of `spec`. Every callback re-checks valid(), so a profile
+-- change, release or a newer call on the same frame turns a late click into a no-op instead of a write to the wrong
+-- profile.
+-- @param frame table  The group widget to fill.
+-- @param spec string  The class spec the rotation belongs to.
+-- @param id string  The Built In rotation ID.
+-- @param onClone function|nil  Called as onClone(newId) after a successful clone.
+-- @param onRefresh function|nil  Called after the enable toggle changes.
 function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     local token = {}
     frame.rmDefaultOptionsToken = token
@@ -140,6 +163,7 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     local lease = frame.rmLease
 
     -- True while this page is still the live one for its frame, profile and widget lease.
+    -- @return boolean  True when late callbacks may still act.
     local function valid()
         return frame.rmDefaultOptionsToken == token
             and addon.db.profile == profile
@@ -217,6 +241,11 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         enable:SetLabel(L['Enable Built In'])
         enable:SetValue(row.switchedOn == true)
 
+        -- Enable toggle: switches the Built In rotation on or off, re-evaluates the rotation when the profile is
+        -- enabled, and reports a failure on the status label.
+        -- @param _ any  Unused.
+        -- @param _ any  Unused.
+        -- @param value boolean  The new state.
         enable:SetCallback('OnValueChanged', function(_, _, value)
             if not valid() then
                 return
@@ -248,6 +277,8 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
         local clone = addon:CreateConditionButton()
         clone:SetText(L['Clone to edit'])
 
+        -- Clone button: duplicates the Built In rotation as a custom one and hands the new ID to onClone, or reports
+        -- the failure on the status label.
         clone:SetCallback('OnClick', function()
             if not valid() then
                 return
@@ -292,8 +323,11 @@ function addon:CreateDefaultRotationOptions(frame, spec, id, onClone, onRefresh)
     end
 end
 
--- Opens (or reuses) the standalone Built In window for rotation `id` of `spec` and returns the window table. The window
--- closes itself if the profile changes underneath it, and a clone hands over to the Rotations settings page.
+-- Opens (or reuses) the standalone Built In window for rotation `id` of `spec`. The window closes itself if the profile
+-- changes underneath it, and a clone hands over to the Rotations settings page.
+-- @param spec string  The class spec the rotation belongs to.
+-- @param id string  The Built In rotation ID.
+-- @return table  The window table.
 function addon:ShowDefaultRotation(spec, id)
     local window = self.defaultRotationWindow
 
@@ -351,6 +385,7 @@ function addon:ShowDefaultRotation(spec, id)
     local lease = root.rmLease
 
     -- True while this showing of the window is current and the profile it was opened on is still active.
+    -- @return boolean  True when late callbacks may still act.
     local function valid()
         return window.active
             and window.serial == serial
@@ -364,6 +399,7 @@ function addon:ShowDefaultRotation(spec, id)
     window.viewport:SetConditionContent(root)
 
     -- A clone succeeded: closes this window and opens the new copy in the Rotations settings page.
+    -- @param generated string  The ID of the new rotation.
     local function cloned(generated)
         if not valid() then
             return

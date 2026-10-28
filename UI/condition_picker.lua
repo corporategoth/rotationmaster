@@ -10,10 +10,15 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- One native combobox: typing immediately opens its filtered results; clicking
--- opens the same results and category browser without needing a search term.
--- `choose(tag)` is called once for the chosen type, `alive()` must return false once the owning editor drawing is gone
--- (every callback checks it), and `reuse` is a previous picker table whose frames are kept. Returns the picker, hidden.
+-- Builds one native combobox: typing immediately opens its filtered results; clicking opens the same results and
+-- category browser without needing a search term.
+-- @param parent Frame  The editor window the picker is parented to and sized from.
+-- @param scope string  The condition scope listed from the registry ("SWITCH", "ALL" or "ANNOUNCEMENT").
+-- @param current string|nil  The tag of the card's current condition type; nil shows the prompt text.
+-- @param choose function  Called once as choose(tag) for the chosen type.
+-- @param alive function  Returns false once the owning editor drawing is gone (every callback checks it).
+-- @param reuse table|nil  A previous picker table whose frames are kept.
+-- @return table  The picker { Filter(query), Open(anchor), Dismiss(), Release(), ... }, hidden.
 function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, reuse)
     local picker = reuse or { rows = {}, categories = {} }
     local width = math.max(300, math.min(540, parent:GetWidth() - 48))
@@ -81,6 +86,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     end
 
     -- Records the choice, closes the popup, then reports it; ignored when the owning drawing is gone.
+    -- @param tag string  The chosen condition type tag.
     local function selectType(tag)
         if not alive() then
             return
@@ -91,9 +97,12 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
         choose(tag)
     end
 
-    -- Fills the result list with the allowed types in the selected category whose description or tag contains `query`
-    -- (case-insensitive, plain text), sorted by description. Only the first 200 matches get rows, which bounds the
-    -- number of buttons created; self.matches keeps the full list for Enter.
+    -- Fills the result list with the allowed types in the selected category whose description or tag contains `query`,
+    -- sorted by description.
+    -- @param query string|nil  The search text (case-insensitive, plain text); nil or empty matches everything.
+    --
+    -- Only the first 200 matches get rows, which bounds the number of buttons created; self.matches keeps the full list
+    -- for Enter.
     function picker:Filter(query)
         if not alive() then
             return
@@ -232,6 +241,7 @@ function addon:CreateConditionTypePicker(parent, scope, current, choose, alive, 
     end
 
     -- Opens below `anchor` (when given) with the results showing and the box focused.
+    -- @param anchor Frame|nil  The frame to open under; nil keeps the previous position.
     function picker:Open(anchor)
         if anchor then
             host:ClearAllPoints()

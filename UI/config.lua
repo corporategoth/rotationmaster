@@ -28,6 +28,8 @@ local sections = {
 }
 
 -- Normalizes a saved UI scale to 0.70 to 1.30 in 0.01 steps; anything else (nil, NaN, out of range) becomes 1.
+-- @param value any  The saved scale.
+-- @return number  The normalized scale.
 local function scale(value)
     if type(value) ~= "number" or value ~= value or value < .7 or value > 1.3 then
         return 1
@@ -36,7 +38,13 @@ local function scale(value)
     return math.floor(value * 100 + .5) / 100
 end
 
--- Paints the whole frame with a solid color texture on the background layer and returns the texture.
+-- Paints the whole frame with a solid color texture on the background layer.
+-- @param frame Frame  The frame to paint.
+-- @param r number  The red channel, 0 to 1.
+-- @param g number  The green channel, 0 to 1.
+-- @param b number  The blue channel, 0 to 1.
+-- @param a number|nil  The alpha, 0 to 1; nil means 1.
+-- @return Texture  The new texture.
 local function fill(frame, r, g, b, a)
     local texture = frame:CreateTexture(nil, "BACKGROUND")
     texture:SetAllPoints(frame)
@@ -44,7 +52,10 @@ local function fill(frame, r, g, b, a)
     return texture
 end
 
--- Creates a left-justified font string on `parent` (default small highlight font).
+-- Creates a left-justified font string on `parent`.
+-- @param parent Frame  The frame that owns the font string.
+-- @param font string|nil  The font object name; nil means GameFontHighlightSmall.
+-- @return FontString  The new font string.
 local function text(parent, font)
     local result = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
     result:SetJustifyH("LEFT")
@@ -52,15 +63,24 @@ local function text(parent, font)
 end
 
 -- A workbench button; the name keeps call sites short.
+-- @param parent Frame  The parent frame.
+-- @param label string  The button text.
+-- @param width number  The button width.
+-- @return Button  The new button.
 local function flatButton(parent, label, width)
     return addon:CreateWorkbenchButton(parent, label, width)
 end
 
+-- True when the pointer is over `content` itself (or a descendant of it) rather than a window stacked above it.
+-- @param content Frame  The page area frame.
+-- @return boolean|nil  True when the pointer is over the content; false when it is over a window above it or over a
+--   control flagged `rmOwnsRightClick` (a reference field, the spell icon); nil on a client with no focus or mouse-over
+--   API.
+--
 -- Geometry alone includes windows underneath other addons. Only a focused descendant can originate a content click when
--- the client exposes focus. True when the pointer is over `content` itself (or a descendant of it) rather than a window
--- stacked above it. Uses the mouse-focus API of whichever client generation is running, falling back to a plain
--- geometry test. False when the pointer is over a control flagged `rmOwnsRightClick` (a reference field, the spell icon):
--- that control gives the right click its own meaning, and UI/window.lua's dialog close honors the same flag.
+-- the client exposes focus. Uses the mouse-focus API of whichever client generation is running, falling back to a plain
+-- geometry test. The rmOwnsRightClick control gives the right click its own meaning, and UI/window.lua's dialog close
+-- honors the same flag.
 local function contentHasFocus(content)
     local focus
 
@@ -90,7 +110,9 @@ local function contentHasFocus(content)
     return false
 end
 
--- Reads a field from the addon's TOC (Version, Author, X-Website, ...); returns nil when missing or empty.
+-- Reads a field from the addon's TOC (Version, Author, X-Website, ...).
+-- @param key string  The TOC field name.
+-- @return string|nil  The value; nil when missing or empty.
 local function metadata(key)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
@@ -103,7 +125,9 @@ local function metadata(key)
     end
 end
 
--- Draws a one-pixel gray border over `button` (the selected-tab outline) and returns the border frame.
+-- Draws a one-pixel gray border over `button` (the selected-tab outline).
+-- @param button Button  The button to outline.
+-- @return Frame  The border frame.
 local function outline(button)
     local border = CreateFrame("Frame", nil, button)
     border:SetAllPoints(button)
@@ -149,7 +173,8 @@ local descriptions = {
 -- ============================================================================
 
 -- Builds the window, its controls and every shell method once; addon:ShowConfig keeps the result in addon.configWindow.
--- Returns the shell table ({ frame, tabs, pane, ... }). The window is a peer window in the shared layering.
+-- The window is a peer window in the shared layering.
+-- @return table  The shell table ({ frame, tabs, pane, ... }).
 local function newShell()
     local window = addon:TrackWorkbenchSize(CreateFrame("Frame", nil, UIParent))
     window:SetSize(1120, 760)
@@ -165,11 +190,11 @@ local function newShell()
     local minimumWidth, minimumHeight = layout.windowMinWidth, layout.windowMinHeight
     local shell = { frame = window, tabs = {}, buttons = {}, settingsPanes = {} }
 
-    -- Sizing stays within the supported minimum and the visible screen. Older
-    -- clients only provide SetMinResize, and a size restored or set by another
-    -- addon is corrected on the next layout as well.
     -- Sets the resize limits (minimum from the layout table, maximum the visible screen) and clamps the current size.
-    -- Returns true when the size had to change.
+    -- @return boolean  True when the size had to change.
+    --
+    -- Sizing stays within the supported minimum and the visible screen. Older clients only provide SetMinResize, and a
+    -- size restored or set by another addon is corrected on the next layout as well.
     function shell:ApplySizeBounds()
         local scale = window:GetScale() or 1
 
@@ -207,7 +232,8 @@ local function newShell()
         return self:ClampSize()
     end
 
-    -- Resizes the window into the current bounds. Returns true when the size had to be corrected.
+    -- Resizes the window into the current bounds.
+    -- @return boolean  True when the size had to be corrected.
     function shell:ClampSize()
         local width, height = window:GetWidth(), window:GetHeight()
         local wantedWidth = math.max(minimumWidth, self.maximumWidth and math.min(width, self.maximumWidth) or width)
@@ -235,7 +261,9 @@ local function newShell()
         addon:RaiseWindow(self)
     end
 
-    -- Hides the window. A settings form with unsaved changes is asked first (RequestLeave); `approved` skips the ask.
+    -- Hides the window. A settings form with unsaved changes is asked first (RequestLeave).
+    -- @param approved boolean|nil  True skips the ask.
+    -- @return any  What the pane's RequestLeave returns when it deferred to the ask; nil otherwise.
     function shell:Hide(approved)
         local pane = self.pane
 
@@ -403,7 +431,9 @@ local function newShell()
     shell.scaleSlider = addon:CreateWorkbenchSlider(window, 70, 130, 1, 116)
     shell.scaleSlider:SetPoint("TOPLEFT", 12, -22)
 
-    -- Applies a UI scale to this window and all other workbench windows; `persist` also saves it to db.global.uiScale.
+    -- Applies a UI scale to this window and all other workbench windows.
+    -- @param value number  The scale, normalized to 0.70 to 1.30.
+    -- @param persist boolean|nil  True also saves it to db.global.uiScale.
     function shell:ApplyScale(value, persist)
         local selected = scale(value)
         window:SetScale(selected)
@@ -512,6 +542,7 @@ local function newShell()
     addon:OpenPopup({ frame = linkPane }, window)
 
     -- Opens the copy box with `url` selected, because an addon cannot open a browser.
+    -- @param url string  The address to show.
     function shell:ShowLink(url)
         linkPane:Show()
         self.linkInput:SetText(url)
@@ -565,8 +596,9 @@ local function newShell()
         end
     end
 
-    -- Opens the help dialog for a page `topic` (nil for the window help). `valid()` lets the page withdraw the request,
-    -- for example when its pane was replaced; the request is dropped if a newer one starts first.
+    -- Opens the help dialog for a page `topic`; the request is dropped if a newer one starts first.
+    -- @param topic string|nil  The section key; nil for the window help.
+    -- @param valid function|nil  Returns false to withdraw the request, for example when its pane was replaced.
     function shell:ShowHelp(topic, valid)
         local request = {}
         self.helpRequest = request
@@ -575,6 +607,8 @@ local function newShell()
         local dialog = addon:OpenWorkbenchHelp({
             heading = heading,
             owner = addon.pretty_name,
+            -- True while this help request is still the newest, the window is shown and the page has not withdrawn it.
+            -- @return boolean  True when the help should stay open.
             valid = function()
                 return self.helpRequest == request and self.frame:IsShown() and (not valid or valid())
             end,
@@ -634,6 +668,7 @@ local function newShell()
         local profile, global, char = addon.db.profile, addon.db.global, addon.db.char
 
         -- True while the pane, section, generation and profile this button was bound for are still the live ones.
+        -- @return boolean  True when nothing has changed since the button was bound.
         local function current()
             return self.frame:IsShown()
                 and self.pane == pane
@@ -759,6 +794,7 @@ local function newShell()
             text:SetPoint('LEFT', 8, 0)
 
             -- True while the tab strip is the one that built this tab (a rebuild invalidates old help requests).
+            -- @return boolean  True when the window is shown and the tabs were not rebuilt since.
             local function current()
                 return self.frame:IsShown() and self.tabGeneration == generation
             end
@@ -780,10 +816,13 @@ local function newShell()
         self:Layout()
     end
 
-    -- Switches to section `key` (unknown keys fall back to Rotations). A page with unsaved changes is asked first;
-    -- `approved` means that was done. Shows a placeholder pane when the page cannot be built. `after`, when given, is
-    -- called with the new pane once the switch has happened, which is later than this call when a prompt is answered
-    -- first, and never when the player keeps the unsaved page.
+    -- Switches to section `key`. A page with unsaved changes is asked first. Shows a placeholder pane when the page
+    -- cannot be built.
+    -- @param key string  The section key; unknown keys fall back to Rotations.
+    -- @param approved boolean|nil  True means the unsaved-changes ask was already answered.
+    -- @param after function|nil  Called with the new pane once the switch has happened, which is later than this call
+    --   when a prompt is answered first, and never when the player keeps the unsaved page.
+    -- @return any  What the pane's RequestLeave returns when the switch was deferred to the ask; nil otherwise.
     function shell:SelectSection(key, approved, after)
         if not approved and self.pane and self.nativePane and self.pane.RequestLeave then
             -- Native editors preserve their pending changes at this boundary.
@@ -872,13 +911,15 @@ local function newShell()
             pane.message:SetPoint('TOPLEFT', 8, -8)
             pane.message:SetWordWrap(true)
 
-            -- The placeholder implements just the pane interface the shell calls: SetWidth, SetHeight, Release.
+            -- Sets the placeholder's width and wraps its message to fit.
+            -- @param width number  The width.
             function pane:SetWidth(width)
                 self.frame:SetWidth(width)
                 self.message:SetWidth(math.max(1, width - 16))
             end
 
             -- Sets the placeholder frame's height.
+            -- @param height number  The height.
             function pane:SetHeight(height)
                 self.frame:SetHeight(height)
             end
@@ -927,8 +968,10 @@ end
 -- Public entry points
 -- ============================================================================
 
--- Built-in tabs use native settings forms and owned editor panes. Opens the window on `section` (default Rotations);
--- `selection` ({ spec, id }) preselects a rotation. Returns the shell.
+-- Opens the window on `section`, built from native settings forms and owned editor panes.
+-- @param section string|nil  The section key; defaults to Rotations.
+-- @param selection table|nil  { spec, id } to preselect a rotation.
+-- @return table  The shell.
 function addon:ShowConfig(section, selection)
     self.configRotationSelection = selection
     self:SetupOptions()
@@ -975,12 +1018,17 @@ local showConfig = addon.ShowConfig
 
 -- Re-declares ShowConfig so the call runs under the diagnostics wrapper when it exists: an error opening the window is
 -- recorded instead of propagating to the caller (a slash command or button).
+-- @param ... any  The arguments of the original ShowConfig (section, selection).
+-- @return table|nil  The shell; nil when the protected call failed (the error is already reported).
 function addon:ShowConfig(...)
     if not self.Diagnostics then
         return showConfig(self, ...)
     end
 
     -- Returns the call's results on success and nothing when the protected call failed (the error is already reported).
+    -- @param ok boolean  Whether the protected call succeeded.
+    -- @param ... any  The call's results.
+    -- @return any  The call's results when ok; nothing otherwise.
     local function result(ok, ...)
         if ok then
             return ...

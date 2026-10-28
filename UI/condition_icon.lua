@@ -9,9 +9,12 @@
 -- is never edited.
 local _, addon = ...
 
--- Shared native image primitive with owned callback and input leases.
--- constructor builds one widget (a Button frame plus its texture and caption) for the widget pool and registers it
--- with the lease machinery. Its click and hover scripts fire only while the widget's lease is still the live one.
+-- Builds one icon widget (a Button frame plus its texture and caption) for the widget pool and registers it with the
+-- lease machinery. Its click and hover scripts fire only while the widget's lease is still the live one.
+-- @return RMConditionIcon  The new widget, registered with the widget registry.
+--
+-- Shared native image primitive with owned callback and input leases. A recorded Built In helper, so its body is
+-- frozen.
 ---@class RMConditionIcon: RMConditionWidget
 ---@field image Texture
 ---@field label FontString
@@ -65,6 +68,7 @@ local function constructor()
 end
 
 -- Returns a pooled icon widget from the condition widget registry; release it through the owning container.
+-- @return RMConditionIcon  The pooled icon widget.
 ---@return RMConditionIcon
 function addon:CreateConditionIcon()
     return self:AcquireConditionWidget('RM-ConditionIcon',constructor)

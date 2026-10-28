@@ -41,6 +41,7 @@ local sampleTextures = {
 -- ============================================================================
 
 -- True while sample icons are on for the current profile; a profile switch silently turns them off.
+-- @return boolean  True when sample mode is on.
 function addon:IsPreviewSampleEnabled()
     if sampleProfile ~= self.db.profile then
         sampleProfile = nil
@@ -50,11 +51,20 @@ function addon:IsPreviewSampleEnabled()
 end
 
 -- `value` limited to lo..hi, or `fallback` when it is not a real number (nil, NaN, wrong type).
+-- @param value any  The value.
+-- @param lo number  The lowest allowed value.
+-- @param hi number  The highest allowed value.
+-- @param fallback any  Returned when value is not a real number.
+-- @return number|any  The clamped number, or the fallback.
 local function clamp(value, lo, hi, fallback)
     return type(value) == 'number' and value == value and math.max(lo, math.min(hi, value)) or fallback
 end
 
--- Native geometry can read back with small floating-point differences.
+-- True when two geometry numbers are equal within a tenth of a pixel. Native geometry can read back with small
+-- floating-point differences.
+-- @param a any  The first number.
+-- @param b any  The second number.
+-- @return boolean  True when both are numbers within .1 of each other.
 local function sameGeometry(a, b)
     return type(a) == 'number' and type(b) == 'number' and math.abs(a - b) <= .1
 end
@@ -63,9 +73,10 @@ end
 -- The preview window
 -- ============================================================================
 
--- Builds (once) and re-activates the preview window for the current profile, restoring its saved position, and returns
--- the window table. Each call starts a new generation, so callbacks captured by an older showing go inert. The window
--- is also published as addon.nextWindow, where the poll finds it.
+-- Builds (once) and re-activates the preview window for the current profile, restoring its saved position. Each call
+-- starts a new generation, so callbacks captured by an older showing go inert. The window is also published as
+-- addon.nextWindow, where the poll finds it.
+-- @return RMRecommendationPreview  The window table.
 ---@class RMRecommendationPreview
 ---@field ReleaseChildren fun(self: RMRecommendationPreview)
 ---@field PauseLayout fun(self: RMRecommendationPreview)
@@ -101,6 +112,7 @@ function addon:CreateNativePreviewWindow()
         window.grip:SetAlpha(0)
 
         -- True while this is the live window of the active profile; every late callback checks it first.
+        -- @return boolean|nil  Truthy while the window is live.
         function window:Valid()
             return self.active and addon.db.profile == self.profile and addon.nextWindow == self
         end
@@ -108,6 +120,8 @@ function addon:CreateNativePreviewWindow()
         local nativeValid = window.Valid
 
         -- Returns icon button number `index`, creating it with its drag, menu and tooltip wiring on first use.
+        -- @param index number  The icon slot.
+        -- @return Button  The icon button.
         function window:EnsureIcon(index)
             local icon = self.icons[index]
 
@@ -328,6 +342,8 @@ function addon:CreateNativePreviewWindow()
         end
 
         -- Turns a dragged frame size into an icon size (24 to 160), saves it to the profile and reconfigures.
+        -- @param width number  The new frame width.
+        -- @param height number  The new frame height.
         function window:Resize(width, height)
             if not self:Valid() or self.locked then
                 self:DoLayout()
@@ -346,6 +362,8 @@ function addon:CreateNativePreviewWindow()
 
         -- Shows the next recommended spell (or item, when `itemId` is set) in the first free slot. Called by the poll
         -- for each result; ignored when the window is stale or full. The first icon also reports delivery to analytics.
+        -- @param spellId number  The spell ID.
+        -- @param itemId number|nil  The item ID, when the recommendation is an item.
         function window:AddRecommendation(spellId, itemId)
             if not self:Valid() or self.count >= self.slots then
                 return
@@ -555,6 +573,7 @@ function addon:CreateNativePreviewWindow()
         end
 
         -- Tracks pointer hover over the body or grip; the resize grip is visible only while hovered.
+        -- @param over boolean|nil  True while the pointer is over the body.
         function window:SetHover(over)
             self.hovered = over == true
             self.grip:SetAlpha((self.hovered or self.gripHovered) and 1 or 0)
@@ -583,8 +602,9 @@ function addon:CreateNativePreviewWindow()
             self.profile.previewHeaderlessGeometry = true
         end
 
-        -- The menu never hides the window: it is shown exactly while Preview
+        -- Builds the right-click menu entries. The menu never hides the window: it is shown exactly while Preview
         -- Spells is above zero (or samples are on) and hidden at zero.
+        -- @return table[]|nil  Entries shaped { text, isTitle, checked, func }; nil when the window is stale.
         function window:MenuEntries()
             if not self:Valid() then
                 return nil
@@ -593,6 +613,7 @@ function addon:CreateNativePreviewWindow()
             local locked, generation = self.locked == true, self.generation
 
             -- True while the menu was built for the live window generation.
+            -- @return boolean|nil  Truthy while the menu entries may act.
             local function current()
                 return self:Valid() and self.generation == generation
             end
@@ -643,6 +664,7 @@ function addon:CreateNativePreviewWindow()
 
                 UIDropDownMenu_Initialize(
                     self.menu,
+                    -- Dropdown initializer: adds one menu button per entry (title, check box or plain item).
                     function()
                         for _, entry in ipairs(entries) do
                             local info = UIDropDownMenu_CreateInfo()
@@ -670,13 +692,16 @@ function addon:CreateNativePreviewWindow()
             end
         end
 
-        -- SetWidth, SetHeight, ClearAllPoints, SetPoint and GetPoint let the poll treat this window like a layout
-        -- container: sizes arrive as Resize requests, points go to the frame.
+        -- Container-style width request from the poll; becomes a Resize. SetWidth, SetHeight, ClearAllPoints, SetPoint
+        -- and GetPoint let the poll treat this window like a layout container: sizes arrive as Resize requests, points
+        -- go to the frame.
+        -- @param width number  The width.
         function window:SetWidth(width)
             self:Resize(width, self.frame:GetHeight())
         end
 
         -- Container-style height request from the poll; becomes a Resize.
+        -- @param height number  The height.
         function window:SetHeight(height)
             self:Resize(self.frame:GetWidth(), height)
         end
@@ -687,11 +712,14 @@ function addon:CreateNativePreviewWindow()
         end
 
         -- Forwards to the frame.
+        -- @param ... any  The arguments of Frame:SetPoint.
         function window:SetPoint(...)
             self.frame:SetPoint(...)
         end
 
         -- Forwards to the frame.
+        -- @param ... any  The arguments of Frame:GetPoint.
+        -- @return any  What Frame:GetPoint returns.
         function window:GetPoint(...)
             return self.frame:GetPoint(...)
         end
@@ -774,12 +802,15 @@ function addon:CreateNativePreviewWindow()
     return window
 end
 
--- The window lost its 20-pixel title bar. A position saved with it anchored
--- the old outer frame, so shift it once per profile to keep the icons where
--- they were: the header sat on top, so top anchors drop 20 pixels, middle
--- anchors 10 and bottom anchors stay. Opacity zero reserved no header.
--- The flag means "the saved position is headerless"; a drag saves one too.
--- With no saved position there is nothing to shift and nothing is written.
+-- Shifts a saved preview position once per profile after the window lost its 20-pixel title bar, so the icons stay
+-- where they were. The flag profile.previewHeaderlessGeometry means "the saved position is headerless"; a drag saves
+-- one too.
+-- @param profile table  The profile.
+-- @param opacity number|nil  The window opacity; zero reserved no header.
+--
+-- A position saved with the title bar anchored the old outer frame: the header sat on top, so top anchors drop 20
+-- pixels, middle anchors 10 and bottom anchors stay. Opacity zero reserved no header. With no saved position there is
+-- nothing to shift and nothing is written.
 function addon:MigratePreviewHeaderGeometry(profile, opacity)
     if type(profile) ~= 'table' or profile.previewHeaderlessGeometry == true then
         return
@@ -810,7 +841,9 @@ end
 -- Settings entry points
 -- ============================================================================
 
--- Saves the lock state, tells the settings page, and refreshes the window. Returns the stored boolean.
+-- Saves the lock state, tells the settings page, and refreshes the window.
+-- @param locked boolean|nil  True locks the position and size.
+-- @return boolean  The stored boolean.
 function addon:SetPreviewLocked(locked)
     locked = locked == true
     self.db.profile.preview_locked = locked
@@ -852,8 +885,9 @@ function addon:RefreshPreviewWindow()
     end
 end
 
--- Returns the resulting enabled state. Non-Boolean input leaves it unchanged.
--- The mode belongs only to this loaded UI and current profile; no saved field.
+-- Turns the sample icons mode on or off. The mode belongs only to this loaded UI and current profile; no saved field.
+-- @param enabled boolean|nil  True to turn it on, false to turn it off; non-Boolean input leaves it unchanged.
+-- @return boolean  The resulting enabled state.
 function addon:SetPreviewSampleEnabled(enabled)
     if type(enabled) ~= 'boolean' then
         return self:IsPreviewSampleEnabled()

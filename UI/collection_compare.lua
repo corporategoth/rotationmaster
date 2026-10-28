@@ -16,6 +16,9 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- ============================================================================
 
 -- Deep equality of two plain values; tables compare by content (cycles are not expected in saved data).
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when both have the same type and the same content.
 local function equal(a, b)
     if type(a) ~= type(b) then
         return false
@@ -40,6 +43,8 @@ local function equal(a, b)
 end
 
 -- Display text for a non-table value: None, Yes/No, a number to four significant digits, or tostring.
+-- @param value any  The value to show.
+-- @return string  The localized or formatted text.
 local function scalar(value)
     if value == nil then
         return L['None']
@@ -54,7 +59,9 @@ local function scalar(value)
     return tostring(value)
 end
 
--- Display text for an {r, g, b, a} color table (a missing channel reads as 1); other values fall back to scalar.
+-- Display text for an {r, g, b, a} color table; other values fall back to scalar.
+-- @param value any  The color table (a missing channel reads as 1) or any other value.
+-- @return string  The "R .. G .. B .. A .." text, or scalar(value) for a non-table.
 local function color(value)
     if type(value) ~= 'table' then
         return scalar(value)
@@ -64,10 +71,19 @@ local function color(value)
 end
 
 -- Structured data as readable indented text, keys in a fixed order, bounded.
+-- @param value any  The value to render; nil reads as None.
+-- @return string  The indented key/value lines joined by newlines, or the localized None when there is nothing to show.
+--
 -- The bound is 200 entries and 8 levels, after which an ellipsis line is written, so a huge table cannot stall the UI.
 local function structured(value)
     local lines, count = {}, 0
 
+    -- Appends the lines for one node of a structured value, recursing into child tables with keys sorted.
+    -- @param current any  The node to write.
+    -- @param indent string  The indentation prefix for this level.
+    -- @param depth number  The nesting depth of this node; 0 at the root.
+    --
+    -- Stops (with an ellipsis line) once the entry count passes 200 or the depth passes 8.
     local function walk(current, indent, depth)
         if type(current) ~= 'table' then
             lines[#lines + 1] = indent .. scalar(current)
@@ -125,6 +141,8 @@ local CODE_LIMIT = 20000
 
 -- Display text for a custom condition's source field: the code as text, cut at CODE_LIMIT with a note of how much is
 -- missing. Never compiled or run.
+-- @param value any  The source text; nil reads as None.
+-- @return string  The code, or scalar(value) for a non-string.
 local function code(value)
     if value == nil then
         return L['None']
@@ -146,16 +164,27 @@ end
 -- Comparison rows
 -- ============================================================================
 
--- Builds the comparison rows for two records of one `kind` ('profile', 'announcement', 'category', 'customcondition',
--- 'itemset', anything else is an effect) and returns the rows and the number of changed ones. A row is
--- { label, left, right, changed, leftIcon, rightIcon } with display text for both sides. Unchanged rows are included
--- only with `showSame`. A profile-shaped table is walked recursively (to depth 12) with readable labels.
+-- Builds the comparison rows for two records of one kind.
+-- @param kind string  'profile', 'announcement', 'category', 'customcondition' or 'itemset'; anything else is an
+--   effect.
+-- @param left table  The first record.
+-- @param right table  The second record.
+-- @param showSame boolean|nil  When true, unchanged rows are included too.
+-- @return table[]  Rows shaped { label=string, left=string, right=string, changed=boolean, leftIcon=any, rightIcon=any
+--   }, with display text for both sides.
+-- @return number  The number of changed rows.
+--
+-- A profile-shaped table (left.profile / right.profile) is walked recursively (to depth 12) with readable labels.
 function addon:CollectionComparisonRows(kind, left, right, showSame)
     local rows = {}
     local total = 0
 
     -- Appends a row for one pair of values when they differ (or showSame is set) and counts it if it changed.
-    -- `format` turns a value into its text (default scalar); `icons` optionally returns a texture for each side.
+    -- @param label string  The row label.
+    -- @param a any  The left value.
+    -- @param b any  The right value.
+    -- @param format function|nil  Turns a value into its text; defaults to scalar.
+    -- @param icons function|nil  Returns a texture for a value; used for the left and right icon.
     local function add(label, a, b, format, icons)
         local changed = not equal(a, b)
 
@@ -261,8 +290,12 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
             imports = L['Imports'],
         }
 
-        -- A human label for a settings key: the translated label table first, then the record's own name, a list
-        -- index, a condition's description, and last the key with underscores and camel case spaced out.
+        -- A human label for a settings key: the translated label table first, then the record's own name, a list index,
+        -- a condition's description, and last the key with underscores and camel case spaced out.
+        -- @param key any  The settings key.
+        -- @param a any  The left value for that key, used for a record name.
+        -- @param b any  The right value for that key.
+        -- @return string  The label.
         local function plain(key, a, b)
             if labels[key] then
                 return labels[key]
@@ -287,6 +320,11 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         end
 
         -- Compares two nodes and adds a row for each differing leaf, labeling it with the path of keys joined by " / ".
+        -- @param a any  The left node.
+        -- @param b any  The right node.
+        -- @param prefix string  The label path so far; '' at the root.
+        -- @param depth number  The nesting depth; the walk adds the node as one row from depth 12 on.
+        --
         -- A table against a non-table is shown as "Structured settings" on the table side rather than expanded.
         local function walk(a, b, prefix, depth)
             if equal(a, b) and not showSame then
@@ -398,6 +436,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         end
 
         -- Spell name and id for an announcement's spell, or None.
+        -- @param id number|nil  The spell ID.
+        -- @return string  "Name (id)", or the localized None when id is nil.
         local function spell(id)
             return id and self:PlainWorkbenchName(self:SpellLabel(id)) .. ' (' .. tostring(id) .. ')' or L['None']
         end
@@ -405,6 +445,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         add(L['Spell'], left.spell, right.spell, spell)
 
         -- One line per item, as name and id; a name the client has not loaded yet reads as "Item data loading".
+        -- @param value any  The item list.
+        -- @return string  The lines joined by newlines, or scalar(value) when value is not a table.
         local function items(value)
             if type(value) ~= 'table' then
                 return scalar(value)
@@ -428,6 +470,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         add(L['Icon'], left.icon, right.icon)
 
         -- A category's condition list as a count followed by one description per tag.
+        -- @param list any  The condition tag list.
+        -- @return string  The count line and a description line per tag, or scalar(list) when it is not a table.
         local function conditions(list)
             if type(list) ~= 'table' then
                 return scalar(list)
@@ -468,11 +512,15 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         local provider = self:GetReferenceProvider('item')
 
         -- Item record for an id or a name reference, or nil.
+        -- @param value number|string|nil  An item ID or a name reference.
+        -- @return table|nil  The item info record, or a falsy value when value is nil or the item is unknown.
         local function info(value)
             return value and provider.info(tonumber(value) or provider.resolve(value))
         end
 
         -- Item name plus how it is identified (id or reference); "Item data loading" until the client knows the item.
+        -- @param value number|string|nil  An item ID or a name reference.
+        -- @return string  The name and identity lines, or the localized None when value is nil.
         local function name(value)
             if value == nil then
                 return L['None']
@@ -488,6 +536,8 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
         end
 
         -- Item icon texture for an id or reference, or nil.
+        -- @param value number|string|nil  An item ID or a name reference.
+        -- @return number|string|nil  The icon texture, or nil when the item is unknown.
         local function icon(value)
             local record = info(value)
             return record and record.icon
@@ -518,6 +568,9 @@ function addon:CollectionComparisonRows(kind, left, right, showSame)
 
         -- Text for one step of an effect's sequence, shaped by the effect type: a custom step lists its texture, angle,
         -- magnification and color, a dazzle step is a color, anything else is a plain value.
+        -- @param value any  The step value.
+        -- @param kind string  The effect type of the record.
+        -- @return string  The step text; the localized None when value is nil.
         local function entry(value, kind)
             if value == nil then
                 return L['None']
@@ -576,10 +629,17 @@ end
 -- The comparison window
 -- ============================================================================
 
--- Opens (building on first use) the comparison window owned by the settings form `p` and returns it. `left` and
--- `right` are copied on open. `options` may set title, leftHeading, rightHeading, `rows(first, second, showSame)` (a
--- custom row builder returning rows and a change count), maxRows, `single` (one record, every field, no toggle) and
--- fromImport. The window hides itself when the form's drawing changes (`p:Valid`) or a newer comparison replaces it.
+-- Opens (building on first use) the comparison window owned by the settings form `p`. The window hides itself when the
+-- form's drawing changes (`p:Valid`) or a newer comparison replaces it.
+-- @param p table  The settings form that owns the window; the window is kept in p.comparison and closed through
+--   p.cleanups.
+-- @param kind string  The record kind passed to CollectionComparisonRows.
+-- @param left table  The first record; copied on open.
+-- @param right table  The second record; copied on open.
+-- @param options table|nil  Optional settings: title, leftHeading, rightHeading, rows(first, second, showSame) (a
+--   custom row builder returning rows and a change count), maxRows, single (one record, every field, no toggle) and
+--   fromImport.
+-- @return table  The window state (frame, chrome, cells, rows, ...) shown by addon:OpenPopup.
 function addon:ShowCollectionComparison(p, kind, left, right, options)
     options = options or {}
     local d = p.comparison
@@ -647,6 +707,7 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
     local token = p.generation
 
     -- True while the owning form drawing is current and no newer comparison has taken over this window.
+    -- @return boolean  True when the window may still draw.
     local function valid()
         return p:Valid(token) and d.serial == serial
     end
@@ -693,7 +754,14 @@ function addon:ShowCollectionComparison(p, kind, left, right, options)
         local n = 0
 
         -- Takes the next pooled cell, places it at (x, current row top) with the given size and tone, and sets its text
-        -- and optional icon. Returns the cell so the caller can grow it to the measured text height.
+        -- and optional icon.
+        -- @param value string  The cell text.
+        -- @param x number  The left offset.
+        -- @param width number  The cell width.
+        -- @param height number  The cell height.
+        -- @param tone number[]  The background color as { r, g, b }.
+        -- @param icon number|string|nil  An optional icon texture shown at the left of the cell.
+        -- @return Frame  The cell, so the caller can grow it to the measured text height.
         local function cell(value, x, width, height, tone, icon)
             n = n + 1
             local c = d.cells[n]

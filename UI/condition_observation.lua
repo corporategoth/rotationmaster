@@ -7,13 +7,21 @@
 local _, addon = ...
 
 -- Packs a call result into a table that remembers its length, so trailing nils survive the round trip.
+-- @param ... any  The values to pack.
+-- @return table  { n = count, ... }.
 local function pack(...)
     return { n = select('#', ...), ... }
 end
 
--- Keep one synchronous allocation scope for Test and the debugger. The caller
--- supplies its existing protected executor, so diagnostics and nil tuples keep
--- their original shape. Nested scopes retain each surrounding native subscription.
+-- Runs `callback` while every condition widget it creates is observed.
+-- @param guard function  The observer, called with each widget as it is created (see addon:ObserveConditionWidgets).
+-- @param invoke function|nil  The protected executor to call the callback through; defaults to pcall.
+-- @param callback function  The function to run.
+-- @param ... any  The arguments passed to the callback.
+-- @return any  The callback's results, with trailing nils preserved; an error from the executor is rethrown unchanged.
+--
+-- Keep one synchronous allocation scope for Test and the debugger. The caller supplies its existing protected executor,
+-- so diagnostics and nil tuples keep their original shape. Nested scopes retain each surrounding native subscription.
 function addon:WithConditionWidgetObservation(guard, invoke, callback, ...)
     local unsubscribe = self:ObserveConditionWidgets(guard)
     local result = pack(pcall(invoke or pcall, callback, ...))

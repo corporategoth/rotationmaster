@@ -9,10 +9,12 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local sample = 'first line: 0123456789\nsecond line: abcdefghij\nthird line: 0123456789'
 
--- This comparison deliberately has no editor/completion/diagnostic scripts or
--- hooks on its EditBox. Its fixed sample never reads or saves an owner buffer.
--- Opens (or reopens) the probe window with the sample text and the stock font selected, and returns the window
--- record. Each opening starts a new session so click handlers from an earlier opening do nothing.
+-- Opens (or reopens) the probe window with the sample text and the stock font selected. Each opening starts a new
+-- session so click handlers from an earlier opening do nothing.
+-- @return table  The window record.
+--
+-- This comparison deliberately has no editor/completion/diagnostic scripts or hooks on its EditBox. Its fixed sample
+-- never reads or saves an owner buffer.
 function addon:ShowLuaInputProbe()
     local d = self.luaInputProbe
 
@@ -87,6 +89,7 @@ function addon:ShowLuaInputProbe()
 
     -- Switches the sample between the stock chat font ('stock') and the bundled monospace font ('rm'), keeping the
     -- caret position and focus so the player can compare caret behavior in place.
+    -- @param mode string  'stock' or 'rm'.
     local function selectFont(mode)
         if not d.active or d.session ~= session or not d.frame:IsShown() then
             return
