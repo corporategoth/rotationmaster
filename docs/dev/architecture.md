@@ -72,7 +72,7 @@ the XML it includes) in load order; `tests/verify.py` fails on a file the TOC na
 Lua file outside `tests/`, `tools/`, `Libs/` and `Modules/` that no TOC or XML loads; `tools/test_devtools.py` fails on a
 `tests/*.lua` or `*.py` that `tools/check` does not run. Nothing in the addon folders is unreferenced: a file no TOC, test, tool or document names is dead and is removed (`git grep` for its name
 first). Generators write only the generated files in the table below; a hand-edited generated file fails
-`python3 tools/check --static`. Dev-only material stays out of the package (`.pkgmeta`, `tools/package_release.py --check`).
+`python3 tools/check --static`. Dev-only material and anything the client cannot load (provenance and pin manifests, readmes, 64/128 px companion textures, unused controls, code no TOC loads) stays out of the package (`.pkgmeta`, `tools/package_release.py --check`); it stays in Git.
 Planning documents are never committed.
 
 ### Byte-pinned text
@@ -176,7 +176,7 @@ Never hand-edit these; `python3 tools/check --static` fails when one is stale.
 
 | File | Generator |
 | --- | --- |
-| `Data/artwork.lua`, `.pkgmeta` | `tools/generate_artwork_catalog.py --write` (from `Assets/*/provenance.json`; `.pkgmeta` also carries the release ignore list) |
+| `Data/artwork.lua`, `.pkgmeta` | `tools/generate_artwork_catalog.py --write` (from `Assets/*/provenance.json`; `.pkgmeta` also carries the release ignore list: patterns for non-loadable file types, plus the code and textures the generator finds unused) |
 | `Data/builtin_sources.lua` | `tools/generate_builtin_sources.py --write` |
 | integration catalog block in `Integrations/catalog.lua` | `tools/generate_integration_projects.py --write` (from `tools/integration_projects.json`) |
 | `Data/talent_trees.json` | `tools/export_talent_trees.py` |

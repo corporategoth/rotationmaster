@@ -160,7 +160,7 @@ jobs:
           cat plan.env >> "${GITHUB_OUTPUT}"
 
       # Hand-written notes (docs/release/notes/<tag>.md) are required for a stable tag; a beta falls back to a
-      # generated summary. CHANGELOG.md goes into the package (the manual-changelog of .pkgmeta) and to CurseForge.
+      # generated summary. CHANGELOG.md goes to CurseForge (the manual-changelog of .pkgmeta); .pkgmeta keeps it out of the package.
       - name: Release notes
         env:
           BETA_GUIDE_URL: ${{ vars.BETA_GUIDE_URL }}
