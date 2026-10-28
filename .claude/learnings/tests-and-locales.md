@@ -51,12 +51,11 @@ text lives. When the main table nears the limit, move text that is only read on 
 `python3 tools/locales.py move <bundle> keys.json` rather than deleting useful strings; never move a key a startup path reads
 (`tests/text_bundles.lua` proves a normal start loads no bundle). Every bundle string must be translated in all ten locales
 (`tests/test_locale_bundles.py` fails otherwise); the main catalog may still carry untranslated keys, which show in English.
-Entries that are keys with `true` values count the same as translated ones.
+A key that is its own English (most of them) is absent from `L` in an English game and reads as itself; only symbolic keys (`Default.*`, `Help.*`) are entries.
 
 ## Locale files
 
-`tools/locales.py` writes `Locales/<xx>.lua` and the same ten files in each text bundle; a `-- en:` comment above each entry records the English it came from, which is
-how *stale* translations are found. `tools/catalog_check.py` finds literal `L["key"]` reads and defines; dynamic or
+`tools/locales.py` writes `Locales/<xx>.lua` and the same ten files in each text bundle as `[id] = "text"`; a `-- <hash> English:` comment above each entry records the English it came from (hash mismatch = *stale*). Load order is translations first, English last. Tests that need strings read them through `tests/fixtures/locale_entries.lua`, never as text of the locale files; `f.language(name)` (tests/fixtures/addon.lua) switches a fixture to a language. `tools/catalog_check.py` finds literal `L["key"]` reads and defines; dynamic or
 concatenated keys are invisible to it, so do not build keys. Zero missing literal keys is not a translated product.
 `tools/translation_status.py` is the per-language report; see `learnings/translations.md`.
 
