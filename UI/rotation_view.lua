@@ -7,11 +7,13 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local data = addon.RotationData
 
--- View controls stay outside the scaled/scrolled scene. All three workspaces
--- share the same draft and history; these choices never alter rotation data.
--- Creates the view controls on `pane` and adds ContentSection, SelectContent, UpdateCanvasNavigation,
+-- Creates the view controls on the pane and adds ContentSection, SelectContent, UpdateCanvasNavigation,
 -- LayoutViewControls and BindViewControls to it. Call once while the pane is built; pane.frame and pane.canvas must
 -- already exist.
+-- @param pane table  The rotation editor pane.
+--
+-- View controls stay outside the scaled/scrolled scene. All three workspaces share the same draft and history; these
+-- choices never alter rotation data.
 function addon:InstallRotationView(pane)
     pane.contentTabs = {}
     pane.sectionLabels = pane.contentTabs
@@ -81,13 +83,17 @@ function addon:InstallRotationView(pane)
     pane.zoomIn:SetPoint('LEFT', pane.zoomReset, 'RIGHT', 2, 0)
     pane.zoomReset.tooltip = L['Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan.']
 
-    -- The section being edited: 'cooldowns' or 'rotation' (anything else counts as the rotation).
+    -- Returns the section being edited.
+    -- @return string  'cooldowns' or 'rotation' (anything else counts as the rotation).
     function pane:ContentSection()
         return self.view.section == 'cooldowns' and 'cooldowns' or 'rotation'
     end
 
-    -- Switches to the 'rotation' or 'cooldowns' section. Pending name and field edits are flushed first so they are
-    -- not lost on the rerender; returns true on success, or nil (and a reason when a flush fails).
+    -- Switches to the 'rotation' or 'cooldowns' section. Pending name and field edits are flushed first so they are not
+    -- lost on the rerender.
+    -- @param section string  'rotation' or 'cooldowns'; anything else is refused.
+    -- @return boolean|nil  True on success; nil when refused, the pane is closed or a flush fails.
+    -- @return string|nil  The reason when a field flush fails.
     function pane:SelectContent(section)
         if not self.active or (section ~= 'rotation' and section ~= 'cooldowns') then
             return nil
@@ -112,8 +118,8 @@ function addon:InstallRotationView(pane)
         return true
     end
 
-    -- Syncs the tab selection, the view-mode pill, the zoom bar visibility and its percentage and enable states
-    -- (zoom runs from 25% to 200%) with the current section and canvas.
+    -- Syncs the tab selection, the view-mode pill, the zoom bar visibility and its percentage and enable states (zoom
+    -- runs from 25% to 200%) with the current section and canvas.
     function pane:UpdateCanvasNavigation()
         local section = self:ContentSection()
         local diagram = self.canvas:IsDiagram()
@@ -151,8 +157,11 @@ function addon:InstallRotationView(pane)
         end
     end
 
-    -- Places the tabs, view switch, expand and collapse buttons and the add palette below y offset `top` for the
-    -- given pane width; the palette wraps to a second row when narrow. Returns the y offset where content starts.
+    -- Places the tabs, view switch, expand and collapse buttons and the add palette below a y offset for the given pane
+    -- width; the palette wraps to a second row when narrow.
+    -- @param top number  The y offset (positive down) where the controls start.
+    -- @param width number  The pane width.
+    -- @return number  The y offset where the content below the controls starts.
     function pane:LayoutViewControls(top, width)
         local section = self:ContentSection()
 
@@ -196,8 +205,9 @@ function addon:InstallRotationView(pane)
         return row + (wrap and 26 or 0) + 28
     end
 
-    -- Wires every view control's click and drag handlers. `alive()` says whether the pane's current render is still
-    -- the live one; handlers do nothing once it returns false. Palette controls are disabled for read-only rotations.
+    -- Wires every view control's click and drag handlers. Palette controls are disabled for read-only rotations.
+    -- @param alive function  Says whether the pane's current render is still the live one; handlers do nothing once it
+    -- returns false.
     function pane:BindViewControls(alive)
         for section, button in pairs(self.contentTabs) do
             addon:SetUIScript(button, 'OnClick', function()
@@ -238,6 +248,8 @@ function addon:InstallRotationView(pane)
             for _, entry in ipairs({ { controls.expand, 'normal' }, { controls.collapse, 'compact' } }) do
                 local mode = entry[2]
 
+                -- Expands (to 'normal') or collapses (to 'compact') every card of the section; expanding also unfolds
+                -- branch children and arms.
                 addon:SetUIScript(entry[1], 'OnClick', function()
                     if not alive() or self:ContentSection() ~= section then
                         return
