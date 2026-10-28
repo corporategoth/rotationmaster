@@ -174,8 +174,7 @@ setmetatable(L, {
     -- @param self table  The locale table.
     -- @param key any  The key being read.
     -- @return string  The text; the key itself (the English text) when the bundle holds nothing for it or failed. Keys
-    --   no
-    --   bundle owns go to the original missing-key handler, whose result is returned.
+    --   no bundle owns go to the original missing-key handler, whose result is returned.
     __index = function(self, key)
         if type(key) == "string" then
             local bundle = ownerOf(key, true)
@@ -302,8 +301,7 @@ end
 -- @param limit number|nil  Caps the list's length in bytes: whole names are kept and the rest is replaced by an
 --   ellipsis, so a long list can never run out of the room the page gives it.
 -- @return string|nil  The credit line; nil when there are no human translators (always for English, and while only an
---   AI
---   has translated).
+--   AI has translated).
 function addon:GetTranslationCredit(limit)
     local names = self:GetLocaleTranslators()
 

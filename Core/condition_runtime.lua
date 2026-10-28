@@ -326,6 +326,12 @@ local function subscribe(plan)
         end
     end
 
+    -- Event handler of the plan's frame: invalidates the level and aura facts when the matching game events arrive.
+    -- @param _ any  The frame; unused.
+    -- @param event string  The event name.
+    -- @param unit string|nil  The unit of a unit event; events for other units than the player are ignored.
+    --
+    -- PLAYER_LEVEL_UP also schedules a deferred re-read, and the fact stays volatile until then.
     frame:SetScript('OnEvent', function(_, event, unit)
         if active ~= plan or plan.retired then
             return

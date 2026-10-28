@@ -162,8 +162,7 @@ end
 -- One rotation works for every trinket. The equipped item comes from the build context (refreshed on equipment changes,
 -- so no native read per evaluation); its cooldown is read fresh through the same reader as an item named in the
 -- condition. An empty slot is false; a trinket with no on-use effect has no cooldown to read and is unavailable, never
--- a
--- confident zero.
+-- a confident zero.
 local function slotCooldown(self, value, cache, now)
     if not self.GetEquippedSlotInfo then
         return nil, 'build-context-unavailable'

@@ -335,6 +335,8 @@ function addon:FunctionBindingPrelude(bindings, parameters)
     table.sort(keys)
     local lines, created = {}, {}
 
+    -- Adds the lines that create the namespace tables of a dotted path ('a.b' creates 'a' and 'a.b'), once each.
+    -- @param path string  The dotted path.
     local function namespace(path)
         local prefix = ''
 
@@ -595,8 +597,7 @@ end
 -- Builds a registry from a table of function sources without touching the live one.
 -- @param sources table  The function sources, keyed by function id.
 -- @return table|nil  The registry: per id a record { source, problem, bindings, fn }, where `problem` is a reason code
---   if
---   it failed; nil on failure.
+--   if it failed; nil on failure.
 -- @return string|nil  'invalid-function-registry' or 'function-limit' (more than 4096 functions) when the first return
 --   is nil; nil otherwise.
 --

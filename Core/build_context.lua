@@ -119,8 +119,7 @@ local engravingNotifications = {
 -- @param unit string|nil  The unit of a unit event.
 --
 -- Inventory changes for other units are ignored, and item metadata arriving only matters while an equipped item's set
--- ID
--- is still pending.
+-- ID is still pending.
 local function onEvent(_, event, unit)
     local parts = notifications[event] or engravingNotifications[event]
 
@@ -909,8 +908,7 @@ function addon:GetSeasonInfo()
 end
 
 -- Reports whether a Season of Discovery rune is engraved on an equipped item, by rune (skillLineAbilityID) or by a
--- spell
--- the rune teaches.
+-- spell the rune teaches.
 -- @param rune number|nil  The rune (skillLineAbilityID).
 -- @param spell number|nil  A spell the rune teaches; used when `rune` is nil.
 -- @return boolean|nil  True when engraved; nil when engraving cannot be read here or no argument was given.
@@ -943,8 +941,7 @@ end
 -- @return string|nil  The reason when the first return is nil; nil otherwise.
 --
 -- Trait talents (Retail, Forever): a node's committed rank, or for a choice node's entry the rank when that entry is
--- the
--- chosen one (else 0).
+-- the chosen one (else 0).
 local function traitNode(talents, node, withEntries)
     local nodes = talents.nodes
     local state = nodes[node]

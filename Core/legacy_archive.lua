@@ -111,8 +111,7 @@ end
 --   nil otherwise.
 --
 -- Each rotation is planned and applied on its own, so a refusal (a collision, an invalid body) leaves the others
--- adopted
--- and is reported, never forced.
+-- adopted and is reported, never forced.
 function addon:AdoptAllUnassignedRotations(scope, options)
     if scope ~= 'class' and scope ~= 'character' then
         return nil, 'invalid-owner-scope'

@@ -61,8 +61,7 @@ end
 -- Estimates the seconds until a unit reaches a health target at its recent damage/healing rate.
 -- @param unit string  The unit token to forecast (non-empty).
 -- @param healthTarget number  An absolute amount (negative means that much below maximum), or a fraction of maximum
---   when
---   `percentage` is true.
+--   when `percentage` is true.
 -- @param percentage boolean  True when healthTarget is a fraction of maximum health.
 -- @param mode string|nil  'noheals', 'nodmg', or anything else to count both damage and healing.
 -- @param cache table|nil  The evaluation-pass cache; nil reads afresh.

@@ -373,8 +373,7 @@ local function execute(serial, identifier, unit, spell)
     end
 
     -- Re-walks the announcement list and proves the chosen entry is still the only macro entry with this identifier at
-    -- the
-    -- same index, in an unmodified list.
+    -- the same index, in an unmodified list.
     -- @return boolean  True while it is.
     local function selectionCurrent()
         if getmetatable(list) ~= nil then

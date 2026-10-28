@@ -32,8 +32,7 @@ end
 --   nil otherwise.
 --
 -- Trusted startup modules capture the same continuation clock. Content revisions remain separate; the clock only
--- retires
--- in-flight execution.
+-- retires in-flight execution.
 function addon:BindRotationExecutionGeneration(receiver)
     if not identity(self, owner) then
         return nil, 'foreign-dependency-owner'
@@ -73,8 +72,8 @@ function addon:InvalidateRotationDependencies(kind, id)
 end
 
 -- Gives one startup consumer a reader for the dependency stamp and epoch.
--- @param bind function  Called once as bind(reader); reader(addon) returns the current stamp table and epoch number,
---   or nil when the argument is not the owning addon.
+-- @param bind function  Called once as bind(reader); reader(addon) returns the current stamp table and epoch number, or
+--   nil when the argument is not the owning addon.
 -- @return boolean|nil  True when the reader was handed over; nil on refusal.
 -- @return string|nil  The reason code on refusal ('foreign-dependency-owner', 'invalid-dependency-reader-binder' or
 --   'dependency-reader-already-bound'); nil otherwise.

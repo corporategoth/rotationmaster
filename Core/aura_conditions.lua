@@ -177,8 +177,7 @@ local spellNames = {}
 -- Walking every aura costs one new native table per aura, every poll. For a spell match one lookup by name gives the
 -- walk's answer: the walk's first match carries that name, and nothing of that name means no match. It is used only
 -- where that holds exactly (no secrets, a result of the requested rank, the player's own aura when asked); anything
--- else
--- walks as before.
+-- else walks as before.
 local function lookupByName(value, filter, mode)
     if not platform.secretsUnrestricted or type(platform.GetAuraBySpellName) ~= "function" then
         return

@@ -76,11 +76,9 @@ end
 -- @return table|nil  { code = "condition-limit" } when the first return is nil; nil otherwise.
 --
 -- The input rows come from the bounded draft model. This scene holds plain, detached presentation values; it never
--- calls
--- condition printers or widgets. NOT is stored as a node, but shown as a property of its operand. Both paths are kept:
--- structural commands act on the outer wrapper; fields act on the underlying operand. This is a projection, never a
--- data
--- rewrite.
+-- calls condition printers or widgets. NOT is stored as a node, but shown as a property of its operand. Both paths are
+-- kept: structural commands act on the outer wrapper; fields act on the underlying operand. This is a projection, never
+-- a data rewrite.
 function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
     if rowsComplete == false or #rows > 4096 then
         return nil, { code = "condition-limit" }
@@ -113,8 +111,7 @@ function addon:BuildConditionCanvas(root, rows, view, rowsComplete)
     local projected = {}
 
     -- Flattens one branch into the projected row list, folding a chain of NOT nodes into the negated flag of its
-    -- operand,
-    -- then recurses into the children.
+    -- operand, then recurses into the children.
     -- @param branch table  The branch { row, node, children } to flatten.
     -- @param depth number  The depth of the projected row.
     -- @param inactive boolean|nil  True for rows under a disabled ancestor, which are marked unreachable.

@@ -31,12 +31,19 @@ local kind, raw, write, identity, meta, iterate = type, rawget, rawset, rawequal
 local infinity, protect = math.huge, pcall
 local operation, active
 
--- Deep-copies plain data into a table nothing else references. Returns nil (not a partial copy) for a metatable, a
--- cycle, a non-finite number, a function or userdata, a key that is not a string or positive integer, more than 20000
--- nodes or more than 64 levels. Reads with rawget and next so no metamethod runs.
+-- Deep-copies plain data into a table nothing else references.
+-- @param value any  The data to copy.
+-- @return any  The copy; nil (not a partial copy) for a metatable, a cycle, a non-finite number, a function or
+--   userdata, a key that is not a string or positive integer, more than 20000 nodes or more than 64 levels.
+--
+-- Reads with rawget and next so no metamethod runs.
 local function detached(value)
     local seen, stack, nodes = {}, {}, 0
 
+    -- Copies one value for detached().
+    -- @param v any  The value to copy.
+    -- @param depth number  The nesting depth.
+    -- @return any  The copy; nil when it cannot be copied.
     local function copy(v, depth)
         nodes = nodes + 1
 
@@ -92,7 +99,10 @@ local function detached(value)
     return copy(value, 0)
 end
 
--- Structural equality for plain data; false for any table with a metatable. Raw reads only.
+-- Structural equality for plain data. Raw reads only.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when equal; false for any table with a metatable.
 local function equal(a, b)
     if kind(a) ~= kind(b) then
         return false
@@ -123,13 +133,20 @@ end
 -- Transition tokens
 -- ============================================================================
 
--- True when `self` is the real addon table (the only owner these functions accept).
+-- Reports whether `self` is the real addon table (the only owner these functions accept).
+-- @param self any  The candidate owner.
+-- @return boolean  True when it is.
 local function owned(self)
     return identity(self, addon)
 end
 
--- True while `token` belongs to the pending transition and the profile, specialization and current rotation still match
--- what it recorded. Cheap enough to call after every step that might have run foreign code.
+-- Reports whether a token still belongs to the pending transition.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @return boolean  True while `token` belongs to the pending transition and the profile, specialization and current
+--   rotation still match what it recorded.
+--
+-- Cheap enough to call after every step that might have run foreign code.
 local function current(self, token)
     if not owned(self) then
         return false
@@ -151,8 +168,12 @@ local function current(self, token)
         and identity(id, pending.id)
 end
 
--- Starts a transition, replacing any pending one (which then fails its checks), and records the profile,
--- specialization and rotation it began with. Returns its token, or nil and a reason.
+-- Starts a transition, replacing any pending one (which then fails its checks), and records the profile, specialization
+-- and rotation it began with.
+-- @param self table  The addon.
+-- @return table|nil  The transition token; nil on failure.
+-- @return string|nil  'foreign-rotation-owner' or 'rotation-transition-superseded' when the first return is nil; nil
+--   otherwise.
 local function begin(self)
     if not owned(self) then
         return nil, 'foreign-rotation-owner'
@@ -172,18 +193,25 @@ local function begin(self)
     return pending.token
 end
 
--- Public entry for begin(); returns a transition token, or nil and a reason.
+-- Starts an active rotation transition; the public entry for begin().
+-- @return table|nil  The transition token; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:BeginActiveRotationTransition()
     return begin(self)
 end
 
--- True while `token` is still the pending transition and nothing it recorded has changed.
+-- Reports whether a transition token is still current.
+-- @param token table  The transition token.
+-- @return boolean  True while `token` is still the pending transition and nothing it recorded has changed.
 function addon:IsActiveRotationTransitionCurrent(token)
     return current(self, token)
 end
 
--- Moves the transition to a new specialization and sets addon.currentSpec. Returns a fresh token that replaces the
--- old one and clears any recorded cleanup selection, or nil and 'rotation-transition-superseded'.
+-- Moves the transition to a new specialization and sets addon.currentSpec.
+-- @param token table  The transition token.
+-- @param spec number  The new specialization ID or talent group.
+-- @return table|nil  A fresh token that replaces the old one and clears any recorded cleanup selection; nil on failure.
+-- @return string|nil  'rotation-transition-superseded' when the first return is nil; nil otherwise.
 function addon:AdvanceActiveRotationSpecialization(token, spec)
     if not current(self, token) then
         return nil, 'rotation-transition-superseded'
@@ -222,8 +250,14 @@ end
 -- Retire and commit
 -- ============================================================================
 
--- Clears the active rotation within the transition. The previous specialization and id are kept as the cleanup
--- selection so the caller can release what that rotation held. Returns true, or nil and a reason.
+-- Clears the active rotation within the transition.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @return boolean|nil  True when cleared; nil on failure.
+-- @return string|nil  'rotation-transition-superseded' when the first return is nil; nil otherwise.
+--
+-- The previous specialization and id are kept as the cleanup selection so the caller can release what that rotation
+-- held.
 local function retire(self, token)
     local pending = operation
 
@@ -250,8 +284,10 @@ end
 
 addon.RetireActiveRotationTransition = retire
 
--- Returns the specialization, rotation id and token of the selection a transition retired and has not yet cleaned up,
--- or nil when there is no current transition.
+-- Returns the selection a transition retired and has not yet cleaned up.
+-- @return number|nil  The specialization ID or talent group; nil when there is no current transition.
+-- @return string|nil  The rotation id.
+-- @return table|nil  The transition token.
 function addon:GetActiveRotationCleanupSelection()
     local pending = operation
 
@@ -262,10 +298,18 @@ function addon:GetActiveRotationCleanupSelection()
     return pending.cleanupSpec, pending.cleanupID, pending.token
 end
 
--- Makes rotation `id` of `spec` the active one: reads its body (from `body`, or through GetRuntimeRotation), takes a
--- detached copy with its content revision and, with the scoped store, its reference, and publishes it. An unchanged
--- body keeps the previous handle so consumers do not see a new identity. Returns the handle, or nil and a reason such
--- as 'invalid-active-rotation' or 'rotation-unavailable'.
+-- Makes a rotation the active one.
+-- @param self table  The addon.
+-- @param token table  The transition token.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @param body table|nil  The rotation body; read through GetRuntimeRotation when nil.
+-- @return table|nil  The handle; nil on failure.
+-- @return string|nil  A reason such as 'invalid-active-rotation' or 'rotation-unavailable' when the first return is
+--   nil; nil otherwise.
+--
+-- Takes a detached copy of the body with its content revision and, with the scoped store, its reference, and publishes
+-- it. An unchanged body keeps the previous handle so consumers do not see a new identity.
 local function commit(self, token, spec, id, body)
     if not current(self, token) then
         return nil, 'rotation-transition-superseded'
@@ -432,9 +476,14 @@ end
 
 addon.CommitActiveRotationTransition = commit
 
--- Re-commits the current rotation after its content changed, following a rename from `previousKey` to `nextKey`. A
--- failed commit retires the rotation rather than leaving a stale body selected. Returns the handle, or nil and a
--- reason.
+-- Re-commits the current rotation after its content changed, following a rename.
+-- @param spec number  The specialization ID or talent group of the changed rotation.
+-- @param previousKey string|nil  The rotation id before a rename.
+-- @param nextKey string|nil  The rotation id after the rename.
+-- @return table|boolean|nil  The handle; true when nothing needed doing; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- A failed commit retires the rotation rather than leaving a stale body selected.
 function addon:RefreshActiveRotation(spec, previousKey, nextKey)
     if not owned(self) then
         return nil, 'foreign-rotation-owner'
@@ -468,11 +517,19 @@ end
 -- Publication and rebind handoff
 -- ============================================================================
 
--- Trusted module handoff: writers prepare before their final authority checks;
--- the owned completion has no extension/native/copy/iterator callouts.
--- Step one of a writer that changes a rotation's saved content. Decides whether the written rotation is the selected
--- one and, if so, prepares a detached copy of its new body and reference. Returns a ticket for finishPublication,
--- or nil when the write must not proceed. All copying happens here, so finishPublication can stay callout-free.
+-- Step one of a writer that changes a rotation's saved content: decides whether the written rotation is the selected
+-- one and, if so, prepares a detached copy of its new body and reference.
+-- @param spec number  The specialization ID or talent group of the written rotation.
+-- @param previousKey string|nil  The rotation id before the write.
+-- @param previousReference table|nil  The rotation's reference before the write.
+-- @param nextReference table|nil  The rotation's reference after the write.
+-- @param body table  The new body.
+-- @param original table|nil  The record being edited in place, for legacy storage.
+-- @param fallbackKey string|nil  The rotation id of the writer's fallback.
+-- @return table|nil  A ticket for finishPublication; nil when the write must not proceed.
+--
+-- Trusted module handoff: writers prepare before their final authority checks; the owned completion has no
+-- extension/native/copy/iterator callouts. All copying happens here, so finishPublication can stay callout-free.
 local function preparePublication(spec, previousKey, previousReference, nextReference, body, original, fallbackKey)
     if not identity(spec, raw(addon, 'currentSpec')) or raw(addon, 'currentRotation') == nil then
         return nil
@@ -590,9 +647,12 @@ local function preparePublication(spec, previousKey, previousReference, nextRefe
     return ticket
 end
 
--- Step two: after the writer has stored the content, installs the prepared body as the active rotation (renamed to
--- `nextKey` when the id changed). Returns the handle and transition token, true for a nil ticket, or nil when the
--- profile, specialization or rotation changed since prepare.
+-- Step two: after the writer has stored the content, installs the prepared body as the active rotation.
+-- @param ticket table|nil  The ticket from preparePublication; nil counts as nothing to do.
+-- @param nextKey string|nil  The rotation id after the write, when the id changed.
+-- @return table|boolean|nil  The handle, or true for a nil ticket or an unselected rotation; nil when the profile,
+--   specialization or rotation changed since prepare.
+-- @return table|nil  The transition token.
 local function finishPublication(ticket, nextKey)
     if ticket == nil then
         return true
@@ -646,9 +706,14 @@ local function finishPublication(ticket, nextKey)
     return prepared.handle, pending.token
 end
 
--- Step one of a writer that moves or replaces rotations in bulk (an import, a restore). Begins a transition, makes sure
--- the active rotation has a detached reference, and returns a ticket, that reference and the transition facts.
--- With no current rotation it just clears the active record and returns nil.
+-- Step one of a writer that moves or replaces rotations in bulk (an import, a restore): begins a transition and makes
+-- sure the active rotation has a detached reference.
+-- @param fallbackKey string|nil  The rotation id of the writer's fallback.
+-- @return table|nil  A ticket; nil on failure or with no current rotation (which just clears the active record).
+-- @return table|nil  The active rotation's detached reference.
+-- @return table|nil  The transition token.
+-- @return number|nil  The specialization ID or talent group.
+-- @return string|nil  The rotation id.
 local function prepareRebind(fallbackKey)
     if raw(addon, 'currentRotation') == nil then
         invalidateExecution()
@@ -695,9 +760,15 @@ local function prepareRebind(fallbackKey)
     return ticket, reference and detached(reference), token, spec, id
 end
 
--- Step two: re-selects the rotation under `key`, but only if it is the same rotation (its reference matches the one
--- prepared) or the writer's fallback. An invalid result retires the selection and returns nil. Otherwise returns the
--- new handle and the transition token.
+-- Step two: re-selects the rotation under a key, but only if it is the same rotation (its reference matches the one
+-- prepared) or the writer's fallback.
+-- @param ticket table|nil  The ticket from prepareRebind; nil counts as nothing to do.
+-- @param key string  The rotation id to select.
+-- @param reference table  The rotation's reference.
+-- @param body table  The rotation's body.
+-- @return table|boolean|nil  The new handle, or true for a nil ticket; nil when the result is invalid (the selection is
+--   retired) or the state changed since prepare.
+-- @return table|nil  The transition token.
 local function finishRebind(ticket, key, reference, body)
     if ticket == nil then
         return true
@@ -773,9 +844,16 @@ end
 -- Runtime access
 -- ============================================================================
 
+-- Returns the active rotation's identity for a spec and key.
+-- @param owner table  The addon.
+-- @param spec number  The specialization ID or talent group.
+-- @param key string  The rotation id.
+-- @return table|nil  The active handle; nothing unless the active rotation is for `spec` and `key` in the current
+--   profile.
+-- @return number|nil  The active content revision.
+-- @return table|nil  The pending transition token.
+--
 -- Source-private runtime access: the identity body never leaves this module.
--- Returns the active handle, its content revision and the pending transition token when the active rotation is for
--- `spec` and `key` in the current profile; nothing otherwise.
 local function runtimeIdentity(owner, spec, key)
     if not owned(owner) or not active or kind(raw(owner, 'db')) ~= 'table' then
         return
@@ -793,8 +871,12 @@ local function runtimeIdentity(owner, spec, key)
     return active.token, active.revision, operation and operation.token
 end
 
--- Returns a fresh detached copy of the active body when `handle` is still the active one, and when `expected` is given
--- the body equals it. Returns nothing otherwise.
+-- Returns a fresh detached copy of the active body.
+-- @param owner table  The addon.
+-- @param handle table  The active handle from runtimeIdentity.
+-- @param expected table|nil  When given, the body must equal it.
+-- @return table|nil  The copy when `handle` is still the active one (and the body equals `expected` when given);
+--   nothing otherwise.
 local function runtimeBody(owner, handle, expected)
     if not active or not identity(active.token, handle) or not runtimeIdentity(owner, active.spec, active.id) then
         return
@@ -806,8 +888,10 @@ local function runtimeBody(owner, handle, expected)
     return detached(active.body)
 end
 
--- One trusted handoff: gives `receiver` the private publication, rebind and runtime-access functions (in that order:
--- prepare, finish, prepareRebind, finishRebind, runtimeIdentity, runtimeBody). Returns true; nil for a foreign caller.
+-- One trusted handoff: gives a receiver the private publication, rebind and runtime-access functions.
+-- @param receiver function  Called with preparePublication, finishPublication, prepareRebind, finishRebind,
+--   runtimeIdentity and runtimeBody, in that order.
+-- @return boolean|nil  True when handed over; nil for a foreign caller or a non-function receiver.
 function addon:BindActiveRotationPublication(receiver)
     if not owned(self) or kind(receiver) ~= 'function' then
         return nil

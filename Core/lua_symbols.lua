@@ -15,8 +15,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Builds the table of names the Lua editor documents and completes for an editing context.
 -- @param context table|nil  The editing context: `kind` ('function' or a condition), `callback`, `id`, and `source`
---   with
---   its args, fields, bindings and parameters (and optionally a bindFunction callback used on accept).
+--   with its args, fields, bindings and parameters (and optionally a bindFunction callback used on accept).
 -- @return table  `{ [name] = symbol }`. A symbol carries LuaWorkbench-style `info` documentation, its `origin`
 --   ('builtin', 'custom' or 'context') and, for a function not yet bound, `requiresBinding`.
 --
@@ -398,8 +397,7 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
         --   symbol.
         --
         -- A Rotation Master symbol gets its own heading (custom function, built-in function or value), and a native
-        -- global the
-        -- client has no signature documentation for says so rather than inventing arguments.
+        -- global the client has no signature documentation for says so rather than inventing arguments.
         function api:FullDescription(name, rich, links)
             local symbol = engine.rmSymbols and engine.rmSymbols[name]
             local text = describe(self, name, rich, links)
@@ -492,8 +490,8 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
         -- @param source string  The editor text.
         -- @param force boolean|nil  Passed through to the engine; true analyses even when the engine is not enabled.
         -- @return table  The engine's path map, with tokens that resolve to a Rotation Master symbol, or to an
-        --   undocumented
-        --   readable global function, added (token start position to dotted name) for hover and navigation.
+        --   undocumented readable global function, added (token start position to dotted name) for hover and
+        --   navigation.
         --
         -- Secret values are never indexed.
         function api:Paths(source, force)
@@ -610,12 +608,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
         -- Accepts the selected completion, binding a function first when the suggestion requires it.
         -- @param input table  The editor input the suggestion list belongs to.
         -- @return boolean  True when the suggestion was accepted; false when the suggestion list is stale, the editor
-        --   is
-        --   read-only or the binding failed.
+        --   is read-only or the binding failed.
         --
         -- Asks the owning editor to bind the function in a transaction, commits it when the engine accepted the text
-        -- and rolls
-        -- it back otherwise. Nothing is bound when the suggestion list is stale or the editor is read-only.
+        -- and rolls it back otherwise. Nothing is bound when the suggestion list is stale or the editor is read-only.
         function engine.Autocomplete:Accept(input)
             -- Mirror upstream's source/cursor/read-only guard before creating a
             -- dependency. Merely displaying or cancelling suggestions is inert.

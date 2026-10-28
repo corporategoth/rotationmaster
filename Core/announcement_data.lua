@@ -93,8 +93,7 @@ end
 -- @param value any  The candidate output card.
 -- @param macro boolean|nil  True for a macro series, the only kind that may use say, yell, whisper or channel.
 -- @return boolean  True for a UUID id, only known keys, an announce mode, and conditions that pass the portable-data
---   and
---   body validators.
+--   and body validators.
 --
 -- Output cards are bounded configuration data; imports never execute callbacks.
 function addon:IsValidAnnouncementOutput(value, macro)

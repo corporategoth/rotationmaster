@@ -49,8 +49,7 @@ end
 -- Returns the search text for a typed value.
 -- @param value any  The typed value.
 -- @return string|nil  '' for nil, the digits of a valid id, or the plain text of a short string (at most 256 bytes);
---   nil
---   for anything else or unreadable input.
+--   nil for anything else or unreadable input.
 -- @return number|nil  The substitution count from plain() when the text came from a string; nil otherwise.
 local function queryText(value)
     if not readable(value) then

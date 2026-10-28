@@ -202,8 +202,8 @@ end
 
 -- Detects a hand-written call that resolves a function binding.
 -- @param code string  The Lua source to scan.
--- @return boolean|nil  True when the code reaches a helper by a hand-written resolver call or computed access on the
---   RM namespace; nil otherwise.
+-- @return boolean|nil  True when the code reaches a helper by a hand-written resolver call or computed access on the RM
+--   namespace; nil otherwise.
 --
 -- Explicit bindings are the only remappable helper reference. Ignores comments and strings when detecting handwritten
 -- resolver calls, without executing Lua. Linear in the source: nothing here copies the remainder of the code.
@@ -532,8 +532,7 @@ end
 -- @return string|nil  The reason when the first return is nil; nil otherwise.
 --
 -- Checks exact field sets, hash format, declared dependencies that match their recorded hashes, no cycles, no missing
--- or
--- unrelated entries.
+-- or unrelated entries.
 local function normalize(self, value)
     if not portable(value) or type(value) ~= 'table' then
         return nil, 'bundle-data-limit'
@@ -816,8 +815,7 @@ function addon:PlanFunctionBundleImport(value, choices)
     end
 
     -- Plans one bundled item: resolves its destination (refusing a Built In or duplicate one), picks the action and
-    -- appends
-    -- the row.
+    -- appends the row.
     -- @param record table  The bundled item { id, name, source, provenance }.
     -- @param kind string  'function' or 'condition'.
     -- @return boolean|nil  True when planned; nil on failure.
@@ -1024,12 +1022,10 @@ function addon:PlanFunctionBundleImport(value, choices)
     -- @param seen table  The ids already accepted.
     -- @return boolean|nil  True when the graph below `id` is sound; nil on failure.
     -- @return string|nil  The reason ('bundle-entry-limit', 'function-depth', 'function-cycle', 'missing-function' or
-    --   the
-    --   record's own problem) when the first return is nil; nil otherwise.
+    --   the record's own problem) when the first return is nil; nil otherwise.
     --
     -- Availability stops at disabled records; structural validation must still follow their declarations to reject
-    -- cycles
-    -- created by reuse/remapping.
+    -- cycles created by reuse/remapping.
     local function structural(id, active, depth, seen)
         if not graphSeen[id] then
             graphSeen[id] = true
@@ -1310,6 +1306,8 @@ function addon:ApplyFunctionBundleImport(plan)
     local resumedConsumers = {}
     local failureReason = 'condition-registration-failed'
 
+    -- The provisional part of the import: compiles and registers each imported condition, then resumes the affected
+    -- consumers. Any failure raises, which the caller turns into a rollback.
     local success = pcall(function()
         for _, record in ipairs(conditions) do
             local entry = record.entry

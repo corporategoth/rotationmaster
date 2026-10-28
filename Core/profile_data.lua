@@ -171,8 +171,8 @@ end
 --
 -- Encoding validates before converting and decoding validates after, so an invalid store never leaves this function.
 -- Preserve the whole reference graph while converting only structural spec-map keys. A map aliased through another
--- owner
--- or payload must remain aliased for the pure store validator to reject it; conversion must never hide that defect.
+-- owner or payload must remain aliased for the pure store validator to reject it; conversion must never hide that
+-- defect.
 local function scopedStore(addon, state, encode)
     -- Reports whether a value is a table with no metatable.
     -- @param v any  The value to check.
@@ -222,8 +222,7 @@ local function scopedStore(addon, state, encode)
     local failed = false
 
     -- Copies a store node, converting the keys of the spec maps and keeping shared tables shared, so aliasing stays
-    -- visible
-    -- to validation.
+    -- visible to validation.
     -- @param value any  The node to copy.
     -- @return any  The copy; nil when the node failed.
     --
@@ -296,8 +295,7 @@ end
 -- @param owner table  The addon, which validates the preferences.
 -- @param profile table|nil  The profile table.
 -- @return boolean  True when the profile carries no rotation choice preferences, or the owner can validate them and
---   they
---   pass.
+--   they pass.
 local function validRotationChoices(owner, profile)
     local value = type(profile) == 'table' and rawget(profile, 'rotationChoicePreferences')
 
@@ -707,9 +705,8 @@ end
 -- @return table|nil  A copy with the spec keys restored to numbers; nil when a map or the store is malformed.
 --
 -- The caller still validates the result with ValidateProfileTransfer. Older profile exports can retain an entirely
--- empty
--- default placeholder. Materialize only its missing empty lists; malformed nonempty records still go through normal
--- validation and are never silently repaired or removed.
+-- empty default placeholder. Materialize only its missing empty lists; malformed nonempty records still go through
+-- normal validation and are never silently repaired or removed.
 function addon:ProfileFromPortable(profile, options)
     if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then
         return nil

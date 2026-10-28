@@ -147,6 +147,10 @@ function addon:listConditions(group, nohide, store)
     end
 
     if group == "ALL" or group == "CUSTOM" then
+        -- Sort order for the ALL and CUSTOM lists: by description.
+        -- @param lhs string  The first condition tag.
+        -- @param rhs string  The second condition tag.
+        -- @return boolean  True when `lhs` sorts before `rhs`.
         table.sort(rv, function(lhs, rhs)
             local ldesc, rdesc
 

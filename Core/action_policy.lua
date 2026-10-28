@@ -41,8 +41,7 @@ local function buildReadiness(platform)
     -- @return boolean  True when it can be used now; every unreadable answer reads as not ready.
     --
     -- The readiness answer handed to conditions and the sequence executor. Memoized per poll by id, so the platform is
-    -- read
-    -- at most once per id per poll.
+    -- read at most once per id per poll.
     local function ready(kind, id, itemID)
         if not validID(id) then
             return false

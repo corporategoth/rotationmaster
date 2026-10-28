@@ -16,6 +16,8 @@ local noticeHeight = 30
 addon.RotationCardNoticeHeight = noticeHeight
 
 -- Returns a copy of a path (a list of keys), so a scene never aliases the body's own tables.
+-- @param path (string|number)[]  The path to copy.
+-- @return (string|number)[]  The copy.
 local function copy(path)
     local result = {}
 
@@ -27,14 +29,18 @@ local function copy(path)
 end
 
 -- Returns a copy of a path with one more key.
+-- @param path (string|number)[]  The path to copy.
+-- @param key string|number  The key to append.
+-- @return (string|number)[]  The new path.
 local function extend(path, key)
     local result = copy(path)
     result[#result + 1] = key
     return result
 end
 
--- Returns a measured height clamped to 0..800, or 0 when the value is not a positive number; heights come from the UI
--- and are not trusted.
+-- Returns a measured height clamped to 0..800.
+-- @param value any  The measured height; heights come from the UI and are not trusted.
+-- @return number  The clamped height, or 0 when the value is not a positive number.
 local function height(value)
     return type(value) == "number" and value == value and value > 0 and math.min(value, 800) or 0
 end
@@ -43,12 +49,18 @@ end
 -- Scene builder
 -- ============================================================================
 
--- Lays a rotation body out as a scene of cards, connectors, drop targets, groups and arm labels. Returns the scene, or
--- nil and a reason when the body's steps cannot be indexed. view selects the section (rotation, cooldowns or both), the
--- layout (diagram or list) and carries the per-card state and measured heights the editor feeds back, so a layout
--- depends only on its arguments.
--- Plain geometry only. No live combat observation, callback, native frame or
--- custom printer is involved. Both evaluated arms stay visible while editing.
+-- Lays a rotation body out as a scene of cards, connectors, drop targets, groups and arm labels.
+-- @param body table  The rotation body.
+-- @param view table|nil  Selects the section (rotation, cooldowns or both) and the layout (diagram or list), and
+--   carries the per-card state and measured heights the editor feeds back (cardStates, collapsed, hiddenChildren,
+--   hiddenArms, detailsHeights, summaryHeights, unbound, sectionsCollapsed, viewportWidth), so a layout depends only on
+--   its arguments.
+-- @return table|nil  The scene { cards, connectors, dropTargets, groups, armLabels, sections, width, height, ... }; nil
+--   when the body's steps cannot be indexed.
+-- @return table|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Plain geometry only. No live combat observation, callback, native frame or custom printer is involved. Both evaluated
+-- arms stay visible while editing.
 function addon:BuildRotationCanvas(body, view)
     local index, why = data.IndexRotationSteps(body)
 
@@ -81,8 +93,10 @@ function addon:BuildRotationCanvas(body, view)
         rows[row.step] = row
     end
 
-    -- Returns a card's display mode: the explicit card state if any, else compact (collapsed, or in the list view's
-    -- rotation section), expanded (it has measured details) or normal.
+    -- Returns a card's display mode.
+    -- @param step table  The step.
+    -- @return string  The explicit card state if any, else 'compact' (collapsed, or in the list view's rotation
+    --   section), 'expanded' (it has measured details) or 'normal'.
     local function state(step)
         return (view.cardStates or {})[step.id]
             or (collapsed[step.id] and 'compact')
@@ -91,7 +105,11 @@ function addon:BuildRotationCanvas(body, view)
             or 'normal'
     end
 
-    -- Returns the step list of a branch arm and whether the editor has folded that arm away.
+    -- Returns the step list of a branch arm.
+    -- @param step table  The branch step.
+    -- @param arm string  'true' or 'false'.
+    -- @return table  The arm's step list.
+    -- @return boolean  True when the editor has folded that arm away.
     local function armList(step, arm)
         local folded = (view.hiddenArms or {})[step.id] and view.hiddenArms[step.id][arm]
         local source = step[arm == 'true' and 'onTrue' or 'onFalse']
@@ -101,7 +119,9 @@ function addon:BuildRotationCanvas(body, view)
     local measureList
 
     -- First pass: computes a step's own header height and, for an open branch, the sizes of both arms, so placement can
-    -- center the card above them. Returns the measured node.
+    -- center the card above them.
+    -- @param step table  The step.
+    -- @return table  The measured node.
     local function measureNode(step)
         local row = rows[step]
         local mode = state(step)
@@ -170,8 +190,12 @@ function addon:BuildRotationCanvas(body, view)
         return node
     end
 
-    -- Measures a list of sibling steps and returns the combined width, left and right extents and height; the left and
-    -- right extents are what let a branch center itself over its arms.
+    -- Measures a list of sibling steps.
+    -- @param list table  The step list.
+    -- @param path (string|number)[]  The list's path.
+    -- @param parentId string|nil  The id of the branch step the list belongs to.
+    -- @return table  The measured list: the combined width, left and right extents and height; the left and right
+    --   extents are what let a branch center itself over its arms.
     measureList = function(list, path, parentId)
         local result = {
             nodes = {},
@@ -229,6 +253,11 @@ function addon:BuildRotationCanvas(body, view)
     })
 
     -- Adds a drop target for inserting at an index of a list.
+    -- @param list table  The measured list.
+    -- @param indexValue number  The insertion index.
+    -- @param x number  The target's left edge.
+    -- @param y number  The target's top edge.
+    -- @param width number  The target's width.
     local function target(list, indexValue, x, y, width)
         scene.dropTargets[#scene.dropTargets + 1] = {
             x = x,
@@ -242,6 +271,13 @@ function addon:BuildRotationCanvas(body, view)
 
     -- Adds a connector polyline between two cards (or to an open end), toned by the arm it belongs to or gray when
     -- inactive.
+    -- @param from string|nil  The id of the card it starts at.
+    -- @param to string|nil  The id of the card it ends at.
+    -- @param points table[]  The polyline points { x, y }.
+    -- @param arm string|nil  'true' or 'false' for a branch arm connector.
+    -- @param inactive boolean|nil  True when the connector leads nowhere that runs.
+    -- @param label string|nil  The label to show.
+    -- @param owner string|nil  The id of the branch step that owns the connector.
     local function line(from, to, points, arm, inactive, label, owner)
         scene.connectors[#scene.connectors + 1] = {
             from = from,
@@ -257,8 +293,13 @@ function addon:BuildRotationCanvas(body, view)
 
     local placeList
 
-    -- Second pass: positions one measured node at x, y, adds its card, and for a branch also its arm groups, labels,
-    -- connectors and drop targets. Returns the entry and exit points that the caller wires to its neighbors.
+    -- Second pass: positions one measured node, adds its card, and for a branch also its arm groups, labels, connectors
+    -- and drop targets.
+    -- @param node table  The measured node.
+    -- @param x number  The left edge.
+    -- @param y number  The top edge.
+    -- @return table  The entry point { x, y, id } that the caller wires to its neighbors.
+    -- @return table  The exit point { x, y, id }.
     local function placeNode(node, x, y)
         local step, row = node.step, node.row
         local branch = step.type == "branch"
@@ -448,8 +489,13 @@ function addon:BuildRotationCanvas(body, view)
         return entry, exit
     end
 
-    -- Places every node of a list top to bottom, adding drop targets and the connectors between neighbors. Returns the
-    -- first entry point and the last exit point; an empty list returns a point at its own center.
+    -- Places every node of a list top to bottom, adding drop targets and the connectors between neighbors.
+    -- @param list table  The measured list.
+    -- @param x number  The left edge.
+    -- @param y number  The top edge.
+    -- @param section string  'rotation' (diagram), 'list' or the section the nodes belong to.
+    -- @return table  The first entry point { x, y, id }; an empty list returns a point at its own center.
+    -- @return table  The last exit point.
     placeList = function(list, x, y, section)
         local cursor = y
         local first, last

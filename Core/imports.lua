@@ -835,8 +835,7 @@ end
 -- @return any  A copy with the body's name set to the display name, or the input when no change is needed.
 --
 -- A Built In's envelope carries its name as a locale key (nameKey), and every importer shows that as the name. The
--- export
--- names the rotation in the exporting client's language (body.name); nameKey stays, it is what the envelope is.
+-- export names the rotation in the exporting client's language (body.name); nameKey stays, it is what the envelope is.
 local function exportName(self, exported)
     if type(exported) ~= 'table' then
         return exported

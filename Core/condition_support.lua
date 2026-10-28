@@ -435,8 +435,7 @@ end
 --
 -- Size and dead members read on every client; assigned roles only where a client lets players assign them (not Era or
 -- Burning Crusade: the function exists there, but the client generated manifests prove only that, not that a role can
--- be
--- assigned).
+-- be assigned).
 local function groupCount(value)
     local measure = type(value) == 'table' and value.measure
 

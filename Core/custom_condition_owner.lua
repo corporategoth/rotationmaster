@@ -22,6 +22,11 @@ function addon:OwnCustomConditionDialog(widget, parent, valid)
     owner.widgets[widget] = true
     local release = widget.OnRelease
 
+    -- OnRelease wrapper: releasing the root closes the whole dialog tree, then the original handler is restored and
+    -- called.
+    -- @param control table  The widget being released.
+    -- @param ... any  Passed to the original OnRelease handler.
+    -- @return any  The original handler's result, when there is one.
     widget.OnRelease = function(control, ...)
         if control == owner.root and owner.active then
             addon:CloseCustomConditionEditor(control, owner)

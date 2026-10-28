@@ -144,8 +144,7 @@ end
 -- Reports whether the CVar should be on now.
 -- @param self table  The addon.
 -- @return boolean  True for a mode that uses Blizzard's highlight, a client that supports it, and an active rotation
---   that
---   has an assisted step.
+--   that has an assisted step.
 local function wanted(self)
     if self:GetAssistedHighlightMode() == 'rm' or self.currentRotation == nil then
         return false
@@ -320,8 +319,7 @@ local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' 
 -- @param ... any  The event's arguments.
 --
 -- The first PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles
--- before
--- that.
+-- before that.
 function manager:OnEvent(event, ...)
     if event == 'PLAYER_LOGOUT' then
         return self:Logout()

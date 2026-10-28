@@ -258,8 +258,7 @@ local function acquire(owner, spec, key)
 
     -- Full guard returned to main.lua.
     -- @return boolean  True while the scalar proof holds, the consumers' identity is intact and the scope's own proof
-    --   says
-    --   the active handle, revision and operation are the ones read at acquire time.
+    --   says the active handle, revision and operation are the ones read at acquire time.
     local function current()
         if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then
             return false
@@ -332,8 +331,7 @@ local function acquire(owner, spec, key)
     -- Lease asked by each receiver before it runs.
     -- @param receiver string  'condition', 'resume', 'step', 'sequence', 'iterator' or 'pathcopy'.
     -- @return boolean  True when the functions that receiver uses and the globals they read are unchanged. After one
-    --   failure
-    --   it answers false.
+    --   failure it answers false.
     local function dispatchCurrent(receiver)
         if dispatchFailed then
             return false

@@ -201,6 +201,12 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
             keys[#keys + 1] = key
         end
 
+        -- Sort order for the children of a node: numeric keys first by value, then named keys by their position in the
+        -- stored
+        -- field order, then by name.
+        -- @param a string|number  The first key.
+        -- @param b string|number  The second key.
+        -- @return boolean  True when `a` sorts before `b`.
         table.sort(keys, function(a, b)
             if type(a) == 'number' then
                 return a < b
@@ -431,8 +437,7 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- Changes a node's kind.
     -- @param path number[]  The path of the node; must not be the root.
     -- @param kind string  'record', 'union', 'string', 'number', 'boolean', 'condition' or 'condition[]'; unknown kinds
-    --   are
-    --   rejected.
+    --   are rejected.
     -- @return boolean  True when it changed the draft.
     --
     -- Creates a starter child when the node becomes a record or union, renames record children so they stay legal and
@@ -455,6 +460,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
             return false
         end
 
+        -- Edit applied by SetKind: sets the node's kind, giving a record or union a starter child and renaming record
+        -- children so
+        -- they stay legal and unique, or dropping the children of a scalar kind.
         return self:Change(function()
             node.kind = kind
 
@@ -492,8 +500,7 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- @param gap number  The slot in the target container (1 to its child count + 1).
     -- @param tail boolean|nil  True to move every later sibling with the node.
     -- @return boolean  True when the slot exists, the move changes something, a container does not move inside itself,
-    --   and
-    --   record names do not collide.
+    --   and record names do not collide.
     function d:CanTransfer(path, destination, gap, tail)
         if #path == 0 or not self:Node(path) then
             return false
@@ -577,6 +584,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         local index = path[#path]
         local count = tail and #parent.children - index + 1 or 1
 
+        -- Edit applied by Transfer: moves the nodes to the destination slot, clearing the required flag of nodes that
+        -- leave the
+        -- top level and naming unnamed nodes that enter a record.
         return self:Change(function()
             local moved = {}
 

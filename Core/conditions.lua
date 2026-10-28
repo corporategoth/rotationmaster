@@ -508,8 +508,7 @@ end
 -- @return table  An outcome { status, reason, path }.
 --
 -- Same contract as evaluateOrdinaryLeaf, but every callback is bracketed by owner (state.switchCurrent) and
--- unit-witness
--- checks, because a callback can change native unit state or the owner synchronously; a change yields
+-- unit-witness checks, because a callback can change native unit state or the owner synchronously; a change yields
 -- "switch-owner-changed" or "switch-unit-changed" and the result is dropped.
 local function evaluateSwitchLeaf(value, definition, cache, start, state, path)
     if state.switchCurrent and not state.switchCurrent() then
@@ -574,12 +573,10 @@ end
 -- @param depth number  The nesting depth of the node.
 -- @param path string  The path of the node, built only for messages.
 -- @return table  An outcome { status, reason, path }. Every failure is an unavailable outcome with a reason and the
---   path
---   of the offending node.
+--   path of the offending node.
 --
 -- AND and OR walk their children in order over a dense 1..n list and stop at the first decisive child (no-match for
--- AND,
--- match for OR); an unavailable child makes the whole node unavailable at once. NOT inverts match and no-match and
+-- AND, match for OR); an unavailable child makes the whole node unavailable at once. NOT inverts match and no-match and
 -- leaves unavailable alone.
 local function evaluate(value, cache, start, state, depth, path)
     state.count = state.count + 1
@@ -791,6 +788,10 @@ function addon:RenderConditionPhrase(text, negated)
     local first = true
     local hasPrimary = text:find('{{!', 1, true) ~= nil
 
+    -- Replaces one "{{positive|negative}}" marker with the wording that suits the reading.
+    -- @param positive string  The positive wording; a leading '!' marks the leaf's predicate.
+    -- @param negative string  The negative wording.
+    -- @return string  The wording to use: the negative one only for the first predicate marker of a negated reading.
     local rendered, count = text:gsub('{{(.-)|(.-)}}', function(positive, negative)
         local primary = positive:sub(1, 1) == '!'
 
@@ -1105,8 +1106,7 @@ end
 -- Prints the children of an AND/OR node as "(a and b ...)", joined by the operation word.
 -- @param operation string  The operation word ("AND" or "OR").
 -- @param array table|nil  The child nodes; entries without a type are skipped, a disabled entry prints as empty text,
---   and
---   a nil list prints as "".
+--   and a nil list prints as "".
 -- @param spec number  The specialization ID or talent group the printers describe it for.
 -- @return string  The text.
 printArray = function(operation, array, spec)
@@ -1332,10 +1332,9 @@ end
 -- @param array table  The condition definition.
 --
 -- The old definition's on_unregister runs first when it was live. The definition's print function is wrapped once so
--- its
--- result always goes through RenderConditionSummary; the registry version and dependency revision are bumped so caches
--- rebuild; on_register runs for an enabled definition. If the disabled flag changed, rotation selection is refreshed. A
--- re-registered definition leaves quarantine.
+-- its result always goes through RenderConditionSummary; the registry version and dependency revision are bumped so
+-- caches rebuild; on_register runs for an enabled definition. If the disabled flag changed, rotation selection is
+-- refreshed. A re-registered definition leaves quarantine.
 function addon:RegisterCondition(tag, array)
     local availabilityChanged = (conditions[tag] and conditions[tag].disabled == true or false)
         ~= (array.disabled == true)
@@ -1636,8 +1635,8 @@ end
 -- @param state table  The compile state: count, active set and limit.
 -- @param depth number  The nesting depth.
 -- @param path string  The path of the node, used in leaf plans.
--- @return table  A constant { status = ... } for anything already decided (absent, disabled, malformed, cyclic),
---   { kind = "AND" | "OR", child... }, { kind = "NOT", child }, or { kind = "leaf", value, tag, path }.
+-- @return table  A constant { status = ... } for anything already decided (absent, disabled, malformed, cyclic), { kind
+--   = "AND" | "OR", child... }, { kind = "NOT", child }, or { kind = "leaf", value, tag, path }.
 --
 -- Sets state.limit when the tree exceeds the depth or node budget, in which case the caller falls back to the ordinary
 -- evaluator. Definitions are looked up later, per leaf, not captured here.
@@ -1733,8 +1732,7 @@ end
 -- @return string  "match", "no-match" or "unavailable", with the same short-circuit and NOT rules as evaluate().
 --
 -- A leaf is unavailable if its definition is missing, disabled, incomplete, function unavailable or quarantined, or if
--- a
--- callback errors or returns nil with a reason. The valid callback result is remembered per leaf for Built In
+-- a callback errors or returns nil with a reason. The valid callback result is remembered per leaf for Built In
 -- definitions (node.validFor), never for custom code.
 local function evaluatePlan(node, cache, start, stepId)
     local status = node.status
@@ -1935,8 +1933,8 @@ end
 -- Hands main.lua the evaluator for a rotation's switch condition, once.
 -- @return function|nil  evaluator(owner, value, current) evaluates the switch condition with unit-presence checks
 --   (evaluateSwitchLeaf) and returns true only on match, false if current() fails. If the owner's evaluateCondition
---   methods have been replaced, it calls the owner's evaluateCondition(value) instead, so overrides are honored. nil
---   on a later call or when not called on the addon.
+--   methods have been replaced, it calls the owner's evaluateCondition(value) instead, so overrides are honored. nil on
+--   a later call or when not called on the addon.
 function addon:ConsumeSwitchConditionEvaluator()
     if self ~= addon or switchBound then
         return

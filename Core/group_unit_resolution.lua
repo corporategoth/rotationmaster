@@ -13,9 +13,8 @@ local _, addon = ...
 -- @return string|nil  The reason code when the first return is nil; nil otherwise.
 --
 -- Conditions name a unit by a token the game understands, or by one of the group unit types in addon.groupUnitKinds
--- (the
--- group's main tank, assigned healer, leader, ...). Those have no token of their own: the engine hands a condition a
--- copy of its value whose unit (and otherunit) is the real token of whoever holds the assignment right now, so every
+-- (the group's main tank, assigned healer, leader, ...). Those have no token of their own: the engine hands a condition
+-- a copy of its value whose unit (and otherunit) is the real token of whoever holds the assignment right now, so every
 -- unit-aware condition works on them unchanged. Nobody holding it, or a member the game will not read, is unavailable
 -- with the reason; it is never guessed.
 function addon:ResolveConditionUnits(value, cache)

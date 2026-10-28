@@ -36,14 +36,17 @@ local proofEnvironment = proofType(proofGetfenv) == 'function' and proofGetfenv(
 -- Entry maps and comparison helpers
 -- ============================================================================
 
--- Stable marker for a map entry: the table itself, or false for anything else, so malformed entries compare equal each
--- time.
+-- Returns a stable marker for a map entry.
+-- @param value any  The entry.
+-- @return table|boolean  The table itself, or false for anything else, so malformed entries compare equal each time.
 local function normalized(value)
     return type(value) == 'table' and value or false
 end
 
--- Copies a map into `{ key = table-or-false }` and returns the copy and the number of entries, never touching the
--- source.
+-- Copies a map into `{ key = table-or-false }`, never touching the source.
+-- @param value any  The map; a non-table gives an empty copy.
+-- @return table  The copy.
+-- @return number  The number of entries.
 local function entries(value)
     local result, count = {}, 0
 
@@ -57,7 +60,11 @@ local function entries(value)
     return result, count
 end
 
--- True when `value` still holds exactly the `expected` entries recorded in `previous`, compared by identity.
+-- Reports whether a map still holds exactly the entries recorded earlier, compared by identity.
+-- @param value any  The map to check.
+-- @param previous table  The entries recorded by entries().
+-- @param expected number  The entry count recorded by entries().
+-- @return boolean  True when it does.
 local function sameEntries(value, previous, expected)
     local count = 0
 
@@ -74,13 +81,21 @@ local function sameEntries(value, previous, expected)
     return count == expected
 end
 
--- True when each item-set map is absent or a table; anything else is treated as no item sets.
+-- Reports whether each item-set map is absent or a table; anything else is treated as no item sets.
+-- @param shared any  The shared item sets.
+-- @param personal any  The per-profile item sets.
+-- @return boolean  True when both are acceptable.
 local function validItemsets(shared, personal)
     return (shared == nil or type(shared) == 'table') and (personal == nil or type(personal) == 'table')
 end
 
 -- Like sameEntries for the merged shared and personal item sets: a personal entry shadows the shared one of the same
 -- key.
+-- @param shared any  The shared item sets.
+-- @param personal any  The per-profile item sets.
+-- @param previous table  The entries recorded by itemsetEntries().
+-- @param expected number  The entry count recorded by itemsetEntries().
+-- @return boolean  True when they still match.
 local function sameItemsets(shared, personal, previous, expected)
     if not validItemsets(shared, personal) then
         return expected == 0
@@ -115,7 +130,11 @@ local function sameItemsets(shared, personal, previous, expected)
     return count == expected
 end
 
--- Merged copy of shared and personal item sets (personal wins) plus the merged entry count.
+-- Merges shared and personal item sets (personal wins).
+-- @param shared any  The shared item sets.
+-- @param personal any  The per-profile item sets.
+-- @return table  The merged copy ({} when either map is invalid).
+-- @return number  The merged entry count.
 local function itemsetEntries(shared, personal)
     if not validItemsets(shared, personal) then
         return {}, 0
@@ -148,6 +167,7 @@ local clientGetter, clientProject
 
 -- Advances the condition registry version when the platform's client facts changed (only test harnesses do that), so
 -- every validation stamp moves with it.
+-- @param owner table  The addon, whose conditionRegistryVersion is advanced.
 local function observeClient(owner)
     local platform = rawget(addon, 'Platform')
     local getter = type(platform) == 'table' and platform.GetClientInfo or nil
@@ -165,7 +185,11 @@ local function observeClient(owner)
     end
 end
 
--- Asks Core/condition_support.lua whether a condition works on this client; returns its reason, or nil when supported.
+-- Asks Core/condition_support.lua whether a condition works on this client.
+-- @param tag string  The condition tag.
+-- @param definition table|nil  The condition definition.
+-- @param value table|nil  The condition value.
+-- @return string|nil  The reason; nil when supported.
 local function support(tag, definition, value)
     local check = addon.GetConditionSupport
 
@@ -174,8 +198,11 @@ local function support(tag, definition, value)
     end
 end
 
--- Observe identities without copying maps on the common unchanged path.
--- Normalized false markers keep malformed/NaN entries stable, as before.
+-- Observes the dependencies by comparing entry identities, replacing the stamp when anything changed.
+-- @param owner table  The addon.
+--
+-- Observe identities without copying maps on the common unchanged path. Normalized false markers keep malformed/NaN
+-- entries stable, as before.
 local function observeLegacy(owner)
     observeClient(owner)
     local profile, global = owner.db.profile, owner.db.global
@@ -214,8 +241,13 @@ local function observeLegacy(owner)
     stamp = {}
 end
 
--- Managed ownership does not require plain/default-free maps. AceDB may
--- materialize default metatables; contents change through explicit publication.
+-- Observes the dependencies (the managed reader when there is one, else the legacy comparison).
+-- @param owner table  The addon.
+-- @return table  The observation (private maps and roots).
+-- @return table  The validation stamp.
+--
+-- Managed ownership does not require plain/default-free maps. AceDB may materialize default metatables; contents change
+-- through explicit publication. Public options copy actual source maps, never a retained private map.
 local function observe(owner)
     if not dependencyReader or not dependencyIdentity(owner, addon) then
         observeLegacy(owner)
@@ -260,8 +292,11 @@ local function observe(owner)
     return managed, managed.stamp
 end
 
--- Internal authority checks need the current stamp, not detached public maps.
--- Keep checking every dependency at each call, including reentrant mutations.
+-- Returns the validation stamp, which changes whenever any dependency does.
+-- @return table  The stamp (compare by identity).
+--
+-- Internal authority checks need the current stamp, not detached public maps. Keep checking every dependency at each
+-- call, including reentrant mutations.
 function addon:GetRotationValidationStamp()
     local _, current = observe(self)
     return current
@@ -273,8 +308,11 @@ local ownedValidationStamp = addon.GetRotationValidationStamp
 -- Proofs that observation is callback-free
 -- ============================================================================
 
--- Even protected metatable metadata can disguise a callback. Only native
--- primitives stored directly in the owned environment can certify this path.
+-- Reports whether the native primitives this module relies on are still the originals in the owned environment.
+-- @return boolean  True only then.
+--
+-- Even protected metatable metadata can disguise a callback. Only native primitives stored directly in the owned
+-- environment can certify this path.
 local function proofGlobals()
     return proofType(proofEnvironment) == 'table'
         and proofRawequal(proofRawget(proofEnvironment, 'pairs'), proofPairs)
@@ -294,14 +332,30 @@ local function proofGlobals()
         and proofRawequal(proofGetfenv(itemsetEntries), proofEnvironment)
 end
 
--- True for a table without a metatable, the only layout whose reads are guaranteed callback-free.
+-- Reports whether a value is a table without a metatable, the only layout whose reads are guaranteed callback-free.
+-- @param value any  The value.
+-- @return boolean  True for such a table.
 local function proofPlain(value)
     return proofType(value) == 'table' and proofGetmetatable(value) == nil
 end
 
--- Only raw-present, callback-free layouts can join adjacent observations.
--- AceAddon owners and AceDB db objects may have metatables: every accessed
--- slot is raw-present, and neither object participates in equality/tostring.
+-- Finds the roots a callback-free validation observation reads.
+-- @param owner any  The addon.
+-- @param method function  The GetRotationValidationStamp method the caller is about to use.
+-- @return table|nil  The db; nil (with nothing else) when the layout cannot be proved callback-free.
+-- @return table  The profile.
+-- @return table  The global table.
+-- @return table  The condition definitions.
+-- @return table  The shared item sets.
+-- @return table  The per-profile item sets.
+-- @return table  The effects.
+-- @return number  The condition registry version.
+-- @return table  The profile's rotation library state.
+--
+-- Only raw-present, callback-free layouts can join adjacent observations. AceAddon owners and AceDB db objects may have
+-- metatables: every accessed slot is raw-present, and neither object participates in equality/tostring. Public option
+-- copying uses live pairs; a prior override can retain its private input maps. Their later lookups must remain
+-- callback-free too.
 local function validationLayout(owner, method)
     if
         proofType(owner) ~= 'table'
@@ -357,7 +411,19 @@ local function validationLayout(owner, method)
     return db, profile, global, conditions, shared, personal, effects, version, state
 end
 
--- Re-runs validationLayout and returns true only when every root it finds is the identical object the caller recorded.
+-- Re-runs validationLayout and reports whether every root it finds is the identical object the caller recorded.
+-- @param owner any  The addon.
+-- @param method function  The GetRotationValidationStamp method.
+-- @param db table  The recorded db.
+-- @param profile table  The recorded profile.
+-- @param global table  The recorded global table.
+-- @param conditions table  The recorded condition definitions.
+-- @param shared table  The recorded shared item sets.
+-- @param personal table  The recorded per-profile item sets.
+-- @param effects table  The recorded effects.
+-- @param version number  The recorded condition registry version.
+-- @param state table  The recorded rotation library state.
+-- @return boolean  True only when every root is unchanged.
 local function sameValidationLayout(
     owner,
     method,
@@ -385,9 +451,17 @@ local function sameValidationLayout(
         and proofRawequal(l, state)
 end
 
--- Reads the validation stamp through `method` for Core/rotation_library.lua. When the owned scan can be proved
--- callback-free it also returns the roots seen before the read, so the caller can confirm afterwards that they did not
--- change.
+-- Reads the validation stamp through a method for Core/rotation_library.lua.
+-- @param owner table  The addon.
+-- @param method function  The GetRotationValidationStamp method to call.
+-- @param entryMethod function  The method as the caller first saw it.
+-- @return table  The stamp.
+-- @return table|nil  When the owned scan can be proved callback-free, the roots seen before the read (db, profile,
+--   global, conditions, shared, personal, effects, version, state as nine values), so the caller can confirm afterwards
+--   that they did not change; nothing otherwise.
+--
+-- A successful PRE proof closes the owned scan. POST checks raw layout again, without repeating globals that no
+-- permitted callback can change.
 local function readValidationStamp(owner, method, entryMethod)
     if dependencyReader and dependencyIdentity(owner, addon) then
         local value = method(owner)
@@ -411,8 +485,14 @@ local function readValidationStamp(owner, method, entryMethod)
     return value
 end
 
--- Trusted private module handoff, retired by its consumer. This does not
--- authenticate a hostile replacement of the complete loader/binder itself.
+-- Hands the private proof helpers to Core/rotation_library.lua.
+-- @param bind function  Called with readValidationStamp, sameValidationLayout, the native primitives, runtimeAuthority,
+--   the owned options method and the owned disabled-dependency method.
+-- @return boolean|nil  True when handed over; nil when `bind` is not a function.
+-- @return string|nil  'invalid-validation-reader-binder' when the first return is nil; nil otherwise.
+--
+-- Trusted private module handoff, retired by its consumer. This does not authenticate a hostile replacement of the
+-- complete loader/binder itself.
 function addon:BindRotationValidationReader(bind)
     if type(bind) ~= 'function' then
         return nil, 'invalid-validation-reader-binder'
@@ -437,8 +517,12 @@ end
 -- Validator options and disabled-dependency scan
 -- ============================================================================
 
--- Dependency maps may carry AceDB defaults metatables. Observe their entries,
--- without copying/traversing definitions or writing into SavedVariables.
+-- Returns the options the rotation validator runs under: fresh copies of the dependency maps.
+-- @return table  { conditions, itemsets, effects, support }.
+-- @return table  The validation stamp.
+--
+-- Dependency maps may carry AceDB defaults metatables. Observe their entries, without copying/traversing definitions or
+-- writing into SavedVariables. Public maps remain fresh: consumers cannot poison private observations.
 function addon:GetRotationValidationOptions()
     local snapshot, current = observe(self)
     -- Public maps remain fresh: consumers cannot poison private observations.
@@ -457,8 +541,20 @@ end
 
 ownedOptions = addon.GetRotationValidationOptions
 
--- Constant-time managed publication authority; unknown property layouts and
--- public overrides retain the existing eager reader. No membership scan.
+-- Constant-time managed publication authority; unknown property layouts and public overrides retain the existing eager
+-- reader. No membership scan.
+-- @param owner table  The addon.
+-- @param continuation boolean|nil  True to skip the layout checks for a continuation of an already-proved call.
+-- @return table|nil  The dependency stamp; nil (with nothing else) when the managed reader cannot vouch.
+-- @return table  The db.
+-- @return table  The profile.
+-- @return table  The global table.
+-- @return table  The condition definitions.
+-- @return number  The condition registry version.
+-- @return table  The shared item sets.
+-- @return table  The per-profile item sets.
+-- @return table  The effects.
+-- @return table  The profile's rotation library state.
 runtimeAuthority = function(owner, continuation)
     if not dependencyReader or not dependencyIdentity(owner, addon) then
         return
@@ -516,8 +612,12 @@ runtimeAuthority = function(owner, continuation)
         proofRawget(profile, 'rotationLibrary')
 end
 
--- Legacy bodies have no envelope. Inspect their semantic condition edges too,
--- so a disabled definition cannot be bypassed by a later priority action.
+-- Reports whether a rotation body references a disabled condition.
+-- @param body table  The rotation body.
+-- @return boolean  True when a disabled definition is referenced, or the body cannot be inspected.
+--
+-- Legacy bodies have no envelope. Inspect their semantic condition edges too, so a disabled definition cannot be
+-- bypassed by a later priority action.
 function addon:HasDisabledRotationDependency(body)
     local definitions = self.conditionDefinitions or {}
     local hasDisabled = false
@@ -542,8 +642,11 @@ function addon:HasDisabledRotationDependency(body)
     local count = 0
     local condition, declared
 
-    -- Walks a value against its schema (a condition, a list of conditions, a union of schemas or a field table) and
-    -- returns true when a disabled condition is reached or the value is malformed or nested too deeply.
+    -- Walks a value against its schema (a condition, a list of conditions, a union of schemas or a field table).
+    -- @param value any  The value.
+    -- @param schema any  The schema: 'condition', 'condition[]', a union table or a field table.
+    -- @param depth number  The nesting depth.
+    -- @return boolean  True when a disabled condition is reached or the value is malformed or nested too deeply.
     declared = function(value, schema, depth)
         if value == nil then
             return false
@@ -586,8 +689,11 @@ function addon:HasDisabledRotationDependency(body)
         return false
     end
 
-    -- Checks one condition node: true when it is disabled, malformed, past the depth or node limits, or references a
-    -- disabled condition in any of its declared fields. AND, OR and NOT recurse into their operands.
+    -- Checks one condition node. AND, OR and NOT recurse into their operands.
+    -- @param value any  The condition node.
+    -- @param depth number  The nesting depth.
+    -- @return boolean  True when it is disabled, malformed, past the depth or node limits, or references a disabled
+    --   condition in any of its declared fields.
     condition = function(value, depth)
         if value == nil then
             return false

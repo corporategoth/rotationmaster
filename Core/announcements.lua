@@ -236,12 +236,10 @@ end
 -- @return function|nil  A function that is true while the same unit is still there.
 --
 -- Native unit APIs may accept a resolvable name as well as a unit token. Keep the cast's recorded recipient exact;
--- never
--- infer the selected target.
+-- never infer the selected target.
 local function automaticTarget(recipient, owned)
     -- Reports whether a value may be inspected: restricted clients hide values with canaccessvalue as well as
-    -- CanReadValue,
-    -- so both must pass.
+    -- CanReadValue, so both must pass.
     -- @param value any  The value to check.
     -- @return boolean  True when readable.
     local function readable(value)

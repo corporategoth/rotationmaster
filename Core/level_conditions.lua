@@ -11,8 +11,8 @@ local _, addon = ...
 -- @param unit string  The unit token to read (non-empty).
 -- @param cache table|nil  The per-pass evaluation cache; nil reads uncached.
 -- @return number|boolean|nil  The unit's level; false when the unit does not exist; nil when the level is unavailable.
--- @return string|nil  The reason code when the first return is nil (restricted-value, invalid-unit,
---   unsupported-client, invalid-api-result, or the platform's own reason); nil otherwise.
+-- @return string|nil  The reason code when the first return is nil (restricted-value, invalid-unit, unsupported-client,
+--   invalid-api-result, or the platform's own reason); nil otherwise.
 --
 -- Keeps the old player-level lifetime, but only promotes a valid observation. Unknown/absent observations live in the
 -- evaluation cache and retry next pass.

@@ -253,8 +253,7 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- @param path table|nil  The condition path the command acts on.
     -- @param value any  The command's argument.
     -- @return any  The draft's own ok (truthy when the command succeeded); nil when the session is closed, read-only or
-    --   the
-    --   command is unknown.
+    --   the command is unknown.
     -- @return any  The draft's own result, or the reason code when the first return is nil.
     --
     -- A command that really changes the draft pushes the prior state on the undo stack and clears redo.
@@ -348,8 +347,7 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- @return table|nil  The validation result, for the schema failures; nil otherwise.
     --
     -- The checks run twice around the validator because it runs custom code: the draft must not have been mutated by it
-    -- and
-    -- the original and its owner must not have changed meanwhile.
+    -- and the original and its owner must not have changed meanwhile.
     function session:Apply()
         if closed then
             return nil, "condition-editor-closed"

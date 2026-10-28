@@ -272,6 +272,9 @@ local function buildSets()
     local byItem, state = {}, { incomplete = false }
     local seen = {}
 
+    -- Adds one item set to the index: every item it contains maps to the set's name.
+    -- @param _ any  The set's key; unused.
+    -- @param set any  The item set.
     eachSet(function(_, set)
         if not validSet(set) then
             return
@@ -955,8 +958,7 @@ end
 local shown = setmetatable({}, { __mode = 'k' })
 
 -- Handler for the Classic OnTooltipSetItem/Spell scripts: reads the ID from the tooltip itself, appends once per
--- display
--- (the shown flag), and re-shows the tooltip so it resizes to fit the new line.
+-- display (the shown flag), and re-shows the tooltip so it resizes to fit the new line.
 -- @param tooltip table  The tooltip.
 -- @param kind string  'item' or 'spell'.
 function manager:OnScript(tooltip, kind)

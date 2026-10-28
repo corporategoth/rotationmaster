@@ -368,8 +368,7 @@ function addon:RefreshSpellCatalog()
     end
 
     -- Files a spellbook entry under a specialization key, along with the base of an active override, which is the same
-    -- book
-    -- entry.
+    -- book entry.
     -- @param spec number|string  The specialization key (or the pet book key).
     -- @param entry table  The spellbook entry (spellID, baseSpellID).
     local function attribute(spec, entry)
