@@ -947,7 +947,8 @@ class Printer:
         if kind == 'field':
             return cat(self.expr(node.base), text('.' + node.name))
         if kind == 'index':
-            return cat(self.expr(node.base), text('['), self.expr(node.key), text(']'))
+            return cat(self.expr(node.base), text('[' + long_string_gap(node.key)), self.expr(node.key),
+                       text(long_string_gap(node.key) + ']'))
         if kind == 'call':
             return cat(self.expr(node.base), self.arguments(node.args))
         if kind == 'method':
@@ -1089,7 +1090,8 @@ class Printer:
             elif field.shorthand:
                 doc = cat(text(field.key.text + ' = '), value)
             else:
-                doc = cat(text('['), self.expr(field.key), text('] = '), value)
+                doc = cat(text('[' + long_string_gap(field.key)), self.expr(field.key),
+                          text(long_string_gap(field.key) + '] = '), value)
             docs.append(doc)
         if has_comments:
             body = []
@@ -1325,6 +1327,11 @@ def guard_kind(statement):
     return inner.kind
 
 
+def long_string_gap(key):
+    """A space inside the brackets of `t[ [[text]] ]`: without it `[[` would open a long string around the whole key."""
+    return ' ' if key.kind == 'atom' and key.text.startswith('[') else ''
+
+
 def huggable(node):
     """Whether an expression opens a bracket the rest of the line can hug: a call, table or function (or an operator
     chain that ends in one)."""
@@ -1406,8 +1413,15 @@ def format_source(src, codes=frozenset()):
     """Format `src`. A region between `-- BEGIN GENERATED X` and `-- END GENERATED X` is some generator's output; it is
     set aside as a placeholder statement while the rest is formatted and put back byte for byte."""
     regions = []
+    try:
+        strings = [(token.start, token.end) for token in lex(src) if token.kind == 'str']
+    except FormatError:
+        strings = []
 
     def hide(match):
+        # Marker lines inside a string literal (a fixture that quotes a generated file) are not regions.
+        if any(start <= match.start() < end for start, end in strings):
+            return match.group(0)
         regions.append(match.group(0))
         return '__RM_GENERATED_REGION_%d__()' % (len(regions) - 1)
 

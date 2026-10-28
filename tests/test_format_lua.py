@@ -153,6 +153,20 @@ class BlankLines(unittest.TestCase):
         self.assertEqual(out, "if a then\n    return\nend\n\n-- why\nif b then\n    return\nend\n")
 
 
+class Regressions(unittest.TestCase):
+    def test_a_long_string_index_keeps_the_space_that_stops_it_opening_a_long_string(self):
+        source = "records[ [====[main.lua]====] ]={bytes=1}\nlocal t={[ [[k]] ]=1}\n"
+        out = fmt(source)
+        self.assertEqual(out, "records[ [====[main.lua]====] ] = { bytes = 1 }\nlocal t = { [ [[k]] ] = 1 }\n")
+        self.assertEqual(format_lua.same_program(source, out), (True, ''))
+
+    def test_generated_region_markers_inside_a_string_are_text(self):
+        source = "local s=[[\n-- BEGIN GENERATED X\nbody\n-- END GENERATED X\n]]\nlocal b=2\n"
+        out = fmt(source)
+        self.assertEqual(out, "local s = [[\n-- BEGIN GENERATED X\nbody\n-- END GENERATED X\n]]\n\nlocal b = 2\n")
+        self.assertEqual(format_lua.same_program(source, out), (True, ''))
+
+
 class CheckMode(unittest.TestCase):
     def run_check(self, source):
         with tempfile.TemporaryDirectory() as scratch:
