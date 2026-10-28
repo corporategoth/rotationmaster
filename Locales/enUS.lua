@@ -10,14 +10,8 @@ local T = addon.translation
 addon.translation = nil
 addon.localeIsTranslated = T ~= nil
 
--- Read under a key that is not their text: [id] = { key, English }. An English game reads only these.
+-- Read under a key that is not their text: [id] = { key, English }. An English game reads these.
 local S = {
--- 562eb99f
-[2] = { "/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.", "/rm perf engine [lean||standard] - Show or choose the rotation evaluation engine." },
--- 4c0510e8
-[3] = { "/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.", "/rm perf cpu||runtime||memory [seconds||stop||report] - Capture performance observations." },
--- 465830f3
-[84] = { "/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again.", "/rm set [auto||profile]  - Switch to a specific rotation, or use automatic switching again." },
 -- d580a703
 -- Context: Name of a Built In rotation for TBC Shaman, Enhancement spec, based on an Icy Veins
 --     guide; a trailing site name in parentheses.
@@ -52,130 +46,6 @@ local S = {
 [845] = { "Default.TBC.Shaman.Restoration.Description", "Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you." },
 -- 87587359
 [952] = { "AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.", "AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated." },
--- f831a06b
--- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
---     talent conditions.
-[1396] = { "TalentTree.Arms", "Arms" },
--- 8d6b26d9
--- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
---     talent conditions.
-[1397] = { "TalentTree.Fury", "Fury" },
--- 0e97ad02
--- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
---     Tree dropdown of talent conditions.
-[1398] = { "TalentTree.Protection", "Protection" },
--- 56eee6a5
--- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
---     talent conditions; not the magic school.
-[1399] = { "TalentTree.Holy", "Holy" },
--- 1d79fa22
--- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
---     of talent conditions.
-[1400] = { "TalentTree.Retribution", "Retribution" },
--- 5d6f7884
--- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
---     dropdown of talent conditions.
-[1401] = { "TalentTree.Beast Mastery", "Beast Mastery" },
--- 03f000fc
--- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1402] = { "TalentTree.Marksmanship", "Marksmanship" },
--- 8302496d
--- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1403] = { "TalentTree.Survival", "Survival" },
--- 727eeac8
--- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1404] = { "TalentTree.Assassination", "Assassination" },
--- 49fcf2c7
--- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1405] = { "TalentTree.Combat", "Combat" },
--- fca36d62
--- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1406] = { "TalentTree.Subtlety", "Subtlety" },
--- a1b14db9
--- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1407] = { "TalentTree.Discipline", "Discipline" },
--- 4c764cb6
--- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1408] = { "TalentTree.Shadow", "Shadow" },
--- 8a7961ab
--- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
---     rotation scope when the game cannot supply the tree name for that class. A proper name;
---     follow the game client's own term.
-[1409] = { "TalentTree.Blood", "Blood" },
--- 17636dd6
--- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
---     and rotation scope when the game cannot supply the tree name for that class. A proper name;
---     follow the game client's own term.
-[1410] = { "TalentTree.Frost", "Frost" },
--- 4de5fe95
--- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
---     rotation scope when the game cannot supply the tree name for that class. A proper name;
---     follow the game client's own term.
-[1411] = { "TalentTree.Unholy", "Unholy" },
--- 4309e83a
--- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1412] = { "TalentTree.Elemental", "Elemental" },
--- b12b36cf
--- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1413] = { "TalentTree.Enhancement", "Enhancement" },
--- 6a3c6c77
--- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
---     rotation scope when the game cannot supply the tree name for that class. A proper name;
---     follow the game client's own term.
-[1414] = { "TalentTree.Restoration", "Restoration" },
--- 93006d61
--- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1415] = { "TalentTree.Arcane", "Arcane" },
--- c141faa8
--- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1416] = { "TalentTree.Fire", "Fire" },
--- ed64274f
--- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1417] = { "TalentTree.Affliction", "Affliction" },
--- c0e4afa6
--- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1418] = { "TalentTree.Demonology", "Demonology" },
--- e848f2c5
--- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1419] = { "TalentTree.Destruction", "Destruction" },
--- d05e07b7
--- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1420] = { "TalentTree.Balance", "Balance" },
--- 454d4a9c
--- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
---     scope when the game cannot supply the tree name for that class. A proper name; follow the
---     game client's own term.
-[1421] = { "TalentTree.Feral Combat", "Feral Combat" },
 -- 17636dd6
 -- Context: Name of a Built In (premade) rotation, shown in the rotation list and picker: Mage, The
 --     Burning Crusade Classic (variant key: Frost).
@@ -2158,1464 +2028,1619 @@ local S = {
 -- 9e4fdb28
 [2506] = { "Default.MoP.Warrior.Unspecialized.Description", "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance." },
 }
-for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
+for id, entry in pairs(S) do
+    L[entry[1]] = T and T[id] or entry[2]
+end
 S = nil
-if not T then return end
 
--- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
-local E = {
+-- Read under "TalentTree." followed by their English: [id] = English. An English game reads these.
+local TalentTree = { -- keys are "TalentTree." followed by the English
+-- f831a06b
+-- Context: Name of the Arms talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
+[1396] = "Arms",
+-- 8d6b26d9
+-- Context: Name of the Fury talent tree (warrior specialization) in the Talent Tree dropdown of
+--     talent conditions.
+[1397] = "Fury",
+-- 0e97ad02
+-- Context: Name of the Protection talent tree (warrior or paladin specialization) in the Talent
+--     Tree dropdown of talent conditions.
+[1398] = "Protection",
+-- 56eee6a5
+-- Context: Name of the Holy talent tree (paladin specialization) in the Talent Tree dropdown of
+--     talent conditions; not the magic school.
+[1399] = "Holy",
+-- 1d79fa22
+-- Context: Name of the Retribution talent tree (paladin specialization) in the Talent Tree dropdown
+--     of talent conditions.
+[1400] = "Retribution",
+-- 5d6f7884
+-- Context: Name of the Beast Mastery talent tree (hunter specialization) in the Talent Tree
+--     dropdown of talent conditions.
+[1401] = "Beast Mastery",
+-- 03f000fc
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1402] = "Marksmanship",
+-- 8302496d
+-- Context: Name of a Classic talent tree (Hunter), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1403] = "Survival",
+-- 727eeac8
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1404] = "Assassination",
+-- 49fcf2c7
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1405] = "Combat",
+-- fca36d62
+-- Context: Name of a Classic talent tree (Rogue), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1406] = "Subtlety",
+-- a1b14db9
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1407] = "Discipline",
+-- 4c764cb6
+-- Context: Name of a Classic talent tree (Priest), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1408] = "Shadow",
+-- 8a7961ab
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
+[1409] = "Blood",
+-- 17636dd6
+-- Context: Name of a Classic talent tree (Mage or Death Knight), used by the talent tree condition
+--     and rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
+[1410] = "Frost",
+-- 4de5fe95
+-- Context: Name of a Classic talent tree (Death Knight), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
+[1411] = "Unholy",
+-- 4309e83a
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1412] = "Elemental",
+-- b12b36cf
+-- Context: Name of a Classic talent tree (Shaman), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1413] = "Enhancement",
+-- 6a3c6c77
+-- Context: Name of a Classic talent tree (Druid or Shaman), used by the talent tree condition and
+--     rotation scope when the game cannot supply the tree name for that class. A proper name;
+--     follow the game client's own term.
+[1414] = "Restoration",
+-- 93006d61
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1415] = "Arcane",
+-- c141faa8
+-- Context: Name of a Classic talent tree (Mage), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1416] = "Fire",
+-- ed64274f
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1417] = "Affliction",
+-- c0e4afa6
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1418] = "Demonology",
+-- e848f2c5
+-- Context: Name of a Classic talent tree (Warlock), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1419] = "Destruction",
+-- d05e07b7
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1420] = "Balance",
+-- 454d4a9c
+-- Context: Name of a Classic talent tree (Druid), used by the talent tree condition and rotation
+--     scope when the game cannot supply the tree name for that class. A proper name; follow the
+--     game client's own term.
+[1421] = "Feral Combat",
+}
+for id, text in pairs(TalentTree) do
+    L["TalentTree." .. text] = T and T[id] or text
+end
+TalentTree = nil
+
+-- Read under their own text (they are in N below), displayed with every | doubled, as chat needs it.
+local P = { -- keys whose English is the key with every | doubled
+"/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.",
+"/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.",
+"/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again.",
+}
+
+if not T then
+    for _, key in ipairs(P) do
+        L[key] = (key:gsub("|", "||"))
+    end
+
+    return
+end
+
+-- Every string read under its own text binds it to its ID: N["English text"] = id. Only a translated game builds
+-- this; the languages bind the ID to the translation, and an untranslated text stays absent (it reads as itself).
+local N = {}
 -- 492353a5
-[1] = "/rm perf probe - Check native profiler access.",
+N["/rm perf probe - Check native profiler access."] = 1
+-- 562eb99f
+N["/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine."] = 2
+-- 4c0510e8
+N["/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations."] = 3
 -- 3e47dffa
 -- Context: Button label in General settings, Diagnostics area: starts a 10-minute memory-usage
 --     capture. Also the heading of its help entry.
-[4] = "Capture memory (10m)",
+N["Capture memory (10m)"] = 4
 -- b84bcf99
 -- Context: Button label in General settings, Diagnostics area: shows the report of the finished
 --     memory capture. Also the heading of its help entry.
-[5] = "Memory report",
+N["Memory report"] = 5
 -- 07027ca8
 -- Context: Button label in General settings, Diagnostics area: replaces the 'Capture memory' button
 --     while a capture runs and stops it.
-[6] = "Stop memory capture",
+N["Stop memory capture"] = 6
 -- 9eff4745
 -- Context: Button label in General settings, Diagnostics area: starts a 10-second capture of which
 --     addon functions use CPU time. Also a help entry heading.
-[7] = "Capture runtime (10s)",
+N["Capture runtime (10s)"] = 7
 -- ceb34b2f
 -- Context: Button label in General settings, Diagnostics area: shows the report of the finished
 --     runtime capture. Also a help entry heading.
-[8] = "Runtime report",
+N["Runtime report"] = 8
 -- b6ce788d
 -- Context: Subtitle (second heading line) of the condition-text window, used when it shows a text
 --     report of a rotation's conditions; the noun 'report'.
-[9] = "Report",
+N["Report"] = 9
 -- a518abfe
 -- Context: Button label in General settings, Diagnostics area: starts a 10-second CPU profile of
 --     the addon. Also a help entry heading.
-[10] = "Capture CPU (10s)",
+N["Capture CPU (10s)"] = 10
 -- b7aa6f62
 -- Context: Button label in General settings, Diagnostics area: shows the report of the finished CPU
 --     capture. Also a help entry heading.
-[11] = "CPU report",
+N["CPU report"] = 11
 -- 17eb3c01
 -- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
 --     disabled' (the shipped default state of a built-in rotation).
-[12] = "disabled",
+N["disabled"] = 12
 -- fb9cf756
 -- Context: Adjective inserted into a tooltip on a rotation's enable checkbox: 'The Built In ships
 --     enabled' (the shipped default state of a built-in rotation).
-[13] = "enabled",
+N["enabled"] = 13
 -- fa79d474
 -- Context: Status word in the Native profiler probe report (CPU diagnostics), shown after 'Callback
 --     arguments:' etc.: the callback received exactly the expected arguments.
-[14] = "exact",
+N["exact"] = 14
 -- 5acbfff1
 -- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g. 'Callback
 --     arguments: mismatch': the observed value differs from what was expected.
-[15] = "mismatch",
+N["mismatch"] = 15
 -- 4d4c7eee
 -- Context: Status word in the Native profiler probe report (CPU diagnostics), e.g.
 --     'C_AddOnProfiler: present': the game API exists.
-[16] = "present",
+N["present"] = 16
 -- 7a0d9159
 -- Context: Status word in the Native profiler probe report (CPU diagnostics): the game restricts
 --     the checked capability.
-[17] = "restricted",
+N["restricted"] = 17
 -- a9283b41
-[18] = "Bypass observation cache (reload required)",
+N["Bypass observation cache (reload required)"] = 18
 -- 0d2db211
-[19] = "Enable observation cache (reload required)",
+N["Enable observation cache (reload required)"] = 19
 -- e5c01247
-[20] = "Enable observation cache (pending)",
+N["Enable observation cache (pending)"] = 20
 -- 6139ce5b
-[21] = "Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.",
+N["Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode."] = 21
 -- a30d7f9f
 -- %s #1: %s #1: the observation-cache mode the game session is running now, one of the words "cached" or "direct" (shown translated), e.g. "cached"
 -- %s #2: %s #2: the mode that will be used after the next UI reload, "cached" or "direct", e.g. "direct"
-[22] = "Observation cache: %s\nNext reload: %s",
+N["Observation cache: %s\nNext reload: %s"] = 22
 -- 3673014e
 -- Context: Status word in diagnostic reports: observation caching mode 'cached' (results of lookups
 --     are reused); the alternative is 'direct'.
-[23] = "cached",
+N["cached"] = 23
 -- d15690f0
 -- Context: Status word in diagnostic reports: observation caching mode 'direct' (every lookup is
 --     read again); the alternative is 'cached'.
-[24] = "direct",
+N["direct"] = 24
 -- b279b4aa
 -- %s #1: %s #1: the observation-cache mode that is active now, "cached" or "direct" (shown translated), e.g. "direct"
-[25] = "Cache diagnostic saved for the next reload. Active mode: %s.",
+N["Cache diagnostic saved for the next reload. Active mode: %s."] = 25
 -- 6ea030dd
-[26] = "Cache diagnostic is unavailable.",
+N["Cache diagnostic is unavailable."] = 26
 -- c0f60371
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Button 'Cancel capture' of the old CPU diagnostics (now replaced by the Stop
 --     button).
-[27] = "Cancel capture",
+N["Cancel capture"] = 27
 -- c1aa81e6
 -- %s #1: %s #1: the profile name, e.g. "Default"
 -- %s #2: %s #2: a short technical reason code for why the data is invalid, e.g. "invalid-owner" (shown as-is; do not translate)
-[28] = "Invalid rotation ownership data in profile %s (%s); record preserved.",
+N["Invalid rotation ownership data in profile %s (%s); record preserved."] = 28
 -- 6ee818aa
 -- Context: Tooltip of a small icon button next to a function binding row in the custom-function
 --     editor: opens the source code of the bound helper function.
-[29] = "View source",
+N["View source"] = 29
 -- 576aa29b
 -- Context: Tooltip of a dropdown-arrow icon button on a function binding row: lets you choose a
 --     different source helper function for that dependency.
-[30] = "Change source helper",
+N["Change source helper"] = 30
 -- 33ba28a9
 -- Context: Button in the custom-function editor that expands or collapses the list of functions
 --     this function depends on; %d is how many dependencies there are.
 -- %d #1: %d #1: the number of function bindings (dependencies) in the list, e.g. 3
-[31] = "Dependencies (%d)",
+N["Dependencies (%d)"] = 31
 -- d28ff2b8
 -- Context: Heading of a help section (and the Functions help topic) explaining the dependency list
 --     of a custom function; also the dependency list's name.
-[32] = "Function dependencies",
+N["Function dependencies"] = 32
 -- d038ddbf
 -- Context: Button in the custom-function editor's dependency list: adds a new dependency (a helper
 --     function this function calls).
-[33] = "Add dependency",
+N["Add dependency"] = 33
 -- ffdb8428
 -- Context: Button/tooltip in the custom-function editor's dependency list: removes this dependency
 --     row.
-[34] = "Remove dependency",
+N["Remove dependency"] = 34
 -- 1f5ef520
 -- Context: Name of a decorative overlay (a glowing arcane ring graphic) in the overlay picker for
 --     rotation icons.
-[35] = "Arcane Ring",
+N["Arcane Ring"] = 35
 -- e3dfa9b3
 -- Context: Name of a decorative overlay (glowing ember corners graphic) in the overlay picker for
 --     rotation icons.
-[36] = "Ember Corners",
+N["Ember Corners"] = 36
 -- ed0b6679
 -- Context: Name of a decorative overlay (frost shard graphics) in the overlay picker for rotation
 --     icons.
-[37] = "Frost Shards",
+N["Frost Shards"] = 37
 -- 4a5ff6e0
 -- Context: Name of a decorative overlay (nature vines graphic) in the overlay picker for rotation
 --     icons.
-[38] = "Nature Vines",
+N["Nature Vines"] = 38
 -- 67f985cc
 -- Context: Name of a decorative overlay (a lightning sweep graphic) in the overlay picker for
 --     rotation icons.
-[39] = "Lightning Sweep",
+N["Lightning Sweep"] = 39
 -- 37476fc2
 -- Context: Name of a decorative overlay (holy light rays graphic) in the overlay picker for
 --     rotation icons.
-[40] = "Holy Rays",
+N["Holy Rays"] = 40
 -- 693a2003
 -- Context: Name of a decorative overlay (shadowy claw marks graphic) in the overlay picker for
 --     rotation icons.
-[41] = "Shadow Claws",
+N["Shadow Claws"] = 41
 -- 1e58829b
 -- Context: Name of a decorative overlay (a rune-marked diamond graphic) in the overlay picker for
 --     rotation icons.
-[42] = "Rune Diamond",
+N["Rune Diamond"] = 42
 -- 0dcf5b86
 -- Context: Name of a decorative overlay (an arcane ring in neutral, uncolored style) in the overlay
 --     picker for rotation icons.
-[43] = "Neutral Arcane Ring",
+N["Neutral Arcane Ring"] = 43
 -- 84f6ccc1
 -- Context: Tooltip of a dropdown-arrow button in the settings form that opens the picker of
 --     decorative overlay textures.
-[44] = "Choose overlay",
+N["Choose overlay"] = 44
 -- 084e6cf7
 -- Context: Option in the 'Applies to' choice (checkbox in the rotation adoption page, and shown in
 --     pending-change lists): the setting applies to the current character only, as opposed to the
 --     whole class.
-[45] = "This character",
+N["This character"] = 45
 -- 6687458b
 -- Context: Label for a choice/field saying whom a rotation applies to: this character or the whole
 --     class (adoption page, pending-change list, help section heading).
-[46] = "Applies to",
+N["Applies to"] = 46
 -- d172148e
 -- %s #1: %s #1: which kind of legacy per-character data conflicts, the internal table name (shown as-is), e.g. "itemsets" or "announces"
-[47] = "Legacy character %s data conflicts with the active profile; character data preserved.",
+N["Legacy character %s data conflicts with the active profile; character data preserved."] = 47
 -- 0da554c3
 -- %s #1: %s #1: the profile name, e.g. "Default"
-[48] = "Invalid rotation fallback configuration in profile %s; data preserved.",
+N["Invalid rotation fallback configuration in profile %s; data preserved."] = 48
 -- 86637dd3
-[49] = "Condition summary unavailable: invalid template or values.",
+N["Condition summary unavailable: invalid template or values."] = 49
 -- 550f7354
-[50] = "The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}"] = 50
 -- c75e3c68
-[51] = "The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"] = 51
 -- e3f0d54c
-[52] = "The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"] = 52
 -- b15c6c5e
-[53] = "The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}"] = 53
 -- 2621f59a
-[54] = "The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"] = 54
 -- a7c7de78
-[55] = "The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}",
+N["The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"] = 55
 -- 764c7ca3
-[56] = "The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}",
+N["The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = 56
 -- 3de1ad93
-[57] = "The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}",
+N["The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] = 57
 -- b0fc7544
-[58] = "A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported.",
+N["A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported."] = 58
 -- 3d2dbbf3
-[59] = "Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.",
+N["Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback."] = 59
 -- e6609c6c
-[60] = "Test values changed. Updating results.",
+N["Test values changed. Updating results."] = 60
 -- ebf235ef
-[61] = "Complete the highlighted test inputs before testing.",
+N["Complete the highlighted test inputs before testing."] = 61
 -- 7a633806
-[62] = "The current source could not be compiled. Fix it before testing again.",
+N["The current source could not be compiled. Fix it before testing again."] = 62
 -- 0e916101
 -- Context: Button that reloads/refreshes the display: in the Lua debugger output window and in the
 --     rotation adoption page.
-[63] = "Refresh",
+N["Refresh"] = 63
 -- 5f623ee6
 -- Context: Title of the Lua debugger output window (shows the debugger's full output and errors).
-[64] = "Debug output",
+N["Debug output"] = 64
 -- b2439bcb
 -- Context: Noun: button in the Lua workbench that opens the debugger output window (also that
 --     window's subtitle); also a column/row label for one result in the collection compare view.
-[65] = "Output",
+N["Output"] = 65
 -- fccce64b
-[66] = "Set values in Test before debugging this condition.",
+N["Set values in Test before debugging this condition."] = 66
 -- 1c22c8c6
-[67] = "Rotation Master addon instance. Public helper functions are documented in Functions.",
+N["Rotation Master addon instance. Public helper functions are documented in Functions."] = 67
 -- 2f3f04fc
-[68] = "Localized Rotation Master text, indexed by its English key.",
+N["Localized Rotation Master text, indexed by its English key."] = 68
 -- a8283ade
 -- Context: Button/tooltip in the condition and custom-function editors: undoes the last edit
 --     (verb).
-[69] = "Undo",
+N["Undo"] = 69
 -- 74273989
 -- Context: Button/tooltip in the condition and custom-function editors: redoes the edit that was
 --     just undone (verb).
-[70] = "Redo",
+N["Redo"] = 70
 -- 7dac8415
 -- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
 -- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
-[71] = "Invalid item reference for announce %s:%s; reference preserved; announcement disabled.",
+N["Invalid item reference for announce %s:%s; reference preserved; announcement disabled."] = 71
 -- 048f2dd8
 -- %s #1: %s #1: where the announcement is stored, "profile:" followed by the profile name, e.g. "profile:Default"
 -- %s #2: %s #2: the announcement's ID, e.g. "a1b2c3d4"
-[72] = "Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement.",
+N["Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement."] = 72
 -- bde1631d
 -- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
 -- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
 -- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
 -- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
-[73] = "Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled.",
+N["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."] = 73
 -- c3f0309d
 -- %s #1: %s #1: where the condition is stored, "global" for account-wide custom conditions, e.g. "global"
 -- %s #2: %s #2: the custom condition's internal key, e.g. "my_condition"
 -- %s #3: %s #3: the name of the invalid field in the condition, e.g. "code"
 -- %s #4: %s #4: a short technical reason code, e.g. "invalid-data" (shown as-is; do not translate)
-[74] = "Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition.",
+N["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."] = 74
 -- b496eb37
 -- %s #1: %s #1: the profile name, e.g. "Default"
 -- %s #2: %s #2: the name of the minimap setting holding the bad number (shown as-is), e.g. "minimapPos" or "radius"
-[75] = "Non-finite minimap value in profile %s: %s.",
+N["Non-finite minimap value in profile %s: %s."] = 75
 -- 504dd0b6
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
 -- %d #3: %d #3: the position of the step in the rotation, counting from 1, e.g. 4
-[76] = "Invalid effect ID for rotation step %s:%s:%d.",
+N["Invalid effect ID for rotation step %s:%s:%d."] = 76
 -- d485d6e1
 -- %s #1: %s #1: where the effect is stored, "global" or "profile:" and the profile name, e.g. "global"
 -- %s #2: %s #2: the effect's ID, e.g. "a1b2c3d4"
 -- %s #3: %s #3: the unrecognised effect type value, e.g. "unknown_type" (shown as-is)
-[77] = "Unknown effect type for %s:%s (%s); record preserved.",
+N["Unknown effect type for %s:%s (%s); record preserved."] = 77
 -- 9148825e
-[78] = "/rm help                - This text.",
+N["/rm help                - This text."] = 78
 -- 1f6168ea
-[79] = "/rm config              - Open the config dialog.",
+N["/rm config              - Open the config dialog."] = 79
 -- 7e4ba6f8
-[80] = "/rm disable             - Disable battle rotation.",
+N["/rm disable             - Disable battle rotation."] = 80
 -- 56da139a
-[81] = "/rm enable              - Enable battle rotation.",
+N["/rm enable              - Enable battle rotation."] = 81
 -- b9976515
-[82] = "/rm toggle              - Toggle between enabled and disabled.",
+N["/rm toggle              - Toggle between enabled and disabled."] = 82
 -- 9842db4d
-[83] = "/rm current             - Print out the name of the current rotation.",
+N["/rm current             - Print out the name of the current rotation."] = 83
+-- 465830f3
+N["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = 84
 -- 4d044932
-[85] = "                          Manual choices are remembered for this character, specialization and action context.",
+N["                          Manual choices are remembered for this character, specialization and action context."] = 85
 -- 69f6b06e
-[86] = "/rm check               - Check the database integrity.",
+N["/rm check               - Check the database integrity."] = 86
 -- b4808703
-[87] = "/rm repair              - Fix any DB errors found in the data with internal validation.",
+N["/rm repair              - Fix any DB errors found in the data with internal validation."] = 87
 -- 71773a7c
-[88] = "No rotation is currently active.",
+N["No rotation is currently active."] = 88
 -- f5951390
 -- %s #1: %s #1: the name of the active rotation, e.g. "Frost Single Target"
-[89] = "The current rotation is |cFFFFFFFF%s|cFF7BC653",
+N["The current rotation is |cFFFFFFFF%s|cFF7BC653"] = 89
 -- 1122c922
 -- %s #1: %s #1: the name of the rotation the player chose, e.g. "Frost Single Target"
-[90] = "Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653",
+N["Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653"] = 90
 -- b406bd3a
 -- %s #1: %s #1: the rotation name the player typed after the slash command, e.g. "Frost AoE"
-[91] = "Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization.",
+N["Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization."] = 91
 -- f6b5a992
 -- Context: Chat warning when a slash command option is not recognized (/rm ...); %s is the option
 --     typed; the color codes must stay.
 -- %s #1: %s #1: the unrecognised option the player typed after the slash command, e.g. "foo"
-[92] = "Invalid option |cFFFFFFFF%s|cFFB212B7",
+N["Invalid option |cFFFFFFFF%s|cFFB212B7"] = 92
 -- 56693a8f
 -- Context: Chat message printed at addon startup; %s is the addon version number.
 -- %s #1: %s #1: the addon version, e.g. "4.2.1"
-[93] = "Starting up version %s",
+N["Starting up version %s"] = 93
 -- 45d8dada
 -- %s #1: %s #1: the name of the rotation that was selected automatically, e.g. "Frost Single Target"
-[94] = "Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653",
+N["Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653"] = 94
 -- d4f91385
-[95] = "No rotation is active as there is none suitable to automatically switch to.",
+N["No rotation is active as there is none suitable to automatically switch to."] = 95
 -- fe0d07c7
 -- Context: Minimap menu checkbox / chat message: the automatic battle rotation (recommendations) is
 --     turned on; status text.
-[96] = "Battle rotation enabled",
+N["Battle rotation enabled"] = 96
 -- d3cca26b
 -- Context: Minimap button tooltip line (red) / chat message: the automatic battle rotation is
 --     turned off; status text.
-[97] = "Battle rotation disabled",
+N["Battle rotation disabled"] = 97
 -- 8b75ea84
 -- Context: Title line in the minimap menu and tooltip above the name of the rotation currently in
 --     use.
-[98] = "Current Rotation",
+N["Current Rotation"] = 98
 -- 11d80e12
 -- Context: Entry in the minimap menu rotation list: let Rotation Master pick the rotation
 --     automatically (the alternative is picking one by hand).
-[99] = "Automatic Switching",
+N["Automatic Switching"] = 99
 -- ea046a56
 -- Context: Key-binding name shown in the game's Key Bindings screen; %s is the addon name; the
 --     colored '/rm toggle' slash command must stay.
 -- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
-[100] = "Toggle %s |cFF00FFFF/rm toggle|r",
+N["Toggle %s |cFF00FFFF/rm toggle|r"] = 100
 -- 0ee9fb73
 -- Context: Chat message when running the /rm check or /rm repair command: the saved settings
 --     database is being validated.
-[101] = "Validating database integrity",
+N["Validating database integrity"] = 101
 -- a256b212
 -- %d #1: %d #1: the talent tier (row), 1 to 7, e.g. 3
 -- %d #2: %d #2: the talent column, 1 to 3, e.g. 2
-[102] = "[Tier: %d, Column: %d]",
+N["[Tier: %d, Column: %d]"] = 102
 -- d634fd5e
-[103] = "Autoswitch rotation list has been updated.",
+N["Autoswitch rotation list has been updated."] = 103
 -- 7beb4a9e
-[104] = "Button Fetch triggered.",
+N["Button Fetch triggered."] = 104
 -- 0578a401
-[105] = "Notified configuration to update it's status.",
+N["Notified configuration to update it's status."] = 105
 -- 2e31afd5
-[106] = "Removing all glows.",
+N["Removing all glows."] = 106
 -- cc9f8575
-[107] = "Active rotation is incomplete and may not work correctly!",
+N["Active rotation is incomplete and may not work correctly!"] = 107
 -- 9e4feae8
 -- %.02f #1: %.02f #1: the cache hit rate as a percentage with two decimals, e.g. 87.35 (the %% after it is a literal percent sign)
-[108] = "Cache hit rate at %.02f%%",
+N["Cache hit rate at %.02f%%"] = 108
 -- 6a0a0288
 -- Context: Name of the 'Spells' category of conditions; also a category in the icon picker (icons
 --     showing spells/magic).
-[109] = "Spells",
+N["Spells"] = 109
 -- fb8e7a1a
 -- Context: Name of the 'Items' condition category; also the label for an items entry when comparing
 --     collections, and an icon-picker category.
-[110] = "Items",
+N["Items"] = 110
 -- 966dac79
 -- Context: Name of the 'Buffs' condition category (auras on a unit); also a category/tag in the
 --     icon picker.
-[111] = "Buffs",
+N["Buffs"] = 111
 -- 49fcf2c7
 -- Context: Name of the 'Combat' condition category; also a category/tag in the icon picker.
-[112] = "Combat",
+N["Combat"] = 112
 -- 1405a63e
 -- Context: Name of the 'Character' condition category (conditions about your own character, class,
 --     level); also an icon-picker category.
-[113] = "Character",
+N["Character"] = 113
 -- f97e9da0
 -- Context: Name of the catch-all condition category for conditions that fit no other category (a
 --     dropdown option / group heading); the adjective 'Other'.
-[114] = "Other",
+N["Other"] = 114
 -- f94a59f5
 -- Context: Name of the 'Spatial' condition category (zone, distance, proximity conditions); also an
 --     icon-picker category.
-[115] = "Spatial",
+N["Spatial"] = 115
 -- 494ca78f
 -- Context: Dropdown option meaning 'an ad-hoc custom item set': choose it instead of a saved
 --     reusable item set, then enter items by hand.
-[116] = "Custom",
+N["Custom"] = 116
 -- 56b9b63d
 -- Context: Button in the item settings that binds the selected item to action-bar slots (verb);
 --     when slots are bound its label becomes 'Slots ... · Unbind'.
-[117] = "Bind",
+N["Bind"] = 117
 -- dca68375
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Button label 'Unbind' for item sets bound to action bar slots (now shown as
 --     'Slots ... · Unbind').
-[118] = "Unbind",
+N["Unbind"] = 118
 -- 67236b42
-[119] = "{unit} {stacks} {comparison} {quantity}",
+N["{unit} {stacks} {comparison} {quantity}"] = 119
 -- ebc99a61
 -- Context: Comparison operator in the sentence of a condition's dropdown: 'value is less than N'
 --     (numeric comparison).
-[120] = "is less than",
+N["is less than"] = 120
 -- 103999f5
-[121] = "is less than or equal to",
+N["is less than or equal to"] = 121
 -- 4ccdd13e
 -- Context: Comparison operator in the sentence of a condition's dropdown: 'value is greater than N'
 --     (numeric comparison).
-[122] = "is greater than",
+N["is greater than"] = 122
 -- 31742930
-[123] = "is greater than or equal to",
+N["is greater than or equal to"] = 123
 -- cb9f4031
 -- Context: Comparison operator in a condition's dropdown: 'is equal to' (also used for the negated
 --     'is not' operator set where it is reversed).
-[124] = "is equal to",
+N["is equal to"] = 124
 -- f3bab6c4
-[125] = "is not equal to",
+N["is not equal to"] = 125
 -- 46fd28a6
-[126] = "is evenly divisible by",
+N["is evenly divisible by"] = 126
 -- bb0347a4
 -- Context: Unit name used inside condition sentences, e.g. 'Health of you'; here the player's own
 --     character as the subject.
-[127] = "you",
+N["you"] = 127
 -- ae77a704
 -- Context: Unit name used inside condition sentences: the player's pet.
-[128] = "your pet",
+N["your pet"] = 128
 -- 5c6909af
 -- Context: Unit name used inside condition sentences: the player's current target.
-[129] = "your target",
+N["your target"] = 129
 -- c03e55b9
 -- Context: Unit name used inside condition sentences: the player's focus target (only for game
 --     versions that have a focus target).
-[130] = "your focus target",
+N["your focus target"] = 130
 -- b3cccabc
 -- Context: Unit name used inside condition sentences: the unit the mouse pointer is over.
-[131] = "your mouseover target",
+N["your mouseover target"] = 131
 -- 475bae27
 -- Context: Unit name used inside condition sentences: the target of the player's pet.
-[132] = "your pet's target",
+N["your pet's target"] = 132
 -- 36be7c3f
 -- Context: Unit name used inside condition sentences: the target of the player's target.
-[133] = "your target's target",
+N["your target's target"] = 133
 -- ad57c70e
-[134] = "your focus target's target",
+N["your focus target's target"] = 134
 -- f445919a
-[135] = "your mouseover target's target",
+N["your mouseover target's target"] = 135
 -- 4d040d3f
 -- Context: Possessive unit word used in condition sentences, e.g. 'your health': the player's own
 --     character.
-[136] = "your",
+N["your"] = 136
 -- 0f29cbcd
 -- Context: Possessive unit phrase used in condition sentences: the player's pet's (e.g. 'your pet's
 --     health').
-[137] = "your pet's",
+N["your pet's"] = 137
 -- 86535199
 -- Context: Possessive unit phrase used in condition sentences: the player's target's (e.g. 'your
 --     target's health').
-[138] = "your target's",
+N["your target's"] = 138
 -- b263b9c4
 -- Context: Possessive unit phrase used in condition sentences: the player's focus target's (only
 --     for game versions with a focus target).
-[139] = "your focus target's",
+N["your focus target's"] = 139
 -- 9c1fb6c2
 -- Context: Possessive unit phrase used in condition sentences: the mouseover unit's (e.g. 'your
 --     mouseover target's health').
-[140] = "your mouseover target's",
+N["your mouseover target's"] = 140
 -- 4df38978
 -- Context: Possessive unit phrase used in condition sentences: the player's pet's target's (e.g.
 --     'your pet's target's health').
-[141] = "your pet's target's",
+N["your pet's target's"] = 141
 -- 6c2c38e9
 -- Context: Possessive unit phrase used in condition sentences: the target of your target's (e.g.
 --     'your target's target's health').
-[142] = "your target's target's",
+N["your target's target's"] = 142
 -- 5028affe
-[143] = "your focus target's target's",
+N["your focus target's target's"] = 143
 -- 32961613
-[144] = "your mouseover target's target's",
+N["your mouseover target's target's"] = 144
 -- 71f18ea0
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was
 --     healed ('your target healed ...').
-[145] = "healed",
+N["healed"] = 145
 -- 4ddc4e8a
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
 --     dodged.
-[146] = "dodged",
+N["dodged"] = 146
 -- 6973dddd
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
 --     blocked.
-[147] = "blocked",
+N["blocked"] = 147
 -- 63d04dee
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: the unit was hit
 --     by an attack.
-[148] = "hit",
+N["hit"] = 148
 -- 0e347254
 -- Context: Past-tense verb phrase in the Last Combat Action condition's action dropdown: the unit
 --     was hit by a critical strike.
-[149] = "critically hit",
+N["critically hit"] = 149
 -- 4f0a566d
-[150] = "hit with a crushing blow",
+N["hit with a crushing blow"] = 150
 -- fb785161
-[151] = "hit with a glancing blow",
+N["hit with a glancing blow"] = 151
 -- 1c33629a
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack missed.
-[152] = "missed",
+N["missed"] = 152
 -- 2fe44909
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
 --     parried.
-[153] = "parried",
+N["parried"] = 153
 -- 57ac7325
 -- Context: Past-tense verb in the Last Combat Action condition's action dropdown: an attack was
 --     resisted.
-[154] = "resisted",
+N["resisted"] = 154
 -- d9460674
 -- Context: Option in an anchor-position dropdown (where a highlight/frame attaches to the screen or
 --     an icon): the exact center.
-[155] = "Center",
+N["Center"] = 155
 -- 1cb2052a
 -- Context: Option in an anchor-position dropdown: the top-left corner.
-[156] = "Top Left",
+N["Top Left"] = 156
 -- dccff16f
 -- Context: Option in an anchor-position dropdown: the top-right corner.
-[157] = "Top Right",
+N["Top Right"] = 157
 -- 7499760f
 -- Context: Option in an anchor-position dropdown: the bottom-left corner.
-[158] = "Bottom Left",
+N["Bottom Left"] = 158
 -- 09b28cd7
 -- Context: Option in an anchor-position dropdown: the bottom-right corner.
-[159] = "Bottom Right",
+N["Bottom Right"] = 159
 -- 271eac34
 -- Context: Option in an anchor-position dropdown: the middle of the top edge.
-[160] = "Top Center",
+N["Top Center"] = 160
 -- 6818850e
 -- Context: Option in an anchor-position dropdown: the middle of the bottom edge.
-[161] = "Bottom Center",
+N["Bottom Center"] = 161
 -- 24b15e35
 -- Context: Option in an anchor-position dropdown: the middle of the left edge.
-[162] = "Left Center",
+N["Left Center"] = 162
 -- 8f0626ff
 -- Context: Option in an anchor-position dropdown: the middle of the right edge.
-[163] = "Right Center",
+N["Right Center"] = 163
 -- bdbea4f8
 -- Context: Title of the icon picker window, where you choose an icon for a condition or rotation;
 --     imperative 'Select an icon'.
-[164] = "Select Icon",
+N["Select Icon"] = 164
 -- 99a52df3
 -- Context: Bold term in the Custom Condition help text: the field that holds the condition's unique
 --     key/identifier (a name used in code).
-[165] = "Key",
+N["Key"] = 165
 -- eef729cf
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Heading 'Custom Condition' for the custom condition editor/help.
-[166] = "Custom Condition",
+N["Custom Condition"] = 166
 -- e0b9479a
 -- Context: Window title of the condition editor when no number is shown (verb + noun: you edit a
 --     condition); also the title of the Edit Condition dialog in the rotation editor.
-[167] = "Edit Condition",
+N["Edit Condition"] = 167
 -- 526e0087
 -- Context: Field label for the free-text description: in the custom condition help, and as a row
 --     label when comparing two collections.
-[168] = "Description",
+N["Description"] = 168
 -- d689600f
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Old name of the custom condition 'On register' callback (code run after the
 --     condition is registered).
-[169] = "Post-Registration Function",
+N["Post-Registration Function"] = 169
 -- 2bd03442
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Old name of the custom condition 'On unregister' callback (code run before the
 --     condition is unregistered).
-[170] = "Pre-Unregistration Function",
+N["Pre-Unregistration Function"] = 170
 -- eaf0fe0a
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Warrior. The game's own localized class names are used in class
 --     pickers; use the standard WoW class name.
-[171] = "Warrior",
+N["Warrior"] = 171
 -- a7d973a7
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Paladin. Use the standard WoW class name for your language.
-[172] = "Paladin",
+N["Paladin"] = 172
 -- 680ce380
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Hunter. Use the standard WoW class name for your language.
-[173] = "Hunter",
+N["Hunter"] = 173
 -- 0b8cdd9e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Rogue. Use the standard WoW class name for your language.
-[174] = "Rogue",
+N["Rogue"] = 174
 -- 909a4523
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Priest. Use the standard WoW class name for your language.
-[175] = "Priest",
+N["Priest"] = 175
 -- 483f6fa9
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Death Knight. Use the standard WoW class name for your language.
-[176] = "Death Knight",
+N["Death Knight"] = 176
 -- 0953e68a
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Shaman. Use the standard WoW class name for your language.
-[177] = "Shaman",
+N["Shaman"] = 177
 -- e181bc01
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Mage. Use the standard WoW class name for your language.
-[178] = "Mage",
+N["Mage"] = 178
 -- 6e7e607f
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Warlock. Use the standard WoW class name for your language.
-[179] = "Warlock",
+N["Warlock"] = 179
 -- a670c8d2
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Monk. Use the standard WoW class name for your language.
-[180] = "Monk",
+N["Monk"] = 180
 -- 274814f1
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Druid. Use the standard WoW class name for your language.
-[181] = "Druid",
+N["Druid"] = 181
 -- 66b96f76
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Class name Demon Hunter. Use the standard WoW class name for your language.
-[182] = "Demon Hunter",
+N["Demon Hunter"] = 182
 -- 628bf77a
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Beast').
-[183] = "Beast",
+N["Beast"] = 183
 -- 4a70eb4d
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Dragonkin').
-[184] = "Dragonkin",
+N["Dragonkin"] = 184
 -- 83bd7784
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Demon').
-[185] = "Demon",
+N["Demon"] = 185
 -- 4309e83a
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Elemental').
-[186] = "Elemental",
+N["Elemental"] = 186
 -- db5bea37
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Giant').
-[187] = "Giant",
+N["Giant"] = 187
 -- a5bb6066
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Undead').
-[188] = "Undead",
+N["Undead"] = 188
 -- d2253641
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Humanoid').
-[189] = "Humanoid",
+N["Humanoid"] = 189
 -- 14e2f7b4
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Critter').
-[190] = "Critter",
+N["Critter"] = 190
 -- 39bf205e
 -- Context: Creature type in the Creature condition's dropdown (WoW creature type 'Mechanical').
-[191] = "Mechanical",
+N["Mechanical"] = 191
 -- dc12bec5
 -- Context: Creature type in the Creature condition's dropdown for units with no creature type (WoW
 --     'Not specified'); also shown where a value is missing in condition text.
-[192] = "Not specified",
+N["Not specified"] = 192
 -- 8f7ae0c0
 -- Context: Creature type in the Creature condition's dropdown (WoW 'Totem'); also the label of the
 --     Totem condition's dropdown choosing the totem slot (Fire, Earth, Water, Air).
-[193] = "Totem",
+N["Totem"] = 193
 -- 87f8c315
 -- Context: Creature type in the Creature condition's dropdown (WoW 'Non-combat Pet', i.e.
 --     companion/vanity pets).
-[194] = "Non-combat Pet",
+N["Non-combat Pet"] = 194
 -- b2098aeb
 -- Context: Creature type in the Creature condition's dropdown (WoW 'Gas Cloud' units, such as in
 --     raid encounters).
-[195] = "Gas Cloud",
+N["Gas Cloud"] = 195
 -- a703e47b
 -- Context: Unit classification in the Classification condition's dropdown: a world boss.
-[196] = "World Boss",
+N["World Boss"] = 196
 -- 7c32325f
 -- Context: Unit classification in the Classification condition's dropdown: a rare elite mob.
-[197] = "Rare Elite",
+N["Rare Elite"] = 197
 -- 1d6953e0
 -- Context: Unit classification in the Classification condition's dropdown: an elite mob.
-[198] = "Elite",
+N["Elite"] = 198
 -- 291d2a97
 -- Context: Unit classification in the Classification condition's dropdown: a rare mob.
-[199] = "Rare",
+N["Rare"] = 199
 -- a7248eeb
 -- Context: Unit classification in the Classification condition's dropdown: an ordinary (normal)
 --     mob.
-[200] = "Normal",
+N["Normal"] = 200
 -- 73fba898
 -- Context: Unit classification in the Classification condition's dropdown: a trivial (low-level,
 --     grey) mob.
-[201] = "Trivial",
+N["Trivial"] = 201
 -- 9befa3c6
 -- Context: Unit classification in the Classification condition's dropdown: a 'minus' mob, a
 --     weaker-than-normal mob (e.g. swarm adds).
-[202] = "Minus",
+N["Minus"] = 202
 -- c0b21fb1
 -- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Tank').
-[203] = "Tank",
+N["Tank"] = 203
 -- caece7f5
 -- Context: Group role in the Role condition's dropdown and its help text: damage dealer
 --     (abbreviation for damage per second).
-[204] = "DPS",
+N["DPS"] = 204
 -- a491a33c
 -- Context: Group role in the Role condition's dropdown and its help text (WoW role 'Healer').
-[205] = "Healer",
+N["Healer"] = 205
 -- ed1a5a81
 -- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Magic').
-[206] = "Magic",
+N["Magic"] = 206
 -- 7bce5b94
 -- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Disease').
-[207] = "Disease",
+N["Disease"] = 207
 -- d5a78b99
 -- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Poison').
-[208] = "Poison",
+N["Poison"] = 208
 -- 88b3d8ee
 -- Context: Debuff/dispel type in the Debuff Type condition's dropdown (WoW dispel type 'Curse').
-[209] = "Curse",
+N["Curse"] = 209
 -- c6e5d717
 -- Context: Debuff type in the Debuff Type condition's dropdown: an enrage effect on a hostile unit
 --     (dispelled by e.g. Tranquilizing Shot).
-[210] = "Enrage",
+N["Enrage"] = 210
 -- 77d7cd99
 -- Context: PvP zone status option in the PvP condition dropdown and help ('You are in an arena');
 --     also instance mode 'Arena' in the Instance Mode condition.
-[211] = "Arena",
+N["Arena"] = 211
 -- b2fb8b8a
-[212] = "Controlled by your faction",
+N["Controlled by your faction"] = 212
 -- 9f22dfe6
 -- Context: PvP zone status option in the PvP condition's dropdown and help: a contested zone,
 --     controlled by neither faction.
-[213] = "Contested",
+N["Contested"] = 213
 -- bdd63a7e
-[214] = "Controlled by opposing faction",
+N["Controlled by opposing faction"] = 214
 -- 5f18bd94
 -- Context: PvP zone status option in the PvP condition's dropdown: a sanctuary where PvP is
 --     impossible.
-[215] = "Sanctuary (no PVP)",
+N["Sanctuary (no PVP)"] = 215
 -- 7d73fb0c
 -- Context: PvP zone status option in the PvP condition's dropdown: a combat zone where players are
 --     flagged for PvP automatically.
-[216] = "Combat (auto-flagged)",
+N["Combat (auto-flagged)"] = 216
 -- dacf1516
 -- Context: Instance mode option in the Instance condition's dropdown: you are not in any instance
 --     (the open world).
-[217] = "Outside",
+N["Outside"] = 217
 -- 40964db2
 -- Context: Instance mode option in the Instance condition's dropdown: a PvP battleground.
-[218] = "Battleground",
+N["Battleground"] = 218
 -- 73054bd6
 -- Context: Instance mode option in the Instance condition's dropdown: a five-player dungeon; also
 --     used as the dungeon group of difficulty names.
-[219] = "Dungeon",
+N["Dungeon"] = 219
 -- 7dabeb63
 -- Context: Group-type word: the Raid checkbox in group conditions ('check the whole raid, not only
 --     the party'); also an instance mode option.
-[220] = "Raid",
+N["Raid"] = 220
 -- c141faa8
 -- Context: Name of the Fire totem slot in the Totem condition's dropdown; also a spell school
 --     (Fire) and an icon-picker category.
-[221] = "Fire",
+N["Fire"] = 221
 -- b7c9b5cc
 -- Context: Name of the Earth totem slot in the Totem condition's dropdown.
-[222] = "Earth",
+N["Earth"] = 222
 -- 7ca7dea9
 -- Context: Name of the Water totem slot in the Totem condition's dropdown.
-[223] = "Water",
+N["Water"] = 223
 -- aa42ff59
 -- Context: Name of the Air totem slot in the Totem condition's dropdown.
-[224] = "Air",
+N["Air"] = 224
 -- 735beee2
 -- Context: Option in the Operation dropdown of spatial statistics conditions: use the lowest value
 --     among units; also its help term.
-[225] = "Minimum",
+N["Minimum"] = 225
 -- e17f73ea
 -- Context: Adjective used inside a condition sentence, e.g. 'the lowest health of ...' (the Minimum
 --     operation).
-[226] = "lowest",
+N["lowest"] = 226
 -- 66c9ab17
 -- Context: Option in the Operation dropdown of spatial statistics conditions: use the highest value
 --     among units; also its help term.
-[227] = "Maximum",
+N["Maximum"] = 227
 -- 4d8fa801
 -- Context: Adjective used inside a condition sentence, e.g. 'the highest health of ...' (the
 --     Maximum operation).
-[228] = "highest",
+N["highest"] = 228
 -- b38ae2c5
 -- Context: Option in the Operation dropdown of spatial statistics conditions: use the mean value
 --     among units; also its help term.
-[229] = "Average",
+N["Average"] = 229
 -- 184df936
 -- Context: Adjective used inside a condition sentence, e.g. 'the average health of ...' (the
 --     Average operation).
-[230] = "average",
+N["average"] = 230
 -- 8fd58c92
 -- Context: Threat-level option in the Threat condition's dropdown and its help: you are in no
 --     danger of taking threat from the tank.
-[231] = "no threat risk",
+N["no threat risk"] = 231
 -- 748beef5
-[232] = "higher threat than tank",
+N["higher threat than tank"] = 232
 -- bee526bf
 -- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit but not
 --     top of the threat table, so you may lose it.
-[233] = "tanking, at risk",
+N["tanking, at risk"] = 233
 -- f40da142
 -- Context: Threat-level option in the Threat condition's dropdown: you are tanking the unit and are
 --     not at risk of losing it.
-[234] = "tanking, secure",
+N["tanking, secure"] = 234
 -- 0f179dbf
 -- Context: Placeholder shown in red in a condition's text when a value is not yet filled in;
 --     literally the angle-bracketed word 'value'.
-[235] = "<value>",
+N["<value>"] = 235
 -- 98bf8ca2
 -- Context: Placeholder shown in a condition's text when the comparison operator is not yet chosen
 --     (e.g. '<operator> 3 actions ago'); keep the angle brackets.
-[236] = "<operator>",
+N["<operator>"] = 236
 -- 77300ce2
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Label of the main enable checkbox (now just 'Enable' in General settings).
-[237] = "Enable Rotation Master",
+N["Enable Rotation Master"] = 237
 -- 1e28d34e
 -- Context: Label of the polling interval slider in General settings (seconds between rotation
 --     recommendation refreshes); also a help heading.
-[238] = "Polling Interval (seconds)",
+N["Polling Interval (seconds)"] = 238
 -- 96414600
-[239] = "Idle Re-check Interval (seconds)",
+N["Idle Re-check Interval (seconds)"] = 239
 -- 9e4deebb
-[240] = "Auto-Switch Re-check Interval (seconds)",
+N["Auto-Switch Re-check Interval (seconds)"] = 240
 -- 43deba51
 -- Context: Checkbox in General settings: recommend spells even when the unit lacks the mana for
 --     them; also a help heading.
-[241] = "Ignore Mana",
+N["Ignore Mana"] = 241
 -- 3427b677
 -- Context: Checkbox in General settings: recommend spells even when the target is out of range;
 --     also a help heading.
-[242] = "Ignore Range",
+N["Ignore Range"] = 242
 -- 4764e65b
-[243] = "Skip rotation entries or disable cooldown highlights because you don't have enough to cast them.",
+N["Skip rotation entries or disable cooldown highlights because you don't have enough to cast them."] = 243
 -- e6b6aad8
 -- Context: Section heading in General settings for options about the highlight effect (effect,
 --     magnification, color, anchor).
-[244] = "Effect Options",
+N["Effect Options"] = 244
 -- cfa79416
 -- Context: Label of the highlight size multiplier (zoom of the effect) in General settings,
 --     rotation steps and the effect editor; also a help heading.
-[245] = "Magnification",
+N["Magnification"] = 245
 -- 48aae415
 -- Context: Label of the highlight color picker in General settings and in the rotation step editor
 --     (the color of the bar highlight); also a help heading.
-[246] = "Highlight Color",
+N["Highlight Color"] = 246
 -- 6d031af1
 -- Context: Label of the step position field in the rotation step editor (where in the rotation list
 --     the step sits); also a help term and a line in change summaries.
-[247] = "Position",
+N["Position"] = 247
 -- f4a13303
 -- Context: Section heading in General settings (Classic clients only): fields for naming your
 --     primary and secondary talent specializations.
-[248] = "Specialization Names",
+N["Specialization Names"] = 248
 -- 1cfb0bd9
 -- Context: Section heading in General settings for options controlling the lines Rotation Master
 --     adds to spell and item tooltips.
-[249] = "Tooltips",
+N["Tooltips"] = 249
 -- 4e430b3e
-[250] = "Show Rotation Master in tooltips",
+N["Show Rotation Master in tooltips"] = 250
 -- 7b4fd840
-[251] = "List item sets in item tooltips",
+N["List item sets in item tooltips"] = 251
 -- e0ebe3cd
-[252] = "List rotations in spell and item tooltips",
+N["List rotations in spell and item tooltips"] = 252
 -- 9c73797e
 -- Context: Checkbox in General settings, Tooltips section: also list the rotation's conditions in
 --     spell/item tooltips; also a help heading.
-[253] = "Include rotation conditions",
+N["Include rotation conditions"] = 253
 -- c6b7619f
-[254] = "Names listed per tooltip line",
+N["Names listed per tooltip line"] = 254
 -- 7fb301ab
-[255] = "Rotation Master item sets",
+N["Rotation Master item sets"] = 255
 -- 6a361b20
 -- Context: Prefix label of a line in spell and item tooltips, followed by the names of the
 --     rotations that use that spell or item.
-[256] = "Rotation Master rotations",
+N["Rotation Master rotations"] = 256
 -- 9204c375
 -- Context: Rotation name in a tooltip line when that rotation is disabled; %s is the rotation name.
 -- %s #1: %s #1: the name of a rotation that is turned off, e.g. "Frost Single Target"
-[257] = "%s (disabled)",
+N["%s (disabled)"] = 257
 -- d5b57b61
 -- Context: Suffix at the end of a tooltip line listing names, when more exist than are shown; %d is
 --     how many were left out.
 -- %d #1: %d #1: how many further rotations are not listed, e.g. 3
-[258] = "(+%d more)",
+N["(+%d more)"] = 258
 -- d440fcce
 -- Context: Section heading in General settings for debugging options (log level, detailed
 --     profiling).
-[259] = "Debugging Options",
+N["Debugging Options"] = 259
 -- 12fe4737
 -- Context: Label of the log verbosity dropdown in General settings, Debugging section; also a help
 --     heading and a comparison row label.
-[260] = "Log Level",
+N["Log Level"] = 260
 -- c0ebb7d6
 -- Context: Option in the Log Level dropdown: only minimal addon chat output.
-[261] = "Quiet",
+N["Quiet"] = 261
 -- 1a03bd2f
 -- Context: Option in the Log Level dropdown: extra debug messages are printed.
-[262] = "Debug",
+N["Debug"] = 262
 -- 2cd57109
 -- Context: Option in the Log Level dropdown: the most detailed log messages.
-[263] = "Verbose",
+N["Verbose"] = 263
 -- f2438f82
 -- Context: Checkbox in General settings, Debugging section: collect detailed performance timing of
 --     the addon; also a help heading.
-[264] = "Detailed Profiling",
+N["Detailed Profiling"] = 264
 -- 0ca3f824
 -- Context: Label of a setting that turns off automatic rotation switching; shown as a row name when
 --     comparing two profile collections.
-[265] = "Disable Auto-Switching",
+N["Disable Auto-Switching"] = 265
 -- 9ac1f2c5
 -- Context: Checkbox in General settings: show or hide the Rotation Master button on the minimap;
 --     also a help heading.
-[266] = "Minimap Icon",
+N["Minimap Icon"] = 266
 -- 7de50af6
-[267] = "Spell History Memory (seconds)",
+N["Spell History Memory (seconds)"] = 267
 -- 36bb3ad3
-[268] = "Combat History Memory (seconds)",
+N["Combat History Memory (seconds)"] = 268
 -- c9f798cf
-[269] = "Damage History Memory (seconds)",
+N["Damage History Memory (seconds)"] = 269
 -- 67e53fcd
-[270] = "Live Status Update Frequency (seconds)",
+N["Live Status Update Frequency (seconds)"] = 270
 -- 8e8f30f5
 -- Context: Checkbox in General settings: turn off the highlight Rotation Master draws on action bar
 --     buttons; also a help heading.
-[271] = "Disable Bar Highlighting",
+N["Disable Bar Highlighting"] = 271
 -- 7079e1f5
 -- Context: Label of a slider in General settings: how many upcoming spells the preview window
 --     shows; also a help heading.
-[272] = "Preview Spells",
+N["Preview Spells"] = 272
 -- e2f5f378
-[273] = "This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled.",
+N["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = 273
 -- cbc0499e
-[274] = "Are you sure you wish to delete this rotation?",
+N["Are you sure you wish to delete this rotation?"] = 274
 -- 969d4b7f
-[275] = "This item set is in use, are you sure you wish to delete it?",
+N["This item set is in use, are you sure you wish to delete it?"] = 275
 -- 30ef2bc9
-[276] = "Default effects have changed since the previous release, do you want to reset the effect list?",
+N["Default effects have changed since the previous release, do you want to reset the effect list?"] = 276
 -- 6db7e56b
 -- Context: Title of the transfer dialog and its help for importing or exporting a rotation as text.
-[277] = "Import/Export Rotation",
+N["Import/Export Rotation"] = 277
 -- a66223ca
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Title of the transfer dialog for importing or exporting an item set as text
 --     (like 'Import/Export Rotation').
-[278] = "Import/Export Item Set",
+N["Import/Export Item Set"] = 278
 -- 87c5e6a6
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Title of the transfer dialog for importing or exporting an effect as text (like
 --     'Import/Export Rotation').
-[279] = "Import/Export Effect",
+N["Import/Export Effect"] = 279
 -- 1318e3a7
 -- Context: Title of the transfer dialog for importing or exporting a custom condition as text.
-[280] = "Import/Export Condition",
+N["Import/Export Condition"] = 280
 -- a04def9c
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Title of the transfer dialog for importing or exporting a condition category as
 --     text.
-[281] = "Import/Export Condition Group",
+N["Import/Export Condition Group"] = 281
 -- 6de338e2
-[282] = "Copy and paste this text share your rotation with others, or import someone else's.",
+N["Copy and paste this text share your rotation with others, or import someone else's."] = 282
 -- e4763493
-[283] = "Copy and paste this text share your effect with others, or import someone else's.",
+N["Copy and paste this text share your effect with others, or import someone else's."] = 283
 -- 052025b2
-[284] = "Copy and paste this text share your item set with others, or import someone else's.",
+N["Copy and paste this text share your item set with others, or import someone else's."] = 284
 -- a0928dd2
-[285] = "Copy and paste this text share your custom condition with others, or import someone else's.",
+N["Copy and paste this text share your custom condition with others, or import someone else's."] = 285
 -- 277089d9
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Unit word 'bytes' (size of text).
-[286] = "bytes",
+N["bytes"] = 286
 -- 5ea44c39
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Unit word 'lines' (number of text lines).
-[287] = "lines",
+N["lines"] = 287
 -- d4121e17
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Heading 'Parse Error' for a failed import of text.
-[288] = "Parse Error",
+N["Parse Error"] = 288
 -- f3bb01ec
 -- Context: Default name for a duplicated item (rotation, condition, profile): 'Copy of ...'; %s is
 --     the original name.
 -- %s #1: %s #1: the name of the item being copied (a rotation, effect, item set or condition), e.g. "Frost Single Target"
-[289] = "Copy of %s",
+N["Copy of %s"] = 289
 -- 64780145
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Note on an imported entry: 'Imported on <date>'; %c is a date and time
 --     formatted by the game.
 -- %c #1: %c #1: not a value but a date format code; the game replaces it with the current local date and time when an effect is imported, e.g. "10/28/26 13:45:00". Keep %c exactly.
-[290] = "Imported on %c",
+N["Imported on %c"] = 290
 -- 42191ef4
 -- Context: Button label (and help term) for the dialog that exports or imports a definition as
 --     text; slash separates the two actions.
-[291] = "Import/Export",
+N["Import/Export"] = 291
 -- 2cff9baa
 -- Context: Button in the import dialog: imports the pasted text (verb).
-[292] = "Import",
+N["Import"] = 292
 -- 821e6678
 -- Context: Checkbox label and help heading: allow this condition type to be used when automatically
 --     choosing a rotation (switch conditions).
-[293] = "Switch Condition",
+N["Switch Condition"] = 293
 -- acba80e5
-[294] = "No other rotations match.",
+N["No other rotations match."] = 294
 -- a66aeacf
-[295] = "Manual switch only.",
+N["Manual switch only."] = 295
 -- fee3779e
-[296] = "THIS CONDITION DOES NOT VALIDATE",
+N["THIS CONDITION DOES NOT VALIDATE"] = 296
 -- a60ad1de
-[297] = "THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE",
+N["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] = 297
 -- a857b1ff
 -- Context: Name of the second tab in the rotation view (steps used for cooldowns, as opposed to the
 --     main rotation); also a comparison row label.
-[298] = "Cooldowns",
+N["Cooldowns"] = 298
 -- 57b5e2fc
 -- Context: Name of the first tab in the rotation view (the main rotation steps); also a generic
 --     label for a rotation entry.
-[299] = "Rotation",
+N["Rotation"] = 299
 -- 39921a74
 -- Context: Name of a condition category/filter (conditions that can be used for automatically
 --     switching rotations) in condition lists.
-[300] = "Switch",
+N["Switch"] = 300
 -- e061b3f5
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Heading 'Condition Options'.
-[301] = "Condition Options",
+N["Condition Options"] = 301
 -- 07724428
 -- Context: Name of the top-level 'Rotations' tab in the settings window; also a row label when
 --     comparing collections.
-[302] = "Rotations",
+N["Rotations"] = 302
 -- 49c266ba
 -- Context: Heading of the help text for the search box above the condition list (verb/noun).
-[303] = "Search",
+N["Search"] = 303
 -- baaddf70
 -- Context: Label for the kind of something: the effect type dropdown in effect settings, and the
 --     step type in the rotation editor; also a column in comparisons.
-[304] = "Type",
+N["Type"] = 304
 -- e28411a3
 -- Context: Effect type in the effect type dropdown (an icon/texture overlay effect); also the label
 --     of the texture picker.
-[305] = "Texture",
+N["Texture"] = 305
 -- 2252d5cf
 -- Context: Label of the highlight effect dropdown in General settings and rotation steps (the
 --     visual glow style); also a comparison row label.
-[306] = "Effect",
+N["Effect"] = 306
 -- 5817280a
 -- Context: Effect type in the effect type dropdown: a glow of moving pixel lines around the button.
-[307] = "Pixel",
+N["Pixel"] = 307
 -- 09968fe6
 -- Context: Effect type in the effect type dropdown: a glow of orbiting sparkles like a pet autocast
 --     border.
-[308] = "Auto Cast",
+N["Auto Cast"] = 308
 -- f534ed97
 -- Context: Effect type in the effect type dropdown: the standard Blizzard button glow.
-[309] = "Glow",
+N["Glow"] = 309
 -- 96afc081
 -- Context: Effect type in the effect type dropdown: a dazzling flashing glow.
-[310] = "Dazzle",
+N["Dazzle"] = 310
 -- fd4a5f3d
 -- Context: Effect type in the effect type dropdown: an animated texture effect.
-[311] = "Animate",
+N["Animate"] = 311
 -- f7a403c6
 -- Context: Effect type in the effect type dropdown: a texture that pulses (grows and shrinks).
-[312] = "Pulse",
+N["Pulse"] = 312
 -- c3613b17
 -- Context: Effect type in the effect type dropdown: a texture that rotates.
-[313] = "Rotate",
+N["Rotate"] = 313
 -- 0740f4ba
 -- Context: Heading of the list of sequence steps in the custom effect editor (an effect built from
 --     a series of frames).
-[314] = "Sequence",
+N["Sequence"] = 314
 -- 4e1f49a9
 -- Context: Label of the dropdown choosing which cast event (started, stopped, succeeded...)
 --     triggers an announcement; also a help heading.
-[315] = "Event",
+N["Event"] = 315
 -- 358511c8
 -- Context: Name of the 'Effects' settings tab; refers to highlight effects.
-[316] = "Effects",
+N["Effects"] = 316
 -- 4ea6bdd3
 -- Context: Name of the 'Item Sets' settings tab and help topic.
-[317] = "Item Sets",
+N["Item Sets"] = 317
 -- 7c326a4b
 -- Context: Name of the 'Announces' settings tab (announcements sent when spells are cast); also a
 --     comparison row label.
-[318] = "Announces",
+N["Announces"] = 318
 -- 535e52e4
 -- Context: Name of the 'Profiles' settings tab; also the title of the profile transfer dialog.
-[319] = "Profiles",
+N["Profiles"] = 319
 -- 3b26a542
 -- Context: Label of the number-of-lines setting of the Pixel effect.
-[320] = "Lines",
+N["Lines"] = 320
 -- 16b6668d
 -- Context: Label of a speed setting of an effect (how fast it animates, in cycles per second).
-[321] = "Frequency",
+N["Frequency"] = 321
 -- 1de3df70
 -- Context: Label of the number-of-steps setting of the Rotate effect.
-[322] = "Steps",
+N["Steps"] = 322
 -- fae1c6f1
 -- Context: Checkbox in the Rotate effect settings: rotate in the opposite direction.
-[323] = "Reverse",
+N["Reverse"] = 323
 -- 1968034b
 -- Context: Label of the rotation angle (degrees, 0-359) of a sequence step in the effect editor.
-[324] = "Angle",
+N["Angle"] = 324
 -- adc95605
 -- Context: Label of the line length setting of the Pixel effect.
-[325] = "Length",
+N["Length"] = 325
 -- 7b594414
 -- Context: Label of the line thickness setting of the Pixel effect.
-[326] = "Thickness",
+N["Thickness"] = 326
 -- e73735cf
 -- Context: Label of the number-of-particles setting of the Auto Cast effect.
-[327] = "Particles",
+N["Particles"] = 327
 -- f102986b
 -- Context: Label of a size/zoom setting: effect scale, and the UI scale slider of the configuration
 --     window.
-[328] = "Scale",
+N["Scale"] = 328
 -- 1709305c
 -- Context: Name of the Level condition (character level of a unit); also its operator field label
 --     in the condition editor.
-[329] = "Level",
+N["Level"] = 329
 -- 75081b59
 -- Context: Status text / button state: the item (condition, step, rotation) is turned off; also
 --     prefixes a condition's text when disabled.
-[330] = "Disabled",
+N["Disabled"] = 330
 -- 92c1cdfd
 -- Context: Status text / toggle button state: the item (condition, function, definition) is turned
 --     on.
-[331] = "Enabled",
+N["Enabled"] = 331
 -- b79cac92
 -- Context: Button/tooltip opening the help for the current editor or condition; also a comparison
 --     row label.
-[332] = "Help",
+N["Help"] = 332
 -- 8c89911a
 -- Context: Name of the Time Until Health condition (estimated seconds until a unit reaches a health
 --     value).
-[333] = "Time Until Health",
+N["Time Until Health"] = 333
 -- dd1e6bab
-[334] = "Time Until Health Percentage",
+N["Time Until Health Percentage"] = 334
 -- 2184a4e3
 -- Context: Name of the Runner condition (the mob tends to flee at low health, per the MobInfo2
 --     addon).
-[335] = "Runner",
+N["Runner"] = 335
 -- 0a10734e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text fragment '%s will run' for the Runner condition; %s is a unit.
 -- %s #1: %s #1: the creature that will flee at low health, e.g. "your target"
-[336] = "%s will run",
+N["%s will run"] = 336
 -- 93bea368
 -- Context: Name of the Resistant condition (a unit resists a magic school above a value).
-[337] = "Resistant",
+N["Resistant"] = 337
 -- 384f6084
 -- Context: Name of the Immune condition (a unit is immune to a magic school).
-[338] = "Immune",
+N["Immune"] = 338
 -- ecbc89cd
 -- Context: Cast event in the announcement Event dropdown: the cast has started; also a help
 --     heading.
-[339] = "Started",
+N["Started"] = 339
 -- 1a4f630a
 -- Context: Cast event in the announcement Event dropdown: the cast was stopped/cancelled by you;
 --     also a help heading.
-[340] = "Stopped",
+N["Stopped"] = 340
 -- 6d9a6f97
 -- Context: Cast event in the announcement Event dropdown: the cast completed successfully.
-[341] = "Succeeded",
+N["Succeeded"] = 341
 -- 132d124d
 -- Context: Cast event in the announcement Event dropdown: the cast was interrupted (e.g. by an
 --     enemy).
-[342] = "Interrupted",
+N["Interrupted"] = 342
 -- 031a8f0f
 -- Context: Cast event in the announcement Event dropdown: the cast failed; also a validation status
 --     ('Failed') in the condition source preview.
-[343] = "Failed",
+N["Failed"] = 343
 -- a5c19c9f
 -- Context: Cast event in the announcement Event dropdown: the cast was delayed (pushback).
-[344] = "Delayed",
+N["Delayed"] = 344
 -- 93006d61
 -- Context: Magic school name (Arcane) in the school dropdown of the Resistant/Immune conditions.
-[345] = "Arcane",
+N["Arcane"] = 345
 -- 17636dd6
 -- Context: Magic school name (Frost) in the school dropdown; also a Death Knight rune type (Frost
 --     rune) in the rune condition help.
-[346] = "Frost",
+N["Frost"] = 346
 -- 56eee6a5
 -- Context: Magic school name (Holy) in the school dropdown of the Resistant/Immune conditions.
-[347] = "Holy",
+N["Holy"] = 347
 -- c71ce8cc
 -- Context: Magic school name (Nature) in the school dropdown; also an icon-picker category.
-[348] = "Nature",
+N["Nature"] = 348
 -- 4c764cb6
 -- Context: Magic school name (Shadow) in the school dropdown of the Resistant/Immune conditions.
-[349] = "Shadow",
+N["Shadow"] = 349
 -- 113ed31a
-[350] = "Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time.",
+N["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = 350
 -- 215b6920
-[351] = "Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition.",
+N["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = 351
 -- 1359626e
 -- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
 --     selected entry one position up; also a help heading.
-[352] = "Move Up",
+N["Move Up"] = 352
 -- db60f7a9
 -- Context: Menu entry/button: moves the selected list entry to the top; also a help heading.
-[353] = "Move to Top",
+N["Move to Top"] = 353
 -- 89abfab0
 -- Context: Menu entry/button: moves the selected list entry to the bottom; also a help heading.
-[354] = "Move to Bottom",
+N["Move to Bottom"] = 354
 -- b58330ac
 -- Context: Button/tooltip in a list (rotation steps, item sets, condition categories): moves the
 --     selected entry one position down; also a help heading.
-[355] = "Move Down",
+N["Move Down"] = 355
 -- 45986160
 -- Context: Label of the dropdown in the Conditions page for choosing the category to move a
 --     condition into (verb phrase 'Move to'); also a help heading.
-[356] = "Move To",
+N["Move To"] = 356
 -- 7e6fefff
 -- Context: Checkbox label: hide this condition from the Other category in the condition picker
 --     (adjective); also a comparison row label.
-[357] = "Hidden",
+N["Hidden"] = 357
 -- 02cdaabf
 -- Context: Button in the rotation list and rotation steps: makes a copy of the selected entry
 --     (verb); also a help heading.
-[358] = "Duplicate",
+N["Duplicate"] = 358
 -- 4a787020
 -- Context: Label of the dropdown choosing which kind of action to look for (e.g. healed, dodged,
 --     missed) in the Last Combat Action conditions; also a help heading for the announcement action
 --     type.
-[359] = "Action Type",
+N["Action Type"] = 359
 -- 4e43f098
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Option label 'No Action' (a step that does nothing).
-[360] = "No Action",
+N["No Action"] = 360
 -- 63c5b771
 -- Context: Name of the Spell choice: the spell name/ID entry field label in conditions, the step
 --     type 'Spell' and a help term; noun.
-[361] = "Spell",
+N["Spell"] = 361
 -- c8a18067
 -- Context: Name of the Pet Spell choice: a step/announcement type that uses a spell of your pet;
 --     also used in pet spell condition help.
-[362] = "Pet Spell",
+N["Pet Spell"] = 362
 -- a4d187b1
 -- Context: Step type dropdown entry in the rotation step editor: a step that fires for any spell,
 --     not a specific one.
-[363] = "Any Spell",
+N["Any Spell"] = 363
 -- 652bcc3a
 -- Context: Label of the item entry field (an item name or ID) in conditions; also the step type
 --     'Item' and a help term; noun.
-[364] = "Item",
+N["Item"] = 364
 -- 97d4be89
 -- Context: Heading of the conditions section of a rotation step/announcement and a help heading;
 --     also a comparison row label.
-[365] = "Conditions",
+N["Conditions"] = 365
 -- c6877c9a
-[366] = "NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field.",
+N["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."] = 366
 -- 464557d7
 -- %s #1: %s #1: a clickable spell link for the spell that became available, e.g. "[Fireball]" (or "Unknown spell (133)" when the game has no data)
-[367] = "%s is now available!",
+N["%s is now available!"] = 367
 -- 2ab52f92
 -- Context: Label of the Announce checkbox/section in a rotation step (announce when the step
 --     triggers) and a help heading (verb/noun); also a comparison row label.
-[368] = "Announce",
+N["Announce"] = 368
 -- f961b619
 -- Context: Label of the dropdown in a rotation step choosing a sound to play when announcing.
-[369] = "Audible Announce",
+N["Audible Announce"] = 369
 -- dc937b59
 -- Context: Dropdown option meaning 'no selection' or an empty value (e.g. no active rotation, no
 --     sound, no channel).
-[370] = "None",
+N["None"] = 370
 -- 51247512
 -- Context: Dropdown option (announce channel) meaning raid chat when in a raid, otherwise party
 --     chat; also used inside condition text as 'members of raid or party'.
-[371] = "Raid or Party",
+N["Raid or Party"] = 371
 -- 272e43a2
 -- Context: Announce channel dropdown option: send the announcement to party chat only; also a help
 --     heading.
-[372] = "Party Only",
+N["Party Only"] = 372
 -- be5b8dfd
 -- Context: Announce channel dropdown option: send the announcement as a raid warning message; also
 --     a help heading.
-[373] = "Raid Warning",
+N["Raid Warning"] = 373
 -- 64f3cd06
 -- Context: Announce channel dropdown option: say (normal /say chat); also the chat-type of an
 --     announcement macro.
-[374] = "Say",
+N["Say"] = 374
 -- 938af47b
 -- Context: Announce channel dropdown option: yell (/yell chat); also the chat-type of an
 --     announcement macro.
-[375] = "Yell",
+N["Yell"] = 375
 -- 5027e850
 -- Context: Announce channel dropdown option: perform a built-in emote; also the Emote field label
 --     in the announcement help.
-[376] = "Emote",
+N["Emote"] = 376
 -- ff3a450e
 -- Context: Announce channel dropdown option: show the message only to you, not to others.
-[377] = "Local Only",
+N["Local Only"] = 377
 -- 71988c4d
 -- Context: Label of a free-text field (the announcement text) and the schema field type 'Text' (a
 --     string) in custom function and schema editors.
-[378] = "Text",
+N["Text"] = 378
 -- b0ef44de
 -- Context: Label of the item set dropdown in item conditions and the item set choice in
 --     announcements; noun.
-[379] = "Item Set",
+N["Item Set"] = 379
 -- 434702dc
-[380] = "Click the icon above to bind to your action bar",
+N["Click the icon above to bind to your action bar"] = 380
 -- e71efd0e
 -- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
 -- %s #2: %s #2: the health percentage that is waited for, e.g. 30 (the %% after it is a literal percent sign)
-[381] = "time until %s is at %s%% health",
+N["time until %s is at %s%% health"] = 381
 -- 4104ecce
 -- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
 -- %s #2: %s #2: the absolute health amount that is waited for, e.g. 50000
-[382] = "time until %s is at %s health",
+N["time until %s is at %s health"] = 382
 -- cd7e49ac
 -- %s #1: %s #1: the unit whose health is tracked, e.g. "target"
 -- %s #2: %s #2: the health deficit amount (missing health) that is waited for, e.g. 20000
-[383] = "time until %s is at %s health defecit",
+N["time until %s is at %s health defecit"] = 383
 -- 6344ed2a
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[384] = "The %s health defecit of %s members%s within %d yards of %s",
+N["The %s health defecit of %s members%s within %d yards of %s"] = 384
 -- b4b2caae
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[385] = "The %s health of %s members%s within %d yards of %s",
+N["The %s health of %s members%s within %d yards of %s"] = 385
 -- 1bbec37f
 -- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #3: %d #3: the distance in yards, e.g. 40
 -- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
-[386] = "The number %s members%s within %d yards of %s whose",
+N["The number %s members%s within %d yards of %s whose"] = 386
 -- 91765b2b
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[387] = "The %s health percentage of %s members%s within %d yards of %s",
+N["The %s health percentage of %s members%s within %d yards of %s"] = 387
 -- 13a2b471
 -- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #3: %d #3: the distance in yards, e.g. 40
 -- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
-[388] = "The number %s members%s within %d yards of %s whose health percentage",
+N["The number %s members%s within %d yards of %s whose health percentage"] = 388
 -- 52cf9fe9
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[389] = "The %s mana defecit of %s members%s within %d yards of %s",
+N["The %s mana defecit of %s members%s within %d yards of %s"] = 389
 -- 0a50ee9b
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[390] = "The %s mana of %s members%s within %d yards of %s",
+N["The %s mana of %s members%s within %d yards of %s"] = 390
 -- ed32b716
 -- %s #1: %s #1: the statistic taken over the members, e.g. "lowest" or "average"
 -- %s #2: %s #2: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #3: %s #3: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #4: %d #4: the distance in yards, e.g. 40
 -- %s #5: %s #5: the unit the distance is measured from, e.g. "you"
-[391] = "The %s mana percentage of %s members%s within %d yards of %s",
+N["The %s mana percentage of %s members%s within %d yards of %s"] = 391
 -- 66dd29aa
 -- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #3: %d #3: the distance in yards, e.g. 40
 -- %s #4: %s #4: the unit the distance is measured from, e.g. "you"
-[392] = "The number %s members%s within %d yards of %s whose mana percentage",
+N["The number %s members%s within %d yards of %s whose mana percentage"] = 392
 -- bd972cc4
 -- Context: Name of the logical AND group condition: all conditions inside it must be true (a
 --     condition type in the condition picker).
-[393] = "AND",
+N["AND"] = 393
 -- 829e5b28
 -- Context: Name of the logical OR group condition: at least one condition inside it must be true.
-[394] = "OR",
+N["OR"] = 394
 -- 8be3365c
 -- Context: Name of the logical NOT group condition: negates the condition inside it; also used as a
 --     prefix in condition text.
-[395] = "NOT",
+N["NOT"] = 395
 -- f733d042
 -- Context: Placeholder shown in a condition list where a condition has a missing or unknown type;
 --     keep the angle brackets.
-[396] = "<INVALID CONDITION>",
+N["<INVALID CONDITION>"] = 396
 -- b2295de9
-[397] = "Please Choose ...",
+N["Please Choose ..."] = 397
 -- 9f24f04e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Label 'Condition Type'.
-[398] = "Condition Type",
+N["Condition Type"] = 398
 -- df00fd14
 -- Context: Window title of the condition editor for the condition at a numbered position; %d is its
 --     position in the list.
 -- %d #1: %d #1: the position of the condition in the rotation step, counting from 1, e.g. 2
-[399] = "Edit Condition #%d",
+N["Edit Condition #%d"] = 399
 -- 55490a4b
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Button label 'Up' (move up arrow).
-[400] = "Up",
+N["Up"] = 400
 -- b86d11af
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Button label 'Down' (move down arrow).
-[401] = "Down",
+N["Down"] = 401
 -- 3124aba4
 -- Context: Placeholder shown in a condition's text where no spell has been chosen yet; keep the
 --     angle brackets.
-[402] = "<spell>",
+N["<spell>"] = 402
 -- 99cd36a3
 -- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
-[403] = "Your talent is a %s role",
+N["Your talent is a %s role"] = 403
 -- 8436c454
 -- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
 -- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
-[404] = "%s is in a %s role",
+N["%s is in a %s role"] = 404
 -- 71fafa0a
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s is a %s' (singular, e.g. 'your target is a Beast');
 --     unit, then a type.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
 -- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
-[405] = "%s is a %s",
+N["%s is a %s"] = 405
 -- f9030f9e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s are a %s' (plural subject); unit, then a type.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you" (the "is" form: "your target")
 -- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
-[406] = "%s are a %s",
+N["%s are a %s"] = 406
 -- 1c5be7b4
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s have %s' (plural subject); unit, then a thing.
 -- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
-[407] = "%s have %s",
+N["%s have %s"] = 407
 -- 82320b64
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s has %s' (singular subject); unit, then a thing.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the buff or debuff, as a spell name or as "your own" followed by it, e.g. "Power Word: Fortitude"
-[408] = "%s has %s",
+N["%s has %s"] = 408
 -- 3313549c
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s is %s' (singular subject); subject, then a state.
 -- %s #1: %s #1: the first unit, e.g. "your target"
 -- %s #2: %s #2: the unit it is compared with (or a distance such as "closer than 10 yards"), e.g. "your focus target"
-[409] = "%s is %s",
+N["%s is %s"] = 409
 -- 4902371e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s are %s' (plural subject); subject, then a state.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the distance phrase, e.g. "closer than 10 yards"
-[410] = "%s are %s",
+N["%s are %s"] = 410
 -- 2564e907
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s were %s' (plural subject, past tense); subject,
 --     then a state.
 -- %s #1: %s #1: the unit that did the action ("were" is used for the player), e.g. "you"
 -- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
-[411] = "%s were %s",
+N["%s were %s"] = 411
 -- 96aacc3d
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s was %s' (singular subject, past tense); subject,
 --     then a state.
 -- %s #1: %s #1: the unit that did the action, e.g. "your target"
 -- %s #2: %s #2: the kind of action, e.g. "casting" or "moving"
-[412] = "%s was %s",
+N["%s was %s"] = 412
 -- 368387c7
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s have %s where %s' (plural subject); subject, a
@@ -3623,7 +3648,7 @@ local E = {
 -- %s #1: %s #1: the unit, e.g. "you"
 -- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
 -- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[413] = "%s have %s where %s",
+N["%s have %s where %s"] = 413
 -- f161aa55
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s has %s where %s' (singular subject); subject, a
@@ -3631,5612 +3656,5622 @@ local E = {
 -- %s #1: %s #1: the unit, e.g. "your target"
 -- %s #2: %s #2: the buff or debuff, e.g. "Rend"
 -- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[414] = "%s has %s where %s",
+N["%s has %s where %s"] = 414
 -- 38277209
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
-[415] = "you are talented in %s",
+N["you are talented in %s"] = 415
 -- 32da26d1
 -- %s #1: %s #1: the name of the talent, e.g. "Arcane Power"
 -- %s #2: %s #2: the name of the talent tree it is in, e.g. "Arcane"
-[416] = "talent points in %s (%s)",
+N["talent points in %s (%s)"] = 416
 -- 85d523f6
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template "%s's resistance to %s"; unit, then a magic school.
 -- %s #1: %s #1: the unit whose resistance is checked, possessive form, e.g. "your target"
 -- %s #2: %s #2: the spell school, e.g. "Fire"
-[417] = "%s's resistance to %s",
+N["%s's resistance to %s"] = 417
 -- 0cad0ea7
 -- %s #1: %s #1: the unit that is immune, e.g. "your target"
 -- %s #2: %s #2: the spell school, e.g. "Frost"
-[418] = "%s is sometimes immune to %s",
+N["%s is sometimes immune to %s"] = 418
 -- e23ffa5e
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template '%s is immune to %s'; unit, then a magic school.
 -- %s #1: %s #1: the unit that is immune, e.g. "your target"
 -- %s #2: %s #2: the spell school, e.g. "Frost"
-[419] = "%s is immune to %s",
+N["%s is immune to %s"] = 419
 -- 6d19eba6
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition-text template 'you have %s glyph'; %s is a glyph name.
 -- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
-[420] = "you have %s glyph",
+N["you have %s glyph"] = 420
 -- 4e545960
 -- Context: Label of the unit dropdown in conditions (which unit is checked: you, your target, ...)
 --     and a help term; noun.
-[421] = "Unit",
+N["Unit"] = 421
 -- 14736a2e
 -- Context: Name of the Role condition (tank, DPS or healer) and the label of its role dropdown.
-[422] = "Role",
+N["Role"] = 422
 -- 4f3a9bd0
 -- Context: Name of the Class condition and the label of its class dropdown; also a scope option
 --     (class vs. this character).
-[423] = "Class",
+N["Class"] = 423
 -- 0df08730
 -- Context: Name of the Class In Group condition: counts group members of a given class.
-[424] = "Class In Group",
+N["Class In Group"] = 424
 -- e23f2e34
 -- Context: Name of the Is Same As condition: true when two units are the same unit.
-[425] = "Is Same As",
+N["Is Same As"] = 425
 -- 03d5b2de
 -- Context: Name of the Creature Type condition (beast, demon, ...) and label of its dropdown.
-[426] = "Creature Type",
+N["Creature Type"] = 426
 -- a1cf0927
 -- Context: Name of the Unit Classification condition (normal, elite, boss...) and label of its
 --     dropdown.
-[427] = "Unit Classification",
+N["Unit Classification"] = 427
 -- caa2e08f
 -- Context: Label of the talent dropdown in the Talent condition (a specific talent).
-[428] = "Talent",
+N["Talent"] = 428
 -- 1aff4871
 -- Context: Name of the Glyph condition: true while you have a given glyph (an item) applied.
-[429] = "Glyph",
+N["Glyph"] = 429
 -- b8790e72
 -- Context: Label of the talent tree/group dropdown in the Talent condition and title of the talent
 --     picker popup.
-[430] = "Talent Tree",
+N["Talent Tree"] = 430
 -- 291101a0
 -- Context: Label of the dropdown holding the comparison operator (is less than, equal to ...) in
 --     conditions, and a help term.
-[431] = "Operator",
+N["Operator"] = 431
 -- b7bdf7a2
 -- Context: Name of the Distance condition (yards to a unit) and label of its distance field.
-[432] = "Distance",
+N["Distance"] = 432
 -- 7a347089
 -- Context: Name of the Distance Count condition: how many units are within a given distance.
-[433] = "Distance Count",
+N["Distance Count"] = 433
 -- 47da413b
 -- Context: Unit word 'yards' (distance unit). No direct call site in the current code; it appeared
 --     in distance conditions' text.
-[434] = "yards",
+N["yards"] = 434
 -- 55898449
 -- Context: Label of the health value field in health-based conditions (e.g. 'Health Within Range')
 --     and the operator widget's value name; noun.
-[435] = "Health",
+N["Health"] = 435
 -- 3c01b3e3
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
 --     fragment for a health deficit comparison ('%s health deficit'; sic 'defecit' in the English
 --     key); %s is a value.
 -- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
-[436] = "%s health defecit",
+N["%s health defecit"] = 436
 -- 59f92800
 -- Context: Name of the Health Percentage condition (a unit's health as a percent of its maximum) in
 --     the condition picker.
-[437] = "Health Percentage",
+N["Health Percentage"] = 437
 -- 066ffe4a
 -- Context: Label of the mana value field in mana conditions (e.g. 'Mana Within Range'); noun.
-[438] = "Mana",
+N["Mana"] = 438
 -- ba32a92b
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
 --     fragment for a mana deficit comparison ('%s mana deficit'; sic 'defecit' in the key); %s is a
 --     value.
 -- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
-[439] = "%s mana defecit",
+N["%s mana defecit"] = 439
 -- 42dccab0
 -- Context: Name of the Mana Percentage condition (a unit's mana as a percent of its maximum).
-[440] = "Mana Percentage",
+N["Mana Percentage"] = 440
 -- 848e9656
 -- Context: Name of the Power condition (a unit's raw resource such as rage or energy) and the label
 --     of its value field.
-[441] = "Power",
+N["Power"] = 441
 -- 0e4dfe83
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Sentence
 --     fragment for a power deficit comparison ('%s power deficit'; sic 'defecit' in the key); %s is
 --     a value.
 -- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
-[442] = "%s power defecit",
+N["%s power defecit"] = 442
 -- 6a612b86
 -- Context: Name of the Power Percentage condition (a unit's resource as a percent of its maximum).
-[443] = "Power Percentage",
+N["Power Percentage"] = 443
 -- 77deabe2
 -- Context: Name of the Points condition (combo points) and the label of its value field.
-[444] = "Points",
+N["Points"] = 444
 -- 8208acbf
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s points' (combo points); %s is a number.
 -- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
-[445] = "%s points",
+N["%s points"] = 445
 -- 49e3a963
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s point deficit' (sic 'defecit' in the key; combo points missing
 --     from max); %s is a number.
 -- %s #1: %s #1: the unit whose stat is read, in the possessive, e.g. "your target's" or "your"
-[446] = "%s point defecit",
+N["%s point defecit"] = 446
 -- 5af0278b
 -- Context: Name of the Runes condition (Death Knight runes available) and the label of its count
 --     field.
-[447] = "Runes",
+N["Runes"] = 447
 -- d62be657
 -- Context: Name of the Rune Cooldown condition (seconds until a rune type is ready).
-[448] = "Rune Cooldown",
+N["Rune Cooldown"] = 448
 -- 9ba5f80d
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s runes available'; %s is a number.
 -- %s #1: %s #1: the rune type, e.g. "Blood", "Frost" or "Unholy"
-[449] = "%s runes available",
+N["%s runes available"] = 449
 -- 61084a6e
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'cooldown on %s rune'; %s is a rune type.
 -- %s #1: %s #1: the rune type, e.g. "Frost"
-[450] = "cooldown on %s rune",
+N["cooldown on %s rune"] = 450
 -- 8a7961ab
 -- Context: Death Knight rune type (Blood) in the Runes and Rune Cooldown conditions' rune dropdown.
-[451] = "Blood",
+N["Blood"] = 451
 -- 4de5fe95
 -- Context: Death Knight rune type (Unholy) in the Runes and Rune Cooldown conditions' rune
 --     dropdown.
-[452] = "Unholy",
+N["Unholy"] = 452
 -- fcd6fea7
 -- Context: Death Knight rune type (Death) in the Runes and Rune Cooldown conditions' rune dropdown.
-[453] = "Death",
+N["Death"] = 453
 -- 8a166eb0
 -- Context: Name of the Character Stat condition (a stat such as strength or armor) and the label of
 --     its stat dropdown.
-[454] = "Character Stat",
+N["Character Stat"] = 454
 -- 0a79e909
 -- Context: Name of the Extended Character Stat condition (stats provided by the
 --     ExtendedCharacterStats addon).
-[455] = "Extended Character Stat",
+N["Extended Character Stat"] = 455
 -- 9cd14132
-[456] = "Extended Character Stat Percentage",
+N["Extended Character Stat Percentage"] = 456
 -- d2923546
 -- Context: Name of the Spell Available condition (a spell is castable/known and available).
-[457] = "Spell Available",
+N["Spell Available"] = 457
 -- b1557241
 -- Context: Name of the Pet Spell Available condition (a pet spell is available).
-[458] = "Pet Spell Available",
+N["Pet Spell Available"] = 458
 -- d24390ed
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is available'; %s is a spell.
 -- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
-[459] = "%s is available",
+N["%s is available"] = 459
 -- b2561670
 -- Context: Name of the Spell In Range condition (the spell can reach the target).
-[460] = "Spell In Range",
+N["Spell In Range"] = 460
 -- 67ef960b
-[461] = "Pet Spell In Range",
+N["Pet Spell In Range"] = 461
 -- 12692f41
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is in range'; %s is a spell.
 -- %s #1: %s #1: a clickable spell or item link (shown as a coloured spell name), e.g. "[Fireball]" or "[Healthstone]"
-[462] = "%s is in range",
+N["%s is in range"] = 462
 -- 8baec846
 -- Context: Name of the Spell Cooldown condition (seconds until a spell can be cast again); also the
 --     title of its help.
-[463] = "Spell Cooldown",
+N["Spell Cooldown"] = 463
 -- f7254914
 -- Context: Name of the Pet Spell Cooldown condition (seconds until a pet spell can be cast again).
-[464] = "Pet Spell Cooldown",
+N["Pet Spell Cooldown"] = 464
 -- 9e4f8469
 -- Context: Name of the Boss Mod Encounter condition (an encounter reported by a boss mod addon such
 --     as DBM/BigWigs is active).
-[465] = "Boss Mod Encounter",
+N["Boss Mod Encounter"] = 465
 -- fd1f1e3c
-[466] = "Boss Mod Encounter Stage",
+N["Boss Mod Encounter Stage"] = 466
 -- c07ffee7
 -- Context: Name of the Boss Mod Timer condition (seconds until a boss ability, from a boss mod
 --     addon).
-[467] = "Boss Mod Timer",
+N["Boss Mod Timer"] = 467
 -- 140bedbf
 -- Context: Lowercase word 'none' inserted in a status line 'Current encounter: ..., ID none, stage
 --     ...' when there is no encounter ID.
-[468] = "none",
+N["none"] = 468
 -- f73bf30c
-[469] = "Spell Active or Pending",
+N["Spell Active or Pending"] = 469
 -- c8ada1d7
-[470] = "Pet Spell Active or Pending",
+N["Pet Spell Active or Pending"] = 470
 -- 85f5aca6
 -- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
-[471] = "%s is active or pending",
+N["%s is active or pending"] = 471
 -- fdb533df
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
 --     name of the Spell Time Remaining condition (time left on a spell).
-[472] = "Spell Time Remaining",
+N["Spell Time Remaining"] = 472
 -- 3422640c
-[473] = "Pet Spell Time Remaining",
+N["Pet Spell Time Remaining"] = 473
 -- 369bb5dd
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'remaining time on %s'; %s is a spell.
 -- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
-[474] = "remaining time on %s",
+N["remaining time on %s"] = 474
 -- 0ce37091
 -- Context: Name of the Spell Charges condition (how many charges of a spell are available).
-[475] = "Spell Charges",
+N["Spell Charges"] = 475
 -- b9dd94ce
 -- Context: Name of the Pet Spell Charges condition (charges of a pet spell).
-[476] = "Pet Spell Charges",
+N["Pet Spell Charges"] = 476
 -- bd7612e8
-[477] = "Spell Cast History Time",
+N["Spell Cast History Time"] = 477
 -- e16b6508
 -- Context: Name of the Spell Cast History condition (a spell was cast N casts ago).
-[478] = "Spell Cast History",
+N["Spell Cast History"] = 478
 -- 26483687
-[479] = "Pet Spell Cast History Time",
+N["Pet Spell Cast History Time"] = 479
 -- 6f884dd0
-[480] = "Pet Spell Cast History",
+N["Pet Spell Cast History"] = 480
 -- 193bb945
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s was cast'; %s is a spell.
 -- %s #1: %s #1: a clickable spell link (shown as a coloured spell name), e.g. "[Fireball]"
-[481] = "%s was cast",
+N["%s was cast"] = 481
 -- 0d112e0c
-[482] = "Combat Action History Time",
+N["Combat Action History Time"] = 482
 -- ec517441
 -- Context: Name of the Combat Action History condition (a combat event such as dodged/healed N
 --     actions ago).
-[483] = "Combat Action History",
+N["Combat Action History"] = 483
 -- 9c434f34
 -- %s #1: %s #1: the number of casts, e.g. 3
-[484] = "fewer than %s casts ago",
+N["fewer than %s casts ago"] = 484
 -- 5966470f
 -- %s #1: %s #1: the number of casts, e.g. 3
-[485] = "at most %s casts ago",
+N["at most %s casts ago"] = 485
 -- c1a41894
 -- %s #1: %s #1: the number of casts, e.g. 3
-[486] = "more than %s casts ago",
+N["more than %s casts ago"] = 486
 -- fd9a7c72
 -- %s #1: %s #1: the number of casts, e.g. 3
-[487] = "at least %s casts ago",
+N["at least %s casts ago"] = 487
 -- c53b5aea
 -- Context: Phrase in condition text for the equals operator in cast history: '... exactly N casts
 --     ago'; %s is the number.
 -- %s #1: %s #1: the number of casts, e.g. 3
-[488] = "exactly %s casts ago",
+N["exactly %s casts ago"] = 488
 -- 770b3b3e
 -- %s #1: %s #1: the number of casts, e.g. 3
-[489] = "other than %s casts ago",
+N["other than %s casts ago"] = 489
 -- 75504648
 -- %s #1: %s #1: the number of casts, e.g. 3
-[490] = "a multiple of %s casts ago",
+N["a multiple of %s casts ago"] = 490
 -- 3619f661
 -- %s #1: %s #1: the number of actions, e.g. 3
-[491] = "fewer than %s actions ago",
+N["fewer than %s actions ago"] = 491
 -- 90c5ca9f
 -- %s #1: %s #1: the number of actions, e.g. 3
-[492] = "at most %s actions ago",
+N["at most %s actions ago"] = 492
 -- 03dcab2c
 -- %s #1: %s #1: the number of actions, e.g. 3
-[493] = "more than %s actions ago",
+N["more than %s actions ago"] = 493
 -- 7688d933
 -- %s #1: %s #1: the number of actions, e.g. 3
-[494] = "at least %s actions ago",
+N["at least %s actions ago"] = 494
 -- 506a71d6
 -- Context: Phrase in condition text for the equals operator in combat action history: '... exactly
 --     N actions ago'; %s is the number.
 -- %s #1: %s #1: the number of actions, e.g. 3
-[495] = "exactly %s actions ago",
+N["exactly %s actions ago"] = 495
 -- 1a4b6a11
 -- %s #1: %s #1: the number of actions, e.g. 3
-[496] = "other than %s actions ago",
+N["other than %s actions ago"] = 496
 -- a5094423
 -- %s #1: %s #1: the number of actions, e.g. 3
-[497] = "a multiple of %s actions ago",
+N["a multiple of %s actions ago"] = 497
 -- 27db12a6
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[498] = "less than %s seconds ago",
+N["less than %s seconds ago"] = 498
 -- 4e0556a9
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[499] = "at most %s seconds ago",
+N["at most %s seconds ago"] = 499
 -- 9644de21
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[500] = "more than %s seconds ago",
+N["more than %s seconds ago"] = 500
 -- 75c46f7d
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[501] = "at least %s seconds ago",
+N["at least %s seconds ago"] = 501
 -- a431b13b
 -- Context: Phrase in condition text for the equals operator in time-based history: '... exactly N
 --     seconds ago'; %s is the number.
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[502] = "exactly %s seconds ago",
+N["exactly %s seconds ago"] = 502
 -- 4ac319b9
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[503] = "other than %s seconds ago",
+N["other than %s seconds ago"] = 503
 -- 2b2e3c59
 -- %s #1: %s #1: the number of seconds, e.g. 5
-[504] = "a multiple of %s seconds ago",
+N["a multiple of %s seconds ago"] = 504
 -- ae4f356c
 -- Context: Name of the Any Spell Available condition (any spell by name/ID, regardless of
 --     specialization).
-[505] = "Any Spell Available",
+N["Any Spell Available"] = 505
 -- 11a84a9d
-[506] = "Any Spell In Range",
+N["Any Spell In Range"] = 506
 -- 6a50cd59
 -- Context: Name of the Any Spell Cooldown condition (seconds until any chosen spell is ready).
-[507] = "Any Spell Cooldown",
+N["Any Spell Cooldown"] = 507
 -- 56ef0943
-[508] = "Any Spell Time Remaining",
+N["Any Spell Time Remaining"] = 508
 -- a8212106
 -- Context: Name of the Any Spell Charges condition (charges of any chosen spell).
-[509] = "Any Spell Charges",
+N["Any Spell Charges"] = 509
 -- ae1e1aed
 -- Context: Name of the Buff Present condition (an aura is on the unit).
-[510] = "Buff Present",
+N["Buff Present"] = 510
 -- 8fb4de97
 -- Context: Name of the Buff Time Remaining condition (seconds left on a buff).
-[511] = "Buff Time Remaining",
+N["Buff Time Remaining"] = 511
 -- 666e85fc
 -- Context: Name of the Buff Stacks condition (the application count of a buff).
-[512] = "Buff Stacks",
+N["Buff Stacks"] = 512
 -- 16ace6d6
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'stacks of %s'; %s is an aura.
 -- %s #1: %s #1: the buff or debuff, as a spell name or "your own" followed by it, e.g. "Sunder Armor"
-[513] = "stacks of %s",
+N["stacks of %s"] = 513
 -- b4f4e6c4
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text word 'stacks' (aura application count).
-[514] = "stacks",
+N["stacks"] = 514
 -- 78fcf705
 -- Context: Name of the Has Stealable Buff condition (a unit has a buff you can steal or purge).
-[515] = "Has Stealable Buff",
+N["Has Stealable Buff"] = 515
 -- 7588c154
 -- %s #1: %s #1: the unit, e.g. "your target"
-[516] = "%s has a stealable buff",
+N["%s has a stealable buff"] = 516
 -- c057197d
 -- Context: Name of the Debuff Present condition (a debuff is on the unit).
-[517] = "Debuff Present",
+N["Debuff Present"] = 517
 -- e12d628f
 -- Context: Name of the Debuff Time Remaining condition (seconds left on a debuff).
-[518] = "Debuff Time Remaining",
+N["Debuff Time Remaining"] = 518
 -- 68627f3e
 -- Context: Name of the Debuff Stacks condition (the application count of a debuff).
-[519] = "Debuff Stacks",
+N["Debuff Stacks"] = 519
 -- fe1e836d
 -- Context: Name of the Debuff Type Present condition (e.g. Magic, Curse, Poison, Disease on the
 --     unit).
-[520] = "Debuff Type Present",
+N["Debuff Type Present"] = 520
 -- 23f8a0cb
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s have a %s debuff' (plural subject); first %s a unit, second a
 --     debuff type.
 -- %s #1: %s #1: the unit; the "have" form is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
-[521] = "%s have a %s debuff",
+N["%s have a %s debuff"] = 521
 -- 7ab4967e
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s has a %s debuff' (singular subject); first %s a unit, second a
 --     debuff type.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the debuff type, e.g. "Magic", "Curse" or "Poison"
-[522] = "%s has a %s debuff",
+N["%s has a %s debuff"] = 522
 -- a7b891f5
 -- Context: Name of the Totem Present condition (a totem of a given element is active).
-[523] = "Totem Present",
+N["Totem Present"] = 523
 -- 0c3d3d7f
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s totem is active'; %s is a totem element.
 -- %s #1: %s #1: the totem element, e.g. "Fire"
-[524] = "%s totem is active",
+N["%s totem is active"] = 524
 -- e885c330
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is active'; %s is a totem/spell.
 -- %s #1: %s #1: a clickable spell link for the totem or ability, e.g. "[Searing Totem]"
-[525] = "%s is active",
+N["%s is active"] = 525
 -- 66da3d47
 -- Context: Name of the Specific Totem Present condition (a particular totem spell is active).
-[526] = "Specific Totem Present",
+N["Specific Totem Present"] = 526
 -- 5bf50471
 -- Context: Name of the Totem Time Remaining condition (seconds left on an active totem).
-[527] = "Totem Time Remaining",
+N["Totem Time Remaining"] = 527
 -- 7543785b
-[528] = "Specific Totem Time Remaining",
+N["Specific Totem Time Remaining"] = 528
 -- 68fb02a4
 -- %s #1: %s #1: the totem element, e.g. "Fire"
 -- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[529] = "you have a %s totem active with %s",
+N["you have a %s totem active with %s"] = 529
 -- a25252ca
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is active with %s'; first %s a totem, second a detail (such as
 --     time left).
 -- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 -- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[530] = "%s is active with %s",
+N["%s is active with %s"] = 530
 -- 2fa842db
 -- Context: Name of the Have Item Equipped condition (you wear a given item).
-[531] = "Have Item Equipped",
+N["Have Item Equipped"] = 531
 -- 5554bebd
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'you have %s equipped'; %s is an item.
 -- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
-[532] = "you have %s equipped",
+N["you have %s equipped"] = 532
 -- 8e3be399
-[533] = "Have Item In Bags",
+N["Have Item In Bags"] = 533
 -- ef20a8e9
 -- %s #1: %s #1: an item or item set name or link, e.g. "[Healing Potion]"
-[534] = "the number of %s you are carrying",
+N["the number of %s you are carrying"] = 534
 -- 86a036a1
 -- Context: Name of the Item Available condition (you have the item and can use it).
-[535] = "Item Available",
+N["Item Available"] = 535
 -- e01cd9e7
 -- Context: Name of the Item In Range condition (the item can reach the target).
-[536] = "Item In Range",
+N["Item In Range"] = 536
 -- 64d7247f
 -- Context: Name of the Item Cooldown condition (seconds until an item is usable again).
-[537] = "Item Cooldown",
+N["Item Cooldown"] = 537
 -- 1b0ab573
 -- Context: Name of the In Combat condition; also a checkbox label in the Distance Count condition
 --     meaning 'only count units in combat'.
-[538] = "In Combat",
+N["In Combat"] = 538
 -- 630eade3
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are in combat' (plural subject); %s is a unit.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
-[539] = "%s are in combat",
+N["%s are in combat"] = 539
 -- 89608711
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is in combat' (singular subject); %s is a unit.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[540] = "%s is in combat",
+N["%s is in combat"] = 540
 -- a9bae210
 -- Context: Name of the Have Pet condition (you currently have a pet).
-[541] = "Have Pet",
+N["Have Pet"] = 541
 -- 924d4ef6
-[542] = "you have a pet",
+N["you have a pet"] = 542
 -- 02734b33
 -- Context: Name of the Have Named Pet condition (your pet has a given name).
-[543] = "Have Named Pet",
+N["Have Named Pet"] = 543
 -- 0c21cff5
 -- %s #1: %s #1: the pet name, e.g. "Rex"
-[544] = "you have a pet named %s",
+N["you have a pet named %s"] = 544
 -- 526a40a4
 -- Context: Name of the Stealth condition (the player is stealthed); noun.
-[545] = "Stealth",
+N["Stealth"] = 545
 -- daac7bb8
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'you are stealthed'.
-[546] = "you are stealthed",
+N["you are stealthed"] = 546
 -- d9237cea
 -- Context: Name of the In Control condition (you are not stunned, feared, or otherwise lost
 --     control).
-[547] = "In Control",
+N["In Control"] = 547
 -- 7eea2830
-[548] = "you are in control of your character",
+N["you are in control of your character"] = 548
 -- 379e2bbc
-[549] = "Loss Of Control Type",
+N["Loss Of Control Type"] = 549
 -- 7843bc0f
-[550] = "Loss Of Control Blocked",
+N["Loss Of Control Blocked"] = 550
 -- 8dac743c
 -- Context: Name of the Moving condition (the player is moving).
-[551] = "Moving",
+N["Moving"] = 551
 -- 09284586
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'you are moving'.
-[552] = "you are moving",
+N["you are moving"] = 552
 -- 56aa198a
 -- Context: Name of the Threat condition (your threat level against a unit) and the label of its
 --     threat-level dropdown.
-[553] = "Threat",
+N["Threat"] = 553
 -- ffa83e17
 -- Context: Name of the Threat Count condition (the number of units on which you have at least a
 --     threat level).
-[554] = "Threat Count",
+N["Threat Count"] = 554
 -- c74406db
 -- %s #1: %s #1: the threat level, e.g. "tanking"
 -- %s #2: %s #2: the unit, e.g. "your target"
-[555] = "you are at least %s on %s",
+N["you are at least %s on %s"] = 555
 -- 99157067
 -- Context: Name of the Shapeshift Form condition (the druid/shaman form you are in).
-[556] = "Shapeshift Form",
+N["Shapeshift Form"] = 556
 -- 89016283
 -- Context: Name of the Attackable condition (the unit can be attacked by you).
-[557] = "Attackable",
+N["Attackable"] = 557
 -- b3478c03
 -- Context: Name of the Hostile condition (the unit is an enemy).
-[558] = "Hostile",
+N["Hostile"] = 558
 -- 46e36b4f
 -- Context: Name of the Allies Within Range condition (number of allies within a distance of a
 --     unit).
-[559] = "Allies Within Range",
+N["Allies Within Range"] = 559
 -- afdfa696
 -- Context: Name of the Health Within Range condition (health statistic over units within a
 --     distance).
-[560] = "Health Within Range",
+N["Health Within Range"] = 560
 -- a4d0252f
-[561] = "Health Count Within Range",
+N["Health Count Within Range"] = 561
 -- ea179db7
-[562] = "Health Percentage Within Range",
+N["Health Percentage Within Range"] = 562
 -- 324a4bd3
-[563] = "Health Percentage Count Within Range",
+N["Health Percentage Count Within Range"] = 563
 -- 8b7e70d8
 -- Context: Name of the Mana Within Range condition (mana statistic over units within a distance).
-[564] = "Mana Within Range",
+N["Mana Within Range"] = 564
 -- 94049799
-[565] = "Mana Count Within Range",
+N["Mana Count Within Range"] = 565
 -- 1a1470db
-[566] = "Mana Percentage Within Range",
+N["Mana Percentage Within Range"] = 566
 -- 953ff9c3
-[567] = "Mana Percentage Count Within Range",
+N["Mana Percentage Count Within Range"] = 567
 -- d709e95d
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is an enemy'; %s is a unit.
 -- %s #1: %s #1: the unit, e.g. "your target"
-[568] = "%s is an enemy",
+N["%s is an enemy"] = 568
 -- 7024062a
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is attackable'; %s is a unit.
 -- %s #1: %s #1: the unit, e.g. "your target"
-[569] = "%s is attackable",
+N["%s is attackable"] = 569
 -- cd29bb25
 -- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %d #3: %d #3: the distance in yards, e.g. 30
-[570] = "number of %s members%s within %d yards",
+N["number of %s members%s within %d yards"] = 570
 -- bb1fa7ca
 -- %s #1: %s #1: the group searched, either "Party" or "Raid or Party", e.g. "Raid or Party"
 -- %s #2: %s #2: " (including pets)" in parentheses when pets count, otherwise empty, e.g. " (including pets)"
 -- %s #3: %s #3: the distance in yards, e.g. 30
-[571] = "number of %s members%s within %s yards",
+N["number of %s members%s within %s yards"] = 571
 -- ffc1e6b0
 -- %s #1: %s #1: the threat level, e.g. "tanking"
-[572] = "number of enemies you are at least %s",
+N["number of enemies you are at least %s"] = 572
 -- 1fc58dea
 -- %s #1: %s #1: the unit, in the possessive form, e.g. "your target's"
-[573] = "you {{!are|are not}} on %s threat table",
+N["you {{!are|are not}} on %s threat table"] = 573
 -- dbcea100
 -- %s #1: %s #1: the unit, e.g. "your target"
-[574] = "you {{!have|do not have}} at least as much threat on %s as its tank",
+N["you {{!have|do not have}} at least as much threat on %s as its tank"] = 574
 -- 1a38484b
 -- %s #1: %s #1: the unit, e.g. "your target"
-[575] = "you {{!are|are not}} tanking %s",
+N["you {{!are|are not}} tanking %s"] = 575
 -- f893e9b8
 -- %s #1: %s #1: the unit, e.g. "your target"
-[576] = "you {{!are|are not}} securely tanking %s",
+N["you {{!are|are not}} securely tanking %s"] = 576
 -- 050bc6fc
-[577] = "the number of enemies whose threat table you are on",
+N["the number of enemies whose threat table you are on"] = 577
 -- 2ab46e82
-[578] = "the number of enemies on which you have at least as much threat as their tank",
+N["the number of enemies on which you have at least as much threat as their tank"] = 578
 -- acb41544
-[579] = "the number of enemies you are tanking",
+N["the number of enemies you are tanking"] = 579
 -- 39546907
-[580] = "the number of enemies you are securely tanking",
+N["the number of enemies you are securely tanking"] = 580
 -- d173b87e
 -- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
-[581] = "you are in %s form",
+N["you are in %s form"] = 581
 -- 38ffcb03
 -- Context: Name of the Channeling condition (a unit is channeling any spell).
-[582] = "Channeling",
+N["Channeling"] = 582
 -- a423f878
 -- Context: Name of the Specific Spell Channeling condition (a unit is channeling a chosen spell).
-[583] = "Specific Spell Channeling",
+N["Specific Spell Channeling"] = 583
 -- c5db67ca
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are currently channeling' (plural subject); %s is a unit.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
-[584] = "%s are currently channeling",
+N["%s are currently channeling"] = 584
 -- f58eece7
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is currently channeling' (singular subject); %s is a unit.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[585] = "%s is currently channeling",
+N["%s is currently channeling"] = 585
 -- 6960967b
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are currently channeling %s' (plural subject); unit, then spell.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
-[586] = "%s are currently channeling %s",
+N["%s are currently channeling %s"] = 586
 -- 53ed0bfb
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is currently channeling %s' (singular subject); unit, then spell.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
-[587] = "%s is currently channeling %s",
+N["%s is currently channeling %s"] = 587
 -- 4c2aeef1
 -- Context: Name of the Channel Time Remaining condition (seconds left on a unit's current channel).
-[588] = "Channel Time Remaining",
+N["Channel Time Remaining"] = 588
 -- e38783fe
-[589] = "time remaining on spell channel",
+N["time remaining on spell channel"] = 589
 -- 39c51722
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
 --     spelling of the Channel Interruptible condition name (now spelled 'Interruptible').
-[590] = "Channel Interruptable",
+N["Channel Interruptable"] = 590
 -- 09453a79
 -- Context: Name of the Channel Interruptible condition (the unit's current channel can be
 --     interrupted).
-[591] = "Channel Interruptible",
+N["Channel Interruptible"] = 591
 -- 2a35e090
 -- %s #1: %s #1: the unit, e.g. "your target"
-[592] = "%s's channeled spell is interruptable",
+N["%s's channeled spell is interruptable"] = 592
 -- 0c9e7b06
 -- Context: Name of the Casting condition (a unit is casting any spell); also an icon-picker
 --     category.
-[593] = "Casting",
+N["Casting"] = 593
 -- bc401bef
 -- Context: Name of the Specific Spell Casting condition (a unit is casting a chosen spell).
-[594] = "Specific Spell Casting",
+N["Specific Spell Casting"] = 594
 -- 53cc77b2
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are currently casting' (plural subject); %s is a unit.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
-[595] = "%s are currently casting",
+N["%s are currently casting"] = 595
 -- f8e91c91
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is currently casting' (singular subject); %s is a unit.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[596] = "%s is currently casting",
+N["%s is currently casting"] = 596
 -- 9ec6cde4
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are currently casting %s' (plural subject); unit, then spell.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the spell being cast, e.g. "Fireball"
-[597] = "%s are currently casting %s",
+N["%s are currently casting %s"] = 597
 -- 79bdf263
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is currently casting %s' (singular subject); unit, then spell.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the spell being cast, e.g. "Fireball"
-[598] = "%s is currently casting %s",
+N["%s is currently casting %s"] = 598
 -- 8f9d9bf5
 -- Context: Name of the Cast Time Remaining condition (seconds until a unit's current cast
 --     completes).
-[599] = "Cast Time Remaining",
+N["Cast Time Remaining"] = 599
 -- 24812186
-[600] = "time remaining on spell cast",
+N["time remaining on spell cast"] = 600
 -- e2513da8
 -- Context: Legacy condition-text template; the current code has no direct reference to it. Earlier
 --     spelling of the Cast Interruptible condition name (now spelled 'Interruptible').
-[601] = "Cast Interruptable",
+N["Cast Interruptable"] = 601
 -- d5c12268
 -- Context: Name of the Cast Interruptible condition (the unit's current cast can be interrupted).
-[602] = "Cast Interruptible",
+N["Cast Interruptible"] = 602
 -- 8b182833
 -- %s #1: %s #1: the unit, e.g. "your target"
-[603] = "%s's spell is interruptable",
+N["%s's spell is interruptable"] = 603
 -- 0d2970f9
 -- Context: Name of the PVP Flagged condition (a unit is flagged for player-versus-player combat).
-[604] = "PVP Flagged",
+N["PVP Flagged"] = 604
 -- d27e8fdc
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s are PVP flagged' (plural subject); %s is a unit.
 -- %s #1: %s #1: the unit; the "are" form is used when it is the player, e.g. "you"
-[605] = "%s are PVP flagged",
+N["%s are PVP flagged"] = 605
 -- c67f02e4
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment '%s is PVP flagged' (singular subject); %s is a unit.
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[606] = "%s is PVP flagged",
+N["%s is PVP flagged"] = 606
 -- 0489205b
 -- Context: Name of the Zone PVP condition (the PvP status of the area you are in).
-[607] = "Zone PVP",
+N["Zone PVP"] = 607
 -- d09a2928
 -- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
-[608] = "zone is a %s zone",
+N["zone is a %s zone"] = 608
 -- 425f2336
 -- Context: Name of the Instance condition (what kind of instance you are in: dungeon, raid,
 --     battleground...).
-[609] = "Instance",
+N["Instance"] = 609
 -- e96c4ff4
 -- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
-[610] = "you are in a %s instance",
+N["you are in a %s instance"] = 610
 -- 6480caf6
 -- Context: Legacy condition-text template; the current code has no direct reference to it.
 --     Condition-text fragment 'in %s'; %s is a zone or instance.
 -- %s #1: %s #1: the zone name, e.g. "Stormwind City"
-[611] = "in %s",
+N["in %s"] = 611
 -- a8a06e4a
 -- Context: Name of the Zone condition (the zone or subzone you are in) and the label of its text
 --     field.
-[612] = "Zone",
+N["Zone"] = 612
 -- 782fc4e1
 -- Context: Name of the In Group condition (you are in a party or raid).
-[613] = "In Group",
+N["In Group"] = 613
 -- b097d347
-[614] = "you are in a group",
+N["you are in a group"] = 614
 -- c299367b
 -- Context: Not referenced by a literal L[] call in the current code (legacy, or looked up
 --     dynamically). Condition name 'In Raid' (replaced by the Raid checkbox in the In Group
 --     condition).
-[615] = "In Raid",
+N["In Raid"] = 615
 -- 8985f5e8
-[616] = "you are in a raid",
+N["you are in a raid"] = 616
 -- 8bf8ef16
 -- Context: Name of the Outdoors condition (you are in an outdoor area).
-[617] = "Outdoors",
+N["Outdoors"] = 617
 -- 2fcb5d37
 -- Context: Instance mode option in the Instance condition: a solo scenario; also a difficulty group
 --     name.
-[618] = "Scenario",
+N["Scenario"] = 618
 -- 0229c086
-[619] = "you are in a outdoors",
+N["you are in a outdoors"] = 619
 -- 4340b353
 -- Context: Name of the Weapon Enchant Present condition (a weapon has a temporary enchant/imbue).
-[620] = "Weapon Enchant Present",
+N["Weapon Enchant Present"] = 620
 -- 61ab108b
-[621] = "Different season or game rules",
+N["Different season or game rules"] = 621
 -- 6abe675a
 -- Context: Name of the Action Context condition (which action bar is in use: yours, a vehicle,
 --     override...) and the label of its dropdown.
-[622] = "Action Context",
+N["Action Context"] = 622
 -- 615c9003
-[623] = "Advice is suspended: no rotation applies while you are using another action bar.",
+N["Advice is suspended: no rotation applies while you are using another action bar."] = 623
 -- e9860cd7
-[624] = "Item Set Pieces Equipped",
+N["Item Set Pieces Equipped"] = 624
 -- e0317f0c
 -- Context: Name of the Weapon Enchant Type condition (which temporary weapon enchant is applied).
-[625] = "Weapon Enchant Type",
+N["Weapon Enchant Type"] = 625
 -- 32eedbe8
 -- Context: Value in the Action Context dropdown: you are in a pet battle (Retail only); lowercase
 --     phrase read in a sentence.
-[626] = "a pet battle",
+N["a pet battle"] = 626
 -- a688c1ab
 -- Context: Value in the Action Context dropdown: you control a possessed (mind controlled) unit;
 --     lowercase phrase read in a sentence.
-[627] = "a possessed unit",
+N["a possessed unit"] = 627
 -- 7e4e79e6
 -- Context: Value in the Action Context dropdown: you are in a vehicle; lowercase phrase read in a
 --     sentence.
-[628] = "a vehicle",
+N["a vehicle"] = 628
 -- 1f7bee61
-[629] = "an override action bar",
+N["an override action bar"] = 629
 -- a89f883b
-[630] = "your own action bar",
+N["your own action bar"] = 630
 -- 6d49f98c
-[631] = "Weapon Enchant Time Remaining",
+N["Weapon Enchant Time Remaining"] = 631
 -- 872198ac
 -- Context: Name of the Weapon Enchant Stacks condition (the stack count of a temporary weapon
 --     enchant).
-[632] = "Weapon Enchant Stacks",
+N["Weapon Enchant Stacks"] = 632
 -- 9a08c36b
 -- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "main hand"
 -- %s #2: %s #2: a comparison on the remaining time or on the stack count, e.g. "the remaining time is greater than 10 seconds"
-[633] = "Your %s weapon buff has %s",
+N["Your %s weapon buff has %s"] = 633
 -- 5aebbe0c
 -- %s #1: %s #1: which weapon, "main hand" or "off hand", e.g. "off hand"
-[634] = "Your %s weapon is enchanted",
+N["Your %s weapon is enchanted"] = 634
 -- bfd173c2
 -- Context: Equipment slot / checkbox label for the off-hand weapon slot in weapon and enchant
 --     conditions; noun.
-[635] = "Off Hand",
+N["Off Hand"] = 635
 -- f0fa1c9c
 -- Context: Name of the Weapon Swing Time condition (time until your next auto-attack swing).
-[636] = "Weapon Swing Time",
+N["Weapon Swing Time"] = 636
 -- 8439ecbd
-[637] = "Weapon Swing Time Remaining",
+N["Weapon Swing Time Remaining"] = 637
 -- a258b30f
 -- Context: Checkbox label for an item set: it is a global set shared by all characters; also a help
 --     heading.
-[638] = "Global",
+N["Global"] = 638
 -- 601196cf
 -- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count both damage
 --     and healing taken by the unit.
-[639] = "Damage and Heals",
+N["Damage and Heals"] = 639
 -- 9d0e8a5a
 -- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only damage
 --     taken by the unit.
-[640] = "Damage Only",
+N["Damage Only"] = 640
 -- 26316d67
 -- Context: Option in the burn-rate mode dropdown of time-to-health conditions: count only healing
 --     received by the unit.
-[641] = "Heals Only",
+N["Heals Only"] = 641
 -- 64cff131
 -- Context: Label for the combat action kind (hit, miss, parried...) field in the Combat Action
 --     History condition; noun, also a comparison row label.
-[642] = "Action",
+N["Action"] = 642
 -- cd70c6b9
-[643] = "Time Since Combat Start",
+N["Time Since Combat Start"] = 643
 -- d49f3af6
 -- %s #1: %s #1: the comparison wording, e.g. "is greater than"
 -- %s #2: %s #2: the number of seconds, e.g. 10
-[644] = "Time in combat is %s %s seconds",
+N["Time in combat is %s %s seconds"] = 644
 -- ffedb1c8
 -- Context: Button that copies a text report to the clipboard (error window, condition text window);
 --     verb + noun.
-[645] = "Copy report",
+N["Copy report"] = 645
 -- 7d9eb7ac
 -- Context: Button/tooltip of the window close icon (X) in dialogs; verb.
-[646] = "Close",
+N["Close"] = 646
 -- 67f981b6
-[647] = "/rm errors              - View and copy Rotation Master errors.",
+N["/rm errors              - View and copy Rotation Master errors."] = 647
 -- 496d05e2
 -- Context: Name of the Spell Known condition (you or your pet know/have learned a spell).
-[648] = "Spell Known",
+N["Spell Known"] = 648
 -- 034f8d39
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Condition-text template 'You know %s'; %s is a spell.
 -- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Fireball (spell ID 133)"
-[649] = "You know %s",
+N["You know %s"] = 649
 -- 5a072a25
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Condition-text template 'Your pet knows %s'; %s is a pet spell.
 -- %s #1: %s #1: the spell, as its name and spell ID, e.g. "Bite (spell ID 17253)"
-[650] = "Your pet knows %s",
+N["Your pet knows %s"] = 650
 -- 41c1fdac
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Template '%s
 --     (spell ID %s)'; spell name, then numeric spell ID.
 -- %s #1: %s #1: the spell name, e.g. "Fireball"
 -- %s #2: %s #2: the spell ID, e.g. 133
-[651] = "%s (spell ID %s)",
+N["%s (spell ID %s)"] = 651
 -- 02ac5ded
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Spell
 --     ID' for a numeric spell identifier.
-[652] = "Spell ID",
+N["Spell ID"] = 652
 -- 1be30861
 -- Context: Checkbox label in the Spell Known condition: the spell is a pet spell; also the step
 --     type description 'Pet spell' in the rotation reference.
-[653] = "Pet spell",
+N["Pet spell"] = 653
 -- 33579e22
-[654] = "Unavailable conditions or unsupported data",
+N["Unavailable conditions or unsupported data"] = 654
 -- 6289fcfd
 -- %s #1: %s #1: the name or description of the condition, e.g. "Pet happiness"
 -- %s #2: %s #2: the reason it cannot work here, as a short phrase (translated), e.g. "this edition has no pet happiness"
-[655] = "%s is not available on this client (%s).",
+N["%s is not available on this client (%s)."] = 655
 -- d0e9a0bb
-[656] = "the combat log is not available to addons on this client",
+N["the combat log is not available to addons on this client"] = 656
 -- ae48d232
-[657] = "health is secret on this client",
+N["health is secret on this client"] = 657
 -- 32d80509
-[658] = "this power is secret on this client",
+N["this power is secret on this client"] = 658
 -- 38e49184
 -- %s #1: %s #1: the name of the active rotation followed by "(manual)" or "(automatic)", or "None", e.g. "Frost Single Target (automatic)"
-[659] = "Active rotation: %s",
+N["Active rotation: %s"] = 659
 -- 95ebda6b
-[660] = "a fallback saved for this character takes precedence",
+N["a fallback saved for this character takes precedence"] = 660
 -- 53e0ff34
 -- Context: Word in the 'Active rotation: NAME (automatic)' status line: the rotation was chosen by
 --     automatic switching, not manually.
-[661] = "automatic",
+N["automatic"] = 661
 -- 81600971
 -- Context: Label for a cooldown entry by position in a path description, e.g. 'Cooldown 2'; %d is
 --     the position number.
 -- %d #1: %d #1: the number of the cooldown in the list, counting from 1, e.g. 2
-[662] = "Cooldown %d",
+N["Cooldown %d"] = 662
 -- 55899740
 -- %d #1: %d #1: how many Built In rotations are disabled, e.g. 3
-[663] = "%d Built In rotations are disabled.",
+N["%d Built In rotations are disabled."] = 663
 -- 6fbad292
 -- %d #1: %d #1: how many other Built In rotations are disabled, e.g. 4
-[664] = "%d other Built In rotations are disabled (for another specialization, level or edition).",
+N["%d other Built In rotations are disabled (for another specialization, level or edition)."] = 664
 -- 856a3f22
 -- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
-[665] = "%s: disabled by you (turn it back on in Rotations, in its Built In view).",
+N["%s: disabled by you (turn it back on in Rotations, in its Built In view)."] = 665
 -- ceaa0803
 -- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
-[666] = "%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view).",
+N["%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view)."] = 666
 -- 4fd646c3
 -- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
-[667] = "then the fallback (%s)",
+N["then the fallback (%s)"] = 667
 -- 1e1885f9
 -- %s #1: %s #1: the comma-separated list of rotations in the order they are tried, e.g. "Frost AoE (10), Frost Single Target (5), then the fallback (Default)"
-[668] = "Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.",
+N["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name."] = 668
 -- 724799e1
 -- %s #1: %s #1: the name of the rotation that would be chosen, or "None", e.g. "Frost Single Target"
-[669] = "Automatic switching would choose: %s",
+N["Automatic switching would choose: %s"] = 669
 -- 07d344c2
 -- %d #1: %d #1: how many Built In rotations are disabled, e.g. 2
 -- %s #2: %s #2: their names, separated by commas, e.g. "Frost Leveling, Fire Leveling"
-[670] = "%d Built In disabled: %s",
+N["%d Built In disabled: %s"] = 670
 -- fd523668
 -- Context: Pill/badge at the top of the rotation editor for a rotation that cannot be edited (a
 --     Built In); adjective.
-[671] = "Read-Only",
+N["Read-Only"] = 671
 -- 75920f9f
-[672] = "Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.",
+N["Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile."] = 672
 -- 33cd603a
-[673] = "Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import.",
+N["Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import."] = 673
 -- 7772b5b6
-[674] = "Import preview: the metadata is shown as imported and cannot be edited here.",
+N["Import preview: the metadata is shown as imported and cannot be edited here."] = 674
 -- b5444cba
 -- Context: Part of a rotation's applicability description: the rotation needs at least this
 --     character level; %d is the level, e.g. 'level 60+'.
 -- %d #1: %d #1: the lowest character level, shown with a plus sign, e.g. 60
-[675] = "level %d+",
+N["level %d+"] = 675
 -- 7ae623fd
 -- Context: Name of the Classic 'Season of Mastery' ruleset, shown in rotation applicability text
 --     (translated through L when displayed).
-[676] = "Season of Mastery",
+N["Season of Mastery"] = 676
 -- 20bc4e56
 -- Context: Name of the Classic 'Season of Discovery' ruleset, shown in rotation applicability text
 --     (translated through L when displayed).
-[677] = "Season of Discovery",
+N["Season of Discovery"] = 677
 -- e913447f
 -- Context: Game ruleset name in rotation applicability text: Hardcore realms (one life).
-[678] = "Hardcore",
+N["Hardcore"] = 678
 -- 61123c4d
 -- Context: Name of the Classic 'Anniversary' ruleset, shown in rotation applicability text
 --     (translated through L when displayed).
-[679] = "Anniversary",
+N["Anniversary"] = 679
 -- 935f9eea
 -- Context: Name of the Classic 'Anniversary Hardcore' ruleset, shown in rotation applicability text
 --     (translated through L when displayed).
-[680] = "Anniversary Hardcore",
+N["Anniversary Hardcore"] = 680
 -- 20170cbb
 -- Context: Game ruleset name in rotation applicability text: Self-Found characters (no trading).
-[681] = "Self-Found",
+N["Self-Found"] = 681
 -- db93324d
 -- Context: Game ruleset name in rotation applicability text: normal (standard) realms, not seasonal
 --     or special rulesets.
-[682] = "Standard realms",
+N["Standard realms"] = 682
 -- b82c4d13
 -- Context: Part of a rotation's applicability text: the game season; %s is the season number.
 -- %s #1: %s #1: the season number, e.g. 3
-[683] = "Season %s",
+N["Season %s"] = 683
 -- 889ec415
 -- Context: Part of a rotation's applicability text: a game mode; %s is its name.
 -- %s #1: %s #1: the game mode number, e.g. 2
-[684] = "Game mode %s",
+N["Game mode %s"] = 684
 -- f06a6bb8
 -- %s #1: %s #1: the name of the default fallback rotation, e.g. "Default"
-[685] = "Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now.",
+N["Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now."] = 685
 -- e87b125e
 -- Context: Revision label of a built-in rotation, e.g. 'Revision 3'; %s is the revision number.
 -- %s #1: %s #1: the revision number of the Built In rotation, e.g. 4
-[686] = "Revision %s",
+N["Revision %s"] = 686
 -- da0fa84c
-[687] = "you switched it off (turn it back on in Rotations)",
+N["you switched it off (turn it back on in Rotations)"] = 687
 -- 20c39307
-[688] = "it ships disabled, an alternative to the recommended one (turn it on in Rotations)",
+N["it ships disabled, an alternative to the recommended one (turn it on in Rotations)"] = 688
 -- 27a5b813
 -- %s #1: %s #1: the rotation's identifier, e.g. "frost"
 -- %s #2: %s #2: the same identifier, used in the slash command, e.g. "frost"
-[689] = "Identifier: %s (/rm set %s)",
+N["Identifier: %s (/rm set %s)"] = 689
 -- 70f29af6
-[690] = "The fallback is always /rm set default.",
+N["The fallback is always /rm set default."] = 690
 -- 0ba95391
-[691] = "A Built In's identifier is fixed. Use it with /rm set.",
+N["A Built In's identifier is fixed. Use it with /rm set."] = 691
 -- 2d355596
-[692] = "Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive.",
+N["Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive."] = 692
 -- ffc28873
-[693] = "Made from the name until you change it. Use it with /rm set.",
+N["Made from the name until you change it. Use it with /rm set."] = 693
 -- 763698c5
-[694] = "has an invalid identifier",
+N["has an invalid identifier"] = 694
 -- 24adb964
 -- %s #1: %s #1: the identifier the player typed, e.g. "auto"
-[695] = "%s is reserved for /rm set.",
+N["%s is reserved for /rm set."] = 695
 -- a33e5083
-[696] = "An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters.",
+N["An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters."] = 696
 -- a15a0c4c
 -- %s #1: %s #1: the name of the rotation that already has this identifier, e.g. "Frost Single Target"
 -- %s #2: %s #2: the identifier, e.g. "frost"
-[697] = "%s already uses the identifier %s.",
+N["%s already uses the identifier %s."] = 697
 -- 2f1b1b88
 -- %s #1: %s #1: the current specialization with its class, e.g. "Frost Mage"
-[698] = "Rotations for %s (use /rm set <id>):",
+N["Rotations for %s (use /rm set <id>):"] = 698
 -- 01e5a59a
 -- Context: Status in a rotation list line: the player has turned this Built In rotation off.
-[699] = "disabled by you",
+N["disabled by you"] = 699
 -- 3f88443b
 -- Context: Status in a rotation list line: this Built In rotation is shipped turned off by default.
-[700] = "ships disabled",
+N["ships disabled"] = 700
 -- 4ac2f70c
-[701] = "not for this character now",
+N["not for this character now"] = 701
 -- e8fe279c
 -- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "it has incomplete or unsupported data"
-[702] = "cannot be selected: %s",
+N["cannot be selected: %s"] = 702
 -- 96879611
 -- Context: Status word in a rotation list line: this rotation is the one currently in use.
-[703] = "active",
+N["active"] = 703
 -- b24d6d33
 -- Context: Status word in a rotation list line: this rotation could be selected but is not the
 --     current one.
-[704] = "ready",
+N["ready"] = 704
 -- 5c7ee207
 -- Context: Kind word in parentheses in a rotation list line: the default fallback rotation.
-[705] = "fallback",
+N["fallback"] = 705
 -- 5eb2da9c
 -- Context: Kind word in parentheses in a rotation list line: a rotation you created (as opposed to
 --     Built In).
-[706] = "yours",
+N["yours"] = 706
 -- 7079adcd
-[707] = "The rotation list opened in a window you can copy from.",
+N["The rotation list opened in a window you can copy from."] = 707
 -- e9131331
-[708] = "Rotations and their identifiers",
+N["Rotations and their identifiers"] = 708
 -- 855192f1
 -- %s #1: %s #1: the identifier the player typed, e.g. "frost"
-[709] = "More than one rotation uses the identifier %s. Give one of them another identifier in Rotations.",
+N["More than one rotation uses the identifier %s. Give one of them another identifier in Rotations."] = 709
 -- 674aaa2c
 -- %s #1: %s #1: the identifiers that can be used now, separated by commas, e.g. "frost, fire"
-[710] = "Identifiers you can use now: %s (or auto). /rm list shows every rotation.",
+N["Identifiers you can use now: %s (or auto). /rm list shows every rotation."] = 710
 -- 3843971d
 -- Context: Label of the read-only identifier field of a rotation in the rotation editor;
 --     abbreviation of 'identifier'.
-[711] = "ID",
+N["ID"] = 711
 -- d60dbba0
 -- Context: Label of the priority number of a rotation in the rotation editor (order in which
 --     automatic selection tries rotations).
-[712] = "Priority",
+N["Priority"] = 712
 -- bc5b45ae
 -- Context: Button in the rotation editor: reset the profile's override of the enable setting back
 --     to the Built In's shipped default.
-[713] = "Reset to default",
+N["Reset to default"] = 713
 -- 4273cc49
-[714] = "Use the Built In as it ships: its own Enabled setting and priority.",
+N["Use the Built In as it ships: its own Enabled setting and priority."] = 714
 -- c6ea26d1
 -- %s #1: %s #1: whether the Built In rotation ships turned on, the word "enabled" or "disabled" (translated), e.g. "enabled"
-[715] = "Your setting for this profile. The Built In ships %s.",
+N["Your setting for this profile. The Built In ships %s."] = 715
 -- 7f5ac649
-[716] = "As the Built In ships. Click to change it for this profile.",
+N["As the Built In ships. Click to change it for this profile."] = 716
 -- c3b9f3c3
 -- %d #1: %d #1: the priority the Built In rotation ships with, e.g. 5
-[717] = "Your priority for this profile; the Built In ships with %d.",
+N["Your priority for this profile; the Built In ships with %d."] = 717
 -- 5a1f096a
 -- Context: Button in the rotation browser: turn the selected Built In rotation on (verb phrase).
-[718] = "Turn on",
+N["Turn on"] = 718
 -- 6d128898
-[719] = "Turn this Built In back on for this profile.",
+N["Turn this Built In back on for this profile."] = 719
 -- 2125e5d4
-[720] = "Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on.",
+N["Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on."] = 720
 -- aec06a34
-[721] = "Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on.",
+N["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = 721
 -- 67bd22a0
-[722] = "Disabled: automatic switching skips it.",
+N["Disabled: automatic switching skips it."] = 722
 -- 72e45f33
-[723] = "Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.",
+N["Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone."] = 723
 -- 73074f60
 -- %s #1: %s #1: the names of the rotations with the same priority, separated by commas, e.g. "Frost AoE, Frost Single Target"
-[724] = "Same priority as %s: both can be selected at once, and the tie is decided by name.",
+N["Same priority as %s: both can be selected at once, and the tie is decided by name."] = 724
 -- 6f39ad0a
 -- %s #1: %s #1: the names of the rotations that can be selected together with this one, separated by commas, e.g. "Frost AoE, Frost Single Target"
-[725] = "Can be selected together with %s: only priority decides which is chosen.",
+N["Can be selected together with %s: only priority decides which is chosen."] = 725
 -- 382c83c2
 -- Context: Part of a rotation's applicability text: the WoW expansion range; both %s are expansion
 --     numbers, e.g. 'expansions 2–3'.
 -- %s #1: %s #1: the first expansion the rotation loads for, e.g. 0 (a "?" when not limited)
 -- %s #2: %s #2: the last expansion the rotation loads for, e.g. 4 (a "?" when not limited)
-[726] = "expansions %s–%s",
+N["expansions %s–%s"] = 726
 -- 5042b611
 -- %s #1: %s #1: the list of limits separated by " · ", e.g. "Mage · level 60+ · expansions 0–4"
-[727] = "Loads only for: %s. Its specializations and switch condition decide the rest.",
+N["Loads only for: %s. Its specializations and switch condition decide the rest."] = 727
 -- eedcafc1
 -- %s #1: %s #1: the names of the Built In rotations that were turned back on, separated by commas, e.g. "Frost Leveling, Fire Leveling"
-[728] = "Built In rotations turned back on (they had been switched off without your choice): %s",
+N["Built In rotations turned back on (they had been switched off without your choice): %s"] = 728
 -- ebed0a8c
-[729] = "Disabled Built In rotations",
+N["Disabled Built In rotations"] = 729
 -- dd2bac9e
-[730] = "Open Rotations, select the Built In and turn it back on to make it selectable.",
+N["Open Rotations, select the Built In and turn it back on to make it selectable."] = 730
 -- f79331ec
 -- Context: Label for the default fallback rotation in a list of rotation choices; %s is its name.
 -- %s #1: %s #1: the name of the fallback rotation, e.g. "Default"
-[731] = "Fallback (%s)",
+N["Fallback (%s)"] = 731
 -- 372d7008
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[732] = "has an action type this version does not understand (%s)",
+N["has an action type this version does not understand (%s)"] = 732
 -- d566274f
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[733] = "has an invalid setting (%s)",
+N["has an invalid setting (%s)"] = 733
 -- 8cccea3a
-[734] = "has an invalid switch priority",
+N["has an invalid switch priority"] = 734
 -- d17ef091
 -- %s #1: %s #1: a short internal problem code, e.g. "invalid-id" (shown as-is; do not translate)
-[735] = "has a problem (%s)",
+N["has a problem (%s)"] = 735
 -- 5fd06eb7
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[736] = "has a setting this version does not understand (%s)",
+N["has a setting this version does not understand (%s)"] = 736
 -- d80aa866
 -- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': its
 --     item list is empty.
-[737] = "has no items",
+N["has no items"] = 737
 -- 60b19b4c
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[738] = "is missing a required setting (%s)",
+N["is missing a required setting (%s)"] = 738
 -- 85bfd4b6
-[739] = "it has incomplete or unsupported data",
+N["it has incomplete or unsupported data"] = 739
 -- f8b96220
-[740] = "It has incomplete or unsupported data",
+N["It has incomplete or unsupported data"] = 740
 -- d7edee09
 -- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...': the
 --     rotation is turned off.
-[741] = "it is disabled",
+N["it is disabled"] = 741
 -- bc0bcb96
-[742] = "it is for another class",
+N["it is for another class"] = 742
 -- 4a6abae5
-[743] = "it is for another expansion",
+N["it is for another expansion"] = 743
 -- f5b298ce
-[744] = "it is for another game build",
+N["it is for another game build"] = 744
 -- 5a11eb0a
-[745] = "it is for another season or game rules",
+N["it is for another season or game rules"] = 745
 -- 780f6563
-[746] = "it is for another specialization",
+N["it is for another specialization"] = 746
 -- 7d8492c5
-[747] = "it is for another WoW edition",
+N["it is for another WoW edition"] = 747
 -- f66da926
 -- %s #1: %s #1: a short internal reason code, e.g. "rotation-unavailable" (shown as-is; do not translate)
-[748] = "it is unavailable (%s)",
+N["it is unavailable (%s)"] = 748
 -- 3539504f
-[749] = "it needs context Rotation Master cannot read yet",
+N["it needs context Rotation Master cannot read yet"] = 749
 -- 6c8b3a05
-[750] = "it uses a condition, item set or function that is disabled",
+N["it uses a condition, item set or function that is disabled"] = 750
 -- 36bde66f
 -- Context: Word in the 'Active rotation: NAME (manual)' status line: the rotation was chosen by
 --     hand.
-[751] = "manual",
+N["manual"] = 751
 -- 561c4c93
 -- Context: Label for the 'false' branch entry of a conditional step, by position; %d is the
 --     position, e.g. 'No 2'.
 -- %d #1: %d #1: the number of the card inside the "No" (false) branch of a condition, counting from 1, e.g. 2
-[752] = "No %d",
+N["No %d"] = 752
 -- 61097c5a
 -- %s #1: %s #1: the specialization with its class, e.g. "Frost Mage"
-[753] = "no fallback rotation is saved for %s",
+N["no fallback rotation is saved for %s"] = 753
 -- 994142c1
-[754] = "No rotation can run until your specialization is available.",
+N["No rotation can run until your specialization is available."] = 754
 -- 2e4e47d8
 -- %s #1: %s #1: why the rotation cannot be selected, a sentence from the game (translated), e.g. "it is for Fire Mage"
-[755] = "Reason: %s. Type /rm why to check every rotation.",
+N["Reason: %s. Type /rm why to check every rotation."] = 755
 -- 21b77ae0
-[756] = "/rm why                 - Explain why each rotation can or cannot be selected.",
+N["/rm why                 - Explain why each rotation can or cannot be selected."] = 756
 -- dc42f8f7
-[757] = "Rotation eligibility opened in a window you can copy from.",
+N["Rotation eligibility opened in a window you can copy from."] = 757
 -- e3857ada
-[758] = "/rm debug glow [seconds] - Explain why a recommendation does or does not light a button.",
+N["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."] = 758
 -- 02b60727
-[759] = "/rm debug editor        - Copy native Lua input diagnostics.",
+N["/rm debug editor        - Copy native Lua input diagnostics."] = 759
 -- 16254d19
-[760] = "/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.",
+N["/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty."] = 760
 -- 79eeac12
 -- %s #1: %s #1: a short internal reason code, e.g. "rotation-store-unavailable" (shown as-is; do not translate)
-[761] = "rotations cannot be read (%s)",
+N["rotations cannot be read (%s)"] = 761
 -- 6a8fd6ba
 -- %s #1: %s #1: the rotation name, with its identifier in square brackets when one is set, e.g. "Frost Single Target [frost]"
-[762] = "Rotation %s cannot be selected.",
+N["Rotation %s cannot be selected."] = 762
 -- 9e742006
 -- Context: Label naming the top-level settings of a rotation when describing where in a rotation a
 --     problem is.
-[763] = "Rotation settings",
+N["Rotation settings"] = 763
 -- c8da2839
 -- Context: Label for a rotation step by position in a path description; %d is its position, e.g.
 --     'Rotation step 3'.
 -- %d #1: %d #1: the number of the step in the rotation list, counting from 1, e.g. 3
-[764] = "Rotation step %d",
+N["Rotation step %d"] = 764
 -- 707d01e5
 -- Context: Name of a rotation with its source appended, e.g. 'Fire Mage (Built In)'; %s is the
 --     rotation name.
 -- %s #1: %s #1: the name of a Built In rotation, e.g. "Frost Mage Leveling"
-[765] = "%s (Built In)",
+N["%s (Built In)"] = 765
 -- 19f8d44d
 -- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
 -- %s #2: %s #2: why it cannot be selected, a short phrase, e.g. "it is for Fire Mage"
-[766] = "%s: cannot be selected, %s.",
+N["%s: cannot be selected, %s."] = 766
 -- d707c233
 -- %s #1: %s #1: the specialization name, e.g. "Frost"
 -- %s #2: %s #2: the specialization number or ID, e.g. "64"
 -- %s #3: %s #3: the character level, e.g. "70" (a "?" when unknown)
-[767] = "Specialization: %s (%s), level %s",
+N["Specialization: %s (%s), level %s"] = 767
 -- 861decdd
 -- Context: Label for a spell step identified only by its spell ID; %d is the spell ID.
 -- %d #1: %d #1: the spell ID, shown when the spell name is not known, e.g. 133
-[768] = "Spell %d",
+N["Spell %d"] = 768
 -- 1ed10cef
 -- %s #1: %s #1: the name of the rotation, e.g. "Frost Mage Leveling"
-[769] = "%s: ready",
+N["%s: ready"] = 769
 -- 9cb0ddf3
-[770] = "the game build is unavailable",
+N["the game build is unavailable"] = 770
 -- 32258c52
 -- %s #1: %s #1: the specializations that do have a fallback, separated by commas, e.g. "Fire Mage, Arcane Mage"
-[771] = "(there is one for %s)",
+N["(there is one for %s)"] = 771
 -- 1ac2e769
 -- %s #1: %s #1: why it cannot be selected, a sentence from the game (translated), e.g. "Rotation step 3 has an invalid setting (duration)."
-[772] = "This rotation cannot be selected. %s.",
+N["This rotation cannot be selected. %s."] = 772
 -- bd35de7b
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[773] = "uses a condition that is disabled in Settings (%s)",
+N["uses a condition that is disabled in Settings (%s)"] = 773
 -- e766db43
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[774] = "uses a condition this client does not have (%s)",
+N["uses a condition this client does not have (%s)"] = 774
 -- 7ee51c30
 -- %s #1: %s #1: the name of the setting or condition involved, e.g. "duration" (shown as stored; do not translate)
-[775] = "uses a custom condition whose function is unavailable (%s)",
+N["uses a custom condition whose function is unavailable (%s)"] = 775
 -- 9c4983d1
-[776] = "uses a highlight effect that no longer exists",
+N["uses a highlight effect that no longer exists"] = 776
 -- fb02fcbf
-[777] = "uses an item set that no longer exists",
+N["uses an item set that no longer exists"] = 777
 -- 78a58cb3
-[778] = "uses Blizzard's suggestion, which only works in the rotation list",
+N["uses Blizzard's suggestion, which only works in the rotation list"] = 778
 -- 0f312508
-[779] = "Why rotations are or are not selected",
+N["Why rotations are or are not selected"] = 779
 -- 0887c156
 -- Context: Label for the 'true' branch entry of a conditional step, by position; %d is the
 --     position, e.g. 'Yes 1'.
 -- %d #1: %d #1: the number of the card inside the "Yes" (true) branch of a condition, counting from 1, e.g. 2
-[780] = "Yes %d",
+N["Yes %d"] = 780
 -- 2d0f9721
-[781] = "you are using another action bar",
+N["you are using another action bar"] = 781
 -- cfa7eb44
-[782] = "your level is outside its level range",
+N["your level is outside its level range"] = 782
 -- 7432f91e
-[783] = "your level is unavailable",
+N["your level is unavailable"] = 783
 -- 795c5030
-[784] = "your specialization is not available yet",
+N["your specialization is not available yet"] = 784
 -- 7139bb28
 -- Context: Specialization name for characters that have not picked a specialization yet (Initial).
-[785] = "No specialization",
+N["No specialization"] = 785
 -- 49271412
 -- Context: Name of the first talent group on Classic clients (primary talents / spec).
-[786] = "Primary talents",
+N["Primary talents"] = 786
 -- 1793e848
 -- Context: Name of the second talent group on Classic clients (secondary talents / dual spec).
-[787] = "Secondary talents",
+N["Secondary talents"] = 787
 -- 87a671ab
 -- Context: Name of a talent group by number on Classic clients; %d is the group number.
 -- %d #1: %d #1: the talent group number, e.g. 3
-[788] = "Talent group %d",
+N["Talent group %d"] = 788
 -- 7ff78404
 -- %s #1: %s #1: either a difficulty name or a talent-group name, e.g. "Heroic" or "Primary talents"
 -- %s #2: %s #2: either the kind of content or the talent tree it belongs to, e.g. "Raid" or "Frost"
-[789] = "%s (%s)",
+N["%s (%s)"] = 789
 -- 108db4c4
 -- Context: Text shown for a specialization ID the addon does not recognize.
-[790] = "Unknown specialization",
+N["Unknown specialization"] = 790
 -- a9e9b05e
 -- Context: Dropdown option in the rotation specialization selector: the rotation is not tied to a
 --     specialization.
-[791] = "Any specialization",
+N["Any specialization"] = 791
 -- e4db2902
 -- Context: Dropdown/filter option in the rotation browser: show rotations for all specializations.
-[792] = "All specializations",
+N["All specializations"] = 792
 -- ca573462
 -- Context: Fragment in 'You are playing %s; this rotation is for ...': the player has no
 --     specialization yet.
-[793] = "no specialization yet",
+N["no specialization yet"] = 793
 -- 254dcb81
 -- Context: Reason a rotation cannot be selected, phrased to follow 'cannot be selected: ...'; %s
 --     lists the specializations it is for.
 -- %s #1: %s #1: the specializations the rotation is for, separated by commas, e.g. "Frost Mage, Fire Mage"
-[794] = "it is for %s",
+N["it is for %s"] = 794
 -- 82612d65
-[795] = "has an invalid specialization list",
+N["has an invalid specialization list"] = 795
 -- 0344f8e2
-[796] = "This is not your current specialization.",
+N["This is not your current specialization."] = 796
 -- d81f37e0
-[797] = "Show the rotations for this specialization (and those for any specialization).",
+N["Show the rotations for this specialization (and those for any specialization)."] = 797
 -- 008ab39e
-[798] = "The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.",
+N["The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization."] = 798
 -- 3e93e3f4
 -- %s #1: %s #1: the specialization the player is in now, with its class, e.g. "Frost Mage"
 -- %s #2: %s #2: the specialization this fallback rotation is for, e.g. "Fire Mage"
-[799] = "You are playing %s; this fallback is for %s, so it is not used now.",
+N["You are playing %s; this fallback is for %s, so it is not used now."] = 799
 -- 70ef639a
 -- %s #1: %s #1: the specialization the player is in now, with its class, or "no specialization yet", e.g. "Frost Mage"
 -- %s #2: %s #2: the specializations this rotation is for, separated by commas, e.g. "Fire Mage"
-[800] = "You are playing %s; this rotation is for %s, so it is not selectable now.",
+N["You are playing %s; this rotation is for %s, so it is not selectable now."] = 800
 -- 10eeff18
 -- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
-[801] = "you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer",
+N["you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer"] = 801
 -- d2039939
 -- %s #1: %s #1: the specialization Rotation Master uses meanwhile, e.g. "Mage (no specialization)"
 -- %s #2: %s #2: its internal number or ID, e.g. "0"
 -- %s #3: %s #3: the specializations the editor offers, separated by commas, e.g. "Arcane, Fire, Frost"
-[802] = "You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.",
+N["You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization."] = 802
 -- 97aa7322
-[803] = "this client has no ranged slot",
+N["this client has no ranged slot"] = 803
 -- 93322c6f
-[804] = "this client has no specializations for your class",
+N["this client has no specializations for your class"] = 804
 -- ab24130e
-[805] = "combat data is restricted on this client",
+N["combat data is restricted on this client"] = 805
 -- 54ad6f4d
-[806] = "the game API it needs is missing",
+N["the game API it needs is missing"] = 806
 -- c155d094
-[807] = "this client is not supported",
+N["this client is not supported"] = 807
 -- 2d8da66b
-[808] = "this client uses a different talent system",
+N["this client uses a different talent system"] = 808
 -- 46ddb2f3
-[809] = "glyphs are not supported on this client build",
+N["glyphs are not supported on this client build"] = 809
 -- 2e996f7c
-[810] = "this edition has no point resource",
+N["this edition has no point resource"] = 810
 -- 364e833a
 -- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
 --     different WoW edition (e.g. Classic vs Retail).
-[811] = "Different WoW edition",
+N["Different WoW edition"] = 811
 -- fbb263cb
 -- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
 --     different class.
-[812] = "Different class",
+N["Different class"] = 812
 -- 178bde4c
 -- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
 --     different specialization.
-[813] = "Different specialization",
+N["Different specialization"] = 813
 -- b7964470
 -- Context: Reason text in the list of Built In rotations that cannot apply: the rotation needs a
 --     different action context (e.g. vehicle bar).
-[814] = "Different action context",
+N["Different action context"] = 814
 -- 46d39e12
-[815] = "Character level is unavailable",
+N["Character level is unavailable"] = 815
 -- e42df82f
-[816] = "Outside its level range",
+N["Outside its level range"] = 816
 -- d34ab535
-[817] = "Game build is unavailable",
+N["Game build is unavailable"] = 817
 -- 139114dc
 -- Context: Reason text in the list of Built In rotations that cannot apply: the rotation is for a
 --     different game client build.
-[818] = "Different game build",
+N["Different game build"] = 818
 -- a55c1483
-[819] = "Required context is not supported yet",
+N["Required context is not supported yet"] = 819
 -- e8fc4568
-[820] = "Reference only on this client",
+N["Reference only on this client"] = 820
 -- a4408d1f
-[821] = "The Built In rotation is unavailable.",
+N["The Built In rotation is unavailable."] = 821
 -- ca12b41f
-[822] = "Built In · read-only",
+N["Built In · read-only"] = 822
 -- d11d9681
 -- %s #1: %s #1: the lowest character level the Built In rotation is for, e.g. 1
 -- %s #2: %s #2: the highest character level, or "?" when there is no limit, e.g. 60
 -- %s #3: %s #3: the revision number, e.g. 4
-[823] = "Level range: %s–%s; revision %s",
+N["Level range: %s–%s; revision %s"] = 823
 -- a0b53ded
-[824] = "Available for this character",
+N["Available for this character"] = 824
 -- a77cc377
 -- %s #1: %s #1: why the Built In rotation is not available, a short phrase (translated), e.g. "Different class"
-[825] = "Not available for this character: %s",
+N["Not available for this character: %s"] = 825
 -- 91f1e71a
 -- Context: Checkbox/button in the Built In rotation panel: turn this Built In rotation on for your
 --     profile.
-[826] = "Enable Built In",
+N["Enable Built In"] = 826
 -- 763de8e1
 -- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
-[827] = "Could not update this Built In rotation: %s",
+N["Could not update this Built In rotation: %s"] = 827
 -- ba6d03f9
 -- Context: Button in the Built In rotation panel: copy the read-only Built In into your own
 --     editable rotation (verb phrase).
-[828] = "Clone to edit",
+N["Clone to edit"] = 828
 -- e1ad50fb
 -- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
-[829] = "Could not duplicate this Built In rotation: %s",
+N["Could not duplicate this Built In rotation: %s"] = 829
 -- ac89ec89
 -- %d #1: %d #1: the position in a numbered list, counting from 1, e.g. 2
 -- %s #2: %s #2: the text of that list entry, e.g. "Cast Frostbolt"
-[830] = "%d. %s",
+N["%d. %s"] = 830
 -- 36021c12
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Message
 --     'Condition preview unavailable' for a condition that could not be previewed.
-[831] = "Condition preview unavailable",
+N["Condition preview unavailable"] = 831
 -- caf85b08
 -- Context: Heading of the list of sources/citations for a rotation (where the Built In was derived
 --     from).
-[832] = "Sources",
+N["Sources"] = 832
 -- ca184496
 -- Context: Status/heading text: something is unavailable (help for a missing subject, debugger
 --     status, validation).
-[833] = "Unavailable",
+N["Unavailable"] = 833
 -- b177f0bb
 -- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
-[846] = "Could not duplicate this rotation: %s",
+N["Could not duplicate this rotation: %s"] = 846
 -- efaafe62
 -- %s #1: %s #1: why it failed, a short reason from the game, e.g. "the rotation no longer exists" (may be an internal code such as "unknown-rotation"; shown as-is)
-[847] = "Could not duplicate this step: %s",
+N["Could not duplicate this step: %s"] = 847
 -- 5ad38304
 -- Context: Word in a rotation comparison: the compared field has no value in the current rotation.
-[848] = "absent",
+N["absent"] = 848
 -- 4303eed3
-[849] = "This comparison could not be completed.",
+N["This comparison could not be completed."] = 849
 -- 15826b1f
-[850] = "This comparison is incomplete; some changes are omitted.",
+N["This comparison is incomplete; some changes are omitted."] = 850
 -- 70277515
-[851] = "No differences.",
+N["No differences."] = 851
 -- 783ee9d8
 -- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].conditions"
 -- %s #2: %s #2: the new value, e.g. "Frostbolt"
-[852] = "Added %s: %s",
+N["Added %s: %s"] = 852
 -- cbd1cc0c
 -- %s #1: %s #1: where in the rotation the setting was, as a path, e.g. "rotation[3].conditions"
 -- %s #2: %s #2: the removed value, e.g. "Frostbolt"
-[853] = "Removed %s: %s",
+N["Removed %s: %s"] = 853
 -- 9ffda67b
 -- %s #1: %s #1: where in the rotation the step is, as a path, e.g. "rotation[3]"
 -- %s #2: %s #2: the old priority (position), e.g. 3
 -- %s #3: %s #3: the new priority (position), e.g. 1
-[854] = "Moved %s: priority %s → %s",
+N["Moved %s: priority %s → %s"] = 854
 -- 496c1fce
 -- %s #1: %s #1: where in the rotation the setting is, as a path, e.g. "rotation[3].spell"
 -- %s #2: %s #2: the old value, e.g. "Frostbolt"
 -- %s #3: %s #3: the new value, e.g. "Ice Lance"
-[855] = "Changed %s: %s → %s",
+N["Changed %s: %s → %s"] = 855
 -- 222fd90b
-[856] = "Read-only comparison. Priority moves are listed; rotations are not merged.",
+N["Read-only comparison. Priority moves are listed; rotations are not merged."] = 856
 -- e47cb3ad
-[857] = "Changes in the Built In rotation since cloning",
+N["Changes in the Built In rotation since cloning"] = 857
 -- a679d4c3
-[858] = "Your changes since cloning",
+N["Your changes since cloning"] = 858
 -- e4e1807d
-[859] = "Differences from the current Built In rotation",
+N["Differences from the current Built In rotation"] = 859
 -- f44ec53e
 -- Context: Heading in the rotation comparison: fields changed both by you and by the new Built In
 --     version.
-[860] = "Overlapping field edits",
+N["Overlapping field edits"] = 860
 -- d1d87a47
-[861] = "No overlapping field edits detected. Priority order still needs review.",
+N["No overlapping field edits detected. Priority order still needs review."] = 861
 -- b4bf24a9
-[862] = "Selected rotation → your rotation",
+N["Selected rotation → your rotation"] = 862
 -- c72b77cf
-[863] = "Some display text was truncated. Rotation data has not been changed.",
+N["Some display text was truncated. Rotation data has not been changed."] = 863
 -- 184940bb
 -- Context: Title of the rotation comparison window; also the button in the rotation editor that
 --     opens it (verb phrase).
-[864] = "Compare rotations",
+N["Compare rotations"] = 864
 -- ad26c965
 -- %s #1: %s #1: the name of the player's own rotation, e.g. "Frost Single Target"
-[865] = "Your rotation: %s",
+N["Your rotation: %s"] = 865
 -- d30f9619
 -- Context: Label of the dropdown choosing what to compare the rotation against in the comparison
 --     window.
-[866] = "Compare against",
+N["Compare against"] = 866
 -- 5cbf27df
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
 --     comparison' to copy the comparison result to the clipboard.
-[867] = "Copy comparison",
+N["Copy comparison"] = 867
 -- 7f25ffda
-[868] = "Review the differences, then select Copy and press Ctrl+C.",
+N["Review the differences, then select Copy and press Ctrl+C."] = 868
 -- 9078f91f
 -- %s #1: %s #1: why the comparison cannot be shown, a short reason, e.g. "the rotation could not be read"
-[869] = "Comparison unavailable: %s",
+N["Comparison unavailable: %s"] = 869
 -- 73484f4d
 -- Context: Placeholder name for a spell whose name cannot be read; %s is the spell ID.
 -- %s #1: %s #1: the spell ID that the game does not know, e.g. 133
-[870] = "Unknown spell (%s)",
+N["Unknown spell (%s)"] = 870
 -- e328ada9
 -- Context: Name of the Beyond Melee Range condition (the target is farther than melee distance).
-[871] = "Beyond Melee Range",
+N["Beyond Melee Range"] = 871
 -- 2652c653
 -- %s #1: %s #1: the unit that is out of reach, e.g. "your target"
-[872] = "%s is beyond melee range",
+N["%s is beyond melee range"] = 872
 -- 4aaede20
 -- Context: Heading for the conditions used to automatically switch rotations in a comparison or
 --     reference view; also a comparison row label.
-[873] = "Switch conditions",
+N["Switch conditions"] = 873
 -- 4e9a0f45
 -- Context: Title of a cooldown step card in a rotation reference: a highlight that is independent
 --     of the sequence.
-[874] = "Optional highlight",
+N["Optional highlight"] = 874
 -- 6ba1c0c2
 -- Context: Title of a sequential step card in a rotation reference; %s is its position number.
 -- %s #1: %s #1: the step's position in the priority list, counting from 1, e.g. 3
-[875] = "Priority %s",
+N["Priority %s"] = 875
 -- 38728cc5
-[876] = "Stop the sequence here",
+N["Stop the sequence here"] = 876
 -- b1fb02b4
 -- %s #1: %s #1: the name of the item or item set, e.g. "Healthstone"
-[877] = "Item or item set: %s",
+N["Item or item set: %s"] = 877
 -- 0bbc45af
-[878] = "Use this exact spell rank",
+N["Use this exact spell rank"] = 878
 -- 59291ee2
-[879] = "No steps in this section.",
+N["No steps in this section."] = 879
 -- 6f32b2f4
 -- Context: Heading in the rotation comparison and reference: the cooldown steps that highlight
 --     independently.
-[880] = "Optional highlights",
+N["Optional highlights"] = 880
 -- 6f79a2fd
-[881] = "These reminders highlight independently whenever their conditions are met.",
+N["These reminders highlight independently whenever their conditions are met."] = 881
 -- 681ceb51
 -- Context: Heading in the rotation comparison and reference: the main steps where the first
 --     eligible one is recommended.
-[882] = "Sequential priority",
+N["Sequential priority"] = 882
 -- 89166303
-[883] = "The first eligible step is recommended. Later steps provide alternatives.",
+N["The first eligible step is recommended. Later steps provide alternatives."] = 883
 -- 2624dd07
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'View
 --     full rotation' to open the complete rotation in the viewer.
-[884] = "View full rotation",
+N["View full rotation"] = 884
 -- d1843213
-[885] = "Built In rotation reference",
+N["Built In rotation reference"] = 885
 -- 922b9ee8
-[886] = "Read-only comparison. Rotations are not merged.",
+N["Read-only comparison. Rotations are not merged."] = 886
 -- a77963c6
-[887] = "Additional settings changed. Copy diagnostic details to inspect all fields.",
+N["Additional settings changed. Copy diagnostic details to inspect all fields."] = 887
 -- 8597bf22
 -- Context: Column title in the comparison window: the rotation as it was when it was cloned from
 --     the Built In.
-[888] = "At cloning",
+N["At cloning"] = 888
 -- 9cc733fc
 -- Context: Column title in the comparison window: the rotation you picked in the list.
-[889] = "Selected rotation",
+N["Selected rotation"] = 889
 -- c9e13168
 -- Context: Column title in the comparison window: the user's own rotation.
-[890] = "Your rotation",
+N["Your rotation"] = 890
 -- dd2e2975
 -- Context: Message in a comparison column: there is no step matching the one in the other column.
-[891] = "No corresponding step",
+N["No corresponding step"] = 891
 -- 6b02e0d3
 -- Context: Status tag in a rotation comparison row (shown in green): this step was added.
-[892] = "Added",
+N["Added"] = 892
 -- 4118fb4f
 -- Context: Status tag in a rotation comparison row (shown in red): this step was removed.
-[893] = "Removed",
+N["Removed"] = 893
 -- 2a6141e4
 -- Context: Status tag in a rotation comparison row (shown in amber): this step was changed.
-[894] = "Changed",
+N["Changed"] = 894
 -- b11c9047
 -- Context: Status tag in a rotation comparison row (shown in blue): this step moved to a different
 --     position.
-[895] = "Moved",
+N["Moved"] = 895
 -- 88b6f742
 -- Context: Status tag in a rotation comparison row: nothing changed in this step.
-[896] = "Unchanged",
+N["Unchanged"] = 896
 -- f5f36595
 -- Context: Title of the diagnostic details report in the comparison window.
-[897] = "Comparison diagnostic details",
+N["Comparison diagnostic details"] = 897
 -- 61d7fa13
-[898] = "Press Ctrl+C to copy the selected diagnostic details.",
+N["Press Ctrl+C to copy the selected diagnostic details."] = 898
 -- bb35fd44
 -- Context: Label of the dropdown choosing the comparison direction/view in the comparison window.
-[899] = "Comparison view",
+N["Comparison view"] = 899
 -- c489054c
 -- Context: Button that copies diagnostic details about a rotation or comparison to the clipboard
 --     (verb).
-[900] = "Copy diagnostic details",
+N["Copy diagnostic details"] = 900
 -- 383100d5
-[901] = "Built In updates since cloning",
+N["Built In updates since cloning"] = 901
 -- 6c3bd099
-[902] = "Your edits since cloning",
+N["Your edits since cloning"] = 902
 -- b3ec34b2
-[903] = "Current Built In rotation",
+N["Current Built In rotation"] = 903
 -- e6b8f377
 -- Context: Placeholder text in a rotation reference for an item that cannot be identified.
-[904] = "Unknown item",
+N["Unknown item"] = 904
 -- 36f3765b
 -- Context: Label for an item identified by ID or name; %s is the item ID or name.
 -- %s #1: %s #1: the item ID or name that the game cannot resolve, e.g. 5512
-[905] = "Item %s",
+N["Item %s"] = 905
 -- 710f81fe
 -- %s #1: %s #1: the name of the item set, e.g. "Healing potions"
-[906] = "Item set: %s",
+N["Item set: %s"] = 906
 -- 3ec02e0c
 -- Context: Message in a rotation reference card: the step has a type the addon does not know.
-[907] = "Unknown action type",
+N["Unknown action type"] = 907
 -- b3fee308
 -- Context: Step type description in a rotation reference: a spell cast by the player.
-[908] = "Player spell",
+N["Player spell"] = 908
 -- aebfceb4
-[909] = "Player or pet spell",
+N["Player or pet spell"] = 909
 -- c910d474
 -- Context: Name of the 'General' settings tab.
-[910] = "General",
+N["General"] = 910
 -- 839ffbca
-[911] = "Copy this export, or paste a rotation and preview it. Import creates a new editable copy.",
+N["Copy this export, or paste a rotation and preview it. Import creates a new editable copy."] = 911
 -- 2c7dec65
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label
 --     'Rotation text' for the exported text of a rotation.
-[912] = "Rotation text",
+N["Rotation text"] = 912
 -- 9d89d908
-[913] = "Name for imported copy",
+N["Name for imported copy"] = 913
 -- 05ca5c89
 -- Context: Default name given to a rotation created by importing text.
-[914] = "Imported rotation",
+N["Imported rotation"] = 914
 -- a0d7b2fa
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
 --     export' to copy exported text to the clipboard.
-[915] = "Copy export",
+N["Copy export"] = 915
 -- ab5c8e55
 -- Context: Button in the import dialog: preview what the import would change before applying it
 --     (verb phrase); also a help heading.
-[916] = "Preview import",
+N["Preview import"] = 916
 -- ebc64351
 -- Context: Button in the import dialog (replace mode): compare the import with the existing entry
 --     before applying (verb phrase).
-[917] = "Compare import",
+N["Compare import"] = 917
 -- ed144b77
 -- Context: Title of the window previewing an import, read-only.
-[918] = "Import preview",
+N["Import preview"] = 918
 -- 53fb6864
-[919] = "Import as new rotation",
+N["Import as new rotation"] = 919
 -- 89411b23
 -- %s #1: %s #1: why the export is not possible, a short reason, e.g. "nothing selected"
-[920] = "Export unavailable: %s",
+N["Export unavailable: %s"] = 920
 -- 4ea0b645
-[921] = "Preview a pasted rotation before importing it.",
+N["Preview a pasted rotation before importing it."] = 921
 -- 6e52d457
-[922] = "Text changed. Preview again before importing.",
+N["Text changed. Preview again before importing."] = 922
 -- a3396230
-[923] = "Text changed. Compare again before importing.",
+N["Text changed. Compare again before importing."] = 923
 -- 815a23ae
 -- %s #1: %s #1: what is wrong with the import, a short reason, e.g. "unknown field"
-[924] = "This import cannot be shown in full (%s). Use Check import for details.",
+N["This import cannot be shown in full (%s). Use Check import for details."] = 924
 -- c409c01f
 -- %s #1: %s #1: why the import cannot be previewed, a short reason, e.g. "invalid-format"
-[925] = "Import preview unavailable: %s",
+N["Import preview unavailable: %s"] = 925
 -- 7fa00152
-[926] = "Ready to import as a new copy.",
+N["Ready to import as a new copy."] = 926
 -- 8bc94920
 -- %s #1: %s #1: why the import cannot be applied, a short reason, e.g. "the rotation is for another class"
-[927] = "This import cannot be applied: %s",
+N["This import cannot be applied: %s"] = 927
 -- d1e71918
-[928] = "Legacy export: WoW edition and class scope were not supplied.",
+N["Legacy export: WoW edition and class scope were not supplied."] = 928
 -- 898a9c6d
 -- %s #1: %s #1: why the import failed, a short reason, e.g. "invalid-data"
-[929] = "Could not import this rotation: %s",
+N["Could not import this rotation: %s"] = 929
 -- 29b67037
 -- Context: Column title in the comparison window: the rotation being imported.
-[930] = "Incoming rotation",
+N["Incoming rotation"] = 930
 -- de9f057a
 -- Context: Condition text for an empty condition list: the step always applies; also status text.
-[931] = "Always",
+N["Always"] = 931
 -- d51cec9c
-[932] = "Condition reference (code is not run).",
+N["Condition reference (code is not run)."] = 932
 -- 40afa4aa
 -- Context: Button in the import dialog: check the pasted import text for problems (verb phrase).
-[933] = "Check import",
+N["Check import"] = 933
 -- 817bfd7b
-[934] = "This import window is out of date. Close it and open it again.",
+N["This import window is out of date. Close it and open it again."] = 934
 -- e301820a
 -- Context: Heading of the column showing the entry being imported, in the import preview.
-[935] = "Incoming",
+N["Incoming"] = 935
 -- a7b182f8
 -- Context: Heading of the list of problems found in an import report.
-[936] = "Problems",
+N["Problems"] = 936
 -- 8a7525b1
 -- Context: Heading of the list of notes (informational messages) in an import report.
-[937] = "Notes",
+N["Notes"] = 937
 -- 2191a0b7
-[938] = "No problems found.",
+N["No problems found."] = 938
 -- 460c60bd
-[939] = "This import can be applied.",
+N["This import can be applied."] = 939
 -- 03f266f9
 -- %d #1: %d #1: the number of settings shown, e.g. 12
-[940] = "Fields shown: %d",
+N["Fields shown: %d"] = 940
 -- 77810b90
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'Field order' in custom function documentation (order of the fields).
-[941] = "Field order",
+N["Field order"] = 941
 -- bbd21338
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'Required fields' in custom condition documentation.
-[942] = "Required fields",
+N["Required fields"] = 942
 -- e68b36b1
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'Parameters' in custom function documentation (a function's input values).
-[943] = "Parameters",
+N["Parameters"] = 943
 -- ea33a267
 -- %s #1: %s #1: the name of the code field being compared, e.g. "evaluate", "print" or "widget" (shown as-is)
-[944] = "Code: %s",
+N["Code: %s"] = 944
 -- bd795f03
 -- %d #1: %d #1: how many settings are left out of the list, e.g. 5
-[945] = "%d more settings are not shown.",
+N["%d more settings are not shown."] = 945
 -- 1a5d255a
 -- %d #1: %d #1: how many characters of the code are cut off, e.g. 1200
-[946] = "... %d more characters not shown.",
+N["... %d more characters not shown."] = 946
 -- 0ee9b450
-[947] = "This is a dependency bundle. Import opens the bundle review.",
+N["This is a dependency bundle. Import opens the bundle review."] = 947
 -- 2a6f7cb8
 -- Context: Button in the Built In rotation panel: export the Built In rotation as text (verb
 --     phrase).
-[948] = "Export Built In",
+N["Export Built In"] = 948
 -- 57152733
 -- Context: Fallback title of a comparison view tab/dropdown entry in the comparison window.
-[949] = "Comparison",
+N["Comparison"] = 949
 -- c849416a
-[950] = "A condition could not be validated. Use /rm errors for details.",
+N["A condition could not be validated. Use /rm errors for details."] = 950
 -- dba2cedf
-[951] = "A custom validator changed the condition while checking it. Fix the validator before applying.",
+N["A custom validator changed the condition while checking it. Fix the validator before applying."] = 951
 -- 60a0d835
 -- Context: Button in the condition editor: add a single condition to the list (verb phrase).
-[953] = "Add condition",
+N["Add condition"] = 953
 -- da431313
 -- Context: Name of the AND group type in the condition editor: all inner conditions must be true.
-[954] = "All (AND)",
+N["All (AND)"] = 954
 -- fca19d27
 -- Context: Name of the OR group type in the condition editor: any inner condition may be true.
-[955] = "Any (OR)",
+N["Any (OR)"] = 955
 -- 31e392d1
 -- Context: Button in editors that saves the pending changes (verb).
-[956] = "Apply",
+N["Apply"] = 956
 -- d9c7876b
-[957] = "Apply or cancel the open condition before editing another.",
+N["Apply or cancel the open condition before editing another."] = 957
 -- 19766ed6
 -- Context: Button/tooltip in dialogs that closes the dialog without saving (verb).
-[958] = "Cancel",
+N["Cancel"] = 958
 -- 838e8c5b
-[959] = "Changes not applied.",
+N["Changes not applied."] = 959
 -- 270bc3e1
 -- Context: Placeholder text in condition text where no condition is chosen yet; imperative.
-[960] = "Choose a condition",
+N["Choose a condition"] = 960
 -- 03557ba7
-[961] = "Complete the selected condition's fields before applying.",
+N["Complete the selected condition's fields before applying."] = 961
 -- 5399c49c
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Button/tooltip 'Disable condition' on a condition card.
-[962] = "Disable condition",
+N["Disable condition"] = 962
 -- ebae65ff
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Button/tooltip 'Enable condition' on a condition card.
-[963] = "Enable condition",
+N["Enable condition"] = 963
 -- 2015044c
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Label/placeholder 'Find condition type' for the condition type search.
-[964] = "Find condition type",
+N["Find condition type"] = 964
 -- 65d9d4e3
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Condition
 --     card action 'Group with %s'; %s names another condition.
 -- %s #1: %s #1: how the condition is grouped, "All" or "Any", e.g. "Any"
-[965] = "Group with %s",
+N["Group with %s"] = 965
 -- e3de7bbd
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Error text
 --     'Invalid disabled flag' for a condition with an invalid disabled value.
-[966] = "Invalid disabled flag",
+N["Invalid disabled flag"] = 966
 -- a1ed1d35
 -- Context: Name of the NOT group type in the condition editor: negates the inner condition.
-[967] = "Not (NOT)",
+N["Not (NOT)"] = 967
 -- cf440966
-[968] = "Only the first 200 conditions are shown. Other conditions are preserved.",
+N["Only the first 200 conditions are shown. Other conditions are preserved."] = 968
 -- 5ac0b06f
 -- Context: Button/tooltip on a condition card: remove this condition (verb phrase).
-[969] = "Remove condition",
+N["Remove condition"] = 969
 -- f2f59bcc
-[970] = "Select a child on the left to edit its fields. Use Add condition to extend this group.",
+N["Select a child on the left to edit its fields. Use Add condition to extend this group."] = 970
 -- c2c0ca8c
-[971] = "Some condition fields have invalid values. Check them before applying.",
+N["Some condition fields have invalid values. Check them before applying."] = 971
 -- b5fb4926
-[972] = "That change could not be applied. Check the selected condition.",
+N["That change could not be applied. Check the selected condition."] = 972
 -- 9088e6de
-[973] = "The condition editor could not display these fields. Use /rm errors for details.",
+N["The condition editor could not display these fields. Use /rm errors for details."] = 973
 -- 9287b789
-[974] = "This condition changed in another editor. Cancel and reopen it before applying.",
+N["This condition changed in another editor. Cancel and reopen it before applying."] = 974
 -- 8a66c68f
-[975] = "This condition has no adjacent sibling in that direction.",
+N["This condition has no adjacent sibling in that direction."] = 975
 -- a84958b2
-[976] = "This draft contains conditions or fields that this version cannot apply.",
+N["This draft contains conditions or fields that this version cannot apply."] = 976
 -- 79bdd6f5
-[977] = "This draft refers to missing data. Resolve those references before applying.",
+N["This draft refers to missing data. Resolve those references before applying."] = 977
 -- b57ef478
 -- Context: Button/tooltip on a condition card: remove the group but keep its inner conditions
 --     (verb).
-[978] = "Ungroup",
+N["Ungroup"] = 978
 -- e70375d8
-[979] = "Ungroup requires a group with at most one child.",
+N["Ungroup requires a group with at most one child."] = 979
 -- 608c89a1
 -- %s #1: %s #1: the internal name of the condition, e.g. "BUFF"
-[980] = "Unknown condition: %s",
+N["Unknown condition: %s"] = 980
 -- e77e940c
 -- Context: Title for a step with no condition in the condition editor: it always applies.
-[981] = "Always (no condition)",
+N["Always (no condition)"] = 981
 -- 422835ec
-[982] = "An empty AND group always matches. Add a condition to restrict it.",
+N["An empty AND group always matches. Add a condition to restrict it."] = 982
 -- 535f9794
-[983] = "An empty OR group never matches. Add a condition that can match.",
+N["An empty OR group never matches. Add a condition that can match."] = 983
 -- 9478e594
-[984] = "An empty condition always matches. Choose a type to restrict it.",
+N["An empty condition always matches. Choose a type to restrict it."] = 984
 -- 877196c3
-[985] = "The original rotation or step was removed or replaced. Cancel this draft and reopen the current one.",
+N["The original rotation or step was removed or replaced. Cancel this draft and reopen the current one."] = 985
 -- 7412ffde
 -- Context: Checkbox in the comparison window: also show steps that did not change.
-[986] = "Show unchanged steps",
+N["Show unchanged steps"] = 986
 -- 4b23882b
 -- %s #1: %s #1: how many steps are hidden because they did not change, e.g. 7
-[987] = "%s unchanged steps hidden.",
+N["%s unchanged steps hidden."] = 987
 -- 128afc72
-[988] = "No other rotations to compare.",
+N["No other rotations to compare."] = 988
 -- 4e170ba0
 -- Context: Name of the Spell Recharge Time condition (seconds until the next charge of a spell).
-[989] = "Spell Recharge Time",
+N["Spell Recharge Time"] = 989
 -- d0db4227
-[990] = "Pet Spell Recharge Time",
+N["Pet Spell Recharge Time"] = 990
 -- 6852f826
-[991] = "Any Spell Recharge Time",
+N["Any Spell Recharge Time"] = 991
 -- 62d868ef
 -- Context: Heading in the rotation comparison: the name of the rotation changed.
-[992] = "Rotation names",
+N["Rotation names"] = 992
 -- a0e34049
 -- Context: Label in a rotation reference: this step has a name you typed.
-[993] = "Custom step name",
+N["Custom step name"] = 993
 -- f5945a5c
 -- Context: Label in a rotation reference: this step's name is generated from its action.
-[994] = "Automatic step name",
+N["Automatic step name"] = 994
 -- 3b913c3a
-[995] = "Spell search data is unavailable.",
+N["Spell search data is unavailable."] = 995
 -- 58caf758
-[996] = "No matching spells.",
+N["No matching spells."] = 996
 -- f5533dea
-[997] = "More matches available. Keep typing to narrow the search.",
+N["More matches available. Keep typing to narrow the search."] = 997
 -- 60613f0f
-[998] = "Spells from this spellbook. Click a result or press Enter.",
+N["Spells from this spellbook. Click a result or press Enter."] = 998
 -- 473d3033
-[999] = "Known and referenced spells. Enter a spell ID or link to find another spell.",
+N["Known and referenced spells. Enter a spell ID or link to find another spell."] = 999
 -- e04de746
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Placeholder/label 'Search rotations' for the search box in the rotation browser.
-[1000] = "Search rotations",
+N["Search rotations"] = 1000
 -- a52ace42
 -- Context: Option label meaning all of the items: the condition category 'All' filter and the 'All'
 --     side of an AND group toggle.
-[1001] = "All",
+N["All"] = 1001
 -- 019a32de
 -- Context: Rotation kind in the rotation browser: a rotation shipped with the addon (Built In);
 --     also a filter option. Keep the term consistent with other 'Built In' strings.
-[1002] = "Built In",
+N["Built In"] = 1002
 -- 5ca6606f
-[1003] = "No rotations match this search.",
+N["No rotations match this search."] = 1003
 -- 68f12a84
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'New
 --     rotation' to create an empty rotation.
-[1004] = "New rotation",
+N["New rotation"] = 1004
 -- 325e8493
 -- Context: Rotation kind in the rotation browser: the default fallback rotation used when none
 --     applies.
-[1005] = "Fallback",
+N["Fallback"] = 1005
 -- 71e6453b
 -- Context: Counter below the rotation browser list; the first %d is how many rotations are shown,
 --     the second how many exist in total.
 -- %d #1: %d #1: how many rotations are listed now, e.g. 3
 -- %d #2: %d #2: how many rotations exist in total, e.g. 12
-[1006] = "%d of %d rotations",
+N["%d of %d rotations"] = 1006
 -- cae7d57b
 -- Context: Step type in the rotation step editor: the step stops the rotation (no further
 --     recommendation); also a help heading.
-[1007] = "Stop",
+N["Stop"] = 1007
 -- 05a85640
-[1008] = "Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.",
+N["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."] = 1008
 -- a4f32e85
-[1009] = "When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button.",
+N["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."] = 1009
 -- 5c68c9c6
 -- Context: Heading in a rotation reference for the automatic final step the addon appends (the
 --     basic attack) when nothing else applies.
-[1010] = "Implicit final fallback",
+N["Implicit final fallback"] = 1010
 -- d56153b6
-[1011] = "Also suppress auto-attack (Attack or Shoot)",
+N["Also suppress auto-attack (Attack or Shoot)"] = 1011
 -- 79dbc7b6
-[1012] = "Implicit auto-attack (Attack or Shoot) is suppressed by this Stop.",
+N["Implicit auto-attack (Attack or Shoot) is suppressed by this Stop."] = 1012
 -- 2c950c8c
-[1013] = "Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop.",
+N["Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop."] = 1013
 -- 762ebb70
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Group
 --     name' for the name of a condition category group.
-[1014] = "Group name",
+N["Group name"] = 1014
 -- 9d5097a8
 -- Context: Dropdown option in the condition picker that shows conditions of every category.
-[1015] = "All categories",
+N["All categories"] = 1015
 -- 848b0fa0
-[1016] = "Choose or search condition type",
+N["Choose or search condition type"] = 1016
 -- 0f8a2a34
 -- %s #1: %s #1: the name of the missing field, e.g. "spell" (or "?" when unknown)
-[1017] = "Incomplete: %s is required",
+N["Incomplete: %s is required"] = 1017
 -- f9575aeb
-[1018] = "Invalid or unsupported condition fields",
+N["Invalid or unsupported condition fields"] = 1018
 -- 010b483d
 -- Context: Summary line in a collection comparison: how many conditions an entry has; %d is the
 --     count.
 -- %d #1: %d #1: the number of conditions in the category, e.g. 8
-[1019] = "%d conditions",
+N["%d conditions"] = 1019
 -- c417805d
-[1020] = "Expand to edit fields",
+N["Expand to edit fields"] = 1020
 -- a063783d
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
 --     'Negate each' (apply NOT to each selected condition).
-[1021] = "Negate each",
+N["Negate each"] = 1021
 -- a9ee2142
 -- %s #1: %s #1: the addon version, e.g. "4.2.1"
 -- %s #2: %s #2: the author, e.g. "PreZ"
-[1022] = "Version: %s  ·  Author: %s",
+N["Version: %s  ·  Author: %s"] = 1022
 -- e2311633
-[1023] = "Configure rotations, conditions and highlights in the Rotation Master window.",
+N["Configure rotations, conditions and highlights in the Rotation Master window."] = 1023
 -- 23010764
 -- Context: Large button on the addon's settings page in the game's Options window: opens the
 --     Rotation Master configuration window.
-[1024] = "Open Options",
+N["Open Options"] = 1024
 -- b764cdc0
 -- Context: Placeholder shown when a value cannot be determined (unknown encounter name, unknown
 --     client edition, unknown addon version or author).
-[1025] = "Unknown",
+N["Unknown"] = 1025
 -- a9080cb3
 -- %d #1: %d #1: the window scale as a percentage, e.g. 100 (the %% after it is a literal percent sign)
-[1026] = "Scale: %d%%",
+N["Scale: %d%%"] = 1026
 -- 17a87f02
-[1027] = "Right-click the title bar to close.",
+N["Right-click the title bar to close."] = 1027
 -- 7e8ccc3f
-[1028] = "Choose a tab to configure Rotation Master. Rotations contains the library and editors. Changes in the condition editor remain a draft until Apply; Cancel abandons them.",
+N["Choose a tab to configure Rotation Master. Rotations contains the library and editors. Changes in the condition editor remain a draft until Apply; Cancel abandons them."] = 1028
 -- 4930aa43
-[1029] = "Drag the title bar to move this window; right-click it to close. Resize from the lower-right corner and adjust Scale in the footer.",
+N["Drag the title bar to move this window; right-click it to close. Resize from the lower-right corner and adjust Scale in the footer."] = 1029
 -- f4326302
-[1030] = "Click to add group name",
+N["Click to add group name"] = 1030
 -- f2b59370
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Button/tooltip 'Negate condition' on a condition card.
-[1031] = "Negate condition",
+N["Negate condition"] = 1031
 -- 56693400
-[1032] = "Enable or disable condition",
+N["Enable or disable condition"] = 1032
 -- 7a2fb682
-[1033] = "Switch All / Any",
+N["Switch All / Any"] = 1033
 -- ca7981b4
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
 --     word 'Off'.
-[1034] = "Off",
+N["Off"] = 1034
 -- 13001175
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Toggle state
 --     word 'On'.
-[1035] = "On",
+N["On"] = 1035
 -- a8566033
 -- Context: Not referenced directly by the current code (legacy or built dynamically). State word
 --     'Negated' for a condition that is inverted (NOT).
-[1036] = "Negated",
+N["Negated"] = 1036
 -- bc47dc21
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New condition' (create a condition).
-[1037] = "New condition",
+N["New condition"] = 1037
 -- f66edce3
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New All group' (create an AND group).
-[1038] = "New All group",
+N["New All group"] = 1038
 -- fb19b6a9
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New Any group' (create an OR group).
-[1039] = "New Any group",
+N["New Any group"] = 1039
 -- 36a53913
-[1040] = "Drag into the tree to insert",
+N["Drag into the tree to insert"] = 1040
 -- 25f7b372
 -- Context: Button in the condition editor and rotation view: collapse every card in the list; verb
 --     phrase.
-[1041] = "Collapse all",
+N["Collapse all"] = 1041
 -- a3e586be
 -- Context: Button in the condition editor and rotation view: expand every card in the list; verb
 --     phrase.
-[1042] = "Expand all",
+N["Expand all"] = 1042
 -- d4d773af
 -- Context: Button in the condition editor: wrap the selected conditions in an AND group (all must
 --     be true); verb phrase.
-[1043] = "Group as All",
+N["Group as All"] = 1043
 -- e658538c
 -- Context: Button in the condition editor: wrap the selected conditions in an OR group (any may be
 --     true); verb phrase.
-[1044] = "Group as Any",
+N["Group as Any"] = 1044
 -- 27e78c35
 -- Context: Drag-and-drop tooltip in the condition editor: moving several selected conditions; %d is
 --     how many.
 -- %d #1: %d #1: how many conditions are being dragged, e.g. 3
-[1045] = "Move %d conditions",
+N["Move %d conditions"] = 1045
 -- 8fa50cbc
 -- Context: Drag-and-drop tooltip in the condition editor: a new condition is being inserted at the
 --     drop position; verb phrase.
-[1046] = "Insert condition",
+N["Insert condition"] = 1046
 -- f54d0e38
 -- Context: Button/tooltip on a condition card: make a copy of this condition (verb phrase).
-[1047] = "Duplicate condition",
+N["Duplicate condition"] = 1047
 -- e21f935f
 -- Context: Button that copies the shown text to the clipboard (transfer dialog); also a column
 --     heading in the help window.
-[1048] = "Copy",
+N["Copy"] = 1048
 -- 2b505597
 -- Context: Toggle label: match any one of several things; condition group operator button (OR) and
 --     the tag filter mode pill in the rotation browser.
-[1049] = "Any",
+N["Any"] = 1049
 -- 3fe9bd3a
-[1050] = "Resolve the wrapper's name or unsupported fields before removing its negation.",
+N["Resolve the wrapper's name or unsupported fields before removing its negation."] = 1050
 -- e49e9c8f
-[1051] = "Not evaluated: an enclosing group is disabled",
+N["Not evaluated: an enclosing group is disabled"] = 1051
 -- 754e2703
 -- Context: Counter label showing how many cards/conditions are selected; %d is the count.
 -- %d #1: %d #1: how many items are selected, e.g. 3
-[1052] = "%d selected",
+N["%d selected"] = 1052
 -- 4e3bbfa6
 -- Context: Title of a conditional branch step (a step that chooses between two paths based on a
 --     condition) in a rotation reference; noun phrase.
-[1053] = "Conditional branch",
+N["Conditional branch"] = 1053
 -- 9c46a836
 -- Context: Branch step mode: the branch decides by evaluating its condition.
-[1054] = "Evaluate condition",
+N["Evaluate condition"] = 1054
 -- 049e212e
 -- Context: Branch step mode: the branch always takes the true path.
-[1055] = "Always true",
+N["Always true"] = 1055
 -- 4d15e741
 -- Context: Branch step mode: the branch always takes the false path; also condition text for a
 --     negated empty condition.
-[1056] = "Always false",
+N["Always false"] = 1056
 -- 0f8c87a3
 -- Context: Message in a rotation reference: the branch step has a mode the addon does not know.
-[1057] = "Unknown branch mode",
+N["Unknown branch mode"] = 1057
 -- 3cbc87c7
 -- Context: Boolean result word: true; the true arm of a branch, and the result of testing a
 --     condition in the condition source preview.
-[1058] = "True",
+N["True"] = 1058
 -- 60a33e6c
 -- Context: Boolean result word: false; the false arm of a branch, and the result of testing a
 --     condition in the condition source preview.
-[1059] = "False",
+N["False"] = 1059
 -- 06f1af3a
-[1060] = "Rotation tree cannot be displayed.",
+N["Rotation tree cannot be displayed."] = 1060
 -- 1e3abf61
 -- Context: Toggle on a condition card showing the condition applies normally (reads like 'If ...');
 --     the alternative is 'Unless'.
-[1061] = "If",
+N["If"] = 1061
 -- b89c64be
 -- Context: Toggle on a condition card showing the condition is negated (reads like 'Unless ...');
 --     the alternative is 'If'.
-[1062] = "Unless",
+N["Unless"] = 1062
 -- ea2dca67
-[1063] = "If matches this condition; Unless negates it.",
+N["If matches this condition; Unless negates it."] = 1063
 -- b798104c
-[1064] = "Condition description unavailable: invalid data.",
+N["Condition description unavailable: invalid data."] = 1064
 -- 8898675a
-[1065] = "Condition description truncated; the draft is unchanged.",
+N["Condition description truncated; the draft is unchanged."] = 1065
 -- df796c65
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New group'.
-[1066] = "New group",
+N["New group"] = 1066
 -- 17c23d28
-[1067] = "Drag card headers to move; drag New into a gap.",
+N["Drag card headers to move; drag New into a gap."] = 1067
 -- 8bac6be3
-[1068] = "Incomplete condition group: choose its conditions.",
+N["Incomplete condition group: choose its conditions."] = 1068
 -- d87c3fb8
-[1069] = "Always (empty All group)",
+N["Always (empty All group)"] = 1069
 -- 06160145
-[1070] = "Never (empty Any group)",
+N["Never (empty Any group)"] = 1070
 -- 7ac5cdd3
-[1071] = "Browse, view and edit rotations.",
+N["Browse, view and edit rotations."] = 1071
 -- 36e2aa86
-[1072] = "Configure recommendations and display.",
+N["Configure recommendations and display."] = 1072
 -- 92448a57
-[1073] = "Organize condition types and custom conditions.",
+N["Organize condition types and custom conditions."] = 1073
 -- 94217692
-[1074] = "Configure highlight effects.",
+N["Configure highlight effects."] = 1074
 -- 73c16731
-[1075] = "Manage interchangeable items and consumables.",
+N["Manage interchangeable items and consumables."] = 1075
 -- e0c7ff4a
-[1076] = "Configure optional announcements.",
+N["Configure optional announcements."] = 1076
 -- 1877c9b2
-[1077] = "Manage saved configuration profiles.",
+N["Manage saved configuration profiles."] = 1077
 -- 777f6a10
-[1078] = "Rotation Master information and credits.",
+N["Rotation Master information and credits."] = 1078
 -- 72a43eab
 -- Context: Name of the Burning Crusade Classic game edition (abbreviation), shown in the window
 --     footer and in rotation applicability text.
-[1079] = "TBC",
+N["TBC"] = 1079
 -- d63015c7
 -- Context: Name of the Classic Era game edition (vanilla Classic), shown in the window footer and
 --     in rotation applicability text.
-[1080] = "Classic Era",
+N["Classic Era"] = 1080
 -- 7d4352ca
 -- Context: Name of the Classic Progression game edition (Classic servers that advance through
 --     expansions), shown in the window footer.
-[1081] = "Classic Progression",
+N["Classic Progression"] = 1081
 -- cdb38c8d
 -- Context: Name of the Retail game edition (current live WoW), shown in the window footer and
 --     rotation applicability text.
-[1082] = "Retail",
+N["Retail"] = 1082
 -- 55f980cf
 -- Context: Name of the Classic 'Forever' game edition (a client that stays on one expansion), shown
 --     in the window footer.
-[1083] = "Forever",
+N["Forever"] = 1083
 -- 21b6a798
 -- Context: Version label used when the addon runs from source (an unpackaged development build)
 --     instead of a release version.
-[1084] = "Development",
+N["Development"] = 1084
 -- 57a9e910
 -- Context: Hint in the window footer: right-clicking the Rotation Master window closes it.
-[1085] = "Right-click to close",
+N["Right-click to close"] = 1085
 -- 5e2f1cfb
-[1086] = "Drag to resize the list. Double-click to reset.",
+N["Drag to resize the list. Double-click to reset."] = 1086
 -- 22270ce0
-[1087] = "Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.",
+N["Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot."] = 1087
 -- ba118bf7
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Language name
 --     'English' in a language list.
-[1088] = "English",
+N["English"] = 1088
 -- b5a229ac
 -- Context: Label of the website link in the About area of the configuration window; noun.
-[1089] = "Website",
+N["Website"] = 1089
 -- 8149bb52
-[1090] = "English is the installed translation; other languages use English until translated.",
+N["English is the installed translation; other languages use English until translated."] = 1090
 -- 029560ce
-[1091] = "Drag the title bar to move. Adjust Scale at the top left; right-click the content to close.",
+N["Drag the title bar to move. Adjust Scale at the top left; right-click the content to close."] = 1091
 -- 8c4b42bc
-[1092] = "Optional addon settings.",
+N["Optional addon settings."] = 1092
 -- fe166e78
 -- Context: Status text in the condition editor footer: this condition cannot be edited (a Built
 --     In).
-[1093] = "Read-only condition",
+N["Read-only condition"] = 1093
 -- e2d0a549
 -- Context: Button/tooltip that deletes the selected entry (rotation, item set, effect,
 --     announcement...); verb, also a help heading.
-[1094] = "Delete",
+N["Delete"] = 1094
 -- 9d85c78b
-[1095] = "Only the first 200 rotation cards are shown. Other cards are preserved.",
+N["Only the first 200 rotation cards are shown. Other cards are preserved."] = 1095
 -- 61aed01b
-[1096] = "Branches select one arm, then rejoin the following priority. Forced modes skip condition evaluation.",
+N["Branches select one arm, then rejoin the following priority. Forced modes skip condition evaluation."] = 1096
 -- 79b92f59
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New action' (add a spell/item step).
-[1097] = "New action",
+N["New action"] = 1097
 -- 7f445154
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New branch' (add a conditional branch step).
-[1098] = "New branch",
+N["New branch"] = 1098
 -- 6f0d96c6
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button label
 --     'New optional' (add an optional highlight step).
-[1099] = "New optional",
+N["New optional"] = 1099
 -- 1abcf34a
-[1100] = "Drag into a gap, or click to append.",
+N["Drag into a gap, or click to append."] = 1100
 -- eb1a70e3
 -- Context: Button in editors that throws away the pending changes and restores the saved state
 --     (verb).
-[1101] = "Discard",
+N["Discard"] = 1101
 -- cd272c87
-[1102] = "Changes applied.",
+N["Changes applied."] = 1102
 -- c7f93783
 -- Context: Default button text for a picker button that has no value chosen yet (verb: choose).
-[1103] = "Choose",
+N["Choose"] = 1103
 -- d8dba008
-[1104] = "Items: separate item IDs or names with commas",
+N["Items: separate item IDs or names with commas"] = 1104
 -- dfd0e008
 -- Context: Dropdown entry in a rotation step's effect chooser: do not override, use the effect from
 --     the profile settings.
-[1105] = "Use profile effect",
+N["Use profile effect"] = 1105
 -- eea6c6fc
-[1106] = "Color: red, green, blue, alpha (0–1); blank inherits",
+N["Color: red, green, blue, alpha (0–1); blank inherits"] = 1106
 -- 31b888e2
 -- Context: Tooltip of a small reset button next to a step's highlight position fields: use the
 --     profile's position setting instead.
-[1107] = "Use profile position",
+N["Use profile position"] = 1107
 -- a581aec9
 -- Context: Tooltip/label of the horizontal (X) offset field of a highlight position.
-[1108] = "Horizontal offset",
+N["Horizontal offset"] = 1108
 -- 923e59df
 -- Context: Tooltip/label of the vertical (Y) offset field of a highlight position.
-[1109] = "Vertical offset",
+N["Vertical offset"] = 1109
 -- fda1b8a0
 -- Context: Footer text in the Rotation Master window; %s is the author's name.
 -- %s #1: %s #1: the author name, e.g. "PreZ"
-[1110] = "Created by %s",
+N["Created by %s"] = 1110
 -- 64464db9
 -- Context: Title of the dialog warning that the rotation editor has unsaved changes when you
 --     navigate away.
-[1111] = "Unsaved rotation changes",
+N["Unsaved rotation changes"] = 1111
 -- 4c8f5e18
-[1112] = "Apply this draft, discard its changes, or keep editing.",
+N["Apply this draft, discard its changes, or keep editing."] = 1112
 -- f1a25223
-[1113] = "The draft could not be applied. Complete the marked fields or Cancel to keep editing.",
+N["The draft could not be applied. Complete the marked fields or Cancel to keep editing."] = 1113
 -- dd7a42d2
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
 --     place' for dragging an item to a position.
-[1114] = "Drag to place",
+N["Drag to place"] = 1114
 -- a7b99a64
 -- Context: Button in the condition text window: copy the complete condition text to the clipboard
 --     (verb phrase).
-[1115] = "Copy full condition",
+N["Copy full condition"] = 1115
 -- 81a5118e
 -- Context: Title of the window showing a condition's full text in readable form.
-[1116] = "Full condition text",
+N["Full condition text"] = 1116
 -- 21b111cb
 -- Context: Button that resets a value (highlight color or position) to the default; also the name
 --     of the built-in default rotation.
-[1117] = "Default",
+N["Default"] = 1117
 -- c9a3dbb0
-[1118] = "Click to add branch name",
+N["Click to add branch name"] = 1118
 -- ab0a9cf9
 -- Context: Name of the section of a rotation that holds the condition used for automatic switching,
 --     in change summaries and path descriptions.
-[1119] = "Switch condition",
+N["Switch condition"] = 1119
 -- 18f3acc3
-[1120] = "No switch condition: this rotation can be selected automatically whenever its specialization and level apply.",
+N["No switch condition: this rotation can be selected automatically whenever its specialization and level apply."] = 1120
 -- 464c4ffd
 -- Context: Button in the Conditions page (custom condition row): edit this custom condition; verb.
-[1121] = "Edit",
+N["Edit"] = 1121
 -- 7515ddaa
 -- Context: Tooltip of the delete button in the rotation editor: deletes the rotation (verb phrase).
-[1122] = "Delete rotation",
+N["Delete rotation"] = 1122
 -- bc48b710
-[1123] = "Discard this new rotation",
+N["Discard this new rotation"] = 1123
 -- 6390ba9c
 -- Context: Button in the rotation view: adds a new spell/item action step to the main rotation
 --     (verb phrase).
-[1124] = "Add action",
+N["Add action"] = 1124
 -- 1947a735
 -- Context: Button in the rotation view: adds a new conditional branch step to the rotation (verb
 --     phrase).
-[1125] = "Add branch",
+N["Add branch"] = 1125
 -- 48dfa1a9
 -- Context: Button in the rotation view: adds a new cooldown (optional highlight) step (verb
 --     phrase).
-[1126] = "Add cooldown",
+N["Add cooldown"] = 1126
 -- cfb5635b
-[1127] = "Delete this custom rotation and its unsaved draft? This cannot be undone.",
+N["Delete this custom rotation and its unsaved draft? This cannot be undone."] = 1127
 -- d1afca1a
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'Rotation details'.
-[1128] = "Rotation details",
+N["Rotation details"] = 1128
 -- 2f839a00
-[1129] = "Complete the highlighted input fields before applying.",
+N["Complete the highlighted input fields before applying."] = 1129
 -- 6d81521d
-[1130] = "Drop in a highlighted gap.",
+N["Drop in a highlighted gap."] = 1130
 -- dcd1d522
 -- Context: Label of the name field (rotation, effect, item set, announcement, category); noun, also
 --     a help heading and comparison row label.
-[1131] = "Name",
+N["Name"] = 1131
 -- bb82fca1
 -- %s #1: %s #1: what input is incomplete, a short phrase, e.g. "Spell is required"
-[1132] = "Incomplete input: %s",
+N["Incomplete input: %s"] = 1132
 -- 0a392308
-[1133] = "Click condition text on any card to view or edit its conditions.",
+N["Click condition text on any card to view or edit its conditions."] = 1133
 -- 286353b7
 -- Context: Button in a rotation step: open the condition read-only (for a Built In); verb phrase.
-[1134] = "View condition",
+N["View condition"] = 1134
 -- 61514750
 -- Context: Button in a rotation step: open the condition editor to change the step's condition;
 --     verb phrase.
-[1135] = "Edit condition",
+N["Edit condition"] = 1135
 -- 19a05c66
-[1136] = "Cycle between summary, fields and name only. Drag the name to move the card.",
+N["Cycle between summary, fields and name only. Drag the name to move the card."] = 1136
 -- 9eddf573
 -- Context: Button in the rotation editor (and the title of its dialog) for the rotation's
 --     description, tags and author; noun.
-[1137] = "Metadata",
+N["Metadata"] = 1137
 -- 8fe26115
-[1138] = "This rotation cannot run until its incomplete or unavailable data is resolved.",
+N["This rotation cannot run until its incomplete or unavailable data is resolved."] = 1138
 -- 40a9941b
 -- Context: Title of the window listing validation problems found in the rotation.
-[1139] = "Rotation validation",
+N["Rotation validation"] = 1139
 -- 5677f1c7
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button/label
 --     'Preview effect' to show how a highlight effect looks.
-[1140] = "Preview effect",
+N["Preview effect"] = 1140
 -- 44e4c2fb
-[1141] = "Show or hide branch paths",
+N["Show or hide branch paths"] = 1141
 -- 5735b9a9
-[1142] = "Expand or collapse the card. Click action or condition text for details.",
+N["Expand or collapse the card. Click action or condition text for details."] = 1142
 -- 2478da41
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Click
 --     to expand' on a collapsed section.
-[1143] = "Click to expand",
+N["Click to expand"] = 1143
 -- 94901258
 -- Context: Button in the condition editor: add an empty AND group (a bracket of conditions); verb
 --     phrase.
-[1144] = "Add group",
+N["Add group"] = 1144
 -- ad19b82b
-[1145] = "Click to append; drag into a gap to insert.",
+N["Click to append; drag into a gap to insert."] = 1145
 -- 36e5aa8a
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label
 --     'Preview highlight' for the highlight preview.
-[1146] = "Preview highlight",
+N["Preview highlight"] = 1146
 -- 5e4de8d1
-[1147] = "This previews the glow used on action buttons. Click the preview icon again to close.",
+N["This previews the glow used on action buttons. Click the preview icon again to close."] = 1147
 -- 1094644b
-[1148] = "Choose a highlight effect in the action details or General settings.",
+N["Choose a highlight effect in the action details or General settings."] = 1148
 -- e3cb6179
 -- Context: Title of the help window for the rotation metadata dialog.
-[1149] = "Rotation metadata",
+N["Rotation metadata"] = 1149
 -- d95082a2
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
 --     field label 'Author' (who wrote the rotation).
-[1150] = "Author",
+N["Author"] = 1150
 -- 2919fe85
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
 --     field label 'Realm' (author's realm).
-[1151] = "Realm",
+N["Realm"] = 1151
 -- 969ccbd3
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Metadata
 --     field label 'Email' (author's email address).
-[1152] = "Email",
+N["Email"] = 1152
 -- dd167905
 -- Context: Column heading in the integrations list: the addon version; also a metadata field.
-[1153] = "Version",
+N["Version"] = 1153
 -- b8bece73
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Use
 --     changes' to apply the edited values.
-[1154] = "Use changes",
+N["Use changes"] = 1154
 -- b02bc1bc
-[1155] = "Use changes updates the draft. Apply the rotation to save it.",
+N["Use changes updates the draft. Apply the rotation to save it."] = 1155
 -- 38274b15
-[1156] = "Built In rotation: duplicate it to edit its metadata.",
+N["Built In rotation: duplicate it to edit its metadata."] = 1156
 -- 0e570ca6
 -- Context: Fallback heading for a rotation source/citation without its own title; noun.
-[1157] = "Source",
+N["Source"] = 1157
 -- 9d7de300
 -- %s #1: %s #1: the invalid saved metadata value as text, e.g. "true" (shown as-is)
-[1158] = "Saved metadata is invalid (%s). Editing these fields replaces it.",
+N["Saved metadata is invalid (%s). Editing these fields replaces it."] = 1158
 -- 6b73191a
 -- Context: Label of the color field in the rotation step effect settings and the title of the color
 --     picker; also a help heading.
-[1159] = "Color",
+N["Color"] = 1159
 -- 2e51d20c
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Placeholder
 --     'Choose an effect' for the effect dropdown.
-[1160] = "Choose an effect",
+N["Choose an effect"] = 1160
 -- d1a44f24
 -- Context: Tooltip of a reset button next to a step's color: use the color from the profile
 --     settings.
-[1161] = "Use profile color",
+N["Use profile color"] = 1161
 -- b840b1dd
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Checkbox
 --     label 'Center the highlight'.
-[1162] = "Center the highlight",
+N["Center the highlight"] = 1162
 -- 6dc46510
-[1163] = "Move highlight; hold Shift for ten pixels",
+N["Move highlight; hold Shift for ten pixels"] = 1163
 -- 294bb35f
 -- Context: Tooltip of a play button next to the sound dropdown: plays the chosen sound; imperative.
-[1164] = "Preview sound",
+N["Preview sound"] = 1164
 -- fa39a479
-[1165] = "Sound preview is unavailable.",
+N["Sound preview is unavailable."] = 1165
 -- ac2276b9
-[1166] = "Choose an available sound to preview.",
+N["Choose an available sound to preview."] = 1166
 -- d6807b3f
 -- Context: Tooltip of the check mark button in the color picker: accepts the chosen color.
-[1167] = "Use color",
+N["Use color"] = 1167
 -- 8807635f
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'Offsets' for the highlight position offsets.
-[1168] = "Offsets",
+N["Offsets"] = 1168
 -- de5a6f78
 -- Context: Abbreviation (letter V) on the vertical-offset field of a highlight position; tooltip is
 --     'Vertical offset'.
-[1169] = "V",
+N["V"] = 1169
 -- 44bd7ae6
 -- Context: Abbreviation (letter H) on the horizontal-offset field of a highlight position; tooltip
 --     is 'Horizontal offset'.
-[1170] = "H",
+N["H"] = 1170
 -- 36c4ddbf
-[1171] = "RGBA channels accept decimal values from 0 to 1.",
+N["RGBA channels accept decimal values from 0 to 1."] = 1171
 -- a5163f27
 -- %s #1: %s #1: the addon name (do not translate), e.g. "Rotation Master"
 -- %s #2: %s #2: the name of the window or section, e.g. "Edit Condition #2"
-[1172] = "%s: %s",
+N["%s: %s"] = 1172
 -- 76b2629a
 -- Context: Name of the addon in a window title/subtitle (brand name; keep untranslated if the addon
 --     name is not localized).
-[1173] = "Rotation Master",
+N["Rotation Master"] = 1173
 -- 39b36d38
 -- Context: Generic word for a single condition: window heading/context in the condition editor.
-[1174] = "Condition",
+N["Condition"] = 1174
 -- 0924a671
 -- Context: Section name for cooldown steps (optional highlights) in change summaries and the step
 --     editor; noun.
-[1175] = "Cooldown",
+N["Cooldown"] = 1175
 -- d85693fc
 -- Context: Header text for an AND group of conditions on a condition card: all of the following
 --     must be true.
-[1176] = "All of",
+N["All of"] = 1176
 -- f44e288e
 -- Context: Header text for an OR group of conditions on a condition card: any of the following may
 --     be true.
-[1177] = "Any of",
+N["Any of"] = 1177
 -- 0ec5ba4e
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label 'Action
 --     bar binding'.
-[1178] = "Action bar binding",
+N["Action bar binding"] = 1178
 -- 380684a5
 -- Context: Button in the Announces settings page: create a new announcement; verb phrase.
-[1179] = "Add announcement",
+N["Add announcement"] = 1179
 -- 1005d35c
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Add
 --     custom condition' to create a custom condition.
-[1180] = "Add custom condition",
+N["Add custom condition"] = 1180
 -- 8fce42d6
 -- Context: Button in the Effects settings page: create a new highlight effect; verb phrase.
-[1181] = "Add effect",
+N["Add effect"] = 1181
 -- d1a0b329
 -- Context: Button in item set editors: add an item to the set; verb phrase, also a help heading.
-[1182] = "Add item",
+N["Add item"] = 1182
 -- da10655e
 -- Context: Button and heading in the Item Sets settings page: create a new item set; verb phrase.
-[1183] = "Add item set",
+N["Add item set"] = 1183
 -- 839bd5e0
 -- Context: Button in the effect sequence editor: add a step (frame) to the sequence; verb phrase.
-[1184] = "Add step",
+N["Add step"] = 1184
 -- 96f2ac95
-[1185] = "An item from this set must be available before binding.",
+N["An item from this set must be available before binding."] = 1185
 -- 2a5562d3
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Bind
 --     item set' to bind an item set to action bar slots.
-[1186] = "Bind item set",
+N["Bind item set"] = 1186
 -- 292c06f0
 -- Context: Label of the category dropdown for a condition and a heading in the icon picker; noun.
-[1187] = "Category",
+N["Category"] = 1187
 -- 8adaa206
-[1188] = "Choose an action first.",
+N["Choose an action first."] = 1188
 -- eb58aed0
-[1189] = "Choose an item first.",
+N["Choose an item first."] = 1189
 -- b269dc4e
 -- Context: Heading on the Profiles page above a short list of slash commands.
-[1190] = "Commands",
+N["Commands"] = 1190
 -- eebdd24a
 -- Context: Button in confirmation prompts: confirm the action; verb.
-[1191] = "Confirm",
+N["Confirm"] = 1191
 -- 29bbf82e
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Copy
 --     and reset' in the profile tools.
-[1192] = "Copy and reset",
+N["Copy and reset"] = 1192
 -- 2da43a1c
 -- Context: Label of the dropdown in the Profiles page: copy settings from another profile into the
 --     current one; also a help heading.
-[1193] = "Copy from profile",
+N["Copy from profile"] = 1193
 -- 47cc49a7
-[1194] = "Copy this text to export. Import replaces the selected settings.",
+N["Copy this text to export. Import replaces the selected settings."] = 1194
 -- 61d30d99
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button
 --     'Create profile'.
-[1195] = "Create profile",
+N["Create profile"] = 1195
 -- 70aede1c
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Label
 --     'Current profile'.
-[1196] = "Current profile",
+N["Current profile"] = 1196
 -- 47311af4
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button
 --     'Delete profile'.
-[1197] = "Delete profile",
+N["Delete profile"] = 1197
 -- 526f44a0
 -- %s #1: %s #1: the name of the profile to delete, e.g. "Default"
-[1198] = "Delete profile %s? This cannot be undone.",
+N["Delete profile %s? This cannot be undone."] = 1198
 -- 0a1b391c
-[1199] = "Delete this custom condition? Existing rotations using it will become unavailable.",
+N["Delete this custom condition? Existing rotations using it will become unavailable."] = 1199
 -- 1342742e
-[1200] = "Delete this effect? Rotations using it will need another effect.",
+N["Delete this effect? Rotations using it will need another effect."] = 1200
 -- bfb176a2
-[1201] = "Delete this item set and its binding? Rotations referencing it will need another item set.",
+N["Delete this item set and its binding? Rotations referencing it will need another item set."] = 1201
 -- 5342e09f
 -- Context: Checkbox in General settings, Recommendations section: turns Rotation Master
 --     recommendations on or off; verb; also a help heading.
-[1202] = "Enable",
+N["Enable"] = 1202
 -- eccca39d
-[1203] = "Enter a name first.",
+N["Enter a name first."] = 1203
 -- 27bf030d
-[1204] = "Enter a profile name first.",
+N["Enter a profile name first."] = 1204
 -- dab97264
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Heading
 --     'History and preview'.
-[1205] = "History and preview",
+N["History and preview"] = 1205
 -- 9b10587f
 -- Context: Label of the identifier field (a unique key for an announcement or custom condition);
 --     noun.
-[1206] = "Identifier",
+N["Identifier"] = 1206
 -- c6af6542
-[1207] = "Invalid effect.",
+N["Invalid effect."] = 1207
 -- dfa8b82c
-[1208] = "Invalid import.",
+N["Invalid import."] = 1208
 -- 6987106d
-[1209] = "Invalid item list.",
+N["Invalid item list."] = 1209
 -- c8edea5f
 -- Context: Label of an item row in a list by position; %d is the position number.
 -- %d #1: %d #1: the position of the item in the item set, counting from 1, e.g. 2
-[1210] = "Item %d",
+N["Item %d"] = 1210
 -- 08bc6729
-[1211] = "Items in priority order",
+N["Items in priority order"] = 1211
 -- 9024c197
 -- Context: Heading of a section listing web links (Profiles page; help window).
-[1212] = "Links",
+N["Links"] = 1212
 -- dba20004
 -- Context: Label of the text field for the name of a new profile.
-[1213] = "New profile name",
+N["New profile name"] = 1213
 -- a6a2aa10
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Status text
 --     'Not bound' for an item set with no action bar binding.
-[1214] = "Not bound",
+N["Not bound"] = 1214
 -- 14908ce9
-[1215] = "Profile changes apply immediately. Rotations and settings belong to the active profile.",
+N["Profile changes apply immediately. Rotations and settings belong to the active profile."] = 1215
 -- 0738ee00
 -- Context: Section heading in General settings for the options controlling recommendations.
-[1216] = "Recommendations",
+N["Recommendations"] = 1216
 -- e8781b01
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Button/tooltip 'Remove binding'.
-[1217] = "Remove binding",
+N["Remove binding"] = 1217
 -- e89af9bb
 -- %s #1: %s #1: the name of the profile to copy from, e.g. "Raiding"
-[1218] = "Replace the current profile with %s?",
+N["Replace the current profile with %s?"] = 1218
 -- daee7606
 -- Context: Button that resets the current editor or item set to the saved or default state (verb);
 --     also a help heading.
-[1219] = "Reset",
+N["Reset"] = 1219
 -- 15d5cb3f
 -- Context: Button in the Profiles page: reset the current profile to defaults (verb phrase); also a
 --     help heading.
-[1220] = "Reset current profile",
+N["Reset current profile"] = 1220
 -- 4ddce508
 -- Context: Tooltip/help heading for the button that puts the preview window back to its default
 --     position.
-[1221] = "Reset preview position",
+N["Reset preview position"] = 1221
 -- 7986b163
-[1222] = "Reset this profile to its defaults? Custom rotations and settings in it will be replaced.",
+N["Reset this profile to its defaults? Custom rotations and settings in it will be replaced."] = 1222
 -- 2a78025d
 -- Context: Placeholder text on a dropdown button that has nothing selected; also the 'Select'
 --     option in an integrations choice (verb).
-[1223] = "Select",
+N["Select"] = 1223
 -- 10151a40
 -- Context: Label for a step row by position in a comparison; %d is the position.
 -- %d #1: %d #1: the number of the step, counting from 1, e.g. 3
-[1224] = "Step %d",
+N["Step %d"] = 1224
 -- b1912f1a
-[1225] = "This name is already in use.",
+N["This name is already in use."] = 1225
 -- 52656e81
 -- Context: Step type name for a conditional branch step (as in 'Branch'); noun.
-[1226] = "Branch",
+N["Branch"] = 1226
 -- b8e156bb
-[1227] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted.",
+N["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted."] = 1227
 -- 95e310bf
-[1228] = "Choose a current profile or enter a new profile name and create it. Copy replaces the current profile’s settings; Reset restores defaults. Delete removes another saved profile. Copy, Reset and Delete ask for confirmation.",
+N["Choose a current profile or enter a new profile name and create it. Copy replaces the current profile’s settings; Reset restores defaults. Delete removes another saved profile. Copy, Reset and Delete ask for confirmation."] = 1228
 -- 07c1af16
-[1229] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list.",
+N["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list."] = 1229
 -- 584f475e
 -- Context: Title of the help window for the condition editor.
-[1230] = "Condition editor",
+N["Condition editor"] = 1230
 -- dae8a15b
 -- Context: Heading in the help for the rotation metadata dialog: the description and author fields.
-[1231] = "Description and attribution",
+N["Description and attribution"] = 1231
 -- 0bff7d0e
-[1232] = "Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.",
+N["Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area."] = 1232
 -- b2fe791b
-[1233] = "Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+N["Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = 1233
 -- 0305e247
-[1234] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected.",
+N["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected."] = 1234
 -- 2c02392e
 -- Context: Heading in help text explaining AND/OR/NOT groups and the If/Unless and Enabled/Disabled
 --     toggles in the condition editor.
-[1235] = "Groups and toggles",
+N["Groups and toggles"] = 1235
 -- 3d69858e
 -- Context: Heading in help text describing the Help (question mark) button and how saving works
 --     (Undo/Redo/Apply) in the editor.
-[1236] = "Help and saving",
+N["Help and saving"] = 1236
 -- 99855946
-[1237] = "Move, copy and remove",
+N["Move, copy and remove"] = 1237
 -- 9497b4fc
-[1238] = "Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation.",
+N["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = 1238
 -- 95b23356
-[1239] = "These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
+N["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = 1239
 -- 00a767bc
 -- Context: Placeholder name for a spell that cannot be found by ID (announcement list, reference
 --     catalog).
-[1240] = "Unknown spell",
+N["Unknown spell"] = 1240
 -- 52ffc6a8
 -- Context: Placeholder shown for an item whose name has not loaded from the server yet.
-[1241] = "Item data loading",
+N["Item data loading"] = 1241
 -- d6572bd2
-[1242] = "No matches.",
+N["No matches."] = 1242
 -- 18fdd549
 -- Context: Button that creates a new entry (rotation, item set, effect, condition category...);
 --     verb.
-[1243] = "New",
+N["New"] = 1243
 -- 7f406b7e
-[1244] = "No matching items.",
+N["No matching items."] = 1244
 -- f9ad9fda
-[1245] = "Click a result or enter an item name, ID or link.",
+N["Click a result or enter an item name, ID or link."] = 1245
 -- a4ae750b
 -- Context: Label of the anchor point dropdown for a highlight (which part of the button the
 --     highlight attaches to); also a help heading.
-[1246] = "Anchor",
+N["Anchor"] = 1246
 -- 1edc56cd
-[1247] = "Return the preview window to the center of the screen.",
+N["Return the preview window to the center of the screen."] = 1247
 -- 30d109c4
-[1248] = "The icon shows your selected profile effect, color, size, anchor and offsets.",
+N["The icon shows your selected profile effect, color, size, anchor and offsets."] = 1248
 -- 64287345
-[1249] = "Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets.",
+N["Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets."] = 1249
 -- c3cf199e
-[1250] = "Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets.",
+N["Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets."] = 1250
 -- 49cf9ec6
 -- Context: Heading and button on the Conditions page: switch to managing condition categories (add,
 --     rename, reorder).
-[1251] = "Manage categories",
+N["Manage categories"] = 1251
 -- eda2efcd
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Button 'Back
 --     to conditions' to return from category management to the condition list.
-[1252] = "Back to conditions",
+N["Back to conditions"] = 1252
 -- 8137101b
 -- Context: Status text on the Conditions page: the selected category is built in and cannot be
 --     edited.
-[1253] = "Built-in category",
+N["Built-in category"] = 1253
 -- d7c828bc
-[1254] = "Delete this category? Its conditions will remain available under Other.",
+N["Delete this category? Its conditions will remain available under Other."] = 1254
 -- 6d0b390a
-[1255] = "Filter the condition list by All, Switch, Custom, Other or a named category. Search narrows the visible conditions without changing their category.",
+N["Filter the condition list by All, Switch, Custom, Other or a named category. Search narrows the visible conditions without changing their category."] = 1255
 -- f04872fd
-[1256] = "Open Manage categories below the list for category maintenance. Back to conditions returns to individual condition settings.",
+N["Open Manage categories below the list for category maintenance. Back to conditions returns to individual condition settings."] = 1256
 -- aeff12ba
-[1257] = "In Manage categories, copy or replace a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.",
+N["In Manage categories, copy or replace a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."] = 1257
 -- fa913070
-[1258] = "The condition ordering controls in condition settings move the selected condition to the top, up, down or to the bottom within its current category. These are separate from the Up and Down controls for category order.",
+N["The condition ordering controls in condition settings move the selected condition to the top, up, down or to the bottom within its current category. These are separate from the Up and Down controls for category order."] = 1258
 -- f2bafb3c
-[1259] = "Move the selected condition to a named category or Other. Use Switch Condition separately for automatic-switch availability.",
+N["Move the selected condition to a named category or Other. Use Switch Condition separately for automatic-switch availability."] = 1259
 -- 85a39ab3
 -- Context: Boolean value word 'Yes' (true) in condition text and comparison views.
-[1260] = "Yes",
+N["Yes"] = 1260
 -- 1ea442a1
 -- Context: Boolean value word 'No' (false) in condition text and comparison views.
-[1261] = "No",
+N["No"] = 1261
 -- f8bfdb1e
 -- Context: Checkbox in the comparison window: also list entries that are identical on both sides.
-[1262] = "Show unchanged",
+N["Show unchanged"] = 1262
 -- 8307fb6b
 -- %d #1: %d #1: the number of fields that differ, e.g. 4
-[1263] = "Changed fields: %d",
+N["Changed fields: %d"] = 1263
 -- e888155d
 -- Context: Button and window title prefix for comparing two entries (rotations, profiles,
 --     collections); verb.
-[1264] = "Compare",
+N["Compare"] = 1264
 -- 72bb9089
 -- Context: Subtitle/badge on windows that only display data and cannot be edited; adjective.
-[1265] = "Read-only",
+N["Read-only"] = 1265
 -- e21330cf
 -- Context: Default name given to an item set created by importing text.
-[1266] = "Imported item set",
+N["Imported item set"] = 1266
 -- ef86a0ed
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Hint 'Drag to
 --     reorder' for reorderable list entries.
-[1267] = "Drag to reorder",
+N["Drag to reorder"] = 1267
 -- 9b6766d2
 -- %s #1: %s #1: the numeric item ID, e.g. 5512
-[1268] = "Item ID: %s",
+N["Item ID: %s"] = 1268
 -- fe76866f
 -- %s #1: %s #1: the item reference as stored (a name or link text), e.g. "Healthstone"
-[1269] = "Item reference: %s",
+N["Item reference: %s"] = 1269
 -- 1f439481
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Adjective
 --     'Built-in' (shipped with the addon).
-[1270] = "Built-in",
+N["Built-in"] = 1270
 -- 36619693
 -- Context: Status text for a condition that ships with the addon (as opposed to a custom one), on
 --     the Conditions page.
-[1271] = "Built-in condition",
+N["Built-in condition"] = 1271
 -- 1a63dcb7
 -- Context: Name for a condition you wrote yourself in the Lua editor, in settings and editor
 --     titles; noun phrase.
-[1272] = "Custom condition",
+N["Custom condition"] = 1272
 -- c3b0c07b
 -- Context: Fallback name for a game icon with no known name in the icon picker.
-[1273] = "Game icon",
+N["Game icon"] = 1273
 -- b33708ba
 -- Context: Group heading in the icon picker: the icons that come from the game's macro icon list.
-[1274] = "Game icons",
+N["Game icons"] = 1274
 -- a35abcd6
 -- Context: Label of the icon field of a condition category/custom condition and a comparison row
 --     label; noun.
-[1275] = "Icon",
+N["Icon"] = 1275
 -- 41ca9dad
 -- Context: Group heading in the icon picker: the item icons from the game.
-[1276] = "Item icons",
+N["Item icons"] = 1276
 -- 059e5b06
 -- Context: Group heading in the icon picker: icons of spells your character knows.
-[1277] = "Known spells",
+N["Known spells"] = 1277
 -- bb50071a
 -- Context: Button on the category management page: go back to editing individual conditions.
-[1278] = "Manage conditions",
+N["Manage conditions"] = 1278
 -- 1ff57a29
 -- Context: Tooltip of the next-page button in the icon picker; imperative.
-[1279] = "Next",
+N["Next"] = 1279
 -- e71ca826
 -- Context: Page indicator in the icon picker; the first %d is the current page, the second the
 --     total pages.
 -- %d #1: %d #1: the current page, e.g. 2
 -- %d #2: %d #2: the total number of pages, e.g. 14
-[1280] = "Page %d of %d",
+N["Page %d of %d"] = 1280
 -- a57b08a4
 -- Context: Tooltip of the previous-page button in the icon picker; imperative.
-[1281] = "Previous",
+N["Previous"] = 1281
 -- fe3f2a5d
 -- Context: Button in the Profiles page: make the selected profile the active one (verb phrase);
 --     also a help heading.
-[1282] = "Activate profile",
+N["Activate profile"] = 1282
 -- 5608b89a
 -- Context: Status/button text in the Profiles page: the selected profile is already the active one.
-[1283] = "Active profile",
+N["Active profile"] = 1283
 -- 1946c44c
-[1284] = "Apply pending changes before leaving? Use Cancel on the page to discard them.",
+N["Apply pending changes before leaving? Use Cancel on the page to discard them."] = 1284
 -- 92b4440b
 -- Context: Announce channel dropdown option: play a sound instead of showing text.
-[1285] = "Audible",
+N["Audible"] = 1285
 -- b8b1d894
 -- Context: Comparison row label: the condition categories (groups) in a profile.
-[1286] = "Categories",
+N["Categories"] = 1286
 -- ddd736ba
-[1287] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.",
+N["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted."] = 1287
 -- 40ac9c5e
-[1288] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.",
+N["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations."] = 1288
 -- bd245266
 -- Context: Comparison row label: the list of Built In rotations that your rotations were cloned
 --     from.
-[1289] = "Clone sources",
+N["Clone sources"] = 1289
 -- 72e094ed
 -- Context: Comparison row label: records of past rotation comparisons.
-[1290] = "Comparison history",
+N["Comparison history"] = 1290
 -- 61062ba2
-[1291] = "Complete the effect settings before applying.",
+N["Complete the effect settings before applying."] = 1291
 -- 2a6b24ad
 -- Context: Label on the settings page: the credits line (people who contributed); noun, followed by
 --     a colon and names.
-[1292] = "Credits",
+N["Credits"] = 1292
 -- b91bfdbb
 -- Context: Comparison row label: your saved preferences about Built In rotations (enabled or
 --     disabled).
-[1293] = "Built In preferences",
+N["Built In preferences"] = 1293
 -- a1ceb156
-[1294] = "Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.",
+N["Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate."] = 1294
 -- 66cf8407
-[1295] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.",
+N["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes."] = 1295
 -- 6d5af309
 -- Context: Comparison row label for the 'Ignore Mana' setting in a profile.
-[1296] = "Ignore mana",
+N["Ignore mana"] = 1296
 -- 96bb8a4a
 -- Context: Comparison row label for the 'Ignore Range' setting in a profile.
-[1297] = "Ignore range",
+N["Ignore range"] = 1297
 -- 7df60b64
 -- Context: Comparison row label: the records of imported entries.
-[1298] = "Imports",
+N["Imports"] = 1298
 -- fa4ba363
-[1299] = "Invalid announcement.",
+N["Invalid announcement."] = 1299
 -- f3d92c2d
-[1300] = "Invalid profile.",
+N["Invalid profile."] = 1300
 -- 0d1e6a1d
-[1301] = "Leave combat before applying these settings.",
+N["Leave combat before applying these settings."] = 1301
 -- 0fabe810
-[1302] = "Leave combat before changing action bar bindings.",
+N["Leave combat before changing action bar bindings."] = 1302
 -- c011d609
 -- Context: Label on the settings page: the license line, followed by a colon and the license name.
-[1303] = "License",
+N["License"] = 1303
 -- e7fdbd0c
 -- Context: Label on the settings page: the list of translations, followed by a colon.
-[1304] = "Localizations",
+N["Localizations"] = 1304
 -- aac6c842
-[1305] = "No rotations in this profile.",
+N["No rotations in this profile."] = 1305
 -- 15ba8148
 -- Context: Comparison row label for the position of the preview window setting.
-[1306] = "Preview position",
+N["Preview position"] = 1306
 -- 08f04b51
 -- Context: Comparison row label: the collection of all rotations in a profile.
-[1307] = "Rotation library",
+N["Rotation library"] = 1307
 -- 7bde8757
-[1308] = "Search or drag a spell here",
+N["Search or drag a spell here"] = 1308
 -- 21c38898
 -- Context: Drag-and-drop tooltip in the rotation editor: moving several selected step cards; %d is
 --     how many.
 -- %d #1: %d #1: how many selected cards are being dragged, e.g. 3
-[1309] = "Move %d selected cards",
+N["Move %d selected cards"] = 1309
 -- 6c0b9d10
 -- Context: Tooltip of a bulk button in the rotation/condition editor: duplicate every selected card
 --     (verb phrase).
-[1310] = "Duplicate selected cards",
+N["Duplicate selected cards"] = 1310
 -- 30a9f853
 -- Context: Tooltip of a bulk button in the rotation/condition editor: enable every selected card
 --     (verb phrase).
-[1311] = "Enable selected cards",
+N["Enable selected cards"] = 1311
 -- d3b30c10
 -- Context: Tooltip of a bulk button in the rotation/condition editor: disable every selected card
 --     (verb phrase).
-[1312] = "Disable selected cards",
+N["Disable selected cards"] = 1312
 -- 48d65c02
 -- Context: Tooltip of a bulk button in the rotation/condition editor: delete every selected card
 --     (verb phrase).
-[1313] = "Delete selected cards",
+N["Delete selected cards"] = 1313
 -- cea4d2e0
 -- Context: Tooltip of a bulk button in the rotation editor: deselect all cards (verb phrase).
-[1314] = "Clear selection",
+N["Clear selection"] = 1314
 -- c58ed264
 -- %s #1: %s #1: the spell being cast by the target, e.g. "Fireball"
-[1315] = "Target casting: %s",
+N["Target casting: %s"] = 1315
 -- ffaf018a
 -- %s #1: %s #1: the spell being cast by the focus target, e.g. "Fireball"
-[1316] = "Focus casting: %s",
+N["Focus casting: %s"] = 1316
 -- 0b303a00
 -- %s #1: %s #1: the spell being channelled by the target, e.g. "Arcane Missiles"
-[1317] = "Target channeling: %s",
+N["Target channeling: %s"] = 1317
 -- 2a66fe87
 -- %s #1: %s #1: the spell being channelled by the focus target, e.g. "Arcane Missiles"
-[1318] = "Focus channeling: %s",
+N["Focus channeling: %s"] = 1318
 -- f6b58a2a
 -- %s #1: %s #1: a spell the player cast recently, e.g. "Frostbolt"
-[1319] = "Recently cast: %s",
+N["Recently cast: %s"] = 1319
 -- db04a504
 -- %s #1: %s #1: the item equipped in the first trinket slot, e.g. "Trinket of the Sun"
-[1320] = "Trinket 1: %s",
+N["Trinket 1: %s"] = 1320
 -- 93b4d929
 -- %s #1: %s #1: the item equipped in the second trinket slot, e.g. "Trinket of the Moon"
-[1321] = "Trinket 2: %s",
+N["Trinket 2: %s"] = 1321
 -- b31f1cc4
-[1322] = "No equipped trinket to insert.",
+N["No equipped trinket to insert."] = 1322
 -- 799ed3e6
-[1323] = "Nothing to insert: no target or focus cast and no recent casts.",
+N["Nothing to insert: no target or focus cast and no recent casts."] = 1323
 -- def2f5ca
-[1324] = "Click to insert. Right-click the field again to close.",
+N["Click to insert. Right-click the field again to close."] = 1324
 -- 4a0eab4f
-[1325] = "Right-click to insert an equipped trinket.",
+N["Right-click to insert an equipped trinket."] = 1325
 -- d0cd6f0d
-[1326] = "Right-click to insert your target's cast or a recent cast.",
+N["Right-click to insert your target's cast or a recent cast."] = 1326
 -- 2702ffe0
-[1327] = "Search or drag an item here",
+N["Search or drag an item here"] = 1327
 -- d27b40b5
-[1328] = "Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement.",
+N["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement."] = 1328
 -- b0413d32
-[1329] = "Settings changed elsewhere. Cancel to reload them before applying.",
+N["Settings changed elsewhere. Cancel to reload them before applying."] = 1329
 -- 1973cc09
 -- Context: Item set binding button when slots are bound; first part is the bound action bar slot
 --     numbers (%s), pressing it unbinds.
 -- %s #1: %s #1: the slot numbers the item set is bound to, separated by commas, e.g. "13, 14"
-[1330] = "Slots %s · Unbind",
+N["Slots %s · Unbind"] = 1330
 -- 46124e02
 -- Context: Label of the sound dropdown in an announcement and a help heading; also a comparison row
 --     label.
-[1331] = "Sound",
+N["Sound"] = 1331
 -- 410cc927
 -- Context: Placeholder shown in a comparison where a setting is a nested table rather than a simple
 --     value.
-[1332] = "Structured settings",
+N["Structured settings"] = 1332
 -- 1ed6b5ea
 -- Context: Fallback name for a rotation that has no name.
-[1333] = "Unnamed rotation",
+N["Unnamed rotation"] = 1333
 -- 62704b0c
-[1334] = "Use arrows or drag rows in the condition sidebar to reorder within the selected category. In Manage categories, the same controls order the categories themselves.",
+N["Use arrows or drag rows in the condition sidebar to reorder within the selected category. In Manage categories, the same controls order the categories themselves."] = 1334
 -- 8e37953d
 -- Context: Label of the numeric value field in the Stagger and group state conditions (the value
 --     the operator compares to); noun.
-[1335] = "Value",
+N["Value"] = 1335
 -- 2d11fd64
-[1336] = "Choose an action and complete the announcement before applying.",
+N["Choose an action and complete the announcement before applying."] = 1336
 -- d45ed343
-[1337] = "Apply changes before leaving this page?",
+N["Apply changes before leaving this page?"] = 1337
 -- 588d9e12
-[1338] = "Apply or discard current settings before opening the custom code editor.",
+N["Apply or discard current settings before opening the custom code editor."] = 1338
 -- de28dd82
-[1339] = "Apply item-set changes before binding it to an action bar.",
+N["Apply item-set changes before binding it to an action bar."] = 1339
 -- c0f78e20
-[1340] = "Choose a new named copy or replace the selected editable entry. Review the destination before importing.",
+N["Choose a new named copy or replace the selected editable entry. Review the destination before importing."] = 1340
 -- 83b12c22
 -- Context: Button in the transfer dialog: clears the text box (verb).
-[1341] = "Clear",
+N["Clear"] = 1341
 -- e25a9c83
-[1342] = "Confirm the Lua import, then review it before saving.",
+N["Confirm the Lua import, then review it before saving."] = 1342
 -- 8aaf46c6
 -- Context: Default placeholder name for an imported custom condition when its name cannot be read;
 --     written in capital letters with an underscore.
-[1343] = "IMPORTED_CONDITION",
+N["IMPORTED_CONDITION"] = 1343
 -- 8237a9a5
 -- Context: Title of the window comparing imported text with the existing entry; also a help
 --     heading.
-[1344] = "Import comparison",
+N["Import comparison"] = 1344
 -- 9d886886
 -- Context: Default name given to an announcement created by importing text.
-[1345] = "Imported announcement",
+N["Imported announcement"] = 1345
 -- 456358c4
 -- Context: Default name given to a condition category created by importing text.
-[1346] = "Imported category",
+N["Imported category"] = 1346
 -- a77b0984
 -- Context: Default name given to an effect created by importing text.
-[1347] = "Imported effect",
+N["Imported effect"] = 1347
 -- 2f91d1e1
 -- Context: Default name given to a profile created by importing text.
-[1348] = "Imported profile",
+N["Imported profile"] = 1348
 -- ec38d3c0
-[1349] = "Invalid custom condition.",
+N["Invalid custom condition."] = 1349
 -- a265e30c
 -- Context: Placeholder in the import dialog: the imported text did not contain a name.
-[1350] = "Name not supplied",
+N["Name not supplied"] = 1350
 -- fb66a1af
 -- Context: Label in the import dialog preceding the name found in the imported text, followed by a
 --     colon.
-[1351] = "Original name",
+N["Original name"] = 1351
 -- 327093d7
-[1352] = "Ready to import. Choose replacement or a named copy.",
+N["Ready to import. Choose replacement or a named copy."] = 1352
 -- 0d9a1fb4
 -- Context: Checkbox in the import dialog: overwrite the entry currently selected instead of
 --     creating a new one.
-[1353] = "Replace selected entry",
+N["Replace selected entry"] = 1353
 -- a84aab9e
-[1354] = "That condition identifier already exists.",
+N["That condition identifier already exists."] = 1354
 -- e50b1bee
-[1355] = "The selected profile changed. Reopen the import window.",
+N["The selected profile changed. Reopen the import window."] = 1355
 -- 1609b3f3
-[1356] = "This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.",
+N["This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it."] = 1356
 -- ae820bc2
-[1357] = "Use letters, numbers and underscores for the condition identifier.",
+N["Use letters, numbers and underscores for the condition identifier."] = 1357
 -- 24c87ffc
 -- %s #1: %s #1: the part of the custom condition that failed the check, e.g. "evaluate" or "Definition"
 -- %s #2: %s #2: the detail of the failure, e.g. "unexpected symbol near end"
-[1358] = "Check %s: %s",
+N["Check %s: %s"] = 1358
 -- 8e09cadd
 -- Context: Button in the Lua editors: check the code for syntax errors without running it (verb
 --     phrase).
-[1359] = "Check syntax",
+N["Check syntax"] = 1359
 -- 1ae4fec7
 -- Context: Tooltip of the icon button in the custom condition editor: opens the icon picker;
 --     imperative.
-[1360] = "Choose icon",
+N["Choose icon"] = 1360
 -- 18156f45
-[1361] = "Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.",
+N["Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract."] = 1361
 -- a53c11ee
-[1362] = "Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua.",
+N["Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua."] = 1362
 -- 9813fafb
 -- Context: Label naming the whole definition of a custom condition (its callbacks and fields) in
 --     errors and comparison rows; noun.
-[1363] = "Definition",
+N["Definition"] = 1363
 -- 9b8e27c6
 -- Context: Heading in help text for the code editor (Undo, Redo, Reset, Check syntax, Apply).
-[1364] = "Editing code",
+N["Editing code"] = 1364
 -- 966591fe
 -- Context: Name of the evaluate callback tab of a custom condition: the code that decides if the
 --     condition is true; noun.
-[1365] = "Evaluate",
+N["Evaluate"] = 1365
 -- 7b08f80e
 -- Context: Heading and label for the schema of a custom condition's fields (their names and types).
-[1366] = "Field schema",
+N["Field schema"] = 1366
 -- 1aab5f2f
 -- Context: Name of the callback tab of a custom condition: the code that builds the condition's
 --     editing widgets; noun.
-[1367] = "Fields UI",
+N["Fields UI"] = 1367
 -- 43dab9e3
-[1368] = "Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs.",
+N["Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs."] = 1368
 -- 6a696870
 -- Context: Name of the callback tab of a custom condition: code that runs when the condition is
 --     registered.
-[1369] = "On register",
+N["On register"] = 1369
 -- 06f9af14
 -- Context: Name of the callback tab of a custom condition: code that runs when the condition is
 --     unregistered.
-[1370] = "On unregister",
+N["On unregister"] = 1370
 -- 8e76a94a
 -- Context: Name of the callback tab of a custom condition: code that builds the condition's text
 --     summary; noun.
-[1371] = "Summary",
+N["Summary"] = 1371
 -- d9f668a3
-[1372] = "Syntax checked. No custom code was executed.",
+N["Syntax checked. No custom code was executed."] = 1372
 -- 39286cd6
-[1373] = "The custom condition changed elsewhere. Reopen it before saving.",
+N["The custom condition changed elsewhere. Reopen it before saving."] = 1373
 -- 6e33a7dd
 -- Context: Heading in help text warning that custom Lua code has full addon access and only trusted
 --     code should be imported.
-[1374] = "Trusted code",
+N["Trusted code"] = 1374
 -- 40611abb
 -- Context: Name of the callback tab of a custom condition: code that validates the condition's
 --     fields; verb used as a tab name.
-[1375] = "Validate",
+N["Validate"] = 1375
 -- 7c39c16d
 -- Context: Not referenced directly by the current code (legacy or built dynamically). Filter option
 --     'All tags' in the rotation browser tag filter.
-[1376] = "All tags",
+N["All tags"] = 1376
 -- 08c83906
-[1377] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+N["Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = 1377
 -- 73f5fe1e
-[1378] = "Invalid tags. Use up to 64 tags of 64 characters, separated by commas.",
+N["Invalid tags. Use up to 64 tags of 64 characters, separated by commas."] = 1378
 -- 36b7b9b3
-[1379] = "Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.",
+N["Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed."] = 1379
 -- 1331275b
 -- Context: Label of the rotation tags field and of the tag filter in the rotation browser; plural
 --     noun.
-[1380] = "Tags",
+N["Tags"] = 1380
 -- 1dd4ab9e
 -- Context: Label of the rotation's priority for automatic switching in change summaries and
 --     comparisons; noun phrase.
-[1381] = "Switch priority",
+N["Switch priority"] = 1381
 -- 1e51f6c3
 -- Context: Priority line in a rotation browser entry; %d is the priority number.
 -- %d #1: %d #1: the rotation's switch priority, e.g. 5
-[1382] = "Priority %d",
+N["Priority %d"] = 1382
 -- defa7982
 -- Context: Text shown in place of a priority number when the stored priority is not valid.
-[1383] = "Invalid priority",
+N["Invalid priority"] = 1383
 -- 1501b340
-[1384] = "Switch priority must be a whole number between -100000 and 100000.",
+N["Switch priority must be a whole number between -100000 and 100000."] = 1384
 -- f3967731
-[1385] = "Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+N["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = 1385
 -- a37462ad
-[1386] = "Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.",
+N["Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero."] = 1386
 -- 2040fdbd
 -- %s #1: %s #1: where the rotation is stored, e.g. "profile:Default:MAGE_62" (profile name and specialization key)
 -- %s #2: %s #2: the rotation's ID, e.g. "a1b2c3d4"
-[1387] = "Invalid switch priority for %s:%s; explicit repair resets it to zero.",
+N["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = 1387
 -- babdd022
 -- Context: Spell label with a note that any rank of the spell matches; %s is the spell name
 --     (Classic ranked spells).
 -- %s #1: %s #1: the spell label, its name and ID, e.g. "Rend (spell ID 772)"
-[1388] = "%s (any rank)",
+N["%s (any rank)"] = 1388
 -- a80c618c
-[1389] = "Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.",
+N["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = 1389
 -- 264ad9c0
 -- Context: Name of the Cast Progress condition (how far the current cast has progressed, in
 --     percent).
-[1390] = "Cast Progress",
+N["Cast Progress"] = 1390
 -- 02ad1e66
 -- Context: Name of the Channel Progress condition (how far the current channel has progressed, in
 --     percent).
-[1391] = "Channel Progress",
+N["Channel Progress"] = 1391
 -- b19c05d2
 -- Context: Name of the Talent Tree Points condition (points spent in a talent tree; Classic).
-[1392] = "Talent Tree Points",
+N["Talent Tree Points"] = 1392
 -- ef4ebbe8
 -- Context: Not referenced directly by the current code (legacy or built dynamically).
 --     Condition-text fragment 'points spent in %s'; %s is a talent tree.
 -- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
-[1393] = "points spent in %s",
+N["points spent in %s"] = 1393
 -- 4fd19fe4
 -- Context: Name of the Primary Talent Tree condition (the tree in which you have the most points;
 --     Classic).
-[1394] = "Primary Talent Tree",
+N["Primary Talent Tree"] = 1394
 -- cffd0628
 -- %s #1: %s #1: the name of the talent tree, e.g. "Frost"
-[1395] = "your primary talent tree is %s",
+N["your primary talent tree is %s"] = 1395
 -- 31e9be18
 -- Context: Rotation editor: label of the view-mode toggle button while the list layout is active
 --     (clicking switches to the diagram), and the "Diagram" option in the General settings "Default
 --     rotation view" dropdown. Names a way of viewing a rotation, not an action.
-[1430] = "Diagram view",
+N["Diagram view"] = 1430
 -- 5d8c3e1b
 -- Context: "List" option of the rotation view: the compact tree list. Shown on the rotation
 --     editor's view-mode toggle button and as an entry in the General settings "Default rotation
 --     view" dropdown.
-[1431] = "List view",
+N["List view"] = 1431
 -- 0dca2dc5
-[1432] = "Switch between the diagram and compact tree list. This changes only the view.",
+N["Switch between the diagram and compact tree list. This changes only the view."] = 1432
 -- bc7b631a
 -- Context: Tooltip of the minus icon button in the zoom bar at the bottom right of the rotation
 --     diagram: makes the diagram smaller (verb).
-[1433] = "Zoom out",
+N["Zoom out"] = 1433
 -- 0e47f09a
 -- Context: Tooltip of the plus icon button in the zoom bar at the bottom right of the rotation
 --     diagram: makes the diagram larger (verb).
-[1434] = "Zoom in",
+N["Zoom in"] = 1434
 -- ed28d6c9
-[1435] = "Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged.",
+N["Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged."] = 1435
 -- a7f6faca
-[1436] = "Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved.",
+N["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved."] = 1436
 -- b1fd3756
 -- Context: Announcement output channel: sends the message as a custom emote. Entry in the channel
 --     dropdown of an announcement output (shown only for emote outputs) and a topic title in the
 --     Announces help.
-[1437] = "Custom emote",
+N["Custom emote"] = 1437
 -- 6dd86cd7
-[1438] = "Use spell recipient ({{target}})",
+N["Use spell recipient ({{target}})"] = 1438
 -- 3cb40b84
-[1439] = "Automatic Say and Yell are unavailable. Choose another announcement destination.",
+N["Automatic Say and Yell are unavailable. Choose another announcement destination."] = 1439
 -- 38f252ac
-[1440] = "Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
+N["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = 1440
 -- c546b857
 -- Context: General settings: label of the dropdown that chooses whether rotations open as a diagram
 --     or a list by default; also a help topic title and a row label in the profile comparison.
-[1441] = "Default rotation view",
+N["Default rotation view"] = 1441
 -- d11b9246
-[1442] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid.",
+N["Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."] = 1442
 -- 769b3ebc
-[1443] = "Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan.",
+N["Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan."] = 1443
 -- a3dd333a
-[1444] = "Move this and following entries",
+N["Move this and following entries"] = 1444
 -- ffcd3171
-[1445] = "Drag one entry; Ctrl-drag moves it and all following siblings.",
+N["Drag one entry; Ctrl-drag moves it and all following siblings."] = 1445
 -- 773001f9
 -- Context: Small count label on the stacked hover card of the rotation view, e.g. "3 cards"; %d is
 --     the number of cards stacked together.
 -- %d #1: %d #1: the number of cards being dragged, e.g. 3
-[1446] = "%d cards",
+N["%d cards"] = 1446
 -- 454b5fb4
 -- Context: Suffix on a True/False branch button in the rotation diagram when part of that branch is
 --     folded away; %d is the number of hidden steps. Keeps its leading space, appended right after
 --     "True" or "False".
 -- %d #1: %d #1: the number of cards hidden inside the folded branch, e.g. 4 (the text starts with a space and follows "True" or "False")
-[1447] = " (%d hidden)",
+N[" (%d hidden)"] = 1447
 -- 9db3d1ae
-[1448] = "Click to fold or unfold this branch arm. Other cards and conditions are unchanged.",
+N["Click to fold or unfold this branch arm. Other cards and conditions are unchanged."] = 1448
 -- a7c224a3
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
-[1449] = "%s {{!are|are not}} PVP flagged",
+N["%s {{!are|are not}} PVP flagged"] = 1449
 -- a2e6fde9
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
-[1450] = "%s {{!are|are not}} a %s",
+N["%s {{!are|are not}} a %s"] = 1450
 -- a9c26592
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the spell being cast, e.g. "Fireball"
-[1451] = "%s {{!are|are not}} currently casting %s",
+N["%s {{!are|are not}} currently casting %s"] = 1451
 -- c0e4c355
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the spell being channelled, e.g. "Arcane Missiles"
-[1452] = "%s {{!are|are not}} currently channeling %s",
+N["%s {{!are|are not}} currently channeling %s"] = 1452
 -- df4ccc9d
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
-[1453] = "%s {{!are|are not}} in combat",
+N["%s {{!are|are not}} in combat"] = 1453
 -- afbc6f6d
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
-[1454] = "%s {{!has|does not have}} %s",
+N["%s {{!has|does not have}} %s"] = 1454
 -- 450074be
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
-[1455] = "%s {{!has|does not have}} a %s debuff",
+N["%s {{!has|does not have}} a %s debuff"] = 1455
 -- e7bdefdc
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: a comparison on how many group members are within a distance, e.g. "the number of Party members within 30 yards of you is greater than 2"
-[1456] = "%s {{!have|do not have}} %s",
+N["%s {{!have|do not have}} %s"] = 1456
 -- 4d5d691c
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the buff or debuff, e.g. "Power Word: Fortitude"
 -- %s #3: %s #3: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[1457] = "%s {{!have|do not have}} %s where %s",
+N["%s {{!have|do not have}} %s where %s"] = 1457
 -- abf6cfd4
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
 -- %s #2: %s #2: the debuff type, e.g. "Magic" (the sentence may then end with "that is dispellable")
-[1458] = "%s {{!have|do not have}} a %s debuff",
+N["%s {{!have|do not have}} a %s debuff"] = 1458
 -- 79e495d3
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[1459] = "%s {{!is|is not}} PVP flagged",
+N["%s {{!is|is not}} PVP flagged"] = 1459
 -- 491c7ee4
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: a class, creature type or unit classification, e.g. "Mage", "Undead" or "Rare Elite"
-[1460] = "%s {{!is|is not}} a %s",
+N["%s {{!is|is not}} a %s"] = 1460
 -- 09b32050
 -- %s #1: %s #1: a clickable spell link for the totem, e.g. "[Searing Totem]"
 -- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[1461] = "%s {{!is|is not}} active with %s",
+N["%s {{!is|is not}} active with %s"] = 1461
 -- c58e76ae
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[1462] = "%s {{!is|is not}} an enemy",
+N["%s {{!is|is not}} an enemy"] = 1462
 -- 2c1ba7dc
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[1463] = "%s {{!is|is not}} attackable",
+N["%s {{!is|is not}} attackable"] = 1463
 -- 742f7cb6
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
 -- %s #2: %s #2: the spell being cast, e.g. "Fireball"
-[1464] = "%s {{!is|is not}} currently casting %s",
+N["%s {{!is|is not}} currently casting %s"] = 1464
 -- ae551afe
 -- %s #1: %s #1: the unit, in the possessive, e.g. "your target's"
 -- %s #2: %s #2: the role name, e.g. "Tank", "DPS" or "Healer"
-[1465] = "%s {{!is|is not}} in a %s role",
+N["%s {{!is|is not}} in a %s role"] = 1465
 -- f6ca7ce9
 -- %s #1: %s #1: the unit that is not the player, e.g. "your target"
-[1466] = "%s {{!is|is not}} in combat",
+N["%s {{!is|is not}} in combat"] = 1466
 -- 0af84407
 -- %s #1: %s #1: the unit, e.g. "your target"
-[1467] = "%s's channeled spell {{!is|is not}} interruptable",
+N["%s's channeled spell {{!is|is not}} interruptable"] = 1467
 -- 7240fa38
 -- %s #1: %s #1: the unit, e.g. "your target"
-[1468] = "%s's spell {{!is|is not}} interruptable",
+N["%s's spell {{!is|is not}} interruptable"] = 1468
 -- 8c1704ad
 -- %s #1: %s #1: the role name, e.g. "Tank", "DPS" or "Healer"
-[1469] = "Your talent {{!is|is not}} a %s role",
+N["Your talent {{!is|is not}} a %s role"] = 1469
 -- c66f7ad7
-[1470] = "is not evenly divisible by",
+N["is not evenly divisible by"] = 1470
 -- 3a09b8a8
-[1471] = "is not greater than",
+N["is not greater than"] = 1471
 -- ff751fea
-[1472] = "is not greater than or equal to",
+N["is not greater than or equal to"] = 1472
 -- 5937cd49
-[1473] = "is not less than",
+N["is not less than"] = 1473
 -- 92bbf51d
-[1474] = "is not less than or equal to",
+N["is not less than or equal to"] = 1474
 -- 970de09b
 -- Context: Wrapper used when describing a negated condition group in text: the %s is the
 --     description of the conditions, so it reads like "not (<conditions>)".
 -- %s #1: %s #1: the full text of the condition that is being negated, e.g. "you are in combat"
-[1475] = "not (%s)",
+N["not (%s)"] = 1475
 -- d4c2a5ad
 -- %s #1: %s #1: the name of the shapeshift form or stance, e.g. "Bear Form"
-[1476] = "you {{!are|are not}} in %s form",
+N["you {{!are|are not}} in %s form"] = 1476
 -- 330c2126
 -- %s #1: %s #1: the instance type, e.g. "Dungeon", "Raid" or "Battleground"
-[1477] = "you {{!are|are not}} in a %s instance",
+N["you {{!are|are not}} in a %s instance"] = 1477
 -- 0f79bc56
-[1478] = "you {{!are|are not}} in a outdoors",
+N["you {{!are|are not}} in a outdoors"] = 1478
 -- 25ce1dd9
 -- %s #1: %s #1: an item or item set name or link, e.g. "[Thunderfury]"
-[1479] = "you {{!have|do not have}} %s equipped",
+N["you {{!have|do not have}} %s equipped"] = 1479
 -- f5b5e754
 -- %s #1: %s #1: a clickable item link for the glyph, e.g. "[Glyph of Fireball]"
-[1480] = "you {{!have|do not have}} %s glyph",
+N["you {{!have|do not have}} %s glyph"] = 1480
 -- 7c1be9a0
 -- %s #1: %s #1: the totem element, e.g. "Fire"
 -- %s #2: %s #2: a comparison on the remaining time, e.g. "the remaining time is greater than 10 seconds"
-[1481] = "you {{!have|do not have}} a %s totem active with %s",
+N["you {{!have|do not have}} a %s totem active with %s"] = 1481
 -- 6691324c
 -- %s #1: %s #1: the pet name, e.g. "Rex"
-[1482] = "you {{!have|do not have}} a pet named %s",
+N["you {{!have|do not have}} a pet named %s"] = 1482
 -- 8fbf9338
 -- %s #1: %s #1: the zone PVP type, e.g. "Sanctuary", "Contested" or "Combat"
-[1483] = "zone {{!is|is not}} a %s zone",
+N["zone {{!is|is not}} a %s zone"] = 1483
 -- 07e00292
 -- %s #1: %s #1: the zone name, e.g. "Stormwind City"
-[1484] = "{{!in|not in}} %s",
+N["{{!in|not in}} %s"] = 1484
 -- f9337f4a
-[1485] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.",
+N["Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color."] = 1485
 -- 085df392
-[1486] = "Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.",
+N["Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color."] = 1486
 -- 90f64b52
 -- Context: Tooltip of the minus icon button beside the Priority box in the rotation editor header:
 --     lowers the rotation's priority number (verb phrase).
-[1487] = "Decrease priority",
+N["Decrease priority"] = 1487
 -- c31a4a7d
 -- Context: Tooltip of the plus icon button beside the Priority box in the rotation editor header:
 --     raises the rotation's priority number (verb phrase).
-[1488] = "Increase priority",
+N["Increase priority"] = 1488
 -- 0abba441
 -- Context: General settings: one of two choices for how the preview window lays out its spell icons
 --     (laid out in a row); the other choice is "Vertical". Also a help topic title.
-[1489] = "Horizontal",
+N["Horizontal"] = 1489
 -- 727cd3a6
 -- Context: General settings: one of two choices for how the preview window lays out its spell icons
 --     (stacked in a column); the other choice is "Horizontal". Also a row label in the profile
 --     comparison.
-[1490] = "Vertical",
+N["Vertical"] = 1490
 -- 6e9ad9af
-[1491] = "Lock preview position and size",
+N["Lock preview position and size"] = 1491
 -- fc3dbf19
 -- Context: General settings: label of the slider that sets the transparency of the preview window;
 --     also a help topic title and a profile comparison row.
-[1492] = "Preview window opacity",
+N["Preview window opacity"] = 1492
 -- a625f9d4
-[1493] = "Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio.",
+N["Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."] = 1493
 -- 54b44fb7
-[1494] = "Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row.",
+N["Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row."] = 1494
 -- 026621d4
-[1495] = "Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved.",
+N["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."] = 1495
 -- 10d580ca
-[1496] = "Lock position and size",
+N["Lock position and size"] = 1496
 -- 0e556ee1
 -- Context: Entry in the preview window's right-click menu: opens the General settings page.
-[1497] = "Open General settings",
+N["Open General settings"] = 1497
 -- f65ed2ec
 -- Context: Button below a draft editor (next to Apply) and title of the dialog that lists what
 --     differs between the saved and unsaved version.
-[1498] = "View Changes",
+N["View Changes"] = 1498
 -- b5c120b3
 -- Context: Left column heading of the View Changes dialog: the version currently stored, before the
 --     pending edits.
-[1499] = "Saved",
+N["Saved"] = 1499
 -- 6250d572
 -- Context: Right column heading of the View Changes dialog: the draft with pending edits that have
 --     not been applied yet.
-[1500] = "Unsaved",
+N["Unsaved"] = 1500
 -- bc6e0973
 -- Context: Row label prefix in the View Changes dialog, shown as "Pending input: <field>": text
 --     typed into a field that has not been committed yet.
-[1501] = "Pending input",
+N["Pending input"] = 1501
 -- 4b96e273
 -- Context: Value shown in the "Saved" column of View Changes for a custom widget whose content
 --     cannot be compared; indicates the saved side was not examined.
-[1502] = "Not inspected",
+N["Not inspected"] = 1502
 -- 12be1b12
-[1503] = "Custom widget has pending input.",
+N["Custom widget has pending input."] = 1503
 -- 70e5c0fd
 -- Context: Default left column heading in the comparison dialog when the first item has no name:
 --     the entry currently selected in the list. Also used when comparing an import.
-[1504] = "Selected entry",
+N["Selected entry"] = 1504
 -- f6cf1462
 -- Context: Default right column heading in the comparison dialog when the second item has no name:
 --     the entry it is compared with.
-[1505] = "Compared entry",
+N["Compared entry"] = 1505
 -- 002a5d77
 -- Context: Name of a rotation-step option (checkbox) that makes the step use its own custom name;
 --     shown as a row label when two profiles are compared.
-[1506] = "Use step name",
+N["Use step name"] = 1506
 -- 6dd777d2
 -- Context: General settings: label of the slider for the size of the icons in the preview window;
 --     also a row label in the profile comparison.
-[1507] = "Preview icon size",
+N["Preview icon size"] = 1507
 -- 9710bd5e
-[1508] = "Add or search tags",
+N["Add or search tags"] = 1508
 -- 93bc41f4
 -- Context: Placeholder text in the search box of the tag picker (when new tags cannot be created):
 --     invites the user to type to filter existing tags.
-[1509] = "Search tags",
+N["Search tags"] = 1509
 -- bdb18f62
-[1510] = "Click to remove this tag. Right-click to choose its color.",
+N["Click to remove this tag. Right-click to choose its color."] = 1510
 -- 9f9619c7
-[1511] = "Apply updates the draft. Apply the rotation to save it.",
+N["Apply updates the draft. Apply the rotation to save it."] = 1511
 -- 6054cb39
-[1512] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+N["Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = 1512
 -- 616f48c1
 -- Context: Fallback row label in View Changes for unsaved edits whose individual field name is not
 --     known; stands for "form fields".
-[1513] = "Fields",
+N["Fields"] = 1513
 -- 7f553822
-[1514] = "Search...",
+N["Search..."] = 1514
 -- 9fd728c6
 -- Context: Button in the Conditions settings roster header that adds a new custom condition (verb).
-[1515] = "Add",
+N["Add"] = 1515
 -- b5a66eb6
 -- Context: Row label in View Changes shown when the comparison was cut short, followed by the note
 --     that only the first 512 conditions per side are shown; a noun.
-[1516] = "Comparison limit",
+N["Comparison limit"] = 1516
 -- 2dc363a7
-[1517] = "Showing the first 512 conditions per side.",
+N["Showing the first 512 conditions per side."] = 1517
 -- 1710782c
 -- Context: Weapon-related icons: an icon name in the icon picker's group list, and a category
 --     filter chip in the picker.
-[1518] = "Weapon",
+N["Weapon"] = 1518
 -- 15b61974
 -- Context: Icon name in the icon picker: a map/location marker (noun).
-[1519] = "Location",
+N["Location"] = 1519
 -- 909cb811
 -- Context: Icon name in the icon picker: a book (noun, the object).
-[1520] = "Book",
+N["Book"] = 1520
 -- 289aff12
 -- Context: Icon name in the icon picker: a question mark (noun).
-[1521] = "Question",
+N["Question"] = 1521
 -- 5919dcd4
 -- Context: Icon name in the icon picker: crossed swords (plural noun).
-[1522] = "Swords",
+N["Swords"] = 1522
 -- 480d4be7
 -- Context: Icon name in the icon picker: a shield (noun, the item). Also used as an equipment
 --     category in the equipped-item condition.
-[1523] = "Shield",
+N["Shield"] = 1523
 -- 44bc3799
 -- Context: Icon name in the icon picker: healing (a heart/cross style icon).
-[1524] = "Healing",
+N["Healing"] = 1524
 -- 41e68f2c
 -- Context: Icon name in the icon picker: a lightning bolt (noun).
-[1525] = "Lightning",
+N["Lightning"] = 1525
 -- b5e0cd8a
 -- Context: Icon name in the icon picker: potions (plural noun).
-[1526] = "Potions",
+N["Potions"] = 1526
 -- e4eb1806
 -- Context: Icon name in the icon picker: food (noun).
-[1527] = "Food",
+N["Food"] = 1527
 -- a592855d
 -- Context: Icon name in the icon picker: armor (noun, the item type).
-[1528] = "Armor",
+N["Armor"] = 1528
 -- 39bbb719
 -- Context: Icon name in the icon picker: several people (plural; a group icon).
-[1529] = "Groups",
+N["Groups"] = 1529
 -- 34ca0e76
 -- Context: Icon name in the icon picker: a group of people (singular noun; a group icon).
-[1530] = "Group",
+N["Group"] = 1530
 -- d461a493
 -- Context: Option in the Lua editor syntax-highlighting dropdown: the editor picks highlighting by
 --     itself.
-[1531] = "Automatic",
+N["Automatic"] = 1531
 -- b8715031
-[1532] = "Built In syntax highlighting",
+N["Built In syntax highlighting"] = 1532
 -- cf416625
 -- Context: Option in the Lua editor syntax-highlighting dropdown: no highlighting, just plain text.
-[1533] = "Plain text",
+N["Plain text"] = 1533
 -- 090512d9
 -- Context: Top-level tab of the settings window (next to General, Conditions, Functions ...):
 --     integrations with other addons.
-[1534] = "Integrations",
+N["Integrations"] = 1534
 -- 90c92d4c
 -- Context: Title of the Lua editor help window, and the name of a Lua editor settings row in the
 --     profile comparison.
-[1535] = "Lua editor",
+N["Lua editor"] = 1535
 -- d8cfde4d
-[1536] = "Choose optional addon integrations.",
+N["Choose optional addon integrations."] = 1536
 -- 67af476d
-[1537] = "Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.",
+N["Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition."] = 1537
 -- 9fe3f474
-[1538] = "Loaded; editor integration not connected.",
+N["Loaded; editor integration not connected."] = 1538
 -- a79eae91
-[1539] = "Not loaded.",
+N["Not loaded."] = 1539
 -- 87b30347
-[1540] = "These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.",
+N["These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor."] = 1540
 -- f1fa67bf
-[1541] = "Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
+N["Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability."] = 1541
 -- dfab6835
 -- %s #1: %s #1: why the custom condition is invalid, a short reason, e.g. "unexpected symbol near end"
-[1542] = "Invalid condition: %s",
+N["Invalid condition: %s"] = 1542
 -- a3d021a9
 -- %s #1: %s #1: the description of the condition, e.g. "In Combat"
-[1543] = "Unavailable condition: %s",
+N["Unavailable condition: %s"] = 1543
 -- ffb313cc
-[1544] = "This condition definition is disabled. Rotations using it are unavailable.",
+N["This condition definition is disabled. Rotations using it are unavailable."] = 1544
 -- 12f67f85
-[1545] = "Availability",
+N["Availability"] = 1545
 -- ef8f927d
 -- Context: Row text and tooltip in the custom condition source preview when a condition has no
 --     named field yet: invites editing the condition's input fields (verb phrase).
-[1546] = "Edit fields",
+N["Edit fields"] = 1546
 -- 9f088dbe
 -- Context: Checkbox at the top right of the schema editor of a custom condition: switches to the
 --     raw schema editor (equivalent text form) instead of the graphical field editor.
-[1547] = "Advanced",
+N["Advanced"] = 1547
 -- bd82cf16
 -- Context: Value type in the condition field type dropdown: a numeric value.
-[1548] = "Number",
+N["Number"] = 1548
 -- a066ff92
 -- Context: Value type in the condition field type dropdown: true/false.
-[1549] = "Boolean",
+N["Boolean"] = 1549
 -- 5f3107cf
 -- Context: Value type in the condition field type dropdown: a list of conditions.
-[1550] = "Condition list",
+N["Condition list"] = 1550
 -- c5025e68
 -- Context: Value type in the condition field type dropdown: a record, i.e. a table of named values
 --     (key/value map).
-[1551] = "Record / map",
+N["Record / map"] = 1551
 -- 58e1de5e
-[1552] = "Allowed types / list alternatives",
+N["Allowed types / list alternatives"] = 1552
 -- a9b310ef
 -- %s #1: %s #1: what is wrong with the field schema, a short code or the field key, e.g. "invalid-required-fields" (shown as-is)
-[1553] = "Invalid field schema: %s",
+N["Invalid field schema: %s"] = 1553
 -- 76900f1b
 -- Context: Label of the back-navigation control in the embedded Lua editor's API knowledge window
 --     (go to the previous page).
-[1554] = "Back",
+N["Back"] = 1554
 -- 02dbfe6e
-[1555] = "Named fields. Choose a type, then edit its children for nested data.",
+N["Named fields. Choose a type, then edit its children for nested data."] = 1555
 -- 8eba81e3
-[1556] = "Allowed types. A nested record or type list describes each item in a list.",
+N["Allowed types. A nested record or type list describes each item in a list."] = 1556
 -- 130a1408
-[1557] = "Showing the first 200 fields. Use Advanced schema for larger definitions.",
+N["Showing the first 200 fields. Use Advanced schema for larger definitions."] = 1557
 -- 5f42d901
 -- Context: Button in the field schema editor: adds a new input field to the custom condition (verb
 --     phrase).
-[1558] = "Add field",
+N["Add field"] = 1558
 -- cb4190b5
 -- Context: Tooltip of the colored swatch in a tag entry in a selector list: the tag's color.
-[1559] = "Tag color",
+N["Tag color"] = 1559
 -- 08b91fc6
-[1560] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.",
+N["Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors."] = 1560
 -- cbf6490e
-[1561] = "Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.",
+N["Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors."] = 1561
 -- 45fa2eb3
-[1562] = "Click to remove this tag. Use the search results to change tag colors.",
+N["Click to remove this tag. Use the search results to change tag colors."] = 1562
 -- 84cfb5be
-[1563] = "Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.",
+N["Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks."] = 1563
 -- 047aff36
-[1564] = "No native Lua editor has been opened this session.",
+N["No native Lua editor has been opened this session."] = 1564
 -- 5472dd28
 -- Context: Title of the report window that shows Lua editor input diagnostics, for testers to copy.
-[1565] = "Lua input diagnostics",
+N["Lua input diagnostics"] = 1565
 -- 5c126363
 -- Context: Title of a test dialog (Lua editor input probe): checks the game's native text input.
-[1566] = "Native input test",
+N["Native input test"] = 1566
 -- 6043d2ec
 -- Context: Subtitle in the header of the native input test dialog (short noun phrase).
-[1567] = "Input test",
+N["Input test"] = 1567
 -- 5a832570
 -- Context: Button in the native input test dialog, and the status text that follows it: use the
 --     game's default font in the sample box.
-[1568] = "Stock font",
+N["Stock font"] = 1568
 -- d92ba9ef
 -- Context: Button in the native input test dialog, and the status text that follows it: use
 --     Rotation Master's own font in the sample box. "RM" is short for Rotation Master.
-[1569] = "RM font",
+N["RM font"] = 1569
 -- c7b373e3
-[1570] = "Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.",
+N["Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved."] = 1570
 -- 90364218
-[1571] = "Arrow test",
+N["Arrow test"] = 1571
 -- 19a006ce
-[1572] = "Arrows: on",
+N["Arrows: on"] = 1572
 -- 423c677c
-[1573] = "Arrows",
+N["Arrows"] = 1573
 -- 170322a3
-[1574] = "Info",
+N["Info"] = 1574
 -- 9ee41d20
-[1575] = "Show input diagnostics for this open Lua editor.",
+N["Show input diagnostics for this open Lua editor."] = 1575
 -- 6ecc3df6
 -- Context: Small label in the custom condition source pane, in front of the category dropdown that
 --     moves the condition into another category (verb, imperative).
-[1576] = "Move",
+N["Move"] = 1576
 -- 9e3bd238
-[1577] = "Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.",
+N["Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua."] = 1577
 -- 5ed7c1f2
-[1578] = "Decide whether this condition currently matches.",
+N["Decide whether this condition currently matches."] = 1578
 -- cbb89125
-[1579] = "The stored values for this condition.",
+N["The stored values for this condition."] = 1579
 -- d02f326b
-[1580] = "Shared data for this evaluation cycle.",
+N["Shared data for this evaluation cycle."] = 1580
 -- 5e32b652
-[1581] = "Evaluation start time, in seconds from GetTime().",
+N["Evaluation start time, in seconds from GetTime()."] = 1581
 -- dbb95241
-[1582] = "True matches; false or nil does not match.",
+N["True matches; false or nil does not match."] = 1582
 -- 33035e0c
-[1583] = "Check whether the stored condition values are complete and valid.",
+N["Check whether the stored condition values are complete and valid."] = 1583
 -- bc51adc0
-[1584] = "Rotation specialization scope.",
+N["Rotation specialization scope."] = 1584
 -- 0cb1ce78
-[1585] = "True when the condition can be evaluated.",
+N["True when the condition can be evaluated."] = 1585
 -- 18eb8e30
-[1586] = "Describe the condition in readable words.",
+N["Describe the condition in readable words."] = 1586
 -- 4e9300c4
-[1587] = "The human-readable condition summary.",
+N["The human-readable condition summary."] = 1587
 -- 7ea336df
-[1588] = "Build the controls used to edit this condition.",
+N["Build the controls used to edit this condition."] = 1588
 -- 2010cda9
-[1589] = "The condition field container supplied by the UI adapter.",
+N["The condition field container supplied by the UI adapter."] = 1589
 -- 2209776b
-[1590] = "Add controls to the supplied container.",
+N["Add controls to the supplied container."] = 1590
 -- ca5a0eaf
-[1591] = "Build the help content for this condition.",
+N["Build the help content for this condition."] = 1591
 -- a2731a25
-[1592] = "The help container supplied by the UI adapter.",
+N["The help container supplied by the UI adapter."] = 1592
 -- 96bf1d1e
-[1593] = "Add help content to the supplied container.",
+N["Add help content to the supplied container."] = 1593
 -- 6738aee6
-[1594] = "Initialize resources when the condition is registered.",
+N["Initialize resources when the condition is registered."] = 1594
 -- 49e57f5b
-[1595] = "The condition identifier.",
+N["The condition identifier."] = 1595
 -- 46569f1f
-[1596] = "No return value is used.",
+N["No return value is used."] = 1596
 -- 95a1b634
-[1597] = "Release resources when the condition is removed or replaced.",
+N["Release resources when the condition is removed or replaced."] = 1597
 -- 7f816072
 -- Context: Heading for a function's argument list: in the generated function documentation and in
 --     the function source pane.
-[1598] = "Arguments",
+N["Arguments"] = 1598
 -- 16dcaa92
 -- Context: Heading for a function's return values: in the generated function documentation and in
 --     the function source pane.
-[1599] = "Returns",
+N["Returns"] = 1599
 -- b92993e1
-[1600] = "Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.",
+N["Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records."] = 1600
 -- 5f81b556
-[1601] = "A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.",
+N["A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it."] = 1601
 -- d24ed6ad
-[1602] = "The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.",
+N["The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types."] = 1602
 -- 521fc51f
 -- %s #1: %s #1: the file path of the packaged helper, e.g. "Functions/text.lua"
-[1603] = "Packaged helper from %s.",
+N["Packaged helper from %s."] = 1603
 -- 75e942e5
 -- Context: Top-level settings tab listing the user-written Lua functions; also the fallback title
 --     in the function bundle import/export dialog.
-[1604] = "Functions",
+N["Functions"] = 1604
 -- 786697a7
-[1605] = "Browse packaged helpers and edit reusable custom Lua functions.",
+N["Browse packaged helpers and edit reusable custom Lua functions."] = 1605
 -- fc6e1f0d
 -- %s #1: %s #1: why the function cannot be used, a short code, e.g. "disabled-function" (shown as-is)
-[1606] = "Function unavailable: %s",
+N["Function unavailable: %s"] = 1606
 -- 2abb9d73
 -- Context: Tooltip of the name box of an argument row in the function source pane (noun phrase).
-[1607] = "Argument name",
+N["Argument name"] = 1607
 -- 6956b2bc
-[1608] = "Add argument",
+N["Add argument"] = 1608
 -- b38d87b4
-[1609] = "Add return",
+N["Add return"] = 1609
 -- 355cc18a
 -- Context: Heading of the function source pane for a function that ships with Rotation Master
 --     (read-only).
-[1610] = "Built-in function",
+N["Built-in function"] = 1610
 -- 0d1f23b5
 -- Context: Heading of the function source pane for a function written by the user (editable).
-[1611] = "Custom function",
+N["Custom function"] = 1611
 -- 4dcab896
-[1612] = "Delete this function? Existing dependents will become unavailable.",
+N["Delete this function? Existing dependents will become unavailable."] = 1612
 -- 3ac00ae7
-[1613] = "Deletion staged. Apply to remove this function.",
+N["Deletion staged. Apply to remove this function."] = 1613
 -- f2dc99c6
 -- Context: Row label in the comparison of two custom functions: the function's list of bindings
 --     (aliases to other helper functions).
-[1614] = "Function bindings",
+N["Function bindings"] = 1614
 -- b19e02e9
-[1615] = "Alias",
+N["Alias"] = 1615
 -- e64bbf11
-[1616] = "This alias is already in use.",
+N["This alias is already in use."] = 1616
 -- c8037103
 -- Context: Word before the name in the function bundle review list: marks the entry as a function
 --     (the alternative is Condition); followed by ": name".
-[1617] = "Function",
+N["Function"] = 1617
 -- a94fd0ee
-[1618] = "Add binding",
+N["Add binding"] = 1618
 -- 327c4c8c
-[1619] = "Packaged source is read-only. Duplicate it to create an editable custom function.",
+N["Packaged source is read-only. Duplicate it to create an editable custom function."] = 1619
 -- 8299c5ac
-[1620] = "Arguments become Lua parameters. Bindings expose selected helpers under explicit local aliases. Editing an alias does not rewrite your Lua body.",
+N["Arguments become Lua parameters. Bindings expose selected helpers under explicit local aliases. Editing an alias does not rewrite your Lua body."] = 1620
 -- 47b843fc
-[1621] = "New function",
+N["New function"] = 1621
 -- edb574e3
-[1622] = "Describe what this function does.",
+N["Describe what this function does."] = 1622
 -- 0d646ec9
-[1623] = "Add a function or duplicate a packaged helper to edit its source.",
+N["Add a function or duplicate a packaged helper to edit its source."] = 1623
 -- aebc00b0
-[1624] = "LuaWorkbench supplies editing, completion, API knowledge and debugging. Debug runs this buffer explicitly using the test arguments. It does not replace the saved rotation or live callback.",
+N["LuaWorkbench supplies editing, completion, API knowledge and debugging. Debug runs this buffer explicitly using the test arguments. It does not replace the saved rotation or live callback."] = 1624
 -- ac6ddfe4
-[1625] = "Connected: embedded editing, completion, API knowledge and debugging.",
+N["Connected: embedded editing, completion, API knowledge and debugging."] = 1625
 -- e3b56b53
-[1626] = "Review the dependency bundle before applying it.",
+N["Review the dependency bundle before applying it."] = 1626
 -- e0ad4daf
 -- %d #1: %d #1: the number of function bindings, e.g. 3
-[1627] = "Function bindings (%d)",
+N["Function bindings (%d)"] = 1627
 -- 1f10215d
-[1628] = "Aliases are local names in your Lua body. Changing an alias does not rewrite the body.",
+N["Aliases are local names in your Lua body. Changing an alias does not rewrite the body."] = 1628
 -- f81e71de
 -- Context: Conflict action in the function bundle import: keep the function already present and
 --     discard the imported one (dropdown entry).
-[1629] = "Reuse existing",
+N["Reuse existing"] = 1629
 -- c72a3c56
 -- Context: Conflict action in the function bundle import: overwrite the function already present
 --     with the imported one (dropdown entry).
-[1630] = "Replace existing",
+N["Replace existing"] = 1630
 -- 548fcd9a
-[1631] = "Import with new identifier",
+N["Import with new identifier"] = 1631
 -- 4759498a
 -- Context: Conflict action in the function bundle import: add the imported entry as a new item
 --     (dropdown entry).
-[1632] = "Create",
+N["Create"] = 1632
 -- 41d342bd
 -- Context: Subtitle and heading of the dialog that shows the source code of a bundle entry so it
 --     can be inspected before the import is applied.
-[1633] = "Review source",
+N["Review source"] = 1633
 -- 195aae02
 -- Context: Label in the function bundle review: the identifier the entry has in the bundle, shown
 --     as "<label>: <id>".
-[1634] = "Original identifier",
+N["Original identifier"] = 1634
 -- 8bec02bf
 -- Context: Label and edit-box title in the function bundle review: the identifier the entry will
 --     get after import.
-[1635] = "Destination identifier",
+N["Destination identifier"] = 1635
 -- 32e8d276
 -- Context: Label of the dropdown in the function-source review dialog that selects which callback
 --     (a part of the code) to view.
-[1636] = "Callback",
+N["Callback"] = 1636
 -- 222b67d3
-[1637] = "Include custom function dependencies",
+N["Include custom function dependencies"] = 1637
 -- df750ab9
 -- Context: Button in the function bundle import dialog: checks the pasted bundle and lists what
 --     would change, without applying it.
-[1638] = "Review import",
+N["Review import"] = 1638
 -- 454d876b
 -- Context: Button in the function bundle review dialog: carries out the import (verb).
-[1639] = "Apply import",
+N["Apply import"] = 1639
 -- b7143073
 -- Context: Title of the dialog for exporting/importing a bundle of functions together with the
 --     functions they depend on.
-[1640] = "Function dependency bundle",
+N["Function dependency bundle"] = 1640
 -- 44fc47f3
-[1641] = "Review the complete bundle before applying an import. Imported Lua can execute when registered; only apply code you trust.",
+N["Review the complete bundle before applying an import. Imported Lua can execute when registered; only apply code you trust."] = 1641
 -- b5ca2246
-[1642] = "Review each original name, destination and dependency below. Apply import saves the complete reviewed bundle.",
+N["Review each original name, destination and dependency below. Apply import saves the complete reviewed bundle."] = 1642
 -- 0f2dd42f
 -- Context: Label of the dropdown in the function bundle review that chooses what to do when an
 --     identifier already exists (Reuse, Replace, ...).
-[1643] = "Conflict action",
+N["Conflict action"] = 1643
 -- 4e81098c
 -- Context: Label of the edit box in the function bundle review holding the display name the
 --     imported entry will have.
-[1644] = "Imported name",
+N["Imported name"] = 1644
 -- 8e818b1f
 -- Context: Label in the function bundle review, followed by a list: the existing functions or
 --     conditions that already use the one being replaced.
-[1645] = "Existing dependents",
+N["Existing dependents"] = 1645
 -- 75c417a1
-[1646] = "This imported definition is disabled. Its dependents remain unavailable.",
+N["This imported definition is disabled. Its dependents remain unavailable."] = 1646
 -- 2643e762
 -- Context: Heading in the function bundle review for the functions the import depends on.
-[1647] = "Required functions",
+N["Required functions"] = 1647
 -- 103c8bbb
-[1648] = "Paste a bundle above, then review its original names, destinations and required functions.",
+N["Paste a bundle above, then review its original names, destinations and required functions."] = 1648
 -- 7f12e5bc
-[1649] = "Filter Built In or Custom helpers and search their names, identifiers or descriptions. Packaged helpers show read-only source and typed documentation. Duplicate creates an editable copy with a new stable identifier. Argument and return rows document the Lua signature.",
+N["Filter Built In or Custom helpers and search their names, identifiers or descriptions. Packaged helpers show read-only source and typed documentation. Duplicate creates an editable copy with a new stable identifier. Argument and return rows document the Lua signature."] = 1649
 -- 812ccde3
-[1650] = "Expand Function bindings to add explicit helper aliases and choose their targets. Changing an alias does not rewrite your Lua body. Missing, disabled or invalid dependencies keep their dependents unavailable until repaired.",
+N["Expand Function bindings to add explicit helper aliases and choose their targets. Changing an alias does not rewrite your Lua body. Missing, disabled or invalid dependencies keep their dependents unavailable until repaired."] = 1650
 -- 9d60841e
-[1651] = "Check",
+N["Check"] = 1651
 -- b64ac05f
 -- Context: Checkbox in the condition test dialog: keeps re-running the test repeatedly while the
 --     dialog stays open (live updating).
-[1652] = "Live",
+N["Live"] = 1652
 -- 324b134f
 -- Context: Title of a help topic: the preview of an effect in the effect editor, and the preview
 --     window's sample in General settings help. A noun.
-[1653] = "Preview",
+N["Preview"] = 1653
 -- a31ec5d7
-[1654] = "The preview failed. Use /rm errors for details.",
+N["The preview failed. Use /rm errors for details."] = 1654
 -- 1c103e84
-[1655] = "Test values were not saved because they are not bounded plain data.",
+N["Test values were not saved because they are not bounded plain data."] = 1655
 -- c1ab4306
-[1656] = "Condition check",
+N["Condition check"] = 1656
 -- 0fa00491
 -- Context: Title of the condition test dialog when it is opened from the developer debug tools to
 --     preview a condition's fields user interface.
-[1657] = "Fields UI preview",
+N["Fields UI preview"] = 1657
 -- 367bba74
 -- Context: Title of the condition test dialog when it is opened from the developer debug tools to
 --     preview a condition's help page.
-[1658] = "Help preview",
+N["Help preview"] = 1658
 -- 59e490f3
-[1659] = "Edit detached test values below. Check validates them before evaluating. Live is opt-in; test values are saved separately from the condition source.",
+N["Edit detached test values below. Check validates them before evaluating. Live is opt-in; test values are saved separately from the condition source."] = 1659
 -- 8b1c0e1c
-[1660] = "Preview runs only this callback with detached sample values. It does not save or register the condition.",
+N["Preview runs only this callback with detached sample values. It does not save or register the condition."] = 1660
 -- 75d9602c
-[1661] = "Complete the source fields before checking.",
+N["Complete the source fields before checking."] = 1661
 -- 00454de7
-[1662] = "Check could not compile the current source. Fix the source before checking again.",
+N["Check could not compile the current source. Fix the source before checking again."] = 1662
 -- 6a255986
-[1663] = "Skipped: invalid test values",
+N["Skipped: invalid test values"] = 1663
 -- 4607aa3d
 -- %s #1: %s #1: the validation result, one of "Passed", "Failed" or "Unavailable" (translated), e.g. "Passed"
-[1664] = "Validation: %s",
+N["Validation: %s"] = 1664
 -- 436fe71b
 -- Context: Result word in the condition test dialog: the test passed.
-[1665] = "Passed",
+N["Passed"] = 1665
 -- 4c852a7e
 -- %s #1: %s #1: the result of the test evaluation, a short phrase such as "True", "False" or "Skipped: invalid test values" (translated), e.g. "True"
-[1666] = "Evaluation: %s",
+N["Evaluation: %s"] = 1666
 -- 55a7b6a1
-[1667] = "Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback.",
+N["Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback."] = 1667
 -- 106d8f1b
-[1668] = "Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live.",
+N["Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live."] = 1668
 -- 5d331ffe
 -- Context: Title of a section in the custom condition editor's help: the page that documents public
 --     helper functions (noun phrase).
-[1669] = "Functions reference",
+N["Functions reference"] = 1669
 -- 64334745
-[1670] = "The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.",
+N["The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers."] = 1670
 -- 8f344bfe
-[1671] = "The imported definition type does not match this editor.",
+N["The imported definition type does not match this editor."] = 1671
 -- 91fe2974
-[1672] = "Test values changed. Check again to refresh the result.",
+N["Test values changed. Check again to refresh the result."] = 1672
 -- 4087dcf1
-[1673] = "Complete the highlighted test inputs before checking.",
+N["Complete the highlighted test inputs before checking."] = 1673
 -- 532eaabd
 -- Context: Button in the custom condition editor, and the dialog subtitle: runs the condition once
 --     with sample input (verb).
-[1674] = "Test",
+N["Test"] = 1674
 -- e031e0df
 -- Context: Button and tooltip in the Lua workbench query panel: runs the entered code once with the
 --     test arguments (verb phrase).
-[1675] = "Run test",
+N["Run test"] = 1675
 -- 312acdf1
 -- Context: Title of the dialog that tries a custom condition with sample values (verb phrase used
 --     as a title).
-[1676] = "Test condition",
+N["Test condition"] = 1676
 -- 34fb96f5
-[1677] = "Debugger output",
+N["Debugger output"] = 1677
 -- e376955f
-[1678] = "Set test values in Test before debugging Evaluate.",
+N["Set test values in Test before debugging Evaluate."] = 1678
 -- 427ea36c
-[1679] = "Debugger output uses a detached sample and the normal field or help container.",
+N["Debugger output uses a detached sample and the normal field or help container."] = 1679
 -- af624aba
-[1680] = "Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.",
+N["Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in."] = 1680
 -- fba588f1
-[1681] = "Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.",
+N["Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback."] = 1681
 -- deba1c35
 -- Context: Checkbox in the argument/return type editor of the function source pane: the value may
 --     also be nil (empty).
-[1682] = "Nullable",
+N["Nullable"] = 1682
 -- fbf338e4
-[1683] = "Add return value",
+N["Add return value"] = 1683
 -- c75ed23e
-[1684] = "Lua returns multiple values in order. Each row documents one result.",
+N["Lua returns multiple values in order. Each row documents one result."] = 1684
 -- f968686c
 -- Context: Tooltip of the button on the code editor corner in the function source pane: enlarges
 --     the editor to fill the pane (verb phrase).
-[1685] = "Expand code editor",
+N["Expand code editor"] = 1685
 -- cc81db61
 -- Context: Tooltip of the same button after the editor is enlarged: shrinks it back to its normal
 --     size (verb phrase).
-[1686] = "Restore code editor",
+N["Restore code editor"] = 1686
 -- cb050073
-[1687] = "Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name.",
+N["Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name."] = 1687
 -- cfaec007
-[1688] = "Local name in code",
+N["Local name in code"] = 1688
 -- d076565e
 -- Context: Column caption in the function bindings table: the existing function the alias points
 --     to.
-[1689] = "Source helper",
+N["Source helper"] = 1689
 -- b49f05b5
-[1690] = "Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.",
+N["Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable."] = 1690
 -- b545dd16
-[1691] = "This cannot be undone.",
+N["This cannot be undone."] = 1691
 -- f07f87d9
-[1692] = "Delete this announcement?",
+N["Delete this announcement?"] = 1692
 -- da985348
 -- %s #1: %s #1: the Lua type name of the symbol, e.g. "number" or "string"
-[1693] = "Type: %s",
+N["Type: %s"] = 1693
 -- 78a0b485
-[1694] = "Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client.",
+N["Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client."] = 1694
 -- b2a921f3
-[1695] = "Supported unit-token to localized possessive unit-name lookup, such as your target.",
+N["Supported unit-token to localized possessive unit-name lookup, such as your target."] = 1695
 -- 7e1dc663
-[1696] = "Rotation Master client compatibility adapter. Its methods return ordinary readable results or nil with a reason when an observation is unavailable. Use a colon call, or pass addon.Platform explicitly as self with a dot reference.",
+N["Rotation Master client compatibility adapter. Its methods return ordinary readable results or nil with a reason when an observation is unavailable. Use a colon call, or pass addon.Platform explicitly as self with a dot reference."] = 1696
 -- bbc0cdbf
-[1697] = "Rotation Master spell catalog for resolving client-specific spell IDs, ranks, names, icons and links.",
+N["Rotation Master spell catalog for resolving client-specific spell IDs, ranks, names, icons and links."] = 1697
 -- 18123a69
-[1698] = "Utility functions explicitly bound to this condition or function. Choose a completion to bind an available custom function before inserting its reference.",
+N["Utility functions explicitly bound to this condition or function. Choose a completion to bind an available custom function before inserting its reference."] = 1698
 -- 16356339
-[1699] = "Rotation Master custom function",
+N["Rotation Master custom function"] = 1699
 -- 902c5c44
-[1700] = "Rotation Master built-in function",
+N["Rotation Master built-in function"] = 1700
 -- 0443c4a6
 -- Context: Heading in the Lua editor's hover text for a symbol that is a plain value provided by
 --     Rotation Master (not a function); the alternatives are 'Rotation Master custom function' and
 --     'Rotation Master built-in function'.
-[1701] = "Rotation Master value",
+N["Rotation Master value"] = 1701
 -- 1a845fe0
-[1702] = "Global function (documentation unavailable on this client)",
+N["Global function (documentation unavailable on this client)"] = 1702
 -- 6912e131
-[1703] = "This client does not provide signature documentation for this function. No arguments or return types have been inferred.",
+N["This client does not provide signature documentation for this function. No arguments or return types have been inferred."] = 1703
 -- 90092e5f
-[1704] = "Invoke",
+N["Invoke"] = 1704
 -- cb214676
-[1705] = "Functions are shared across profiles after Apply. Call custom utilities as functions.name(...); accepting completion adds the dependency binding. Typed calls need a binding under Function bindings. Built In examples show dot or colon explicitly.",
+N["Functions are shared across profiles after Apply. Call custom utilities as functions.name(...); accepting completion adds the dependency binding. Typed calls need a binding under Function bindings. Built In examples show dot or colon explicitly."] = 1705
 -- d03262ba
 -- Context: Checkbox in Integrations settings (Lua editor section): shows line numbers in the Lua
 --     code editors; also a help topic title.
-[1706] = "Show line numbers",
+N["Show line numbers"] = 1706
 -- f12fff00
-[1707] = "Line-number visibility applies to every condition and function code editor.",
+N["Line-number visibility applies to every condition and function code editor."] = 1707
 -- 596578e6
-[1708] = "Call a saved custom utility as functions.name(...). Accepting a completion attaches its stable dependency binding; for a typed call, choose its helper under Function bindings. Existing direct aliases still work. The Invoke example shows required addon dot or colon syntax for Built In functions. Renaming an alias does not rewrite source. Missing, disabled or invalid dependencies keep consumers unavailable.",
+N["Call a saved custom utility as functions.name(...). Accepting a completion attaches its stable dependency binding; for a typed call, choose its helper under Function bindings. Existing direct aliases still work. The Invoke example shows required addon dot or colon syntax for Built In functions. Renaming an alias does not rewrite source. Missing, disabled or invalid dependencies keep consumers unavailable."] = 1708
 -- 38416c88
-[1709] = "Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
+N["Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability."] = 1709
 -- 50c3cb6e
 -- Context: First entry of the namespace filter dropdown on the Functions page: show functions from
 --     every namespace.
-[1710] = "All namespaces",
+N["All namespaces"] = 1710
 -- 5605815a
-[1711] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
+N["Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable."] = 1711
 -- 66506282
-[1712] = "Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.",
+N["Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code."] = 1712
 -- 5226404c
-[1713] = "Existing API",
+N["Existing API"] = 1713
 -- e572edc2
 -- Context: Column caption in the function bindings table and tooltip of the alias field: the name a
 --     binding is called inside the Lua code.
-[1714] = "Name in code",
+N["Name in code"] = 1714
 -- c4e4e7ab
 -- Context: Label of the namespace box in the function source pane and a help section title: the
 --     dotted group name under which a function is listed.
-[1715] = "Namespace",
+N["Namespace"] = 1715
 -- c6d86222
-[1716] = "Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply.",
+N["Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply."] = 1716
 -- 76209725
-[1717] = "Private utility-function namespace. It contains only explicit bindings for this callback.",
+N["Private utility-function namespace. It contains only explicit bindings for this callback."] = 1717
 -- 481da3a7
 -- Context: Row title and add-button text in the function source pane: one function argument (noun).
 --     The same place has "Return".
-[1718] = "Argument",
+N["Argument"] = 1718
 -- e0836fce
 -- %d #1: %d #1: the number of function bindings, e.g. 3
-[1719] = "Bindings (%d)",
+N["Bindings (%d)"] = 1719
 -- 6ecb5a70
-[1720] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
+N["Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable."] = 1720
 -- d35a9985
-[1721] = "Changing argument or return order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?",
+N["Changing argument or return order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?"] = 1721
 -- 2199cecc
-[1722] = "Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.",
+N["Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites."] = 1722
 -- 6b0143d0
 -- Context: Row title and add-button text in the function source pane: one function return value
 --     (noun). The same place has "Argument".
-[1723] = "Return",
+N["Return"] = 1723
 -- 2584fdfb
-[1724] = "Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?",
+N["Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?"] = 1724
 -- 79fbb27b
-[1725] = "Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?",
+N["Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?"] = 1725
 -- 2266dd0b
 -- Context: Heading of a section in the argument editor help: explains the controls on an argument's
 --     card.
-[1726] = "Card controls",
+N["Card controls"] = 1726
 -- 1f03f52f
-[1727] = "Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.",
+N["Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply."] = 1727
 -- 9513dcfb
-[1728] = "Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.",
+N["Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten."] = 1728
 -- 33f24b5d
-[1729] = "Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.",
+N["Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers."] = 1729
 -- 74057930
-[1730] = "Rendered output appears here when the callback runs or steps through widget creation.",
+N["Rendered output appears here when the callback runs or steps through widget creation."] = 1730
 -- 47b50257
-[1731] = "Set values in Test before running or debugging this condition.",
+N["Set values in Test before running or debugging this condition."] = 1731
 -- 96aa8cc3
-[1732] = "The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.",
+N["The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code."] = 1732
 -- 438e9a47
-[1733] = "Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.",
+N["Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body."] = 1733
 -- 42e8bcf1
 -- Context: Condition category in the icon picker's category list: debuff-related icons (plural
 --     noun).
-[1734] = "Debuffs",
+N["Debuffs"] = 1734
 -- e89b30aa
 -- Context: Condition category in the icon picker's category list: resources such as mana and rage.
-[1735] = "Resources",
+N["Resources"] = 1735
 -- 8f0d1b30
 -- Context: Condition category in the icon picker's category list: pet-related icons.
-[1736] = "Pet",
+N["Pet"] = 1736
 -- 7c400199
 -- Context: Condition category in the icon picker's category list: logical operators (and/or/not).
-[1737] = "Logic",
+N["Logic"] = 1737
 -- 9e471951
 -- Context: Condition category in the icon picker's category list: environment (weather, zone ...).
-[1738] = "Environment",
+N["Environment"] = 1738
 -- 33b93476
 -- Context: Condition category in the icon picker's category list: time-related icons.
-[1739] = "Time",
+N["Time"] = 1739
 -- 66f9cfa2
 -- Context: Condition type title: true when the spell is set to auto-repeat (e.g. Auto Shot, wand).
 --     Also an icon name in the icon picker.
-[1740] = "Spell Auto-Repeat Active",
+N["Spell Auto-Repeat Active"] = 1740
 -- a97bc1c7
-[1791] = "Apply changes to this selected item list. Other settings keep their own Apply action.",
+N["Apply changes to this selected item list. Other settings keep their own Apply action."] = 1791
 -- 4cec1d75
-[1792] = "Choose an item list before editing.",
+N["Choose an item list before editing."] = 1792
 -- 550c388b
-[1793] = "The item list changed elsewhere. Close and reopen it before applying.",
+N["The item list changed elsewhere. Close and reopen it before applying."] = 1793
 -- 67559dc7
 -- %s #1: %s #1: the internal key of the settings page, e.g. "profiles" (shown as-is)
-[1794] = "Native settings page unavailable: %s",
+N["Native settings page unavailable: %s"] = 1794
 -- 0f6314b0
-[1795] = "The native rotation editor is unavailable.",
+N["The native rotation editor is unavailable."] = 1795
 -- 4850b174
 -- Context: Checkbox on a field card in the schema editor (and its help title): the field must be
 --     filled in before the condition can run.
-[1796] = "Required",
+N["Required"] = 1796
 -- 9bcec068
-[1797] = "Required field references need review. Apply keeps the displayed root requirements.",
+N["Required field references need review. Apply keeps the displayed root requirements."] = 1797
 -- c463dfb4
-[1798] = "Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.",
+N["Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged."] = 1798
 -- 8b8cd45b
 -- Context: Button in the condition editor: copies the plain-language description of the condition
 --     to the clipboard (verb phrase).
-[1799] = "Copy condition description",
+N["Copy condition description"] = 1799
 -- b5739be0
-[1800] = "This condition exceeds the supported editor limits.",
+N["This condition exceeds the supported editor limits."] = 1800
 -- df58aeb6
 -- Context: Effect type in the effect editor dropdown and Effects help: a glow in the style of the
 --     game's spell-proc highlight.
-[1801] = "Proc Glow",
+N["Proc Glow"] = 1801
 -- dce1c179
 -- Context: Help topic title and setting for the proc glow effect: how long one loop of the glow
 --     animation lasts.
-[1802] = "Loop duration",
+N["Loop duration"] = 1802
 -- a4f0db33
 -- Context: Checkbox in the effect editor for the proc glow effect (and its help title): plays the
 --     start burst animation when the glow begins.
-[1803] = "Start burst",
+N["Start burst"] = 1803
 -- b89fd7fd
-[1804] = "Proc Glow is unavailable on this client; Pixel glow will be used.",
+N["Proc Glow is unavailable on this client; Pixel glow will be used."] = 1804
 -- 34ae0a26
 -- %s #1: %s #1: why the data cannot be used, a short code or reason, e.g. "unsupported-version" (shown as-is)
-[1805] = "Rotation data requires recovery: %s",
+N["Rotation data requires recovery: %s"] = 1805
 -- 8b4e37b9
-[1806] = "Copies belong to your Class unless This character is selected. Replacement keeps its original owner.",
+N["Copies belong to your Class unless This character is selected. Replacement keeps its original owner."] = 1806
 -- 0faa3bd8
-[1807] = "Archive report truncated; saved data is unchanged.",
+N["Archive report truncated; saved data is unchanged."] = 1807
 -- 414c7fd3
 -- Context: Button in the banner that appears when older rotations lack an owner, and title of a
 --     help section/window: opens the unassigned rotation archive so they can be adopted.
-[1808] = "Recover unassigned rotations",
+N["Recover unassigned rotations"] = 1808
 -- 291f821c
 -- Context: Subtitle of the unassigned rotation recovery window: tells the user these rotations need
 --     an owner (class or character) before they can be used.
-[1809] = "Ownership required",
+N["Ownership required"] = 1809
 -- cd16196a
-[1810] = "These records have no assigned owner. Choose Class or This character explicitly. No ownership is inferred from names, spells or profile history.",
+N["These records have no assigned owner. Choose Class or This character explicitly. No ownership is inferred from names, spells or profile history."] = 1810
 -- ce112847
 -- %s #1: %s #1: why the recovery list cannot be shown, a short code, e.g. "rotation-store-unavailable" (shown as-is)
-[1811] = "Recovery unavailable: %s",
+N["Recovery unavailable: %s"] = 1811
 -- af7356f1
 -- Context: Title of the report window with the contents of the unassigned rotation archive.
-[1812] = "Unassigned rotation archive",
+N["Unassigned rotation archive"] = 1812
 -- d17af82d
 -- Context: Label in the recover window: the archive that belongs to a single character (see
 --     "Profile archive").
-[1813] = "Character archive",
+N["Character archive"] = 1813
 -- 8ce8b3ed
 -- Context: Label in the recover window: the archive that belongs to the whole profile (see
 --     "Character archive").
-[1814] = "Profile archive",
+N["Profile archive"] = 1814
 -- 4064b908
-[1815] = "No unassigned rotations.",
+N["No unassigned rotations."] = 1815
 -- 46bb2f53
 -- %s #1: %s #1: the kind of archive, "Character archive" or "Profile archive" (translated), e.g. "Profile archive"
 -- %s #2: %s #2: the specialization number the record belongs to, e.g. 64
 -- %s #3: %s #3: the record's identifier, e.g. "a1b2c3d4"
-[1816] = "Archive: %s; specialization: %s; identifier: %s",
+N["Archive: %s; specialization: %s; identifier: %s"] = 1816
 -- a7232fd4
 -- Context: Button in the recover window: exports the archive's contents as text (verb phrase).
-[1817] = "Export archive",
+N["Export archive"] = 1817
 -- b650b12a
 -- Context: Button in the recover window: assigns the selected unowned rotation to a class or
 --     character (verb phrase).
-[1818] = "Adopt rotation",
+N["Adopt rotation"] = 1818
 -- 2b1bc965
 -- %s #1: %s #1: why the record cannot be adopted, a short code, e.g. "missing-archival-body" (shown as-is)
-[1819] = "Could not adopt this record: %s",
+N["Could not adopt this record: %s"] = 1819
 -- 041c7071
 -- %s #1: %s #1: the rotation name the player typed, e.g. "Frost AoE"
-[1820] = "More than one rotation is named %s. Select its Class or This character entry in the rotation browser.",
+N["More than one rotation is named %s. Select its Class or This character entry in the rotation browser."] = 1820
 -- 71ddae9f
-[1821] = "The fallback rotation is unavailable. Open Rotations to complete or recover it.",
+N["The fallback rotation is unavailable. Open Rotations to complete or recover it."] = 1821
 -- 0729dbe6
-[1822] = "Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.",
+N["Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten."] = 1822
 -- d90071b9
-[1823] = "Unsupported condition editor frame.",
+N["Unsupported condition editor frame."] = 1823
 -- 5cb9c94c
-[1824] = "The native condition editor is unavailable.",
+N["The native condition editor is unavailable."] = 1824
 -- f47f68cf
-[1825] = "Native custom condition editor required.",
+N["Native custom condition editor required."] = 1825
 -- d5cade7e
-[1826] = "Stock",
+N["Stock"] = 1826
 -- 9286002a
 -- Context: Name of the addon "Questie" shown in the Integrations settings list; stays unchanged.
-[1827] = "Questie",
+N["Questie"] = 1827
 -- 6dff3b3c
-[1828] = "Waiting for Questie.",
+N["Waiting for Questie."] = 1828
 -- 80cd466c
-[1829] = "Questie API incompatible.",
+N["Questie API incompatible."] = 1829
 -- a11121bf
-[1830] = "Questie callback connection available.",
+N["Questie callback connection available."] = 1830
 -- a6769caf
-[1831] = "Questie values are restricted by this client.",
+N["Questie values are restricted by this client."] = 1831
 -- 22ec51b9
-[1832] = "Questie integration unavailable after an adapter error.",
+N["Questie integration unavailable after an adapter error."] = 1832
 -- a414f778
-[1833] = "Questie adapter unavailable.",
+N["Questie adapter unavailable."] = 1833
 -- a0b302b0
 -- %s #1: %s #1: the Questie version, e.g. "9.7.1"
 -- %s #2: %s #2: how well it is tested, "source-tested" or "unverified" (translated), e.g. "unverified"
-[1834] = "Questie version: %s (%s)",
+N["Questie version: %s (%s)"] = 1834
 -- 97b7e2db
 -- Context: Qualifier in the Questie version line, shown in parentheses after the version: the
 --     version has not been checked against Rotation Master's tests (lowercase).
-[1835] = "unverified",
+N["unverified"] = 1835
 -- 0d6aeafd
 -- %s #1: %s #1: the game client family, e.g. "Classic Era"
 -- %s #2: %s #2: the compatibility status, "declared; unverified" or "unsupported" (translated), e.g. "unsupported"
-[1836] = "Client family: %s (%s)",
+N["Client family: %s (%s)"] = 1836
 -- ff3a37e2
-[1837] = "declared; unverified",
+N["declared; unverified"] = 1837
 -- 60945d49
-[1838] = "unsupported",
+N["unsupported"] = 1838
 -- b0fa65e4
-[1839] = "Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection.",
+N["Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection."] = 1839
 -- 0dfbd5e8
-[1840] = "Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used.",
+N["Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used."] = 1840
 -- f0486ac1
 -- Context: Button in the Questie integration part of Integrations settings: checks again whether
 --     Questie is loaded and connected (verb phrase).
-[1841] = "Refresh Questie status",
+N["Refresh Questie status"] = 1841
 -- ee7e05e5
 -- Context: Heading above the list of supported addons in Integrations settings.
-[1842] = "Supported addons",
+N["Supported addons"] = 1842
 -- 2fc99337
-[1843] = "Loaded; integration not connected.",
+N["Loaded; integration not connected."] = 1843
 -- 5b205b7f
 -- Context: Addon name followed by its version in the Integrations list; first %s is the addon name,
 --     second %s its version.
 -- %s #1: %s #1: the name of the add-on integration, e.g. "Questie"
 -- %s #2: %s #2: its version, e.g. "9.7.1"
-[1844] = "%s (version %s)",
+N["%s (version %s)"] = 1844
 -- bad4af6a
-[1845] = "Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available.",
+N["Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available."] = 1845
 -- 11b28c68
 -- Context: Name of the addon "ExtendedCharacterStats" shown in the Integrations settings list;
 --     stays unchanged.
-[1846] = "ExtendedCharacterStats",
+N["ExtendedCharacterStats"] = 1846
 -- cbc21d63
 -- Context: Name of the addon "LuaWorkbench" (an external Lua editor) shown in the Integrations
 --     settings list; stays unchanged.
-[1847] = "LuaWorkbench",
+N["LuaWorkbench"] = 1847
 -- 696b160a
 -- Context: Name of the action bar addon "ElvUI" shown in the Integrations settings list; stays
 --     unchanged.
-[1848] = "ElvUI",
+N["ElvUI"] = 1848
 -- fc95169b
 -- Context: Name of the action bar addon "Bartender4" shown in the Integrations settings list; stays
 --     unchanged.
-[1849] = "Bartender4",
+N["Bartender4"] = 1849
 -- 73198132
 -- Context: Name of the action bar addon "ButtonForge" shown in the Integrations settings list;
 --     stays unchanged.
-[1850] = "ButtonForge",
+N["ButtonForge"] = 1850
 -- 42fa5fc0
 -- Context: Name of the addon "LUI" (interface suite with action bars) shown in the Integrations
 --     settings list; stays unchanged.
-[1851] = "LUI",
+N["LUI"] = 1851
 -- efc3965e
 -- Context: Name of the action bar addon "Dominos" shown in the Integrations settings list; stays
 --     unchanged.
-[1852] = "Dominos",
+N["Dominos"] = 1852
 -- 14548eff
 -- Context: Name of the addon "AzeriteUI" (interface suite with action bars) shown in the
 --     Integrations settings list; stays unchanged.
-[1853] = "AzeriteUI",
+N["AzeriteUI"] = 1853
 -- 7c811de6
 -- Context: Name of the addon "FarmingBar" shown in the Integrations settings list; stays unchanged.
-[1854] = "FarmingBar",
+N["FarmingBar"] = 1854
 -- e866b4e8
 -- Context: Name of the addon "TotemTimers" shown in the Integrations settings list; stays
 --     unchanged.
-[1855] = "TotemTimers",
+N["TotemTimers"] = 1855
 -- 06c879f3
 -- Context: Name of the addon "AzeriteUI6" shown in the Integrations settings list; stays unchanged.
-[1856] = "AzeriteUI6",
+N["AzeriteUI6"] = 1856
 -- 5bd55adb
 -- Context: Name of the boss-mod addon "BigWigs" shown in the Integrations settings list; stays
 --     unchanged.
-[1857] = "BigWigs",
+N["BigWigs"] = 1857
 -- 1c91d8be
 -- Context: Group heading in Integrations settings for boss-mod addons (BigWigs, DBM) that supply
 --     encounter timers; also a help topic title.
-[1858] = "Boss mods",
+N["Boss mods"] = 1858
 -- c5eddceb
 -- Context: Group heading in Integrations settings for addons that show panels at the top of the
 --     screen (Titan Panel); also a help topic title.
-[1859] = "Top panels",
+N["Top panels"] = 1859
 -- 22965568
 -- Context: Status text of an addon row in the Integrations list: the addon is loaded and connected
 --     to Rotation Master.
-[1860] = "Connected",
+N["Connected"] = 1860
 -- 8777e3a9
 -- Context: Status text of an addon row in the Integrations list: the addon is loaded but its
 --     version cannot be used with Rotation Master.
-[1861] = "Incompatible",
+N["Incompatible"] = 1861
 -- 56178c4b
-[1862] = "Loaded; connection not confirmed.",
+N["Loaded; connection not confirmed."] = 1862
 -- 3c586673
 -- Context: Button text in General settings that starts a 30-second spell cast recording; also a
 --     help topic title.
-[1863] = "Capture casts (30s)",
+N["Capture casts (30s)"] = 1863
 -- b90c2cce
 -- Context: Label of the button/report in General settings that shows the finished cast recording;
 --     also a help topic title.
-[1864] = "Cast report",
+N["Cast report"] = 1864
 -- 548d9c5c
 -- Context: Button text in General settings, shown while the CPU recording is running: stops it
 --     (verb phrase).
-[1865] = "Stop CPU capture",
+N["Stop CPU capture"] = 1865
 -- 5ba35474
 -- Context: Button text in General settings, shown while the runtime recording is running: stops it
 --     (verb phrase).
-[1866] = "Stop runtime capture",
+N["Stop runtime capture"] = 1866
 -- 0f122dcf
 -- Context: Button text in General settings, shown while the cast recording is running: stops it
 --     (verb phrase).
-[1867] = "Stop cast capture",
+N["Stop cast capture"] = 1867
 -- ba691ba0
 -- Context: Status word in the performance and analytics reports where a value could not be read
 --     (lowercase, fits in running text).
-[1868] = "unavailable",
+N["unavailable"] = 1868
 -- a43f31c1
-[1869] = "Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it.",
+N["Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it."] = 1869
 -- edc2be9d
-[1870] = "Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor).",
+N["Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor)."] = 1870
 -- 8c620adc
-[1871] = "Baseline plain editor; always available.",
+N["Baseline plain editor; always available."] = 1871
 -- 78a6a8fe
-[1872] = "Built in",
+N["Built in"] = 1872
 -- f85577f0
 -- Context: Column heading in the Integrations table: what the integration does and its state.
-[1873] = "Description / status",
+N["Description / status"] = 1873
 -- d9494bd4
-[1874] = "Editor options",
+N["Editor options"] = 1874
 -- b9c3bfb3
 -- Context: Column heading in the Integrations table over the checkbox or button that turns an
 --     integration on or lets the user choose it.
-[1875] = "Enable / Select",
+N["Enable / Select"] = 1875
 -- 1ce31af1
-[1876] = "Lua editors",
+N["Lua editors"] = 1876
 -- 4207e3fc
 -- Context: Option in the Lua editor mode choice: no special editor, just the plain text box.
-[1877] = "None (plain editor)",
+N["None (plain editor)"] = 1877
 -- c935b9fd
-[1878] = "Shared editor settings.",
+N["Shared editor settings."] = 1878
 -- bea3f386
 -- Context: Heading above the Lua editor options in Integrations settings.
-[1879] = "Editor settings",
+N["Editor settings"] = 1879
 -- 332b0b0a
-[1880] = "Enable built-in syntax highlighting",
+N["Enable built-in syntax highlighting"] = 1880
 -- a1aa075c
 -- Context: Checkbox in Integrations settings (Lua editor section): turn on color highlighting of
 --     Lua syntax; also a help topic title.
-[1881] = "Syntax highlighting",
+N["Syntax highlighting"] = 1881
 -- dc3bae06
-[1882] = "Addon release pages",
+N["Addon release pages"] = 1882
 -- 365765f4
-[1883] = "Publisher listings describe release availability; integration behavior on this client may be unverified.",
+N["Publisher listings describe release availability; integration behavior on this client may be unverified."] = 1883
 -- 839b59a4
 -- %s #1: %s #1: what is copied, e.g. "Rotation"
-[1884] = "Copy %s",
+N["Copy %s"] = 1884
 -- 6377056a
-[1885] = "Release links checked: 2026-10-20.",
+N["Release links checked: 2026-10-20."] = 1885
 -- 06a1145d
-[1886] = "CurseForge — LUI Classic",
+N["CurseForge — LUI Classic"] = 1886
 -- 26330782
 -- %d #1: %d #1: the number of the link, counting from 1, e.g. 2
-[1887] = "Copy link %d",
+N["Copy link %d"] = 1887
 -- 382bc741
 -- Context: Group heading in Integrations settings for the options that affect how the preview
 --     window looks (Masque skins).
-[1888] = "Preview appearance",
+N["Preview appearance"] = 1888
 -- 71e7edd7
-[1889] = "Skin preview buttons with Masque",
+N["Skin preview buttons with Masque"] = 1889
 -- 0e769600
 -- Context: Heading in General settings above the three sliders that set how many seconds of spell,
 --     combat and damage history are remembered.
-[1890] = "History",
+N["History"] = 1890
 -- 46811e29
-[1891] = "Bypass observation cache",
+N["Bypass observation cache"] = 1891
 -- c51d2cd3
-[1892] = "Bypass observation cache (requires restart)",
+N["Bypass observation cache (requires restart)"] = 1892
 -- 6b6e2380
-[1893] = "Bypass observation cache (pending)",
+N["Bypass observation cache (pending)"] = 1893
 -- 1fc91201
 -- Context: Label of the Masque skin dropdown in General settings for the preview buttons; also a
 --     help topic title.
-[1894] = "Skin",
+N["Skin"] = 1894
 -- f24d3294
 -- Context: Name of the built-in default button skin choice in the Masque skin dropdown (no Masque
 --     skin applied).
-[1895] = "Blizzard Classic",
+N["Blizzard Classic"] = 1895
 -- a41fff13
-[1896] = "Preview skin is unavailable.",
+N["Preview skin is unavailable."] = 1896
 -- 8f31d7c7
 -- Context: Tooltip of the example icon shown in the preview window.
-[1897] = "Sample icon",
+N["Sample icon"] = 1897
 -- a87bca24
-[1898] = "Saved manual choice is unavailable in the current context.",
+N["Saved manual choice is unavailable in the current context."] = 1898
 -- f51aa35f
 -- Context: Tooltip of the button in an announcement output that opens the editor for the conditions
 --     deciding when it is announced (verb phrase).
-[1899] = "Edit announcement conditions",
+N["Edit announcement conditions"] = 1899
 -- 90b95311
 -- Context: Title of the announcement conditions editor window and a help topic title; noun phrase.
-[1900] = "Announcement conditions",
+N["Announcement conditions"] = 1900
 -- b291861f
 -- Context: Unit choice in the condition editor when editing announcements: the person the spell is
 --     cast on.
-[1901] = "Spell recipient",
+N["Spell recipient"] = 1901
 -- 6edf74a9
-[1902] = "{unit} {{!is|is not}} in a raid",
+N["{unit} {{!is|is not}} in a raid"] = 1902
 -- 60f5f5ce
 -- Context: Unit choice in the condition editor when editing announcement conditions: the target
 --     named in the announcement; also a label in condition summaries.
-[1903] = "Announcement target",
+N["Announcement target"] = 1903
 -- fe664929
-[1904] = "Is Dead or Ghost",
+N["Is Dead or Ghost"] = 1904
 -- b2bdc8d6
 -- Context: Condition type title: the unit is friendly. Also an icon name in the icon picker.
-[1905] = "Is Friendly",
+N["Is Friendly"] = 1905
 -- 12062b75
-[1906] = "{unit} {{!is dead or a ghost|is alive}}",
+N["{unit} {{!is dead or a ghost|is alive}}"] = 1906
 -- c1454135
 -- Context: Fallback title of the help window opened without a topic.
-[1907] = "Workbench Help",
+N["Workbench Help"] = 1907
 -- 3db65f8c
 -- Context: Help section title in the workbench window help: how to move around the window.
-[1908] = "Navigation",
+N["Navigation"] = 1908
 -- 293d404a
 -- Context: Help section title in the profile import/export dialog: where the imported profile will
 --     be placed.
-[1909] = "Destination",
+N["Destination"] = 1909
 -- e5f16b07
 -- Context: Event text substituted for {{event}} in macro-driven announcements: the announcement was
 --     triggered by a macro.
-[1910] = "Via Macro",
+N["Via Macro"] = 1910
 -- 79c3596b
 -- Context: Announcement type dropdown entry: the announcement is triggered from a macro or script
 --     call, not by casting; also a help topic title.
-[1911] = "Via Script/Macro",
+N["Via Script/Macro"] = 1911
 -- 73210659
-[1912] = "Use a unique Via Script/Macro identifier.",
+N["Use a unique Via Script/Macro identifier."] = 1912
 -- 41714d2c
 -- Context: Announcement channel dropdown entry: sends the message as a whisper to a player.
-[1913] = "Whisper",
+N["Whisper"] = 1913
 -- 02e363ed
-[1914] = "Use supplied macro target ({{target}})",
+N["Use supplied macro target ({{target}})"] = 1914
 -- 6ce2aa2e
 -- %s #1: %s #1: the macro command that calls the announcement, e.g. "/run RM_Annouce("FOO","mouseover",nil)"
-[1915] = "Macro call: %s",
+N["Macro call: %s"] = 1915
 -- 5a435552
 -- Context: Checkbox in the custom condition source pane (and its help title): offers this condition
 --     type when editing announcement conditions.
-[1916] = "Announcement Condition",
+N["Announcement Condition"] = 1916
 -- 028cd1c8
 -- Context: Entry in the Conditions settings category filter that lists conditions available for
 --     announcements.
-[1917] = "Announcement",
+N["Announcement"] = 1917
 -- d763075f
-[1918] = "Show this condition in the announcement condition editor.",
+N["Show this condition in the announcement condition editor."] = 1918
 -- e7ce9976
 -- Context: Heading for the list of outputs of an announcement (each output sends one message); also
 --     a help topic title and a comparison row.
-[1919] = "Outputs",
+N["Outputs"] = 1919
 -- 1a3f4334
 -- Context: Name of one announcement output in the list, numbered; %d is the position (1, 2, ...).
 -- %d #1: %d #1: the number of the announcement output, counting from 1, e.g. 2
-[1920] = "Output %d",
+N["Output %d"] = 1920
 -- cafb5358
 -- Context: Tooltip of the enable checkbox of an announcement output: tells whether the output is on
 --     or off.
-[1921] = "Output state",
+N["Output state"] = 1921
 -- 1674ce8b
 -- Context: Button in the announcement editor: adds another output message to the announcement (verb
 --     phrase).
-[1922] = "Add output",
+N["Add output"] = 1922
 -- ce4683e7
 -- Context: Announcement output type dropdown entry: send to a numbered chat channel; also a help
 --     topic title and a comparison row.
-[1923] = "Channel",
+N["Channel"] = 1923
 -- 32c16791
-[1924] = "Complete this output or choose a destination available for this action type.",
+N["Complete this output or choose a destination available for this action type."] = 1924
 -- 8e918b7f
-[1925] = "{unit} {{!is friendly|is not friendly}}",
+N["{unit} {{!is friendly|is not friendly}}"] = 1925
 -- 81f887aa
-[1926] = "{unit} {{!are friendly|are not friendly}}",
+N["{unit} {{!are friendly|are not friendly}}"] = 1926
 -- 19489a96
-[1927] = "{unit} {{!are dead or a ghost|are alive}}",
+N["{unit} {{!are dead or a ghost|are alive}}"] = 1927
 -- bb52ff6b
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
-[1928] = "%s {{!are|are not}} an enemy",
+N["%s {{!are|are not}} an enemy"] = 1928
 -- 5a04bf0d
 -- %s #1: %s #1: the unit; the "are" form of the sentence is used when it is the player, e.g. "you"
-[1929] = "%s {{!are|are not}} attackable",
+N["%s {{!are|are not}} attackable"] = 1929
 -- a551fec4
-[1930] = "{unit} {{!are|are not}} in a raid",
+N["{unit} {{!are|are not}} in a raid"] = 1930
 -- 89e1e228
-[1931] = "{unit} {{!is|is not}} in a party or raid",
+N["{unit} {{!is|is not}} in a party or raid"] = 1931
 -- 06f016f4
-[1932] = "{unit} {{!are|are not}} in a party or raid",
+N["{unit} {{!are|are not}} in a party or raid"] = 1932
 -- 8d5eac2b
-[1933] = "Choose a unit for this condition.",
+N["Choose a unit for this condition."] = 1933
 -- 64f6064c
-[1934] = "Group membership option is invalid.",
+N["Group membership option is invalid."] = 1934
 -- e18851d3
 -- Context: Part of a condition description: appended after a dash and followed by the subject, e.g.
 --     "For Fireball"; %s is the subject name.
 -- %s #1: %s #1: the unit the condition applies to, e.g. "your target"
-[1935] = "For %s",
+N["For %s"] = 1935
 -- 610c1d8d
 -- Context: Label in a condition description, followed by a list of saved field values.
-[1936] = "Saved settings",
+N["Saved settings"] = 1936
 -- ddbcf067
 -- Context: Entry in the General settings log level dropdown: no messages at all.
-[2507] = "Silent",
+N["Silent"] = 2507
 -- 35eb2a7f
 -- Context: Condition type title: equipped set pieces count. Also an icon name in the icon picker.
-[2508] = "Set Pieces",
+N["Set Pieces"] = 2508
 -- 64cd5df4
 -- Context: Condition type title: temporary weapon enchants (poison, imbue). Also an icon name in
 --     the icon picker.
-[2509] = "Weapon Imbue",
+N["Weapon Imbue"] = 2509
 -- 754e76f8
 -- Context: Condition type title: the spell currently recommended by Blizzard's Assisted Combat.
 --     Also an icon name in the icon picker.
-[2510] = "Assisted Combat Suggestion",
+N["Assisted Combat Suggestion"] = 2510
 -- 3fa562a1
 -- Context: Step description of a rotation step that follows the game's built-in rotation helper
 --     suggestion; also shown in the rotation help.
-[2511] = "Blizzard's suggestion",
+N["Blizzard's suggestion"] = 2511
 -- 90dc6c00
-[2512] = "Recommends the spell Blizzard's Assisted Combat suggests",
+N["Recommends the spell Blizzard's Assisted Combat suggests"] = 2512
 -- 423a9284
-[2513] = "Assisted Combat Rotation Spell",
+N["Assisted Combat Rotation Spell"] = 2513
 -- 70a4e33d
 -- Context: Condition type title: whether Blizzard's Assisted Combat is available. Also an icon name
 --     in the icon picker.
-[2514] = "Assisted Combat Available",
+N["Assisted Combat Available"] = 2514
 -- 4de7b468
 -- Context: General settings: label of the dropdown for how the suggested spell of Blizzard's
 --     Assisted Combat is highlighted; also a help topic title.
-[2515] = "Blizzard's suggestion highlight",
+N["Blizzard's suggestion highlight"] = 2515
 -- 019a5647
 -- Context: Choice in that dropdown: only Rotation Master's own glow is shown.
-[2516] = "Rotation Master's glow",
+N["Rotation Master's glow"] = 2516
 -- e24abd9f
 -- Context: Choice in that dropdown: only the game's native highlight is shown.
-[2517] = "Blizzard's Assisted Highlight",
+N["Blizzard's Assisted Highlight"] = 2517
 -- b6c1d862
 -- Context: Choice in that dropdown: both highlights are shown.
-[2518] = "Both",
+N["Both"] = 2518
 -- cd3a1b13
-[2519] = "Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off.",
+N["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."] = 2519
 -- 9aab05d6
 -- Context: Condition type title: whether a given Season of Discovery rune is engraved. Also an icon
 --     name in the icon picker.
-[2520] = "Engraved Rune",
+N["Engraved Rune"] = 2520
 -- ea43639d
 -- %s #1: %s #1: the name of the talent, e.g. "Improved Blink"
-[2521] = "ranks in %s",
+N["ranks in %s"] = 2521
 -- 1dd73b64
 -- Context: Button in the talent condition editor: opens a window showing the talent tree to pick
 --     from.
-[2522] = "Show talent tree",
+N["Show talent tree"] = 2522
 -- 3e590ed8
 -- Context: Heading label in the talent window and a source name in the talent condition editor for
 --     the hero talent trees.
-[2523] = "Hero Talents",
+N["Hero Talents"] = 2523
 -- 8107299a
-[2524] = "The talent tree cannot be shown during combat.",
+N["The talent tree cannot be shown during combat."] = 2524
 -- 9ac000a4
-[2525] = "Finish or discard the changes in your own talent window first.",
+N["Finish or discard the changes in your own talent window first."] = 2525
 -- da703663
-[2526] = "The talent tree cannot be shown right now. Use the Talent list instead.",
+N["The talent tree cannot be shown right now. Use the Talent list instead."] = 2526
 -- 80ea0eae
-[2527] = "Click a talent to choose it for this condition.",
+N["Click a talent to choose it for this condition."] = 2527
 -- 6f1df5fc
 -- %s #1: %s #1: the name of the talent the player clicked, e.g. "Arcane Power"
-[2528] = "Selected: %s",
+N["Selected: %s"] = 2528
 -- 7a5e089f
 -- %d #1: %d #1: the maximum number of ranks of the talent, e.g. 3
-[2529] = "Ranks: %d",
+N["Ranks: %d"] = 2529
 -- 26722619
-[2530] = "Choose one of the talents on this node.",
+N["Choose one of the talents on this node."] = 2530
 -- d9f6a964
-[2531] = "Click to choose this talent.",
+N["Click to choose this talent."] = 2531
 -- ccb6e92e
-[2532] = "Click to clear this talent.",
+N["Click to clear this talent."] = 2532
 -- 8a667e66
-[2533] = "Close the build shown in your own talent window first.",
+N["Close the build shown in your own talent window first."] = 2533
 -- f831a06b
 -- Context: Specialization name (Warrior, first tree). Used in the specialization condition and
 --     rotation scope; follows the game's naming.
-[2534] = "Arms",
+N["Arms"] = 2534
 -- 8d6b26d9
 -- Context: Specialization name (Warrior, second tree).
-[2535] = "Fury",
+N["Fury"] = 2535
 -- 0e97ad02
 -- Context: Specialization name (Warrior or Paladin tank tree).
-[2536] = "Protection",
+N["Protection"] = 2536
 -- 1d79fa22
 -- Context: Specialization name (Paladin damage tree).
-[2537] = "Retribution",
+N["Retribution"] = 2537
 -- 5d6f7884
 -- Context: Specialization name (Hunter, first tree).
-[2538] = "Beast Mastery",
+N["Beast Mastery"] = 2538
 -- 03f000fc
 -- Context: Specialization name (Hunter, second tree).
-[2539] = "Marksmanship",
+N["Marksmanship"] = 2539
 -- 8302496d
 -- Context: Specialization name (Hunter, third tree).
-[2540] = "Survival",
+N["Survival"] = 2540
 -- 727eeac8
 -- Context: Specialization name (Rogue, first tree).
-[2541] = "Assassination",
+N["Assassination"] = 2541
 -- fca36d62
 -- Context: Specialization name (Rogue, third tree).
-[2542] = "Subtlety",
+N["Subtlety"] = 2542
 -- a1b14db9
 -- Context: Specialization name (Priest, first tree).
-[2543] = "Discipline",
+N["Discipline"] = 2543
 -- b12b36cf
 -- Context: Specialization name (Shaman, second tree).
-[2544] = "Enhancement",
+N["Enhancement"] = 2544
 -- 6a3c6c77
 -- Context: Specialization name (Shaman or Druid healer tree).
-[2545] = "Restoration",
+N["Restoration"] = 2545
 -- ed64274f
 -- Context: Specialization name (Warlock, first tree).
-[2546] = "Affliction",
+N["Affliction"] = 2546
 -- c0e4afa6
 -- Context: Specialization name (Warlock, second tree).
-[2547] = "Demonology",
+N["Demonology"] = 2547
 -- e848f2c5
 -- Context: Specialization name (Warlock, third tree).
-[2548] = "Destruction",
+N["Destruction"] = 2548
 -- d05e07b7
 -- Context: Specialization name (Druid, first tree).
-[2549] = "Balance",
+N["Balance"] = 2549
 -- 1f397413
 -- Context: Specialization name for a character of level 1 to 9 that has not chosen a specialization
 --     yet.
-[2550] = "Initial",
+N["Initial"] = 2550
 -- 7214aeb1
 -- Context: Condition type title and dropdown label in the condition editor: the player's active
 --     specialization.
-[2551] = "Specialization",
+N["Specialization"] = 2551
 -- 20356d41
 -- Context: Fallback text for a specialization that has no known name; %d is the numeric
 --     specialization ID.
 -- %d #1: %d #1: the specialization number, used when the game gives no name, e.g. 64
-[2552] = "specialization %d",
+N["specialization %d"] = 2552
 -- d22bb30c
 -- Context: Condition type title and dropdown label in the condition editor: the kind of weapon
 --     equipped.
-[2553] = "Weapon Type",
+N["Weapon Type"] = 2553
 -- ed3897f1
 -- Context: Equipment slot option in the equipped-item condition: the main-hand weapon slot.
-[2554] = "Main Hand",
+N["Main Hand"] = 2554
 -- 3f0b51a2
 -- Context: Equipment slot option in the equipped-item condition and a checkbox label in the weapon
 --     condition: the ranged weapon slot.
-[2555] = "Ranged",
+N["Ranged"] = 2555
 -- 9e9c1c72
 -- Context: Category option in the equipped-item condition: the slot is empty.
-[2556] = "Nothing equipped",
+N["Nothing equipped"] = 2556
 -- d1c5d83c
 -- Context: Category option in the equipped-item condition: any weapon.
-[2557] = "Any weapon",
+N["Any weapon"] = 2557
 -- 723e86de
 -- Context: Category option in the equipped-item condition: a one-handed weapon.
-[2558] = "One-handed weapon",
+N["One-handed weapon"] = 2558
 -- 432f6b17
 -- Context: Category option in the equipped-item condition: a two-handed weapon.
-[2559] = "Two-handed weapon",
+N["Two-handed weapon"] = 2559
 -- e55ba453
 -- Context: Category option in the equipped-item condition: a ranged weapon.
-[2560] = "Ranged weapon",
+N["Ranged weapon"] = 2560
 -- ef734bb6
-[2561] = "Held in off hand",
+N["Held in off hand"] = 2561
 -- 2d7b1802
-[2562] = "Not on your action bars, so it can't be highlighted. It is skipped.",
+N["Not on your action bars, so it can't be highlighted. It is skipped."] = 2562
 -- 47e97838
-[2563] = "1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it.",
+N["1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it."] = 2563
 -- cc735c50
 -- %d #1: %d #1: how many suggested spells are missing from the action bars, e.g. 3
-[2564] = "%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them.",
+N["%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them."] = 2564
 -- 29258402
 -- Context: End of a spell list in a tooltip: %s is the first few spell names (comma-separated) not
 --     on the action bars, %d is how many more are not shown, giving 'A, B, C, and 4 more'.
 -- %s #1: %s #1: the names of the first missing spells, separated by commas, e.g. "Fireball, Frostbolt, Ice Lance"
 -- %d #2: %d #2: how many more are not listed, e.g. 4
-[2565] = "%s, and %d more",
+N["%s, and %d more"] = 2565
 -- f657f763
 -- %s #1: %s #1: the names of the spells that are not on the action bars, separated by commas, e.g. "Fireball, Frostbolt"
-[2566] = "Not on your action bars: %s.",
+N["Not on your action bars: %s."] = 2566
 -- d60bbc94
-[2567] = "Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail).",
+N["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = 2567
 -- 982f6c69
-[2568] = "Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail).",
+N["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = 2568
 -- 9ec46751
-[2569] = "Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them.",
+N["Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them."] = 2569
 -- c6fa3ead
 -- %s #1: %s #1: the skipped steps, separated by semicolons, each with its name and place, e.g. "Fireball (step 3); Frostbolt (cooldown)"
-[2570] = "Skipped, not on your action bars (they cannot be highlighted): %s.",
+N["Skipped, not on your action bars (they cannot be highlighted): %s."] = 2570
 -- 435eac3e
 -- Context: Location in a report line about an unbound rotation step (a step whose spell is not on
 --     the action bars): %s is the step's position number, e.g. 'step 3'.
 -- %s #1: %s #1: the number of the step in the rotation, counting from 1 (a "?" when unknown), e.g. 3
-[2571] = "step %s",
+N["step %s"] = 2571
 -- 09182dd8
 -- Context: Location in a report line about an unbound rotation step: the step sits in the cooldowns
 --     section rather than the numbered list (lowercase).
-[2572] = "cooldown",
+N["cooldown"] = 2572
 -- c9e1a473
 -- Context: Headline on a rotation card when the condition is true right now.
-[2573] = "Currently Matches",
+N["Currently Matches"] = 2573
 -- 6fafaf30
-[2574] = "Does Not Currently Match",
+N["Does Not Currently Match"] = 2574
 -- f70be4d8
 -- %s #1: %s #1: why the live status cannot be read, a short reason (translated), e.g. "unreadable right now"
-[2575] = "Unavailable: %s",
+N["Unavailable: %s"] = 2575
 -- a463bcd3
 -- Context: Reason shown in a card headline or tooltip when a condition's value cannot be read in
 --     the current situation (lowercase).
-[2576] = "unreadable right now",
+N["unreadable right now"] = 2576
 -- 8a0dcf23
-[2577] = "the condition could not be evaluated",
+N["the condition could not be evaluated"] = 2577
 -- 01e62ea3
 -- %d #1: %d #1: how many seconds ago the condition was last checked, e.g. 2
-[2578] = "Checked %d seconds ago.",
+N["Checked %d seconds ago."] = 2578
 -- 37822fb8
-[2579] = "Rotation Master is advising this step now.",
+N["Rotation Master is advising this step now."] = 2579
 -- 053a39d7
-[2580] = "This cooldown is showing now.",
+N["This cooldown is showing now."] = 2580
 -- 42ee3bdd
-[2581] = "This rotation is advising now.",
+N["This rotation is advising now."] = 2581
 -- 81f39eb5
 -- Context: Option in the player state condition: the player is on a mount.
-[2582] = "Mounted",
+N["Mounted"] = 2582
 -- 54230802
 -- Context: Option in the player state condition: the player is swimming.
-[2583] = "Swimming",
+N["Swimming"] = 2583
 -- 6192f184
 -- Context: Option in the player state condition: the player is falling.
-[2584] = "Falling",
+N["Falling"] = 2584
 -- 75a4c2fe
 -- Context: Option in the player state condition: the player is flying.
-[2585] = "Flying",
+N["Flying"] = 2585
 -- 4ae9e2a1
-[2586] = "In a Rested Area",
+N["In a Rested Area"] = 2586
 -- 5cc337a5
 -- Context: Condition type title: a boss fight is in progress. Also an icon name in the icon picker.
-[2587] = "Boss Encounter",
+N["Boss Encounter"] = 2587
 -- 87a6b205
 -- Context: Label of the dropdown in the instance condition: the difficulty of the dungeon or raid.
-[2588] = "Instance Difficulty",
+N["Instance Difficulty"] = 2588
 -- fce1b615
 -- Context: Condition type title: the level of the Mythic+ keystone of the current dungeon. Also the
 --     title of its help page.
-[2589] = "Mythic+ Keystone Level",
+N["Mythic+ Keystone Level"] = 2589
 -- 26566745
 -- Context: Condition type title and dropdown label in the condition editor: the player's active
 --     hero talent tree. Also an icon name in the icon picker.
-[2590] = "Hero Talent Tree",
+N["Hero Talent Tree"] = 2590
 -- 6115798c
 -- Context: Condition type title: the spell currently has the proc glow on its action button. Also
 --     an icon name in the icon picker.
-[2591] = "Spell Proc Glow",
+N["Spell Proc Glow"] = 2591
 -- c563bae9
 -- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the first
 --     trinket slot instead of a named item.
-[2592] = "Trinket 1",
+N["Trinket 1"] = 2592
 -- 4595f2ac
 -- Context: Entry in the trinket dropdown of the item cooldown condition: the trinket in the second
 --     trinket slot instead of a named item.
-[2593] = "Trinket 2",
+N["Trinket 2"] = 2593
 -- a91c3e5e
 -- Context: Condition type title and dropdown label in the condition editor: a Hunter pet's mood.
 --     Also an icon name in the icon picker.
-[2594] = "Pet Happiness",
+N["Pet Happiness"] = 2594
 -- 37108f8a
 -- Context: Option in the Pet Happiness dropdown: the lowest of the three moods (the pet is
 --     unhappy).
-[2595] = "Unhappy",
+N["Unhappy"] = 2595
 -- 47bd2907
 -- Context: Option in the Pet Happiness dropdown: the middle mood (the pet is content, neither happy
 --     nor unhappy).
-[2596] = "Content",
+N["Content"] = 2596
 -- 725accb5
 -- Context: Option in the Pet Happiness dropdown: the highest mood (the pet is happy).
-[2597] = "Happy",
+N["Happy"] = 2597
 -- b575a12f
 -- Context: Condition type title: the Brewmaster's Stagger pool. Also the label of its comparison
 --     and its help page title.
-[2598] = "Stagger",
+N["Stagger"] = 2598
 -- fbfcff79
 -- Context: Label of the dropdown in the Eclipse condition: which Eclipse direction the bar is
 --     heading toward.
-[2599] = "Eclipse Direction",
+N["Eclipse Direction"] = 2599
 -- cc23ba6c
 -- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Solar (Druid
 --     Balance); lowercase, reads as 'the bar is heading for a Solar Eclipse'.
-[2600] = "a Solar Eclipse",
+N["a Solar Eclipse"] = 2600
 -- 1dc3e526
 -- Context: Option in the Eclipse direction dropdown: the Eclipse bar is moving toward Lunar (Druid
 --     Balance); lowercase, reads as 'the bar is heading for a Lunar Eclipse'.
-[2601] = "a Lunar Eclipse",
+N["a Lunar Eclipse"] = 2601
 -- f2fcd3f7
 -- Context: Label of the comparison in the Eclipse condition: the Eclipse bar's energy value; the
 --     other measure is Direction.
-[2602] = "Energy",
+N["Energy"] = 2602
 -- d8877585
-[2603] = "only Retail has this",
+N["only Retail has this"] = 2603
 -- 5f1196be
-[2604] = "this edition has no pet happiness",
+N["this edition has no pet happiness"] = 2604
 -- 1ca6128e
-[2605] = "this edition has no Stagger",
+N["this edition has no Stagger"] = 2605
 -- 70b12e8e
-[2606] = "this edition has no Eclipse",
+N["this edition has no Eclipse"] = 2606
 -- 864ee126
-[2607] = "this client has no assigned group roles",
+N["this client has no assigned group roles"] = 2607
 -- 1eb43a88
-[2608] = "/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons.",
+N["/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons."] = 2608
 -- aca68a8a
 -- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
-[2609] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations.",
+N["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations."] = 2609
 -- a64b8edb
 -- %d #1: %d #1: how many rotations from before version 2 are waiting in the archive, e.g. 5
-[2610] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them.",
+N["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them."] = 2610
 -- 48845bff
 -- Context: Button in the banner about unassigned rotations: closes the banner without opening the
 --     archive (verb).
-[2611] = "Dismiss",
+N["Dismiss"] = 2611
 -- e11a6591
 -- Context: Button in the recovery window that adopts every listed rotation at once: %d is how many
 --     rotations, %s is the destination (a class name or 'This character').
 -- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
 -- %s #2: %s #2: who will own them, e.g. "your Mage class"
-[2612] = "Adopt all %d for %s",
+N["Adopt all %d for %s"] = 2612
 -- c727dc7d
 -- %d #1: %d #1: how many rotations of this specialization will be adopted, e.g. 3
 -- %d #2: %d #2: the specialization number, e.g. 64
 -- %s #3: %s #3: who will own them, e.g. "your Mage class"
-[2613] = "Adopt all %d from specialization %d for %s",
+N["Adopt all %d from specialization %d for %s"] = 2613
 -- dcf0a82d
 -- %d #1: %d #1: how many unassigned rotations will be adopted, e.g. 5
 -- %s #2: %s #2: who will own them, e.g. "your Mage class"
-[2614] = "Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive.",
+N["Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive."] = 2614
 -- bf328c9e
 -- %d #1: %d #1: how many rotations were adopted, e.g. 4
 -- %d #2: %d #2: how many were attempted, e.g. 5
 -- %s #3: %s #3: the names of those that were not adopted, separated by commas, e.g. "Old Fire"
-[2615] = "Adopted %d of %d. These stay in the archive: %s",
+N["Adopted %d of %d. These stay in the archive: %s"] = 2615
 -- 23bfc44f
 -- Context: Condition type title: groups simple player states (mounted, swimming, flying ...). Also
 --     an icon name in the icon picker.
-[2616] = "Player State",
+N["Player State"] = 2616
 -- 68a2f69b
 -- Context: Condition type title: the number of players in the group. Also its help page title.
-[2617] = "Group Count",
+N["Group Count"] = 2617
 -- de24e677
 -- Context: Condition type title: the Druid Eclipse bar. Also its help page title.
-[2618] = "Eclipse",
+N["Eclipse"] = 2618
 -- 5baf9a05
-[2619] = "your group's main tank",
+N["your group's main tank"] = 2619
 -- 94585dba
-[2620] = "your group's main tank's",
+N["your group's main tank's"] = 2620
 -- 90092817
-[2621] = "your group's main assist",
+N["your group's main assist"] = 2621
 -- 67d03081
-[2622] = "your group's main assist's",
+N["your group's main assist's"] = 2622
 -- 800a1841
-[2623] = "your group's assigned tank",
+N["your group's assigned tank"] = 2623
 -- c27b7dbd
-[2624] = "your group's assigned tank's",
+N["your group's assigned tank's"] = 2624
 -- 0a817df6
-[2625] = "your group's assigned healer",
+N["your group's assigned healer"] = 2625
 -- 1f321239
-[2626] = "your group's assigned healer's",
+N["your group's assigned healer's"] = 2626
 -- 343dc906
 -- Context: Phrase for the unit choice 'group leader' in condition summaries, e.g. '<this> {{!is|is
 --     not}} your group's leader'; the next string is its possessive form.
-[2627] = "your group's leader",
+N["your group's leader"] = 2627
 -- 1d3180fa
 -- Context: Possessive form of 'your group's leader' used in condition summaries before a noun, e.g.
 --     'your group's leader's health'.
-[2628] = "your group's leader's",
+N["your group's leader's"] = 2628
 -- fad43537
-[2629] = "Absolute health target (negative means deficit) or percentage fraction.",
+N["Absolute health target (negative means deficit) or percentage fraction."] = 2629
 -- 29a55788
-[2630] = "All original results, preserving nil positions and return count.",
+N["All original results, preserving nil positions and return count."] = 2630
 -- c7e69e75
-[2631] = "Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator.",
+N["Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator."] = 2631
 -- 69eb2e21
-[2632] = "Arguments forwarded unchanged to the observed function.",
+N["Arguments forwarded unchanged to the observed function."] = 2632
 -- 1d513028
-[2633] = "Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries.",
+N["Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries."] = 2633
 -- 3e8d2702
-[2634] = "Availability or query-validation reason for a nil level observation.",
+N["Availability or query-validation reason for a nil level observation."] = 2634
 -- e2ffe9af
-[2635] = "Availability or query-validation reason for a nil level.",
+N["Availability or query-validation reason for a nil level."] = 2635
 -- 66134514
-[2636] = "Availability or query-validation reason when no current state can be read.",
+N["Availability or query-validation reason when no current state can be read."] = 2636
 -- 77b92c6d
-[2637] = "Availability or query-validation reason when the whole observation is unavailable.",
+N["Availability or query-validation reason when the whole observation is unavailable."] = 2637
 -- 11483c22
-[2638] = "Availability or validation reason for a nil result.",
+N["Availability or validation reason for a nil result."] = 2638
 -- bd62d347
-[2639] = "Availability or validation reason when the record is nil.",
+N["Availability or validation reason when the record is nil."] = 2639
 -- cab01ca9
-[2640] = "Availability or validation reason when the result is nil.",
+N["Availability or validation reason when the result is nil."] = 2640
 -- 37cddc45
-[2641] = "Availability reason for a nil result.",
+N["Availability reason for a nil result."] = 2641
 -- eced4849
-[2642] = "Availability reason when resolution fails; nil on success.",
+N["Availability reason when resolution fails; nil on success."] = 2642
 -- 09403547
-[2643] = "Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached.",
+N["Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached."] = 2643
 -- ec80f70e
-[2644] = "Calculate a checked health-history rate using an explicit finite window and clock. Preserve ordered weighting, per-row live canonical rounding, skipped streams, array holes, fractional keys and final visited ages. A fixed 4096-unit budget covers visited rows and accumulation bins across both streams; excess or invalid consumed arithmetic returns unavailable, never a partial estimate or clamp. This new API has its own source identity; historical trend functions remain unchanged.",
+N["Calculate a checked health-history rate using an explicit finite window and clock. Preserve ordered weighting, per-row live canonical rounding, skipped streams, array holes, fractional keys and final visited ages. A fixed 4096-unit budget covers visited rows and accumulation bins across both streams; excess or invalid consumed arithmetic returns unavailable, never a partial estimate or clamp. This new API has its own source identity; historical trend functions remain unchanged."] = 2644
 -- e3a904cc
-[2645] = "Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly.",
+N["Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly."] = 2645
 -- cb8a709c
-[2646] = "Callback invoked after changing the selected unit.",
+N["Callback invoked after changing the selected unit."] = 2646
 -- f4755bc2
-[2647] = "Callback receiving the committed spell value.",
+N["Callback receiving the committed spell value."] = 2647
 -- 8473e032
-[2648] = "Caller-owned evaluation observation cache; nil queries afresh.",
+N["Caller-owned evaluation observation cache; nil queries afresh."] = 2648
 -- d07ec966
-[2649] = "Capability or clock observation availability reason.",
+N["Capability or clock observation availability reason."] = 2649
 -- aca2f51b
-[2650] = "Capability or observation availability reason for a nil class.",
+N["Capability or observation availability reason for a nil class."] = 2650
 -- fb8dd5ac
-[2651] = "Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime().",
+N["Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime()."] = 2651
 -- 1081f5fc
-[2652] = "Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values.",
+N["Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values."] = 2652
 -- 3f1a5911
-[2653] = "Checkbox widget with boolean value and callback methods.",
+N["Checkbox widget with boolean value and callback methods."] = 2653
 -- 8373609b
-[2654] = "Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved.",
+N["Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved."] = 2654
 -- 68e9defe
-[2655] = "Classification, validation or availability reason for a nil result.",
+N["Classification, validation or availability reason for a nil result."] = 2655
 -- 7fc7159a
-[2656] = "Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping.",
+N["Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping."] = 2656
 -- 355b4c25
-[2657] = "Client-family, query-validation or required-observation availability reason for a nil result.",
+N["Client-family, query-validation or required-observation availability reason for a nil result."] = 2657
 -- 56d0a810
-[2658] = "Client-policy, capability, call or observation availability reason for a nil form.",
+N["Client-policy, capability, call or observation availability reason for a nil form."] = 2658
 -- fffddfca
-[2659] = "Client-policy, capability, call or observation availability reason for a nil record.",
+N["Client-policy, capability, call or observation availability reason for a nil record."] = 2659
 -- 7a0f627b
-[2660] = "Client-policy, native-call or required membership availability reason for a nil record.",
+N["Client-policy, native-call or required membership availability reason for a nil record."] = 2660
 -- 0a8d99a6
-[2661] = "Closed kind: runner, resist or immune.",
+N["Closed kind: runner, resist or immune."] = 2661
 -- 6999f76c
-[2662] = "Closed scalar kind: current or maximum.",
+N["Closed scalar kind: current or maximum."] = 2662
 -- a7224c57
-[2663] = "Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order.",
+N["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = 2663
 -- 508c105b
-[2664] = "Combat-policy, capability, observation or scan-budget reason for a nil count.",
+N["Combat-policy, capability, observation or scan-budget reason for a nil count."] = 2664
 -- 14b9d8a2
-[2665] = "Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior.",
+N["Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior."] = 2665
 -- ee842735
-[2666] = "Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added.",
+N["Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added."] = 2666
 -- 098e89f6
-[2667] = "Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added.",
+N["Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added."] = 2667
 -- f92fafbd
-[2668] = "Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation.",
+N["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = 2668
 -- 4d1da429
-[2669] = "Comparison operator key, such as EQUALS or LESSTHAN.",
+N["Comparison operator key, such as EQUALS or LESSTHAN."] = 2669
 -- 8d6dc0da
-[2670] = "Comparison result, or nil for an unknown operator.",
+N["Comparison result, or nil for an unknown operator."] = 2670
 -- 45e7a5a6
-[2671] = "Comparison text retaining named Boolean alternative markup.",
+N["Comparison text retaining named Boolean alternative markup."] = 2671
 -- beb1fd9a
-[2672] = "Complete matching class count, including zero, or nil when unavailable.",
+N["Complete matching class count, including zero, or nil when unavailable."] = 2672
 -- 3abb0dce
-[2673] = "Complete nonnegative observed count including zero, or nil when unavailable.",
+N["Complete nonnegative observed count including zero, or nil when unavailable."] = 2673
 -- a3cbc46a
-[2674] = "Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout.",
+N["Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout."] = 2674
 -- 1edda05a
-[2675] = "Condition value record containing spell, ranked and disabled fields; updated in place.",
+N["Condition value record containing spell, ranked and disabled fields; updated in place."] = 2675
 -- bd948209
-[2676] = "Condition value record updated when a unit is chosen.",
+N["Condition value record updated when a unit is chosen."] = 2676
 -- 49082497
-[2677] = "Configured unit selector; add it with parent:AddChild(widget).",
+N["Configured unit selector; add it with parent:AddChild(widget)."] = 2677
 -- 93e87554
-[2678] = "Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order.",
+N["Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order."] = 2678
 -- dcd01801
-[2679] = "Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero.",
+N["Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero."] = 2679
 -- 7ee6eac7
-[2680] = "Count matching class tokens in the current fixed roster. Read group membership first; when requested, raid membership selects raid1 through raid40 without a separate player fact. Solo and party paths read player first, then party1 through party4 when grouped. A complete known roster returns a count, including zero; any required unavailable fact returns nil with a reason. Complete observations share the evaluation-pass cache; no player class persists across passes. Archived raw callbacks retain their original load-time class separately.",
+N["Count matching class tokens in the current fixed roster. Read group membership first; when requested, raid membership selects raid1 through raid40 without a separate player fact. Solo and party paths read player first, then party1 through party4 when grouped. A complete known roster returns a count, including zero; any required unavailable fact returns nil with a reason. Complete observations share the evaluation-pass cache; no player class persists across passes. Archived raw callbacks retain their original load-time class separately."] = 2680
 -- ddfd3a7c
-[2681] = "Count only GUID-keyed units already in the observed membership snapshot. Verify current token identity before using the published threat observer; known absent or reused tokens are excluded without adding replacements. Complete identity and threat observations share only the supplied evaluation cache, while membership is traversed fresh. Known nonenemy or optional nil threat is not counted; required unreadable, malformed or failed facts make the entire result unavailable. This does not enumerate a complete roster, apply a range filter or modify tracked records.",
+N["Count only GUID-keyed units already in the observed membership snapshot. Verify current token identity before using the published threat observer; known absent or reused tokens are excluded without adding replacements. Complete identity and threat observations share only the supplied evaluation cache, while membership is traversed fresh. Known nonenemy or optional nil threat is not counted; required unreadable, malformed or failed facts make the entire result unavailable. This does not enumerate a complete roster, apply a range filter or modify tracked records."] = 2681
 -- 02e149c6
-[2682] = "Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent.",
+N["Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent."] = 2682
 -- 24b26357
-[2683] = "Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent.",
+N["Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent."] = 2683
 -- 704feebd
-[2684] = "Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget).",
+N["Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget)."] = 2684
 -- d67fc3b8
-[2685] = "Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the callback parent with parent:AddChild(widget).",
+N["Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the callback parent with parent:AddChild(widget)."] = 2685
 -- d4341110
-[2686] = "Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget).",
+N["Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget)."] = 2686
 -- e149229e
-[2687] = "Create a native image control using the condition widget lifecycle. SetImage and SetImageSize choose the texture; SetText optionally adds a caption. OnClick, OnEnter and OnLeave use the shared callback contract. Add the control to the callback parent with parent:AddChild(widget).",
+N["Create a native image control using the condition widget lifecycle. SetImage and SetImageSize choose the texture; SetText optionally adds a caption. OnClick, OnEnter and OnLeave use the shared callback contract. Add the control to the callback parent with parent:AddChild(widget)."] = 2687
 -- b943d164
-[2688] = "Create a native numeric condition input with a slider and typed numeric field. Configure SetSliderValues, SetValue, SetIsPercent and SetCallback; OnValueChanged reports committed values. Add it with parent:AddChild(widget).",
+N["Create a native numeric condition input with a slider and typed numeric field. Configure SetSliderValues, SetValue, SetIsPercent and SetCallback; OnValueChanged reports committed values. Add it with parent:AddChild(widget)."] = 2688
 -- a67c621c
-[2689] = "Create a native position pad using the shared directional controls. OnOffsetChanged reports horizontal and vertical direction, whether Center was pressed, and the increment (one, or ten with Shift). SetDisabled controls interaction; add the pad to the callback parent with parent:AddChild(widget).",
+N["Create a native position pad using the shared directional controls. OnOffsetChanged reports horizontal and vertical direction, whether Center was pressed, and the increment (one, or ten with Shift). SetDisabled controls interaction; add the pad to the callback parent with parent:AddChild(widget)."] = 2689
 -- 25defe9e
-[2690] = "Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget).",
+N["Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget)."] = 2690
 -- edff3bd0
-[2691] = "Create a shallow filtered copy despite the historical deepcopy name. Nested values retain their original identities and the source metatable is not copied. By default exclude keys listed among except values; invert true includes only listed keys. Nil input returns nil.",
+N["Create a shallow filtered copy despite the historical deepcopy name. Nested values retain their original identities and the source metatable is not copied. By default exclude keys listed among except values; invert true includes only listed keys. Nil input returns nil."] = 2691
 -- ccc11c66
-[2692] = "Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent.",
+N["Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent."] = 2692
 -- 4736bce4
-[2693] = "Create a transient named condition summary. Use {name} for scalar values and {{positive|negative}} for predicate alternatives; prefix a primary alternative with !. Escape literal double braces as {{{{ and }}}}. Values are inserted literally without parsing their percent signs, links, colors or braces. Typed predicate values participate in primary selection. Templates, values and rendered text are bounded; malformed input renders a localized unavailable summary. This changes presentation only and runs no condition observations.",
+N["Create a transient named condition summary. Use {name} for scalar values and {{positive|negative}} for predicate alternatives; prefix a primary alternative with !. Escape literal double braces as {{{{ and }}}}. Values are inserted literally without parsing their percent signs, links, colors or braces. Typed predicate values participate in primary selection. Templates, values and rendered text are bounded; malformed input renders a localized unavailable summary. This changes presentation only and runs no condition observations."] = 2693
 -- 7735b638
-[2694] = "Create a typed comparison predicate for a named condition phrase. Positive wording uses the original captured operator map and negative wording uses the current negated operator map. A primary predicate takes precedence over qualifiers; only the first eligible predicate negates. Unknown operators use the existing operator placeholder. This formats wording without comparing values or evaluating a condition.",
+N["Create a typed comparison predicate for a named condition phrase. Positive wording uses the original captured operator map and negative wording uses the current negated operator map. A primary predicate takes precedence over qualifiers; only the first eligible predicate negates. Unknown operators use the existing operator placeholder. This formats wording without comparing values or evaluating a condition."] = 2694
 -- ddea308b
-[2695] = "Create an iterator over a sorted snapshot of table keys. Default ordering compares keys; a custom order callback receives the original table and two keys. Values are read from the original table when each key is yielded. The legacy iterator ends when the next captured key is nil or false.",
+N["Create an iterator over a sorted snapshot of table keys. Default ordering compares keys; a custom order callback receives the original table and two keys. Values are read from the original table when each key is yielded. The legacy iterator ends when the next captured key is nil or false."] = 2695
 -- 629b2567
-[2696] = "Create native wrapping text that measures its height from its width and font. SetText, SetFont or SetFontObject configure its contents. Add it to the callback parent with parent:AddChild(widget) so layout can track its measured height.",
+N["Create native wrapping text that measures its height from its width and font. SetText, SetFont or SetFontObject configure its contents. Add it to the callback parent with parent:AddChild(widget) so layout can track its measured height."] = 2696
 -- c58c9a9a
-[2697] = "Create native wrapping text with optional leading image and pointer callbacks. SetImage and SetImageSize configure the image; OnEnter, OnLeave and OnClick use the condition callback contract. Add it to the callback parent with parent:AddChild(widget); callbacks expire when its lease is released.",
+N["Create native wrapping text with optional leading image and pointer callbacks. SetImage and SetImageSize configure the image; OnEnter, OnLeave and OnClick use the condition callback contract. Add it to the callback parent with parent:AddChild(widget); callbacks expire when its lease is released."] = 2697
 -- fa988d31
-[2698] = "Current evaluation time in seconds from GetTime(), normally evalStart.",
+N["Current evaluation time in seconds from GetTime(), normally evalStart."] = 2698
 -- c7fd7453
-[2699] = "Current positive visibility distance in yards; nil when unavailable.",
+N["Current positive visibility distance in yards; nil when unavailable."] = 2699
 -- 574eed72
-[2700] = "Current unit token whose distance from the player should be observed.",
+N["Current unit token whose distance from the player should be observed."] = 2700
 -- 83a1023e
-[2701] = "Damage/heals arrays of time/value rows; only selected streams are consumed.",
+N["Damage/heals arrays of time/value rows; only selected streams are consumed."] = 2701
 -- 38e0b44b
-[2702] = "Decimal places, default zero; negative values round to tens or larger powers of ten.",
+N["Decimal places, default zero; negative values round to tens or larger powers of ten."] = 2702
 -- c1094708
-[2703] = "Dense array of keys sorted by associated value.",
+N["Dense array of keys sorted by associated value."] = 2703
 -- 7de55bf4
-[2704] = "Dense array of nonempty text fields.",
+N["Dense array of nonempty text fields."] = 2704
 -- ba17b32f
-[2705] = "Destination array modified in place.",
+N["Destination array modified in place."] = 2705
 -- 9d65688a
-[2706] = "Display lookup table.",
+N["Display lookup table."] = 2706
 -- 763bf095
-[2707] = "Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results.",
+N["Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results."] = 2707
 -- c95e98a7
-[2708] = "Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate.",
+N["Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate."] = 2708
 -- 52a17c6c
-[2709] = "Evaluation cache, or nil to bypass caching.",
+N["Evaluation cache, or nil to bypass caching."] = 2709
 -- 79697e3a
-[2710] = "Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot.",
+N["Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot."] = 2710
 -- bd88f3f9
-[2711] = "Evaluation-pass cache, or nil for fresh observations.",
+N["Evaluation-pass cache, or nil for fresh observations."] = 2711
 -- d022fab6
-[2712] = "Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation.",
+N["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = 2712
 -- 0900784b
-[2713] = "Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live.",
+N["Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live."] = 2713
 -- 383aa43c
-[2714] = "Evaluation-pass native observation cache; nil queries afresh.",
+N["Evaluation-pass native observation cache; nil queries afresh."] = 2714
 -- bf9ecd5c
-[2715] = "Evaluation-pass presence cache only; name, level and provider history remain fresh.",
+N["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = 2715
 -- 2dbf0453
-[2716] = "Exact helper-owned player, party1..party4 or raid1..raid40 token.",
+N["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = 2716
 -- 27bda267
-[2717] = "Exact integral native rune slot from 1 through 6.",
+N["Exact integral native rune slot from 1 through 6."] = 2717
 -- 4fc2d3d1
-[2718] = "Exact nonempty unit token to observe.",
+N["Exact nonempty unit token to observe."] = 2718
 -- c590f11f
-[2719] = "Exact nonempty unit token, passed unchanged.",
+N["Exact nonempty unit token, passed unchanged."] = 2719
 -- fd8065c0
-[2720] = "Exact readable recipient name recorded for this cast.",
+N["Exact readable recipient name recorded for this cast."] = 2720
 -- b05cf3b2
-[2721] = "Exact selected unit token; only the literal player token may select the TBC combo transport.",
+N["Exact selected unit token; only the literal player token may select the TBC combo transport."] = 2721
 -- 19306e82
-[2722] = "Exact selected unit token; player class alone may use the successful longterm cache.",
+N["Exact selected unit token; player class alone may use the successful longterm cache."] = 2722
 -- af7eabaa
-[2723] = "Exact selected unit token; the attacker remains player.",
+N["Exact selected unit token; the attacker remains player."] = 2723
 -- c08ce58e
-[2724] = "Exact unit token checked for existence and passed to the selected metadata API.",
+N["Exact unit token checked for existence and passed to the selected metadata API."] = 2724
 -- eb750dcd
-[2725] = "Exact unit token passed unchanged to UnitExists and, when required, UnitClass.",
+N["Exact unit token passed unchanged to UnitExists and, when required, UnitClass."] = 2725
 -- 3641c328
-[2726] = "Exact unit token used for existence and as the recipient of player hostility and threat queries.",
+N["Exact unit token used for existence and as the recipient of player hostility and threat queries."] = 2726
 -- 616ee642
-[2727] = "Exact unit token whose resource should be observed; this does not redirect player or vehicle units.",
+N["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = 2727
 -- f89b30c5
-[2728] = "Exact unit token whose selected flag should be observed.",
+N["Exact unit token whose selected flag should be observed."] = 2728
 -- bb716e79
-[2729] = "Exact unit token whose selected resource quantity is requested.",
+N["Exact unit token whose selected resource quantity is requested."] = 2729
 -- d07d5f8c
-[2730] = "Exactly current for UnitPower or maximum for UnitPowerMax.",
+N["Exactly current for UnitPower or maximum for UnitPowerMax."] = 2730
 -- 3234a7b8
-[2731] = "Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added.",
+N["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = 2731
 -- ce5b4817
-[2732] = "Exactly current for the player/target combo query or maximum for the player capacity query.",
+N["Exactly current for the player/target combo query or maximum for the player capacity query."] = 2732
 -- 01112dbd
-[2733] = "Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).",
+N["Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit)."] = 2733
 -- 572b3dd2
-[2734] = "Exactly type or school; selects the required subject field without requiring the other.",
+N["Exactly type or school; selects the required subject field without requiring the other."] = 2734
 -- 618e2637
-[2735] = "Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD.",
+N["Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD."] = 2735
 -- 93af5992
-[2736] = "Explicit finite clock snapshot; signed and fractional values remain valid.",
+N["Explicit finite clock snapshot; signed and fractional values remain valid."] = 2736
 -- b6d72a06
-[2737] = "Explicit finite weighting window; no profile fallback or clamp.",
+N["Explicit finite weighting window; no profile fallback or clamp."] = 2737
 -- 8775b9a4
-[2738] = "Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable.",
+N["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = 2738
 -- 593273d6
-[2739] = "Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable.",
+N["Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable."] = 2739
 -- 18dcc116
-[2740] = "Explicit readable finite nonnegative integer power selector, including zero.",
+N["Explicit readable finite nonnegative integer power selector, including zero."] = 2740
 -- 4cb2bf6f
-[2741] = "Explicit readable finite nonnegative integer power selector.",
+N["Explicit readable finite nonnegative integer power selector."] = 2741
 -- cdbf6c56
-[2742] = "Finite ETA including zero, false for known absence/no estimate, or nil when unavailable.",
+N["Finite ETA including zero, false for known absence/no estimate, or nil when unavailable."] = 2742
 -- a4382b09
-[2743] = "Finite final stream age, or nil when unavailable.",
+N["Finite final stream age, or nil when unavailable."] = 2743
 -- 84e16e8d
-[2744] = "Finite minimum native threat status, preserving signed and fractional thresholds.",
+N["Finite minimum native threat status, preserving signed and fractional thresholds."] = 2744
 -- 7e3a2158
-[2745] = "Finite native creature ID, false for known unit absence, or nil when required observations are unavailable.",
+N["Finite native creature ID, false for known unit absence, or nil when required observations are unavailable."] = 2745
 -- 3dd70e07
-[2746] = "Finite native resource quantity, retaining its sign and fractional part; nil when unavailable.",
+N["Finite native resource quantity, retaining its sign and fractional part; nil when unavailable."] = 2746
 -- 3931aa80
-[2747] = "Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations.",
+N["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = 2747
 -- 9cb9f6d2
-[2748] = "Finite nonnegative native health scalar, or nil when unavailable.",
+N["Finite nonnegative native health scalar, or nil when unavailable."] = 2748
 -- aa23a412
-[2749] = "Finite quantity in whole units with its fractional part; nil when unavailable.",
+N["Finite quantity in whole units with its fractional part; nil when unavailable."] = 2749
 -- 29e4a6a2
-[2750] = "Finite signed combined rate, or nil for unavailable calculation.",
+N["Finite signed combined rate, or nil for unavailable calculation."] = 2750
 -- 94c010ef
-[2751] = "First exact unit token, checked for existence before comparison.",
+N["First exact unit token, checked for existence before comparison."] = 2751
 -- 46ec876e
-[2752] = "First table to compare.",
+N["First table to compare."] = 2752
 -- 13e6df72
-[2753] = "Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs.",
+N["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = 2753
 -- b0edcb9b
-[2754] = "Fresh finite native clock value, or nil when unavailable.",
+N["Fresh finite native clock value, or nil when unavailable."] = 2754
 -- b3a296d8
-[2755] = "Fresh readable class filename, or nil when unavailable.",
+N["Fresh readable class filename, or nil when unavailable."] = 2755
 -- 16428e88
-[2756] = "Fresh readable finite clock, or nil when unavailable.",
+N["Fresh readable finite clock, or nil when unavailable."] = 2756
 -- 2078f2c6
-[2757] = "Fresh readable record with active, then name or nameReason, remainingSeconds, durationSeconds, interruptible and spellID. Remaining time and duration are in seconds; remaining time is clamped to zero. An unavailable optional field has its own reason; it does not invalidate an active record.",
+N["Fresh readable record with active, then name or nameReason, remainingSeconds, durationSeconds, interruptible and spellID. Remaining time and duration are in seconds; remaining time is clamped to zero. An unavailable optional field has its own reason; it does not invalidate an active record."] = 2757
 -- 47a58974
-[2758] = "Fresh readable record with exists and, when present, a positive integer level.",
+N["Fresh readable record with exists and, when present, a positive integer level."] = 2758
 -- a25abeed
-[2759] = "Fresh readable record with exists and, when present, current health. Maximum health is included only when requested.",
+N["Fresh readable record with exists and, when present, current health. Maximum health is included only when requested."] = 2759
 -- 21290700
-[2760] = "Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed.",
+N["Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed."] = 2760
 -- 681f8ad6
-[2761] = "Fresh readable record with finite nonnegative speed, or nil when unavailable.",
+N["Fresh readable record with finite nonnegative speed, or nil when unavailable."] = 2761
 -- abf7477d
-[2762] = "Function or global function name to call.",
+N["Function or global function name to call."] = 2762
 -- 9d253f49
-[2763] = "History record with newest-first damage and heals arrays of time/value entries. Falsy history returns only zero without reading the clock.",
+N["History record with newest-first damage and heals arrays of time/value entries. Falsy history returns only zero without reading the clock."] = 2763
 -- 8deb9947
-[2764] = "Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created.",
+N["Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created."] = 2764
 -- b1c195d7
-[2765] = "Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index.",
+N["Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index."] = 2765
 -- db2baa62
-[2766] = "Integral RM statistic selector 1..5, or 6 for effective armor.",
+N["Integral RM statistic selector 1..5, or 6 for effective armor."] = 2766
 -- c406e603
-[2767] = "Iterator yielding a captured key and its current table value, or no values when exhausted.",
+N["Iterator yielding a captured key and its current table value, or no values when exhausted."] = 2767
 -- ce63ac6d
-[2768] = "Key to look up.",
+N["Key to look up."] = 2768
 -- 3638b5da
-[2769] = "Known active count from zero through the RM scan budget, or nil when unavailable.",
+N["Known active count from zero through the RM scan budget, or nil when unavailable."] = 2769
 -- 101d17c0
-[2770] = "Known nonempty role string, false for known absent unit, or nil when unavailable.",
+N["Known nonempty role string, false for known absent unit, or nil when unavailable."] = 2770
 -- 5194c38b
-[2771] = "Known nonempty role string, or nil when unavailable.",
+N["Known nonempty role string, or nil when unavailable."] = 2771
 -- 74c5fd96
-[2772] = "Known unit presence or absence; nil when the required observation is unavailable.",
+N["Known unit presence or absence; nil when the required observation is unavailable."] = 2772
 -- 337a2aa3
-[2773] = "Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy.",
+N["Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy."] = 2773
 -- 289c0861
-[2774] = "Left operand; use numbers for ordering and divisibility.",
+N["Left operand; use numbers for ordering and divisibility."] = 2774
 -- c6b39836
-[2775] = "Literal prefix, including an empty prefix.",
+N["Literal prefix, including an empty prefix."] = 2775
 -- 8bc05b19
-[2776] = "Literal suffix, including an empty suffix.",
+N["Literal suffix, including an empty suffix."] = 2776
 -- 696821ba
-[2777] = "Live selected talent-group argument, forwarded unchanged as one argument after readability checking.",
+N["Live selected talent-group argument, forwarded unchanged as one argument after readability checking."] = 2777
 -- 55c2262c
-[2778] = "Localized complete sentence with named slots and optional explicit predicate alternatives.",
+N["Localized complete sentence with named slots and optional explicit predicate alternatives."] = 2778
 -- ebab9399
-[2779] = "Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text.",
+N["Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text."] = 2779
 -- d27c5ef2
-[2780] = "Lookup key.",
+N["Lookup key."] = 2780
 -- d746509f
 -- %s #1: %s #1: not a placeholder; it is the literal Lua pattern class for whitespace, shown to the user as text, e.g. "default %s for whitespace". Keep %s exactly as written.
-[2781] = "Lua pattern character-class separator, default %s for whitespace.",
+N["Lua pattern character-class separator, default %s for whitespace."] = 2781
 -- 3aeb0664
-[2782] = "Mark the positive wording as the primary named alternative.",
+N["Mark the positive wording as the primary named alternative."] = 2782
 -- 44dec6d3
-[2783] = "Matching key, including a false key, or nil when no match exists.",
+N["Matching key, including a false key, or nil when no match exists."] = 2783
 -- 75ef3e00
-[2784] = "Missing-value display text; omitted uses the localized value placeholder.",
+N["Missing-value display text; omitted uses the localized value placeholder."] = 2784
 -- 15f81670
-[2785] = "Native button with label, disabled state and lease-protected callbacks.",
+N["Native button with label, disabled state and lease-protected callbacks."] = 2785
 -- 8eb10f5d
-[2786] = "Native directional pad with center reset and lease-protected callbacks.",
+N["Native directional pad with center reset and lease-protected callbacks."] = 2786
 -- bb0ac63a
-[2787] = "Native image control with label, texture, disabled state and callbacks.",
+N["Native image control with label, texture, disabled state and callbacks."] = 2787
 -- 43cf01e1
-[2788] = "Native interactive text and image control with measured height and disabled state.",
+N["Native interactive text and image control with measured height and disabled state."] = 2788
 -- 990a6544
-[2789] = "Native one-based integral active-row index within the 256-row RM scan budget.",
+N["Native one-based integral active-row index within the 256-row RM scan budget."] = 2789
 -- 7e3aed01
-[2790] = "Native wrapping text control with font, color and alignment methods.",
+N["Native wrapping text control with font, color and alignment methods."] = 2790
 -- d76c2067
-[2791] = "New shallow filtered table, or nil for nil input.",
+N["New shallow filtered table, or nil for nil input."] = 2791
 -- 50f7bd28
-[2792] = "New table with stringified keys and unchanged values.",
+N["New table with stringified keys and unchanged values."] = 2792
 -- f1052f11
-[2793] = "Newest-first health snapshots containing time, value and max. Falsy input returns only zero without reading the clock.",
+N["Newest-first health snapshots containing time, value and max. Falsy input returns only zero without reading the clock."] = 2793
 -- 7276d3c4
-[2794] = "No return values. The destination array is modified in place.",
+N["No return values. The destination array is modified in place."] = 2794
 -- 69c24773
-[2795] = "No return values. The supplied table is modified in place.",
+N["No return values. The supplied table is modified in place."] = 2795
 -- da87cc23
-[2796] = "Nonempty class filename token to count; no class-token whitelist is applied.",
+N["Nonempty class filename token to count; no class-token whitelist is applied."] = 2796
 -- 3694f9ed
-[2797] = "Nonempty historical school key for resist/immune; unused for runner.",
+N["Nonempty historical school key for resist/immune; unused for runner."] = 2797
 -- 7ee44b6f
-[2798] = "Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable.",
+N["Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable."] = 2798
 -- 93ec5fb4
-[2799] = "Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable.",
+N["Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable."] = 2799
 -- 7663ebe1
-[2800] = "Number of entries visited.",
+N["Number of entries visited."] = 2800
 -- 7f36a397
-[2801] = "Number or string to inspect; other types do not match.",
+N["Number or string to inspect; other types do not match."] = 2801
 -- 4e6ddf17
-[2802] = "Numeric widget supporting slider bounds, percent display and pending-edit validation.",
+N["Numeric widget supporting slider bounds, percent display and pending-edit validation."] = 2802
 -- c8144d6f
-[2803] = "Observation kind: cast or channel. These use different native interruptibility tuple positions.",
+N["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = 2803
 -- 02905e55
-[2804] = "Observation, history, work-limit or arithmetic availability reason.",
+N["Observation, history, work-limit or arithmetic availability reason."] = 2804
 -- 966b23c3
-[2805] = "Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used.",
+N["Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used."] = 2805
 -- 9d79dc0d
-[2806] = "Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added.",
+N["Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added."] = 2806
 -- eb0c20b2
-[2807] = "Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels.",
+N["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = 2807
 -- bc5313d0
-[2808] = "Observe a selected unit role on probe- and restricted-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact.",
+N["Observe a selected unit role on probe- and restricted-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = 2808
 -- 3668cf1e
-[2809] = "Observe a unit casting or channeling on probe- and restricted-policy clients. A known absent unit or a readable inactive result returns active=false. Active records contain name, or nameReason when the name is secret (the unit is still casting), and independently available remainingSeconds, durationSeconds, interruptible and spellID fields, with remainingReason, durationReason, interruptibleReason or spellReason when an optional field is unavailable. Missing, failed or restricted presence observations return nil with a reason.",
+N["Observe a unit casting or channeling on probe- and restricted-policy clients. A known absent unit or a readable inactive result returns active=false. Active records contain name, or nameReason when the name is secret (the unit is still casting), and independently available remainingSeconds, durationSeconds, interruptible and spellID fields, with remainingReason, durationReason, interruptibleReason or spellReason when an optional field is unavailable. Missing, failed or restricted presence observations return nil with a reason."] = 2809
 -- 740dd187
-[2810] = "Observe creature identity from native UnitCreatureType return two on probe- and restricted-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added.",
+N["Observe creature identity from native UnitCreatureType return two on probe- and restricted-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added."] = 2810
 -- 075b71e7
-[2811] = "Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe- and restricted-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.",
+N["Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe- and restricted-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained."] = 2811
 -- 87176204
-[2812] = "Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state.",
+N["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = 2812
 -- 2280ad22
-[2813] = "Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity.",
+N["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = 2813
 -- 9b79981c
-[2814] = "Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum.",
+N["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = 2814
 -- 278a17a4
-[2815] = "Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity.",
+N["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = 2815
 -- 24ad932a
-[2816] = "Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added.",
+N["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = 2816
 -- 641cce1a
-[2817] = "Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states.",
+N["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = 2817
 -- abc3ec81
-[2818] = "Observe one exact native rune slot using GetRuneType with its single index argument. Require a readable finite positive integral type; known future numeric types remain distinct from the selected type, and Death is an exact type rather than a wildcard. Missing, failed, restricted or malformed observations remain unavailable. No class, unit, count or inferred base-rune query is added.",
+N["Observe one exact native rune slot using GetRuneType with its single index argument. Require a readable finite positive integral type; known future numeric types remain distinct from the selected type, and Death is an exact type rather than a wildcard. Missing, failed, restricted or malformed observations remain unavailable. No class, unit, count or inferred base-rune query is added."] = 2818
 -- 87dc4eea
-[2819] = "Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added.",
+N["Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added."] = 2819
 -- 46d51f29
-[2820] = "Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added.",
+N["Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added."] = 2820
 -- 5671d2c8
-[2821] = "Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added.",
+N["Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added."] = 2821
 -- 545656e0
-[2822] = "Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value.",
+N["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = 2822
 -- 254b0aeb
-[2823] = "Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added.",
+N["Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added."] = 2823
 -- 1de1b681
-[2824] = "Observe the effective statistic from native return two only. On probe- and restricted-policy clients, query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit.",
+N["Observe the effective statistic from native return two only. On probe- and restricted-policy clients, query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit."] = 2824
 -- 2cf23a04
-[2825] = "Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache.",
+N["Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache."] = 2825
 -- 95b7963d
-[2826] = "Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact.",
+N["Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact."] = 2826
 -- 79e9c144
-[2827] = "Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure.",
+N["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = 2827
 -- 9570ca02
-[2828] = "Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason.",
+N["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = 2828
 -- 6b0f7980
-[2829] = "Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added.",
+N["Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added."] = 2829
 -- a754c7d3
-[2830] = "Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership.",
+N["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = 2830
 -- d4d5ab66
-[2831] = "Observed class filename string, false for a known absent unit, or nil when unavailable.",
+N["Observed class filename string, false for a known absent unit, or nil when unavailable."] = 2831
 -- 6b236c0f
-[2832] = "Observed membership, or nil when unavailable.",
+N["Observed membership, or nil when unavailable."] = 2832
 -- 7c413887
-[2833] = "On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport.",
+N["On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport."] = 2833
 -- 4b90146b
-[2834] = "On probe- and restricted-policy clients, observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added.",
+N["On probe- and restricted-policy clients, observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added."] = 2834
 -- 7980af82
-[2835] = "One of class, creature or classification; other metadata kinds are unsupported.",
+N["One of class, creature or classification; other metadata kinds are unsupported."] = 2835
 -- f4dbfa56
-[2836] = "One of combat, enemy or pvp; other flag kinds are not supported.",
+N["One of combat, enemy or pvp; other flag kinds are not supported."] = 2836
 -- 6a9d3fdc
-[2837] = "One of stealthed, control or outdoors; no other predicate is invoked.",
+N["One of stealthed, control or outdoors; no other predicate is invoked."] = 2837
 -- e7332ebe
-[2838] = "One rounded numeric result from the original formula.",
+N["One rounded numeric result from the original formula."] = 2838
 -- ffb1aba4
-[2839] = "Optional collection of key values selecting entries; its own keys are ignored.",
+N["Optional collection of key values selecting entries; its own keys are ignored."] = 2839
 -- a4bd9302
-[2840] = "Optional ordering callback called as order(t, leftKey, rightKey).",
+N["Optional ordering callback called as order(t, leftKey, rightKey)."] = 2840
 -- 3a0cafbd
-[2841] = "Optional positive class ID; nil queries the current player class under protection.",
+N["Optional positive class ID; nil queries the current player class under protection."] = 2841
 -- d8e2dd81
-[2842] = "Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query.",
+N["Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query."] = 2842
 -- 8311cae8
-[2843] = "Original non-nil lookup result, or a colored placeholder string.",
+N["Original non-nil lookup result, or a colored placeholder string."] = 2843
 -- 32680ed5
-[2844] = "Original non-nil value, or a colored placeholder string.",
+N["Original non-nil value, or a colored placeholder string."] = 2844
 -- 80842131
-[2845] = "Original rounded-age bucket count, omitted when the result is the lone zero.",
+N["Original rounded-age bucket count, omitted when the result is the lone zero."] = 2845
 -- 169b03f3
-[2846] = "Packaged helper from Conditions/spatial.lua.",
+N["Packaged helper from Conditions/spatial.lua."] = 2846
 -- 18a2dc4d
-[2847] = "Packaged helper from utils.lua.",
+N["Packaged helper from utils.lua."] = 2847
 -- dd1476f6
-[2848] = "Partial current/maximum record, empty when provider absent, or nil when unavailable.",
+N["Partial current/maximum record, empty when provider absent, or nil when unavailable."] = 2848
 -- 52076b9c
-[2849] = "Partial record containing ready or readyReason, start or startReason, and duration or durationReason; nil only when the query itself is unavailable.",
+N["Partial record containing ready or readyReason, start or startReason, and duration or durationReason; nil only when the query itself is unavailable."] = 2849
 -- 7001225d
-[2850] = "Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable.",
+N["Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable."] = 2850
 -- f4bb093a
-[2851] = "Policy or availability reason for a nil movement observation.",
+N["Policy or availability reason for a nil movement observation."] = 2851
 -- 7f7f12b8
-[2852] = "Policy, capability or clock observation availability reason for a nil time.",
+N["Policy, capability or clock observation availability reason for a nil time."] = 2852
 -- 43794680
-[2853] = "Policy, capability or required-observation availability reason.",
+N["Policy, capability or required-observation availability reason."] = 2853
 -- d35012ad
-[2854] = "Policy, query, capability or required row/subject availability reason for a nil record.",
+N["Policy, query, capability or required row/subject availability reason for a nil record."] = 2854
 -- 59cf373b
-[2855] = "Policy, query-validation or availability reason for a nil metadata observation.",
+N["Policy, query-validation or availability reason for a nil metadata observation."] = 2855
 -- 5f9416e7
-[2856] = "Policy, query-validation or availability reason for a nil pet observation.",
+N["Policy, query-validation or availability reason for a nil pet observation."] = 2856
 -- 046d5773
-[2857] = "Policy, query-validation or availability reason for a nil player flag.",
+N["Policy, query-validation or availability reason for a nil player flag."] = 2857
 -- a9338066
-[2858] = "Policy, query-validation or availability reason for a nil quantity.",
+N["Policy, query-validation or availability reason for a nil quantity."] = 2858
 -- bde90d0c
-[2859] = "Policy, query-validation or availability reason for a nil resource observation.",
+N["Policy, query-validation or availability reason for a nil resource observation."] = 2859
 -- cd1d6bc4
-[2860] = "Policy, query-validation or availability reason for a nil threat observation.",
+N["Policy, query-validation or availability reason for a nil threat observation."] = 2860
 -- b963fb2b
-[2861] = "Policy, query-validation or availability reason for a nil unit flag.",
+N["Policy, query-validation or availability reason for a nil unit flag."] = 2861
 -- de3eca9c
-[2862] = "Policy, query-validation or availability reason for nil attackability.",
+N["Policy, query-validation or availability reason for nil attackability."] = 2862
 -- e1be06fc
-[2863] = "Policy, query-validation or identity/selector availability reason for a nil selector.",
+N["Policy, query-validation or identity/selector availability reason for a nil selector."] = 2863
 -- a82bb017
-[2864] = "Policy, query-validation or required observation availability reason for a nil quantity.",
+N["Policy, query-validation or required observation availability reason for a nil quantity."] = 2864
 -- 3422d50e
-[2865] = "Policy, query-validation or required observation availability reason for a nil record.",
+N["Policy, query-validation or required observation availability reason for a nil record."] = 2865
 -- 6d8971dd
-[2866] = "Policy, query-validation or required-observation availability reason for a nil ID.",
+N["Policy, query-validation or required-observation availability reason for a nil ID."] = 2866
 -- abb38505
-[2867] = "Policy, query-validation or required-observation availability reason for a nil match.",
+N["Policy, query-validation or required-observation availability reason for a nil match."] = 2867
 -- 4be03f57
-[2868] = "Policy, slot-validation or required observation availability reason for a nil type.",
+N["Policy, slot-validation or required observation availability reason for a nil type."] = 2868
 -- 07a2f2a4
-[2869] = "Policy, slot-validation, capability or native-call availability reason for a nil record.",
+N["Policy, slot-validation, capability or native-call availability reason for a nil record."] = 2869
 -- 57d4e2a6
-[2870] = "Policy, snapshot, identity or threat observation availability reason.",
+N["Policy, snapshot, identity or threat observation availability reason."] = 2870
 -- 88172c69
-[2871] = "Policy, token-validation or availability reason for a nil identity result.",
+N["Policy, token-validation or availability reason for a nil identity result."] = 2871
 -- 41f7dc66
-[2872] = "Policy, validation or availability reason for a nil health observation.",
+N["Policy, validation or availability reason for a nil health observation."] = 2872
 -- cc67968e
-[2873] = "Policy, validation or availability reason for a nil snapshot.",
+N["Policy, validation or availability reason for a nil snapshot."] = 2873
 -- 84bacc88
-[2874] = "Policy, validation or observation availability reason.",
+N["Policy, validation or observation availability reason."] = 2874
 -- 702b5d1d
-[2875] = "Policy, validation or required observation availability reason.",
+N["Policy, validation or required observation availability reason."] = 2875
 -- e3a0a3ce
-[2876] = "Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references.",
+N["Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references."] = 2876
 -- c7e5f035
-[2877] = "Positive integer level, false for a known absent unit, or nil when unavailable.",
+N["Positive integer level, false for a known absent unit, or nil when unavailable."] = 2877
 -- 2ce665d6
-[2878] = "Positive integer spell ID, not a spell-book slot.",
+N["Positive integer spell ID, not a spell-book slot."] = 2878
 -- 37be242f
-[2879] = "Positive item ID or native-recognized item name/link to classify.",
+N["Positive item ID or native-recognized item name/link to classify."] = 2879
 -- eac23024
-[2880] = "Predicate that validates the proposed spell value.",
+N["Predicate that validates the proposed spell value."] = 2880
 -- b7acadb2
-[2881] = "Present GUID, false for known absence, or nil when unavailable.",
+N["Present GUID, false for known absence, or nil when unavailable."] = 2881
 -- 5825055c
-[2882] = "Provider, validation or observation availability reason.",
+N["Provider, validation or observation availability reason."] = 2882
 -- e78c7309
-[2883] = "Query, policy or observation availability reason.",
+N["Query, policy or observation availability reason."] = 2883
 -- b79b336b
-[2884] = "RM comparison operator identifier; missing labels use the operator placeholder.",
+N["RM comparison operator identifier; missing labels use the operator placeholder."] = 2884
 -- 505c9dde
-[2885] = "RM operator identifier.",
+N["RM operator identifier."] = 2885
 -- a3bcccb3
-[2886] = "Range record with applicable and, when applicable, inRange; nil when unavailable.",
+N["Range record with applicable and, when applicable, inRange; nil when unavailable."] = 2886
 -- a18d0c99
-[2887] = "Read a fresh protected UnitClass player observation for rotation ownership. Consume only the readable nonempty class filename from return two. No existence, level, vehicle, family or combat-policy read is added, and no result persists across calls. Core ownership still validates the class token and character key separately; overridden context providers retain their complete original path.",
+N["Read a fresh protected UnitClass player observation for rotation ownership. Consume only the readable nonempty class filename from return two. No existence, level, vehicle, family or combat-policy read is added, and no result persists across calls. Core ownership still validates the class token and character key separately; overridden context providers retain their complete original path."] = 2887
 -- 97b3a051
-[2888] = "Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied.",
+N["Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied."] = 2888
 -- 3b2652a8
-[2889] = "Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe- and restricted-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added.",
+N["Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe- and restricted-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added."] = 2889
 -- cd858e26
-[2890] = "Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason.",
+N["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = 2890
 -- 3ba4fbdf
-[2891] = "Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification.",
+N["Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification."] = 2891
 -- 3db7feb7
-[2892] = "Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read.",
+N["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read."] = 2892
 -- 4ae0aa42
-[2893] = "Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID, plus equipLoc, the non-localized INVTYPE_* equip location token, when it is readable and nonempty; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason.",
+N["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID, plus equipLoc, the non-localized INVTYPE_* equip location token, when it is readable and nonempty; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = 2893
 -- 5286a3fe
-[2894] = "Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used.",
+N["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = 2894
 -- 5a423c22
-[2895] = "Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily.",
+N["Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily."] = 2895
 -- 9f37d74c
-[2896] = "Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates.",
+N["Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates."] = 2896
 -- 0ab0e9af
-[2897] = "Read optional MobInfo2 historical observations on probe- and restricted-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records.",
+N["Read optional MobInfo2 historical observations on probe- and restricted-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records."] = 2897
 -- a27fc0e3
-[2898] = "Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used.",
+N["Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used."] = 2898
 -- 0a7395cc
-[2899] = "Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason.",
+N["Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason."] = 2899
 -- 4a264ad3
-[2900] = "Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason.",
+N["Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason."] = 2900
 -- 1f3c0a57
-[2901] = "Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason.",
+N["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = 2901
 -- d3d07abb
-[2902] = "Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason.",
+N["Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason."] = 2902
 -- f4bc8da4
-[2903] = "Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable.",
+N["Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable."] = 2903
 -- 597a72b9
-[2904] = "Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell.",
+N["Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell."] = 2904
 -- 89759fd9
-[2905] = "Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason.",
+N["Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason."] = 2905
 -- 41e0213a
-[2906] = "Readability authority for consumed values.",
+N["Readability authority for consumed values."] = 2906
 -- 7f7e5283
-[2907] = "Readable canonical item classification record (itemID, classID, subClassID and optional equipLoc), or nil when unavailable.",
+N["Readable canonical item classification record (itemID, classID, subClassID and optional equipLoc), or nil when unavailable."] = 2907
 -- 708f11a6
-[2908] = "Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata.",
+N["Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata."] = 2908
 -- b7b27422
-[2909] = "Readable charge record, or nil when unavailable.",
+N["Readable charge record, or nil when unavailable."] = 2909
 -- 5274b7b7
-[2910] = "Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable.",
+N["Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable."] = 2910
 -- 041c7f05
-[2911] = "Readable cooldown record, or nil when unavailable.",
+N["Readable cooldown record, or nil when unavailable."] = 2911
 -- c171ab16
-[2912] = "Readable current state, or nil when unavailable.",
+N["Readable current state, or nil when unavailable."] = 2912
 -- ea709ff8
-[2913] = "Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable.",
+N["Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable."] = 2913
 -- 5fe2cef3
-[2914] = "Readable finite positive integral rune type, or nil when unavailable.",
+N["Readable finite positive integral rune type, or nil when unavailable."] = 2914
 -- 243ee644
-[2915] = "Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable.",
+N["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = 2915
 -- 7c9763dd
-[2916] = "Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries.",
+N["Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries."] = 2916
 -- 2ce03ebb
-[2917] = "Readable nonempty unit token or native-recognized name, passed unchanged.",
+N["Readable nonempty unit token or native-recognized name, passed unchanged."] = 2917
 -- 30a14f21
-[2918] = "Readable nonempty unit token to match, unchanged in the native observation.",
+N["Readable nonempty unit token to match, unchanged in the native observation."] = 2918
 -- 4421ce67
-[2919] = "Readable nonempty unit token, passed unchanged as the single native argument.",
+N["Readable nonempty unit token, passed unchanged as the single native argument."] = 2919
 -- 831ff884
-[2920] = "Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable.",
+N["Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable."] = 2920
 -- e5d5a0bd
-[2921] = "Readable selected flag or nil when required data is unavailable.",
+N["Readable selected flag or nil when required data is unavailable."] = 2921
 -- ae99174e
-[2922] = "Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable.",
+N["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = 2922
 -- 15d71981
-[2923] = "Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable.",
+N["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = 2923
 -- c72ce8bc
-[2924] = "Record with exists=false, or exists=true and finite value; nil when unavailable.",
+N["Record with exists=false, or exists=true and finite value; nil when unavailable."] = 2924
 -- bbdbf34c
-[2925] = "Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable.",
+N["Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable."] = 2925
 -- d2443dc7
-[2926] = "Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable.",
+N["Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable."] = 2926
 -- b2c4007b
-[2927] = "Reference input kind, such as Spec_EditBox, used for spell suggestions.",
+N["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = 2927
 -- 27542d97
-[2928] = "Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing.",
+N["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = 2928
 -- e6ab096c
-[2929] = "Remove leading and trailing Lua-pattern whitespace from a string.",
+N["Remove leading and trailing Lua-pattern whitespace from a string."] = 2929
 -- a3fc9f6e
-[2930] = "Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh.",
+N["Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh."] = 2930
 -- 1be3efe7
-[2931] = "Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts.",
+N["Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts."] = 2931
 -- bf87a408
-[2932] = "Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here.",
+N["Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here."] = 2932
 -- b9173e02
-[2933] = "Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity.",
+N["Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity."] = 2933
 -- 718644e5
-[2934] = "Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed.",
+N["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = 2934
 -- 1d0d55d1
-[2935] = "Resolved spell ID, or nil when unavailable.",
+N["Resolved spell ID, or nil when unavailable."] = 2935
 -- 6ffafa71
-[2936] = "Resolver mapping a typed spell name to its ID.",
+N["Resolver mapping a typed spell name to its ID."] = 2936
 -- 09cbb92e
-[2937] = "Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback.",
+N["Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback."] = 2937
 -- d42a9ff5
-[2938] = "Return the first key whose value equals the supplied value during pairs traversal. Nil or false input tables and absent values return nil. Multiple matching keys have no guaranteed selection order.",
+N["Return the first key whose value equals the supplied value during pairs traversal. Nil or false input tables and absent values return nil. Multiple matching keys have no guaranteed selection order."] = 2938
 -- 3f5f3e62
-[2939] = "Right operand; DIVISIBLE requires a nonzero divisor.",
+N["Right operand; DIVISIBLE requires a nonzero divisor."] = 2939
 -- 6734885b
-[2940] = "Rotation Master addon instance (implicit with colon calls).",
+N["Rotation Master addon instance (implicit with colon calls)."] = 2940
 -- 46daa133
-[2941] = "Rotation Master platform adapter (implicit with colon calls).",
+N["Rotation Master platform adapter (implicit with colon calls)."] = 2941
 -- f0f9c415
-[2942] = "Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.",
+N["Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly."] = 2942
 -- 3f1284ef
-[2943] = "Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added.",
+N["Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added."] = 2943
 -- 885bcca4
-[2944] = "Run the historical health-snapshot trend formula using the live profile history window, clock and legacy rounding service. Preserve its maximum-health transitions, early stop at full or zero health, weighting, errors and return counts. An empty array, or snapshots that record no weighted change, return only zero rather than a 0/0 result; this is the legacy algorithm rather than a validated forecast.",
+N["Run the historical health-snapshot trend formula using the live profile history window, clock and legacy rounding service. Preserve its maximum-health transitions, early stop at full or zero health, weighting, errors and return counts. An empty array, or snapshots that record no weighted change, return only zero rather than a 0/0 result; this is the legacy algorithm rather than a validated forecast."] = 2944
 -- 472af904
-[2945] = "Second exact unit token, passed unchanged to UnitIsUnit.",
+N["Second exact unit token, passed unchanged to UnitIsUnit."] = 2945
 -- 89bc8587
-[2946] = "Second table to compare.",
+N["Second table to compare."] = 2946
 -- 181d7eb2
-[2947] = "Selected nonempty unit token, unchanged in native calls.",
+N["Selected nonempty unit token, unchanged in native calls."] = 2947
 -- ad96e1f2
-[2948] = "Selected nonempty unit token, unchanged in native/provider calls.",
+N["Selected nonempty unit token, unchanged in native/provider calls."] = 2948
 -- 0fe63d0e
-[2949] = "Selected nonempty unit token.",
+N["Selected nonempty unit token."] = 2949
 -- 2228fc20
-[2950] = "Selected nonempty unit token; this call alone does not establish presence.",
+N["Selected nonempty unit token; this call alone does not establish presence."] = 2950
 -- f67a8632
-[2951] = "Selected nonempty unit token; unchanged native argument.",
+N["Selected nonempty unit token; unchanged native argument."] = 2951
 -- 9aeb1b04
-[2952] = "Selected unit token forwarded as the only provider argument.",
+N["Selected unit token forwarded as the only provider argument."] = 2952
 -- 91d2e43e
-[2953] = "Selected unit token, unchanged in observations.",
+N["Selected unit token, unchanged in observations."] = 2953
 -- 169d575d
-[2954] = "Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks.",
+N["Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks."] = 2954
 -- c4649a76
-[2955] = "Shared evaluation cache; nil observes directly without a per-pass cache.",
+N["Shared evaluation cache; nil observes directly without a per-pass cache."] = 2955
 -- 32b53cb5
-[2956] = "Source array whose ipairs prefix is inserted without copying nested values.",
+N["Source array whose ipairs prefix is inserted without copying nested values."] = 2956
 -- f292d1c8
-[2957] = "Specialization scope used to resolve spell suggestions.",
+N["Specialization scope used to resolve spell suggestions."] = 2957
 -- 78f0e3c1
-[2958] = "Spell ID or client-recognized spell name whose charges should be read.",
+N["Spell ID or client-recognized spell name whose charges should be read."] = 2958
 -- 3b34f727
-[2959] = "Spell ID or client-recognized spell name whose cooldown should be checked.",
+N["Spell ID or client-recognized spell name whose cooldown should be checked."] = 2959
 -- 2d3ce2ab
-[2960] = "Spell ID or client-recognized spell name whose cooldown should be read.",
+N["Spell ID or client-recognized spell name whose cooldown should be read."] = 2960
 -- 55538bf5
-[2961] = "Spell ID whose range should be checked.",
+N["Spell ID whose range should be checked."] = 2961
 -- b7614a02
-[2962] = "Spell field group containing an action icon, reference input and optional rank control.",
+N["Spell field group containing an action icon, reference input and optional rank control."] = 2962
 -- 31f8edf3
-[2963] = "Spell-book scope: spell, pet or any.",
+N["Spell-book scope: spell, pet or any."] = 2963
 -- 05372e4c
-[2964] = "Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted.",
+N["Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted."] = 2964
 -- db7ca748
-[2965] = "Stored spell ID to resolve.",
+N["Stored spell ID to resolve."] = 2965
 -- 9379f3fe
-[2966] = "Successful observation record with pvpType string or nil; nil record means unavailable.",
+N["Successful observation record with pvpType string or nil; nil record means unavailable."] = 2966
 -- e41b12b3
-[2967] = "Table to copy shallowly, or nil.",
+N["Table to copy shallowly, or nil."] = 2967
 -- 07e8d4d0
-[2968] = "Table to count, or nil for zero.",
+N["Table to count, or nil for zero."] = 2968
 -- 58e2d717
-[2969] = "Table to inspect.",
+N["Table to inspect."] = 2969
 -- 90809a03
-[2970] = "Table to modify, or nil to do nothing.",
+N["Table to modify, or nil to do nothing."] = 2970
 -- ff2b1485
-[2971] = "Table to search; nil or false returns nil.",
+N["Table to search; nil or false returns nil."] = 2971
 -- 259ede57
-[2972] = "Table to traverse; keys must be mutually comparable when no custom ordering is supplied.",
+N["Table to traverse; keys must be mutually comparable when no custom ordering is supplied."] = 2972
 -- f4e4becf
-[2973] = "Table whose keys should be converted to strings.",
+N["Table whose keys should be converted to strings."] = 2973
 -- a59c785e
-[2974] = "Table whose values must be mutually comparable.",
+N["Table whose values must be mutually comparable."] = 2974
 -- 2074ad97
-[2975] = "Target line width, default 72 characters.",
+N["Target line width, default 72 characters."] = 2975
 -- f3db5e09
-[2976] = "Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved.",
+N["Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved."] = 2976
 -- 1f02a40c
-[2977] = "Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved.",
+N["Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved."] = 2977
 -- e2c64484
-[2978] = "Text or number shown after the comparison wording.",
+N["Text or number shown after the comparison wording."] = 2978
 -- 026b376c
-[2979] = "Text or number shown before the comparison wording.",
+N["Text or number shown before the comparison wording."] = 2979
 -- b84e9fc7
-[2980] = "Text to inspect.",
+N["Text to inspect."] = 2980
 -- 95d67c5a
-[2981] = "Text to split.",
+N["Text to split."] = 2981
 -- a672408d
-[2982] = "Text to trim.",
+N["Text to trim."] = 2982
 -- 332756da
-[2983] = "Text to wrap.",
+N["Text to wrap."] = 2983
 -- 33010633
-[2984] = "Text widget supporting label, text, pending-edit and callback methods.",
+N["Text widget supporting label, text, pending-edit and callback methods."] = 2984
 -- f6be6e89
-[2985] = "Text with line breaks inserted at word boundaries.",
+N["Text with line breaks inserted at word boundaries."] = 2985
 -- 6f85c46a
-[2986] = "The selected value, including false or nil.",
+N["The selected value, including false or nil."] = 2986
 -- 6af26a9c
-[2987] = "Transient trusted phrase recognized by condition summary rendering; do not persist it as condition data.",
+N["Transient trusted phrase recognized by condition summary rendering; do not persist it as condition data."] = 2987
 -- 2bae0b3f
-[2988] = "Transient typed predicate used as a named phrase value; do not persist it as condition data.",
+N["Transient typed predicate used as a named phrase value; do not persist it as condition data."] = 2988
 -- 4cf99d8d
-[2989] = "Trimmed text.",
+N["Trimmed text."] = 2989
 -- e0249036
-[2990] = "True also observes maximum health; false or nil reads current health only.",
+N["True also observes maximum health; false or nil reads current health only."] = 2990
 -- 9ba98a90
-[2991] = "True also observes the selected resource maximum; false or nil reads current quantity only.",
+N["True also observes the selected resource maximum; false or nil reads current quantity only."] = 2991
 -- 19d0b8a3
-[2992] = "True also requires the present unit class filename; false reads existence only.",
+N["True also requires the present unit class filename; false reads existence only."] = 2992
 -- ac4e613c
-[2993] = "True checks raid membership only; false or nil checks party or raid.",
+N["True checks raid membership only; false or nil checks party or raid."] = 2993
 -- 9cf4986d
-[2994] = "True checks raid membership only; false or nil checks party then raid.",
+N["True checks raid membership only; false or nil checks party then raid."] = 2994
 -- 4bf4841d
-[2995] = "True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable.",
+N["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = 2995
 -- 72d71c8f
-[2996] = "True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable.",
+N["True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable."] = 2996
 -- 3286d546
-[2997] = "True includes only listed entries; false or nil excludes listed entries.",
+N["True includes only listed entries; false or nil excludes listed entries."] = 2997
 -- b3108208
-[2998] = "True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists.",
+N["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = 2998
 -- 00d420e2
-[2999] = "True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster.",
+N["True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster."] = 2999
 -- 9865f6c6
-[3000] = "True removes listed entries; false or nil preserves only listed entries.",
+N["True removes listed entries; false or nil preserves only listed entries."] = 3000
 -- 9e3983eb
-[3001] = "True requests raid membership; false or nil requests any group membership.",
+N["True requests raid membership; false or nil requests any group membership."] = 3001
 -- d660860e
-[3002] = "True requests the formatted pet name; false or omitted reads presence only.",
+N["True requests the formatted pet name; false or omitted reads presence only."] = 3002
 -- d60dacff
-[3003] = "True selects percentage target and optional fresh provider facts.",
+N["True selects percentage target and optional fresh provider facts."] = 3003
 -- 755a2020
-[3004] = "True skips all access to the damage stream.",
+N["True skips all access to the damage stream."] = 3004
 -- 0ff2c956
-[3005] = "True skips all access to the healing stream.",
+N["True skips all access to the healing stream."] = 3005
 -- e23b6035
-[3006] = "True to require this exact rank; false or nil follows the available rank.",
+N["True to require this exact rank; false or nil follows the available rank."] = 3006
 -- bd4e75af
-[3007] = "True when array[value] is non-nil.",
+N["True when array[value] is non-nil."] = 3007
 -- af070544
-[3008] = "True when every visited entry compares equal in both directions.",
+N["True when every visited entry compares equal in both directions."] = 3008
 -- 38e1fab8
-[3009] = "True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result.",
+N["True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result."] = 3009
 -- 11ccb8e3
-[3010] = "True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable.",
+N["True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable."] = 3010
 -- 1b4d0696
-[3011] = "Truthy skips the damage stream without reading its array.",
+N["Truthy skips the damage stream without reading its array."] = 3011
 -- 09c7ad07
-[3012] = "Truthy skips the heals stream without reading its array.",
+N["Truthy skips the heals stream without reading its array."] = 3012
 -- 1a26aa88
-[3013] = "Unit key-to-display-name map shown in the selector.",
+N["Unit key-to-display-name map shown in the selector."] = 3013
 -- 72d92ef1
-[3014] = "Unit token to compare with the literal player token.",
+N["Unit token to compare with the literal player token."] = 3014
 -- a3b5e12b
-[3015] = "Unit token whose current cast or channel should be observed.",
+N["Unit token whose current cast or channel should be observed."] = 3015
 -- 8978c94b
-[3016] = "Unit token whose current health should be observed.",
+N["Unit token whose current health should be observed."] = 3016
 -- 16f17c11
-[3017] = "Unit token whose raw level should be observed.",
+N["Unit token whose raw level should be observed."] = 3017
 -- bb787bde
-[3018] = "Unit token whose raw level should be resolved.",
+N["Unit token whose raw level should be resolved."] = 3018
 -- 4b2caef5
-[3019] = "Unit token, such as target; nil uses target.",
+N["Unit token, such as target; nil uses target."] = 3019
 -- 8b73a7bd
-[3020] = "Validation or availability reason for a nil result.",
+N["Validation or availability reason for a nil result."] = 3020
 -- 193551e6
-[3021] = "Validation, policy or availability reason for a nil result.",
+N["Validation, policy or availability reason for a nil result."] = 3021
 -- 2b8bf1ec
-[3022] = "Validation, policy or required-fact availability reason for a nil count.",
+N["Validation, policy or required-fact availability reason for a nil count."] = 3022
 -- f4896f62
-[3023] = "Value compared with each table value using Lua equality.",
+N["Value compared with each table value using Lua equality."] = 3023
 -- 682b55a9
-[3024] = "Value passed to the original arithmetic formula.",
+N["Value passed to the original arithmetic formula."] = 3024
 -- 53d931f9
-[3025] = "Value record field to edit; defaults to unit.",
+N["Value record field to edit; defaults to unit."] = 3025
 -- 48c786d6
-[3026] = "Value returned for every other unit.",
+N["Value returned for every other unit."] = 3026
 -- 35f7fff6
-[3027] = "Value returned when unit is player.",
+N["Value returned when unit is player."] = 3027
 -- 59731a4c
-[3028] = "Value to display; false is preserved.",
+N["Value to display; false is preserved."] = 3028
 -- d488fb09
-[3029] = "Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively.",
+N["Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively."] = 3029
 -- b4707a12
-[3030] = "Weighted health-snapshot change from the original total/count formula; zero for falsy input or when no weighted change was recorded.",
+N["Weighted health-snapshot change from the original total/count formula; zero for falsy input or when no weighted change was recorded."] = 3030
 -- c3ba802c
-[3031] = "Weighting window in seconds; nil or false uses the current profile damage_history setting.",
+N["Weighting window in seconds; nil or false uses the current profile damage_history setting."] = 3031
 -- c6cfccd1
-[3032] = "Whether the original floor-equality or exact numeric-spelling predicate matches.",
+N["Whether the original floor-equality or exact numeric-spelling predicate matches."] = 3032
 -- 8c0b7ad7
-[3033] = "Whether the text begins with the exact prefix.",
+N["Whether the text begins with the exact prefix."] = 3033
 -- 37054b01
-[3034] = "Whether the text ends with the exact suffix.",
+N["Whether the text ends with the exact suffix."] = 3034
 -- 2ae8305f
-[3035] = "With restricted-value only: isActive, true while a cooldown (its own or the global one) is running.",
+N["With restricted-value only: isActive, true while a cooldown (its own or the global one) is running."] = 3035
 -- 08c56f26
-[3036] = "With restricted-value only: isEnabled, false while the cooldown is on hold.",
+N["With restricted-value only: isEnabled, false while the cooldown is on hold."] = 3036
 -- 11f0d805
-[3037] = "With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil.",
+N["With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil."] = 3037
 -- 303e2b6b
-[3038] = "Work-limit, data or arithmetic availability reason for nil rate/age.",
+N["Work-limit, data or arithmetic availability reason for nil rate/age."] = 3038
 -- 01efc08d
-[3039] = "Wrap text at whitespace boundaries near a target column count. Long words are retained intact.",
+N["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = 3039
 -- 07e1e312
-[3040] = "mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero.",
+N["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = 3040
 -- c383f3b4
-[3041] = "noheals selects damage only; nodmg selects healing only; other readable values select both.",
+N["noheals selects damage only; nodmg selects healing only; other readable values select both."] = 3041
 -- 02586670
 -- %s #1: %s #1: the name of the game language, e.g. "German"
 -- %s #2: %s #2: the translators' names, separated by commas, e.g. "Anna, Boris"
-[4043] = "Translation (%s): %s",
+N["Translation (%s): %s"] = 4043
 -- 7e412986
 -- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries
 --     that raid mark (skull, cross, square ...). Read as a noun phrase, e.g. "the Skull-marked
 --     unit".
 -- %s #1: the game's name for the raid mark, e.g. "Skull"
-[4045] = "the %s-marked unit",
+N["the %s-marked unit"] = 4045
 -- 1ba884a2
 -- Context: The possessive of the unit choice in the sentences conditions print, e.g. "the
 --     Skull-marked unit's health is below 50%".
 -- %s #1: the game's name for the raid mark, e.g. "Skull"
-[4046] = "the %s-marked unit's",
+N["the %s-marked unit's"] = 4046
 -- 967e14d2
-[4047] = "the highest-priority marked unit",
+N["the highest-priority marked unit"] = 4047
 -- 60b66204
-[4048] = "the highest-priority marked unit's",
+N["the highest-priority marked unit's"] = 4048
 -- 4f69582c
 -- Context: Name of the Raid Mark condition in the condition list: true while a unit carries a raid
 --     target marker (skull, star ...).
-[4049] = "Raid Mark",
+N["Raid Mark"] = 4049
 -- d2e9e36a
 -- Context: Name of the Raid Mark Count condition in the condition list: counts the units that carry
 --     a raid target marker.
-[4050] = "Raid Mark Count",
+N["Raid Mark Count"] = 4050
 -- d7cda0ca
 -- Context: Label of a dropdown in the rotation editor's Set Mark step: which raid target marker to
 --     place (Skull, Cross ...), and the label of the choice in the Raid Mark condition. A noun.
-[4051] = "Mark",
+N["Mark"] = 4051
 -- ae11f7ac
 -- Context: Rotation step type in the step type dropdown of the rotation editor, and the name of the
 --     step while it is not filled in: the step recommends placing a raid target marker on a unit. A
 --     verb phrase.
-[4052] = "Set Mark",
+N["Set Mark"] = 4052
 -- 8b5f5100
 -- Context: Summary of a Set Mark step in the rotation editor and its preview tooltip, e.g. "Set
 --     Skull on your target".
 -- %s #1: the game's name for the raid mark, e.g. "Skull"
 -- %s #2: the unit phrase the condition is about, e.g. "your target" or "the Skull-marked unit"
-[4053] = "Set %s on %s",
+N["Set %s on %s"] = 4053
 -- 0cbd291f
 -- Context: Summary of a Set Mark step that removes the marker, e.g. "Clear the mark on your
 --     target".
 -- %s #1: the unit phrase the condition is about, e.g. "your target" or "the Skull-marked unit"
-[4054] = "Clear the mark on %s",
+N["Clear the mark on %s"] = 4054
 -- f065d37f
 -- Context: Entry of the mark dropdown of a Set Mark step: instead of a mark, remove the marker the
 --     unit carries. A verb phrase.
-[4055] = "Clear the mark",
+N["Clear the mark"] = 4055
 -- 32436d10
-[4056] = "Put on an action bar",
+N["Put on an action bar"] = 4056
 -- eb8dfba9
-[4057] = "Makes a macro that presses this step's hidden button, and picks it up. Drop it on an action bar slot and Rotation Master lights it while this step is advised. In a raid only the leader and assistants can place marks.",
+N["Makes a macro that presses this step's hidden button, and picks it up. Drop it on an action bar slot and Rotation Master lights it while this step is advised. In a raid only the leader and assistants can place marks."] = 4057
 -- 406b0045
 -- Context: Message after pressing Put on an action bar: the macro is now on the mouse cursor and
 --     the player has to drop it on an action bar slot.
 -- %s #1: the name of the macro that was created, e.g. "RM skull/tgt"
-[4058] = "Drag the macro %s to an action bar slot.",
+N["Drag the macro %s to an action bar slot."] = 4058
 -- 45a37997
-[4059] = "Empty your cursor before binding.",
+N["Empty your cursor before binding."] = 4059
 -- 69f3d263
-[4060] = "Your character macros are full, so the macro could not be made.",
+N["Your character macros are full, so the macro could not be made."] = 4060
 -- b9f12561
-[4061] = "Raid marks cannot be placed on this client.",
+N["Raid marks cannot be placed on this client."] = 4061
 -- 90c22683
-[4062] = "The macro could not be made.",
+N["The macro could not be made."] = 4062
 -- 19a35f5c
-[4063] = "Recommends pressing a macro that places the raid mark",
+N["Recommends pressing a macro that places the raid mark"] = 4063
 -- 2dacd008
-[4064] = "uses a Set Mark step this client cannot run",
+N["uses a Set Mark step this client cannot run"] = 4064
 -- bd3e44b0
-[4065] = "uses Set Mark, which only works in the rotation list",
+N["uses Set Mark, which only works in the rotation list"] = 4065
 -- 0d936a8d
-[4066] = "/rm debug marks - Report the raid mark table and what each mark unit resolves to.",
+N["/rm debug marks - Report the raid mark table and what each mark unit resolves to."] = 4066
 -- d607ecc3
 -- Context: Check box on the General settings page, Tooltips section. On: spell and item tooltips
 --     also list rotations that are switched off (grayed, marked disabled). Off: only rotations that
 --     are on are listed.
-[4088] = "Include disabled rotations",
+N["Include disabled rotations"] = 4088
 -- e1738cc8
 -- Context: Check box on the General settings page, Tooltips section, next to 'Include rotation
 --     conditions'. On: a condition that is switched off in the rotation editor is not counted when
 --     tooltips list the rotations that use a spell or item.
-[4089] = "Exclude disabled conditions",
-}
-for id, text in pairs(E) do
+N["Exclude disabled conditions"] = 4089
+
+for text, id in pairs(N) do
     local translation = T[id]
-    if translation then L[text] = translation end
+
+    if translation then
+        L[text] = translation
+    end
+end
+
+-- An untranslated string that doubles its pipes still shows the doubled English.
+for _, key in ipairs(P) do
+    if not T[N[key]] then
+        L[key] = (key:gsub("|", "||"))
+    end
 end

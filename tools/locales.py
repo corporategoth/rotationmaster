@@ -31,13 +31,14 @@ translations, check them, reword English without losing translations, move text 
                                                           where the source reads a string, with context lines like grep
 
 Stable IDs. Every string has a number from tools/locale_registry.json that is never reused and never derived from the
-wording. Locale files are ID -> text (tools/locale_format.py has the layout); each translation records, in a comment
+wording. The English binds text to ID, N["English text"] = 1234, and a language binds the ID to its translation,
+[1234] = "translation" (tools/locale_format.py has the layout); each translation records, in a comment
 above it, the hash of the English it was made from, so a reworded English leaves its translations in place, shown in
 game, and listed by `missing` as stale until a translator confirms (`accept`) or replaces them.
 
 Each generated locale is a plain AceLocale NewLocale(addon_name, "<xx>", false, true): only the game's language
 executes its file, the others return at once. The enUS file of each catalog runs last, joins the language's
-ID -> text table to English -> ID and writes the result into the AceLocale table.
+ID -> translation table to its own text -> ID table N and writes L[text] = translation into the AceLocale table.
 
 Catalogs. The main catalog is Locales/<xx>.lua (listed in locales.xml, loaded with the addon). A text bundle is the
 same set of files inside a load-on-demand add-on Modules/<module>/ (listed in that add-on's TOC), named in

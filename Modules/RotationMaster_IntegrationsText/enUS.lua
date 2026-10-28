@@ -10,316 +10,317 @@ local T = addon.translation
 addon.translation = nil
 addon.localeIsTranslated = T ~= nil
 
--- Read under a key that is not their text: [id] = { key, English }. An English game reads only these.
-local S = {
-}
-for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
-S = nil
-if not T then return end
+if not T then
+    return
+end
 
--- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
-local E = {
+-- Every string read under its own text binds it to its ID: N["English text"] = id. Only a translated game builds
+-- this; the languages bind the ID to the translation, and an untranslated text stays absent (it reads as itself).
+local N = {}
 -- 251b444e
-[3925] = "View and copy full debugger output and errors.",
+N["View and copy full debugger output and errors."] = 3925
 -- 5919ba77
 -- Context: Label above the test-arguments box in the Lua workbench when editing a condition: the
 --     values come from the Test dialog.
-[3926] = "Arguments from Test",
+N["Arguments from Test"] = 3926
 -- d683fe35
 -- Context: Label above the test-arguments box in the Lua workbench query panel: the values passed
 --     to the function when it is run.
-[3927] = "Test arguments",
+N["Test arguments"] = 3927
 -- 77022d7f
 -- Context: Tooltip of the search icon button in the Lua workbench toolbar: opens the Lua API
 --     knowledge base window.
-[3928] = "API knowledge",
+N["API knowledge"] = 3928
 -- 3848b912
-[3929] = "Test arguments must be a Lua table.",
+N["Test arguments must be a Lua table."] = 3929
 -- 2566379c
 -- Context: Section title in the Lua workbench help: explains the Debug button.
-[3930] = "Debug current buffer",
+N["Debug current buffer"] = 3930
 -- a5e13d1f
 -- Context: Section title in the Lua workbench help: explains the terminal shown under the code
 --     while debugging.
-[3931] = "Debugger terminal",
+N["Debugger terminal"] = 3931
 -- 4252a548
-[3932] = "Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback.",
+N["Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback."] = 3932
 -- 45da73fa
 -- Context: Section title in the Lua workbench help: explains the Play button.
-[3933] = "Run current buffer",
+N["Run current buffer"] = 3933
 -- 3803ce92
-[3934] = "The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops.",
+N["The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops."] = 3934
 -- 7e740a9f
-[3935] = "The debugger terminal appears below the code while debugging. When paused, enter expressions or assignments to inspect or change the current variables. The drawer button hides or shows the terminal. Output provides a copyable report of printed output, terminal evaluations and complete errors.",
+N["The debugger terminal appears below the code while debugging. When paused, enter expressions or assignments to inspect or change the current variables. The drawer button hides or shows the terminal. Output provides a copyable report of printed output, terminal evaluations and complete errors."] = 3935
 -- 494c893e
-[3936] = "Preview rendered. Use Output for printed messages.",
+N["Preview rendered. Use Output for printed messages."] = 3936
 -- fe11778c
 -- Context: Qualifier in the Questie version line, shown in parentheses after the version: this
 --     version was checked against Rotation Master's tests (lowercase).
-[3937] = "source-tested",
+N["source-tested"] = 3937
 -- 2d58ec3c
 -- Context: Name of the addon "MobInfo2" shown in the Integrations settings list; stays unchanged.
-[3938] = "MobInfo2",
+N["MobInfo2"] = 3938
 -- 052d7753
 -- Context: Name of the addon "WeakAuras" shown in the Integrations settings list; stays unchanged.
-[3939] = "WeakAuras",
+N["WeakAuras"] = 3939
 -- ca47b1c5
 -- Context: Name of the addon "ForeverAuras" shown in the Integrations settings list; stays
 --     unchanged.
-[3940] = "ForeverAuras",
+N["ForeverAuras"] = 3940
 -- 58a1df11
 -- Context: Name of the addon "EllesmereUI Action Bars" shown in the Integrations settings list;
 --     stays unchanged.
-[3941] = "EllesmereUI Action Bars",
+N["EllesmereUI Action Bars"] = 3941
 -- b7f9153c
-[3942] = "Optional character statistics conditions.",
+N["Optional character statistics conditions."] = 3942
 -- a61c65a6
-[3943] = "Recorded creature history conditions; no current history is queried.",
+N["Recorded creature history conditions; no current history is queried."] = 3943
 -- 815e09d6
-[3944] = "Lua editor integration. Choose an editor in Lua editor options.",
+N["Lua editor integration. Choose an editor in Lua editor options."] = 3944
 -- be7a5831
-[3945] = "Recommendation event bridge; no WeakAuras display is required.",
+N["Recommendation event bridge; no WeakAuras display is required."] = 3945
 -- 3152761d
-[3946] = "Quest update receipts only; native quest progress is not verified.",
+N["Quest update receipts only; native quest progress is not verified."] = 3946
 -- 160184d0
-[3947] = "Optional action-bar mapping and glow support.",
+N["Optional action-bar mapping and glow support."] = 3947
 -- d5beae79
-[3948] = "Optional action-bar glow support.",
+N["Optional action-bar glow support."] = 3948
 -- a9c76027
 -- Context: Name of the boss mod addon "DBM" (Deadly Boss Mods) shown in the Integrations settings
 --     list; stays unchanged.
-[3949] = "DBM",
+N["DBM"] = 3949
 -- 8f02be3c
 -- Context: Name of the addon "Titan Panel" shown in the Integrations settings list; stays
 --     unchanged.
-[3950] = "Titan Panel",
+N["Titan Panel"] = 3950
 -- fde6df5e
-[3951] = "Boss-mod timers and encounter stage for the Boss Mod conditions.",
+N["Boss-mod timers and encounter stage for the Boss Mod conditions."] = 3951
 -- 92243257
-[3952] = "Shows the active rotation from RM's LibDataBroker feed; add Rotation Master from Titan's plugin menu.",
+N["Shows the active rotation from RM's LibDataBroker feed; add Rotation Master from Titan's plugin menu."] = 3952
 -- 31b7aa98
-[3953] = "DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids.",
+N["DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids."] = 3953
 -- 127b024d
-[3954] = "Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases.",
+N["Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases."] = 3954
 -- bb1d53dd
-[3955] = "BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary.",
+N["BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary."] = 3955
 -- ea31c1b6
-[3956] = "Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 3956
 -- c9ae0a09
-[3957] = "Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC.",
+N["Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC."] = 3957
 -- c5f7562c
-[3958] = "Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 3958
 -- 3b4269d3
 -- Context: Group heading in Integrations settings for action bar addons (ElvUI, Bartender4 ...).
-[3959] = "Action bars",
+N["Action bars"] = 3959
 -- 25bd3377
 -- Context: Column heading in the Integrations table: the addon's name.
-[3960] = "Addon",
+N["Addon"] = 3960
 -- c7b26f73
 -- Context: Group heading in Integrations settings for addons that supply data to conditions
 --     (Extended Character Stats, MobInfo2).
-[3961] = "Condition data",
+N["Condition data"] = 3961
 -- a1a45d5e
 -- Context: Group heading in Integrations settings for the Questie integration (reacts to quest
 --     events).
-[3962] = "Quest callbacks",
+N["Quest callbacks"] = 3962
 -- 1c8da9fe
 -- Context: Group heading in Integrations settings for addons that receive Rotation Master's
 --     recommendations (WeakAuras, ForeverAuras).
-[3963] = "Recommendation notifications",
+N["Recommendation notifications"] = 3963
 -- 57fd7a0c
 -- Context: Status text of an addon row in the Integrations table: this addon is the one in use
 --     among alternatives.
-[3964] = "Selected",
+N["Selected"] = 3964
 -- 83189b98
 -- Context: Group heading in Integrations settings for the Lua editor addons that can replace the
 --     built-in editor.
-[3965] = "Lua editor integrations",
+N["Lua editor integrations"] = 3965
 -- d509e493
 -- Context: Name of the built-in choice among the Lua editor integrations: Rotation Master's own
 --     editor, no addon used.
-[3966] = "Native",
+N["Native"] = 3966
 -- 9b41ba20
 -- Context: Status text of an addon row in the Integrations table: the addon is not loaded in the
 --     game.
-[3967] = "Not loaded",
+N["Not loaded"] = 3967
 -- c1658000
 -- Context: Status text of an addon row in the Integrations table: the addon is loaded and Rotation
 --     Master can work with it.
-[3968] = "Supported",
+N["Supported"] = 3968
 -- 920e413c
 -- Context: Column heading in the Integrations table: the integration's status.
-[3969] = "Status",
+N["Status"] = 3969
 -- c243becf
-[3970] = "Built-in Lua editor.",
+N["Built-in Lua editor."] = 3970
 -- 280f5418
-[3971] = "Registered Lua editor provider.",
+N["Registered Lua editor provider."] = 3971
 -- 123d19ad
 -- Context: Provider name in the addon download links dialog: the CurseForge website.
-[3972] = "CurseForge",
+N["CurseForge"] = 3972
 -- 616316df
-[3973] = "Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project.",
+N["Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project."] = 3973
 -- 5d139f48
-[3974] = "Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic.",
+N["Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic."] = 3974
 -- aa2ff251
-[3975] = "Retail, Forever and TBC. Other editions are unverified.",
+N["Retail, Forever and TBC. Other editions are unverified."] = 3975
 -- e5feed28
-[3976] = "Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.",
+N["Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified."] = 3976
 -- 0f8b7255
 -- Context: Provider name in the addon download links dialog: the Tukui website (the ElvUI author's
 --     site).
-[3977] = "Tukui",
+N["Tukui"] = 3977
 -- d8b491c3
-[3978] = "Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic.",
+N["Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic."] = 3978
 -- f508d7d7
-[3979] = "Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition.",
+N["Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition."] = 3979
 -- a2effecc
-[3980] = "Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified.",
+N["Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified."] = 3980
 -- 9d1c6e3d
 -- Context: Provider name in the addon download links dialog: the WoWInterface website.
-[3981] = "WoWInterface",
+N["WoWInterface"] = 3981
 -- a6028afe
-[3982] = "Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork.",
+N["Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork."] = 3982
 -- c4d88692
-[3983] = "Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified.",
+N["Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified."] = 3983
 -- f5548d24
-[3984] = "WoWInterface — Retail full bundle",
+N["WoWInterface — Retail full bundle"] = 3984
 -- 118975ad
-[3985] = "Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates.",
+N["Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates."] = 3985
 -- 28d9535d
-[3986] = "WoWInterface — Classic full bundle",
+N["WoWInterface — Classic full bundle"] = 3986
 -- fc436436
-[3987] = "Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above.",
+N["Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above."] = 3987
 -- c31e7d8a
-[3988] = "Retail, Forever, Classic Era, TBC and Mists Classic.",
+N["Retail, Forever, Classic Era, TBC and Mists Classic."] = 3988
 -- 1011f8d4
-[3989] = "Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified.",
+N["Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified."] = 3989
 -- 85ba1c0f
-[3990] = "Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below.",
+N["Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below."] = 3990
 -- 1d762e31
-[3991] = "CurseForge — TotemTimers Classic",
+N["CurseForge — TotemTimers Classic"] = 3991
 -- c2c950fc
-[3992] = "Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",
+N["Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified."] = 3992
 -- b7e3e4aa
 -- Context: Choice in the popup shown for an integration row that is not the one in use: stop using
 --     the addon (verb). The other choice is Select.
-[3993] = "Disable",
+N["Disable"] = 3993
 -- 71294f63
 -- Context: Provider name in the addon download links dialog: the Wago Addons website.
-[3994] = "Wago Addons",
+N["Wago Addons"] = 3994
 -- cb095b30
-[3995] = "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 3995
 -- f911e414
 -- Context: Provider name in the addon download links dialog: GitHub.
-[3996] = "GitHub",
+N["GitHub"] = 3996
 -- fa52322b
-[3997] = "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+N["Official source repository. Choose the release for your game edition; source availability does not certify integration behavior."] = 3997
 -- 7e99b47e
 -- Context: Provider name in the addon download links dialog: an older WoWInterface page that is no
 --     longer the main source.
-[3998] = "WoWInterface — historical",
+N["WoWInterface — historical"] = 3998
 -- 36486dd2
-[3999] = "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
+N["Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading."] = 3999
 -- 4ad4075b
-[4000] = "Official source — CurseForge SVN",
+N["Official source — CurseForge SVN"] = 4000
 -- 777f245a
-[4001] = "Official project page. Release edition and current patch compatibility are unverified.",
+N["Official project page. Release edition and current patch compatibility are unverified."] = 4001
 -- 45e882f4
-[4002] = "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4002
 -- f76b7810
 -- Context: Provider name in the addon download links dialog: the WowUp Hub website.
-[4003] = "WowUp Hub",
+N["WowUp Hub"] = 4003
 -- b16446d4
 -- Context: Provider name in the addon download links dialog: the addon author's own website.
-[4004] = "Official website",
+N["Official website"] = 4004
 -- 57361449
-[4005] = "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4005
 -- 0d724b67
-[4006] = "Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4006
 -- 7eac4e12
-[4007] = "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4007
 -- a9a99921
 -- Context: Provider name in the addon download links dialog: the WoWAce website.
-[4008] = "WoWAce",
+N["WoWAce"] = 4008
 -- 845e7b22
-[4009] = "CurseForge — LUI Core",
+N["CurseForge — LUI Core"] = 4009
 -- 41be1b90
-[4010] = "CurseForge — LUI Classic fork",
+N["CurseForge — LUI Classic fork"] = 4010
 -- b2991899
-[4011] = "GitHub — LUI Core",
+N["GitHub — LUI Core"] = 4011
 -- e70d871d
-[4012] = "CurseForge — Musca Auras",
+N["CurseForge — Musca Auras"] = 4012
 -- d2fe1b41
-[4013] = "GitHub — Musca Auras",
+N["GitHub — Musca Auras"] = 4013
 -- 6db87668
 -- Context: Provider name in the addon download links dialog: the LittleWigs project page on
 --     CurseForge.
-[4014] = "CurseForge — LittleWigs",
+N["CurseForge — LittleWigs"] = 4014
 -- 64cbe742
-[4015] = "CurseForge — DBM Dungeons",
+N["CurseForge — DBM Dungeons"] = 4015
 -- 9e310fe7
 -- Context: Provider name in the addon download links dialog: the EllesmereUI project page on
 --     CurseForge.
-[4016] = "CurseForge — EllesmereUI",
+N["CurseForge — EllesmereUI"] = 4016
 -- 0ae11d12
-[4017] = "CurseForge — EllesmereUI Action Bars",
+N["CurseForge — EllesmereUI Action Bars"] = 4017
 -- fe2b439f
-[4018] = "Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras.",
+N["Current Classic Era, TBC and Mists Classic releases. The newest Retail file (January 2026) predates Midnight and RM does not list Retail. There is no Forever file; see Musca Auras and ForeverAuras."] = 4018
 -- d37f2305
-[4019] = "WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release.",
+N["WeakAuras ported to Forever by a different team. It installs the WeakAuras folder, so it shares this identity; it is not an official WeakAuras release."] = 4019
 -- 62aecc1a
-[4020] = "Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls.",
+N["Source of the Forever fork. It defines the same WeakAuras.ScanEvents function that RM calls."] = 4020
 -- 3af6c1b3
-[4021] = "Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls.",
+N["Author source repository: a modified WeakAuras for Forever. It still creates the WeakAuras global with ScanEvents, which is all RM calls."] = 4021
 -- f279f1b3
-[4022] = "Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified.",
+N["Release page linked by the author's README. It returned HTTP 403 to automated checks, so its edition and version are unverified."] = 4022
 -- d77b31a8
-[4023] = "A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript).",
+N["A project with this name exists on Wago; its author and editions could not be read (the page requires JavaScript)."] = 4023
 -- d8b9c094
-[4024] = "Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row.",
+N["Legacy AzeriteUI5, deprecated by its authors. The Classic Era and TBC releases are the current ones; AzeriteUI6 is a separate row."] = 4024
 -- 3729d865
-[4025] = "Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0.",
+N["Current AzeriteUI series. Retail, Forever, Classic Era, TBC and Mists Classic. Action buttons come from LibActionButton-1.0."] = 4025
 -- f5421253
-[4026] = "Official project page. This page requires JavaScript; edition metadata was not independently readable.",
+N["Official project page. This page requires JavaScript; edition metadata was not independently readable."] = 4026
 -- 8c9c8997
-[4027] = "Full EllesmereUI suite including the Action Bars module. Retail and Forever.",
+N["Full EllesmereUI suite including the Action Bars module. Retail and Forever."] = 4027
 -- 0553000e
-[4028] = "Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create.",
+N["Standalone Action Bars only. Retail and Forever. Its install folder was not confirmed; RM also recognizes the bars by the frames they create."] = 4028
 -- e70d09da
-[4029] = "Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior.",
+N["Official source repository. The action bars are the EllesmereUIActionBars folder. Source availability does not certify integration behavior."] = 4029
 -- 19905387
-[4030] = "BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection.",
+N["BigWigs plugin for dungeon and delve bosses. Requires BigWigs and feeds the same bars and stages, so the BigWigs row covers it; no separate RM connection."] = 4030
 -- 6bc1ceb1
-[4031] = "DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection.",
+N["DBM module pack for dungeons, delves and events. Requires DBM-Core and registers through it, so the DBM row covers it; no separate RM connection."] = 4031
 -- 828e6463
-[4032] = "GitHub — LUI Classic fork",
+N["GitHub — LUI Classic fork"] = 4032
 -- 905eadc1
-[4033] = "Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified.",
+N["Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified."] = 4033
 -- dc9b5523
-[4034] = "Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4034
 -- 8e4a9f70
-[4035] = "GitHub — TotemTimers Classic",
+N["GitHub — TotemTimers Classic"] = 4035
 -- 59d97e7a
-[4036] = "WoWInterface — TotemTimers Classic",
+N["WoWInterface — TotemTimers Classic"] = 4036
 -- 4557585c
-[4037] = "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+N["Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = 4037
 -- c315f2a3
-[4038] = "Wago Addons — TotemTimers Classic",
+N["Wago Addons — TotemTimers Classic"] = 4038
 -- c8e5998f
 -- Context: Label in the integration status text, followed by a colon and the version number: the
 --     addon's programming interface (API).
-[4039] = "API",
+N["API"] = 4039
 -- 50bb7ec6
 -- Context: Name of the addon "Masque" (button skins) shown in the Integrations settings list; stays
 --     unchanged.
-[4040] = "Masque",
+N["Masque"] = 4040
 -- 17d346ab
-[4041] = "Optional preview-button skins; configure skins with /masque.",
+N["Optional preview-button skins; configure skins with /masque."] = 4041
 -- 35d2f575
 -- Context: Group heading in Integrations settings for the Masque button skin addon.
-[4042] = "Button skins",
-}
-for id, text in pairs(E) do
+N["Button skins"] = 4042
+
+for text, id in pairs(N) do
     local translation = T[id]
-    if translation then L[text] = translation end
+
+    if translation then
+        L[text] = translation
+    end
 end

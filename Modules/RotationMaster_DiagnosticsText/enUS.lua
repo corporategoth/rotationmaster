@@ -10,251 +10,268 @@ local T = addon.translation
 addon.translation = nil
 addon.localeIsTranslated = T ~= nil
 
--- Read under a key that is not their text: [id] = { key, English }. An English game reads only these.
+-- Read under a key that is not their text: [id] = { key, English }. An English game reads these.
 local S = {
--- df7dc1a7
-[3822] = { "Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe", "Usage: /rm perf cpu||runtime||memory [seconds||start||stop||report], or /rm perf probe" },
--- 01fdff8c
-[3826] = { "Usage: /rm perf engine [lean|standard]", "Usage: /rm perf engine [lean||standard]" },
 -- f7cf9a31
 [3833] = { "Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes every 30 seconds and their cost is reported.", "Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes at capture start and completion, with their cost reported." },
--- 8110cef6
-[3881] = { "Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor", "Usage: /rm debug glow [seconds||show], /rm debug talents [views] or /rm debug editor" },
 }
-for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
+for id, entry in pairs(S) do
+    L[entry[1]] = T and T[id] or entry[2]
+end
 S = nil
-if not T then return end
 
--- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
-local E = {
+-- Read under their own text (they are in N below), displayed with every | doubled, as chat needs it.
+local P = { -- keys whose English is the key with every | doubled
+"Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe",
+"Usage: /rm perf engine [lean|standard]",
+"Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor",
+}
+
+if not T then
+    for _, key in ipairs(P) do
+        L[key] = (key:gsub("|", "||"))
+    end
+
+    return
+end
+
+-- Every string read under its own text binds it to its ID: N["English text"] = id. Only a translated game builds
+-- this; the languages bind the ID to the translation, and an untranslated text stays absent (it reads as itself).
+local N = {}
 -- ae7064c5
-[3819] = "CPU capture complete. Use General > CPU report or /rm perf cpu report to view and copy it.",
+N["CPU capture complete. Use General > CPU report or /rm perf cpu report to view and copy it."] = 3819
 -- be403677
-[3820] = "Runtime capture complete. Use General > Runtime report or /rm perf runtime report to view and copy it.",
+N["Runtime capture complete. Use General > Runtime report or /rm perf runtime report to view and copy it."] = 3820
 -- e7cb84d8
-[3821] = "Memory capture complete. Use General > Memory report or /rm perf memory report to view and copy it.",
+N["Memory capture complete. Use General > Memory report or /rm perf memory report to view and copy it."] = 3821
+-- df7dc1a7
+N["Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe"] = 3822
 -- e4d45a37
 -- %s #1: %s #1: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
-[3823] = "Capture stopped. Use /rm perf %s report to view and copy it.",
+N["Capture stopped. Use /rm perf %s report to view and copy it."] = 3823
 -- 6f8012ee
 -- %g #1: %g #1: the capture length in seconds, e.g. 10
 -- %s #2: %s #2: the capture kind used in the command, "cpu", "runtime" or "memory" (shown as-is), e.g. "cpu"
-[3824] = "Capture started for %g seconds. Close configuration, then use /rm perf %s report.",
+N["Capture started for %g seconds. Close configuration, then use /rm perf %s report."] = 3824
 -- e8370df2
 -- %d #1: %d #1: the longest allowed capture length in seconds, e.g. 60
-[3825] = "Choose a duration from 1 to %d seconds.",
+N["Choose a duration from 1 to %d seconds."] = 3825
+-- 01fdff8c
+N["Usage: /rm perf engine [lean|standard]"] = 3826
 -- e670bdea
 -- %s #1: %s #1: the active evaluation engine, "lean" or "standard" (shown as-is), e.g. "lean"
-[3827] = "Evaluation engine: %s",
+N["Evaluation engine: %s"] = 3827
 -- 61606866
 -- %s #1: %s #1: the name of the capture that is running, e.g. "CPU profile"
-[3828] = "%s is running. Stop it or wait for completion.",
+N["%s is running. Stop it or wait for completion."] = 3828
 -- d2b17a1b
 -- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
-[3829] = "No %s report is available. Start a capture first.",
+N["No %s report is available. Start a capture first."] = 3829
 -- ac026dc1
 -- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
-[3830] = "No %s is running.",
+N["No %s is running."] = 3830
 -- 4eaf7cbc
 -- %s #1: %s #1: the name of the capture report, e.g. "CPU profile", "Runtime profile" or "Memory capture" (translated)
 -- %s #2: %s #2: why it is unavailable, a short code (shown as-is) or "Unknown", e.g. "missing-profiler-api"
-[3831] = "%s is unavailable: %s",
+N["%s is unavailable: %s"] = 3831
 -- 6c8f579f
 -- Context: Title of the report window with the memory capture results.
-[3832] = "Memory capture",
+N["Memory capture"] = 3832
 -- a8a89538
 -- %s #1: %s #1: why the memory capture is unavailable, a short code (shown as-is), e.g. "missing-memory-api"
-[3834] = "Memory capture is unavailable: %s",
+N["Memory capture is unavailable: %s"] = 3834
 -- 8a6ec49e
-[3835] = "Memory capture stopped. Open Memory report to copy the observations.",
+N["Memory capture stopped. Open Memory report to copy the observations."] = 3835
 -- bcdd68d0
-[3836] = "Memory capture ended with unavailable observations. Open Memory report for details.",
+N["Memory capture ended with unavailable observations. Open Memory report for details."] = 3836
 -- 7a63fb47
 -- Context: Title of the report window with the runtime profile results.
-[3837] = "Runtime profile",
+N["Runtime profile"] = 3837
 -- 80ef0822
-[3838] = "Runtime capture started for 10 seconds. Close configuration, then open Runtime report.",
+N["Runtime capture started for 10 seconds. Close configuration, then open Runtime report."] = 3838
 -- 0ec2f69a
 -- %s #1: %s #1: why the runtime capture is unavailable, a short code (shown as-is), e.g. "missing-native-profiler"
-[3839] = "Runtime capture is unavailable: %s",
+N["Runtime capture is unavailable: %s"] = 3839
 -- 58dc403d
-[3840] = "Runtime capture ended without complete measurements. Open Runtime report for details.",
+N["Runtime capture ended without complete measurements. Open Runtime report for details."] = 3840
 -- 00457437
 -- Context: Title of the report window with the CPU profile results.
-[3841] = "CPU profile",
+N["CPU profile"] = 3841
 -- abd8722f
 -- Context: Title of the report window and first line of its text, for the test of the game's
 --     built-in profiler (no real measurement).
-[3842] = "Native profiler probe",
+N["Native profiler probe"] = 3842
 -- a704d2a5
 -- Context: Line label in the native profiler probe report, followed by a colon and a result: what
 --     the test call received as arguments.
-[3843] = "Callback arguments",
+N["Callback arguments"] = 3843
 -- a19d7778
 -- Context: Line label in the native profiler probe report, followed by a colon and a result: how
 --     many times the test callback was called.
-[3844] = "Callback calls",
+N["Callback calls"] = 3844
 -- fb275c4f
 -- Context: Line label in the native profiler probe report, followed by a colon and a result: what
 --     the test callback returned.
-[3845] = "Callback returns",
+N["Callback returns"] = 3845
 -- ec06c9e1
-[3846] = "Capability probe only; no evaluator or gameplay was measured.",
+N["Capability probe only; no evaluator or gameplay was measured."] = 3846
 -- ae7e85ec
-[3847] = "Native profiler probe is already running.",
+N["Native profiler probe is already running."] = 3847
 -- b9525d7a
-[3848] = "Native profiler probe is unavailable while CPU capture is running.",
+N["Native profiler probe is unavailable while CPU capture is running."] = 3848
 -- 5f85500c
-[3849] = "Native profiler probe is unavailable.",
+N["Native profiler probe is unavailable."] = 3849
 -- 0674f152
 -- Context: Result value in the native profiler probe report (lowercase): the call finished
 --     normally.
-[3850] = "call completed",
+N["call completed"] = 3850
 -- fa259a8b
 -- Context: Result value in the native profiler probe report (lowercase): the call raised an error.
-[3851] = "call failed",
+N["call failed"] = 3851
 -- 60ec9bb7
 -- Context: Result value in the native profiler probe report (lowercase): the result had an
 --     unexpected shape.
-[3852] = "malformed",
+N["malformed"] = 3852
 -- 611f3162
 -- Context: Result value in the native profiler probe report (lowercase): the callback was called
 --     twice or more.
-[3853] = "more than one",
+N["more than one"] = 3853
 -- b4a98437
 -- Context: Result value in the native profiler probe report (lowercase): this step was not carried
 --     out.
-[3854] = "not run",
+N["not run"] = 3854
 -- d2aaba53
 -- Context: Result value in the native profiler probe report (lowercase): the measurement is
 --     unavailable because the game state changed.
-[3855] = "unavailable (context changed)",
+N["unavailable (context changed)"] = 3855
 -- 0e625cbe
-[3856] = "CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting.",
+N["CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting."] = 3856
 -- 4146643f
-[3857] = "CPU capture is running. Open the report after it finishes.",
+N["CPU capture is running. Open the report after it finishes."] = 3857
 -- 924669e6
-[3858] = "No CPU capture is available. Start a capture first.",
+N["No CPU capture is available. Start a capture first."] = 3858
 -- 201fb573
-[3859] = "No CPU capture is running.",
+N["No CPU capture is running."] = 3859
 -- 8d375d61
 -- %s #1: %s #1: why the CPU capture is unavailable, a short code (shown as-is), e.g. "script-profile-disabled"
-[3860] = "CPU capture is unavailable: %s",
+N["CPU capture is unavailable: %s"] = 3860
 -- c0afc6b0
-[3861] = "CPU capture started for 10 seconds. Close configuration to measure normal gameplay, then open CPU report.",
+N["CPU capture started for 10 seconds. Close configuration to measure normal gameplay, then open CPU report."] = 3861
 -- 7412d763
-[3862] = "CPU capture canceled.",
+N["CPU capture canceled."] = 3862
 -- 71629344
-[3863] = "CPU capture could not produce valid measurements. Open CPU report for details.",
+N["CPU capture could not produce valid measurements. Open CPU report for details."] = 3863
 -- 6996067a
 -- Context: Title of the window that lists Rotation Master's recorded Lua errors.
-[3864] = "Rotation Master errors",
+N["Rotation Master errors"] = 3864
 -- 9a85b2b4
-[3865] = "Review the report, then select Copy and press Ctrl+C. Reload after fixing a paused callback.",
+N["Review the report, then select Copy and press Ctrl+C. Reload after fixing a paused callback."] = 3865
 -- 2c882357
 -- Context: Button in the errors window: shows the earlier error in the list.
-[3866] = "Previous error",
+N["Previous error"] = 3866
 -- 2da271a8
 -- Context: Button in the errors window: shows the next error in the list.
-[3867] = "Next error",
+N["Next error"] = 3867
 -- 6396d0fc
 -- Context: Button in the errors window: empties the list of Rotation Master's recorded errors. 'RM'
 --     is short for Rotation Master.
-[3868] = "Clear RM errors",
+N["Clear RM errors"] = 3868
 -- 2956e06a
 -- Context: Label of the drag handle in the corner of the errors window: drag to change the window
 --     size.
-[3869] = "Resize",
+N["Resize"] = 3869
 -- 4d7325d3
-[3870] = "No Rotation Master errors have been captured this session.",
+N["No Rotation Master errors have been captured this session."] = 3870
 -- 8c505cd0
-[3871] = "Use redacted error text",
+N["Use redacted error text"] = 3871
 -- 2a1ab28d
-[3872] = "Include original text (may contain names or code)",
+N["Include original text (may contain names or code)"] = 3872
 -- c29de79e
 -- Context: Title of the report window with the glow diagnostic results.
-[3873] = "Glow diagnostic",
+N["Glow diagnostic"] = 3873
 -- 41e36336
-[3874] = "Glow diagnostic saved.",
+N["Glow diagnostic saved."] = 3874
 -- 5691cd23
 -- %d #1: %d #1: how many seconds the glow diagnostic keeps watching, e.g. 10
-[3875] = "Glow diagnostic saved. Watching for %d seconds.",
+N["Glow diagnostic saved. Watching for %d seconds."] = 3875
 -- 820421f2
-[3876] = "Glow watch finished. Run /rm debug glow show to view it.",
+N["Glow watch finished. Run /rm debug glow show to view it."] = 3876
 -- 6eb70331
 -- %s #1: %s #1: where the glow stops, a developer sentence that stays in English, e.g. "the glow was never requested for Fireball"
-[3877] = "Glow stops at: %s",
+N["Glow stops at: %s"] = 3877
 -- d918e458
-[3878] = "No glow diagnostic is saved yet. Run /rm debug glow.",
+N["No glow diagnostic is saved yet. Run /rm debug glow."] = 3878
 -- 5e41a846
 -- Context: Title of the report window with the talent diagnostic results.
-[3879] = "Talent diagnostic",
+N["Talent diagnostic"] = 3879
 -- c728736f
-[3880] = "Talent diagnostic saved.",
+N["Talent diagnostic saved."] = 3880
+-- 8110cef6
+N["Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor"] = 3881
 -- 268f14bb
-[3882] = "Diagnostics",
+N["Diagnostics"] = 3882
 -- bdd4e1fa
-[3883] = "Advice: not available; presentation: not available; ordinary-cast proof: not available.",
+N["Advice: not available; presentation: not available; ordinary-cast proof: not available."] = 3883
 -- 66a2de57
 -- %d #1: %d #1: the number of cast attempts recorded, e.g. 42
 -- %d #2: %d #2: the number of cast results recorded, e.g. 40
-[3884] = "Attempts: %d; results: %d",
+N["Attempts: %d; results: %d"] = 3884
 -- 78937d68
-[3885] = "Capture: unavailable",
+N["Capture: unavailable"] = 3885
 -- a9079be6
 -- %s #1: %s #1: why the capture ended, a short code (shown as-is), e.g. "stopped"
-[3886] = "Capture: complete; reason=%s",
+N["Capture: complete; reason=%s"] = 3886
 -- f9bf7230
 -- %s #1: %s #1: why the capture is unavailable, a short code (shown as-is), e.g. "disabled"
-[3887] = "Capture: unavailable; reason=%s",
+N["Capture: unavailable; reason=%s"] = 3887
 -- 47972aa9
-[3888] = "Cast capture cleared.",
+N["Cast capture cleared."] = 3888
 -- d1701aa8
-[3889] = "Cast capture is running. Stop it or wait before opening Cast report.",
+N["Cast capture is running. Stop it or wait before opening Cast report."] = 3889
 -- 905a4552
-[3890] = "Cast capture is unavailable.",
+N["Cast capture is unavailable."] = 3890
 -- bfa270b9
-[3891] = "Cast capture started for 30 seconds. Configuration can be closed during capture.",
+N["Cast capture started for 30 seconds. Configuration can be closed during capture."] = 3891
 -- 54bfe5ac
-[3892] = "Cast capture status: idle",
+N["Cast capture status: idle"] = 3892
 -- 2c08a3e0
-[3893] = "Cast capture status: running",
+N["Cast capture status: running"] = 3893
 -- 1dbab8ec
-[3894] = "Cast capture stopped. Open Cast report to inspect receipts.",
+N["Cast capture stopped. Open Cast report to inspect receipts."] = 3894
 -- 5963707b
 -- Context: Title of the report window with the spell cast receipt capture results.
-[3895] = "Cast receipt report",
+N["Cast receipt report"] = 3895
 -- ef1fabff
 -- %s #1: %s #1: the game client family, e.g. "retail"
 -- %s #2: %s #2: the game version, e.g. "11.0.2"
 -- %s #3: %s #3: the game build number, e.g. "56313"
 -- %s #4: %s #4: the interface (TOC) number, e.g. "110002"
 -- %s #5: %s #5: the game locale code, e.g. "enUS"
-[3896] = "Client: family=%s version=%s build=%s interface=%s locale=%s",
+N["Client: family=%s version=%s build=%s interface=%s locale=%s"] = 3896
 -- 9cf1f5cb
-[3897] = "Counts describe receipt rows, not gameplay opportunities.",
+N["Counts describe receipt rows, not gameplay opportunities."] = 3897
 -- cdda6d4b
-[3898] = "Damage: unavailable (no damage observations or encounter denominator).",
+N["Damage: unavailable (no damage observations or encounter denominator)."] = 3898
 -- 7a8de1c2
 -- %s #1: %s #1: the length of the capture in seconds, e.g. 10.5
-[3899] = "Duration: %s seconds",
+N["Duration: %s seconds"] = 3899
 -- eaab562c
-[3900] = "Healer: unavailable (no effective healing, absorbs or mana observations).",
+N["Healer: unavailable (no effective healing, absorbs or mana observations)."] = 3900
 -- 6f5d4cf6
-[3901] = "Native acceptance: unverified",
+N["Native acceptance: unverified"] = 3901
 -- f0c99d53
-[3902] = "No cast capture is running.",
+N["No cast capture is running."] = 3902
 -- 82be959a
-[3903] = "No cast capture report is available. Start a capture first.",
+N["No cast capture report is available. Start a capture first."] = 3903
 -- 1821370f
-[3904] = "Producer: UNIT_SPELLCAST adapter",
+N["Producer: UNIT_SPELLCAST adapter"] = 3904
 -- 6e486b5a
 -- %d #1: %d #1: the number of records captured, e.g. 120
-[3905] = "Records: %d",
+N["Records: %d"] = 3905
 -- a46835a4
 -- %d #1: %d #1: the number of channelled-spell receipts, e.g. 3
 -- %d #2: %d #2: the number of receipts of unmodelled kinds, e.g. 0
-[3906] = "Receipt kinds: channel=%d unmodeled=%d",
+N["Receipt kinds: channel=%d unmodeled=%d"] = 3906
 -- 7ffcd926
 -- %d #1: %d #1: receipts of the kind "sent", e.g. 40
 -- %d #2: %d #2: receipts of the kind "start", e.g. 40
@@ -262,20 +279,20 @@ local E = {
 -- %d #4: %d #4: receipts of the kind "failed", e.g. 1
 -- %d #5: %d #5: receipts of the kind "interrupted", e.g. 1
 -- %d #6: %d #6: receipts of the kind "stop", e.g. 0
-[3907] = "Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d",
+N["Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d"] = 3907
 -- 672aa08d
-[3908] = "Rotation Master cast receipt diagnostics",
+N["Rotation Master cast receipt diagnostics"] = 3908
 -- 7c09baa2
-[3909] = "Rotation attribution: unavailable; capture seconds are not encounter seconds.",
+N["Rotation attribution: unavailable; capture seconds are not encounter seconds."] = 3909
 -- 19f6c4f8
 -- %d #1: %d #1: how many rows are left out of the report, e.g. 25
-[3910] = "Rows omitted: %d",
+N["Rows omitted: %d"] = 3910
 -- bed3540d
-[3911] = "Scoring: unavailable",
+N["Scoring: unavailable"] = 3911
 -- 2e738179
-[3912] = "Tank: unavailable (no threat, mitigation or survival observations).",
+N["Tank: unavailable (no threat, mitigation or survival observations)."] = 3912
 -- 16603b59
-[3913] = "Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.",
+N["Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available."] = 3913
 -- c7dc0ff3
 -- %d #1: %d #1: number of "advice" rows, e.g. 40
 -- %d #2: %d #2: number of "presentation" rows, e.g. 40
@@ -283,36 +300,46 @@ local E = {
 -- %d #4: %d #4: number of "hidden" rows, e.g. 10
 -- %d #5: %d #5: number of "unknown" rows, e.g. 0
 -- %d #6: %d #6: number of "retired" rows, e.g. 0
-[3914] = "Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).",
+N["Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities)."] = 3914
 -- c419fb3c
-[3915] = "Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.",
+N["Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering."] = 3915
 -- fe67ade9
 -- %s #1: %s #1: number of START rows observed, e.g. 40 (or "?" when unknown)
 -- %s #2: %s #2: number of rows that matched, e.g. 38
 -- %s #3: %s #3: number of rows that mismatched, e.g. 1
 -- %s #4: %s #4: number of rows excluded, e.g. 1
 -- %s #5: %s #5: number of rows with unknown status, e.g. 0
-[3916] = "START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).",
+N["START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof)."] = 3916
 -- 159c3cdb
-[3917] = "START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.",
+N["START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring."] = 3917
 -- d16fd756
-[3918] = "Timeline watch finished. Run /rm debug timeline show to view it.",
+N["Timeline watch finished. Run /rm debug timeline show to view it."] = 3918
 -- 4abea1a9
-[3919] = "No timeline watch is running.",
+N["No timeline watch is running."] = 3919
 -- 6b48ba81
-[3920] = "Usage: /rm debug timeline [seconds|show|stop]",
+N["Usage: /rm debug timeline [seconds|show|stop]"] = 3920
 -- 50b2861c
 -- %d #1: %d #1: how many seconds the timeline diagnostic keeps watching, e.g. 10
-[3921] = "Timeline diagnostic saved. Watching for %d seconds.",
+N["Timeline diagnostic saved. Watching for %d seconds."] = 3921
 -- 8c8e2d53
-[3922] = "Timeline diagnostic saved.",
+N["Timeline diagnostic saved."] = 3922
 -- cfb45a68
 -- Context: Title of the report window with the timeline diagnostic results.
-[3923] = "Timeline diagnostic",
+N["Timeline diagnostic"] = 3923
 -- 3b2ae94e
-[3924] = "No timeline diagnostic is saved yet. Run /rm debug timeline.",
-}
-for id, text in pairs(E) do
+N["No timeline diagnostic is saved yet. Run /rm debug timeline."] = 3924
+
+for text, id in pairs(N) do
     local translation = T[id]
-    if translation then L[text] = translation end
+
+    if translation then
+        L[text] = translation
+    end
+end
+
+-- An untranslated string that doubles its pipes still shows the doubled English.
+for _, key in ipairs(P) do
+    if not T[N[key]] then
+        L[key] = (key:gsub("|", "||"))
+    end
 end
