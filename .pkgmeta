@@ -33,6 +33,7 @@ ignore:
   - .gitattributes
   - README.md
   - CONTRIBUTING.md
+  - CHANGELOG.md
   - Modules/README.md
   - Data/talent_trees.json
   - Assets/Conditions/source

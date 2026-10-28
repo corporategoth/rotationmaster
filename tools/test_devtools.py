@@ -290,6 +290,14 @@ class Lean(unittest.TestCase):
         self.assertEqual(len(problems), len(derived), problems[:3])
         self.assertTrue(all('no loaded code names' in p or 'no TOC or XML loads' in p for p in problems))
 
+    def test_the_release_notes_go_to_the_sites_not_into_the_package(self):
+        notes = temp_dir(self) / 'CHANGELOG.md'
+        notes.write_text('# Notes\n')
+        self.assertIn('CHANGELOG.md', self.meta['ignore'])
+        self.assertNotIn('RotationMaster/CHANGELOG.md', P.build_files(ROOT, self.meta, self.info, changelog=notes))
+        kept = dict(self.meta, ignore=[item for item in self.meta['ignore'] if item != 'CHANGELOG.md'])
+        self.assertIn('RotationMaster/CHANGELOG.md', P.build_files(ROOT, kept, self.info, changelog=notes))
+
     def test_a_stray_file_in_the_package_fails_the_check(self):
         layout = dict(self.layout, **{'RotationMaster/Assets/Stray/notes.json': b'{}'})
         problems = P.check_layout(layout, self.meta, '2.0.0-beta.1', ROOT)

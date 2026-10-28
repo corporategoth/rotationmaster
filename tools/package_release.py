@@ -237,7 +237,8 @@ def build_files(root, meta, info, changelog=None):
         if relative.endswith(tuple(p[1:] for p in TEXT_PATTERNS)):
             data = process_text(relative, data, info, relative in project)
         files[relative] = data
-    if meta['changelog']:
+    # The changelog goes to the sites from the checkout; it is in the package only if .pkgmeta does not ignore it.
+    if meta['changelog'] and not any(fnmatch.fnmatchcase(meta['changelog'], pattern) for pattern in patterns):
         source = Path(changelog) if changelog else root / meta['changelog']
         if source.is_file():
             files[meta['changelog']] = process_text(meta['changelog'], source.read_bytes(), info, False)

@@ -60,7 +60,7 @@ def release_metadata():
     # The packager already skips every dotfile; naming the development trees here keeps the intent in the file and lets
     # tools/package_release.py --check state it as a rule.
     ignored = ['tests', 'tools', 'docs', '.claude', '.gitea', '.github', '.pre-commit-config.yaml', '.gitattributes',
-               'README.md', 'CONTRIBUTING.md',
+               'README.md', 'CONTRIBUTING.md', 'CHANGELOG.md',
                'Modules/README.md',
                'Data/talent_trees.json',
                'Assets/Conditions/source', 'Assets/Conditions/qa',
