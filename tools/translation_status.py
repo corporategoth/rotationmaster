@@ -12,7 +12,7 @@ A wrapper over tools/locales.py (which owns reading, checking and building local
 Columns:
   complete    translated from the current English (identical-to-English entries count when they are names)
   missing     the key has no entry; the game shows English
-  stale       translated from English that has since changed (`-- en:` comment differs)
+  stale       translated from English that has since changed (the hash in the English comment above it differs)
   same        equal to the English and not a name: probably never translated
   invalid     placeholders, color codes or format specifiers differ from the English (locales.py check fails)
   orphans     entries whose key left enUS

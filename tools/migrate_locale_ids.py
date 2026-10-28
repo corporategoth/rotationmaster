@@ -158,10 +158,12 @@ def prove(old_root, scratch):
     old_root, scratch = Path(old_root), Path(scratch)
     scratch.mkdir(parents=True, exist_ok=True)
     keys = scratch / 'keys.txt'
-    saved = L.ROOT
-    L.ROOT = ROOT
-    all_keys = [e.key for e in L.english_entries()]
-    L.ROOT = saved
+    # The keys of the OLD tree: strings added since the conversion have no old behaviour to compare with.
+    all_keys, newer = [], 0
+    for catalog in L.catalogs():
+        relative = catalog.english_path.relative_to(ROOT)
+        all_keys.extend(key for key, _ in run_reader(old_root / relative, old_root)['entries'])
+    newer = len(L.english_entries()) - len(all_keys)
     keys.write_text('\n'.join(k.encode('utf-8').hex() for k in all_keys) + '\n')
     report = {}
     mismatches = 0
@@ -183,7 +185,8 @@ def prove(old_root, scratch):
     for (interpreter, client), (count, bad, old_stats, new_stats) in report.items():
         print(f'{interpreter:7} {client}: {count} keys compared, {bad} differ; memory KB at start old {old_stats["boot"]} new {new_stats["boot"]}, '
               f'after reading everything old {old_stats["all"]} new {new_stats["all"]}')
-    print(f'proof: {len(all_keys)} keys x {len(L.LOCALES) + 1} clients x 2 interpreters, {mismatches} mismatch(es)')
+    print(f'proof: {len(all_keys)} keys x {len(L.LOCALES) + 1} clients x 2 interpreters, {mismatches} mismatch(es)'
+          + (f' ({newer} string(s) added since the conversion are not compared)' if newer else ''))
     return mismatches
 
 
