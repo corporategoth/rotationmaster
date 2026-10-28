@@ -8987,6 +8987,4 @@ addon.translation = {
 [3041] = "noheals sélectionne uniquement les dégâts ; nodmg uniquement les soins ; toute autre valeur lisible sélectionne les deux.",
 -- 02586670 English: Translation (%s): %s
 [4043] = "Traduction (%s) : %s",
--- ba118bf7 English: English
-[4044] = "Français",
 }

@@ -8987,6 +8987,4 @@ addon.translation = {
 [3041] = "noheals 只選擇傷害；nodmg 只選擇治療；其他可讀的值會同時選擇兩者。",
 -- 02586670 English: Translation (%s): %s
 [4043] = "翻譯（%s）：%s",
--- ba118bf7 English: English
-[4044] = "繁體中文",
 }

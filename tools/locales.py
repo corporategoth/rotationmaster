@@ -8,7 +8,9 @@ translations, check them, reword English without losing translations, move text 
                                                           merge {id: text} into the locale files deDE owns
   python3 tools/locales.py accept deDE [ID ...]           mark stale translations as still right for the current English
   python3 tools/locales.py credit deDE --translator "Name" [--strings N] [--human|--ai]   credit without writing strings
-  python3 tools/locales.py check [--complete]             validate every locale file against its English
+  python3 tools/locales.py check [--complete] [--require-notes] [--require-context]
+                                                          validate every locale file against its English (IDs, hashes, placeholders,
+                                                          headers, notes); the switches also fail for strings lacking notes/context
   python3 tools/locales.py rebuild                        rewrite every file in canonical form (headers, order, TOCs, index)
   python3 tools/locales.py bundles                        list the catalogs: the main one and each text bundle
   python3 tools/locales.py move BUNDLE KEYS.json          move the keys in KEYS.json (a JSON list) between catalogs, with their IDs
@@ -19,6 +21,12 @@ translations, check them, reword English without losing translations, move text 
   python3 tools/locales.py add KEY [TEXT] [--catalog NAME]  add a string (TEXT omitted: the key is its own English); new ID
   python3 tools/locales.py remove KEY ...                 delete strings everywhere and retire their IDs
   python3 tools/locales.py sync [--dry-run]               add every literal L["..."] the code reads and no catalog holds
+  python3 tools/locales.py notes todo [--only notes|context] [--context-words N]
+                                                          strings with format tokens and no notes, short strings without context,
+                                                          with the code that reads them
+  python3 tools/locales.py notes set notes.json           merge {id or English: [notes] | {"notes": [...], "context": "..."}}
+  python3 tools/locales.py where ID|English|substring [-B N] [-A N] [-C N] [--json] [--tests]
+                                                          where the source reads a string, with context lines like grep
 
 Stable IDs. Every string has a number from tools/locale_registry.json that is never reused and never derived from the
 wording. Locale files are ID -> text (tools/locale_format.py has the layout); each translation records, in a comment

@@ -8987,6 +8987,4 @@ addon.translation = {
 [3041] = "noheals는 피해만, nodmg는 치유만 선택하며, 그 외 읽을 수 있는 값은 둘 다 선택합니다.",
 -- 02586670 English: Translation (%s): %s
 [4043] = "번역 (%s): %s",
--- ba118bf7 English: English
-[4044] = "한국어",
 }

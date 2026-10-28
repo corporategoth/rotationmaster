@@ -1352,8 +1352,6 @@ local S = {
 [2505] = { "Default.MoP.Warrior.Unspecialized.Name", "Unspecialized" },
 -- 9e4fdb28
 [2506] = { "Default.MoP.Warrior.Unspecialized.Description", "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance." },
--- ba118bf7
-[4044] = { "Locale.LanguageName", "English" },
 }
 for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
 S = nil

@@ -208,6 +208,19 @@ function addon:GetLocaleTranslators()
     return names
 end
 
+-- Each language's name in that language (an autonym, as a language picker shows it): the same text whatever language the
+-- interface is in, so it is not a translated string. Keyed by the game locale.
+local LANGUAGE_NAMES = {
+    deDE = "Deutsch", esES = "Español", esMX = "Español (México)", frFR = "Français", itIT = "Italiano",
+    koKR = "한국어", ptBR = "Português (Brasil)", ruRU = "Русский", zhCN = "简体中文", zhTW = "繁體中文",
+}
+
+-- The name of the game's language in that language, or its locale code for one this addon has no name for.
+local function languageName()
+    local code = rawget(_G, "GAME_LOCALE") or (type(GetLocale) == "function" and GetLocale()) or ""
+    return LANGUAGE_NAMES[code] or code
+end
+
 --- The About-page line crediting the human translators of the game's language, or nil when there are none (always for
 --- English, and while only an AI has translated). `limit` caps the list's length in bytes: whole names are kept and
 --- the rest is replaced by an ellipsis, so a long list can never run out of the room the page gives it.
@@ -227,5 +240,5 @@ function addon:GetTranslationCredit(limit)
         list = nextList
     end
 
-    return string.format(L["Translation (%s): %s"], L["Locale.LanguageName"], list)
+    return string.format(L["Translation (%s): %s"], languageName(), list)
 end

@@ -53,25 +53,25 @@ end)
 local function withTranslators(names,languageName)
     local f,registered,frames=fixture();local a=f.addon
     local L=f.libraries['AceLocale-3.0']:GetLocale()
-    if languageName then rawset(L,'Locale.LanguageName',languageName) end
+    f.env.GetLocale=function() return languageName end
     if names then rawset(L,0,names) end
     f.load('Core/text_bundles.lua')
     a:SetupOptions()
     return f,a,a.settingsLauncher
 end
 test('no translator line when nobody human has translated the language (the AI is never credited there)',function()
-    local _,a,page=withTranslators(nil,'Deutsch')
+    local _,a,page=withTranslators(nil,'deDE')
     assert(a:GetTranslationCredit()==nil)
     assert(not page.credits.text:find('Translation',1,true) and not page.credits.text:find('Deutsch',1,true),page.credits.text)
-    local _,_,english=withTranslators({},'English')
+    local _,_,english=withTranslators({},'enUS')
     assert(not english.credits.text:find('Translation',1,true))
 end)
 test('two human translators give one Translation (language) line, each name once',function()
-    local f,a,page=withTranslators({'Anna Beispiel','Bruno','anna beispiel'},'Deutsch')
+    local f,a,page=withTranslators({'Anna Beispiel','Bruno','anna beispiel'},'deDE')
     f.translations['Translation (%s): %s']='Übersetzung (%s): %s'
     local line=a:GetTranslationCredit()
     assert(line=='Übersetzung (Deutsch): Anna Beispiel, Bruno',tostring(line))
-    local f2,a2,page2=withTranslators({'Anna Beispiel','Bruno'},'Deutsch')
+    local f2,a2,page2=withTranslators({'Anna Beispiel','Bruno'},'deDE')
     assert(page2.credits.text:find('Translation (Deutsch): Anna Beispiel, Bruno',1,true),page2.credits.text)
     -- the three existing credit lines are still first
     assert(page2.credits.text:find('^License'),page2.credits.text)
@@ -85,7 +85,7 @@ test('a long list is cut at a name boundary with an ellipsis and wraps inside th
     }
     for script,names in pairs(samples) do
         local many={};for i=1,80 do many[#many+1]=names[(i-1)%#names+1]..(i>#names and (' '..i) or '') end
-        local f,a,page=withTranslators(many,'Language')
+        local f,a,page=withTranslators(many,'koKR')
         local line=a:GetTranslationCredit(480)
         assert(line:len()<=480+60,script..' '..line:len())
         assert(line:sub(-3)=='\226\128\166',script..' list was not cut with an ellipsis')
@@ -107,7 +107,7 @@ test('a long list is cut at a name boundary with an ellipsis and wraps inside th
 end)
 test('the About page of the workbench lists the translators too, in full, and nothing for English',function()
     local function about(names)
-        local f,a=withTranslators(names,'Deutsch')
+        local f,a=withTranslators(names,'deDE')
         f.load('UI/settings_profiles.lua')
         local texts={}
         local p={Heading=function() end,Text=function(_,text) texts[#texts+1]=text end,Edit=function() return {} end,Guard=function(_,fn) return fn end}
@@ -120,7 +120,7 @@ test('the About page of the workbench lists the translators too, in full, and no
     assert(about(many):find('Translator 100',1,true),'the About page of the workbench must not cap the list')
 end)
 test('the launcher caps by whole names',function()
-    local _,a=withTranslators({'Anna','Bruno'},'Deutsch')
+    local _,a=withTranslators({'Anna','Bruno'},'deDE')
     assert(a:GetTranslationCredit(8)=='Translation (Deutsch): Anna, \226\128\166',a:GetTranslationCredit(8))
 end)
 
