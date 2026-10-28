@@ -107,6 +107,7 @@ local incompatibleBranchFields = {
     yoffs = true,
     announce = true,
     announce_sound = true,
+    unit = true,
 }
 
 -- Returns trusted source references for internal identity/ownership operations.

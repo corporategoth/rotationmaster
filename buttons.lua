@@ -1407,6 +1407,12 @@ end
 
 -- Returns the readable name of a spell id, or nil.
 local function spellNameOf(id)
+    -- A Set Mark step's pseudo spell id is named for its mark; it must never be matched to a spell of that name, or to
+    -- another unit's button for the same mark.
+    if addon.Platform.IsMarkActionId and addon.Platform:IsMarkActionId(id) then
+        return nil
+    end
+
     local info = addon.Platform:GetSpellInfo(id)
     local name = info and info.name
 
@@ -1464,6 +1470,11 @@ local function aliasButtons(id)
         return settled or nil
     end
     if fetchedPolicy ~= 'restricted' or not validSpellId(id) then
+        return nil
+    end
+
+    -- A Set Mark button is found by the exact macro line only (Platform/raid_mark_actions.lua).
+    if addon.Platform.IsMarkActionId and addon.Platform:IsMarkActionId(id) then
         return nil
     end
 
@@ -2369,7 +2380,7 @@ function addon:EnsureFreshButtonIndex(maxAge)
 end
 
 -- Step types whose action can be looked up on the bars.
-local BINDABLE = { spell = true, pet = true, any = true, item = true }
+local BINDABLE = { spell = true, pet = true, any = true, item = true, mark = true }
 
 -- Whether a step's action is on an action button now: the test the engine
 -- applies before it may select a step or show a cooldown (main.lua, "the
@@ -2566,6 +2577,9 @@ function addon:DescribeStepAction(step)
 
     if step.type == 'assisted' then
         return L["Blizzard's suggestion"]
+    end
+    if step.type == 'mark' and self.DescribeMarkStep then
+        return self:DescribeMarkStep(step)
     end
 
     if step.type == 'item' then

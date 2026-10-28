@@ -118,6 +118,9 @@ function addon:CreateRotationStepCard(parent, step, spec, position, kind, status
         )
     elseif step.type == "assisted" then
         label(card, L["Recommends the spell Blizzard's Assisted Combat suggests"])
+    elseif step.type == "mark" then
+        label(card, addon:DescribeMarkStep(step))
+        label(card, L["Recommends pressing a macro that places the raid mark"])
     elseif step.type == "stop" then
         label(card, L["Stop the sequence here"])
 

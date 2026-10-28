@@ -428,7 +428,7 @@ function T.new(o)
         'IsPlayerMoving', 'GetMirrorTimerInfo', 'GetMirrorTimerProgress', 'IsSubmerged', 'GetSpellCharges',
         'UnitSpellHaste', 'UnitRangedDamage', 'UnitDamage', 'GetMeleeHaste', 'GetRangedHaste', 'GetPowerRegen',
         'GetManaRegen', 'UnitIsAFK', 'UnitIsDND', 'IsFlyableArea', 'IsAdvancedFlyableArea', 'GetRestState',
-        'GetXPExhaustion', 'UnitXP', 'UnitXPMax'
+        'GetXPExhaustion', 'UnitXP', 'UnitXPMax', 'GetRaidTargetIndex'
     }) do
         if rawget(env, name) == nil then
             env[name] = function() end

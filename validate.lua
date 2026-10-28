@@ -776,6 +776,9 @@ function addon:validate_rotation(prefix, id, rotation, fix)
             or rot.type == "anyspell"
         then
             template["action"] = 1234
+        elseif rot.type == "mark" then
+            template["action"] = "skull"
+            template["unit"] = "target"
         elseif rot["type"] == "item" then
             if type(rot["action"]) == "table" then
                 template["action"] = {}

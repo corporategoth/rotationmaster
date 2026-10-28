@@ -829,6 +829,7 @@ function addon:CreateRotationCanvas(parent, owner)
             or (step.type == 'branch' and L['Add branch']
                 or step.type == 'stop' and L['Stop']
                 or step.type == 'assisted' and L["Blizzard's suggestion"]
+                or step.type == 'mark' and addon:DescribeMarkStep(step)
                 or addon:SpellLabel(step.action))
 
         if self.drag.tail then

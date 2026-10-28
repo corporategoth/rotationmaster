@@ -224,7 +224,7 @@ local default_condition_groups = {
             "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNELING_PROGRESS", "CHANNEL_INTERRUPTABLE", "COMBAT",
             "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED", "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT",
             "THREAT_COUNT", "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
-            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER", "ENCOUNTER"
+            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER", "ENCOUNTER", "MARKED", "MARK_COUNT"
         },
     },
     {
@@ -996,6 +996,9 @@ function addon:init()
     end
     if self.InstallWorldConditions then
         self:InstallWorldConditions(self.db)
+    end
+    if self.InstallRaidMarkConditions then
+        self:InstallRaidMarkConditions(self.db)
     end
     if self.InstallCastProgressConditions then
         self:InstallCastProgressConditions(self.db)

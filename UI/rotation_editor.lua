@@ -746,6 +746,8 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
                     title = L['Stop']
                 elseif step.type == 'assisted' then
                     title = L["Blizzard's suggestion"]
+                elseif step.type == 'mark' then
+                    title = addon:DescribeMarkStep(step)
                 elseif step.type == 'item' then
                     title = L['Item']
                 else

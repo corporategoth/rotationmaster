@@ -48,6 +48,14 @@ end
 -- macro is a macro index or name. Returns { kind = "item", itemID, spellID } or { kind = "spell", spellID }, or nil
 -- and a reason code.
 function platform:GetMacroAction(macro)
+    -- A macro that presses a Set Mark button (Platform/raid_mark_actions.lua) stands for that step's pseudo spell id.
+    -- Answered before the policy gate: the macro body is plain text, readable on every client, and nothing is parsed
+    -- but the button name.
+    local mark = self.GetMarkMacroActionId and self:GetMarkMacroActionId(macro)
+
+    if mark then
+        return { kind = 'mark', spellID = mark }
+    end
     if readClientPolicy(self) ~= 'probe' then
         return nil, 'unsupported-policy'
     end

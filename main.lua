@@ -457,6 +457,7 @@ local defaults = {
         engravingConditionsSeeded = false,
         loadoutConditionsSeeded = false,
         worldConditionsSeeded = false,
+        raidMarkConditionsSeeded = false,
         bossModConditionsSeeded = false,
         castProgressConditionsSeeded = false,
         legacyArchiveNoticed = false,
@@ -870,6 +871,7 @@ function addon:HandleCommand(str)
             L['/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons.']
         )
 
+        addon:print(L['/rm debug marks - Report the raid mark table and what each mark unit resolves to.'])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
@@ -4305,7 +4307,7 @@ end
 -- pet and "any" steps return the action alone on Retail and on ranked steps, otherwise every known rank from the spell
 -- catalog. Item steps expand an item set (or a literal item list) to each item's use-spell; an item whose use-spell or
 -- id is not loaded yet is left out and retried on the next poll. "assisted" steps return Blizzard's suggestion and its
--- override ids, read fresh on every call. Anything else returns an empty list.
+-- override ids, read fresh on every call, and "mark" steps their one pseudo spell id. Anything else returns an empty list.
 function addon:GetSpellIds(rot)
     if rot.action then
         if rot.type == (BOOKTYPE_SPELL or "spell") or rot.type == (BOOKTYPE_PET or "pet") or rot.type == "any" then
@@ -4342,6 +4344,10 @@ function addon:GetSpellIds(rot)
             end
 
             return spellids, itemids
+        elseif rot.type == "mark" then
+            -- Set Mark: one pseudo spell id for the (unit, mark) pair, found on a macro that presses its button
+            -- (Core/raid_mark_buttons.lua).
+            return self:GetMarkStepSpellIds(rot)
         end
     elseif rot.type == "assisted" then
         -- Blizzard's Assisted Combat suggestion, resolved fresh on every call:

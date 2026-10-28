@@ -387,7 +387,14 @@ function addon:CreateNativePreviewWindow()
                 end
 
                 GameTooltip:SetOwner(icon, 'ANCHOR_BOTTOMRIGHT', 3)
-                GameTooltip:SetHyperlink((itemId and 'item:' .. itemId or 'spell:' .. spellId))
+                local mark = not itemId and addon.DescribeMarkAction and addon:DescribeMarkAction(spellId)
+
+                -- A Set Mark step has no spell to link: its tooltip is the sentence on its card.
+                if mark then
+                    GameTooltip:SetText(mark)
+                else
+                    GameTooltip:SetHyperlink((itemId and 'item:' .. itemId or 'spell:' .. spellId))
+                end
             end)
 
             addon:SetUIScript(icon, 'OnLeave', function()

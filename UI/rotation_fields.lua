@@ -513,20 +513,30 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
 
     if model.section == 'rotation' then
         types[#types + 1] = { value = 'assisted', text = L["Blizzard's suggestion"] }
+
+        -- Set Mark is offered where the client can place marks, and kept for a step that is already one.
+        local platform = addon.Platform
+
+        if step.type == 'mark' or platform.GetMarkActionSupport and platform:GetMarkActionSupport() == nil then
+            types[#types + 1] = { value = 'mark', text = L['Set Mark'] }
+        end
+
         types[#types + 1] = { value = 'stop', text = L['Stop'] }
     end
 
     local typeControl = choice('type', nil, types, step.type, function(value)
         local ok, why = owner:FlushFieldEdits()
 
-        if ok then
-            patch({ type = value }, { 'action', 'ranked', 'suppress_attack' })
+        if ok and value == 'mark' then
+            patch({ type = value, unit = 'target', action = 'skull' }, { 'ranked', 'suppress_attack' })
+        elseif ok then
+            patch({ type = value }, { 'action', 'ranked', 'suppress_attack', 'unit' })
         else
             owner:Message(why)
         end
     end)
 
-    if step.type ~= 'stop' and step.type ~= 'assisted' then
+    if step.type ~= 'stop' and step.type ~= 'assisted' and step.type ~= 'mark' then
         card.fieldSpellIcon = card.fieldSpellIcon or addon:CreateWorkbenchIconButton(frame, 'preview')
         local icon = card.fieldSpellIcon
         icon:ClearAllPoints()
@@ -628,6 +638,19 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
             field:SetWidth(fieldWidth - 44)
             y = spellY + 28
         end
+    elseif step.type == 'mark' then
+        y = addon:BuildRotationMarkFields(owner, card, model, alive, {
+            acquire = acquire,
+            choice = choice,
+            patch = patch,
+            controls = controls,
+            width = fieldWidth,
+            readOnly = readOnly,
+            getY = function() return y end,
+            setY = function(value)
+                y = value
+            end,
+        })
     elseif step.type == 'stop' then
         flag('suppress', L['Also suppress auto-attack (Attack or Shoot)'], step.suppress_attack, function(value)
             patch({ suppress_attack = value })

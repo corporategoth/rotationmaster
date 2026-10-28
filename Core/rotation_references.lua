@@ -174,6 +174,16 @@ local function support(tag, definition, value)
     end
 end
 
+-- Asks Core/raid_mark_buttons.lua whether a step works on this client (only a Set Mark step can be unsupported);
+-- returns its reason, or nil when supported.
+local function stepSupport(step)
+    local check = addon.GetStepSupport
+
+    if type(check) == 'function' then
+        return check(addon, step)
+    end
+end
+
 -- Observe identities without copying maps on the common unchanged path.
 -- Normalized false markers keep malformed/NaN entries stable, as before.
 local function observeLegacy(owner)
@@ -452,7 +462,15 @@ function addon:GetRotationValidationOptions()
     end
 
     local effects = entries(snapshot.effects)
-    return { conditions = conditions, itemsets = itemsets, effects = effects, support = support }, current
+
+    return {
+        conditions = conditions,
+        itemsets = itemsets,
+        effects = effects,
+        support = support,
+        stepSupport = stepSupport,
+    },
+        current
 end
 
 ownedOptions = addon.GetRotationValidationOptions

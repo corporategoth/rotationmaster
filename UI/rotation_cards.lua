@@ -124,6 +124,8 @@ function addon:GetStepIcon(step, fallback)
         end
     elseif step.type == 'assisted' then
         return self:GetAssistedStepIcon() or fallback
+    elseif step.type == 'mark' then
+        return self:GetMarkStepIcon(step)
     end
 
     return fallback
@@ -324,6 +326,7 @@ function addon:CreateRotationCard(parent)
         local action = branch and L['Click to add branch name']
             or step.type == 'stop' and L['Stop']
             or step.type == 'assisted' and L["Blizzard's suggestion"]
+            or step.type == 'mark' and addon:DescribeMarkStep(step)
             or (step.type == 'spell' or step.type == 'pet' or step.type == 'any') and addon:SpellLabel(step.action)
             or L['Item']
 

@@ -109,6 +109,9 @@ local issueText = {
     ['unknown-action-type'] = L['has an action type this version does not understand (%s)'],
     ['unexpected-assisted-action'] = L['has a setting this version does not understand (%s)'],
     ['unexpected-stop-option'] = L['has a setting this version does not understand (%s)'],
+    ['unsupported-mark-step'] = L['uses a Set Mark step this client cannot run'],
+    ['mark-in-optional-list'] = L['uses Set Mark, which only works in the rotation list'],
+    ['unexpected-mark-option'] = L['has a setting this version does not understand (%s)'],
     ['invalid-priority'] = L['has an invalid switch priority'],
     ['invalid-identifier'] = L['has an invalid identifier'],
     ['invalid-specs'] = L['has an invalid specialization list'],
@@ -173,6 +176,8 @@ local function stepName(step)
         return L['Stop']
     elseif step.type == 'assisted' then
         return L["Blizzard's suggestion"]
+    elseif step.type == 'mark' and addon.DescribeMarkStep then
+        return addon:DescribeMarkStep(step)
     elseif step.type == 'item' then
         return L['Item']
     end

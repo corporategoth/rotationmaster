@@ -187,6 +187,8 @@ function addon:BuildDraftChangeRows(kind, before, after, showSame, spec)
             return L['Stop']
         elseif step.type == 'assisted' then
             return L["Blizzard's suggestion"]
+        elseif step.type == 'mark' then
+            return self:DescribeMarkStep(step)
         end
 
         if step.type == 'spell' or step.type == 'pet' or step.type == 'any' then

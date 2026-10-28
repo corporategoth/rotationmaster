@@ -26,6 +26,10 @@ local S = {
 [3816] = { "Help.Conditions.SWING_RANGED", "Measure your Auto Shot or wand shot instead of a melee weapon. Choose Off Hand or Ranged, not both. The time remaining needs the combat log, so it works on Classic Era, Burning Crusade and Mists of Pandaria but not on Retail or Forever." },
 -- e7ccbb83
 [3818] = { "Help.Conditions.DISTANCE_COUNT_COMBAT", "Count only units that are in combat. For enemies that is the ones fighting right now, not every enemy whose nameplate is visible. A unit whose combat state the game will not report makes the count unavailable." },
+-- 6bc4e7b1
+[4085] = { "Help.Conditions.MARKED", "Matches while the unit carries a raid target marker. Choose Any mark, No mark, or One of these marks and tick the marks you want (skull, cross, square, moon, triangle, diamond, circle, star). A unit that does not exist never matches, not even for No mark. Where the game hides a marker (Retail and Forever restrict some data in combat) the condition is unavailable, also under NOT, never false. To act on whichever unit carries a mark, pick the mark itself as the Unit of another condition: Skull, Cross and the rest, or the highest-priority marked unit, which tries skull first and star last." },
+-- 74adf719
+[4086] = { "Help.Conditions.MARK_COUNT", "Counts the marked units Rotation Master knows of. It finds them on your target, focus, mouseover, nameplates, group members and their targets, bosses and arena opponents each time a mark changes, so a marked unit you cannot reach right now still counts until the mark is seen to be gone or you leave the area. Count every marked unit, only enemies, or only friendly units. If a marker cannot be read, or a unit's hostility is unknown for the filter you chose, the condition is unavailable, also under NOT. A unit carries at most one mark, so the count is never more than eight." },
 }
 for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
 S = nil
@@ -871,6 +875,85 @@ local E = {
 [3810] = "A number of players, or a percent of the whole group when the box is ticked. You are always part of the group and of every count you fit.",
 -- a8b3d1b8
 [3817] = "Number of %s in combat within %s yards",
+-- 42f0cd37
+-- Context: Choice in the mark dropdown of the Raid Mark condition: the unit carries any raid
+--     marker.
+[4067] = "Any mark",
+-- 1bc1f1c6
+-- Context: Choice in the mark dropdown of the Raid Mark condition: the unit carries no raid marker.
+[4068] = "No mark",
+-- 36baf150
+[4069] = "One of these marks",
+-- 582de115
+-- Context: Sentence the Raid Mark condition prints. Used when the unit is the player ("you"). The
+--     {{!positive|negated}} part is the wording for the condition and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+[4070] = "%s {{!have|do not have}} a raid mark",
+-- 472cb18e
+-- Context: Sentence the Raid Mark condition prints. Used when the unit is anyone else (third
+--     person, "has"). The {{!positive|negated}} part is the wording for the condition and for its
+--     NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+[4071] = "%s {{!has|does not have}} a raid mark",
+-- 4235af62
+-- Context: Sentence the Raid Mark condition prints. Used when the unit is the player ("you"). The
+--     {{!positive|negated}} part is the wording for the condition and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+[4072] = "%s {{!have no|have a}} raid mark",
+-- 4f17a484
+-- Context: Sentence the Raid Mark condition prints. Used when the unit is anyone else (third
+--     person, "has"). The {{!positive|negated}} part is the wording for the condition and for its
+--     NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+[4073] = "%s {{!has no|has a}} raid mark",
+-- a8bca387
+-- Context: Sentence the Raid Mark condition prints when several marks are ticked. Used when the
+--     unit is the player ("you"). The {{!positive|negated}} part is the wording for the condition
+--     and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+-- %s #2: the marks to match, comma separated, in the game's names, e.g. "Skull, Moon"
+[4074] = "%s {{!have|do not have}} one of these marks: %s",
+-- ed95df2d
+-- Context: Sentence the Raid Mark condition prints when several marks are ticked. Used when the
+--     unit is anyone else (third person, "has"). The {{!positive|negated}} part is the wording for
+--     the condition and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+-- %s #2: the marks to match, comma separated, in the game's names, e.g. "Skull, Moon"
+[4075] = "%s {{!has|does not have}} one of these marks: %s",
+-- c8ca4b13
+-- Context: Sentence the Raid Mark condition prints when exactly one mark is ticked. Used when the
+--     unit is the player ("you"). The {{!positive|negated}} part is the wording for the condition
+--     and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+-- %s #2: the game's name of the one mark, e.g. "Skull"
+[4076] = "%s {{!have|do not have}} the %s mark",
+-- 8c22e3b7
+-- Context: Sentence the Raid Mark condition prints when exactly one mark is ticked. Used when the
+--     unit is anyone else (third person, "has"). The {{!positive|negated}} part is the wording for
+--     the condition and for its NOT form.
+-- %s #1: the unit phrase, e.g. "your target"
+-- %s #2: the game's name of the one mark, e.g. "Skull"
+[4077] = "%s {{!has|does not have}} the %s mark",
+-- 58d8289e
+[4078] = "the number of marked units",
+-- e5568f80
+[4079] = "the number of marked enemy units",
+-- 0112a03e
+[4080] = "the number of marked friendly units",
+-- e2490322
+-- Context: Choice in the Count dropdown of the Raid Mark Count condition: count every unit that
+--     carries a marker.
+[4081] = "Marked units",
+-- cfc9ed3d
+-- Context: Choice in the Count dropdown of the Raid Mark Count condition: count only marked units
+--     the player can attack.
+[4082] = "Marked enemies",
+-- e9c0dcf1
+-- Context: Choice in the Count dropdown of the Raid Mark Count condition: count only marked units
+--     that are friendly.
+[4083] = "Marked friendly units",
+-- 205bd60c
+[4084] = "A number from 0 to 8: there are eight marks, and a unit carries at most one.",
 }
 for id, text in pairs(E) do
     local translation = T[id]

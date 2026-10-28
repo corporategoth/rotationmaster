@@ -60,6 +60,7 @@ local shownFields = {
     mode = true,
     onTrue = true,
     onFalse = true,
+    unit = true,
 }
 
 -- Only structural field/step segments form identity locations. Numeric source

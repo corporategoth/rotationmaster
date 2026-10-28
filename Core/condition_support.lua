@@ -627,6 +627,8 @@ local requirements = {
     PET_HAPPINESS = { POLICY, PET_HAPPINESS_EDITION, { 'GetPetHappiness' } },
     STAGGER = { POLICY, STAGGER_EDITION, { 'UnitStagger' } },
     ECLIPSE = { POLICY, ECLIPSE_EDITION, { 'UnitClass' }, eclipse },
+    MARKED = { POLICY, UNIT, { 'GetRaidTargetIndex' } },
+    MARK_COUNT = { POLICY, { 'GetRaidTargetIndex' } },
     ZONE = { { 'GetZoneText' }, { 'GetSubZoneText' } },
 }
 

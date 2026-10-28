@@ -28,6 +28,8 @@ in-game check is `/focus` then `/run print(UnitExists("focus"))`.
 | `assignedtank` | the first member whose assigned role is Tank | `UnitGroupRolesAssigned` | Retail, Forever, Wrath through Mists (not Classic Era or Burning Crusade: `no-group-roles`) |
 | `assignedhealer` | the first member whose assigned role is Healer | `UnitGroupRolesAssigned` | as above |
 | `groupleader` | the party or raid leader | `UnitIsGroupLeader` | all |
+| `skull` `cross` `square` `moon` `triangle` `diamond` `circle` `star` | the unit that carries that raid mark now | `GetRaidTargetIndex` over the tokens the client can reach (the mark table) | clients that have `GetRaidTargetIndex`; see [raid-marks.md](raid-marks.md) |
+| `anymark` | the highest-priority marked unit: skull first, then cross, square, moon, triangle, diamond, circle, star | as above | as above |
 
 `Platform:ResolveGroupUnit(kind)` (`Platform/group_units.lua`) walks `party1-4`
 and `player`, or `raid1-40`, and answers a token (`raid7`, `party2`, `player`).
@@ -56,5 +58,7 @@ where readable, existence); health, power and most auras are secret there.
 
 Boss, arena, party-member and raid-member tokens as unit choices, nameplate
 tokens, heal-target selection, lowest-health ally on Retail (health is secret),
-raid-marker units, and any integration with another addon's assignments (no
+the reading "any marked unit satisfies" (the engine hands a condition one resolved
+token; `anymark` is the highest-priority marked unit, and `MARKED` / `MARK_COUNT`
+cover the rest), and any integration with another addon's assignments (no
 stable public API).

@@ -778,13 +778,13 @@ end)
 -- one-time marker the code writes has to be declared. This boots the real AceDB with every seeder loaded and collects what
 -- the addon prints.
 local profileMarkers={'rotationSpecsMigrated','unitStateSwitchSeeded','contextConditionsSeeded','assistedConditionsSeeded','assistedSignalConditionsSeeded',
-    'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded',
+    'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','raidMarkConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded',
     'legacyArchiveNoticed','legacyArchiveBannerDismissed','previewHeaderlessGeometry'}
 local function bootWithMessages(saved)
     local messages={}
     local env,a,scripts,load=persistentFixture(saved,nil,true,function(_,e,load)
         e.LibStub('AceConsole-3.0').Printf=function(_,text,...) messages[#messages+1]=string.format(text,...) end
-        for _,file in ipairs({'Conditions/world_seed.lua','Conditions/specialization.lua','Conditions/bossmod.lua','Conditions/channeling.lua','Core/legacy_archive.lua'}) do load(file) end
+        for _,file in ipairs({'Conditions/world_seed.lua','Conditions/raid_marks.lua','Conditions/specialization.lua','Conditions/bossmod.lua','Conditions/channeling.lua','Core/legacy_archive.lua'}) do load(file) end
     end)
     assert(not a.initializationErrorReport,'initialization failed')
     return env,a,scripts,messages,load
@@ -798,7 +798,7 @@ test('boot validation reports no extra field for the markers the code writes, on
     local env,a,scripts,messages=bootWithMessages()
     local profile=a.db.sv.profiles.Default
     for _,name in ipairs({'rotationSpecsMigrated','unitStateSwitchSeeded','contextConditionsSeeded','assistedConditionsSeeded','assistedSignalConditionsSeeded',
-        'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded'}) do
+        'engravingConditionsSeeded','loadoutConditionsSeeded','worldConditionsSeeded','raidMarkConditionsSeeded','bossModConditionsSeeded','castProgressConditionsSeeded'}) do
         assert(profile[name]==true,name..' was not set by boot, so this test would not see it')
     end
     assert(type(a.db.sv.global.legacyBodyUpgrade)=='string','the saved-body upgrade left no marker')

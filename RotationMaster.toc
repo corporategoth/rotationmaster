@@ -30,6 +30,8 @@ Platform/rotation_owner.lua
 Platform/groups.lua
 Platform/focus_unit.lua
 Platform/group_units.lua
+Platform/raid_marks.lua
+Platform/raid_mark_actions.lua
 Platform/announcement_recipient.lua
 Platform/roster_class.lua
 Platform/role.lua
@@ -81,6 +83,7 @@ locales.xml
 Data/text_bundle_index.lua
 Core/text_bundles.lua
 constants.lua
+Core/raid_mark_units.lua
 Data/artwork.lua
 Data/talent_trees.lua
 Functions/values.lua
@@ -109,6 +112,7 @@ Core/creature_conditions.lua
 Core/health_forecast_conditions.lua
 Core/threat_count_conditions.lua
 Core/itemset_services.lua
+Core/raid_mark_buttons.lua
 Core/rotation_references.lua
 Core/item_sets.lua
 Core/inventory.lua
@@ -179,6 +183,7 @@ buttons.lua
 Diagnostics/glow.lua
 Diagnostics/talents.lua
 Diagnostics/timeline.lua
+Diagnostics/raid_marks.lua
 Core/unit_state_conditions.lua
 Core/assisted_highlight.lua
 Core/tooltips.lua
@@ -248,6 +253,7 @@ UI/rotation_canvas.lua
 UI/color_picker.lua
 UI/tag_picker.lua
 UI/rotation_effect_fields.lua
+UI/rotation_mark_fields.lua
 UI/rotation_fields.lua
 UI/rotation_navigation.lua
 UI/rotation_metadata.lua
@@ -330,3 +336,4 @@ Conditions/hero_talent.lua
 Conditions/proc_glow.lua
 Conditions/edition_state.lua
 Conditions/world_seed.lua
+Conditions/raid_marks.lua

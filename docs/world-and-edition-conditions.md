@@ -167,6 +167,6 @@ else.
   a project of their own. (Focus, and the resolved group units, are in
   [unit-types.md](unit-types.md).)
 - A heal-target choice (RM never chooses a spell's target), the lowest-health
-  ally on Retail (health is secret), War Mode, affixes, delve tier, raid
-  markers (`GetRaidTargetIndex` is secret on Retail) and level difference: low
-  value, impossible, or no stable list.
+  ally on Retail (health is secret), War Mode, affixes, delve tier and level
+  difference: low value, impossible, or no stable list. (Raid markers are in
+  [raid-marks.md](raid-marks.md).)

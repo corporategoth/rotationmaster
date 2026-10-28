@@ -264,6 +264,22 @@ local function explainNoSpellIds(self, step)
         return 'assisted: suggestion ' .. show(suggestion) .. ' gave no candidates'
     end
 
+    if kind == 'mark' then
+        local id, reason = platform:GetMarkStepActionId(step)
+
+        if not id then
+            return 'mark: the step does not name a valid unit and mark (' .. show(reason) .. ')'
+        end
+
+        local support = platform:GetMarkActionSupport()
+
+        if support then
+            return 'mark: this client cannot place marks (' .. show(support) .. ')'
+        end
+
+        return 'mark: no pseudo spell id'
+    end
+
     if action == nil then
         return 'the step has no action'
     end
@@ -1220,7 +1236,8 @@ end
 
 -- /rm debug editor copies the Lua editor input report (UI/lua_input_diagnostics.lua);
 -- /rm debug talents reports the trait talent reads (Diagnostics/talents.lua);
--- /rm debug timeline probes Blizzard's encounter timeline (Diagnostics/timeline.lua).
+-- /rm debug timeline probes Blizzard's encounter timeline (Diagnostics/timeline.lua);
+-- /rm debug marks reports the raid mark table (Diagnostics/raid_marks.lua).
 -- Routes the arguments of /rm debug to the matching report; prints the usage line for anything else.
 function addon:HandleDebugCommand(args)
     local what, rest = (args or ''):match('^%s*(%S*)%s*(.-)%s*$')
@@ -1241,6 +1258,9 @@ function addon:HandleDebugCommand(args)
     end
     if what == 'timeline' and self.RunTimelineDiagnostic then
         return self:RunTimelineDiagnostic(rest)
+    end
+    if what == 'marks' and self.RunRaidMarkDiagnostic then
+        return self:RunRaidMarkDiagnostic()
     end
 
     self:print(L['Usage: /rm debug glow [seconds|show], /rm debug talents [views] or /rm debug editor'])

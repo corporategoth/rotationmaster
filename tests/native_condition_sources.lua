@@ -264,6 +264,8 @@ local function sample(a, tag, definition)
     elseif tag == 'ECLIPSE' then
         v.measure = 'direction'
         v.direction = 'sun'
+    elseif tag == 'MARKED' then
+        v.mark = 'skull'
     end
 
     return v
@@ -396,7 +398,7 @@ test('every actual branch source compiles current duplicates without an Ace bind
         count = count + 1
     end
 
-    assert(count == 141, 'current source inventory unexpectedly narrowed: ' .. count)
+    assert(count == 143, 'current source inventory unexpectedly narrowed: ' .. count)
 end)
 
 test(
@@ -453,7 +455,7 @@ test(
             count = count + 1
         end
 
-        assert(count == 141 and rendered > 1000, 'native render inventory narrowed')
+        assert(count == 143 and rendered > 1000, 'native render inventory narrowed')
     end
 )
 

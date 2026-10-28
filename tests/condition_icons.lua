@@ -30,6 +30,10 @@ local function packaged(icon)
     assert(width == 128 and height == 128, 'icon dimensions are not the expected power of two')
 end
 
+-- Conditions that borrow the artwork of a condition of a related meaning until a design of their own exists
+-- (Conditions/raid_marks.lua). They are the only conditions allowed to share an icon.
+local borrowed = { MARKED = 'CLASSIFICATION', MARK_COUNT = 'DISTANCE_COUNT' }
+
 test('all reviewed Built In declarations use bundled original semantic icons', function()
     local seen, icons = {}, {}
 
@@ -50,9 +54,23 @@ test('all reviewed Built In declarations use bundled original semantic icons', f
         local function inspect(tag, definition)
             packaged(definition.icon)
             assert(definition.icon == f.addon.Artwork.condition[tag], 'declaration bypasses selected artwork: ' .. tag)
-            assert(not icons[definition.icon] or icons[definition.icon] == tag, 'conditions share one icon: ' .. tag)
-            icons[definition.icon] = tag
-            seen[tag] = true
+
+            if borrowed[tag] then
+                assert(
+                    definition.icon == f.addon.Artwork.condition[borrowed[tag]],
+                    'a borrowed icon must be the lender icon: ' .. tag
+                )
+
+                seen[tag] = true
+            else
+                assert(
+                    not icons[definition.icon] or icons[definition.icon] == tag,
+                    'conditions share one icon: ' .. tag
+                )
+
+                icons[definition.icon] = tag
+                seen[tag] = true
+            end
         end
 
         for tag, definition in pairs(f.addon.definitions) do
@@ -72,7 +90,7 @@ test('all reviewed Built In declarations use bundled original semantic icons', f
         count = count + 1
     end
 
-    assert(count == 141, 'reviewed icon inventory changed: ' .. count)
+    assert(count == 143, 'reviewed icon inventory changed: ' .. count)
 end)
 
 test('category defaults follow stable identity while saved custom choices remain exact', function()

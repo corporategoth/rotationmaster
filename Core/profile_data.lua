@@ -25,6 +25,7 @@ local scalar = {
     engravingConditionsSeeded = 'boolean',
     loadoutConditionsSeeded = 'boolean',
     worldConditionsSeeded = 'boolean',
+    raidMarkConditionsSeeded = 'boolean',
     bossModConditionsSeeded = 'boolean',
     castProgressConditionsSeeded = 'boolean',
     previewHeaderlessGeometry = 'boolean',

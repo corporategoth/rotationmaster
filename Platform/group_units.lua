@@ -1,4 +1,5 @@
 -- Platform adapter for group-role unit types: main tank, main assist, assigned tank, assigned healer, group leader.
+-- (The raid mark unit types are answered by Platform/raid_marks.lua through the same two entry points.)
 -- Owns the `value or nil, reason` resolvers that turn one of those types into a unit token at evaluation time
 -- (GetNumGroupMembers, IsInRaid, GetRaidRosterInfo, UnitGroupRolesAssigned, UnitIsGroupLeader); it must not cache a
 -- token, because assignments change. Called by Core/group_unit_resolution.lua. Loaded from RotationMaster.toc after
@@ -62,6 +63,10 @@ end
 -- nil when this client can resolve the kind, else the reason. Roles exist only
 -- where players can assign them (see 'no-group-roles' in Core/condition_support.lua).
 function platform:GetGroupUnitSupport(kind)
+    -- The raid mark unit types (skull ... star, anymark) are answered by Platform/raid_marks.lua.
+    if self.IsRaidMarkUnitKind and self:IsRaidMarkUnitKind(kind) then
+        return self:GetRaidMarkSupport()
+    end
     if not KINDS[kind] then
         return 'invalid-group-unit'
     end
@@ -137,6 +142,10 @@ end
 
 -- The token of the first member holding the assignment, else nil and a reason.
 function platform:ResolveGroupUnit(kind)
+    if self.IsRaidMarkUnitKind and self:IsRaidMarkUnitKind(kind) then
+        return self:ResolveRaidMarkUnit(kind)
+    end
+
     local unsupported = self:GetGroupUnitSupport(kind)
 
     if unsupported then

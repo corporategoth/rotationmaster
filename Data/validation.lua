@@ -886,6 +886,7 @@ local function validate(envelope, options, bodyOnly)
                     yoffs = true,
                     announce = true,
                     announce_sound = true,
+                    unit = true,
                 },
                 where
             )
@@ -923,6 +924,25 @@ local function validate(envelope, options, bodyOnly)
                     if row.section ~= "rotation" then
                         issue("assisted-in-optional-list", where .. ".type", "warning", "unsupported")
                     end
+                elseif step.type == "mark" then
+                    -- Set Mark: a unit token and a mark word, both looked up in fixed whitelists when the step runs
+                    -- (Platform/raid_mark_actions.lua). A client that cannot place marks, or a value outside the
+                    -- whitelists, leaves the step unresolved: flagged and kept, never dropped. Rotation list only.
+                    check(step.action, nonempty, where .. ".action")
+                    check(step.unit, nonempty, where .. ".unit")
+                    local stepSupport = options.stepSupport
+
+                    if type(stepSupport) == "function" then
+                        local reason = stepSupport(step)
+
+                        if type(reason) == "string" then
+                            issue("unsupported-mark-step", where .. ".type", "warning", "unresolved", nil, reason)
+                        end
+                    end
+
+                    if row.section ~= "rotation" then
+                        issue("mark-in-optional-list", where .. ".type", "warning", "unsupported")
+                    end
                 elseif step.type ~= "stop" then
                     issue("unknown-action-type", where .. ".type", "warning", "unsupported")
                 end
@@ -934,6 +954,9 @@ local function validate(envelope, options, bodyOnly)
 
             optionalType(step.suppress_attack, "boolean", where .. ".suppress_attack")
 
+            if step.unit ~= nil and step.type ~= "mark" then
+                issue("unexpected-mark-option", where .. ".unit", "warning", "unsupported")
+            end
             if step.suppress_attack ~= nil and step.type ~= "stop" then
                 issue("unexpected-stop-option", where .. ".suppress_attack", "warning", "unsupported")
             end

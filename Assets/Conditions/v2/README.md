@@ -51,6 +51,14 @@ offline visual and format checks. In-game rendering, color settings, filtering,
 and placement still require native acceptance; file existence alone does not
 prove that a consuming UI uses the selected mapping.
 
+## Borrowed icons
+
+`MARKED` and `MARK_COUNT` (`docs/raid-marks.md`) have no design of their own yet. `Conditions/raid_marks.lua` points
+`Artwork.condition.MARKED` at the Unit Classification skull and `Artwork.condition.MARK_COUNT` at the Distance Count
+studs, and `tests/condition_icons.lua` lists the two as the only conditions allowed to share an icon. They are not
+entries of `provenance.json`, so the counts above (141 conditions, 153 designs) count designs, not conditions. Record
+artwork for them with `export_icons.py --record` and replace the borrowing.
+
 ## World-state and edition conditions
 
 The twenty conditions of `docs/world-and-edition-conditions.md` and the eight

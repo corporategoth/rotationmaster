@@ -6103,6 +6103,78 @@ local E = {
 [3041] = "noheals selects damage only; nodmg selects healing only; other readable values select both.",
 -- 02586670
 [4043] = "Translation (%s): %s",
+-- 7e412986
+-- Context: Name of a unit choice in the unit dropdown of every condition: whichever unit carries
+--     that raid mark (skull, cross, square ...). Read as a noun phrase, e.g. "the Skull-marked
+--     unit".
+-- %s #1: the game's name for the raid mark, e.g. "Skull"
+[4045] = "the %s-marked unit",
+-- 1ba884a2
+-- Context: The possessive of the unit choice in the sentences conditions print, e.g. "the
+--     Skull-marked unit's health is below 50%".
+-- %s #1: the game's name for the raid mark, e.g. "Skull"
+[4046] = "the %s-marked unit's",
+-- 967e14d2
+[4047] = "the highest-priority marked unit",
+-- 60b66204
+[4048] = "the highest-priority marked unit's",
+-- 4f69582c
+-- Context: Name of the Raid Mark condition in the condition list: true while a unit carries a raid
+--     target marker (skull, star ...).
+[4049] = "Raid Mark",
+-- d2e9e36a
+-- Context: Name of the Raid Mark Count condition in the condition list: counts the units that carry
+--     a raid target marker.
+[4050] = "Raid Mark Count",
+-- d7cda0ca
+-- Context: Label of a dropdown in the rotation editor's Set Mark step: which raid target marker to
+--     place (Skull, Cross ...), and the label of the choice in the Raid Mark condition. A noun.
+[4051] = "Mark",
+-- ae11f7ac
+-- Context: Rotation step type in the step type dropdown of the rotation editor, and the name of the
+--     step while it is not filled in: the step recommends placing a raid target marker on a unit. A
+--     verb phrase.
+[4052] = "Set Mark",
+-- 8b5f5100
+-- Context: Summary of a Set Mark step in the rotation editor and its preview tooltip, e.g. "Set
+--     Skull on your target".
+-- %s #1: the game's name for the raid mark, e.g. "Skull"
+-- %s #2: the unit phrase the condition is about, e.g. "your target" or "the Skull-marked unit"
+[4053] = "Set %s on %s",
+-- 0cbd291f
+-- Context: Summary of a Set Mark step that removes the marker, e.g. "Clear the mark on your
+--     target".
+-- %s #1: the unit phrase the condition is about, e.g. "your target" or "the Skull-marked unit"
+[4054] = "Clear the mark on %s",
+-- f065d37f
+-- Context: Entry of the mark dropdown of a Set Mark step: instead of a mark, remove the marker the
+--     unit carries. A verb phrase.
+[4055] = "Clear the mark",
+-- 32436d10
+[4056] = "Put on an action bar",
+-- eb8dfba9
+[4057] = "Makes a macro that presses this step's hidden button, and picks it up. Drop it on an action bar slot and Rotation Master lights it while this step is advised. In a raid only the leader and assistants can place marks.",
+-- 406b0045
+-- Context: Message after pressing Put on an action bar: the macro is now on the mouse cursor and
+--     the player has to drop it on an action bar slot.
+-- %s #1: the name of the macro that was created, e.g. "RM skull/tgt"
+[4058] = "Drag the macro %s to an action bar slot.",
+-- 45a37997
+[4059] = "Empty your cursor before binding.",
+-- 69f3d263
+[4060] = "Your character macros are full, so the macro could not be made.",
+-- b9f12561
+[4061] = "Raid marks cannot be placed on this client.",
+-- 90c22683
+[4062] = "The macro could not be made.",
+-- 19a35f5c
+[4063] = "Recommends pressing a macro that places the raid mark",
+-- 2dacd008
+[4064] = "uses a Set Mark step this client cannot run",
+-- bd3e44b0
+[4065] = "uses Set Mark, which only works in the rotation list",
+-- 0d936a8d
+[4066] = "/rm debug marks - Report the raid mark table and what each mark unit resolves to.",
 }
 for id, text in pairs(E) do
     local translation = T[id]
