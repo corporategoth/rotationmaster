@@ -16,8 +16,12 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- handlers, from GetItem/GetSpell) and is checked readable before use.
 --
 -- Settings (profile): tooltips (master, on), tooltip_itemsets (on),
--- tooltip_rotations (on), tooltip_conditions (off: also count spells and
--- items a condition refers to), tooltip_limit (names listed, default 3).
+-- tooltip_rotations (on), tooltip_disabled_rotations (on: list rotations that
+-- are switched off, grayed and marked; off hides them),
+-- tooltip_conditions (off: also count spells and items a condition refers
+-- to), tooltip_exclude_disabled_conditions (off: when on, a condition that is
+-- switched off in the editor - a node with disabled == true, with everything
+-- under it - is not counted), tooltip_limit (names listed, default 3).
 --
 -- Two registration paths, chosen by the tooltip object and not by the client
 -- name, because the processor global exists on every client but only the
@@ -99,12 +103,20 @@ local function now()
     return type(GetTime) == 'function' and GetTime() or 0
 end
 
--- master, itemsets, rotations, conditions, limit (no table: this runs per tooltip).
+-- Reads the tooltip settings from the profile (or `source`), without building a table: this runs per tooltip.
+-- @param source table|nil  a profile-shaped table to read instead of the active profile
+-- @return boolean  master switch
+-- @return boolean  list item sets (always false when the master is off)
+-- @return boolean  list rotations (always false when the master is off)
+-- @return boolean  also count spells and items named only inside conditions
+-- @return number  names listed per line (1 to 20)
+-- @return boolean  list rotations that are switched off (default true)
+-- @return boolean  leave disabled conditions out of the condition counts (default false)
 local function readSettings(source)
     local p = source or profile()
 
     if type(p) ~= 'table' then
-        return false, false, false, false, DEFAULT_LIMIT
+        return false, false, false, false, DEFAULT_LIMIT, true, false
     end
 
     local master = p.tooltips ~= false
@@ -120,13 +132,26 @@ local function readSettings(source)
         master and p.tooltip_itemsets ~= false,
         master and p.tooltip_rotations ~= false,
         p.tooltip_conditions == true,
-        limit
+        limit,
+        p.tooltip_disabled_rotations ~= false,
+        p.tooltip_exclude_disabled_conditions == true
 end
 
--- Returns the tooltip settings as a table { enabled, itemsets, rotations, conditions, limit } for the settings page.
+-- Returns the tooltip settings for the settings page.
+-- @param source table|nil  a profile-shaped table to read instead of the active profile
+-- @return table  { enabled, itemsets, rotations, conditions, limit, disabledRotations, excludeDisabledConditions }
 function addon:GetTooltipSettings(source)
-    local master, itemsets, rotations, conditions, limit = readSettings(source)
-    return { enabled = master, itemsets = itemsets, rotations = rotations, conditions = conditions, limit = limit }
+    local master, itemsets, rotations, conditions, limit, disabledRotations, excludeDisabled = readSettings(source)
+
+    return {
+        enabled = master,
+        itemsets = itemsets,
+        rotations = rotations,
+        conditions = conditions,
+        limit = limit,
+        disabledRotations = disabledRotations,
+        excludeDisabledConditions = excludeDisabled,
+    }
 end
 
 -- Returns the value as a positive whole number (a numeric string is accepted), or nil.
@@ -335,9 +360,11 @@ local function referenceItems(reference, state)
     return ids
 end
 
--- Add the rotation's references. includeConditions: also those inside conditions.
+-- Add the rotation's references. includeConditions: also those inside conditions; excludeDisabled: not those under a
+-- condition node that is switched off (`disabled == true`, which the evaluator treats as always true and the
+-- description prints as nothing, so its subtree never runs).
 -- Only steps that can run (reachable and enabled) count. The condition walk is bounded in depth and node count.
-local function indexBody(body, ref, index, includeConditions, state)
+local function indexBody(body, ref, index, includeConditions, state, excludeDisabled)
     local data = addon.RotationData
 
     if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' or type(body) ~= 'table' then
@@ -360,6 +387,11 @@ local function indexBody(body, ref, index, includeConditions, state)
         end
 
         budget = budget - 1
+
+        if excludeDisabled and node.disabled == true then
+            return
+        end
+
         local kind = node.type
 
         if kind == 'AND' or kind == 'OR' then
@@ -430,14 +462,17 @@ local function displayName(name)
 end
 
 -- spell ID / item ID -> list of {rotation={name,enabled,priority},ranked,condition}.
-local function buildUses(rows, includeConditions, spec)
+-- `options` is { conditions, disabledRotations, excludeDisabledConditions }; a rotation that is switched off is left
+-- out entirely when disabledRotations is false.
+local function buildUses(rows, options, spec)
+    local includeConditions = options.conditions
     local index = { spells = {}, items = {}, spellText = {}, itemText = {}, incomplete = false }
     local state = { incomplete = false }
     local seen = {}
 
     -- Adds one rotation body to the index under a reference carrying its name, enabled state and priority.
     local function refer(name, enabled, priority, body)
-        if type(body) ~= 'table' then
+        if type(body) ~= 'table' or not enabled and not options.disabledRotations then
             return
         end
 
@@ -447,7 +482,7 @@ local function buildUses(rows, includeConditions, spec)
             priority = type(priority) == 'number' and priority or 0,
         }
 
-        indexBody(body, ref, index, includeConditions, state)
+        indexBody(body, ref, index, includeConditions, state, options.excludeDisabledConditions)
     end
 
     for _, row in ipairs(rows or {}) do
@@ -522,11 +557,17 @@ function manager:Sets()
     return built
 end
 
--- Uses: the same, plus the current specialization, the condition setting and
--- the rotation roster stamp (a rotation edit moves neither of the others).
--- Returns the current index, rebuilt when stale, or the previous one (possibly nil) in combat or when the rotation
--- list is not ready.
-function manager:Uses(includeConditions)
+-- Uses: the same, plus the current specialization, the condition and disabled
+-- settings and the rotation roster stamp (a rotation edit moves neither of the
+-- others).
+-- @param includeConditions boolean  also index what conditions name
+-- @param disabledRotations boolean|nil  index rotations that are switched off (nil counts as true, today's output)
+-- @param excludeDisabled boolean|nil  leave disabled conditions out (nil counts as false)
+-- @return table|nil  the current index, rebuilt when stale, or the previous one (possibly nil) in combat or when the
+--   rotation list is not ready
+function manager:Uses(includeConditions, disabledRotations, excludeDisabled)
+    disabledRotations = disabledRotations ~= false
+    excludeDisabled = excludeDisabled == true
     local current = self.uses
     local spec = addon.currentSpec
     local stamp = validationStamp()
@@ -537,6 +578,8 @@ function manager:Uses(includeConditions)
         and current.profile == profileTable
         and current.spec == spec
         and current.conditions == includeConditions
+        and current.disabledRotations == disabledRotations
+        and current.excludeDisabled == excludeDisabled
 
     if
         fresh and current.incomplete and self.itemData ~= current.itemData and now() - current.built >= INCOMPLETE_RETRY
@@ -575,10 +618,20 @@ function manager:Uses(includeConditions)
         return current
     end
 
-    local built = buildUses(rows, includeConditions, spec)
+    local built = buildUses(
+        rows,
+        {
+            conditions = includeConditions,
+            disabledRotations = disabledRotations,
+            excludeDisabledConditions = excludeDisabled,
+        },
+        spec
+    )
 
     built.stamp, built.profile, built.spec, built.conditions, built.roster =
         stamp, profileTable, spec, includeConditions, roster
+
+    built.disabledRotations, built.excludeDisabled = disabledRotations, excludeDisabled
 
     built.itemData, built.built, built.checked = self.itemData, time, time
     self.uses = built
@@ -721,7 +774,7 @@ end
 -- The lines for one hovered spell or item (cached per index until it is replaced).
 -- `kind` is 'item' or 'spell'. Returns a list of lines, or nil when there is nothing to add.
 function manager:Lines(kind, id)
-    local master, wantSets, wantRotations, includeConditions, limit = readSettings()
+    local master, wantSets, wantRotations, includeConditions, limit, disabledRotations, excludeDisabled = readSettings()
 
     if not master or not (wantSets or wantRotations) then
         return nil
@@ -748,7 +801,7 @@ function manager:Lines(kind, id)
     end
 
     if wantRotations then
-        local uses = self:Uses(includeConditions)
+        local uses = self:Uses(includeConditions, disabledRotations, excludeDisabled)
 
         if uses then
             local cache = kind == 'item' and uses.itemText or uses.spellText

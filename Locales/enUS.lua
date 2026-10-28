@@ -6175,6 +6175,16 @@ local E = {
 [4065] = "uses Set Mark, which only works in the rotation list",
 -- 0d936a8d
 [4066] = "/rm debug marks - Report the raid mark table and what each mark unit resolves to.",
+-- d607ecc3
+-- Context: Check box on the General settings page, Tooltips section. On: spell and item tooltips
+--     also list rotations that are switched off (grayed, marked disabled). Off: only rotations that
+--     are on are listed.
+[4088] = "Include disabled rotations",
+-- e1738cc8
+-- Context: Check box on the General settings page, Tooltips section, next to 'Include rotation
+--     conditions'. On: a condition that is switched off in the rotation editor is not counted when
+--     tooltips list the rotations that use a spell or item.
+[4089] = "Exclude disabled conditions",
 }
 for id, text in pairs(E) do
     local translation = T[id]

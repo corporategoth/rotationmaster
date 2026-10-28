@@ -27,6 +27,9 @@ local function label(parent, font)
     return text
 end
 
+-- The smallest size a list row's status line is shrunk to when its kind and priority alone fill the column.
+local STATUS_MIN_SIZE = 8
+
 -- True when two rotation references name the same rotation: the same Built In id, or the same stored address
 -- (scope, class, owner, specialization, id).
 local function sameReference(a, b)
@@ -469,27 +472,68 @@ local function create(parent)
         end
 
         local status = line(specText)
+        local statusLabel = control.statusLabel
+
+        -- A row bound before may have shrunk its caption: start from the font it was made with.
+        if control.statusFont and control.statusShrunk then
+            statusLabel:SetFont(control.statusFont[1], control.statusFont[2], control.statusFont[3])
+            control.statusShrunk = nil
+        end
+
         -- One line, never cut in the middle of the kind or the priority: when
         -- the specializations are too long for the column, they give way (the
         -- full text is in the tooltip).
-        local room = control.statusLabel:GetWidth()
+        local room = statusLabel:GetWidth()
+
+        -- Sets the longest start of the specialization text (ending in an ellipsis) that fits the room, if the whole
+        -- line does not.
+        -- @return number|nil  characters of the specialization text kept; nil when the whole line already fits
+        -- @return number|nil  how many characters the specialization text has; nil when the whole line already fits
+        local function fitSpecialization()
+            statusLabel:SetText(status)
+
+            if statusLabel:GetStringWidth() <= room then
+                return nil
+            end
+
+            local characters = {}
+
+            for character in specText:gmatch('[%z\1-\127\194-\244][\128-\191]*') do
+                characters[#characters + 1] = character
+            end
+
+            local kept = 0
+
+            for count = #characters - 1, 0, -1 do
+                kept = count
+                status = line(table.concat(characters, '', 1, count) .. '…')
+                statusLabel:SetText(status)
+
+                if statusLabel:GetStringWidth() <= room then
+                    break
+                end
+            end
+
+            return kept, #characters
+        end
 
         if specText and room > 0 then
-            control.statusLabel:SetText(status)
+            local kept = fitSpecialization()
 
-            if control.statusLabel:GetStringWidth() > room then
-                local characters = {}
+            -- When the kind and the priority alone take the whole column (a long word for each, as in German), cutting
+            -- the specializations to an ellipsis is not enough and the line would spill out of the row: shrink the
+            -- caption, down to a floor that still reads, and fit again at the smaller size.
+            if kept == 0 and statusLabel:GetStringWidth() > room and statusLabel.GetFont then
+                local path, size, flags = statusLabel:GetFont()
 
-                for character in specText:gmatch('[%z\1-\127\194-\244][\128-\191]*') do
-                    characters[#characters + 1] = character
-                end
+                if path and size then
+                    control.statusFont = control.statusFont or { path, size, flags }
+                    local target = math.max(STATUS_MIN_SIZE, math.floor(size * room / statusLabel:GetStringWidth()))
 
-                for count = #characters - 1, 0, -1 do
-                    status = line(table.concat(characters, '', 1, count) .. '…')
-                    control.statusLabel:SetText(status)
-
-                    if control.statusLabel:GetStringWidth() <= room then
-                        break
+                    if target < size and statusLabel:SetFont(path, target, flags) ~= false then
+                        control.statusShrunk = true
+                        status = line(specText)
+                        fitSpecialization()
                     end
                 end
             end

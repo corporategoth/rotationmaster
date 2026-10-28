@@ -266,17 +266,21 @@ test('General lists the tooltip options, defaults them on, and applies them thro
     local f,parent=fixture();local a=f.addon
     local refreshed=0;a.RefreshTooltipIntegration=function() refreshed=refreshed+1 end
     local p=a:OpenNativeSettings(parent,'General')
-    local keys={'tooltips','tooltip_itemsets','tooltip_rotations','tooltip_conditions','tooltip_limit'}
+    local keys={'tooltips','tooltip_disabled_rotations','tooltip_conditions','tooltip_exclude_disabled_conditions','tooltip_itemsets','tooltip_rotations','tooltip_limit'}
     for _,key in ipairs(keys) do assert(p.fields[key],key..' missing') end
     assert(p.fields.tooltips:GetChecked() and p.fields.tooltip_itemsets:GetChecked() and p.fields.tooltip_rotations:GetChecked(),'on by default')
+    assert(p.fields.tooltip_disabled_rotations:GetChecked(),'disabled rotations are listed by default, as before')
     assert(not p.fields.tooltip_conditions:GetChecked(),'conditions off by default')
+    assert(not p.fields.tooltip_exclude_disabled_conditions:GetChecked(),'disabled conditions are not excluded by default')
     assert(p.fields.tooltip_limit:GetValue()==3,'three names by default')
     -- Everything is staged until Apply.
-    p.fields.tooltip_limit:SetValue(5);p.fields.tooltip_conditions:Click()
-    assert(a.db.profile.tooltip_limit==nil and a.db.profile.tooltip_conditions==nil and refreshed==0,'staged, not applied')
+    p.fields.tooltip_limit:SetValue(5);p.fields.tooltip_conditions:Click();p.fields.tooltip_disabled_rotations:Click();p.fields.tooltip_exclude_disabled_conditions:Click()
+    assert(a.db.profile.tooltip_limit==nil and a.db.profile.tooltip_conditions==nil and a.db.profile.tooltip_disabled_rotations==nil and a.db.profile.tooltip_exclude_disabled_conditions==nil and refreshed==0,'staged, not applied')
+    for _,key in ipairs({'tooltip_disabled_rotations','tooltip_conditions','tooltip_exclude_disabled_conditions','tooltip_itemsets','tooltip_rotations'}) do assert(p.fields[key]:IsEnabled(),key..' is on while the master is on') end
     p.fields.tooltips:Click()
-    assert(not p.fields.tooltip_itemsets:IsEnabled() and not p.fields.tooltip_rotations:IsEnabled() and not p.fields.tooltip_conditions:IsEnabled(),'master off disables the others')
-    assert(p:SaveSettingsDraft());assert(a.db.profile.tooltips==false and a.db.profile.tooltip_conditions==true and a.db.profile.tooltip_limit==5 and refreshed==1,'applied once, the integration refreshed')
+    assert(p.fields.tooltips:IsEnabled(),'the master switch stays usable')
+    for _,key in ipairs({'tooltip_disabled_rotations','tooltip_conditions','tooltip_exclude_disabled_conditions','tooltip_itemsets','tooltip_rotations'}) do assert(not p.fields[key]:IsEnabled(),'master off disables '..key) end
+    assert(p:SaveSettingsDraft());assert(a.db.profile.tooltips==false and a.db.profile.tooltip_conditions==true and a.db.profile.tooltip_disabled_rotations==false and a.db.profile.tooltip_exclude_disabled_conditions==true and a.db.profile.tooltip_limit==5 and refreshed==1,'applied once, the integration refreshed')
     -- Discard leaves the saved values alone.
     p=a:OpenNativeSettings(parent,'General');p.fields.tooltips:Click();p:DiscardSettingsDraft()
     assert(a.db.profile.tooltips==false and refreshed==1)
@@ -303,10 +307,11 @@ end)
 test('the tooltip options have help text in the General help, after the highlight options and before the debug options',function()
     local f=fixture();local a=f.addon;local order,entries={},{}
     for index,entry in ipairs(a:GetGeneralOptionHelp()) do if entry.id then order[entry.id]=index;entries[entry.id]=entry end end
-    for _,key in ipairs({'tooltips','tooltip_itemsets','tooltip_rotations','tooltip_conditions','tooltip_limit'}) do
+    for _,key in ipairs({'tooltips','tooltip_disabled_rotations','tooltip_conditions','tooltip_exclude_disabled_conditions','tooltip_itemsets','tooltip_rotations','tooltip_limit'}) do
         assert(entries[key] and entries[key].text~='' and not entries[key].text:find('^Help%.General'),key..' has no help text')
     end
-    assert(order.tooltips<order.tooltip_itemsets and order.tooltip_itemsets<order.tooltip_rotations and order.tooltip_rotations<order.tooltip_conditions and order.tooltip_conditions<order.tooltip_limit)
+    -- The help follows the grid: row one, row two, row three, then the limit.
+    assert(order.tooltips<order.tooltip_disabled_rotations and order.tooltip_disabled_rotations<order.tooltip_conditions and order.tooltip_conditions<order.tooltip_exclude_disabled_conditions and order.tooltip_exclude_disabled_conditions<order.tooltip_itemsets and order.tooltip_itemsets<order.tooltip_rotations and order.tooltip_rotations<order.tooltip_limit)
     assert(order.xoffs<order.tooltips and order.tooltip_limit<order.loglevel)
 end)
 test('item announcements preserve item-set and custom-list storage and new announcements get an identity',function()

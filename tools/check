@@ -883,6 +883,7 @@ def main():
             ['lua5.1', 'tests/rotation_header_layout.lua'],
             ['luajit', 'tests/rotation_header_layout.lua'],
             ['luajit', 'tests/offset_fields_layout.lua'],
+            ['luajit', 'tests/settings_tooltips_layout.lua'],
             ['lua5.1', 'tests/stock_retired.lua'],
             ['luajit', 'tests/stock_retired.lua'],
             ['lua5.1', 'tests/ordered_cards.lua'],

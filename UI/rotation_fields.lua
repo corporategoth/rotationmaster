@@ -10,6 +10,24 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
+-- Reports whether this client has Blizzard's Assisted Combat API at all (the platform does not report `missing-api`), so
+-- the step-type menu offers "Blizzard's suggestion" only where it can ever run.
+-- @return boolean  true when the API exists (even if it currently reports itself unavailable); false on clients without it
+--
+-- A client whose platform cannot be asked is treated as having no API. An existing assisted step stays editable
+-- regardless; the caller adds that case.
+function addon:HasAssistedCombatAPI()
+    local platform = self.Platform
+
+    if type(platform) ~= 'table' or type(platform.GetAssistedAvailability) ~= 'function' then
+        return false
+    end
+
+    local ok, availability = pcall(platform.GetAssistedAvailability, platform)
+
+    return ok and type(availability) == 'table' and availability.reason ~= 'missing-api'
+end
+
 -- Parses pending text for a field key into a patch `{ set = {...}, unset = {...} }`, or returns nil when the text is
 -- not valid for that key (a non-finite number, a magnification of 0 or less, a color that is not four 0..1 channels).
 -- Empty text unsets the field. The nil result is what marks a field red and blocks Apply.
@@ -514,7 +532,9 @@ function addon:BuildRotationCardFields(owner, card, model, alive)
     }
 
     if model.section == 'rotation' then
-        types[#types + 1] = { value = 'assisted', text = L["Blizzard's suggestion"] }
+        if step.type == 'assisted' or addon:HasAssistedCombatAPI() then
+            types[#types + 1] = { value = 'assisted', text = L["Blizzard's suggestion"] }
+        end
 
         -- Set Mark is offered where the client can place marks, and kept for a step that is already one.
         local platform = addon.Platform
