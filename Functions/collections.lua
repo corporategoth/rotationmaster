@@ -15,7 +15,9 @@ local collections = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.collections = collections
 
--- Returns the keys of a table sorted by their values (not by the keys themselves); the values must be comparable.
+-- Returns the keys of a table sorted by their values (not by the keys themselves).
+-- @param array table  The table whose values are compared; the values must be comparable with <.
+-- @return any[]  The keys, ordered by their values.
 collections.keys = function(array)
     local rv = {}
     for k,_ in pairs(array) do
@@ -26,8 +28,13 @@ collections.keys = function(array)
     return rv
 end
 
--- Iterates a table in sorted key order, or in the order given by order(t, a, b) over the keys. The keys are snapshotted
--- first, so changing values during the loop is safe but added keys are not visited.
+-- Iterates a table in sorted key order, or in the order given by order(t, a, b) over the keys.
+-- @param t table  The table to iterate.
+-- @param order function|nil  Called as order(t, a, b) with two keys; returns true when a comes before b. nil sorts the
+--   keys with <.
+-- @return function  An iterator that returns the next key and its value, and nothing at the end.
+--
+-- The keys are snapshotted first, so changing values during the loop is safe but added keys are not visited.
 collections.spairs = function(t, order)
     -- collect the keys
     local keys = {}
@@ -52,6 +59,8 @@ collections.spairs = function(t, order)
 end
 
 -- Returns a copy of the table with every key converted to a string (so numeric keys become "1", "2", ...).
+-- @param array table  The table to copy.
+-- @return table  The copy, keyed by strings.
 collections.tomap = function(array)
     local rv = {}
     for k,v in pairs(array) do
@@ -60,7 +69,10 @@ collections.tomap = function(array)
     return rv
 end
 
--- Returns the key under which the table holds the value (first found, in pairs order), or nil when absent.
+-- Finds the key under which the table holds a value.
+-- @param array table|nil  The table to search.
+-- @param value any  The value to look for (compared with ==).
+-- @return any|nil  The first key found, in pairs order; nil when absent or when array is nil.
 collections.index = function(array, value)
     if not array then return nil end
 
@@ -71,7 +83,9 @@ collections.index = function(array, value)
     end
 end
 
--- Counts every entry of a table, hash part included (the # operator counts only a sequence); nil counts as zero.
+-- Counts every entry of a table, hash part included (the # operator counts only a sequence).
+-- @param T table|nil  The table to count; nil counts as zero.
+-- @return number  The number of entries.
 collections.tablelength = function(T)
     if T == nil then return 0 end
     local count = 0
@@ -80,6 +94,8 @@ collections.tablelength = function(T)
 end
 
 -- Inserts the list at the front of the target, item by item at positions 1..n, so the new items keep their order.
+-- @param t table  The target list; changed in place.
+-- @param values any[]  The items to insert.
 collections.multiinsert = function(t, values)
     for i,v in ipairs(values) do
 	    table.insert(t, i, v)
@@ -87,7 +103,9 @@ collections.multiinsert = function(t, values)
 end
 
 -- Clears the table in place, keeping the keys listed in except; with invert true it clears only those keys instead.
--- Does nothing for nil.
+-- @param array table|nil  The table to clear; nil does nothing.
+-- @param except any[]|nil  The keys to keep (or, with invert, to clear).
+-- @param invert boolean|nil  True to clear only the keys listed in except; nil means false.
 collections.cleanArray = function(array, except, invert)
     if array == nil then
         return
@@ -112,8 +130,14 @@ collections.cleanArray = function(array, except, invert)
     end
 end
 
--- Returns a new table with the top-level entries, dropping the keys listed in except (or keeping only them with
--- invert true). Nested tables are shared with the source, not copied.
+-- Returns a new table with the top-level entries, dropping the keys listed in except (or keeping only them with invert
+-- true).
+-- @param array table|nil  The table to copy.
+-- @param except any[]|nil  The keys to drop (or, with invert, to keep).
+-- @param invert boolean|nil  True to keep only the keys listed in except; nil means false.
+-- @return table|nil  The copy; nil when array is nil.
+--
+-- Nested tables are shared with the source, not copied.
 collections.deepcopy = function(array, except, invert)
     if array == nil then
         return nil
@@ -140,8 +164,11 @@ collections.deepcopy = function(array, except, invert)
     return rv
 end
 
--- Returns true when both tables hold the same keys with equal values (compared with ==, so nested tables must be the
--- same table).
+-- Tells whether both tables hold the same keys with equal values.
+-- @param lhs table  The first table.
+-- @param rhs table  The second table.
+-- @return boolean  True when every key has an equal value in both; values are compared with ==, so nested tables must
+--   be the same table.
 collections.compareArray = function(lhs, rhs)
     for k,v in pairs(lhs) do
         if rhs[k] ~= v then

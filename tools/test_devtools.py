@@ -6,7 +6,9 @@ repository guards, fast-test selection. Standard library only; seconds.
 
   python3 tools/test_devtools.py
 """
+import contextlib
 import http.server
+import io
 import json
 import os
 from pathlib import Path
@@ -23,6 +25,7 @@ sys.path.insert(0, str(TOOLS))
 import check_all  # noqa: E402
 import copyright as C  # noqa: E402
 import fast_tests  # noqa: E402
+import function_comments as FC  # noqa: E402
 import gitea_release  # noqa: E402
 import lint_workflows  # noqa: E402
 import release_plan  # noqa: E402
@@ -838,6 +841,213 @@ class Translation(unittest.TestCase):
         if key:
             english = self.corpus.english[key]
             self.assertTrue(self.check(key, english.replace('|r', ''))[0])
+
+
+class FunctionComments(unittest.TestCase):
+    """tools/function_comments.py: which functions need a structured header and what makes one malformed."""
+
+    GOOD = (
+        '-- Looks a spell up.\n'
+        '-- @param spell number|string  The spell ID or name.\n'
+        '-- @param unit string|nil  The unit token; nil means "player".\n'
+        '-- @return boolean  True when known.\n'
+        '-- @return string|nil  The reason code when false.\n'
+        '--\n'
+        '-- Longer notes.\n'
+        'function addon:Lookup(spell, unit)\n'
+        '    local known = spell == 1\n'
+        '    if known then\n'
+        '        return true\n'
+        '    end\n'
+        '    return false, "unknown"\n'
+        'end\n')
+
+    def codes(self, source, strict=False, frozen=None):
+        found = FC.check_source('x.lua', source, frozen=frozen if frozen is not None else set(), strict=strict)
+        return sorted(v.code for v in found)
+
+    def mutate(self, old, new, source=None):
+        source = source or self.GOOD
+        self.assertIn(old, source)
+        return source.replace(old, new)
+
+    def test_a_complete_header_passes(self):
+        self.assertEqual(self.codes(self.GOOD), [])
+
+    def test_missing_and_plain_comments(self):
+        body = 'function addon:Lookup(spell, unit)\n    local a = 1\n    local b = 2\n    local c = 3\n    return a + b + c + spell\nend\n'
+        self.assertEqual(self.codes(body), ['missing'], 'no comment')
+        self.assertEqual(self.codes('-- Looks a spell up.\n' + body), ['missing'], 'plain comment where tags are needed')
+        self.assertEqual(self.codes('-- Looks a spell up.\n\n' + body), ['missing'], 'comment behind a blank line')
+        without_params = 'function addon:Reset()\n' + '    local a = 1\n' * 6 + 'end\n'
+        self.assertEqual(self.codes(without_params), ['missing'], 'six lines need a comment')
+        self.assertEqual(self.codes('-- Resets.\n' + without_params), [], 'a brief line is enough without parameters')
+
+    def test_a_blank_line_between_a_tagged_header_and_the_function(self):
+        source = self.mutate('-- Longer notes.\nfunction', '-- Longer notes.\n\nfunction')
+        self.assertEqual(self.codes(source), ['blank'])
+
+    def test_trivial_functions_need_nothing_unless_strict(self):
+        short = 'local function pair(a, b)\n    return a, b\nend\n'
+        self.assertEqual(self.codes(short), [])
+        self.assertEqual(self.codes(short, strict=True), ['missing'])
+        three = 'local function pair(a, b)\n    local x = a\n    local y = b\n    return x, y\nend\n'
+        self.assertEqual(self.codes(three), [], 'three lines are still trivial')
+        four = 'local function pair(a, b)\n    local x = a\n    local y = b\n    local z = x\n    return x, y\nend\n'
+        self.assertEqual(self.codes(four), ['missing'], 'more than three lines with parameters')
+        self.assertEqual(self.codes('local function noop()\n    local a = 1\n    local b = 2\n    local c = 3\n    local d = 4\nend\n'), [])
+
+    def test_a_trivial_function_with_a_header_is_still_checked(self):
+        source = '-- Pairs.\n-- @param a number  First.\nlocal function pair(a, b)\n    return a, b\nend\n'
+        self.assertEqual(self.codes(source), ['param', 'return'])
+
+    def test_the_brief_line(self):
+        source = self.mutate('-- Looks a spell up.\n', '')
+        self.assertEqual(self.codes(source), ['brief'])
+
+    def test_parameters_must_match_the_declaration(self):
+        self.assertEqual(self.codes(self.mutate('-- @param unit string|nil  The unit token; nil means "player".\n', '')), ['param'])
+        self.assertEqual(self.codes(self.mutate('@param unit', '@param target')), ['param'])
+        swapped = self.mutate('-- @param spell number|string  The spell ID or name.\n-- @param unit string|nil  The unit token; nil means "player".\n',
+                              '-- @param unit string|nil  The unit token; nil means "player".\n-- @param spell number|string  The spell ID or name.\n')
+        self.assertEqual(self.codes(swapped), ['param'])
+        extra = self.mutate('-- @return boolean', '-- @param more any  Extra.\n-- @return boolean')
+        self.assertEqual(self.codes(extra), ['param'])
+
+    def test_self_is_implicit_for_methods_only(self):
+        listed = self.mutate('-- @param spell', '-- @param self table  The addon.\n-- @param spell')
+        self.assertEqual(self.codes(listed), ['param'], 'a colon method never lists self')
+        local = ('-- Runs.\n-- @param self table  The addon.\n-- @param n number  How often.\n'
+                 'local function run(self, n)\n' + '    local a = n\n' * 4 + 'end\n')
+        self.assertEqual(self.codes(local), [], 'an explicit self parameter is listed')
+        self.assertEqual(self.codes(local.replace('-- @param self table  The addon.\n', '')), ['param'])
+
+    def test_varargs_are_a_parameter(self):
+        source = ('-- Calls.\n-- @param fn function  The function.\n-- @param ... any  Its arguments.\n'
+                  '-- @return any  Its results.\nlocal function call(fn, ...)\n' + '    local a = fn\n' * 3 + '    return fn(...)\nend\n')
+        self.assertEqual(self.codes(source), [])
+        self.assertEqual(self.codes(source.replace('-- @param ... any  Its arguments.\n', '')), ['param'])
+
+    def test_return_values(self):
+        self.assertEqual(self.codes(self.mutate('-- @return string|nil  The reason code when false.\n', '')), ['return'], 'two values returned')
+        self.assertEqual(self.codes(self.mutate('-- @return string|nil  The reason code when false.\n-- @return boolean  True when known.\n'
+                                                .replace('-- @return boolean  True when known.\n', ''), '')), ['return'])
+        silent = ('-- Runs.\n-- @param n number  How often.\n-- @return boolean  Whether it ran.\n'
+                  'local function run(n)\n' + '    local a = n\n' * 5 + 'end\n')
+        self.assertEqual(self.codes(silent), ['return'], 'a @return on a function that returns nothing')
+
+    def test_returns_of_nested_functions_do_not_count(self):
+        source = ('-- Builds a handler.\n-- @param n number  The count.\n'
+                  'local function build(n)\n    local handler = function()\n        return n\n    end\n'
+                  '    local a = 1\n    local b = 2\n    handler()\n    handler()\nend\n')
+        self.assertEqual(self.codes(source), [])
+
+    def test_malformed_tags(self):
+        self.assertEqual(self.codes(self.mutate('-- @param spell number|string  The spell ID or name.', '-- @param spell')), ['tag'])
+        self.assertEqual(self.codes(self.mutate('-- @param spell number|string  The spell ID or name.', '-- @param spell number|string')), ['tag'])
+        self.assertEqual(self.codes(self.mutate('-- @return boolean  True when known.', '-- @return boolean')), ['tag'])
+        one_line = self.mutate('-- @return boolean  True when known.', '-- @return boolean  True when known. @return x  Y')
+        self.assertEqual(self.codes(one_line), ['tag'], 'two tags on a line')
+        glued = self.mutate('-- Looks a spell up.', '-- Looks a spell up. @param spell x  Y')
+        self.assertEqual(self.codes(glued), ['tag'], 'a tag in the middle of the brief line')
+        late = self.mutate('-- Longer notes.', '-- Longer notes.\n-- @param extra any  After the notes.')
+        self.assertEqual(self.codes(late), ['tag'], 'a tag after the longer notes')
+        order = self.mutate('-- @return boolean  True when known.', '-- @return boolean  True when known.\n-- @param z any  Late.')
+        self.assertIn('tag', self.codes(order), 'a @param after a @return')
+        self.assertIn('tag', self.codes(self.mutate('-- @return boolean', '-- @see x  Y\n-- @return boolean')), 'an unknown tag')
+
+    def test_types_may_contain_spaces_inside_brackets(self):
+        source = self.mutate('number|string  The spell ID', 'table{id=number, name=string}  The spell')
+        self.assertEqual(self.codes(source), [])
+        self.assertEqual(self.codes(self.mutate('number|string  The spell ID or name.', 'table{id=number, name=string}')), ['tag'])
+
+    def test_wrapped_descriptions_and_annotations(self):
+        wrapped = self.mutate('-- @param unit string|nil  The unit token; nil means "player".',
+                              '-- @param unit string|nil  The unit token;\n--   nil means "player".')
+        self.assertEqual(self.codes(wrapped), [])
+        annotated = self.mutate('function addon:Lookup', '---@param unit string|nil\nfunction addon:Lookup')
+        self.assertEqual(self.codes(annotated), [], 'a LuaLS annotation between the header and the function is ignored')
+
+    def test_named_functions_and_table_fields(self):
+        field = 'local t = {\n    run = function(a)\n' + '        local x = a\n' * 6 + '    end,\n}\n'
+        self.assertEqual(self.codes(field), [], 'a short table-field closure is a callback')
+        long_field = 'local t = {\n    run = function(a)\n' + '        local x = a\n' * 16 + '    end,\n}\n'
+        self.assertEqual(self.codes(long_field), ['missing'])
+        assigned = 'local run\nrun = function(a)\n' + '    local x = a\n' * 6 + 'end\n'
+        self.assertEqual(self.codes(assigned), ['missing'])
+        member = 'function M.run(a)\n' + '    local x = a\n' * 6 + 'end\n'
+        self.assertEqual(self.codes(member), ['missing'])
+        anonymous = 'register(function(a)\n' + '    local x = a\n' * 8 + 'end)\n'
+        self.assertEqual(self.codes(anonymous), [])
+        nested = 'local function outer()\n    local function inner(a)\n' + '        local x = a\n' * 6 + '    end\n    inner(1)\nend\n'
+        found = FC.check_source('x.lua', nested, frozen=set())
+        self.assertEqual(sorted(v.name for v in found), ['local inner', 'local outer'], 'a nested named function is checked')
+
+    def test_generated_regions_are_not_read(self):
+        suffix = ('-- BEGIN GENERATED RM SOURCE BINDINGS\n'
+                  'do\n    local function sourceGetter(name)\n' + '        local a = name\n' * 8 + '    end\nend\n'
+                  '-- END GENERATED RM SOURCE BINDINGS\n')
+        self.assertEqual(self.codes('local x = 1\n' + suffix), [])
+        region = ('local x = 1\n-- BEGIN GENERATED THING\nfunction G(a)\n' + '    local v = a\n' * 8
+                  + 'end\n-- END GENERATED THING\n')
+        self.assertEqual(self.codes(region), [])
+        self.assertEqual(self.codes(region.replace('-- BEGIN GENERATED THING\n', '').replace('-- END GENERATED THING\n', '')),
+                         ['missing'], 'the same function outside a generated region')
+
+    def test_frozen_helpers_are_checked_whole_and_never_inside(self):
+        text = ('-- Doubles.\n-- @param n number  The number.\n-- @return number  Twice n.\n'
+                'local function double(n)\n    local function inner(v)\n        local a = v\n        local b = a\n'
+                '        local c = b\n        local d = c\n        return d\n    end\n    return inner(n) * 2\nend\n')
+        raw = text[text.index('(n)') + 3:text.rindex('end')]
+        self.assertEqual(self.codes(text, frozen={raw}), [], 'the nested function inside a frozen body is exempt')
+        self.assertEqual(self.codes(text, frozen=set()), ['missing'], 'the same function when it is not frozen')
+        no_return = text.replace('-- @return number  Twice n.\n', '')
+        self.assertEqual(self.codes(no_return, frozen={raw}), ['return'], 'the frozen body still decides the returns')
+
+    def test_the_baseline_ratchet(self):
+        source = ('function a1(x)\n' + '    local v = x\n' * 6 + 'end\n\nfunction a2(x)\n' + '    local v = x\n' * 6 + 'end\n')
+        found = FC.check_source('x.lua', source, frozen=set())
+        self.assertEqual(len(found), 2)
+        baseline = {found[0].key(): 1}
+        fresh, stale = FC.new_violations(found, baseline)
+        self.assertEqual([v.name for v in fresh], ['a2'], 'only the violation outside the baseline fails')
+        self.assertEqual(stale, 0)
+        fresh, stale = FC.new_violations(found[:1], {found[0].key(): 1, found[1].key(): 1})
+        self.assertEqual((len(fresh), stale), (0, 1), 'a baselined violation that no longer occurs is reported as stale')
+        twice = FC.check_source('x.lua', source.replace('a2', 'a1'), frozen=set())
+        fresh, _ = FC.new_violations(twice, {twice[0].key(): 1})
+        self.assertEqual(len(fresh), 1, 'a second violation of the same kind is new')
+
+    def test_baseline_files_round_trip(self):
+        directory = temp_dir(self)
+        path = directory / 'baseline.json'
+        found = FC.check_source('x.lua', 'function a1(x)\n' + '    local v = x\n' * 6 + 'end\n', frozen=set())
+        FC.write_baseline(path, found)
+        self.assertEqual(FC.load_baseline(path), {found[0].key(): 1})
+
+    def test_a_path_outside_the_repository_is_an_error(self):
+        directory = temp_dir(self)
+        (directory / 'x.lua').write_text('return 1\n', encoding='utf-8')
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(FC.main([str(directory / 'x.lua')]), 2)
+
+    def test_the_tree_is_the_formatters_without_the_tests(self):
+        files = FC.tree_files()
+        self.assertIn('main.lua', files)
+        self.assertFalse([f for f in files if f.startswith(('tests/', 'Libs/', 'Locales/', 'Modules/'))])
+        self.assertNotIn('Data/builtin_sources.lua', files)
+
+    def test_summary_counts_per_directory(self):
+        found = [FC.Violation('UI/a.lua', 1, 'f', 'missing', ''), FC.Violation('UI/b.lua', 1, 'g', 'missing', ''),
+                 FC.Violation('Core/a.lua', 1, 'h', 'missing', ''), FC.Violation('main.lua', 1, 'i', 'missing', '')]
+        self.assertEqual([row.split() for row in FC.summarize(found)], [['2', 'UI'], ['1', '.'], ['1', 'Core']])
+
+    def test_the_shipped_tool_files_stay_documented(self):
+        """A real file, mutated in memory: dropping or breaking a header in tools/builtin_modules.lua is caught."""
+        text = (ROOT / 'tools' / 'builtin_modules.lua').read_text(encoding='utf-8')
+        self.assertEqual(self.codes(text), [])
+        self.assertEqual(self.codes(text.replace('-- @param root string|nil  The repository root; nil or empty means the current directory.\n-- @return string[]  The TOC paths.', '-- @return string[]  The TOC paths.')), ['param'])
+        self.assertEqual(self.codes(text.replace('-- Lists every module TOC (fallback and flavours): inputs whose bytes decide what loads.', '')), ['brief'])
 
 
 if __name__ == '__main__':

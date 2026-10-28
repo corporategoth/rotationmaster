@@ -14,8 +14,11 @@ local values = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.values = values
 
--- Applies a stored operator name (LESSTHAN, EQUALS, DIVISIBLE, ...) to two values and returns the boolean result.
--- An unknown operator logs a warning and returns nil. Callers must pass comparable (readable) values.
+-- Applies a stored operator name (LESSTHAN, EQUALS, DIVISIBLE, ...) to two values.
+-- @param operator string  The stored operator name.
+-- @param left any  The left value; callers must pass comparable (readable) values.
+-- @param right any  The right value.
+-- @return boolean|nil  The result; nil (after logging a warning) for an unknown operator.
 values.compare = function(operator, left, right)
     if operator == "LESSTHAN" then
         return left < right
@@ -36,19 +39,26 @@ values.compare = function(operator, left, right)
     end
 end
 
--- Returns true when the set-style table has a non-nil entry under the key (the table is keyed by value, not a list).
+-- Tells whether the set-style table has a non-nil entry under the key.
+-- @param array table  A table keyed by value, not a list.
+-- @param value any  The key to test.
+-- @return boolean  True when array[value] is not nil.
 values.isin = function(array, value)
     return array[value] ~= nil
 end
 
--- Rounds half up to the given number of decimal places (zero when omitted).
+-- Rounds half up to the given number of decimal places.
+-- @param num number  The number to round.
+-- @param numDecimalPlaces number|nil  The decimal places; nil means zero.
+-- @return number  The rounded number.
 values.round = function(num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return floor(num * mult + 0.5) / mult
 end
 
--- Returns true for a whole number, given as a number or as a string that reads back unchanged (so "5" passes and
--- "5.0" or "05" does not).
+-- Tells whether a value is a whole number, given as a number or as a string that reads back unchanged.
+-- @param num number|string  The value to test; "5" passes and "5.0" or "05" does not.
+-- @return boolean  True for a whole number.
 values.isint = function(num)
     if type(num) == "number" then
         return floor(num) == num

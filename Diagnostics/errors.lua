@@ -33,7 +33,9 @@ local platformFields = {
 -- Scalar copies and redaction
 -- ============================================================================
 
--- True when value is neither a secret nor inaccessible; a throwing check counts as unreadable.
+-- Tells whether a game value may be read: it is neither a secret nor inaccessible.
+-- @param value any  The value to test.
+-- @return boolean  True when the value is readable; false when it is secret or inaccessible, or when the check throws.
 local function readable(value)
     if type(issecretvalue) == "function" then
         local ok, secret = pcall(issecretvalue, value)
@@ -54,8 +56,13 @@ local function readable(value)
     return true
 end
 
--- Returns value as a string (truncated to limit, default 256) when it is a readable string, boolean or number;
--- nil for anything else. Reports hold scalars only, never live references.
+-- Converts a value to a string scalar for a report.
+-- @param value any  The value to convert.
+-- @param limit number|nil  The most characters kept of a string; nil means 256.
+-- @return string|nil  The string (truncated), or "true"/"false", or the number as text; nil for anything else or an
+--   unreadable value.
+--
+-- Reports hold scalars only, never live references.
 local function scalar(value, limit)
     if not readable(value) then
         return nil
@@ -74,7 +81,11 @@ local function scalar(value, limit)
     end
 end
 
--- Calls fn under pcall and returns its first result as a scalar string, or nil.
+-- Calls fn under pcall and returns its first result as a scalar string.
+-- @param fn function|nil  The function to call; anything else yields nil.
+-- @param ... any  The arguments passed to fn.
+-- @return string|nil  The first result as a scalar (see scalar); nil when fn is not a function, throws or returns
+--   something else.
 local function probe(fn, ...)
     if type(fn) ~= "function" then
         return nil
@@ -87,8 +98,11 @@ local function probe(fn, ...)
     end
 end
 
--- Copies the whitelisted fields of an operation context into a table of scalars. A rotation id that is an issued
--- session handle is replaced by the rotation's printable identifier, or dropped.
+-- Copies the whitelisted fields of an operation context into a table of scalars.
+-- @param context table|nil  The operation context; anything but a readable table yields an empty copy.
+-- @return table  The scalar string value of each whitelisted field that has one, by field name.
+--
+-- A rotation id that is an issued session handle is replaced by the rotation's printable identifier, or dropped.
 local function contextCopy(context)
     local copy = {}
 
@@ -119,7 +133,9 @@ local function contextCopy(context)
     return copy
 end
 
--- Returns a copy of a stored report without the raw message and stack, with the context rebuilt through contextCopy.
+-- Copies a stored report without the raw message and stack, with the context rebuilt through contextCopy.
+-- @param record table  A stored report.
+-- @return table  The copy.
 local function copyRecord(record)
     local copy = {}
 
@@ -135,11 +151,13 @@ local function copyRecord(record)
 end
 
 -- Collects the personal names to scrub from a report: realm, guild, and the name and realm of the player, party and
--- raid members (at most 45 units). Names shorter than two characters are skipped.
+-- raid members (at most 45 units).
+-- @return string[]  The names; names shorter than two characters are skipped.
 local function identifiers()
     local names = {}
 
     -- Adds one name to the list when it is a readable string of at least two characters.
+    -- @param value any  The name to add.
     local function add(value)
         value = scalar(value)
 
@@ -166,7 +184,10 @@ local function identifiers()
     return names
 end
 
--- Returns text with player GUIDs, user names in file paths and every name in names replaced by a placeholder.
+-- Replaces player GUIDs, user names in file paths and every name in names with a placeholder.
+-- @param text string  The text to scrub.
+-- @param names string[]  The personal names to replace, from identifiers().
+-- @return string  The scrubbed text.
 local function redact(text, names)
     text = text:gsub("Player%-%d+%-%x+", "<player-guid>")
     text = text:gsub("(/home/)[^/]+", "%1<user>"):gsub("(/Users/)[^/]+", "%1<user>")
@@ -183,10 +204,15 @@ end
 -- Recording and observing errors
 -- ============================================================================
 
--- Records one failure and returns its report id. An identical failure (same message, stack and context) only bumps
--- the existing report's count. The message and stack are stored redacted; the raw text is kept for explicit
--- requests only, and custom Lua text is replaced by a placeholder in the redacted form. The oldest report is dropped
--- beyond 100.
+-- Records one failure.
+-- @param context table|nil  The operation context (copied through contextCopy).
+-- @param message any  The error value; stored as a scalar of at most 2048 characters.
+-- @param stack string|nil  The stack text; at most 8192 characters are kept.
+-- @return number  The report id (that of the existing report when this failure was recorded before).
+--
+-- An identical failure (same message, stack and context) only bumps the existing report's count. The message and stack
+-- are stored redacted; the raw text is kept for explicit requests only, and custom Lua text is replaced by a
+-- placeholder in the redacted form. The oldest report is dropped beyond 100.
 local function recordError(context, message, stack)
     local clean = contextCopy(context)
     local errorText = scalar(message, 2048) or "<unavailable error value>"
@@ -286,6 +312,10 @@ do
     local frame
 
     -- OnEvent handler: records a blocked or forbidden protected action when this addon is the owner named by the event.
+    -- @param _ any  The frame; not used.
+    -- @param event string  "ADDON_ACTION_BLOCKED" or "ADDON_ACTION_FORBIDDEN"; any other event is ignored.
+    -- @param owner any  The addon name the event names; events for other addons are ignored.
+    -- @param blockedFunction any  The name of the blocked function, recorded as a scalar.
     local function observe(_, event, owner, blockedFunction)
         if
             handling
@@ -355,8 +385,12 @@ do
 end
 
 -- Wraps the game's error handler once so that errors it receives from this addon's files (or from AceLocale for this
--- addon) are recorded; every error is still passed to the original handler. Returns true when a wrapper is installed.
--- Cheap to call repeatedly: service:Call invokes it so that a handler installed later is wrapped too.
+-- addon) are recorded.
+-- @return boolean  True when a wrapper is installed (now or earlier); false when the handler API is missing or
+--   installing failed.
+--
+-- Every error is still passed to the original handler. Cheap to call repeatedly: service:Call invokes it so that a
+-- handler installed later is wrapped too.
 function service:ObserveReportedErrors()
     if type(seterrorhandler) ~= 'function' or type(geterrorhandler) ~= 'function' then
         return false
@@ -372,7 +406,10 @@ function service:ObserveReportedErrors()
     end
 
     -- Records message when its stack passes through this addon's files (other than this one), or it is an AceLocale
-    -- error for this addon; ignores errors raised while one is already being recorded or forwarded.
+    -- error for this addon.
+    -- @param message any  The error message the game's handler received; non-strings are ignored.
+    --
+    -- Ignores errors raised while one is already being recorded or forwarded.
     local function observe(message)
         if handling or forwarding > 0 or not readable(message) or type(message) ~= 'string' then
             return
@@ -408,11 +445,16 @@ function service:ObserveReportedErrors()
     end
 
     -- The installed error handler: observes the error, then forwards it to the original handler unchanged.
+    -- @param ... any  The arguments of the game's error handler (the error message first).
+    -- @return any  Whatever the original handler returns (any number of values); rethrows its error if it failed.
     local function wrapper(...)
         observe((...))
         forwarding = forwarding + 1
 
         -- Restores the forwarding count and rethrows if the original handler itself errored.
+        -- @param success boolean  Whether the original handler ran without error (the pcall flag).
+        -- @param ... any  The handler's results, or the error value when it failed.
+        -- @return any  The handler's results (any number of values).
         local function finish(success, ...)
             forwarding = forwarding - 1
 
@@ -434,10 +476,13 @@ end
 -- Boundary (Call and Wrap) and reports
 -- ============================================================================
 
--- The handler runs before xpcall unwinds, while activeContext is still this
--- call's context, so one shared function serves every call.
--- Records the failure and passes it to the game's error handler. Returns the report id, or 0 when it could not be
--- recorded (including a failure raised while another is being recorded).
+-- Records the failure and passes it to the game's error handler.
+-- @param message any  The error value xpcall hands over.
+-- @return number  The report id, or 0 when it could not be recorded (including a failure raised while another is being
+--   recorded).
+--
+-- The handler runs before xpcall unwinds, while activeContext is still this call's context, so one shared function
+-- serves every call.
 local function callFailed(message)
     if handling then
         return 0
@@ -473,6 +518,9 @@ local function callFailed(message)
 end
 
 -- Puts the previous context back and passes the call's results through, so nested Calls keep their own context.
+-- @param previous table|nil  The context to restore.
+-- @param ... any  The call's results.
+-- @return any  The same results (any number).
 local function restore(previous, ...)
     activeContext = previous
     return ...
@@ -481,10 +529,16 @@ end
 -- WoW's xpcall passes extra arguments to the callback; plain Lua 5.1 does not.
 local xpcallForwards = select(2, xpcall(function(value) return value end, callFailed, true)) == true
 
--- Calls run for every event and polling tick. A context is only read (and
--- copied) when an error is recorded, so callers may reuse one context table.
--- Runs callback(...) under xpcall with context as the error context. Returns xpcall's results: true and the
--- callback's results, or false and the error value.
+-- Runs callback(...) under xpcall with context as the error context.
+-- @param context table|nil  The error context, only read (and copied) when an error is recorded, so callers may reuse
+--   one table.
+-- @param callback function  The function to run.
+-- @param ... any  The arguments passed to callback.
+-- @return boolean  True when callback ran without error.
+-- @return any  The callback's results (any number of values) on success; on failure the report id from callFailed (0
+--   when it could not be recorded).
+--
+-- Calls run for every event and polling tick. Nested calls keep their own context.
 function service:Call(context, callback, ...)
     self:ObserveReportedErrors()
     local previous = activeContext
@@ -499,6 +553,7 @@ function service:Call(context, callback, ...)
 end
 
 -- Returns copies of the stored reports (redacted, without raw text or fingerprints).
+-- @return table[]  The report copies, oldest first.
 function service:GetReports()
     local copy = {}
 
@@ -510,8 +565,11 @@ function service:GetReports()
     return copy
 end
 
--- Formats the report with this id (every report when id is nil) as text for pasting into an issue. The original,
--- unredacted message and stack are included only when includeOriginal is exactly true.
+-- Formats a report as text for pasting into an issue.
+-- @param id number|nil  The report id; nil formats every report.
+-- @param includeOriginal boolean|nil  The original, unredacted message and stack are included only when this is exactly
+--   true.
+-- @return string  The formatted text; empty when no report matches.
 function service:FormatReport(id, includeOriginal)
     local parts = {}
 
@@ -558,9 +616,14 @@ function service:Clear()
     reports, fingerprints = {}, {}
 end
 
--- A broken owned script is retired until its owner installs a new callback.
--- The existing collector still receives the original failure through Call.
 -- Returns a function that runs callback under service:Call with context, and stops running it after its first failure.
+-- @param context table|nil  The error context passed to Call.
+-- @param callback function  The function to wrap.
+-- @return function  Called with the callback's arguments; returns the callback's results, or nothing once it has
+--   failed.
+--
+-- A broken owned script is retired until its owner installs a new callback. The existing collector still receives the
+-- original failure through Call.
 function service:Wrap(context, callback)
     local failed = false
 
@@ -570,6 +633,9 @@ function service:Wrap(context, callback)
         end
 
         -- Passes the callback's results through, or retires the wrapper when it failed.
+        -- @param ok boolean  Whether the call succeeded.
+        -- @param ... any  The callback's results, or the failure.
+        -- @return any  The callback's results on success (any number of values); nothing on failure.
         local function result(ok, ...)
             if ok then
                 return ...

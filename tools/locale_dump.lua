@@ -10,14 +10,23 @@
 local root, client, keysPath, outPath = ...
 root = root:gsub('/$', '')
 
+-- Encodes a string as hexadecimal.
+-- @param s string  The string.
+-- @return string  Two lowercase hex digits per byte.
 local function hex(s)
     return (s:gsub('.', function(c) return string.format('%02x', c:byte()) end))
 end
 
+-- Decodes a hexadecimal string.
+-- @param h string  Pairs of hex digits.
+-- @return string  The decoded bytes.
 local function unhex(h)
     return (h:gsub('%x%x', function(c) return string.char(tonumber(c, 16)) end))
 end
 
+-- Reads a text file into a list of lines.
+-- @param path string  The file path.
+-- @return string[]  The lines, without line endings.
 local function lines(path)
     local out = {}
 
@@ -49,6 +58,10 @@ local env = setmetatable({
 
 env._G = env
 
+-- Loads a file of the add-on tree into the game-like environment and runs it.
+-- @param path string  The path relative to the tree root.
+-- @param ... any  The arguments passed to the chunk (the addon name and namespace).
+-- @return any  The chunk's results.
 local function load(path, ...)
     local fn = assert(loadfile(root .. '/' .. path))
     setfenv(fn, env)
@@ -74,6 +87,11 @@ end
 local loaded = {}
 
 env.C_AddOns = {
+    -- Stand-in for C_AddOns.LoadAddOn: loads the text files of a Built In text module into its own namespace.
+    -- @param name string  The module name; its TOC under Modules/<name>/ lists the files.
+    -- @return boolean  Always true.
+    --
+    -- Only the text files are loaded: a converter add-on also lists code that needs the whole client.
     LoadAddOn = function(name)
         local dir = 'Modules/' .. name
         local namespace = {}

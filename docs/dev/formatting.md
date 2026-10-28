@@ -52,14 +52,56 @@ Comments say why, not what. The standard:
 1. **A header** at the top of every file, above the first statement: what the file is for, what it owns and must not do,
    what loads it (the TOC position or the module that requires it) and the dependencies that matter (load order, a
    restricted-client rule, a saved-data shape). Three to eight lines.
-2. **A comment above every function** (including `function addon:Name` and local helpers): what it does, in terms of
-   its inputs and result (`returns value, or nil and a reason`), and the assumption a caller must keep (called on the poll
-   path, must not allocate, only valid while the window is open). A trivial accessor gets one line.
+2. **A header above every function** (including `function addon:Name` and local helpers): what it does, then each
+   parameter and each returned value on its own line, then the assumption a caller must keep (called on the poll path,
+   must not allocate, only valid while the window is open). The exact shape is in "Function headers" below. A trivial
+   accessor gets one line.
 3. **Section headers** in a file longer than about 150 lines, a line of `=` above and below the section title.
 4. **Inside a function** a comment explains a trap or a non-obvious reason (a client quirk with its evidence, a workaround
    and what removes it, why an order matters). It does not narrate the next line.
 
 Do not write change-log comments, do not leave commented-out code, do not add a to-do that is not an issue.
+
+## Function headers
+
+A header is a block of plain `--` lines directly above the function, no blank line between them and the function:
+
+```lua
+-- Brief description of what the function does, not how it does it.
+-- @param spell number|string  The spell ID or name to look up; nil is not allowed.
+-- @param unit string|nil  The unit token to check; nil means "player".
+-- @return boolean  True when the spell is known and ready.
+-- @return string|nil  The reason code when false; nil when true.
+--
+-- Longer notes only where they help: how it works, what a caller must know (side effects, ordering, timing).
+function addon:IsSpellReady(spell, unit)
+```
+
+- The first line says what the function does, not how. Tags follow, then a bare `--` line, then the notes. A wrapped
+  description continues on the next line indented by two spaces (`--   more text`). Wrap at 120 columns.
+- One `@param name type  description` line per parameter, in declaration order, with the names the code uses. A method
+  declared `function a:b()` does not list `self`; an explicit `self` parameter of any other function is listed. A
+  varargs parameter is `@param ... type  what`.
+- One `@return type  description` line per returned value, in order. Say in the type and the description whether nil is
+  possible (`string|nil`). A function that returns nothing has no `@return` line; one with no parameters and no return
+  values needs only the brief line.
+- Types are Lua type names plus `table`, `function`, `any` and shapes where they help (`table{id=number,name=string}`,
+  `table[]`, `string|nil`). A type may contain spaces only inside brackets. Read the body and the callers to decide the
+  type and whether nil is allowed; a wrong type is worse than none.
+- Use `--`, never `---`: three dashes start a LuaLS annotation and the static checker would begin type-checking the
+  function. An existing `---@param` annotation stays directly above the function, below the header.
+- A header never goes inside a Built In helper or condition callback (their text is hashed), and the functions nested in
+  one cannot carry a comment either; they are left undocumented on purpose. Put the header above the helper and run
+  `python3 tools/generate_builtin_sources.py --write` (the catalog's line numbers and module hashes move; nothing else
+  may).
+
+`python3 tools/function_comments.py` checks all of it: every named function that is not trivial (six or more code lines,
+or parameters or a return value and more than three code lines) must carry a header whose tags match the code, and a
+header that is malformed (missing brief line, a tag without a type and a description, two tags on one line, a header
+behind a blank line, `@param` names that differ from the declaration, a missing or surplus `@return`) is reported. It
+reads the same files as `format_lua.py --tree` minus `tests/`. `--summary` counts the violations per directory,
+`--strict` also requires the tags on short functions, `--write-baseline FILE` records today's violations and
+`--baseline FILE` makes only new ones fail (a ratchet: the key is file, function and kind, not the line number).
 
 ## Text that must keep its exact bytes
 

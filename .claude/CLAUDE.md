@@ -50,6 +50,7 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
 | Layout, load order, engines, condition registry, how to add things | `docs/dev/architecture.md` |
 | Commands: checks, generators, packaging, translation, slash commands | `docs/dev/running-things.md` |
 | Style and naming, the copyright notice | `docs/dev/conventions.md` |
+| Function header comments (`@param`/`@return`), their checker and traps | `docs/dev/formatting.md`, `.claude/learnings/code-comments.md` |
 | Debugging a report from game | `docs/dev/debugging.md` |
 | Premade rotations, modules, policy | `Modules/README.md` |
 | Restricted clients | `docs/restricted-clients.md`, `docs/quality/client-support.md` |

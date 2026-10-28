@@ -11,11 +11,13 @@ local trends = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.trends = trends
 
--- Runtime history services keep their live addon/profile, clock and legacy
--- rounding lookups. Canonical ownership does not change those contracts.
--- Estimates the health change per second from newest-first snapshots of time/value/max, weighting each one-second
--- bucket within the profile's damage_history window. Returns the rate and the bucket count, or only 0 when there is
--- nothing to weigh.
+-- Estimates the health change per second from newest-first snapshots of time/value/max.
+-- @param health table[]|nil  Snapshots {time=number, value=number, max=number}, newest first.
+-- @return number  The rate (0 when there is nothing to weigh).
+-- @return number|nil  The bucket count; nil when only 0 is returned.
+--
+-- Weights each one-second bucket within the profile's damage_history window. Runtime history services keep their live
+-- addon/profile, clock and legacy rounding lookups; canonical ownership does not change those contracts.
 function trends.calculateOld(health)
     if not health then
         return 0
@@ -62,8 +64,14 @@ function trends.calculateOld(health)
 end
 
 -- Estimates the signed health change from history.damage (negative) and history.heals (positive), weighting newer
--- entries more across the window (the profile damage_history setting when nil). noheals and nodmg skip a stream.
--- Returns the combined rate and the larger rounded stream age, or only 0 for a falsy history.
+-- entries more across the window.
+-- @param history table|nil  {damage=table[], heals=table[]} rows of {time=number, value=number}; a falsy history
+--   returns 0.
+-- @param window number|nil  The weighting window in seconds; nil means the profile damage_history setting.
+-- @param noheals boolean|nil  True to skip the heal stream.
+-- @param nodmg boolean|nil  True to skip the damage stream.
+-- @return number  The combined rate (0 for a falsy history).
+-- @return number|nil  The larger rounded stream age; nil when only 0 is returned.
 function trends.calculate(history, window, noheals, nodmg)
     if not history then
         return 0

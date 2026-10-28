@@ -126,6 +126,7 @@ python3 tools/locales.py check
 | `tools/fast_tests.py` | Suites named after changed Lua files |
 | `tools/format_lua.py`, `tools/bytecode_equal.py`, `tools/readability_report.py` | Reformat Lua without changing what it compiles to, prove a formatting-only commit, report long lines and uncommented functions (`docs/dev/formatting.md`) |
 | `tools/copyright.py` | The copyright notice line and the TOC licence field: `--check`, `--write`, `--list` (`docs/dev/conventions.md`) |
+| `tools/function_comments.py` | List the functions that lack the structured header comment (brief line, `@param` and `@return` lines) or have a malformed one; `--summary`, `--strict`, `--baseline FILE` and `--write-baseline FILE` (`docs/dev/formatting.md`, "Function headers") |
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
 | `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |

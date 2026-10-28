@@ -13,7 +13,8 @@ local color = color
 local helpers = addon.help_funcs
 local CreateText, CreatePictureText, Gap = helpers.CreateText, helpers.CreatePictureText, helpers.Gap
 
--- Returns the Conditions page help entries { title, text }, in the order the controls appear on the page.
+-- Returns the Conditions page help entries, in the order the controls appear on the page.
+-- @return table[]  The entries, each {title=string, text=string}.
 function addon:GetDocument_layout_conditions_options_help()
     return {
         {
@@ -76,6 +77,7 @@ function addon:GetDocument_layout_conditions_options_help()
 end
 
 -- Lays the Conditions help document out in a frame as a yellow title followed by its text, one gap between each.
+-- @param frame table  The help frame the text widgets are added to.
 function addon.layout_conditions_options_help(frame)
     for _, entry in ipairs(addon:GetDocument_layout_conditions_options_help()) do
         frame:AddChild(Gap())

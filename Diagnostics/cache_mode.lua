@@ -12,20 +12,26 @@ local _, addon = ...
 local type, rawget, rawset, pcall = type, rawget, rawset, pcall
 local globals = _G
 
--- Returns the global saved-variables table straight from the RotationMasterDB global (before AceDB has set up
--- addon.db), or nil.
+-- Reads the global saved-variables table straight from the RotationMasterDB global (before AceDB has set up addon.db).
+-- @return table|nil  The saved global table; nil when it is not there.
 local function savedGlobal()
     local saved = rawget(globals, 'RotationMasterDB')
     return type(saved) == 'table' and rawget(saved, 'global') or nil
 end
 
--- Returns the AceDB global table once addon.db exists, or nil before that.
+-- Reads the AceDB global table once addon.db exists.
+-- @return table|nil  The AceDB global table; nil before addon.db exists.
 local function readyGlobal()
     local db = rawget(addon, 'db')
     return type(db) == 'table' and rawget(db, 'global') or nil
 end
 
--- Returns true when the saved choice asks for direct mode.
+-- Tells whether the saved choice asks for direct mode.
+-- @param global any  The global table that holds diagnosticCacheBypass; anything but a table asks for direct mode.
+-- @return boolean  True when direct mode is asked for.
+--
+-- Explicit legacy choices are preserved: false means cached, true means direct. Missing or malformed preferences use
+-- the allocation-light direct default.
 local function directRequested(global)
     -- Preserve explicit legacy choices: false means cached, true means direct.
     -- Missing or malformed preferences use the allocation-light direct default.
@@ -52,8 +58,12 @@ end
 
 local finalized, initialized = false, false
 
--- Applies the saved choice, once, by firing the switch Functions/cache.lua handed over. Returns true, or false and a
--- reason code; later calls report the first outcome and never change the mode again.
+-- Applies the saved cache diagnostic choice, once, by firing the switch Functions/cache.lua handed over.
+-- @param global table  The AceDB global table that holds diagnosticCacheBypass; anything else is refused.
+-- @return boolean  True when the mode was selected (or already was); false otherwise.
+-- @return string|nil  The reason code when false ("invalid-owner" or "cache-mode-unavailable"); nil when true.
+--
+-- Later calls report the first outcome and never change the mode again.
 function addon:InitializeCacheDiagnosticMode(global)
     if self ~= addon then
         return false, 'invalid-owner'
@@ -91,8 +101,11 @@ function addon:InitializeCacheDiagnosticMode(global)
     return true
 end
 
--- Returns the mode in effect this session ("cached" or "direct"), the mode the saved choice asks for, and whether
--- they differ (a reload is then needed).
+-- Reports the cache mode in effect this session, the mode the saved choice asks for, and whether they differ.
+-- @return string|nil  The mode in effect ("cached" or "direct"); nil when called on the wrong owner.
+-- @return string|boolean  The mode the saved choice asks for, or the reason code "invalid-owner" when the first value
+--   is nil.
+-- @return boolean|nil  True when the two differ (a reload is then needed); nil on the wrong owner.
 function addon:GetCacheDiagnosticMode()
     if self ~= addon then
         return nil, 'invalid-owner'
@@ -108,8 +121,11 @@ function addon:GetCacheDiagnosticMode()
     return loaded, requested, loaded ~= requested
 end
 
--- Saves the choice for the next session ("cached" or "direct"); does not change the mode in effect. Returns true, or
--- false and a reason code.
+-- Saves the cache diagnostic choice for the next session; does not change the mode in effect.
+-- @param mode string  The mode to save, "cached" or "direct".
+-- @return boolean  True when the choice was saved.
+-- @return string|nil  The reason code when false ("invalid-owner", "invalid-cache-mode" or "cache-mode-unavailable");
+--   nil when true.
 function addon:SetCacheDiagnosticMode(mode)
     if self ~= addon then
         return false, 'invalid-owner'

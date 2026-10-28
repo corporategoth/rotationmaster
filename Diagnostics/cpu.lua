@@ -35,8 +35,10 @@ local executionIndexDiagnostic
 -- Execution index proof
 -- ============================================================================
 
--- One-time handoff from main.lua: stores the provider function that returns the ownership status of the execution
--- index reader, then removes this entry point. Only the first provider from the addon itself is accepted.
+-- One-time handoff from main.lua: stores the provider of the execution index reader's ownership status, then removes
+-- this entry point.
+-- @param provider function  Returns the ownership status table of the execution index reader; only the first provider
+--   from the addon itself is accepted, anything else is ignored.
 function addon:BindCPUExecutionIndexDiagnostic(provider)
     if self ~= addon or executionIndexDiagnostic or proofType(provider) ~= "function" then
         return
@@ -62,10 +64,13 @@ end
 local proofOwners = { "main", "sequence", "portable", "index" }
 local proofRawKeys = { "type", "pairs", "ipairs", "getmetatable", "getfenv", "math", "table" }
 
--- Returns one line summarizing whether the four owners of the execution index (main, sequence, portable, index) still
--- look intact, for example "main=ready; sequence=ready; ...; parser-match=1; parser-sub=1". Reads the provider's table
--- with rawget under pcall and prints only allow-listed reasons. Returns "probe-unavailable" if there is no provider or
--- it fails. Called at capture start and end.
+-- Summarizes in one line whether the four owners of the execution index (main, sequence, portable, index) still look
+-- intact.
+-- @return string  For example "main=ready; sequence=ready; ...; parser-match=1; parser-sub=1"; "probe-unavailable" when
+--   there is no provider or it fails.
+--
+-- Reads the provider's table with rawget under pcall and prints only allow-listed reasons. Called at capture start and
+-- end.
 local function executionIndexProof()
     if not executionIndexDiagnostic then
         return "probe-unavailable"
@@ -106,6 +111,10 @@ local function executionIndexProof()
             parts[i] = part
         end
 
+        -- Reads one parser flag of the execution index status.
+        -- @param owner string  The status row to read ("index" or "portable").
+        -- @param key string  The flag name ("parserMatch" or "parserSub").
+        -- @return string  "1" for true, "0" for false, otherwise "?".
         local function parserFlag(owner, key)
             local row = proofRawget(status, owner)
             local value = proofType(row) == "table" and proofRawget(row, key)
@@ -128,8 +137,12 @@ local function executionIndexProof()
     return ok and text or "probe-unavailable"
 end
 
--- Adds the start and end proof lines to the report (a list of lines) if the report stays under 16000 bytes, otherwise
--- adds a short "omitted" line if that still fits. The same size rule governs every append* function below.
+-- Adds the start and end execution index proof lines to the report, or a short "omitted" line if only that fits.
+-- @param report string[]  The report lines so far; appended to in place when the report stays under 16000 bytes.
+-- @param started string|nil  The proof line taken at capture start; nil prints "probe-unavailable".
+-- @param ended string  The proof line taken at capture end.
+--
+-- The same size rule governs every append* function below.
 local function appendExecutionIndexProof(report, started, ended)
     local bytes = #report - 1
 
@@ -185,9 +198,12 @@ end
 -- Value guards and counter readers
 -- ============================================================================
 
--- True when value is neither a secret value nor inaccessible (restricted clients); a check that throws counts as
--- unreadable. On clients without those APIs everything is readable. Every game value in this file passes through here
--- before it is compared or formatted.
+-- Tells whether a game value may be read: it is neither a secret value nor inaccessible (restricted clients).
+-- @param value any  The value to test.
+-- @return boolean  True when the value is readable; false when it is secret or inaccessible, or the check throws.
+--
+-- On clients without those APIs everything is readable. Every game value in this file passes through here before it is
+-- compared or formatted.
 local function readable(value)
     if type(issecretvalue) == 'function' then
         local ok, secret = pcall(issecretvalue, value)
@@ -210,9 +226,11 @@ end
 
 -- BEGIN COLD STORE STRING SHAPE
 -- Current observations only: cached constructor identities/admission stay private.
--- Returns one line describing the string metatable as the client exposes it now (type of the metatable, of __index and
--- of its find, and whether a second read returns the same objects), or "unavailable" when any read is unreadable or
--- throws. Called at capture start and end; changes nothing.
+-- Describes the string metatable as the client exposes it now, in one line.
+-- @return string  The type of the metatable, of __index and of its find, and whether a second read returns the same
+--   objects; "unavailable" when any read is unreadable or throws.
+--
+-- Called at capture start and end; changes nothing.
 local function storeStringShape()
     local ok, text = proofPcall(function()
         local meta = getmetatable('')
@@ -274,6 +292,9 @@ end
 
 -- Adds the start and end string-shape lines and a caveat that the shape is necessary but not sufficient evidence, under
 -- the report size limit.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param started string|nil  The shape line taken at capture start; nil prints "unavailable".
+-- @param ended string  The shape line taken at capture end.
 local function appendStoreStringShape(report, started, ended)
     local lines = {
         'Store string shape start: ' .. (started or 'unavailable'),
@@ -307,24 +328,35 @@ local function appendStoreStringShape(report, started, ended)
 end
 
 -- END COLD STORE STRING SHAPE
--- True for a readable, finite number (not NaN or infinity).
+-- Tells whether a value is a readable, finite number (not NaN or infinity).
+-- @param value any  The value to test.
+-- @return boolean  True for a readable finite number.
 local function finite(value)
     return readable(value) and type(value) == 'number' and value == value and value ~= math.huge and value ~= -math.huge
 end
 
--- True for a usable CPU counter: finite and not negative, and a whole number when integer is set (call counts).
+-- Tells whether a value is a usable CPU counter.
+-- @param value any  The value to test.
+-- @param integer boolean|nil  True to also require a whole number (call counts).
+-- @return boolean  True for a finite number that is not negative.
 local function counter(value, integer)
     return finite(value) and value >= 0 and (not integer or value % 1 == 0)
 end
 
--- Reads owner[key] with rawget, so no metamethod runs; returns nil when owner is not a table.
+-- Reads owner[key] with rawget, so no metamethod runs.
+-- @param owner any  The table to read from.
+-- @param key any  The key.
+-- @return any  The value; nil when owner is not a table.
 local function field(owner, key)
     if type(owner) == 'table' then
         return rawget(owner, key)
     end
 end
 
--- Returns the C_AddOns function of that name if the client has it, else the legacy global passed in, else nil.
+-- Finds a C_AddOns function by name, falling back to the legacy global.
+-- @param name string  The key to look up in C_AddOns.
+-- @param legacy function|nil  The legacy global to use when C_AddOns lacks the function.
+-- @return function|nil  The C_AddOns function if the client has it, else legacy if it is a function, else nil.
 local function addonCPUAPI(name, legacy)
     local candidate = field(C_AddOns, name)
 
@@ -336,26 +368,33 @@ local function addonCPUAPI(name, legacy)
     end
 end
 
--- The function that reads the addon's total CPU time (GetAddOnCPUUsage), or nil.
+-- Finds the function that reads the addon's total CPU time (GetAddOnCPUUsage).
+-- @return function|nil  The function, or nil.
 local function totalAPI()
     return addonCPUAPI('GetAddOnCPUUsage', GetAddOnCPUUsage)
 end
 
--- The function that refreshes the client's addon CPU figures (UpdateAddOnCPUUsage), or nil.
+-- Finds the function that refreshes the client's addon CPU figures (UpdateAddOnCPUUsage).
+-- @return function|nil  The function, or nil.
 local function updateAPI()
     return addonCPUAPI('UpdateAddOnCPUUsage', UpdateAddOnCPUUsage)
 end
 
--- The function that reads a console variable (GetCVar or C_CVar.GetCVar), or nil.
+-- Finds the function that reads a console variable (GetCVar or C_CVar.GetCVar).
+-- @return function|nil  The function, or nil.
 local function cvarAPI()
     return type(GetCVar) == 'function' and GetCVar
         or type(C_CVar) == 'table' and type(C_CVar.GetCVar) == 'function' and C_CVar.GetCVar
         or nil
 end
 
--- Checks the scriptProfile console variable through fn. Returns true, or false and a reason code
--- (missing-script-profile-api, script-profile-query-error, restricted-script-profile, script-profile-disabled,
--- invalid-script-profile-result). The addon only reads this setting; the player must enable it before a reload.
+-- Checks the scriptProfile console variable through fn.
+-- @param fn function|nil  The console variable reader (GetCVar or C_CVar.GetCVar).
+-- @return boolean  True when scriptProfile is "1".
+-- @return string|nil  The reason code when false (missing-script-profile-api, script-profile-query-error,
+--   restricted-script-profile, script-profile-disabled, invalid-script-profile-result); nil when true.
+--
+-- The addon only reads this setting; the player must enable it before a reload.
 local function enabled(fn)
     if type(fn) ~= 'function' then
         return false, 'missing-script-profile-api'
@@ -379,12 +418,16 @@ local function enabled(fn)
     return true
 end
 
--- The most precise clock the client offers (GetTimePreciseSec, else GetTime), or nil.
+-- Finds the most precise clock the client offers (GetTimePreciseSec, else GetTime).
+-- @return function|nil  The function, or nil.
 local function clockAPI()
     return type(GetTimePreciseSec) == 'function' and GetTimePreciseSec or type(GetTime) == 'function' and GetTime or nil
 end
 
--- Reads the clock once. Returns seconds, or nil and a reason (missing-clock-api, clock-error, invalid-clock).
+-- Reads the clock once.
+-- @param fn function|nil  The clock function (GetTimePreciseSec or GetTime).
+-- @return number|nil  The time in seconds; nil when it cannot be read.
+-- @return string|nil  The reason code when nil (missing-clock-api, clock-error, invalid-clock); nil otherwise.
 local function clock(fn)
     if type(fn) ~= 'function' then
         return nil, 'missing-clock-api'
@@ -402,8 +445,11 @@ local function clock(fn)
     return value
 end
 
--- Refreshes and reads the addon's cumulative CPU time (milliseconds) using the functions saved in the run. Returns the
--- counter, or nil and a reason (addon-cpu-update-error, addon-cpu-query-error, invalid-addon-cpu-counter).
+-- Refreshes and reads the addon's cumulative CPU time (milliseconds) using the functions saved in the run.
+-- @param run table  The capture state; its update and total functions are used.
+-- @return number|nil  The counter in milliseconds; nil when it cannot be read.
+-- @return string|nil  The reason code when nil (addon-cpu-update-error, addon-cpu-query-error,
+--   invalid-addon-cpu-counter); nil otherwise.
 local function total(run)
     local ok = pcall(run.update)
 
@@ -423,9 +469,14 @@ local function total(run)
     return value
 end
 
--- Reads the cumulative exclusive and inclusive CPU time and call counts of one function. Returns
--- { exclusive, inclusive, calls, inclusiveCalls }, or nil and a reason (function-cpu-query-error,
--- invalid-function-cpu-counter). Counters are the client's own and are never reset by this file.
+-- Reads the cumulative exclusive and inclusive CPU time and call counts of one function.
+-- @param run table  The capture state; its query function is used.
+-- @param fn function  The function to read the counters of.
+-- @return table|nil  {exclusive=number, inclusive=number, calls=number, inclusiveCalls=number}; nil when a counter
+--   cannot be read.
+-- @return string|nil  The reason code when nil (function-cpu-query-error, invalid-function-cpu-counter); nil otherwise.
+--
+-- Counters are the client's own and are never reset by this file.
 local function snapshot(run, fn)
     local ok, exclusive, calls = pcall(run.query, fn, false)
 
@@ -452,7 +503,9 @@ end
 -- Report context
 -- ============================================================================
 
--- Returns true or false for whether the owner's frame (or the owner itself) is shown, or nil when that cannot be read.
+-- Tells whether the owner's frame (or the owner itself) is shown.
+-- @param owner table|nil  The object whose frame field (or the object itself) has an IsShown method.
+-- @return boolean|nil  True or false for shown; nil when that cannot be read.
 local function visibility(owner)
     local frame = field(owner, 'frame') or owner
     local method = type(frame) == 'table' and frame.IsShown
@@ -468,9 +521,12 @@ local function visibility(owner)
     end
 end
 
--- Returns the one-line state summary printed at capture start and end: whether the configuration window is shown, the
--- combat lockdown state, the poll and live-update settings, and (when present) the observation cache mode. Every part
--- falls back to "unavailable" instead of failing.
+-- Builds the one-line state summary printed at capture start and end.
+-- @param owner table  The addon, read with rawget.
+-- @return string  Whether the configuration window is shown, the combat lockdown state, the poll and live-update
+--   settings and, when present, the observation cache mode.
+--
+-- Every part falls back to "unavailable" instead of failing.
 local function context(owner)
     local config = visibility(field(owner, 'configWindow'))
     local dialog = visibility(field(owner, 'nativeCustomConditionDialog'))
@@ -491,6 +547,9 @@ local function context(owner)
 
     local profile = field(field(owner, 'db'), 'profile')
 
+    -- Formats one profile setting for the context line.
+    -- @param key string  The profile field to read ("poll" or "live_config_update").
+    -- @return string  The finite number or boolean as text, or "unavailable".
     local function interval(key)
         local value = field(profile, key)
 
@@ -516,6 +575,9 @@ local function context(owner)
     if type(mode) == 'function' then
         local ok, loaded, requested, pending = pcall(mode, owner)
 
+        -- Tells whether a value is a valid observation cache mode.
+        -- @param value any  The value to test.
+        -- @return boolean  True for a readable "cached" or "direct".
         local function known(value)
             return readable(value) and type(value) == 'string' and (value == 'cached' or value == 'direct')
         end
@@ -537,10 +599,13 @@ end
 -- Canonical-slot observation only; this does not authenticate foreign frames.
 local previewNumbers = { [0] = '0', '1', '2', '3', '4', '5' }
 
--- Returns one line describing the standalone preview window (shown, active, setting, slots, recommendations, whether it
--- belongs to the current profile), "selected=custom" when the selected window is not the canonical preview, or
--- "selected=unavailable". current() re-proves every identity it read, so a getter that rebinds the preview mid-snapshot
--- yields "unavailable" rather than a mixed picture.
+-- Describes the standalone preview window in one line.
+-- @param owner table  The addon, read with rawget.
+-- @return string  Shown, active, setting, slots, recommendations and whether it belongs to the current profile;
+--   "selected=custom" when the selected window is not the canonical preview, or "selected=unavailable".
+--
+-- current() re-proves every identity it read, so a getter that rebinds the preview mid-snapshot yields "unavailable"
+-- rather than a mixed picture.
 local function standalonePreviewContext(owner)
     local ok, text = pcall(function()
         local selected, canonical = field(owner, 'nextWindow'), field(owner, 'nativePreviewWindow')
@@ -571,6 +636,8 @@ local function standalonePreviewContext(owner)
         local setting, generation = field(profile, 'preview_spells'), field(selected, 'generation')
         local capture = active
 
+        -- Tells whether the capture, the selected preview window and every identity read above are unchanged.
+        -- @return boolean  True while all of them are the same objects (compared with rawequal).
         local function current()
             return active == capture
                 and rawequal(field(owner, 'nextWindow'), selected)
@@ -587,6 +654,9 @@ local function standalonePreviewContext(owner)
                 and rawequal(field(selected, 'generation'), generation)
         end
 
+        -- Formats a small count for the preview line.
+        -- @param value any  The value to format.
+        -- @return string  The digit "0" to "5" for a whole number in that range, otherwise "?".
         local function number(value)
             if
                 readable(value)
@@ -602,6 +672,9 @@ local function standalonePreviewContext(owner)
             return '?'
         end
 
+        -- Formats a boolean for the preview line.
+        -- @param value any  The value to format.
+        -- @return string  "1" for true, "0" for false, otherwise "?".
         local function boolean(value)
             if readable(value) and type(value) == 'boolean' then
                 return value and '1' or '0'
@@ -662,6 +735,9 @@ local function standalonePreviewContext(owner)
 end
 
 -- Adds the start and end preview lines to the report under the size limit.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param started string|nil  The preview line taken at capture start; nil prints "selected=unavailable".
+-- @param ended string  The preview line taken at capture end.
 local function appendStandalonePreviewContext(report, started, ended)
     local bytes = #report - 1
 
@@ -685,8 +761,13 @@ local function appendStandalonePreviewContext(report, started, ended)
 end
 
 -- END STANDALONE PREVIEW CONTEXT
--- Returns a resolver that follows owner[key1][key2]... with rawget each time it is called. The report compares the
--- resolved value with the function sampled at start to detect a function replaced during the capture.
+-- Builds a resolver that follows owner[key1][key2]... with rawget each time it is called.
+-- @param owner table  The table the path starts at.
+-- @param ... string  The keys to follow, in order.
+-- @return function  Called with no arguments; returns the value at the end of the path, or nil.
+--
+-- The report compares the resolved value with the function sampled at start to detect a function replaced during the
+-- capture.
 local function reference(owner, ...)
     local keys = { ... }
 
@@ -701,26 +782,44 @@ local function reference(owner, ...)
     end
 end
 
--- The registry of condition definitions (addon.conditionDefinitions, or a plain definitions field), or nil.
+-- Finds the registry of condition definitions (addon.conditionDefinitions, or a plain definitions field).
+-- @param owner table  The addon.
+-- @return table|nil  The registry, or nil.
 local function definitionsOf(owner)
     return field(owner, 'conditionDefinitions') or field(owner, 'definitions')
 end
 
--- Returns a resolver for one callback ("evaluate" or "valid") of the condition registered under key.
+-- Builds a resolver for one callback of the condition registered under key.
+-- @param owner table  The addon.
+-- @param key string  The condition tag.
+-- @param callback string  "evaluate" or "valid".
+-- @return function  Called with no arguments; returns the callback function, or nil.
 local function conditionReference(owner, key, callback)
     return function() return field(field(definitionsOf(owner), key), callback) end
 end
 
--- Chooses which functions the capture samples. Returns rows, truncated, validationRows: rows is a list of
--- { fn, label, refs } (at most MAX_FUNCTIONS; one row per distinct function, with a resolver for each name it was
--- found under), truncated says the limit or the definition scan cap cut the list, and validationRows names the rows
--- whose call counts the report quotes (IndexRotationSteps, ValidateEnvelope, ValidateBody). Covers the addon's
--- runtime methods, Platform adapters, a few RotationData and SpellCatalog entry points, the cache helpers and every
--- condition's evaluate and valid callbacks. Built In conditions are labeled by tag; custom ones are only numbered.
+-- Chooses which functions the capture samples.
+-- @param owner table  The addon.
+-- @return table[]  Rows of {fn=function, label=string, refs=function[]}: at most MAX_FUNCTIONS, one row per distinct
+--   function, with a resolver for each name it was found under.
+-- @return boolean  True when the limit or the definition scan cap cut the list.
+-- @return table  The rows whose call counts the report quotes, keyed IndexRotationSteps, ValidateEnvelope and
+--   ValidateBody.
+--
+-- Covers the addon's runtime methods, Platform adapters, a few RotationData and SpellCatalog entry points, the cache
+-- helpers and every condition's evaluate and valid callbacks. Built In conditions are labeled by tag; custom ones are
+-- only numbered.
 local function selectFunctions(owner)
     local rows, seen, validationRows = {}, {}, {}
     local truncated = false
 
+    -- Adds the function found at container[key] to the rows, once per distinct function.
+    -- @param container table|nil  The table that holds the function.
+    -- @param key string  The field that holds the function.
+    -- @param label string  The row's label in the report.
+    -- @param resolve function|nil  Resolver for the function; defaults to reference(container, key).
+    -- @return table|nil  The row for the function (an existing one when the function was already added, which gains the
+    --   extra resolver); nil when the field is not a function or the limit was reached.
     local function add(container, key, label, resolve)
         local fn = field(container, key)
 
@@ -847,9 +946,14 @@ end
 -- ============================================================================
 
 -- BEGIN PRIVATE CACHE SAMPLES
--- Returns the live private cache helper function for an alias (getCachedInternal or packResults) through the source
--- getter captured at load, or nil and a reason (source-reader-unavailable, source-reader-changed, source-reader-error,
--- invalid-source-function). Refuses if the addon, the module table or the getter was replaced since load.
+-- Finds the live private cache helper for an alias through the source getter captured at load.
+-- @param owner table  The addon; refused if it is not the addon the getter was captured from.
+-- @param alias string  The helper's name ("getCachedInternal" or "packResults").
+-- @return function|nil  The helper function; nil when unavailable.
+-- @return string|nil  The reason code when nil (source-reader-unavailable, source-reader-changed, source-reader-error,
+--   invalid-source-function); nil otherwise.
+--
+-- Refuses if the addon, the module table or the getter was replaced since load.
 local function cacheFunction(owner, alias)
     if proofType(cacheSourceModules) ~= 'table' or proofType(cacheSourceGetter) ~= 'function' then
         return nil, 'source-reader-unavailable'
@@ -874,8 +978,11 @@ local function cacheFunction(owner, alias)
     return fn
 end
 
--- Picks the two private cache helpers for the report. Returns { views, samples }: one view per alias, pointing at the
--- row that already samples that function or at a new sample added here (counted against MAX_FUNCTIONS).
+-- Picks the two private cache helpers for the report.
+-- @param owner table  The addon.
+-- @param rows table[]  The rows already selected for sampling.
+-- @return table  {views=table[], samples=table[]}: one view per alias, pointing at the row that already samples that
+--   function or at a new sample added here (counted against MAX_FUNCTIONS).
 local function privateCacheSelection(owner, rows)
     local result = { views = {}, samples = {} }
     local seen = {}
@@ -942,9 +1049,14 @@ local function validationRetire()
     end
 end
 
--- Registration entry point, published as addon.BindCPUValidationScopeDiagnostic: accepts (addon, name, anchorFunction,
--- reader) once for each of the names in validationSpecs. Returns true when accepted and false for anything else
--- (closed, wrong caller, unknown or repeated name, non-function arguments).
+-- Registration entry point, published as addon.BindCPUValidationScopeDiagnostic (called with the addon as self):
+-- registers one validation scope owner.
+-- @param self table  The addon.
+-- @param name string  One of the names in validationSpecs ("references", "library", "scope"); each is accepted once.
+-- @param anchor function  The anchor function that identifies the owner.
+-- @param reader function  Returns the owner's private helper functions.
+-- @return boolean  True when accepted; false for anything else (closed, wrong caller, unknown or repeated name,
+--   non-function arguments).
 validationInstaller = function(self, name, anchor, reader)
     if
         validationClosed
@@ -982,8 +1094,10 @@ end
 
 addon.BindCPUValidationScopeDiagnostic = validationInstaller
 
--- Abandons the validation-scope state of a run (marks it retired so any in-flight fence fails) and releases the capture
--- slot if this run held it.
+-- Abandons the validation-scope state of a run and releases the capture slot if this run held it.
+-- @param run table  The capture state.
+--
+-- Marks the state retired so any in-flight fence fails.
 local function validationClear(run)
     local state = run.validationScopes
 
@@ -998,8 +1112,10 @@ local function validationClear(run)
     end
 end
 
--- Called as a capture finishes: a completed run moves its validation state to the "end" phase for the final read;
--- any other outcome discards it.
+-- Called as a capture finishes: a completed run moves its validation state to the "end" phase for the final read; any
+-- other outcome discards it.
+-- @param run table  The capture state.
+-- @param status string  The capture outcome ("complete", "cancelled" or "invalid").
 local function validationEnding(run, status)
     if status ~= 'complete' then
         validationClear(run)
@@ -1009,12 +1125,21 @@ local function validationEnding(run, status)
 end
 
 -- Packs a pcall result with its count in field n, so a nil among the returns is not lost.
+-- @param ... any  The values to pack.
+-- @return table  {n=count, ...}.
 local function validationTuple(...)
     return { n = validationSelect('#', ...), ... }
 end
 
--- Same reading as snapshot, but re-proves the capture is still the live one (current()) around every client call, since
--- a native query can run foreign code. Returns the counters, or nil and a reason such as "capture-retired".
+-- Reads the counters of one function like snapshot does, re-proving the capture is still the live one around every
+-- client call.
+-- @param run table  The capture state; its query function is used.
+-- @param fn function  The function to read the counters of.
+-- @param current function  The fence; returns true while the capture is still live.
+-- @return table|nil  {exclusive, inclusive, calls, inclusiveCalls}; nil when unavailable.
+-- @return string|nil  The reason code when nil, such as "capture-retired" or the snapshot reasons; nil otherwise.
+--
+-- A native query can run foreign code, which is why the fence is checked around every call.
 local function validationSnapshot(run, fn, current)
     if not current() then
         return nil, 'capture-retired'
@@ -1053,10 +1178,16 @@ local function validationSnapshot(run, fn, current)
     return { exclusive = exclusive, inclusive = inclusive, calls = calls, inclusiveCalls = inclusiveCalls }
 end
 
--- Asks a registered owner for its private helper functions. Returns the pcall tuple (true, fn1, fn2, ...) after
--- checking that the addon, the owner's anchor function and the capture were unchanged before and after the reader ran
--- and that every slot is a readable function; otherwise nil and a reason (capture-retired, owner-changed, unbound,
--- provider-unavailable, invalid-source-function).
+-- Asks a registered owner for its private helper functions.
+-- @param run table  The capture state.
+-- @param spec table  The entry of validationSpecs (name, anchor, slots) being read.
+-- @param group table|nil  What the owner registered ({anchor, reader}); nil when it never registered.
+-- @param current function  The fence; returns true while the capture is still live.
+-- @return table|nil  The pcall tuple (true, fn1, fn2, ...) with every slot a readable function; nil otherwise.
+-- @return string|nil  The reason code when nil (capture-retired, owner-changed, unbound, provider-unavailable,
+--   invalid-source-function); nil otherwise.
+--
+-- Checks that the addon, the owner's anchor function and the capture were unchanged before and after the reader ran.
 local function validationFunctions(run, spec, group, current)
     if not current() then
         return nil, 'capture-retired'
@@ -1109,9 +1240,12 @@ local function validationFunctions(run, spec, group, current)
     return values
 end
 
--- Capture-start half: resolves each validation view and takes a baseline sample of every helper function not already
--- sampled elsewhere in the run (counted against MAX_FUNCTIONS). state.current is the fence used for the whole run: true
--- only while this run is the live capture and in the expected phase.
+-- Capture-start half of the validation scopes: resolves each validation view and takes a baseline sample of every
+-- helper function not already sampled elsewhere in the run (counted against MAX_FUNCTIONS).
+-- @param run table  The capture state; run.validationScopes is created.
+--
+-- state.current is the fence used for the whole run: true only while this run is the live capture and in the expected
+-- phase.
 local function validationStart(run)
     if active ~= run then
         return
@@ -1129,6 +1263,8 @@ local function validationStart(run)
 
     local seen, total = {}, 0
 
+    -- Counts a row's function once, so shared functions are not sampled twice.
+    -- @param row table  A sampled row; its fn field is the function.
     local function remember(row)
         if not seen[row.fn] then
             seen[row.fn] = row
@@ -1187,9 +1323,14 @@ local function validationStart(run)
     end
 end
 
--- Capture-end half: re-resolves each helper, checks it is the same function that was sampled at start, takes the end
--- sample through sampleEnd and appends one line per view (exclusive and inclusive milliseconds and calls, or
--- "unavailable: <reason>") plus a summary, under the report size limit. Counter regressions are reported, not hidden.
+-- Capture-end half of the validation scopes: appends one line per view and a summary under the report size limit.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
+-- @param sampleEnd function  Takes the end sample (finishSample); called as sampleEnd(run, sample, fence) and returns
+--   the counters, or nil and a reason.
+--
+-- Re-resolves each helper, checks it is the same function that was sampled at start, then prints exclusive and
+-- inclusive milliseconds and calls, or "unavailable: <reason>". Counter regressions are reported, not hidden.
 local function appendValidationScopes(report, run, sampleEnd)
     local state = run.validationScopes
     local lines = { 'Private validation scopes (native counters; shared functions overlap):' }
@@ -1340,9 +1481,15 @@ local function workRetire()
     end
 end
 
--- Registration entry point, published as addon.BindCPURuntimeWorkDiagnostic: accepts (addon, name, anchorFunction,
--- reader) once each for "store" and "main". Returns true when accepted, false for anything else. The store's anchor is
--- looked up on the RotationData namespace, which is remembered at registration.
+-- Registration entry point, published as addon.BindCPURuntimeWorkDiagnostic (called with the addon as self): registers
+-- one runtime work owner.
+-- @param self table  The addon.
+-- @param name string  "store" or "main"; each is accepted once.
+-- @param anchor function  The anchor function that identifies the owner.
+-- @param reader function  Returns the owner's function(s).
+-- @return boolean  True when accepted; false for anything else.
+--
+-- The store's anchor is looked up on the RotationData namespace, which is remembered at registration.
 workInstaller = function(self, name, anchor, reader)
     if
         workClosed
@@ -1374,6 +1521,7 @@ end
 addon.BindCPURuntimeWorkDiagnostic = workInstaller
 
 -- Abandons the runtime-work state of a run and releases the capture slot if this run held it.
+-- @param run table  The capture state.
 local function workClear(run)
     local state = run.runtimeWork
 
@@ -1389,6 +1537,8 @@ local function workClear(run)
 end
 
 -- Counterpart of validationEnding for the runtime-work state.
+-- @param run table  The capture state.
+-- @param status string  The capture outcome ("complete", "cancelled" or "invalid").
 local function workEnding(run, status)
     if status ~= 'complete' then
         workClear(run)
@@ -1397,7 +1547,9 @@ local function workEnding(run, status)
     end
 end
 
--- The table a work spec's functions live on right now: the named namespace on the addon, or the addon itself.
+-- Finds the table a work spec's functions live on right now.
+-- @param spec table  The entry of workSpecs.
+-- @return table|nil  The named namespace on the addon, or the addon itself; nil when the namespace is missing.
 local function workNamespace(spec)
     if spec.namespace then
         return proofRawget(addon, spec.namespace)
@@ -1407,9 +1559,14 @@ local function workNamespace(spec)
 end
 
 -- Resolves the functions of one work spec, either through the owner's registered reader (anchored specs) or directly
--- from a fixed member. Returns (true, fn...) after proving the namespace and anchor were not replaced before and
--- after the read, or nil and a reason (capture-retired, owner-changed, unbound, provider-unavailable,
--- invalid-source-function, function-replaced).
+-- from a fixed member.
+-- @param run table  The capture state.
+-- @param source table  {spec=table, group=table|nil, namespace=table|nil} as recorded at capture start.
+-- @param current function  The fence; returns true while the capture is still live.
+-- @return table|nil  (true, fn...) as a table, after proving the namespace and anchor were not replaced before and
+--   after the read; nil otherwise.
+-- @return string|nil  The reason code when nil (capture-retired, owner-changed, unbound, provider-unavailable,
+--   invalid-source-function, function-replaced); nil otherwise.
 local function workFunctions(run, source, current)
     if not current() then
         return nil, 'capture-retired'
@@ -1492,6 +1649,7 @@ end
 
 -- Capture-start half for the runtime work views; same shape as validationStart (baseline samples of functions not
 -- already sampled, within MAX_FUNCTIONS).
+-- @param run table  The capture state; run.runtimeWork is created.
 local function workStart(run)
     if active ~= run then
         return
@@ -1509,6 +1667,8 @@ local function workStart(run)
 
     local seen, total = {}, 0
 
+    -- Counts a row's function once, so shared functions are not sampled twice.
+    -- @param row table  A sampled row; its fn field is the function.
     local function remember(row)
         if not seen[row.fn] then
             seen[row.fn] = row
@@ -1567,6 +1727,9 @@ end
 
 -- Capture-end half for the runtime work views; same shape as appendValidationScopes, with the "Work.<slot>" labels and
 -- a summary of six fixed aliases.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
+-- @param sampleEnd function  Takes the end sample (finishSample); returns the counters, or nil and a reason.
 local function appendWorkViews(report, run, sampleEnd)
     local state = run.runtimeWork
     local lines = { 'Runtime work views (native counters; shared functions overlap):' }
@@ -1677,8 +1840,13 @@ local function appendWorkViews(report, run, sampleEnd)
 end
 
 -- END RUNTIME WORK VIEWS
--- Takes the end sample of a row once and remembers it on the row (so a function shared by several views is read a
--- single time). With guard it uses the fenced reader. Returns the counters, or nil and a reason.
+-- Takes the end sample of a row once and remembers it on the row, so a function shared by several views is read a
+-- single time.
+-- @param run table  The capture state.
+-- @param row table  The sampled row ({fn, before, ...}).
+-- @param guard function|nil  The fence; with it the fenced reader (validationSnapshot) is used, without it snapshot.
+-- @return table|nil  The counters; nil when unavailable.
+-- @return string|nil  The reason code when nil; nil otherwise.
 local function finishSample(run, row, guard)
     if not row.sampled then
         row.sampled = true
@@ -1694,7 +1862,11 @@ local function finishSample(run, row, guard)
 end
 
 -- Appends the delta lines for the two private cache helpers (or "unavailable: <reason>" for each), with a summary,
--- under the report size limit. Checks the helper is still the function sampled at start.
+-- under the report size limit.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
+--
+-- Checks the helper is still the function sampled at start.
 local function appendPrivateCache(report, run)
     local lines = { 'Private cache helpers (native counters; shared functions overlap):' }
     local available = 0
@@ -1800,9 +1972,12 @@ end
 local activityProviders, activityFrame, activityAPI = {}, nil, nil
 local activityEqual, activityCreate = rawequal, CreateFrame
 
--- Registration entry point for the activity readers: accepts (name, reader) once each for "spell", "item" and "visual"
--- from the addon, returning true, or false for anything else. Removes itself when all three are bound (and when a
--- capture starts).
+-- Registration entry point for the activity readers: registers one reader.
+-- @param name string  "spell", "item" or "visual"; each is accepted once.
+-- @param reader function  Called with the captured frame API; returns a table of counts.
+-- @return boolean  True when accepted; false for anything else.
+--
+-- Only the addon itself may register. Removes itself when all three are bound (and when a capture starts).
 function addon:BindCPUActivityDiagnostic(name, reader)
     if
         self ~= addon
@@ -1822,8 +1997,9 @@ function addon:BindCPUActivityDiagnostic(name, reader)
     return true
 end
 
--- Calls each registered reader once under pcall (handing it the captured frame API) and returns the table results by
--- name; a reader that fails or returns a non-table is simply absent.
+-- Calls each registered reader once under pcall, handing it the captured frame API.
+-- @return table  The table results by name ("spell", "item", "visual"); a reader that fails or returns a non-table is
+--   simply absent.
 local function activityRead()
     local result = {}
 
@@ -1842,8 +2018,13 @@ local function activityRead()
     return result
 end
 
--- Counts one metadata load result for the run: a successful SPELL_DATA_LOAD_RESULT or ITEM_DATA_LOAD_RESULT adds to its
--- tally, and an unreadable or non-boolean success flag adds to "unknown". Failures are not counted.
+-- Counts one metadata load result for the run.
+-- @param run table  The capture state.
+-- @param event string  "SPELL_DATA_LOAD_RESULT" or "ITEM_DATA_LOAD_RESULT".
+-- @param _ number  The spell or item ID the result is for; not used.
+-- @param success any  Whether the load succeeded; an unreadable or non-boolean flag counts as unknown.
+--
+-- A successful result adds to its tally; failures are not counted.
 local function activityEvent(run, event, _, success)
     if not readable(success) or proofType(success) ~= 'boolean' then
         run.activity.events.unknown = run.activity.events.unknown + 1
@@ -1859,9 +2040,11 @@ local function activityEvent(run, event, _, success)
     end
 end
 
--- Releases the event frame at the end of a run. The frame's scripts and events are cleared only if the OnEvent handler
--- is still ours; if anything else took it over, the frame is abandoned (and the event counts are marked unavailable)
--- rather than disturbed.
+-- Releases the event frame at the end of a run.
+-- @param run table  The capture state.
+--
+-- The frame's scripts and events are cleared only if the OnEvent handler is still ours; if anything else took it over,
+-- the frame is abandoned (and the event counts are marked unavailable) rather than disturbed.
 local function activityStop(run)
     local state = run.activity
 
@@ -1937,9 +2120,12 @@ local function activityEnsureAPI()
     end
 end
 
--- Capture-start half: closes registration, starts counting metadata load events, reads the start values from the
--- readers and baseline-samples the four animation callbacks (overlay, pixel, autocast, blizzard) the visual reader
--- exposes. A callback that is ambiguous, missing or over the sample limit is skipped with a reason.
+-- Capture-start half of the activity diagnostic: closes registration, starts counting metadata load events, reads the
+-- start values from the readers and baseline-samples the four animation callbacks (overlay, pixel, autocast, blizzard)
+-- the visual reader exposes.
+-- @param run table  The capture state; run.activity is created.
+--
+-- A callback that is ambiguous, missing or over the sample limit is skipped with a reason.
 local function activityStart(run)
     addon.BindCPUActivityDiagnostic = nil
     run.activity = { events = { spell = 0, item = 0, unknown = 0, available = false }, views = {}, samples = {} }
@@ -2023,11 +2209,12 @@ end
 
 local memoryActivityPrepared = false
 
--- Bounded detached cardinality for explicit lifetime diagnostics. Never return
--- private maps, native frames, callbacks or the activity reader functions.
--- Returns a small table of counts for Diagnostics/memory.lua (spell and item catalog sizes, and animation counts, each
--- at most 4096 and with a "...Capped" flag), or nothing for any caller other than the addon. Does not need a capture
--- to be running.
+-- Returns bounded detached counts of retained catalogs and animations for Diagnostics/memory.lua.
+-- @return table|nil  Spell and item catalog sizes and animation counts, each at most 4096 and with a "...Capped" flag;
+--   nil for any caller other than the addon.
+--
+-- For explicit lifetime diagnostics. Never returns private maps, native frames, callbacks or the activity reader
+-- functions. Does not need a capture to be running.
 function addon:GetRetainedMemoryDiagnostic()
     if self ~= addon then
         return
@@ -2078,6 +2265,9 @@ end
 
 -- Appends the retained-catalog section: start, end and change of each catalog size, metadata load event counts, the
 -- start and end animation counts, and the CPU delta of each sampled animation callback, under the report size limit.
+-- @param report string[]  The report lines so far; appended to in place.
+-- @param run table  The capture state.
+--
 -- Does nothing if the run has no activity state.
 local function appendActivity(report, run)
     local state = run.activity
@@ -2088,6 +2278,11 @@ local function appendActivity(report, run)
 
     local lines = { 'Retained catalogs and animation activity (capture only):' }
 
+    -- Formats the size of one retained catalog.
+    -- @param root table|nil  The start or end reader result for a catalog owner.
+    -- @param key string  The catalog field (for example "spellIDs").
+    -- @return string  The count, prefixed ">=" when capped; "unavailable" when it cannot be read.
+    -- @return number|nil  The count as a number when it is exact; nil when capped or unavailable.
     local function retained(root, key)
         local object = field(root, key)
         local n = field(object, 'n')
@@ -2129,6 +2324,10 @@ local function appendActivity(report, run)
     )
         or 'metadata successes: unavailable'
 
+    -- Formats the animation counts of one side of the capture.
+    -- @param label string  "start" or "end".
+    -- @param value table|nil  The visual reader result at that boundary.
+    -- @return string  One line of counts, or "<label> visuals: unavailable".
     local function visual(label, value)
         if proofType(value) ~= 'table' then
             return label .. ' visuals: unavailable'
@@ -2256,12 +2455,15 @@ end
 -- Finishing a capture
 -- ============================================================================
 
--- Ends the run (normally from its completion timer, or from StopCPUProfile and CancelCPUProfile). status is "complete",
--- "cancelled" or, after a failed check, "invalid" with a reason. A complete run is re-validated first (sane clock,
--- the same profiling API objects, scriptProfile still enabled, addon counter not reset); then every sampled row gets
--- its end sample, the rows are ranked by exclusive time, and the report text is assembled with all the appendices.
--- The text (or a one-line status for a run that did not complete) becomes lastReport and is passed to the owner's
--- OnCPUProfileFinished callback. Does nothing if this run is no longer the active one.
+-- Ends the run, normally from its completion timer or from StopCPUProfile and CancelCPUProfile, and builds its report.
+-- @param run table  The capture state; nothing happens if it is no longer the active one.
+-- @param status string  "complete", "cancelled" or "invalid".
+-- @param reason string|nil  The reason code for an "invalid" outcome.
+--
+-- A complete run is re-validated first (sane clock, the same profiling API objects, scriptProfile still enabled, addon
+-- counter not reset); then every sampled row gets its end sample, the rows are ranked by exclusive time, and the report
+-- text is assembled with all the appendices. The text (or a one-line status for a run that did not complete) becomes
+-- lastReport and is passed to the owner's OnCPUProfileFinished callback.
 local function finish(run, status, reason)
     if active ~= run then
         return
@@ -2414,6 +2616,9 @@ local function finish(run, status, reason)
                 ),
             }
 
+            -- Formats the call count of one structural validation row.
+            -- @param name string  The row name ("ValidateEnvelope", "ValidateBody" or "IndexRotationSteps").
+            -- @return string  The count as text, or "unavailable".
             local function validationCount(name)
                 local row = run.validationRows[name]
                 return row and row.deltaCalls ~= nil and tostring(row.deltaCalls) or 'unavailable'
@@ -2574,12 +2779,15 @@ end
 -- Public API
 -- ============================================================================
 
--- Starts a capture of duration seconds (default 10, allowed 1 to 60). Returns true, or false and a reason code
--- (native-runtime-capture-running, already-running, invalid-duration, script-profile-disabled and the other
--- scriptProfile reasons, missing-function-cpu-api, missing-addon-cpu-api, missing-timer-api, clock reasons,
--- function-cpu-unavailable, timer-error). Takes the baseline readings of every selected function and of the addon
--- total, retires the registration entry points so no owner can attach mid-run, and schedules finish on the addon
--- timer.
+-- Starts a CPU capture.
+-- @param duration number|nil  Seconds to capture, 1 to 60; nil means 10.
+-- @return boolean  True when the capture started.
+-- @return string|nil  The reason code when false (native-runtime-capture-running, already-running, invalid-duration,
+--   script-profile-disabled and the other scriptProfile reasons, missing-function-cpu-api, missing-addon-cpu-api,
+--   missing-timer-api, clock reasons, function-cpu-unavailable, timer-error); nil when true.
+--
+-- Takes the baseline readings of every selected function and of the addon total, retires the registration entry points
+-- so no owner can attach mid-run, and schedules finish on the addon timer.
 function addon:StartCPUProfile(duration)
     -- BEGIN NATIVE RUNTIME EXCLUSION
     if type(self.IsCPURuntimeCaptureRunning) == 'function' and self:IsCPURuntimeCaptureRunning() then
@@ -2756,8 +2964,9 @@ function addon:StartCPUProfile(duration)
     return true
 end
 
--- Ends the running capture now and produces its report from the time elapsed so far. Returns true, or false and
--- "not-running".
+-- Ends the running capture now and produces its report from the time elapsed so far.
+-- @return boolean  True when a capture was ended.
+-- @return string|nil  "not-running" when false; nil when true.
 function addon:StopCPUProfile()
     local run = active
 
@@ -2776,7 +2985,9 @@ function addon:StopCPUProfile()
     return true
 end
 
--- Abandons the running capture without a report. Returns true, or false and "not-running".
+-- Abandons the running capture without a report.
+-- @return boolean  True when a capture was cancelled.
+-- @return string|nil  "not-running" when false; nil when true.
 function addon:CancelCPUProfile()
     local run = active
 
@@ -2792,13 +3003,18 @@ function addon:CancelCPUProfile()
     return true
 end
 
--- True while a capture is in progress.
+-- Tells whether a capture is in progress.
+-- @return boolean  True while a capture is in progress.
 function addon:IsCPUProfileRunning()
     return active ~= nil
 end
 
--- Returns the text of the last finished capture, a one-line "running" status while one is in progress, or nil and
--- "not-captured". The report is only kept in memory for this session.
+-- Returns the text of the last finished capture.
+-- @return string|nil  The report; a one-line "running" status while a capture is in progress; nil when none was
+--   captured.
+-- @return string|nil  "not-captured" when the first value is nil; nil otherwise.
+--
+-- The report is only kept in memory for this session.
 function addon:GetCPUProfileReport()
     if active then
         return string.format('Rotation Master CPU profile: running (requested %.3f s)', active.duration)

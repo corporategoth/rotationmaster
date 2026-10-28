@@ -11,9 +11,16 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Calls a cached read behind pcall and returns ok, results; returns false, "missing-api" when the method is absent
--- (an API this client does not have). Conditions use it so a throwing read becomes "unavailable", not an error.
--- Preserve the original global type/pcall lookups and live legacy cache dispatch.
+-- Calls a cached read behind pcall.
+-- @param cache table|nil  The cache table passed to getCached.
+-- @param method function|nil  The function to call through the cache.
+-- @param ... any  The arguments of the call.
+-- @return boolean  True when the call ran without error; false for a throwing call, or when the method is absent.
+-- @return any  The call's results (any number), the error value, or "missing-api" when the method is absent (an API
+--   this client does not have).
+--
+-- Conditions use it so a throwing read becomes "unavailable", not an error. Preserves the original global type/pcall
+-- lookups and live legacy cache dispatch.
 local function protectedRead(cache, method, ...)
     if type(method)~="function" then return false,"missing-api" end
     return pcall(addon.getCached,cache,method,...)
@@ -32,13 +39,20 @@ local cacheMisses = 0
 local nilArgument, cachedResult = {}, {}
 
 -- Packs a call's results into a table with an explicit count so nil results survive the round trip.
+-- @param ... any  The values to pack.
+-- @return table  {n=count, ...}.
 local function packResults(...)
     return { n = select('#', ...), ... }
 end
 
--- Returns the memoized results of func(...) from the cache table, calling and storing on a miss. A nil cache, an
--- unreadable (restricted) argument or a NaN argument calls through uncached. With recordnil false, a call that returned
--- nothing is not stored, so it is retried next time (the getRetryCached behavior).
+-- Returns the memoized results of func(...) from the cache table, calling and storing on a miss.
+-- @param cache table|nil  The cache table; nil calls through uncached.
+-- @param recordnil boolean  True to store a call that returned nothing; false to retry it next time (the getRetryCached
+--   behavior).
+-- @param func function|string  The function to call, or the name of a global function.
+-- @param ... any  The arguments of the call; they are the cache key, so an unreadable (restricted) or NaN argument
+--   calls through uncached.
+-- @return any  The results of func(...), any number of them; nothing when func is not a function.
 ---@param cache table|nil
 local function getCachedInternal(cache, recordnil, func, ...)
     if type(func) == 'string' then func = _G[func] end
@@ -96,9 +110,12 @@ do
     local getCachedInternal = getCachedInternal
     local bound = false
 
-    -- Hands the diagnostics module a one-shot switch that can route every cached call straight to the function, with
-    -- no memoizing, to measure the cache's cost. Only the first call binds; Diagnostics/cache_mode.lua calls it at
-    -- load and then removes this method from addon.
+    -- Hands the diagnostics module a one-shot switch that can route every cached call straight to the function, with no
+    -- memoizing, to measure the cache's cost.
+    -- @param bind function  Called once with the switch function(direct): it takes a boolean (true routes calls
+    --   straight through), returns true on the first valid call and false afterwards.
+    --
+    -- Only the first call binds; Diagnostics/cache_mode.lua calls it at load and then removes this method from addon.
     function addon:BindCacheDiagnosticDispatcher(bind)
         if self ~= addon or type(bind) ~= "function" or bound then
             return
@@ -115,6 +132,13 @@ do
             selected = true
 
             if direct then
+                -- Direct-mode replacement for the memoizing call: calls the function straight through, with no
+                -- memoizing.
+                -- @param _ any  The cache table; ignored.
+                -- @param _recordnil any  Whether empty results are stored; ignored.
+                -- @param func function|string  The function to call, or the name of a global function.
+                -- @param ... any  The arguments of the call.
+                -- @return any  The results of func(...), any number of them; nothing when func is not a function.
                 getCachedInternal = function(_, _recordnil, func, ...)
                     if type(func) == 'string' then
                         func = _G[func]
@@ -133,11 +157,19 @@ do
     end
 
     -- Memoizing call: results are stored whether or not the function returned anything.
+    -- @param cache table|nil  The cache table; nil calls through uncached.
+    -- @param func function|string  The function to call, or the name of a global function.
+    -- @param ... any  The arguments of the call.
+    -- @return any  The results of func(...), any number of them.
     cache.getCached = function(cache, func, ...)
     return getCachedInternal(cache, true, func, ...)
 end
 
     -- Memoizing call that does not store an empty result, so a read that returned nothing is retried on the next call.
+    -- @param cache table|nil  The cache table; nil calls through uncached.
+    -- @param func function|string  The function to call, or the name of a global function.
+    -- @param ... any  The arguments of the call.
+    -- @return any  The results of func(...), any number of them.
     cache.getRetryCached = function(cache, func, ...)
     return getCachedInternal(cache, false, func, ...)
 end

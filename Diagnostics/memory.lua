@@ -20,7 +20,10 @@ local format, concat = string.format, table.concat
 -- Value guards
 -- ============================================================================
 
--- True when value is neither a secret nor inaccessible; a secret-value API that is not callable counts as unreadable.
+-- Tells whether a game value may be read: it is neither a secret nor inaccessible.
+-- @param value any  The value to test.
+-- @return boolean  True when the value is readable; false when it is secret or inaccessible, or when a secret-value API
+--   is not callable.
 local function readable(value)
     local secret = raw(_G, 'issecretvalue')
 
@@ -53,25 +56,38 @@ local function readable(value)
     return true
 end
 
--- True for a readable finite non-negative number small enough to be a safe integer.
+-- Tells whether a value is a readable finite non-negative number small enough to be a safe integer.
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function number(value)
     return readable(value) and kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
--- Returns value[key] without invoking metamethods, or nil when value is unreadable or not a table.
+-- Reads value[key] without invoking metamethods.
+-- @param value any  The table to read from.
+-- @param key any  The key.
+-- @return any  The value; nil when value is unreadable or not a table.
 local function field(value, key)
     if readable(value) and kind(value) == 'table' then
         return raw(value, key)
     end
 end
 
--- True while run is the active, running capture. Checked after every native call, because a callout can stop or
--- replace the capture.
+-- Tells whether a run is the active, running capture.
+-- @param run table  The capture state.
+-- @return boolean  True while it is.
+--
+-- Checked after every native call, because a callout can stop or replace the capture.
 local function current(run)
     return active == run and run.phase == 'running'
 end
 
 -- Calls fn under pcall and returns its result only when it is a valid number and the run is still current.
+-- @param run table  The capture state.
+-- @param fn function|nil  The function to call.
+-- @param ... any  The arguments passed to fn.
+-- @return number|nil  The result; nil when fn is not a function, throws, returns something else or the run was retired
+--   meanwhile.
 ---@return number|nil
 local function callNumber(run, fn, ...)
     if not current(run) or kind(fn) ~= 'function' then
@@ -88,7 +104,9 @@ local function callNumber(run, fn, ...)
     return value
 end
 
--- Returns the C_AddOns function of that name, or the legacy global, or nil.
+-- Finds a C_AddOns function by name, falling back to the legacy global.
+-- @param name string  The function name.
+-- @return function|nil  The C_AddOns function, else the legacy global, else nil.
 local function api(name)
     local method = field(raw(_G, 'C_AddOns'), name)
 
@@ -121,7 +139,12 @@ local wtmAddonKey = string.lower(addon_name)
 -- ============================================================================
 
 -- Reads the WoWTaskManager spike counters for this addon and compares them with the previous snapshot, counting how
--- many spike increases happened in intervals where the heap dropped. Co-occurrence only; it proves no causality.
+-- many spike increases happened in intervals where the heap dropped.
+-- @param run table  The capture state; the wtm* counters are updated.
+-- @param at number  The time of this sample.
+-- @param dropped boolean|nil  True when the heap dropped since the previous sample.
+--
+-- Co-occurrence only; it proves no causality.
 local function sampleSpikes(run, at, dropped)
     local owner = field(field(field(raw(_G, 'WoWTaskManager'), 'Processes'), 'byName'), wtmAddonKey)
     local n, last = field(owner, 'spikes'), field(owner, 'lastSpikeAt')
@@ -160,7 +183,11 @@ local function sampleSpikes(run, at, dropped)
 end
 
 -- Counts the keys of a plain table (no metatable) without calling into it, charging each key to the shared budget.
--- Returns the count and whether it was capped, or nil when the table is unreadable or the run was retired.
+-- @param run table  The capture state; the count stops when it is retired.
+-- @param map any  The table to count.
+-- @param budget table  {n=number}, the nodes counted so far for the whole row; updated.
+-- @return number|nil  The count; nil when the table is unreadable or the run was retired.
+-- @return boolean|nil  True when the count was capped; nil when the first value is nil.
 local function count(run, map, budget)
     if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then
         return
@@ -190,12 +217,18 @@ local function count(run, map, budget)
     return COUNT_LIMIT, true
 end
 
--- Fills row with key and row counts of the addon's own history and cache tables, within one node budget for the whole
--- row so that a huge table cannot stall a sample. Counts are lower bounds when the matching *Capped flag is true.
+-- Fills row with key and row counts of the addon's own history and cache tables.
+-- @param run table  The capture state.
+-- @param row table  The detail row being built; count fields and their *Capped flags are set.
+--
+-- Works within one node budget for the whole row so that a huge table cannot stall a sample. Counts are lower bounds
+-- when the matching *Capped flag is true.
 local function roots(run, row)
     local budget = { n = 0 }
 
     -- Stores the (capped) key count of map under row[key].
+    -- @param key string  The row field; the capped flag goes to key .. "Capped".
+    -- @param map any  The table to count.
     local function save(key, map)
         local n, capped = count(run, map, budget)
         row[key], row[key .. 'Capped'] = n, capped
@@ -208,6 +241,11 @@ local function roots(run, row)
 
     -- Counts a table of per-unit tables: the unit count under unitKey and the summed row count of the child (and, with
     -- second, of a second child) under rowKey.
+    -- @param root string  The name of the addon field that holds the table.
+    -- @param unitKey string  The row field that receives the unit count.
+    -- @param rowKey string  The row field that receives the summed row count.
+    -- @param child string|nil  The field of each unit entry that holds the rows; nil counts the entry itself.
+    -- @param second string|nil  A second field of each entry whose rows are summed into healRows.
     local function nested(root, unitKey, rowKey, child, second)
         local map = raw(addon, root)
         save(unitKey, map)
@@ -280,19 +318,27 @@ end
 -- Report
 -- ============================================================================
 
--- True for a stored (already validated) non-negative number.
+-- Tells whether a stored (already validated) value is a non-negative number.
+-- @param value any  The value to test.
+-- @return boolean  True when it is.
 local function storedNumber(value)
     return kind(value) == 'number' and value == value and value >= 0 and value <= 9007199254740991
 end
 
--- Formats a stored number to three decimals, or "unavailable".
+-- Formats a stored number to three decimals.
+-- @param value any  The stored number.
+-- @return string  The formatted number, or "unavailable".
 local function amount(value)
     return storedNumber(value) and format('%.3f', value) or 'unavailable'
 end
 
--- Renders the finished run as report text (about 15 KB at most; detail rows beyond that are omitted). status is
--- "complete", "stopped", "cancelled", "invalid" or "unavailable". The text states what the numbers are not (heap is
--- shared Lua memory, counts are keys not bytes) so the report cannot be misread.
+-- Renders the finished run as report text (about 15 KB at most; detail rows beyond that are omitted).
+-- @param run table  The capture state.
+-- @param status string  "complete", "stopped", "cancelled", "invalid" or "unavailable".
+-- @return string  The report lines joined by newlines.
+--
+-- The text states what the numbers are not (heap is shared Lua memory, counts are keys not bytes) so the report cannot
+-- be misread.
 local function render(run, status)
     local lines = {
         'Rotation Master memory capture: ' .. status,
@@ -348,6 +394,9 @@ local function render(run, status)
     }
 
     -- Formats the named counts of a detail row, marking a capped count with ">=".
+    -- @param row table  The detail row.
+    -- @param keys string[]  The count fields to print.
+    -- @return string  The fields as "key=value" separated by spaces; "unavailable" for a missing value.
     local function counts(row, keys)
         local parts = {}
 
@@ -423,8 +472,10 @@ local function render(run, status)
     return concat(lines, '\n')
 end
 
--- Retires the run, cancels its timers, stores the rendered report and notifies the optional
--- OnMemoryCaptureFinished hook. Does nothing for a run that is not current.
+-- Retires the run, cancels its timers, stores the rendered report and notifies the optional OnMemoryCaptureFinished
+-- hook.
+-- @param run table  The capture state; nothing happens for a run that is not current.
+-- @param status string  "complete", "stopped", "cancelled", "invalid" or "unavailable".
 local function finish(run, status)
     if not current(run) then
         return
@@ -458,9 +509,14 @@ local function finish(run, status)
     end
 end
 
--- Adds one detailed row: heap, the addon's memory (refreshed through UpdateAddOnMemoryUsage only when refresh is
--- true, at capture start and end, because the refresh itself costs time and can cause frame spikes), CPU capture
--- state, retained-memory counts and table counts. Abandons the row if the run is retired during a native call.
+-- Adds one detailed row: heap, the addon's memory, CPU capture state, retained-memory counts and table counts.
+-- @param run table  The capture state.
+-- @param at number  The time of this sample.
+-- @param heap number|nil  The heap size in KiB read for this sample.
+-- @param refresh boolean|nil  True to refresh the addon's memory through UpdateAddOnMemoryUsage (at capture start and
+--   end only, because the refresh itself costs time and can cause frame spikes).
+--
+-- Abandons the row if the run is retired during a native call.
 local function detail(run, at, heap, refresh)
     local row = {
         t = at - run.started,
@@ -539,7 +595,9 @@ local function detail(run, at, heap, refresh)
         end
     end
 
-    -- Returns "active", "inactive" or "unknown" from the named addon method.
+    -- Reads whether a capture owned by another module is running.
+    -- @param name string  The addon method to call (IsCPUProfileRunning or IsCPURuntimeCaptureRunning).
+    -- @return string  "active", "inactive" or "unknown".
     local function captureState(name)
         local fn = raw(addon, name)
 
@@ -600,9 +658,12 @@ local function detail(run, at, heap, refresh)
     run.nextDetail = at + 30
 end
 
--- One timer tick: reads the heap, tracks drops, adds a detail row when due, charges its own cost to the overhead
--- totals and finishes the run when its time is up. ending is true for the closing tick. Never re-entered
--- (run.sampling).
+-- One timer tick: reads the heap, tracks drops, adds a detail row when due, charges its own cost to the overhead totals
+-- and finishes the run when its time is up.
+-- @param run table  The capture state.
+-- @param ending boolean|nil  True for the closing tick.
+--
+-- Never re-entered (run.sampling).
 local function sample(run, ending)
     if not current(run) or run.sampling then
         return
@@ -717,8 +778,11 @@ end
 -- Public API
 -- ============================================================================
 
--- Starts a capture of duration seconds (default 600, 1 to 1800). Returns true, or false and a reason code (for
--- example "already-running", "addon-disabled" or "missing-memory-api"). Only one capture runs at a time.
+-- Starts a memory capture. Only one capture runs at a time.
+-- @param duration number|nil  Seconds to capture, 1 to 1800; nil means 600.
+-- @return boolean  True when the capture started.
+-- @return string|nil  The reason code when false (for example "already-running", "addon-disabled" or
+--   "missing-memory-api"); nil when true.
 function addon:StartMemoryCapture(duration)
     if self ~= addon then
         return false, 'foreign-owner'
@@ -860,8 +924,11 @@ function addon:StartMemoryCapture(duration)
     return true
 end
 
+-- Ends the running capture as "stopped" with a final sample, keeping its report.
+-- @return boolean  True when a capture was ended.
+-- @return string|nil  "not-running" when false; nil when true.
+--
 -- Explicit completed boundary; legacy StopMemoryCapture remains cancellation.
--- Ends the running capture as "stopped" with a final sample, keeping its report. Returns true, or false and a reason.
 function addon:CompleteMemoryCapture()
     if self ~= addon or not active then
         return false, 'not-running'
@@ -879,8 +946,9 @@ function addon:CompleteMemoryCapture()
     return true
 end
 
--- Cancels the running capture without a final sample (the report says "cancelled"). Returns true, or false and a
--- reason.
+-- Cancels the running capture without a final sample (the report says "cancelled").
+-- @return boolean  True when a capture was cancelled.
+-- @return string|nil  "not-running" when false; nil when true.
 function addon:StopMemoryCapture()
     if self ~= addon or not active then
         return false, 'not-running'
@@ -890,12 +958,15 @@ function addon:StopMemoryCapture()
     return true
 end
 
--- True while a capture is running.
+-- Tells whether a capture is running.
+-- @return boolean  True while one is.
 function addon:IsMemoryCaptureRunning()
     return self == addon and active ~= nil
 end
 
--- Returns the report of the last finished capture, or nil and "running" or "not-captured".
+-- Returns the report of the last finished capture.
+-- @return string|nil  The report; nil while a capture runs or when none was captured.
+-- @return string|nil  "foreign-owner", "running" or "not-captured" when the first value is nil; nil otherwise.
 function addon:GetMemoryCaptureReport()
     if self ~= addon then
         return nil, 'foreign-owner'

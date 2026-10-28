@@ -13,7 +13,11 @@ local text = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.text = text
 
--- Splits a string on a Lua pattern character class (whitespace by default) and returns the non-empty pieces as a list.
+-- Splits a string on a Lua pattern character class (whitespace by default).
+-- @param inputstr string  The string to split.
+-- @param sep string|nil  The separator characters, spliced into a character class; nil means "%s".
+-- @return string[]  The non-empty pieces.
+--
 -- The separator is spliced into a character class, so it must be plain characters that are safe inside [^...].
 text.split = function(inputstr, sep)
     if sep == nil then
@@ -26,8 +30,10 @@ text.split = function(inputstr, sep)
     return t
 end
 
--- Word-wraps a string by inserting newlines so lines stay near the limit (72 columns by default) without splitting
--- words; a single word longer than the limit stays whole.
+-- Word-wraps a string by inserting newlines so lines stay near the limit without splitting words.
+-- @param str string  The text to wrap.
+-- @param limit number|nil  The line length; nil means 72 columns.
+-- @return string  The wrapped text; a single word longer than the limit stays whole.
 text.wrap = function(str, limit)
     limit = limit or 72
     local here = 1
@@ -42,17 +48,25 @@ text.wrap = function(str, limit)
             end)
 end
 
--- Strips leading and trailing whitespace and returns only the string (not the gsub count).
+-- Strips leading and trailing whitespace.
+-- @param s string  The string to trim.
+-- @return string  The trimmed string (not the gsub count).
 text.trim = function(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
--- Returns true when the string begins with the given plain prefix.
+-- Tells whether the string begins with the given plain prefix.
+-- @param str string  The string to test.
+-- @param start string  The prefix.
+-- @return boolean  True when str begins with start.
 text.starts_with = function(str, start)
     return str:sub(1, #start) == start
 end
 
--- Returns true when the string ends with the given plain suffix; an empty suffix always matches.
+-- Tells whether the string ends with the given plain suffix.
+-- @param str string  The string to test.
+-- @param ending string  The suffix; an empty suffix always matches.
+-- @return boolean  True when str ends with ending.
 text.ends_with = function(str, ending)
     return ending == "" or str:sub(-#ending) == ending
 end

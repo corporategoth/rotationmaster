@@ -9,8 +9,11 @@ local _, addon = ...
 local helpers = {}
 local color = color
 
--- Builds a full-width group holding one wrapped label of help text. font is a font object name, or a font file when
--- fontheight is also given. Returns the group.
+-- Builds a full-width group holding one wrapped label of help text.
+-- @param text string  The help text.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @return table  The group widget.
 function helpers.CreateText(text, font, fontheight)
     local t = addon:CreateConditionGroup()
     t:SetFullWidth(true)
@@ -32,7 +35,15 @@ function helpers.CreateText(text, font, fontheight)
     return t
 end
 
--- Builds a two-column row with an icon (texture plus optional texcoords) at the left and help text at the right.
+-- Builds a two-column row with an icon at the left and help text at the right.
+-- @param texture string|number  The icon texture path or file ID.
+-- @param width number  The icon width (and the width of the left column).
+-- @param height number  The icon height.
+-- @param text string  The help text.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @param ... number  The optional texcoords passed on to the icon's SetImage.
+-- @return table  The row widget.
 function helpers.CreatePictureText(texture, width, height, text, font, fontheight, ...)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -52,6 +63,12 @@ function helpers.CreatePictureText(texture, width, height, text, font, fontheigh
 end
 
 -- Builds a two-column row with a button labeled like the real control at the left and its explanation at the right.
+-- @param name string  The button label.
+-- @param text string  The explanation.
+-- @param font string|nil  A font object name, or a font file when fontheight is also given.
+-- @param fontheight number|nil  The font height; with it font is a font file.
+-- @param ... any  Not used.
+-- @return table  The row widget.
 function helpers.CreateButtonText(name, text, font, fontheight, ...)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -68,6 +85,9 @@ function helpers.CreateButtonText(name, text, font, fontheight, ...)
 end
 
 -- Wraps a widget in a row with an empty left column of the given width, so it appears indented.
+-- @param size number  The width of the empty left column.
+-- @param target table  The widget to indent.
+-- @return table  The row widget.
 function helpers.Indent(size, target)
     local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
@@ -84,7 +104,8 @@ function helpers.Indent(size, target)
     return group
 end
 
--- Returns a one-line blank label used as vertical spacing between help paragraphs.
+-- Builds a one-line blank label used as vertical spacing between help paragraphs.
+-- @return table  The label widget.
 function helpers.Gap()
     local rv = addon:CreateConditionLabel()
     rv:SetText(" ")

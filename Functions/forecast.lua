@@ -12,7 +12,13 @@ local forecast = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.forecast = forecast
 
--- Returns true when the value is a readable, finite number; otherwise false and a reason code ('restricted-value' or
+-- Tells whether a value is a readable, finite number.
+-- @param platform table  The platform adapter (its CanReadValue is the readability authority).
+-- @param value any  The value to test.
+-- @return boolean  True when the value is a readable, finite number.
+-- @return string|nil  The reason code when false ('restricted-value' or 'invalid-forecast-number'); nil when true.
+--
+-- Guards every number before arithmetic so a secret or NaN value cannot reach it.
 -- 'invalid-forecast-number'). Guards every number before arithmetic so a secret or NaN value cannot reach it.
 local function finite(platform, value)
     if not platform:CanReadValue(value) then return false,'restricted-value' end
@@ -20,9 +26,15 @@ local function finite(platform, value)
     return true
 end
 
--- Reads object[key] under pcall after checking both the table and the value are readable. Returns the value, or nil and
--- a reason code ('restricted-value', 'invalid-forecast-history' or 'forecast-history-error'). A metatable that throws
--- therefore becomes an unavailable result instead of an error.
+-- Reads object[key] under pcall after checking both the table and the value are readable.
+-- @param platform table  The platform adapter (its CanReadValue is the readability authority).
+-- @param object any  The table to read from.
+-- @param key any  The key to read.
+-- @return any  The value; nil when it cannot be read.
+-- @return string|nil  The reason code when the value is nil ('restricted-value', 'invalid-forecast-history' or
+--   'forecast-history-error'); nil otherwise.
+--
+-- A metatable that throws therefore becomes an unavailable result instead of an error.
 local function readField(platform, object, key)
     if not platform:CanReadValue(object) then return nil,'restricted-value' end
     if type(object)~='table' then return nil,'invalid-forecast-history' end
@@ -32,12 +44,20 @@ local function readField(platform, object, key)
     return value
 end
 
--- A new checked kernel. Published trends.calculate and its aliases remain
--- untouched for saved source. Work bounds are RM policy, not a native limit.
--- Takes the platform (readability authority), the history table with damage and heals rows of time/value, the
--- weighting window, the two skip flags (a skipped stream is never read) and the clock snapshot. Returns rate and the
--- larger stream age, or nil, nil and a reason code. The inner scan visits at most 4096 rows plus accumulation bins
--- across both streams combined.
+-- Calculates the signed health rate per second from damage and heal history.
+-- @param platform table  The platform adapter (readability authority; its CanReadValue must be a function).
+-- @param history table  {damage=table[], heals=table[]}; each stream is a list of rows {time=number, value=number}.
+-- @param window number  The weighting window in seconds.
+-- @param noheals boolean  True to skip the heal stream (a skipped stream is never read).
+-- @param nodmg boolean  True to skip the damage stream (a skipped stream is never read).
+-- @param now number  The clock snapshot the row ages are measured from.
+-- @return number|nil  The signed rate per second (heals minus damage); nil when anything cannot be read.
+-- @return number|nil  The larger stream age in seconds; nil when the first value is nil.
+-- @return string|nil  The reason code when the first value is nil; nil otherwise.
+--
+-- A new checked kernel. Published trends.calculate and its aliases remain untouched for saved source. Work bounds are
+-- RM policy, not a native limit: the inner scan visits at most 4096 rows plus accumulation bins across both streams
+-- combined.
 function forecast.calculate(platform, history, window, noheals, nodmg, now)
     if type(platform)~='table' or type(platform.CanReadValue)~='function' then return nil,nil,'invalid-forecast-platform' end
     if not platform:CanReadValue(history) or not platform:CanReadValue(noheals) or not platform:CanReadValue(nodmg) then return nil,nil,'restricted-value' end
