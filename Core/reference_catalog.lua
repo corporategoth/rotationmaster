@@ -14,12 +14,18 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- ever seen (it survives a transient miss), and `blocked` marks ids whose latest observation was a real failure.
 local items, indexed, blocked = {}, {}, {}
 
--- True when the value may be inspected on this client (restricted-client rule); every game value is checked first.
+-- Reports whether a value may be inspected on this client (the restricted-client rule); every game value is checked
+-- first.
+-- @param value any  The value to check.
+-- @return boolean  True when the value is readable.
 local function readable(value)
     return addon.Platform:CanReadValue(value)
 end
 
--- Normalizes a number or numeric string to a positive whole number id, or returns nil.
+-- Normalizes a number or numeric string to a positive whole number id.
+-- @param value any  The candidate id.
+-- @return number|nil  The id; nil when the value is unreadable, not a number or numeric string, or not a positive whole
+--   number.
 local function id(value)
     if not readable(value) or (type(value) ~= 'number' and type(value) ~= 'string') then
         return
@@ -33,12 +39,19 @@ local function id(value)
 end
 
 -- Strips color escapes from a string so names and queries compare as plain text.
+-- @param value string  The text to clean.
+-- @return string  The text without |cAARRGGBB and |r escapes.
+-- @return number  The number of |r escapes removed (the count of the last substitution).
 local function plain(value)
     return value:gsub('|c%x%x%x%x%x%x%x%x', ''):gsub('|r', '')
 end
 
--- Returns the search text for a typed value: '' for nil, the digits of a valid id, or the plain text of a short string;
--- nil for anything else or unreadable input.
+-- Returns the search text for a typed value.
+-- @param value any  The typed value.
+-- @return string|nil  '' for nil, the digits of a valid id, or the plain text of a short string (at most 256 bytes);
+--   nil
+--   for anything else or unreadable input.
+-- @return number|nil  The substitution count from plain() when the text came from a string; nil otherwise.
 local function queryText(value)
     if not readable(value) then
         return
@@ -54,7 +67,10 @@ local function queryText(value)
     end
 end
 
--- True when the optional icon (texture id or path) and link are readable and well formed.
+-- Checks the optional icon and link of a presentation row.
+-- @param icon any  The texture id or path; nil is allowed.
+-- @param link any  The hyperlink text; nil is allowed.
+-- @return boolean  True when both are readable and well formed.
 local function optionalFields(icon, link)
     if not readable(icon) or not readable(link) then
         return false
@@ -73,7 +89,12 @@ local function optionalFields(icon, link)
     return true
 end
 
--- Builds the row the pickers show for an item, or returns nil when the name or optional fields are not usable.
+-- Builds the row the pickers show for an item.
+-- @param key number  The item id.
+-- @param name string  The item name; must be a non-empty string.
+-- @param icon string|number|nil  The texture id or path.
+-- @param link string|nil  The item hyperlink.
+-- @return table|nil  { id, name, display, icon, link }; nil when the name or optional fields are not usable.
 local function presentation(key, name, icon, link)
     if not readable(name) or not optionalFields(icon, link) then
         return
@@ -91,6 +112,7 @@ end
 
 -- Returns a set of the item ids the player has: carried bags (addon.bagContents, kept by Core/inventory.lua) and the
 -- equipped slots.
+-- @return table  A set keyed by item id with the value true.
 local function inventory()
     local result = {}
     local bags = addon.bagContents
@@ -125,9 +147,12 @@ local function inventory()
     return result
 end
 
--- Looks one item up through the platform and updates the caches. Returns its presentation row, or nil when the value is
--- not an item id or the item is not (yet) known. A real failure blocks the id until a later observation succeeds; an
--- item whose data has not loaded keeps any earlier readable index entry.
+-- Looks one item up through the platform and updates the caches.
+-- @param value number|string  The item id (or numeric string).
+-- @return table|nil  The item's presentation row; nil when the value is not an item id or the item is not (yet) known.
+--
+-- A real failure blocks the id until a later observation succeeds; an item whose data has not loaded keeps any earlier
+-- readable index entry.
 local function itemInfo(value)
     local key = id(value)
 
@@ -151,7 +176,9 @@ local function itemInfo(value)
 end
 
 -- Returns the id-to-row map the search matches against: everything indexed so far plus a fresh look at the owned and
--- blocked ids. Blocked ids are left out. `owned` is the inventory set, computed when not given.
+-- blocked ids.
+-- @param owned table|nil  The inventory set, computed when not given.
+-- @return table  A map from item id to presentation row; blocked ids are left out.
 local function indexedItems(owned)
     local result = {}
 
@@ -184,12 +211,16 @@ local function indexedItems(owned)
     return result
 end
 
--- Public entry that records an item's metadata in the caches (used when an item is first seen); returns its row or nil.
+-- Records an item's metadata in the caches (used when an item is first seen).
+-- @param value number|string  The item id.
+-- @return table|nil  The item's presentation row; nil when the item is not known.
 function addon:UpdateReferenceItem(value)
     return itemInfo(value)
 end
 
--- Returns the settings table (an empty one for nil), or nil when it is unreadable or not a table.
+-- Returns the settings table to use for a provider call.
+-- @param settings any  The caller's settings; nil means none.
+-- @return table|nil  The settings table (an empty one for nil); nil when it is unreadable or not a table.
 local function options(settings)
     if settings == nil then
         return {}
@@ -199,9 +230,12 @@ local function options(settings)
     end
 end
 
--- Resolves typed text (id, item link, item: string, or exact name) to an item id. `accept` may veto an id by returning
--- false and a reason. Returns the id, or nil with a reason such as item-not-in-inventory, or nil alone when no item
--- matches.
+-- Resolves typed text (id, item link, item: string, or exact name) to an item id.
+-- @param input string|number|nil  The typed value.
+-- @param settings table|nil  Provider settings; settings.inventory restricts the answer to items the player has.
+-- @param accept function|nil  accept(itemId) may veto an id by returning false and a reason.
+-- @return number|nil  The item id; nil when no item matches or the id was refused.
+-- @return string|nil  The reason for a refusal, such as item-not-in-inventory; nil otherwise.
 local function itemResolve(input, settings, accept)
     settings = options(settings)
     local text = queryText(input)
@@ -249,9 +283,15 @@ local function itemResolve(input, settings, accept)
     end
 end
 
--- Searches the indexed item names for a picker. Returns up to settings.limit (default 30, at most 100) rows sorted by
--- name, plus { coverage, more }; or nil and invalid-search-options / invalid-search-query. Only names the client has
--- already loaded can match, hence the coverage tag.
+-- Searches the indexed item names for a picker.
+-- @param input string|number|nil  The typed text or id.
+-- @param settings table|nil  Provider settings: limit (a whole number 1..100, default 30) and inventory.
+-- @param accept function|nil  accept(itemId) may exclude an id.
+-- @return table[]|nil  Up to settings.limit presentation rows sorted by name; nil for invalid options or query.
+-- @return table|string|nil  { coverage = 'indexed-metadata', more = boolean } on success, or invalid-search-options /
+--   invalid-search-query when the first return is nil.
+--
+-- Only names the client has already loaded can match, hence the coverage tag.
 local function itemSearch(input, settings, accept)
     settings = options(settings)
 
@@ -310,11 +350,17 @@ local function itemSearch(input, settings, accept)
 end
 
 -- Asks the platform whether the id is a glyph item (an acceptance test for the glyph provider).
+-- @param value number  The item id.
+-- @return table|nil  The glyph item record; nil when it is not a glyph of the player's class.
+-- @return string|nil  The platform's reason when the first return is nil; nil otherwise.
 local function glyphItem(value)
     return addon.Platform:GetGlyphItemInfo(value)
 end
 
--- Like itemInfo, but only for glyph items; returns the row, or nil and the platform's reason.
+-- Like itemInfo, but only for glyph items.
+-- @param value number|string  The item id.
+-- @return table|nil  The item's presentation row; nil when it is not a known glyph item.
+-- @return string|nil  The platform's reason when the item is not a glyph; nil otherwise.
 local function glyphInfo(value)
     local key = id(value)
 
@@ -335,9 +381,14 @@ end
 -- Providers
 -- ============================================================================
 
--- Returns the provider table the reference editboxes use for an edit box kind: functions index, info, resolve, search
--- and name plus the missing-data text. Glyph and item kinds use the item caches above; anything else falls through to
--- the spell catalog provider. Providers are built fresh on every call.
+-- Returns the provider table the reference editboxes use for an edit box kind.
+-- @param kind string  The edit box kind: 'Glyph_EditBox', 'Item_EditBox', 'Inventory_EditBox' or 'item'; anything else
+--   selects the spell catalog provider.
+-- @return table  The provider: kind, index, info, resolve, search and name functions plus the missing-data text (and
+--   `inventory` for the inventory kind).
+--
+-- Glyph and item kinds use the item caches above; anything else falls through to the spell catalog provider. Providers
+-- are built fresh on every call.
 function addon:GetReferenceProvider(kind)
     if kind == 'Glyph_EditBox' then
         return {
@@ -392,6 +443,8 @@ do
     local ownedUpdate, ownedProvider = addon.UpdateReferenceItem, addon.GetReferenceProvider
 
     -- Counts the keys of a map, stopping at 4096 so a capture never walks a huge table.
+    -- @param map table  The map to count.
+    -- @return table  { n = number (at most 4096), capped = boolean }.
     local function count(map)
         local n, key = 0, nil
 

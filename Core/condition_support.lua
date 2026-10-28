@@ -40,8 +40,9 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local env = getfenv and getfenv(1) or _G
 local POLICY, FAMILY, LISTED, BOSSMOD, LOG = 'policy', 'family', 'listed', 'bossmod', 'log'
 
--- Resolves a dotted global path such as 'C_Spell.GetSpellCooldown' in the captured environment; nil when any part is
--- missing.
+-- Resolves a dotted global path in the captured environment.
+-- @param path string  A dotted global path such as 'C_Spell.GetSpellCooldown'.
+-- @return any  The value at the path; nil when any part is missing.
 local function lookup(path)
     local value = env
 
@@ -56,8 +57,9 @@ local function lookup(path)
     return value
 end
 
--- Whether the client hands out secret values now. A restricted-policy client
--- without the predicate, or one whose answer is unreadable, is restricted.
+-- Reports whether the client hands out secret values now.
+-- @return boolean  True when restrictions apply; a restricted-policy client without the predicate, or one whose answer
+--   is unreadable, is restricted.
 local function secretRestrictions()
     local secrets = lookup('C_Secrets')
 
@@ -75,8 +77,11 @@ local function secretRestrictions()
     return restricted
 end
 
--- nil on the probe policy and on a restricted client without restrictions;
--- otherwise the policy reason or `reason` when `secret()` holds.
+-- Builds a requirement that is unmet only while the client restricts a secret value.
+-- @param reason string  The reason code returned when `secret()` holds.
+-- @param secret function  secret(value) returns true when the condition's source is secret.
+-- @return function  A requirement function(value) that returns nil on the probe policy and on a restricted client
+--   without restrictions; otherwise 'unsupported-policy' for an unknown policy, `reason` when `secret()` holds, or nil.
 local function whileRestricted(reason, secret)
     return function(value)
         local platform = addon.Platform
@@ -106,10 +111,10 @@ end
 -- and UnitHealthPercent likewise (2026-10-23). Health cannot be compared there.
 local SECRET_HEALTH = whileRestricted('secret-health', function() return true end)
 
--- UnitPower is SecretWhenUnitPowerRestricted: "secret values for power types not
--- explicitly flagged as being never secret". The flag is client data,
--- C_Secrets.GetPowerTypeSecrecy (Enum.SecrecyLevel NeverSecret = 0); without it,
--- the never-secret point resources Blizzard named (Platform/points.lua).
+-- Reports whether a power type is flagged never secret.
+-- @param name string  The Enum.PowerType name, for example 'Mana'.
+-- @return boolean  True when the client flags the power never secret (via C_Secrets.GetPowerTypeSecrecy, else the
+--   never-secret point resources Blizzard named in Platform/points.lua).
 local function neverSecretPower(name)
     local enum = lookup('Enum.PowerType')
 
@@ -167,7 +172,10 @@ end)
 -- Value-dependent gates and edition rules
 -- ============================================================================
 
--- Value-dependent permanent gates.
+-- Value-dependent permanent gate for the TALENT condition.
+-- @param value table|nil  The condition value (layout, tree, talent, value).
+-- @return string|nil  A reason code ('historical-talent-layout', 'unsupported-talent-layout' or
+--   'talent-layout-mismatch'); nil when usable.
 local function talentLayout(value)
     if type(value) ~= 'table' then
         return nil
@@ -195,8 +203,10 @@ local function talentLayout(value)
     end
 end
 
--- Classic talent trees: the tree layout, and Forever, whose three classic
--- trees are trait node groups (Platform/talents.lua GetTraitTreeGroups).
+-- Requirement for the classic talent trees: the tree layout, and Forever, whose three classic trees are trait node
+-- groups (Platform/talents.lua GetTraitTreeGroups).
+-- @return string|nil  A reason code ('unsupported-talent-layout' or 'talent-layout-mismatch'); nil when usable.
+--
 -- Retail's trait tree has no such groups.
 local function treeLayout()
     local platform = addon.Platform
@@ -218,7 +228,9 @@ local function treeLayout()
     end
 end
 
--- Reason code when this progression expansion has no known point resource map, else nil.
+-- Requirement for the POINT condition on progression clients.
+-- @return string|nil  'unsupported-point-expansion' when this progression expansion has no known point resource map;
+--   nil otherwise.
 local function pointEdition()
     local platform = addon.Platform
 
@@ -239,7 +251,10 @@ local function pointEdition()
     end
 end
 
--- Mists removed the ranged slot and Retail followed (Core/build_context.lua).
+-- Requirement for the WEAPON_TYPE condition: Mists removed the ranged slot and Retail followed
+-- (Core/build_context.lua).
+-- @param value table|nil  The condition value (slot).
+-- @return string|nil  'no-ranged-slot' when the ranged slot is chosen on a client without one; nil otherwise.
 local function weaponSlot(value)
     if type(value) ~= 'table' or value.slot ~= 'ranged' then
         return nil
@@ -262,7 +277,8 @@ local function weaponSlot(value)
     end
 end
 
--- Reason code when the client's glyph layout is not supported, else nil.
+-- Requirement for the GLYPH condition.
+-- @return string|nil  'unsupported-glyph-layout' when the client's glyph layout is not supported; nil otherwise.
 local function glyphLayout()
     local platform = addon.Platform
 
@@ -274,9 +290,11 @@ local function glyphLayout()
     end
 end
 
--- Mechanics that exist only in some editions. `test` receives the client info
--- (family, and for progression the expansion level: 2 Wrath, 3 Cataclysm,
--- 4 Mists of Pandaria) and answers whether the edition has the mechanic.
+-- Builds a requirement for mechanics that exist only in some editions.
+-- @param reason string  The reason code returned when the edition lacks the mechanic.
+-- @param test function  test(info) receives the client info (family, and for progression the expansion level: 2 Wrath,
+--   3 Cataclysm, 4 Mists of Pandaria) and answers whether the edition has the mechanic.
+-- @return function  A requirement function() that returns `reason` when the edition lacks the mechanic, else nil.
 local function editionRule(reason, test)
     return function()
         local platform = addon.Platform
@@ -296,7 +314,10 @@ local function editionRule(reason, test)
     end
 end
 
--- True for a progression client whose expansion level is at least `first`.
+-- Reports whether a client is a progression client of at least a given expansion.
+-- @param info table  The client info (family, expansion).
+-- @param first number  The lowest expansion level that counts.
+-- @return boolean  True for a progression client whose expansion level is at least `first`.
 local function progressionFrom(info, first)
     return info.family == 'progression' and type(info.expansion) == 'number' and info.expansion >= first
 end
@@ -334,7 +355,10 @@ local SPELL_RANGE = { FAMILY, UNIT, { 'C_Spell.IsSpellInRange', 'IsSpellInRange'
 local SPELL_CURRENT = { { 'C_Spell.IsCurrentSpell', 'IsCurrentSpell' } }
 local KNOWN = { { 'C_SpellBook.IsSpellKnown', 'IsSpellKnown' } }
 
--- Returns a copy of the requirement list `base` with the extra requirements appended.
+-- Returns a copy of a requirement list with extra requirements appended.
+-- @param base table  The requirement list to copy.
+-- @param ... any  The extra requirements to append.
+-- @return table  The new requirement list.
 local function with(base, ...)
     local result = {}
 
@@ -387,6 +411,8 @@ local PLAYER_STATE_API = {
 }
 
 -- Requirement for PLAYER_STATE: checks the API that the chosen state reads.
+-- @param value table|nil  The condition value (state).
+-- @return string|nil  The reason code of the first unmet API requirement; nil when usable.
 local function playerState(value)
     local needs = type(value) == 'table' and PLAYER_STATE_API[value.state]
 
@@ -403,10 +429,14 @@ local function playerState(value)
     end
 end
 
--- GROUP_COUNT: size and dead members read on every client; assigned roles only
--- where a client lets players assign them (not Era or Burning Crusade: the
--- function exists there, but the client generated manifests prove only that, not
--- that a role can be assigned).
+-- Requirement for GROUP_COUNT.
+-- @param value table|nil  The condition value (measure).
+-- @return string|nil  The reason code; nil when usable.
+--
+-- Size and dead members read on every client; assigned roles only where a client lets players assign them (not Era or
+-- Burning Crusade: the function exists there, but the client generated manifests prove only that, not that a role can
+-- be
+-- assigned).
 local function groupCount(value)
     local measure = type(value) == 'table' and value.measure
 
@@ -423,7 +453,9 @@ local function groupCount(value)
     end
 end
 
--- ITEM_COOLDOWN with a trinket slot reads the equipped item from the slot.
+-- Requirement for ITEM_COOLDOWN with a trinket slot, which reads the equipped item from the slot.
+-- @param value table|nil  The condition value (slot).
+-- @return string|nil  The reason code; nil when usable or no slot is chosen.
 local function itemCooldownSlot(value)
     if type(value) ~= 'table' or value.slot == nil then
         return nil
@@ -432,7 +464,9 @@ local function itemCooldownSlot(value)
     return check({ 'GetInventoryItemID' }, value)
 end
 
--- DISTANCE_COUNT with `incombat` also asks whether each counted unit is in combat.
+-- Requirement for DISTANCE_COUNT with `incombat`, which also asks whether each counted unit is in combat.
+-- @param value table|nil  The condition value (incombat).
+-- @return string|nil  The reason code; nil when usable or incombat is not set.
 local function distanceCountCombat(value)
     if type(value) ~= 'table' or not value.incombat then
         return nil
@@ -441,7 +475,9 @@ local function distanceCountCombat(value)
     return check({ 'UnitAffectingCombat' }, value)
 end
 
--- Eclipse: the direction and the energy each read their own API.
+-- Requirement for ECLIPSE: the direction and the energy each read their own API.
+-- @param value table|nil  The condition value (measure).
+-- @return string|nil  The reason code; nil when usable.
 local function eclipse(value)
     local measure = type(value) == 'table' and value.measure
 
@@ -458,8 +494,11 @@ local function eclipse(value)
     end
 end
 
--- Swing timers: the ranged option reads UnitRangedDamage, the melee hands UnitAttackSpeed; the
--- remaining time needs the combat log for either (a restricted client has none).
+-- Requirement for the swing timers: the ranged option reads UnitRangedDamage, the melee hand UnitAttackSpeed.
+-- @param value table|nil  The condition value (ranged).
+-- @return string|nil  The reason code; nil when usable.
+--
+-- The remaining time needs the combat log for either (a restricted client has none).
 local function swingApi(value)
     return check(type(value) == 'table' and value.ranged and { 'UnitRangedDamage' } or { 'UnitAttackSpeed' }, value)
 end
@@ -639,9 +678,11 @@ local bossmodFamilies = { era = true, tbc = true, progression = true }
 -- Checking requirements
 -- ============================================================================
 
--- Evaluates one requirement against the client and returns nil when satisfied or a reason code. A requirement is a
--- function of the condition value, a list of alternative API names (any one existing suffices) or one of the POLICY,
--- FAMILY, LISTED, BOSSMOD and LOG markers.
+-- Evaluates one requirement against the client.
+-- @param requirement function|table|string  A function of the condition value, a list of alternative API names (any one
+--   existing suffices) or one of the POLICY, FAMILY, LISTED, BOSSMOD and LOG markers.
+-- @param value table|nil  The condition value, passed to a function requirement.
+-- @return string|nil  nil when satisfied, else a reason code.
 function check(requirement, value)
     local kind = type(requirement)
 
@@ -701,12 +742,12 @@ function check(requirement, value)
     end
 end
 
--- nil when the condition can work on this client, else a permanent reason.
--- Never evaluates the condition and never caches: client facts are cached by
--- the platform, and validation results are keyed by the validation stamp,
--- which advances when the client changes (Core/rotation_references.lua).
--- A group unit type (the main tank, an assigned healer, ...) in a unit field needs
--- the client to resolve it (Platform/group_units.lua). Applies to any condition.
+-- Checks that the client can resolve a group unit type used in a unit field.
+-- @param value table|nil  The condition value (unit, otherunit).
+-- @return string|nil  The platform's reason code; nil when supported.
+--
+-- A group unit type (the main tank, an assigned healer, ...) in a unit field needs the client to resolve it
+-- (Platform/group_units.lua). Applies to any condition.
 local function groupUnitSupport(value)
     local kinds = addon.groupUnitKinds
     local platform = addon.Platform
@@ -728,9 +769,17 @@ local function groupUnitSupport(value)
     end
 end
 
--- Returns nil when the condition `tag` can work on this client, else a permanent reason code (see `reasonText`). A
--- definition's own `supported(value)` wins, custom conditions are always supported here, and a group unit kind in a
--- unit field is checked first. A support check that errors answers 'support-check-error'.
+-- Reports whether a condition can work on this client.
+-- @param tag string  The condition tag.
+-- @param definition table|nil  The condition definition; a non-table gives nil.
+-- @param value table|nil  The condition value, for requirements that depend on the saved value.
+-- @return string|nil  nil when the condition can work on this client, else a permanent reason code (see `reasonText`);
+--   'support-check-error' when a support check errors.
+--
+-- A definition's own `supported(value)` wins, custom conditions are always supported here, and a group unit kind in a
+-- unit field is checked first. Never evaluates the condition and never caches: client facts are cached by the platform,
+-- and validation results are keyed by the validation stamp, which advances when the client changes
+-- (Core/rotation_references.lua).
 function addon:GetConditionSupport(tag, definition, value)
     if type(definition) ~= 'table' then
         return nil
@@ -792,8 +841,9 @@ local reasonText = {
     ['no-group-roles'] = L['this client has no assigned group roles'],
 }
 
--- "X is not supported on this client (reason)." for an unsupported-condition
--- validation issue; nil for any other issue.
+-- Describes an unsupported-condition validation issue: "X is not available on this client (reason)."
+-- @param problem table  The validation issue ({ code, condition, reason }).
+-- @return string|nil  The localized sentence; nil for any other issue.
 function addon:DescribeUnsupportedCondition(problem)
     if type(problem) ~= 'table' or problem.code ~= 'unsupported-condition' then
         return nil

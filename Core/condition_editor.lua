@@ -35,15 +35,22 @@ local commands = {
     SetProjectedDisabled = true,
 }
 
--- True when two portable plain-data trees are equal by value. Non-portable data (functions, cycles) is never equal, so
--- such a draft always reads as changed.
+-- Reports whether two portable plain-data trees are equal by value.
+-- @param left any  The first tree.
+-- @param right any  The second tree.
+-- @return boolean  True when equal. Non-portable data (functions, cycles) is never equal, so such a draft always reads
+--   as changed.
 local function unchanged(left, right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then
         return false
     end
 
-    -- Conditions may legally use names such as body.rotation for their own
-    -- fields. Compare plain values without envelope/step identity semantics.
+    -- Compares two plain values deeply, without envelope/step identity semantics.
+    -- @param a any  The first value.
+    -- @param b any  The second value.
+    -- @return boolean  True when equal.
+    --
+    -- Conditions may legally use names such as body.rotation for their own fields.
     local function equal(a, b)
         if type(a) ~= type(b) then
             return false
@@ -74,10 +81,12 @@ end
 -- Condition values
 -- ============================================================================
 
--- The value a newly chosen condition type starts with. Aura conditions start
--- with every rank matching (`anyrank`) on clients that have spell ranks, so
--- "Use this exact spell rank" starts unticked like the other rank options.
--- Saved conditions without the field keep matching the exact ID.
+-- Returns the value a newly chosen condition type starts with.
+-- @param tag string  The condition tag.
+-- @return table  { type = tag }, plus `anyrank = true` for aura conditions on clients that have spell ranks.
+--
+-- Aura conditions start with every rank matching (`anyrank`) on clients that have spell ranks, so "Use this exact spell
+-- rank" starts unticked like the other rank options. Saved conditions without the field keep matching the exact ID.
 function addon:NewConditionValue(tag)
     local value = { type = tag }
     local definition = self.conditionDefinitions and self.conditionDefinitions[tag]
@@ -99,12 +108,18 @@ end
 -- Edit session
 -- ============================================================================
 
--- Editing is detached from the running rotation. Only explicit Apply writes
--- the original plain table, after schema, semantic and concurrent-edit checks.
--- Returns a session object (Snapshot, Baseline, IsDirty, Rows, Command, HistoryState, Undo, Redo, Cancel, Apply) over a
--- draft copy of the condition tree `original`, or nil and a reason. targetValid, when given, says whether the owner
--- the condition belongs to still exists; options.readOnly refuses every edit and options.announcementTarget selects the
--- announcement validator. Apply returns true after writing back into `original`, or nil and a reason code.
+-- Opens a detached edit session over a draft copy of a condition tree.
+-- @param spec number  The specialization ID or talent group the condition is edited for.
+-- @param original table  The condition tree; only Apply writes it.
+-- @param targetValid function|nil  Says whether the owner the condition belongs to still exists.
+-- @param options table|nil  options.readOnly refuses every edit; options.announcementTarget selects the announcement
+--   validator.
+-- @return table|nil  The session object (Snapshot, Baseline, IsDirty, Rows, Command, HistoryState, Undo, Redo, Cancel,
+--   Apply); nil when the arguments or the tree are invalid.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Editing is detached from the running rotation. Only explicit Apply writes the original plain table, after schema,
+-- semantic and concurrent-edit checks.
 function addon:NewConditionEditSession(spec, original, targetValid, options)
     options = options or {}
 
@@ -118,7 +133,8 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         return nil, "invalid-editor-owner"
     end
 
-    -- True when the owner of the condition still exists; a throwing owner check counts as gone.
+    -- Reports whether the owner of the condition still exists.
+    -- @return boolean  True when there is no owner check or it passes; a throwing owner check counts as gone.
     local function targetExists()
         if not targetValid then
             return true
@@ -140,7 +156,9 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- and an estimate of retained table/string storage, including redo states.
     local undo, redo, historyBytes = {}, {}, 0
 
-    -- Rough byte cost of a value, used only to bound how much undo history one draft may retain.
+    -- Estimates the byte cost of a value, used only to bound how much undo history one draft may retain.
+    -- @param value any  The value to measure.
+    -- @return number  The estimated bytes.
     local function weight(value)
         if type(value) == "string" then
             return 32 + #value
@@ -159,13 +177,18 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     end
 
     -- Pushes a snapshot on the undo or redo stack and adds its weight to the retained total.
+    -- @param stack table  The undo or redo stack.
+    -- @param value table  The snapshot to keep.
     local function push(stack, value)
         local bytes = weight(value)
         stack[#stack + 1] = { value = value, bytes = bytes }
         historyBytes = historyBytes + bytes
     end
 
-    -- Removes and returns an entry (the newest unless an index is given), releasing its weight.
+    -- Removes an entry from a history stack, releasing its weight.
+    -- @param stack table  The undo or redo stack.
+    -- @param index number|nil  The entry to remove; the newest when nil.
+    -- @return table|nil  The removed entry { value, bytes }; nil when the stack was empty.
     local function pop(stack, index)
         local entry = table.remove(stack, index or #stack)
 
@@ -176,7 +199,7 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         return entry
     end
 
-    -- Drops the oldest history while the edit count or retained size is over its cap.
+    -- Drops the oldest history while the edit count (100) or retained size (8 MiB) is over its cap.
     local function trim()
         while #undo + #redo > 100 or historyBytes > 8388608 do
             if #undo > 0 then
@@ -200,27 +223,41 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     local session = {}
 
     -- Returns a copy of the draft as it stands now.
+    -- @return table  The copy.
     function session:Snapshot()
         return draft:Snapshot()
     end
 
     -- Returns a copy of the condition as it was when the session opened.
+    -- @return table  The copy.
     function session:Baseline()
         return data.CopyData(baseline)
     end
 
-    -- True when the draft differs from the baseline by value.
+    -- Reports whether the draft differs from the baseline by value.
+    -- @return boolean  True when it differs.
     function session:IsDirty()
         return not unchanged(baseline, draft:Snapshot())
     end
 
-    -- Returns the draft's display rows, up to limit.
+    -- Returns the draft's display rows.
+    -- @param limit number|nil  The most rows to return (the draft's default is 200, at most 4096).
+    -- @return table[]  The rows { path, type, disabled, invalidDisabled, depth, childCount }.
+    -- @return boolean  False when the limit cut the list short.
     function session:Rows(limit)
         return draft:Rows(limit)
     end
 
-    -- Runs a whitelisted draft command. A command that really changes the draft pushes the prior state on the undo
-    -- stack and clears redo. Returns the draft's own ok, result, or nil and a reason when closed, read-only or unknown.
+    -- Runs a whitelisted draft command.
+    -- @param name string  The draft command name (Replace, Wrap, Unwrap, Add, Remove, Move, ...).
+    -- @param path table|nil  The condition path the command acts on.
+    -- @param value any  The command's argument.
+    -- @return any  The draft's own ok (truthy when the command succeeded); nil when the session is closed, read-only or
+    --   the
+    --   command is unknown.
+    -- @return any  The draft's own result, or the reason code when the first return is nil.
+    --
+    -- A command that really changes the draft pushes the prior state on the undo stack and clears redo.
     function session:Command(name, path, value)
         if closed then
             return nil, "condition-editor-closed"
@@ -248,6 +285,7 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     end
 
     -- Reports whether undo and redo are currently possible, for enabling the buttons.
+    -- @return table  { canUndo = boolean, canRedo = boolean }.
     function session:HistoryState()
         return {
             canUndo = not closed and not readOnly and #undo > 0,
@@ -256,6 +294,10 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     end
 
     -- Moves one history step: restores the newest entry of source and stacks the current state on destination.
+    -- @param source table  The stack to take the entry from.
+    -- @param destination table  The stack that receives the current state.
+    -- @return boolean|nil  True when a step was taken; nil when closed, read-only, empty or the draft refused it.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     local function travel(source, destination)
         if closed then
             return nil, "condition-editor-closed"
@@ -281,12 +323,16 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
         return true
     end
 
-    -- Steps back one edit; returns true, or nil and a reason when there is nothing to undo.
+    -- Steps back one edit.
+    -- @return boolean|nil  True when an edit was undone; nil when there is nothing to undo.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function session:Undo()
         return travel(undo, redo)
     end
 
-    -- Re-applies the last undone edit; returns true, or nil and a reason when there is nothing to redo.
+    -- Re-applies the last undone edit.
+    -- @return boolean|nil  True when an edit was redone; nil when there is nothing to redo.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
     function session:Redo()
         return travel(redo, undo)
     end
@@ -297,9 +343,13 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     end
 
     -- Validates the draft and, only if every check passes, copies it into the original table and closes the session.
-    -- Returns true, or nil and a reason code (with the validation result for the schema failures). The checks run
-    -- twice around the validator because it runs custom code: the draft must not have been mutated by it and the
-    -- original and its owner must not have changed meanwhile.
+    -- @return boolean|nil  True after writing back into `original`; nil on failure.
+    -- @return string|nil  The reason code when the first return is nil; nil otherwise.
+    -- @return table|nil  The validation result, for the schema failures; nil otherwise.
+    --
+    -- The checks run twice around the validator because it runs custom code: the draft must not have been mutated by it
+    -- and
+    -- the original and its owner must not have changed meanwhile.
     function session:Apply()
         if closed then
             return nil, "condition-editor-closed"
@@ -330,8 +380,10 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
 
         local candidate = data.CopyData(snapshot)
 
-        -- Runs the announcement or the ordinary condition validator on the candidate copy; it may run custom code,
-        -- hence the checks around it.
+        -- Runs the announcement or the ordinary condition validator on the candidate copy.
+        -- @return boolean  The validator's answer.
+        --
+        -- It may run custom code, hence the checks around it.
         local function validate()
             if options.announcementTarget then
                 return addon:validateAnnouncementCondition(candidate, spec)

@@ -12,12 +12,17 @@ local catalog = addon.SpellCatalog
 -- ============================================================================
 
 -- Strips color codes and surrounding whitespace so pasted link text compares like a typed name.
+-- @param text string  The text to clean.
+-- @return string  The cleaned text.
 local function plain(text)
     return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match("^%s*(.-)%s*$"))
 end
 
--- Validates the caller's search settings and returns a normalized copy, or nil when anything is out of range. A nil
--- value means the defaults (limit 30). The checks are strict because settings can come from saved or imported data.
+-- Validates the caller's search settings and returns a normalized copy.
+-- @param value table|nil  The settings (spec, norank, limit, nameContains); nil means the defaults (limit 30).
+-- @return table|nil  { spec, norank, limit, nameContains } copy; nil when anything is out of range.
+--
+-- The checks are strict because settings can come from saved or imported data.
 local function options(value)
     if value == nil then
         return { limit = 30 }
@@ -54,8 +59,11 @@ local function options(value)
     return { spec = spec, norank = value.norank, limit = limit, nameContains = value.nameContains }
 end
 
--- Returns the set of spell IDs in the given spellbook (a spec number or the pet book), or nil when spec is nil.
--- Returns nil and a reason when that book has not finished loading, so callers never treat a partial book as complete.
+-- Returns the set of spell IDs in a spellbook.
+-- @param spec number|string|nil  A specialization number, or the pet book (BOOKTYPE_PET); nil means no book filter.
+-- @return table|nil  The set of spell IDs keyed by id; nil when spec is nil or the book is not available.
+-- @return string|nil  The reason when that book has not finished loading, so callers never treat a partial book as
+--   complete; nil otherwise.
 local function book(spec)
     if spec == nil then
         return nil
@@ -70,18 +78,26 @@ local function book(spec)
     return addon.specSpells and addon.specSpells[spec] or {}
 end
 
--- True when the optional case-insensitive nameContains filter accepts the name (plain substring, not a pattern).
+-- Reports whether the optional case-insensitive nameContains filter accepts a name.
+-- @param name any  The spell name.
+-- @param opts table  The normalized options; opts.nameContains is a plain substring, not a pattern.
+-- @return boolean  True when there is no filter or the name contains the filter text.
 local function nameAllowed(name, opts)
     return not opts.nameContains
         or type(name) == "string" and string.find(string.lower(name), string.lower(opts.nameContains), 1, true) ~= nil
 end
 
--- Returns the numeric rank of an index entry, or 0 when it has none.
+-- Returns the numeric rank of an index entry.
+-- @param entry table  The index entry.
+-- @return number  The rank number, or 0 when it has none.
 local function rank(entry)
     return tonumber((entry.rank or ""):match("%d+")) or 0
 end
 
 -- Sort order for index entries: by name ignoring case, then higher rank first, then higher spell ID first.
+-- @param a table  The first index entry.
+-- @param b table  The second index entry.
+-- @return boolean  True when `a` sorts before `b`.
 local function ordered(a, b)
     local left, right = string.lower(a.name), string.lower(b.name)
 
@@ -95,7 +111,9 @@ local function ordered(a, b)
     return a.id > b.id
 end
 
--- Returns the entry's name with its rank in parentheses when it has one.
+-- Returns an index entry's name with its rank in parentheses when it has one.
+-- @param entry table  The index entry.
+-- @return string  The label.
 local function label(entry)
     return entry.name .. (entry.rank and entry.rank ~= "" and " (" .. entry.rank .. ")" or "")
 end
@@ -105,8 +123,12 @@ end
 -- ============================================================================
 
 -- Resolves typed text, a spell ID or a spell link to one spell ID under the optional spellbook and name filters.
--- Returns the ID, or nil and a reason code such as "spell-not-in-book" or "spell-data-unavailable". A name that several
--- spells share resolves to the highest rank (or the first by sort order) rather than failing.
+-- @param input string|number  The typed text, spell ID, or spell link.
+-- @param settings table|nil  Search settings (spec, norank, limit, nameContains).
+-- @return number|nil  The spell ID; nil when it cannot be resolved.
+-- @return string|nil  The reason code, such as "spell-not-in-book" or "spell-data-unavailable"; nil on success.
+--
+-- A name that several spells share resolves to the highest rank (or the first by sort order) rather than failing.
 function catalog:ResolveSelection(input, settings)
     local opts = options(settings)
 
@@ -190,9 +212,13 @@ function catalog:ResolveSelection(input, settings)
     return nil, why or "spell-data-unavailable"
 end
 
--- Lists indexed spells matching the text (or the exact spell that an ID or link names), at most settings.limit rows.
--- Returns rows and a status table (coverage, scope, bookComplete, reason, more); on a bad query or an incomplete
--- spellbook the rows are empty and status.reason says why. Rows are the shared index entries with `display` set.
+-- Lists indexed spells matching the text (or the exact spell that an ID or link names).
+-- @param input string  The typed text, spell ID, or spell link (at most 256 bytes).
+-- @param settings table|nil  Search settings: spec, norank, limit (at most settings.limit rows) and nameContains.
+-- @return table[]|nil  The rows: the shared index entries with `display` set; empty when the spellbook is incomplete or
+--   an exact spell cannot be resolved; nil for invalid options or query.
+-- @return table|string|nil  The status table { coverage, scope, bookComplete, reason, more } when rows are returned, or
+--   the reason code (invalid-search-options / invalid-search-query) when the first return is nil.
 function catalog:Search(input, settings)
     local opts = options(settings)
 
