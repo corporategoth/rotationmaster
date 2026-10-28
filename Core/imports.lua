@@ -16,18 +16,23 @@ if type(addon.BindActiveRotationPublication) == 'function' then
     end)
 end
 
--- True for a plain table with no metatable; saved state that is anything else is treated as invalid.
+-- Reports whether a value is a plain table with no metatable; saved state that is anything else is treated as invalid.
+-- @param value any  The value to check.
+-- @return boolean  True for a plain table.
 local function plain(value)
     return type(value) == "table" and getmetatable(value) == nil
 end
 
 -- Returns the validation options an import runs under (the same ones the rest of the addon validates rotations with).
+-- @param self table  The addon.
+-- @return table  The validation options.
 local function settings(self)
     local options = self:GetRotationValidationOptions()
     return options
 end
 
--- Public alias of the import validation options, for the editors that validate a body the way an import would.
+-- Returns the import validation options, for the editors that validate a body the way an import would.
+-- @return table  The validation options.
 function addon:GetImportValidationOptions()
     return settings(self)
 end
@@ -36,8 +41,12 @@ end
 -- Reading imported rotations
 -- ============================================================================
 
--- Returns a view { envelope, applicability, validation, sourceId, sourceRevision, stepOrigins } of an imported
--- rotation, rebuilt from its retained manifest and current body, or nil and 'not-imported' / 'invalid-import-state'.
+-- Rebuilds a view of an imported rotation from its retained manifest and current body.
+-- @param spec number  The specialization ID or talent group the rotation is stored under.
+-- @param id string  The rotation id.
+-- @return table|nil  The view { envelope, applicability, enabled, validation, sourceId, sourceRevision, stepOrigins };
+--   nil when the rotation is not an import or its state is invalid.
+-- @return string|nil  'not-imported' or 'invalid-import-state' when the first return is nil; nil otherwise.
 function addon:GetImportedRotationView(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -108,9 +117,19 @@ end
 -- Creating and applying imports
 -- ============================================================================
 
--- Stores a prepared import as a custom rotation under `spec` and returns its new (or replaced) id, nil, nil and the
--- active transition. `replacement` ({ id, valid }) overwrites that rotation instead. Returns nil and a reason when
--- validation or any ownership re-check fails; nothing is written until every id is allocated and every check passed.
+-- Stores a prepared import as a custom rotation.
+-- @param prepared table  The prepared import ({ body, manifest, sourceId, sourceRevision, stepOrigins }).
+-- @param spec number  The specialization ID or talent group to store it under.
+-- @param name string  The rotation name (1 to 256 bytes).
+-- @param replacement table|nil  { id, valid } to overwrite that rotation instead of creating one; valid() says whether
+--   the replacement is still current.
+-- @param options table|nil  Passed to the scoped coordinator.
+-- @return string|nil  The new (or replaced) rotation id; nil when validation or any ownership re-check fails.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+-- @return table|nil  The saved reference, from the scoped store; nil on the legacy path.
+-- @return table|nil  The active transition, when the import changed the active rotation.
+--
+-- Nothing is written until every id is allocated and every check passed.
 function addon:CreateImportedRotation(prepared, spec, name, replacement, options)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -176,9 +195,11 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
 
     local used = {}
 
-    -- Reserve identities in live bodies and retained provenance; never discard
-    -- malformed unrelated saved data while allocating a new rotation.
-    -- Marks every string in the value as an identity already in use, so a fresh id cannot collide with any of them.
+    -- Marks every string in a value as an identity already in use, so a fresh id cannot collide with any of them.
+    -- @param value any  The value to scan.
+    --
+    -- Reserve identities in live bodies and retained provenance; never discard malformed unrelated saved data while
+    -- allocating a new rotation.
     local function reserve(value)
         if type(value) == "string" then
             used[value] = true
@@ -225,7 +246,9 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
     reserve(body)
     reserve(manifest)
 
-    -- Allocates a new unused id from the id provider. Returns the id, or nil and a reason code.
+    -- Allocates a new unused id from the id provider.
+    -- @return string|nil  The id; nil on failure.
+    -- @return string|nil  'invalid-id-provider' or 'id-collision' when the first return is nil; nil otherwise.
     local function fresh()
         local success, id = pcall(self.uuid)
 
@@ -343,7 +366,10 @@ function addon:CreateImportedRotation(prepared, spec, name, replacement, options
     return id, nil, nil, transition
 end
 
--- Deep equality of two plain data trees, used to detect that a rotation changed since the import was previewed.
+-- Compares two plain data trees deeply, to detect that a rotation changed since the import was previewed.
+-- @param a any  The first value.
+-- @param b any  The second value.
+-- @return boolean  True when equal.
 local function equal(a, b)
     if type(a) ~= type(b) then
         return false
@@ -367,21 +393,35 @@ local function equal(a, b)
     return true
 end
 
--- Applies the import held by `session` (identified by `token`) as a new rotation, or over `target` when given.
--- `expected` is what the caller saw when it previewed the replacement; if the rotation, its profile or its record
--- changed, or it has unsaved edits open, nothing is written. Returns the id, or nil and a reason ('rotation-changed-
--- externally', 'rotation-has-unsaved-changes', ...). Afterwards it refreshes autoswitch, the active rotation and glows.
+-- Applies the import held by a session as a new rotation, or over a target.
+-- @param session table  The import session.
+-- @param token any  Identifies the import within the session.
+-- @param spec number  The specialization ID or talent group.
+-- @param name string  The rotation name.
+-- @param target table|nil  The rotation to overwrite instead of creating one.
+-- @param expected table|nil  What the caller saw when it previewed the replacement; if the rotation, its profile or its
+--   record changed, or it has unsaved edits open, nothing is written.
+-- @param options table|nil  Import options.
+-- @return string|nil  The rotation id; nil on failure.
+-- @return string|nil  The reason ('rotation-changed-externally', 'rotation-has-unsaved-changes', ...) when the first
+--   return is nil; nil otherwise.
+-- @return table|nil  The saved reference, from the scoped store; nil on the legacy path.
+--
+-- Afterwards it refreshes autoswitch, the active rotation and glows.
 function addon:ApplyRotationImport(session, token, spec, name, target, expected, options)
     local change = beginActive(self)
 
-    -- True while no newer rotation transition has superseded this import's. Checked after every step that can call
+    -- Reports whether no newer rotation transition has superseded this import's. Checked after every step that can call
     -- out.
+    -- @return boolean  True while it is current.
     local function current()
         return activeCurrent(self, change)
     end
 
-    -- Calls a method that may not be loaded yet, re-reading it after the first check. Returns whether this import is
-    -- still current.
+    -- Calls a method that may not be loaded yet, re-reading it after the first check.
+    -- @param name string  The method name on the addon.
+    -- @param ... any  The arguments for the method.
+    -- @return boolean  Whether this import is still current.
     local function optional(name, ...)
         local available = self[name]
 
@@ -402,8 +442,8 @@ function addon:ApplyRotationImport(session, token, spec, name, target, expected,
         return current()
     end
 
-    -- Re-selects the rotation through SwitchRotation and adopts the transition it returns. Returns whether this import
-    -- is still current.
+    -- Re-selects the rotation through SwitchRotation and adopts the transition it returns.
+    -- @return boolean  Whether this import is still current.
     local function switch()
         local available = self.SwitchRotation
 
@@ -523,7 +563,8 @@ function addon:ApplyRotationImport(session, token, spec, name, target, expected,
     local profile = self.db.profile
     local original = self:GetEditableRotation(spec, target)
 
-    -- True while the rotation being replaced is still the exact record and profile the caller previewed.
+    -- Reports whether the rotation being replaced is still the exact record and profile the caller previewed.
+    -- @return boolean  True while it is.
     local function valid()
         return self.db.profile == profile
             and type(expected) == 'table'
@@ -608,16 +649,18 @@ function addon:ApplyRotationImport(session, token, spec, name, target, expected,
     return id
 end
 
--- Specializations across accounts. Where body.specs holds talent groups
--- (dual-specialization clients, Platform/specializations.lua), group 2 on
--- one character is not group 2 on another: an export carries no specs and an
--- import is for the talent group it is imported into (chosen by the caller,
--- the Rotations list's specialization; else the one you are playing). A
--- replacement keeps the replaced rotation's own specs. Where it holds
--- specialization IDs they travel as they are, and a rotation only for
--- another class's specializations is refused like any other class mismatch.
 -- Removes the body's specs when this client keeps talent groups (slot kind), since slot numbers do not travel between
--- characters. Returns the body.
+-- characters.
+-- @param self table  The addon.
+-- @param body any  The rotation body.
+-- @return any  The same body.
+--
+-- Specializations across accounts. Where body.specs holds talent groups (dual-specialization clients,
+-- Platform/specializations.lua), group 2 on one character is not group 2 on another: an export carries no specs and an
+-- import is for the talent group it is imported into (chosen by the caller, the Rotations list's specialization; else
+-- the one you are playing). A replacement keeps the replaced rotation's own specs. Where it holds specialization IDs
+-- they travel as they are, and a rotation only for another class's specializations is refused like any other class
+-- mismatch.
 local function stripSlotSpecs(self, body)
     if
         type(body) == 'table'
@@ -631,9 +674,15 @@ local function stripSlotSpecs(self, body)
     return body
 end
 
--- Decides which specs an imported rotation gets on this client. Returns the spec list (possibly nil), or nil and
--- 'invalid-import' / 'class-mismatch'. Talent-group clients use the caller's choice or the current group; other
--- clients keep the incoming specs and refuse ones that belong only to another class.
+-- Decides which specs an imported rotation gets on this client.
+-- @param specs table|nil  The incoming body.specs.
+-- @param chosen table|number|nil  The caller's choice of specialization (talent-group clients).
+-- @param replacement table|nil  The replacement target; a replacement keeps the replaced rotation's own specs.
+-- @return table|nil  The spec list (possibly nil); nil as well on failure.
+-- @return string|nil  'invalid-import' or 'class-mismatch' on failure; nil otherwise.
+--
+-- Talent-group clients use the caller's choice or the current group; other clients keep the incoming specs and refuse
+-- ones that belong only to another class.
 function addon:PrepareImportedRotationSpecs(specs, chosen, replacement)
     local kind = self.GetRotationSpecKind and self:GetRotationSpecKind()
 
@@ -696,9 +745,13 @@ end
 -- Export
 -- ============================================================================
 
--- Builds the export envelope for a rotation: its Built In, sourced or imported envelope when it has one, else the
--- bare body, with talent-group specs removed and body tags mirrored onto the envelope. Returns nil and a reason on
--- failure.
+-- Builds the export envelope for a rotation.
+-- @param self table  The addon.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  Its Built In, sourced or imported envelope when it has one, else the bare body, with talent-group
+--   specs removed and body tags mirrored onto the envelope; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 local function exportData(self, spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
 
@@ -731,6 +784,9 @@ local function exportData(self, spec, id)
     end
 
     -- Returns a copy of the envelope whose tags match the body's current tags (the body is where edits land).
+    -- @param envelope any  The envelope.
+    -- @return any  The copy, or the envelope itself when it has no body tags; nil on a copy failure.
+    -- @return string|nil  The reason when the copy failed; nil otherwise.
     local function currentTags(envelope)
         if type(envelope) == 'table' and type(envelope.body) == 'table' and envelope.body.tags ~= nil then
             local copy, why = data.CopyData(envelope)
@@ -773,8 +829,14 @@ local function exportData(self, spec, id)
     return stripSlotSpecs(self, data.CopyData(self:GetEditableRotation(spec, id)))
 end
 
+-- Names an export in the exporting client's language.
+-- @param self table  The addon.
+-- @param exported any  The export envelope or body.
+-- @return any  A copy with the body's name set to the display name, or the input when no change is needed.
+--
 -- A Built In's envelope carries its name as a locale key (nameKey), and every importer shows that as the name. The
--- export names the rotation in the exporting client's language (body.name); nameKey stays, it is what the envelope is.
+-- export
+-- names the rotation in the exporting client's language (body.name); nameKey stays, it is what the envelope is.
 local function exportName(self, exported)
     if type(exported) ~= 'table' then
         return exported
@@ -798,7 +860,11 @@ local function exportName(self, exported)
     return copy
 end
 
--- Returns the export envelope or body for a rotation, named for the exporting client's language; or nil and a reason.
+-- Returns the export envelope or body for a rotation, named for the exporting client's language.
+-- @param spec number  The specialization ID or talent group.
+-- @param id string  The rotation id.
+-- @return table|nil  The export envelope or body; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetRotationExportData(spec, id)
     local exported, why = exportData(self, spec, id)
     return exportName(self, exported), why

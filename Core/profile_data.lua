@@ -72,7 +72,10 @@ local scalar = {
     tooltip_limit = 'number',
 }
 
--- True when value is a gap-free array (keys 1..n only) and every element passes validate.
+-- Reports whether a value is a gap-free array (keys 1..n only) whose every element passes a validator.
+-- @param value any  The candidate array.
+-- @param validate function  validate(item) returns true for an acceptable element.
+-- @return boolean  True when it is such an array.
 local function dense(value, validate)
     if type(value) ~= 'table' then
         return false
@@ -91,8 +94,10 @@ local function dense(value, validate)
     return n == #value
 end
 
--- True when value is a table and every one of its keys exists in schema with a value of the named type; extra keys
--- fail.
+-- Reports whether a value is a table whose every key exists in a schema with a value of the named type.
+-- @param value any  The candidate table.
+-- @param schema table  Maps each allowed key to the Lua type name its value must have.
+-- @return boolean  True when it is; extra keys fail.
 local function fields(value, schema)
     if type(value) ~= 'table' then
         return false
@@ -108,7 +113,11 @@ local function fields(value, schema)
 end
 
 -- Converts one specialization key between its saved form (a non-negative whole number) and its wire form (the canonical
--- decimal string). Returns nil for anything that is not exactly such a number or string.
+-- decimal string).
+-- @param key number|string  The key to convert.
+-- @param encode boolean|nil  True to convert saved form to wire form; otherwise wire form to saved form.
+-- @return number|string|nil  The converted key (a string when encoding, a number when decoding); nil for anything that
+--   is not exactly such a number or string.
 local function specKey(key, encode)
     local number = type(key) == 'string' and not encode and key:match('^%d+$') and tonumber(key) or key
 
@@ -125,8 +134,10 @@ local function specKey(key, encode)
     return encode and text or number
 end
 
--- Returns a copy of a spec-keyed map with its keys converted by specKey, or nil when it has a metatable, a bad key or
--- two keys that collapse to one.
+-- Returns a copy of a spec-keyed map with its keys converted by specKey.
+-- @param map table  The map to convert.
+-- @param encode boolean|nil  True to convert keys to wire form; otherwise back to numbers.
+-- @return table|nil  The converted copy; nil when it has a metatable, a bad key or two keys that collapse to one.
 local function specMap(map, encode)
     if type(map) ~= 'table' or getmetatable(map) then
         return nil
@@ -151,14 +162,21 @@ end
 -- Rotation store conversion
 -- ============================================================================
 
--- Preserve the whole reference graph while converting only structural spec-map
--- keys. A map aliased through another owner or payload must remain aliased for
--- the pure store validator to reject it; conversion must never hide that defect.
--- Converts the rotation store between saved and wire form (see specKey) and returns the converted copy, or nil when the
--- state is not plain data, the store fails validation, or a key cannot be converted. Encoding validates before
--- converting and decoding validates after, so an invalid store never leaves this function.
+-- Converts the rotation store between saved and wire form (see specKey).
+-- @param addon table  The addon, whose RotationData validates the store.
+-- @param state table  The rotation store.
+-- @param encode boolean|nil  True to convert to wire form; otherwise back to saved form.
+-- @return table|nil  The converted copy; nil when the state is not plain data, the store fails validation, or a key
+--   cannot be converted.
+--
+-- Encoding validates before converting and decoding validates after, so an invalid store never leaves this function.
+-- Preserve the whole reference graph while converting only structural spec-map keys. A map aliased through another
+-- owner
+-- or payload must remain aliased for the pure store validator to reject it; conversion must never hide that defect.
 local function scopedStore(addon, state, encode)
-    -- True for a table with no metatable.
+    -- Reports whether a value is a table with no metatable.
+    -- @param v any  The value to check.
+    -- @return boolean  True for such a table.
     local function plain(v)
         return type(v) == 'table' and getmetatable(v) == nil
     end
@@ -204,7 +222,12 @@ local function scopedStore(addon, state, encode)
     local failed = false
 
     -- Copies a store node, converting the keys of the spec maps and keeping shared tables shared, so aliasing stays
-    -- visible to validation. Sets failed when the node is not plain data or a key cannot be converted.
+    -- visible
+    -- to validation.
+    -- @param value any  The node to copy.
+    -- @return any  The copy; nil when the node failed.
+    --
+    -- Sets failed when the node is not plain data or a key cannot be converted.
     local function copy(value)
         if type(value) ~= 'table' then
             return value
@@ -253,9 +276,13 @@ end
 -- Profile transfer
 -- ============================================================================
 
--- The desired-stock feature is retired. An existing saved stockTargets map
--- is inert data: copies, transfers and validation carry it unread as long as
--- it is plain table data.
+-- Reports whether the retired stockTargets map, if any, is plain data.
+-- @param _ any  Unused.
+-- @param profile table|nil  The profile table.
+-- @return boolean  True when there is none or it is a plain table.
+--
+-- The desired-stock feature is retired. An existing saved stockTargets map is inert data: copies, transfers and
+-- validation carry it unread as long as it is plain table data.
 local function validStockTargets(_, profile)
     if type(profile) ~= 'table' then
         return true
@@ -265,7 +292,12 @@ local function validStockTargets(_, profile)
     return plan == nil or type(plan) == 'table' and getmetatable(plan) == nil
 end
 
--- True when the profile carries no rotation choice preferences, or the owner can validate them and they pass.
+-- Reports whether the profile's rotation choice preferences, if any, are valid.
+-- @param owner table  The addon, which validates the preferences.
+-- @param profile table|nil  The profile table.
+-- @return boolean  True when the profile carries no rotation choice preferences, or the owner can validate them and
+--   they
+--   pass.
 local function validRotationChoices(owner, profile)
     local value = type(profile) == 'table' and rawget(profile, 'rotationChoicePreferences')
 
@@ -274,9 +306,12 @@ local function validRotationChoices(owner, profile)
             and owner:ValidateRotationChoicePreferences(value) == true
 end
 
--- Returns true when a profile table (an import candidate or a copy about to be applied) is wholly valid: every key is
--- known, each value has the right type and range, and nested rotations, the rotation store and the library are well
--- formed. Nothing is changed. Returns false at the first problem, with no reason.
+-- Reports whether a profile table (an import candidate or a copy about to be applied) is wholly valid.
+-- @param value table  The profile table.
+-- @return boolean  True when every key is known, each value has the right type and range, and nested rotations, the
+--   rotation store and the library are well formed; false at the first problem, with no reason.
+--
+-- Nothing is changed.
 function addon:ValidateProfileTransfer(value)
     if type(value) ~= 'table' then
         return false
@@ -291,7 +326,9 @@ function addon:ValidateProfileTransfer(value)
         return false
     end
 
-    -- True for a string.
+    -- Reports whether a value is a string.
+    -- @param v any  The value.
+    -- @return boolean  True for a string.
     local function stringValue(v)
         return type(v) == 'string'
     end
@@ -610,9 +647,12 @@ function addon:ValidateProfileTransfer(value)
     return true
 end
 
--- Profile specialization maps include spec 0. The shared rotation transport
--- intentionally accepts only positive numeric table keys, so profile wire maps
--- use canonical decimal strings and restore numbers only in these namespaces.
+-- Converts a profile to its wire form.
+-- @param profile table  The profile table.
+-- @return table|nil  A copy with the spec keys as canonical decimal strings; nil when a map or the store is malformed.
+--
+-- Profile specialization maps include spec 0. The shared rotation transport intentionally accepts only positive numeric
+-- table keys, so profile wire maps use canonical decimal strings and restore numbers only in these namespaces.
 function addon:ProfileToPortable(profile)
     if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then
         return nil
@@ -620,7 +660,9 @@ function addon:ProfileToPortable(profile)
 
     local copy = self:CopySettingsData(profile)
 
-    -- Converts a spec map's keys to wire form, or returns nil.
+    -- Converts a spec map's keys to wire form.
+    -- @param map table  The spec map.
+    -- @return table|nil  The converted copy; nil on failure.
     local function encode(map)
         return specMap(map, true)
     end
@@ -658,9 +700,16 @@ function addon:ProfileToPortable(profile)
     return copy
 end
 
--- The inverse of ProfileToPortable: returns a copy with the spec keys restored to numbers, or nil when a map or the
--- store is malformed. An empty rotation body from an older export gets its missing empty lists unless
--- options.preserveLegacyBodies is set. The caller still validates the result with ValidateProfileTransfer.
+-- The inverse of ProfileToPortable.
+-- @param profile table  The wire-form profile table.
+-- @param options table|nil  options.preserveLegacyBodies keeps an empty rotation body from an older export as it is
+--   instead of giving it its missing empty lists.
+-- @return table|nil  A copy with the spec keys restored to numbers; nil when a map or the store is malformed.
+--
+-- The caller still validates the result with ValidateProfileTransfer. Older profile exports can retain an entirely
+-- empty
+-- default placeholder. Materialize only its missing empty lists; malformed nonempty records still go through normal
+-- validation and are never silently repaired or removed.
 function addon:ProfileFromPortable(profile, options)
     if not validStockTargets(self, profile) or not validRotationChoices(self, profile) then
         return nil
@@ -668,7 +717,9 @@ function addon:ProfileFromPortable(profile, options)
 
     local copy = self:CopySettingsData(profile)
 
-    -- Converts a spec map's keys back to numbers, or returns nil.
+    -- Converts a spec map's keys back to numbers.
+    -- @param map table  The wire-form spec map.
+    -- @return table|nil  The converted copy; nil on failure.
     local function decode(map)
         return specMap(map, false)
     end

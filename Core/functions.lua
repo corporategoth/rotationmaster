@@ -44,7 +44,9 @@ local reserved = {
     ['while'] = true,
 }
 
--- True for a Lua identifier of at most 128 bytes that is not a keyword.
+-- Reports whether a name is a Lua identifier that is not a keyword.
+-- @param name any  The candidate name.
+-- @return boolean  True for a Lua identifier of at most 128 bytes that is not a keyword.
 local function identifier(name)
     return type(name) == 'string'
         and #name <= 128
@@ -52,12 +54,19 @@ local function identifier(name)
         and not reserved[name]
 end
 
--- True for a string of at most `limit` bytes; with `required` it must also contain a non-space character.
+-- Reports whether a value is a string within a size limit.
+-- @param value any  The candidate text.
+-- @param limit number  The most bytes allowed.
+-- @param required boolean|nil  True to also require a non-space character.
+-- @return boolean  True for a string of at most `limit` bytes (with a non-space character when `required`).
 local function text(value, limit, required)
     return type(value) == 'string' and #value <= limit and (not required or value:find('%S') ~= nil)
 end
 
--- True for a plain dense list (no metatable, no holes, no extra keys) of at most `limit` entries.
+-- Reports whether a value is a plain dense list.
+-- @param value any  The candidate list.
+-- @param limit number  The most entries allowed.
+-- @return boolean  True for a list with no metatable, no holes and no extra keys, of at most `limit` entries.
 local function array(value, limit)
     if type(value) ~= 'table' or getmetatable(value) or #value > limit then
         return false
@@ -76,8 +85,10 @@ local function array(value, limit)
     return count == #value
 end
 
--- True when `id` may name a custom function: a valid identifier that does not shadow the `addon` or `L` parameters
--- every function body receives.
+-- Reports whether an id may name a custom function.
+-- @param id any  The candidate id.
+-- @return boolean  True for a valid identifier that does not shadow the `addon` or `L` parameters every function body
+--   receives.
 function addon:IsCustomFunctionIdentifier(id)
     return identifier(id) and id ~= 'addon' and id ~= 'L'
 end
@@ -101,8 +112,11 @@ local namespaceRoots = {
     utf8 = true,
 }
 
--- Splits a dotted path into its identifier parts. Returns the parts, or nil when the path is longer than 512 bytes,
--- has an empty segment, a non-identifier segment or more than `maxSegments` (default 8) segments.
+-- Splits a dotted path into its identifier parts.
+-- @param path any  The dotted path.
+-- @param maxSegments number|nil  The most segments allowed (default 8).
+-- @return string[]|nil  The parts; nil when the path is longer than 512 bytes, has an empty segment, a non-identifier
+--   segment or too many segments.
 local function identifierPath(path, maxSegments)
     if type(path) ~= 'string' or #path > 512 or path == '' or path:sub(1, 1) == '.' or path:sub(-1) == '.' or path:find(
         '..',
@@ -129,8 +143,10 @@ local function identifierPath(path, maxSegments)
     return parts
 end
 
--- True for the empty namespace or a dotted identifier path of at most 7 segments that does not start with a reserved
--- root.
+-- Reports whether a name is a valid function namespace.
+-- @param namespace any  The candidate namespace.
+-- @return boolean  True for the empty namespace or a dotted identifier path of at most 7 segments that does not start
+--   with a reserved root.
 function addon:IsFunctionNamespace(namespace)
     if namespace == '' then
         return true
@@ -150,8 +166,12 @@ end
 -- Names and bindings
 -- ============================================================================
 
--- Returns the namespace a function is exposed under: its own valid `source.namespace`; for a Built In id
--- ('builtin:<module>:<name>') the module path with dots; 'builtin' for other Built In ids; otherwise 'functions'.
+-- Returns the namespace a function is exposed under.
+-- @param id string|nil  The function id.
+-- @param source table|nil  The function source; its own valid `namespace` wins.
+-- @return string  The source's namespace; for a Built In id ('builtin:<module>:<name>') the module path with dots;
+--   'builtin' for other Built In ids; otherwise 'functions'.
+-- @return number|nil  The substitution count of the module-path rewrite; only returned for the Built In module case.
 function addon:FunctionNamespace(id, source)
     if
         type(source) == 'table'
@@ -175,12 +195,20 @@ function addon:FunctionNamespace(id, source)
 end
 
 -- Returns 'namespace.name' for a function, as shown in the editors.
+-- @param id string|nil  The function id.
+-- @param source table|nil  The function source.
+-- @return string  The qualified name.
 function addon:FunctionQualifiedName(id, source)
     return self:FunctionNamespace(id, source) .. '.' .. self:FunctionEditorName(id, source)
 end
 
--- Registry IDs remain stable across name edits; a binding exposes this suggested
--- local name in a caller. Existing exports with descriptive names still load.
+-- Returns the suggested local name a binding exposes for a function.
+-- @param id string|nil  The function id, used when the source has no usable name.
+-- @param source table|nil  The function source; its `name` is used when it is a valid identifier.
+-- @return string  The name, made into a valid identifier ('helper_' prefixed when needed).
+--
+-- Registry IDs remain stable across name edits; a binding exposes this suggested local name in a caller. Existing
+-- exports with descriptive names still load.
 function addon:FunctionEditorName(id, source)
     local name = source and source.name
 
@@ -203,9 +231,13 @@ function addon:FunctionEditorName(id, source)
     return name
 end
 
--- Validates a binding table of alias to function id (at most 128 aliases, aliases are identifier paths). `arguments`
--- are the callback's parameters, which an alias may not shadow. Rejects an alias that is a prefix of another and two
--- different ids on one `functions.<alias>` path. Returns a copy, or nil and 'invalid-function-bindings'.
+-- Validates a binding table of alias to function id.
+-- @param bindings table|nil  The bindings: at most 128 aliases, aliases are identifier paths. nil means none.
+-- @param arguments table[]|nil  The callback's parameters ({ name = ... }), which an alias may not shadow.
+-- @return table|nil  A copy; nil when invalid.
+-- @return string|nil  'invalid-function-bindings' when the first return is nil; nil otherwise.
+--
+-- Rejects an alias that is a prefix of another and two different ids on one `functions.<alias>` path.
 function addon:NormalizeFunctionBindings(bindings, arguments)
     if bindings == nil then
         return {}
@@ -273,9 +305,13 @@ function addon:NormalizeFunctionBindings(bindings, arguments)
     return result
 end
 
--- Builds the Lua text prepended to a callback body: one `local alias=addon:RequireFunctionBinding("id")` per binding,
--- the namespace tables dotted aliases need, and a `functions` table with the plain aliases unless the callback
--- already uses that name. `parameters` is the comma-separated parameter list. Returns the text, or nil and a reason.
+-- Builds the Lua text prepended to a callback body.
+-- @param bindings table|nil  The alias to function id bindings.
+-- @param parameters string|nil  The comma-separated parameter list of the callback.
+-- @return string|nil  One `local alias=addon:RequireFunctionBinding("id")` per binding, the namespace tables dotted
+--   aliases need, and a `functions` table with the plain aliases unless the callback already uses that name; nil on
+--   failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:FunctionBindingPrelude(bindings, parameters)
     local arguments = {}
 
@@ -354,7 +390,10 @@ end
 -- Compilation and validation
 -- ============================================================================
 
--- Strips leading blank lines and re-indents with the Lua tokenizer when it is loaded. Returns the text for the editor.
+-- Prepares callback source for the editor: strips leading blank lines and re-indents with the Lua tokenizer when it is
+-- loaded.
+-- @param code string|nil  The source text.
+-- @return string  The text for the editor.
 function addon:NormalizeLuaSourceForEditor(code)
     code = (code or ''):gsub('^[ \t\r]*\n', '')
 
@@ -374,7 +413,12 @@ function addon:NormalizeLuaSourceForEditor(code)
 end
 
 -- Compiles a callback body wrapped in `function(addon,L) return function(<parameters>) <prelude> <code> end end`.
--- Returns the loadstring chunk (nothing is executed), or nil and the compile error or a reason code.
+-- @param code string  The callback body.
+-- @param parameters string  The comma-separated parameter list.
+-- @param bindings table|nil  The alias to function id bindings.
+-- @param chunkName string  The chunk name for error messages.
+-- @return function|nil  The loadstring chunk (nothing is executed); nil on failure.
+-- @return string|nil  The compile error or a reason code when the first return is nil; nil otherwise.
 function addon:CompileLuaCallbackBody(code, parameters, bindings, chunkName)
     if type(loadstring) ~= 'function' then
         return nil, 'compiler-unavailable'
@@ -401,9 +445,14 @@ function addon:CompileLuaCallbackBody(code, parameters, bindings, chunkName)
     )
 end
 
--- Validates one saved custom function: identifier, text and size limits, only known fields, at most 32 arguments and 16
--- returns, and its bindings; then compiles it unless it is disabled. Returns { bindings, chunk } (no chunk when
--- disabled), or nil and a reason code or compile error.
+-- Validates one saved custom function and compiles it unless it is disabled.
+-- @param id string  The function id.
+-- @param source table  The saved function source.
+-- @return table|nil  { bindings, chunk } (no chunk when disabled); nil on failure.
+-- @return string|nil  A reason code or compile error when the first return is nil; nil otherwise.
+--
+-- Checks the identifier, text and size limits, only known fields, at most 32 arguments and 16 returns, and its
+-- bindings.
 function addon:ValidateCustomFunctionSource(id, source)
     if not self:IsCustomFunctionIdentifier(id) then
         return nil, 'invalid-function-identifier'
@@ -516,8 +565,12 @@ end
 -- Registry
 -- ============================================================================
 
--- Registers a Built In function under an id starting 'builtin:'. `getter` returns the callable (or, with
--- `valueBinding`, any value). Returns false for a bad argument or a duplicate id.
+-- Registers a Built In function under an id starting 'builtin:'.
+-- @param id string  The function id, starting 'builtin:' (at most 512 bytes).
+-- @param source table  The function's documentation record.
+-- @param getter function  Returns the callable (or, with `valueBinding`, any value).
+-- @param valueBinding boolean|nil  True when the getter returns a value rather than a function.
+-- @return boolean  True when registered; false for a bad argument or a duplicate id.
 function addon:RegisterBuiltinFunction(id, source, getter, valueBinding)
     if
         type(id) ~= 'string'
@@ -539,10 +592,16 @@ function addon:RegisterBuiltinFunction(id, source, getter, valueBinding)
     return true
 end
 
--- Builds a registry from a table of function sources without touching the live one. Each record carries the source,
--- a problem code if it failed, its bindings and the compiled function. A function whose source is unchanged keeps its
--- previously bound function so editing one function does not rebind every other. Returns the registry, or nil and
--- 'invalid-function-registry' / 'function-limit' (more than 4096 functions).
+-- Builds a registry from a table of function sources without touching the live one.
+-- @param sources table  The function sources, keyed by function id.
+-- @return table|nil  The registry: per id a record { source, problem, bindings, fn }, where `problem` is a reason code
+--   if
+--   it failed; nil on failure.
+-- @return string|nil  'invalid-function-registry' or 'function-limit' (more than 4096 functions) when the first return
+--   is nil; nil otherwise.
+--
+-- A function whose source is unchanged keeps its previously bound function so editing one function does not rebind
+-- every other.
 function addon:BuildFunctionRegistry(sources)
     if type(sources) ~= 'table' or getmetatable(sources) then
         return nil, 'invalid-function-registry'
@@ -587,8 +646,9 @@ function addon:BuildFunctionRegistry(sources)
     return result
 end
 
--- Builds the live registry from the saved functions and notifies dependents. Called at startup and lazily by
--- FunctionAvailable when no registry exists yet.
+-- Builds the live registry from the saved functions and notifies dependents.
+--
+-- Called at startup and lazily by FunctionAvailable when no registry exists yet.
 function addon:InitializeFunctionRegistry()
     self.functionRegistry = self:BuildFunctionRegistry(self.db.global.custom_functions or {}) or {}
     self.functionRegistryVersion = (self.functionRegistryVersion or 0) + 1
@@ -598,10 +658,15 @@ function addon:InitializeFunctionRegistry()
     end
 end
 
--- Returns true when function `id` and every function it binds to can run, otherwise nil and a reason
--- ('missing-function', 'disabled-function', 'function-cycle', 'function-depth' beyond 64 levels, or the record's own
--- problem). A Built In id is available. `registry` defaults to the live one; `active`, `depth` and `memo` are the
--- recursion state.
+-- Reports whether a function and every function it binds to can run.
+-- @param id string  The function id; a Built In id is available.
+-- @param registry table|nil  The registry to check; defaults to the live one.
+-- @param active table|nil  Recursion state: the ids being visited.
+-- @param depth number|nil  Recursion state: the current depth.
+-- @param memo table|nil  Recursion state: results already computed.
+-- @return boolean|nil  True when available; nil (or false from a memoized failure) otherwise.
+-- @return string|nil  The reason ('missing-function', 'disabled-function', 'function-cycle', 'function-depth' beyond 64
+--   levels, or the record's own problem) when not available; nil otherwise.
 function addon:FunctionAvailable(id, registry, active, depth, memo)
     registry = registry or self.functionRegistry
 
@@ -664,7 +729,11 @@ function addon:FunctionAvailable(id, registry, active, depth, memo)
     return true
 end
 
--- Returns true when every function id in `bindings` is available, otherwise nil and the first reason.
+-- Reports whether every function id in a binding table is available.
+-- @param bindings table|nil  The alias to function id bindings.
+-- @param registry table|nil  The registry to check; defaults to the live one.
+-- @return boolean|nil  True when every id is available; nil otherwise.
+-- @return string|nil  The first reason when the first return is nil; nil otherwise.
 function addon:AreFunctionBindingsAvailable(bindings, registry)
     for _, id in pairs(bindings or {}) do
         local ok, why = self:FunctionAvailable(id, registry)
@@ -677,7 +746,10 @@ function addon:AreFunctionBindingsAvailable(bindings, registry)
     return true
 end
 
--- Returns the callable for function `id` (a custom function, or the Built In getter's value), or nil and a reason.
+-- Returns the callable for a function id.
+-- @param id string  The function id.
+-- @return any  The callable (a custom function, or the Built In getter's value); nil when unavailable.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:ResolveFunctionBinding(id)
     local ok, why = self:FunctionAvailable(id)
 
@@ -703,8 +775,12 @@ function addon:ResolveFunctionBinding(id)
     return self.functionRegistry[id].fn
 end
 
--- Like ResolveFunctionBinding but raises an error naming the function. The generated prelude of a callback calls it at
--- the start of every call, so a callback whose binding disappeared fails loudly instead of running without it.
+-- Like ResolveFunctionBinding but raises an error naming the function.
+-- @param id string  The function id.
+-- @return any  The callable.
+--
+-- The generated prelude of a callback calls it at the start of every call, so a callback whose binding disappeared
+-- fails loudly instead of running without it.
 function addon:RequireFunctionBinding(id)
     local value, why = self:ResolveFunctionBinding(id)
 
@@ -719,11 +795,13 @@ end
 -- Consumer transitions and writers
 -- ============================================================================
 
--- Release resources while the old helper graph is still usable. A later
--- refresh resumes suspended consumers only after the new graph is installed.
--- Suspends every enabled condition whose bindings will not be available in `registry`, running its on_unregister. If
--- one cleanup fails, the ones already suspended are resumed and the call returns nil and
--- 'function-consumer-cleanup-failed'.
+-- Suspends every enabled condition whose bindings will not be available in a registry, running its on_unregister.
+-- @param registry table  The registry that is about to replace the live one.
+-- @return boolean|nil  True on success; nil if one cleanup fails (the ones already suspended are resumed).
+-- @return string|nil  'function-consumer-cleanup-failed' when the first return is nil; nil otherwise.
+--
+-- Release resources while the old helper graph is still usable. A later refresh resumes suspended consumers only after
+-- the new graph is installed.
 function addon:PrepareFunctionConsumerTransition(registry)
     local cleaned = {}
 
@@ -769,11 +847,15 @@ function addon:PrepareFunctionConsumerTransition(registry)
     return true
 end
 
--- Staged imports defer runtime selection refresh until commit and retain every
+-- Re-evaluates every condition that binds functions.
+-- @param deferRefresh boolean|nil  True to skip the runtime selection refresh (a staged import commits it later).
+-- @return boolean  True when every resume succeeded.
+-- @return string|nil  'function-consumer-registration-failed' on failure; nil otherwise.
+-- @return table[]  The resume attempts ({ id, definition }).
+--
+-- Records why a condition is unavailable, resumes the suspended ones whose bindings are back (running on_register) and
+-- bumps the condition registry version. Staged imports defer runtime selection refresh until commit and retain every
 -- resume attempt so rollback can release partially initialized hook resources.
--- Re-evaluates every condition that binds functions: records why it is unavailable, resumes the suspended ones whose
--- bindings are back (running on_register) and bumps the condition registry version. Returns success, a reason on
--- failure, and the list of resume attempts.
 function addon:RefreshFunctionConsumers(deferRefresh)
     local successful, attempted = true, {}
 
@@ -832,9 +914,14 @@ function addon:RefreshFunctionConsumers(deferRefresh)
     return successful, not successful and 'function-consumer-registration-failed' or nil, attempted
 end
 
--- Saves a custom function if the stored copy still equals `expected` (compare-and-set against a stale editor). The new
--- registry is built, checked and the consumers prepared before anything is written; on any failure nothing changes and
--- the call returns nil and a reason. Returns true.
+-- Saves a custom function if the stored copy still equals `expected` (compare-and-set against a stale editor).
+-- @param id string  The function id.
+-- @param source table  The new function source.
+-- @param expected table|nil  The stored copy the editor started from.
+-- @return boolean|nil  True when saved; nil on failure, in which case nothing changes.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- The new registry is built, checked and the consumers prepared before anything is written.
 function addon:InstallCustomFunction(id, source, expected)
     if not self:IsCustomFunctionIdentifier(id) then
         return nil, 'invalid-function-identifier'
@@ -886,8 +973,14 @@ function addon:InstallCustomFunction(id, source, expected)
     return true
 end
 
--- Deletes a custom function if the stored copy still equals `expected`, with the same all-or-nothing order as
--- InstallCustomFunction. Functions that bound to it become unavailable and their consumers are suspended.
+-- Deletes a custom function if the stored copy still equals `expected`.
+-- @param id string  The function id.
+-- @param expected table|nil  The stored copy the editor started from.
+-- @return boolean|nil  True when removed; nil on failure, in which case nothing changes.
+-- @return string|nil  The reason code when the first return is nil; nil otherwise.
+--
+-- Same all-or-nothing order as InstallCustomFunction. Functions that bound to it become unavailable and their consumers
+-- are suspended.
 function addon:RemoveCustomFunction(id, expected)
     local current = (self.db.global.custom_functions or {})[id]
 

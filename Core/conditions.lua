@@ -38,9 +38,10 @@ end
 local consumerAvailability
 local consumerAvailabilityBound
 
--- One-shot handoff for Core/rotation_scope.lua: returns an installer that accepts the reader function used to ask
--- whether the current rotation's body is still available. Only the first call (with self == addon) gets the installer,
--- and only the first reader installed is kept.
+-- Hands Core/rotation_scope.lua an installer for the reader that says whether the current rotation's body is still
+-- available (one-shot).
+-- @return function|nil  install(reader), which keeps the first function reader installed; nil unless this is the first
+--   call and it was made on the addon.
 function addon:ConsumeConditionConsumerAvailability()
     if self ~= addon or consumerAvailabilityBound then
         return
@@ -78,8 +79,14 @@ special["NOT"] = { desc = L["NOT"], icon = addon.Artwork.logic["NOT"], fields = 
 -- Inputs here are normalized, readable data. Client adapters own secret-value access.
 local matchedOutcome, unmatchedOutcome = { status = "match" }, { status = "no-match" }
 
--- Builds an evaluation outcome: { status = "match" | "no-match" | "unavailable", reason, path }. The two decided
--- statuses return shared tables so the common case allocates nothing; callers must not modify an outcome they get back.
+-- Builds an evaluation outcome.
+-- @param status string  "match", "no-match" or "unavailable".
+-- @param reason string|nil  The reason code for an unavailable outcome.
+-- @param path string|nil  The condition path the outcome refers to.
+-- @return table  { status, reason, path }.
+--
+-- The two decided statuses return shared tables so the common case allocates nothing; callers must not modify an
+-- outcome they get back.
 local function outcome(status, reason, path)
     if status == "match" then
         return matchedOutcome
@@ -104,12 +111,29 @@ local historyReaders = {
     TT_HEALTHPCT = 'damage',
 }
 
--- Runs one definition callback (stage "valid" or "evaluate") for a condition node and returns ok, result, reason,
--- where ok is false only when the callback raised an error (the definition is then quarantined). Also tells main.lua
--- which history the condition reads, and swaps a group unit type for the member now holding it. The optional guard
--- (guardNode, guardSession) belongs to the private source-owned graph: it is checked before and again inside the error
--- boundary, and when it fails the call returns true, nil, nil, skipped = true, invoked = false without running the
--- callback. With a guard the result also carries the skipped and invoked flags; stats, when given, counts calls.
+-- Runs one definition callback for a condition node.
+-- @param definition table  The condition definition.
+-- @param stage string  "valid" or "evaluate".
+-- @param value table  The condition node's value.
+-- @param cache table|nil  The per-evaluation cache.
+-- @param start number  The evaluation's start time.
+-- @param path string|nil  The condition path, for diagnostics.
+-- @param context table|nil  The evaluation context (stepId).
+-- @param guard function|nil  guard(guardNode, guardSession), the private source-owned graph's guard.
+-- @param guardNode any  The node handed to the guard.
+-- @param guardSession any  The session handed to the guard.
+-- @param stats table|nil  Counters (validatorCalls, leafEvaluations) updated when a guard is given.
+-- @return boolean  False only when the callback raised an error (the definition is then quarantined) or was already
+--   quarantined.
+-- @return any  The callback's result.
+-- @return string|nil  The callback's reason.
+-- @return boolean|nil  With a guard: true when the guard failed and the callback was skipped.
+-- @return boolean|nil  With a guard: true when the callback was invoked.
+--
+-- Also tells main.lua which history the condition reads, and swaps a group unit type for the member now holding it. The
+-- optional guard (guardNode, guardSession) belongs to the private source-owned graph: it is checked before and again
+-- inside the error boundary, and when it fails the call returns true, nil, nil, skipped = true, invoked = false without
+-- running the callback.
 local function callCondition(
     definition,
     stage,
@@ -144,6 +168,13 @@ local function callCondition(
 
     local skipped, invoked
 
+    -- Runs the definition's callback for the current stage inside the error boundary.
+    -- @return any  The callback's result; nil when skipped or a group unit could not be resolved.
+    -- @return string|nil  The callback's reason.
+    --
+    -- ObserveReportedErrors runs before this callback. Recheck the finite private producer after that callout, before
+    -- handing it a private node. A group unit type (the main tank, the group leader, ...) is replaced by the token of
+    -- whoever holds it now; nobody holding it is unavailable.
     local function run()
         -- ObserveReportedErrors runs before this callback. Recheck the finite
         -- private producer after that callout, before handing it a private node.
@@ -216,13 +247,28 @@ local function callCondition(
     return ok, result, reason
 end
 
--- Both dispatch routes use the same callback/error boundary. Only the private
--- source-owned graph may memoize a successful configuration-only validator.
--- Evaluates one ordinary leaf: validates its fields (skipped when validation.valid is already set, which that graph
--- sets), then evaluates it, and maps every failure to an unavailable outcome with a reason code. current(), when
--- given, is the owner fence: if it turns false at any point (also after a callback ran) the leaf is
--- "condition-owner-changed" and no stale result is used. A nil result with a reason is unavailable; a nil without one
--- is false. Core/condition_runtime.lua reaches this function through ConsumeConditionRuntimeEngine.
+-- Evaluates one ordinary leaf: validates its fields, then evaluates it.
+-- @param value table  The condition node's value.
+-- @param definition table  The condition definition.
+-- @param cache table|nil  The per-evaluation cache.
+-- @param start number  The evaluation's start time.
+-- @param path string|nil  The condition path.
+-- @param context table|nil  The evaluation context.
+-- @param validation table|nil  The leaf's validation memo; validation.valid skips the validator (the private graph sets
+--   it).
+-- @param current function|nil  The owner fence current(); if it turns false at any point (also after a callback ran)
+--   the leaf is "condition-owner-changed" and no stale result is used.
+-- @param stats table|nil  Counters updated when no guard is given.
+-- @param guard function|nil  The private graph's guard, guard(guardNode, guardSession).
+-- @param guardNode any  The node handed to the guard.
+-- @param guardSession any  The session handed to the guard.
+-- @param afterCurrent function|nil  afterCurrent(guardSession), the proof asked after a callback was invoked.
+-- @return table  An outcome { status, reason, path }.
+--
+-- Maps every failure to an unavailable outcome with a reason code. A nil result with a reason is unavailable; a nil
+-- without one is false. Both dispatch routes use the same callback/error boundary. Only the private source-owned graph
+-- may memoize a successful configuration-only validator. Core/condition_runtime.lua reaches this function through
+-- ConsumeConditionRuntimeEngine.
 local function evaluateOrdinaryLeaf(
     value,
     definition,
@@ -327,9 +373,13 @@ end
 -- Switch leaves
 -- ============================================================================
 
--- BEGIN SWITCH UNIT PRESENCE
--- Returns true when the platform says value (a unit token or tag) may be used in a comparison on this client; false
--- when it cannot be read, the platform has no CanReadValue, the call errors, or the owner fence current() fails.
+-- Reports whether the platform says a value may be used in a comparison on this client.
+-- @param platform table|nil  The Platform adapter.
+-- @param value any  A unit token or tag.
+-- @param current function|nil  The owner fence.
+-- @return boolean  True when readable; false when it cannot be read, the platform has no CanReadValue, the call errors,
+--   or the owner fence fails.
+--
 -- Rechecks the fence on both sides of the platform call.
 local function switchReadable(platform, value, current)
     if current and not current() then
@@ -350,10 +400,15 @@ local function switchReadable(platform, value, current)
 end
 
 -- Proves, before a switch leaf runs, that the unit it names exists, and returns a witness to recheck afterwards.
--- Returns true when the definition has no unit field (nothing to prove), a function (the witness: true while the
--- owner, the platform, the leaf and the unit are all unchanged and the unit is still present), or nil and
--- 'switch-unit-unavailable' when the unit is unknown, unreadable or absent. Player and omitted units need identity
--- fences only, because the player is always present.
+-- @param value table  The leaf's value (unit, type).
+-- @param definition table  The condition definition.
+-- @param state table  The switch evaluation state (switchCurrent).
+-- @return boolean|function|nil  True when the definition has no unit field (nothing to prove); a witness function (true
+--   while the owner, the platform, the leaf and the unit are all unchanged and the unit is still present); nil when the
+--   unit is unknown, unreadable or absent.
+-- @return string|nil  'switch-unit-unavailable' when the first return is nil; nil otherwise.
+--
+-- Player and omitted units need identity fences only, because the player is always present.
 local function switchUnitWitness(value, definition, state)
     local fields = definition.fields
 
@@ -368,6 +423,8 @@ local function switchUnitWitness(value, definition, state)
         return nil, 'switch-unit-unavailable'
     end
 
+    -- Reports whether the owner, the platform, the leaf and its definition are all unchanged.
+    -- @return boolean  True while nothing changed.
     local function current()
         return (not state.switchCurrent or state.switchCurrent())
             and addon.Platform == platform
@@ -408,6 +465,11 @@ local function switchUnitWitness(value, definition, state)
         return nil, 'switch-unit-unavailable'
     end
 
+    -- Reports whether the unit is still present, with every fence rechecked around the platform call.
+    -- @return boolean  True while the unit is present and nothing changed.
+    --
+    -- Valid/evaluate callbacks can change native unit state synchronously. Keep these cold checks fresh instead of
+    -- retaining a positive snapshot.
     local function present()
         if
             not current()
@@ -436,9 +498,19 @@ local function switchUnitWitness(value, definition, state)
     return present
 end
 
--- Evaluates one leaf of a rotation's switch condition. Same contract as evaluateOrdinaryLeaf, but every callback is
--- bracketed by owner (state.switchCurrent) and unit-witness checks, because a callback can change native unit state or
--- the owner synchronously; a change yields "switch-owner-changed" or "switch-unit-changed" and the result is dropped.
+-- Evaluates one leaf of a rotation's switch condition.
+-- @param value table  The leaf's value.
+-- @param definition table  The condition definition.
+-- @param cache table|nil  The per-evaluation cache.
+-- @param start number  The evaluation's start time.
+-- @param state table  The switch evaluation state (switchCurrent).
+-- @param path string|nil  The condition path.
+-- @return table  An outcome { status, reason, path }.
+--
+-- Same contract as evaluateOrdinaryLeaf, but every callback is bracketed by owner (state.switchCurrent) and
+-- unit-witness
+-- checks, because a callback can change native unit state or the owner synchronously; a change yields
+-- "switch-owner-changed" or "switch-unit-changed" and the result is dropped.
 local function evaluateSwitchLeaf(value, definition, cache, start, state, path)
     if state.switchCurrent and not state.switchCurrent() then
         return outcome("unavailable", "switch-owner-changed", path)
@@ -492,13 +564,23 @@ end
 -- Tree evaluation
 -- ============================================================================
 
--- Evaluates a condition tree node and returns an outcome. An absent node, an empty table and a disabled node count as
--- match. AND and OR walk their children in order over a dense 1..n list and stop at the first decisive child (no-match
--- for AND, match for OR); an unavailable child makes the whole node unavailable at once. NOT inverts match and
--- no-match and leaves unavailable alone. The state table carries the guards: count (at most 4096 nodes), depth (at
--- most 64), the active set that detects cycles, and the mode flags that choose how a leaf is run (switchUnits for a
--- rotation's switch, announcementTarget for announcement conditions, otherwise ordinary). Every failure is an
--- unavailable outcome with a reason and the path of the offending node; path is built only for messages.
+-- Evaluates a condition tree node.
+-- @param value table|nil  The node; an absent node, an empty table and a disabled node count as match.
+-- @param cache table|nil  The per-evaluation cache.
+-- @param start number  The evaluation's start time.
+-- @param state table  The guard state: count (at most 4096 nodes), depth (at most 64), the active set that detects
+--   cycles, and the mode flags that choose how a leaf is run (switchUnits for a rotation's switch, announcementTarget
+--   for announcement conditions, otherwise ordinary).
+-- @param depth number  The nesting depth of the node.
+-- @param path string  The path of the node, built only for messages.
+-- @return table  An outcome { status, reason, path }. Every failure is an unavailable outcome with a reason and the
+--   path
+--   of the offending node.
+--
+-- AND and OR walk their children in order over a dense 1..n list and stop at the first decisive child (no-match for
+-- AND,
+-- match for OR); an unavailable child makes the whole node unavailable at once. NOT inverts match and no-match and
+-- leaves unavailable alone.
 local function evaluate(value, cache, start, state, depth, path)
     state.count = state.count + 1
 
@@ -692,12 +774,15 @@ end
 -- Maps the wrapper installed by RegisterCondition back to the definition's original print function (weak keys).
 local printerSources = setmetatable({}, { __mode = 'k' })
 
--- Alternatives belong to translated predicate templates, never inferred from
--- rendered names. Only the first marker is the leaf's predicate; subsequent
--- markers are qualifiers and retain their positive wording under negation.
--- Expands the "{{positive|negative}}" alternatives of a translated template: positive wording normally, the negative
--- wording of the leaf's predicate when negated. A "{{!positive|negative}}" marker names the predicate explicitly. A
--- negated text with no markers is wrapped as "not (...)". Plain-string form of RenderConditionSummary.
+-- Expands the "{{positive|negative}}" alternatives of a translated template.
+-- @param text string  The template; any non-string is returned unchanged.
+-- @param negated boolean|nil  True to use the negative wording of the leaf's predicate.
+-- @return string  The rendered text (positive wording normally); a negated text with no markers is wrapped as "not
+--   (...)".
+--
+-- A "{{!positive|negative}}" marker names the predicate explicitly. Alternatives belong to translated predicate
+-- templates, never inferred from rendered names. Only the first marker is the leaf's predicate; subsequent markers are
+-- qualifiers and retain their positive wording under negation. Plain-string form of RenderConditionSummary.
 function addon:RenderConditionPhrase(text, negated)
     if type(text) ~= 'string' then
         return text
@@ -735,27 +820,36 @@ end
 local summaryRecords = setmetatable({}, { __mode = 'k' })
 local SUMMARY_LIMIT, SUMMARY_PARTS = 64000, 4096
 
--- Wraps a summary record in an opaque table. Only objects made here are accepted by CreateConditionSummaryPhrase and
--- RenderConditionSummary, so a caller cannot forge a record.
+-- Wraps a summary record in an opaque table.
+-- @param record table  The summary record.
+-- @return table  The opaque object. Only objects made here are accepted by CreateConditionSummaryPhrase and
+--   RenderConditionSummary, so a caller cannot forge a record.
+--
+-- Transient summary authority is shared by native and compiled helper calls. Values are detached before rendering and
+-- are never parsed as template syntax.
 local function summaryObject(record)
     local object = {}
     summaryRecords[object] = record
     return object
 end
 
--- The marker object returned for any malformed template or value; rendering it yields the fallback text.
+-- Returns the marker object used for any malformed template or value; rendering it yields the fallback text.
+-- @return table  The invalid summary object.
 local function invalidSummary()
     return summaryObject({ kind = 'invalid' })
 end
 
--- Returns the localized "summary unavailable" text, or its English key if the translation is missing or too long.
+-- Returns the localized "summary unavailable" text.
+-- @return string  The translation, or its English key if the translation is missing or too long.
 local function summaryFallback()
     local key = 'Condition summary unavailable: invalid template or values.'
     local text = L[key]
     return type(text) == 'string' and #text <= SUMMARY_LIMIT and text or key
 end
 
--- Returns a value as display text, or nil if it is not a short string, boolean or finite number.
+-- Returns a value as display text.
+-- @param value any  The value to show.
+-- @return string|nil  The text; nil if it is not a short string, boolean or finite number.
 local function summaryScalar(value)
     local kind = type(value)
 
@@ -768,8 +862,11 @@ local function summaryScalar(value)
 end
 
 -- Builds a summary object for one predicate with its positive and negative wording, to pass as a value to
--- CreateConditionSummaryPhrase. primary marks it as the predicate that flips under negation. Returns the invalid object
--- for bad input (non-strings, over-long text).
+-- CreateConditionSummaryPhrase.
+-- @param positive string  The positive wording.
+-- @param negative string|nil  The negative wording.
+-- @param primary boolean|nil  True to mark it as the predicate that flips under negation.
+-- @return table  The predicate summary object; the invalid object for bad input (non-strings, over-long text).
 function addon:CreateConditionSummaryPredicate(positive, negative, primary)
     if
         type(positive) ~= 'string'
@@ -783,11 +880,14 @@ function addon:CreateConditionSummaryPredicate(positive, negative, primary)
     return summaryObject({ kind = 'predicate', positive = positive, negative = negative, primary = primary == true })
 end
 
--- Parses a template into a summary object that RenderConditionSummary can render for either polarity. In the template,
--- "{name}" inserts a value (a scalar or a predicate object from the values table), "{{a|b}}" is a literal
--- positive/negative alternative, and "{{{{" and "}}}}" produce literal double braces. Values are copied and inserted as
--- finished parts, never re-parsed as template syntax. Anything malformed, over the size limits (64000 characters, 4096
--- parts) or with a stray brace returns the invalid object instead of raising.
+-- Parses a template into a summary object that RenderConditionSummary can render for either polarity.
+-- @param template string  The template. "{name}" inserts a value (a scalar or a predicate object from the values
+--   table), "{{a|b}}" is a literal positive/negative alternative, and "{{{{" and "}}}}" produce literal double braces.
+-- @param values table  The named values; keys must be identifiers and values scalars or predicate objects.
+-- @return table  The phrase summary object; anything malformed, over the size limits (64000 characters, 4096 parts) or
+--   with a stray brace returns the invalid object instead of raising.
+--
+-- Values are copied and inserted as finished parts, never re-parsed as template syntax.
 function addon:CreateConditionSummaryPhrase(template, values)
     if
         type(template) ~= 'string'
@@ -822,6 +922,9 @@ function addon:CreateConditionSummaryPhrase(template, values)
 
     local parts, index = {}, 1
 
+    -- Appends a part to the phrase being parsed.
+    -- @param part string|table  The literal text or predicate part.
+    -- @return boolean  False when the part limit is exceeded.
     local function add(part)
         parts[#parts + 1] = part
         return #parts <= SUMMARY_PARTS
@@ -891,9 +994,12 @@ function addon:CreateConditionSummaryPhrase(template, values)
     return summaryObject({ kind = 'phrase', parts = parts })
 end
 
--- Renders what a condition's print callback returned: a plain template string goes through RenderConditionPhrase, a
--- phrase object is flattened (negating the leaf's primary predicate, or wrapping in "not (...)" when it has none). Any
--- other value, or output over the size limit, gives the fallback text. Always returns a string.
+-- Renders what a condition's print callback returned.
+-- @param result any  A plain template string (rendered through RenderConditionPhrase) or a phrase object made by
+--   CreateConditionSummaryPhrase; the leaf's primary predicate is negated, or the text wrapped in "not (...)" when it
+--   has none. Any other value, or output over the size limit, gives the fallback text.
+-- @param negated boolean|nil  True to render the negated reading.
+-- @return string  The text; always a string.
 function addon:RenderConditionSummary(result, negated)
     if type(result) == 'string' then
         return self:RenderConditionPhrase(result, negated)
@@ -968,6 +1074,8 @@ end
 -- ============================================================================
 
 -- Removes one pair of parentheses only when it encloses the whole text, so "(a) and (b)" is left alone.
+-- @param text string  The text to trim.
+-- @return string  The text without the enclosing parentheses, or unchanged.
 ---@param text string
 ---@return string
 local function trimOuter(text)
@@ -994,8 +1102,13 @@ local function trimOuter(text)
     return depth == 0 and text:sub(2, -2) or text
 end
 
--- Prints the children of an AND/OR node as "(a and b ...)", joined by the operation word. Entries without a type are
--- skipped, a disabled entry prints as empty text, and a nil list prints as "".
+-- Prints the children of an AND/OR node as "(a and b ...)", joined by the operation word.
+-- @param operation string  The operation word ("AND" or "OR").
+-- @param array table|nil  The child nodes; entries without a type are skipped, a disabled entry prints as empty text,
+--   and
+--   a nil list prints as "".
+-- @param spec number  The specialization ID or talent group the printers describe it for.
+-- @return string  The text.
 printArray = function(operation, array, spec)
     if array == nil then
         return ""
@@ -1021,9 +1134,12 @@ printArray = function(operation, array, spec)
     return rv
 end
 
--- Prints one condition node as readable text. negated is carried through NOT nodes so each leaf's print callback can
--- choose its negative wording. A disabled or function-unavailable definition prints as "Unavailable condition: ...",
--- and an unknown tag as the invalid-condition text.
+-- Prints one condition node as readable text.
+-- @param value table|nil  The node.
+-- @param spec number  The specialization ID or talent group the printers describe it for.
+-- @param negated boolean|nil  Carried through NOT nodes so each leaf's print callback can choose its negative wording.
+-- @return string  The text; a disabled or function-unavailable definition prints as "Unavailable condition: ...", and
+--   an unknown tag as the invalid-condition text.
 printSingle = function(value, spec, negated)
     if value == nil or value.type == nil or value.disabled then
         return ""
@@ -1045,8 +1161,11 @@ printSingle = function(value, spec, negated)
     end
 end
 
--- True when every entry of an AND/OR list is valid (a nil list is valid). The first argument is unused; it mirrors
--- printArray's signature.
+-- Reports whether every entry of an AND/OR list is valid.
+-- @param _ any  Unused; it mirrors printArray's signature.
+-- @param array table|nil  The child nodes; a nil list is valid.
+-- @param spec number  The specialization ID or talent group.
+-- @return boolean  True when every entry is valid.
 validateArray = function(_, array, spec)
     if array == nil then
         return true
@@ -1071,10 +1190,14 @@ validateArray = function(_, array, spec)
     return true
 end
 
--- True when a condition node is complete and usable for this specialization: nil, typeless and disabled nodes pass; an
--- unknown tag, a disabled or function-unavailable definition, a condition this client cannot support, or a definition
--- whose own valid callback says no, fails. Calls the definitions' valid callbacks directly, without the error
--- boundary that callCondition provides.
+-- Reports whether a condition node is complete and usable for a specialization.
+-- @param value table|nil  The node; nil, typeless and disabled nodes pass.
+-- @param spec number  The specialization ID or talent group.
+-- @return boolean  False for an unknown tag, a disabled or function-unavailable definition, a condition this client
+--   cannot support, or a definition whose own valid callback says no; otherwise true (or what the valid callback
+--   returned).
+--
+-- Calls the definitions' valid callbacks directly, without the error boundary that callCondition provides.
 validateSingle = function(value, spec)
     if value == nil or value.type == nil or value.disabled then
         return true
@@ -1100,7 +1223,10 @@ validateSingle = function(value, spec)
     end
 end
 
--- True when any entry of an AND/OR list contains at least one known condition. The first argument is unused.
+-- Reports whether any entry of an AND/OR list contains at least one known condition.
+-- @param _ any  Unused.
+-- @param array table|nil  The child nodes.
+-- @return boolean  True when one does.
 usefulArray = function(_, array)
     if array == nil then
         return false
@@ -1125,8 +1251,11 @@ usefulArray = function(_, array)
     return false
 end
 
--- True when the node is, or contains, a registered condition. Looks only at structure and tags: it does not check
--- validity, and an empty AND/OR or an unknown tag is not useful.
+-- Reports whether a node is, or contains, a registered condition.
+-- @param value table|nil  The node.
+-- @return boolean  True when it is or contains one.
+--
+-- Looks only at structure and tags: it does not check validity, and an empty AND/OR or an unknown tag is not useful.
 usefulSingle = function(value)
     if value == nil or value.type == nil then
         return false
@@ -1147,9 +1276,10 @@ end
 -- Registration
 -- ============================================================================
 
--- Re-runs rotation selection after a condition became available or unavailable: refreshes the auto-switch, turns the
--- current rotation off if its body can no longer be obtained, then switches. Does nothing before runtime
--- initialization (no current spec yet), because definitions register before that.
+-- Re-runs rotation selection after a condition became available or unavailable.
+--
+-- Refreshes the auto-switch, turns the current rotation off if its body can no longer be obtained, then switches. Does
+-- nothing before runtime initialization (no current spec yet), because definitions register before that.
 function addon:RefreshConditionConsumers()
     -- Built-in and saved definitions register before runtime initialization.
     if self.currentSpec == nil or type(self.autoswitchRotation) ~= 'table' or not self.UpdateAutoSwitch then
@@ -1185,8 +1315,10 @@ function addon:RefreshConditionConsumers()
     self:SwitchRotation()
 end
 
--- Lets a quarantined definition run again (for example after its source was fixed), and bumps the quarantine version
--- only if it actually was quarantined.
+-- Lets a quarantined definition run again (for example after its source was fixed).
+-- @param definition table  The condition definition.
+--
+-- Bumps the quarantine version only if it actually was quarantined.
 function addon:ResetConditionQuarantine(definition)
     if quarantined[definition] then
         conditionQuarantineVersion = conditionQuarantineVersion + 1
@@ -1195,10 +1327,15 @@ function addon:ResetConditionQuarantine(definition)
     quarantined[definition] = nil
 end
 
--- Installs (or replaces) the definition for a tag. The old definition's on_unregister runs first when it was live. The
--- definition's print function is wrapped once so its result always goes through RenderConditionSummary; the registry
--- version and dependency revision are bumped so caches rebuild; on_register runs for an enabled definition. If the
--- disabled flag changed, rotation selection is refreshed. A re-registered definition leaves quarantine.
+-- Installs (or replaces) the definition for a tag.
+-- @param tag string  The condition tag.
+-- @param array table  The condition definition.
+--
+-- The old definition's on_unregister runs first when it was live. The definition's print function is wrapped once so
+-- its
+-- result always goes through RenderConditionSummary; the registry version and dependency revision are bumped so caches
+-- rebuild; on_register runs for an enabled definition. If the disabled flag changed, rotation selection is refreshed. A
+-- re-registered definition leaves quarantine.
 function addon:RegisterCondition(tag, array)
     local availabilityChanged = (conditions[tag] and conditions[tag].disabled == true or false)
         ~= (array.disabled == true)
@@ -1241,8 +1378,11 @@ function addon:RegisterCondition(tag, array)
     end
 end
 
--- Removes a tag's definition after running its on_unregister (when it was live), bumps the registry version and
--- dependency revision if it existed, and refreshes rotation selection if a disabled definition went away.
+-- Removes a tag's definition after running its on_unregister (when it was live).
+-- @param tag string  The condition tag.
+--
+-- Bumps the registry version and dependency revision if it existed, and refreshes rotation selection if a disabled
+-- definition went away.
 function addon:UnregisterCondition(tag)
     local wasDisabled = conditions[tag] and conditions[tag].disabled == true
 
@@ -1279,9 +1419,11 @@ end
 -- Public evaluation
 -- ============================================================================
 
--- Evaluates a condition tree with a fresh cache at the current time and returns an outcome table: { status = "match" }
--- or "no-match", or an unavailable outcome with reason and path. context (optional) carries stepId for diagnostics.
--- The outcome is a copy, safe to keep.
+-- Evaluates a condition tree with a fresh cache at the current time.
+-- @param value table|nil  The condition tree.
+-- @param context table|nil  Optional; carries stepId for diagnostics.
+-- @return table  An outcome { status = "match" }, "no-match", or an unavailable outcome with reason and path. The
+--   outcome is a copy, safe to keep.
 function addon:evaluateConditionResult(value, context)
     local result = evaluate(value, {}, GetTime(), { active = {}, count = 0, context = context }, 0, "condition")
 
@@ -1292,13 +1434,17 @@ function addon:evaluateConditionResult(value, context)
     return result
 end
 
--- Cast-event conditions get their own observation cache. Recipient context
--- never enters a rotation's polling cache or survives this announcement.
--- Returns a copy of an announcement condition tree in which every leaf whose unit is the 'announcementtarget'
--- placeholder names the given unit instead. A leaf whose definition has no unit field, or when the unit is unreadable
--- (restricted client) or malformed, gets type false, which evaluates as unavailable only if the evaluation reaches it.
--- Returns the original tree untouched when it has no placeholder, or nil and a reason ('invalid-announcement-condition'
--- for non-portable data, 'condition-limit' for a tree over the node or depth limits).
+-- Returns a copy of an announcement condition tree with the 'announcementtarget' placeholder replaced by a unit.
+-- @param value table  The announcement condition tree.
+-- @param unit string  The unit token to put in place of the placeholder.
+-- @return table|nil  The tree: a copy in which every leaf whose unit is the 'announcementtarget' placeholder names the
+--   given unit instead, or the original tree untouched when it has no placeholder; nil on failure.
+-- @return string|nil  The reason when the first return is nil ('invalid-announcement-condition' for non-portable data,
+--   'condition-limit' for a tree over the node or depth limits); nil otherwise.
+--
+-- A leaf whose definition has no unit field, or when the unit is unreadable (restricted client) or malformed, gets type
+-- false, which evaluates as unavailable only if the evaluation reaches it. Cast-event conditions get their own
+-- observation cache: recipient context never enters a rotation's polling cache or survives this announcement.
 local function announcementUnits(value, unit)
     local data = addon.RotationData
 
@@ -1309,6 +1455,11 @@ local function announcementUnits(value, unit)
     local count, found = 0, false
     local readable
 
+    -- Visits a node and its children, counting the placeholder leaves and, when replacing, rewriting them.
+    -- @param node any  The node.
+    -- @param depth number  The nesting depth.
+    -- @param replace boolean  True to rewrite placeholder leaves (on the copy); false only to look for them.
+    -- @return boolean  False when the tree is over the node or depth limits.
     local function walk(node, depth, replace)
         count = count + 1
 
@@ -1364,10 +1515,15 @@ local function announcementUnits(value, unit)
     return resolved
 end
 
--- Evaluates an announcement's condition tree for one cast event and returns an outcome table. recipient goes into the
--- evaluation cache for recipient-aware conditions. Either targetUnit is substituted for the placeholder up front
--- (announcementUnits), or, when resolveTarget is given, each placeholder leaf asks resolveTarget(tag) for its unit and
--- a fence function at evaluation time. Does not use any rotation's polling cache.
+-- Evaluates an announcement's condition tree for one cast event.
+-- @param value table|nil  The condition tree.
+-- @param recipient any  Goes into the evaluation cache for recipient-aware conditions.
+-- @param targetUnit string|nil  Substituted for the 'announcementtarget' placeholder up front (announcementUnits).
+-- @param resolveTarget function|nil  When given, each placeholder leaf asks resolveTarget(tag) for its unit and a fence
+--   function at evaluation time instead.
+-- @return table  An outcome { status, reason, path }; the decided outcomes are copies, safe to keep.
+--
+-- Does not use any rotation's polling cache.
 function addon:evaluateAnnouncementConditionResult(value, recipient, targetUnit, resolveTarget)
     local resolved, reason
 
@@ -1401,15 +1557,21 @@ function addon:evaluateAnnouncementConditionResult(value, recipient, targetUnit,
     return result
 end
 
--- Validates an announcement condition tree with the placeholder unit replaced by 'target'. False when the tree cannot
--- be resolved or any condition is invalid.
+-- Validates an announcement condition tree with the placeholder unit replaced by 'target'.
+-- @param value table  The announcement condition tree.
+-- @param spec number  The specialization ID or talent group.
+-- @return boolean  False when the tree cannot be resolved or any condition is invalid.
 function addon:validateAnnouncementCondition(value, spec)
     local resolved, reason = announcementUnits(value, 'target')
     return not reason and validateSingle(resolved, spec)
 end
 
--- True only when the tree evaluates to match; no-match and unavailable are both false. Use evaluateConditionResult when
--- the difference matters.
+-- Reports whether a condition tree evaluates to a match.
+-- @param value table|nil  The condition tree.
+-- @param context table|nil  Optional; carries stepId for diagnostics.
+-- @return boolean  True only when the tree evaluates to match; no-match and unavailable are both false.
+--
+-- Use evaluateConditionResult when the difference matters.
 function addon:evaluateCondition(value, context)
     return self:evaluateConditionResult(value, context).status == "match"
 end
@@ -1429,10 +1591,18 @@ end
 local planLeafContext = { module = "conditions", operation = "evaluate" }
 local planValidContext = { module = "conditions", operation = "valid" }
 
--- Calls a definition callback for a plan leaf and returns ok, result, reason. Records history interest like
--- callCondition, and when diagnostics are loaded runs the call inside Diagnostics:Call, quarantining the definition if
--- it errors. context is one of the two shared tables above, filled in by the caller so the poll path allocates
--- nothing.
+-- Calls a definition callback for a plan leaf.
+-- @param definition table  The condition definition.
+-- @param context table  One of the two shared diagnostics tables above, filled in by the caller so the poll path
+--   allocates nothing.
+-- @param fn function  The callback to call.
+-- @param ... any  The arguments for the callback.
+-- @return boolean  False when the callback raised an error.
+-- @return any  The callback's result.
+-- @return string|nil  The callback's reason.
+--
+-- Records history interest like callCondition, and when diagnostics are loaded runs the call inside Diagnostics:Call,
+-- quarantining the definition if it errors.
 local function planCall(definition, context, fn, ...)
     local history = historyReaders[context.conditionTag]
 
@@ -1461,10 +1631,16 @@ local function planCall(definition, context, fn, ...)
     return ok, result, reason
 end
 
--- Checks a condition tree once and returns a plan node: a constant { status = ... } for anything already decided
--- (absent, disabled, malformed, cyclic), { kind = "AND" | "OR", child... }, { kind = "NOT", child }, or
--- { kind = "leaf", value, tag, path }. Sets state.limit when the tree exceeds the depth or node budget, in which case
--- the caller falls back to the ordinary evaluator. Definitions are looked up later, per leaf, not captured here.
+-- Checks a condition tree once and returns a plan node.
+-- @param value table|nil  The condition tree.
+-- @param state table  The compile state: count, active set and limit.
+-- @param depth number  The nesting depth.
+-- @param path string  The path of the node, used in leaf plans.
+-- @return table  A constant { status = ... } for anything already decided (absent, disabled, malformed, cyclic),
+--   { kind = "AND" | "OR", child... }, { kind = "NOT", child }, or { kind = "leaf", value, tag, path }.
+--
+-- Sets state.limit when the tree exceeds the depth or node budget, in which case the caller falls back to the ordinary
+-- evaluator. Definitions are looked up later, per leaf, not captured here.
 local function compilePlan(value, state, depth, path)
     state.count = state.count + 1
 
@@ -1549,10 +1725,17 @@ local function compilePlan(value, state, depth, path)
     return node
 end
 
--- Evaluates a plan node and returns the status string "match", "no-match" or "unavailable", with the same short-circuit
--- and NOT rules as evaluate(). A leaf is unavailable if its definition is missing, disabled, incomplete, function
--- unavailable or quarantined, or if a callback errors or returns nil with a reason. The valid callback result is
--- remembered per leaf for Built In definitions (node.validFor), never for custom code. Runs on the poll path.
+-- Evaluates a plan node. Runs on the poll path.
+-- @param node table  The plan node.
+-- @param cache table|nil  The per-poll cache.
+-- @param start number  The poll's start time.
+-- @param stepId string|nil  The step being evaluated, for diagnostics.
+-- @return string  "match", "no-match" or "unavailable", with the same short-circuit and NOT rules as evaluate().
+--
+-- A leaf is unavailable if its definition is missing, disabled, incomplete, function unavailable or quarantined, or if
+-- a
+-- callback errors or returns nil with a reason. The valid callback result is remembered per leaf for Built In
+-- definitions (node.validFor), never for custom code.
 local function evaluatePlan(node, cache, start, stepId)
     local status = node.status
 
@@ -1645,9 +1828,12 @@ local function evaluatePlan(node, cache, start, stepId)
     return kind == "AND" and "match" or "no-match"
 end
 
--- One-shot handoff to main.lua. Returns two functions: compile(value) gives a plan for a condition tree (or
--- { legacy = value } when the tree is too large to compile), and evaluate(plan, cache, start, stepId) gives the status
--- string. The function removes itself from the addon after the first call, so only the first caller gets them.
+-- Hands main.lua the plan compiler and evaluator, once.
+-- @return function|nil  compile(value) gives a plan for a condition tree (or { legacy = value } when the tree is too
+--   large to compile); nil when not called on the addon.
+-- @return function|nil  evaluate(plan, cache, start, stepId) gives the status string.
+--
+-- The function removes itself from the addon after the first call, so only the first caller gets them.
 function addon:ConsumeConditionPlans()
     if self ~= addon then
         return
@@ -1708,10 +1894,16 @@ local runtimeDiagnosticsObserveEnvironment = type(runtimeDiagnosticsObserve) == 
 )
     or nil
 
--- One-shot handoff to Core/condition_runtime.lua (the lean engine). Returns the live definitions table, the ordinary
--- leaf evaluator, outcome(), an "engine still intact" check (the public evaluators and Diagnostics entry points are the
--- ones captured at load), a quarantine test for a definition, and the quarantine version counter. Later callers get
--- nothing.
+-- Hands Core/condition_runtime.lua (the lean engine) its pieces, once.
+-- @return table|nil  The live definitions table; nil on a later call or when not called on the addon.
+-- @return function|nil  The ordinary leaf evaluator.
+-- @return function|nil  outcome().
+-- @return function|nil  An "engine still intact" check (the public evaluators and Diagnostics entry points are the ones
+--   captured at load).
+-- @return function|nil  A quarantine test for a definition.
+-- @return function|nil  The quarantine version counter reader.
+--
+-- Later callers get nothing.
 function addon:ConsumeConditionRuntimeEngine()
     if self ~= addon or runtimeBound then
         return
@@ -1740,10 +1932,11 @@ function addon:ConsumeConditionRuntimeEngine()
         function() return conditionQuarantineVersion end
 end
 
--- One-shot handoff to main.lua. Returns evaluator(owner, value, current): evaluates a rotation's switch condition with
--- unit-presence checks (evaluateSwitchLeaf) and returns true only on match, false if current() fails. If the owner's
--- evaluateCondition methods have been replaced, it calls the owner's evaluateCondition(value) instead, so overrides
--- are honored.
+-- Hands main.lua the evaluator for a rotation's switch condition, once.
+-- @return function|nil  evaluator(owner, value, current) evaluates the switch condition with unit-presence checks
+--   (evaluateSwitchLeaf) and returns true only on match, false if current() fails. If the owner's evaluateCondition
+--   methods have been replaced, it calls the owner's evaluateCondition(value) instead, so overrides are honored. nil
+--   on a later call or when not called on the addon.
 function addon:ConsumeSwitchConditionEvaluator()
     if self ~= addon or switchBound then
         return
@@ -1786,26 +1979,36 @@ end
 -- ============================================================================
 
 -- Returns the readable text of a condition tree, without the outermost pair of parentheses.
+-- @param value table|nil  The condition tree.
+-- @param spec number  The specialization ID or talent group the printers describe it for.
+-- @return string  The text.
 function addon:printCondition(value, spec)
     return trimOuter(printSingle(value, spec))
 end
 
--- True when every condition in the tree is complete and usable for the specialization (see validateSingle).
+-- Reports whether every condition in the tree is complete and usable for a specialization (see validateSingle).
+-- @param value table|nil  The condition tree.
+-- @param spec number  The specialization ID or talent group.
+-- @return boolean  True when valid.
 function addon:validateCondition(value, spec)
     return validateSingle(value, spec)
 end
 
--- True when the tree contains at least one registered condition (see usefulSingle).
+-- Reports whether the tree contains at least one registered condition (see usefulSingle).
+-- @param value table|nil  The condition tree.
+-- @return boolean  True when it does.
 function addon:usefulCondition(value)
     return usefulSingle(value)
 end
 
--- A rotation with no switch condition (none at all, an empty one, or a tree
--- with nothing in it) matches whenever it is otherwise eligible: its
--- specializations, level and edition gates still apply, and priority decides
--- among everything that matches. The user can always disable it. A tree that
--- is not empty but is broken (an unknown condition) is not "no switch": it
--- fails validation and the rotation cannot be selected.
+-- Reports whether a rotation has a switch condition that actually says something.
+-- @param switch table|nil  The rotation's switch condition tree.
+-- @return boolean  True for a tree with at least one registered condition.
+--
+-- A rotation with no switch condition (none at all, an empty one, or a tree with nothing in it) matches whenever it is
+-- otherwise eligible: its specializations, level and edition gates still apply, and priority decides among everything
+-- that matches. The user can always disable it. A tree that is not empty but is broken (an unknown condition) is not
+-- "no switch": it fails validation and the rotation cannot be selected.
 function addon:HasSwitchCondition(switch)
     return type(switch) == 'table' and self:usefulCondition(switch)
 end

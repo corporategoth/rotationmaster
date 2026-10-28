@@ -16,8 +16,12 @@ local deliveryRequest = 0
 -- Delivery lease
 -- ============================================================================
 
--- Structural equality for plain data: same types, same keys, same leaves, and false for any table that has a
--- metatable. Used to prove a configuration has not been edited since it was copied.
+-- Structural equality for plain data: same types, same keys, same leaves, and false for any table that has a metatable.
+-- @param left any  The first value.
+-- @param right any  The second value.
+-- @return boolean  True when equal.
+--
+-- Used to prove a configuration has not been edited since it was copied.
 local function same(left, right)
     if type(left) ~= type(right) then
         return false
@@ -44,11 +48,16 @@ local function same(left, right)
     return true
 end
 
--- A cold event owns a detached, immutable witness of its complete entry.
--- Retain this lease across action resolution, conditions and text formatting.
--- Returns a private copy of `config` with `action` set from its spell or item, and a `current()` function that is true
--- only while this is still the newest prepared delivery, `owner()` still returns true and `config` is unchanged.
--- Returns nil when `config` is not portable data or `owner` is not a function.
+-- Prepares a delivery lease: a private copy of an announcement for one cast.
+-- @param config table  The announcement configuration; it must be portable data.
+-- @param owner function  owner() returns true while the announcement's owner is still current.
+-- @return table|nil  A private copy of `config` with `action` set from its spell or item; nil when `config` is not
+--   portable data or `owner` is not a function.
+-- @return function|nil  current(), true only while this is still the newest prepared delivery, `owner()` still returns
+--   true and `config` is unchanged; nil when the first return is nil.
+--
+-- A cold event owns a detached, immutable witness of its complete entry. Retain this lease across action resolution,
+-- conditions and text formatting.
 function addon:PrepareAnnouncementDelivery(config, owner)
     deliveryRequest = deliveryRequest + 1
     local request = deliveryRequest
@@ -75,6 +84,9 @@ function addon:PrepareAnnouncementDelivery(config, owner)
 
     local expected = copy(entry)
 
+    -- Reports whether the lease is still valid.
+    -- @return boolean  True while this is the newest prepared delivery, the owner still reports true and nothing
+    --   changed.
     local function current()
         if request ~= deliveryRequest then
             return false
@@ -91,12 +103,19 @@ end
 -- Series dispatch
 -- ============================================================================
 
--- One prepared parent lease owns all reached cards. Never prepare a card: that
--- would replace the parent delivery serial. Public callbacks see a detached view.
--- Delivers each enabled card of `parent.outputs` whose conditions match: `format(view, live)` builds the text and
--- `deliver` (default DispatchAnnouncement) sends it. Returns { chat, sound, outputs, retired }, where chat and sound
--- say whether anything was sent or played and `retired` is set when the lease lapsed part way. All cards are validated
--- before the first one is sent, and an invalid series sends nothing.
+-- Delivers each enabled card of a series whose conditions match.
+-- @param parent table  The prepared series; its `outputs` are the cards.
+-- @param recipient string|nil  The cast recipient.
+-- @param current function  The lease check; any lapse ends the delivery.
+-- @param targetUnit string|nil  A unit that stands in for the recipient placeholder in the cards' conditions.
+-- @param format function  format(view, live) builds the card's text.
+-- @param deliver function|nil  deliver(view, value, live) sends it; default DispatchAnnouncement.
+-- @return table  { chat, sound, outputs, retired }: chat and sound say whether anything was sent or played, `outputs`
+--   holds each card's result, and `retired` is set when the lease lapsed part way.
+--
+-- All cards are validated before the first one is sent, and an invalid series sends nothing. One prepared parent lease
+-- owns all reached cards. Never prepare a card: that would replace the parent delivery serial. Public callbacks see a
+-- detached view.
 function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit, format, deliver)
     local result = { chat = false, sound = false, outputs = {} }
     local cards = parent.outputs
@@ -144,6 +163,8 @@ function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit
             view.type = parent.type
             local expected = self.RotationData.CopyData(view)
 
+            -- Reports whether the card's lease is still valid.
+            -- @return boolean  True while the parent lease holds and the card view is unchanged.
             local function live()
                 return current() and same(view, expected)
             end
@@ -208,13 +229,21 @@ end
 -- Condition matching
 -- ============================================================================
 
--- Native unit APIs may accept a resolvable name as well as a unit token.
--- Keep the cast's recorded recipient exact; never infer the selected target.
--- Resolves the cast recipient to a unit usable by conditions after proving it exists and has a readable GUID. Returns
--- the recipient and a function that is true while the same unit is still there, or nothing when the recipient cannot
--- be read or does not exist. `owned` is the caller's lease check.
+-- Resolves the cast recipient to a unit usable by conditions after proving it exists and has a readable GUID.
+-- @param recipient any  The cast recipient.
+-- @param owned function  The caller's lease check.
+-- @return string|nil  The recipient; nothing when the recipient cannot be read or does not exist.
+-- @return function|nil  A function that is true while the same unit is still there.
+--
+-- Native unit APIs may accept a resolvable name as well as a unit token. Keep the cast's recorded recipient exact;
+-- never
+-- infer the selected target.
 local function automaticTarget(recipient, owned)
-    -- Restricted clients hide values with canaccessvalue as well as CanReadValue; require both before comparing.
+    -- Reports whether a value may be inspected: restricted clients hide values with canaccessvalue as well as
+    -- CanReadValue,
+    -- so both must pass.
+    -- @param value any  The value to check.
+    -- @return boolean  True when readable.
     local function readable(value)
         return platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
     end
@@ -231,7 +260,8 @@ local function automaticTarget(recipient, owned)
         return
     end
 
-    -- The unit APIs are captured above; a replaced global ends the lease so the proof cannot be redirected.
+    -- Reports whether the lease and the unit APIs captured above are still in place.
+    -- @return boolean  True while they are; a replaced global ends the lease so the proof cannot be redirected.
     local function live()
         if not owned() then
             return false
@@ -240,6 +270,8 @@ local function automaticTarget(recipient, owned)
         return exists == UnitExists and guid == UnitGUID
     end
 
+    -- Reads the recipient's GUID after proving the unit exists.
+    -- @return string|nil  The GUID; nil when the unit is absent, unreadable or the lease lapsed.
     local function observe()
         if not live() then
             return
@@ -286,14 +318,21 @@ local function automaticTarget(recipient, owned)
     end
 end
 
--- Called only after a cast matches an announcement, never by cooldown output.
--- True when `config` has no conditions or they evaluate to a match for `recipient`. A spell, pet or item announcement
--- with no explicit `targetUnit` resolves the recipient through automaticTarget; a macro announcement does not.
--- `current` is the lease check; any lapse makes the answer false.
+-- Reports whether an announcement's conditions match the cast recipient.
+-- @param config table  The announcement or card configuration.
+-- @param recipient string|nil  The cast recipient.
+-- @param current function|nil  The lease check; any lapse makes the answer false.
+-- @param targetUnit string|nil  A unit that stands in for the recipient placeholder.
+-- @return boolean  True when `config` has no conditions or they evaluate to a match for `recipient`.
+--
+-- Called only after a cast matches an announcement, never by cooldown output. A spell, pet or item announcement with no
+-- explicit `targetUnit` resolves the recipient through automaticTarget; a macro announcement does not.
 function addon:AnnouncementConditionMatches(config, recipient, current, targetUnit)
     conditionRequest = conditionRequest + 1
     local request = conditionRequest
 
+    -- Reports whether this condition request is still the newest and the lease still holds.
+    -- @return boolean  True while it does.
     local function owned()
         if request ~= conditionRequest then
             return false
@@ -354,15 +393,19 @@ local emoteReasons = {
     ['cast-recipient-unavailable'] = true,
 }
 
--- Starts an emote attempt of `kind` ('automatic' or 'test') and returns its serial; a newer attempt of the same kind
--- makes older ones drop their observation.
+-- Starts an emote attempt and returns its serial; a newer attempt of the same kind makes older ones drop their
+-- observation.
+-- @param kind string  'automatic' or 'test'.
+-- @return number  The attempt's serial.
 local function beginEmote(kind)
     emoteSerial[kind] = emoteSerial[kind] + 1
     return emoteSerial[kind]
 end
 
--- Copies the adapter's emote detail through a whitelist of keys and values, so the report can never hold game data
--- or free text. Returns the safe copy, or nil when the detail is hidden or not a table.
+-- Copies the adapter's emote detail through a whitelist of keys and values, so the report can never hold game data or
+-- free text.
+-- @param detail any  The adapter's detail table.
+-- @return table|nil  The safe copy; nil when the detail is hidden or not a table.
 local function emoteDetailCopy(detail)
     if not platform:CanReadValue(detail) or type(detail) ~= 'table' then
         return nil
@@ -402,9 +445,13 @@ local function emoteDetailCopy(detail)
     return copy
 end
 
--- Records the outcome of an emote attempt as the retained observation for `kind`, unless a newer attempt superseded
--- it. The reason is reduced to a known code and the detail to the whitelisted copy; a hidden or unknown value is stored
--- as 'unavailable'.
+-- Records the outcome of an emote attempt as the retained observation for a kind, unless a newer attempt superseded it.
+-- @param kind string  'automatic' or 'test'.
+-- @param serial number  The attempt's serial from beginEmote.
+-- @param target string  What the emote targeted ('cast-recipient' or 'none').
+-- @param reason any  The adapter's reason; reduced to a known code, and a hidden or unknown value is stored as
+--   'unavailable'.
+-- @param detail any  The adapter's detail; reduced to the whitelisted copy.
 local function finishEmote(kind, serial, target, reason, detail)
     local copied, closed = pcall(emoteDetailCopy, detail)
 
@@ -434,9 +481,14 @@ end
 -- Chat and sound output
 -- ============================================================================
 
--- Maps an announce mode to a chat channel name, 'LOCAL' or 'GESTURE'. Returns nil and a reason when nothing should be
--- sent: say and yell need a hardware event and are never sent from here; 'none' and 'audible' send no text. Group modes
--- read the group from the platform and fall back to PARTY or LOCAL when the player is not in a raid.
+-- Maps an announce mode to a chat channel name, 'LOCAL' or 'GESTURE'.
+-- @param mode any  The announce mode.
+-- @return string|nil  The channel name ('LOCAL', 'EMOTE', 'GESTURE', 'PARTY', 'RAID' or 'RAID_WARNING'); nil when
+--   nothing should be sent.
+-- @return string|nil  The reason when the first return is nil: say and yell need a hardware event and are never sent
+--   from here; 'none' and 'audible' send no text; otherwise the platform's reason; nil when a channel is returned.
+--
+-- Group modes read the group from the platform and fall back to PARTY or LOCAL when the player is not in a raid.
 local function destination(mode)
     if not platform:CanReadValue(mode) or type(mode) ~= 'string' then
         return nil, 'invalid-destination'
@@ -479,7 +531,9 @@ local function destination(mode)
     return group.inGroup and 'PARTY' or 'LOCAL'
 end
 
--- True when the optional lease check `current` is absent or reports true; an error in it counts as retired.
+-- Reports whether the optional lease check is absent or reports true; an error in it counts as retired.
+-- @param current function|nil  The lease check.
+-- @return boolean  True while the announcement is still current.
 local function active(current)
     if not current then
         return true
@@ -489,8 +543,13 @@ local function active(current)
     return ok and valid == true
 end
 
--- Plays the LibSharedMedia sound `key` on the Master channel. Returns true, or false and a reason code. The lease is
--- re-checked after each call that can yield to other code, so a retired announcement stays silent.
+-- Plays the LibSharedMedia sound on the Master channel.
+-- @param key any  The sound key (a string); nil or '' means no sound was requested.
+-- @param current function|nil  The lease check.
+-- @return boolean  True when the sound played; false otherwise.
+-- @return string|nil  The reason code when the first return is false; nil otherwise.
+--
+-- The lease is re-checked after each call that can yield to other code, so a retired announcement stays silent.
 local function sound(key, current)
     if not active(current) then
         return false, 'announcement-retired'
@@ -548,12 +607,16 @@ local function sound(key, current)
     return true
 end
 
--- Output is best-effort and independent: a failed chat or audio API must not
--- interrupt cast bookkeeping or recommendation evaluation. This does not
--- construct templates, match events, or retry messages through another path.
--- Sends `text` for one announcement config and plays its sound. Returns { chat, sound, chatReason, soundReason }:
--- booleans for what happened and reason codes for what did not. `castRecipient` is the gesture target and `current`
--- the lease check.
+-- Sends the text for one announcement config and plays its sound.
+-- @param config table  The announcement or card configuration.
+-- @param text string  The message text.
+-- @param castRecipient string|nil  The gesture target.
+-- @param current function|nil  The lease check.
+-- @return table  { chat, sound, chatReason, soundReason }: booleans for what happened and reason codes for what did
+--   not.
+--
+-- Output is best-effort and independent: a failed chat or audio API must not interrupt cast bookkeeping or
+-- recommendation evaluation. This does not construct templates, match events, or retry messages through another path.
 function addon:DispatchAnnouncement(config, text, castRecipient, current)
     local result = { chat = false, sound = false }
 
@@ -627,9 +690,10 @@ end
 -- Diagnostics and runtime source
 -- ============================================================================
 
--- Called only by an explicitly labelled diagnostic button. It sends one
--- independent targetless CHEER, never a pending announcement or cast retry.
--- Returns { chat, chatReason } for the button to show.
+-- Sends one independent targetless CHEER for the diagnostic button.
+-- @return table  { chat = boolean, chatReason = string|nil }, for the button to show.
+--
+-- Called only by an explicitly labelled diagnostic button. It never sends a pending announcement or cast retry.
 function addon:TestAnnouncementEmote()
     local serial = beginEmote('test')
     local sent, reason, detail = platform:PerformAnnouncementEmote('CHEER', '')
@@ -637,8 +701,8 @@ function addon:TestAnnouncementEmote()
     return { chat = sent == true, chatReason = reason }
 end
 
--- Builds the plain-text emote diagnostics report from the two retained observations. Holds no recipient names or
--- message text, only the whitelisted backend and call facts.
+-- Builds the plain-text emote diagnostics report from the two retained observations.
+-- @return string  The report; it holds no recipient names or message text, only the whitelisted backend and call facts.
 function addon:GetAnnouncementEmoteReport()
     local lines = {
         'Rotation Master emote diagnostics',
@@ -678,7 +742,9 @@ local runtimeDispatch = addon.DispatchAnnouncement
 local runtimeDispatchEnvironment = getfenv(1)
 
 -- Hands the active runtime plan the original DispatchAnnouncement and its environment so it can later prove neither was
--- replaced. Works only for the addon itself.
+-- replaced.
+-- @return function|nil  The original DispatchAnnouncement; nil unless called on the addon.
+-- @return table|nil  The environment DispatchAnnouncement was defined in.
 function addon:ConsumeAnnouncementRuntimeSource()
     if self ~= addon then
         return

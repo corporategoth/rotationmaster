@@ -19,12 +19,19 @@ local MAX_ENTRIES, MAX_BYTES, MAX_DEPTH = 128, 1048576, 64
 -- Limits and shape checks
 -- ============================================================================
 
+-- Reports whether a value is plain, bounded data.
+-- @param value any  The value to check.
+-- @return boolean  True when it is portable plain data within the node, byte and depth limits.
+--
 -- Bound and reject hostile data before any recursive copy or source compilation.
 local function portable(value)
     local active, nodes, bytes = {}, 0, 0
 
     -- Validates one value for portable(): records the node count and byte total and rejects anything that is not plain
     -- data.
+    -- @param v any  The value to check.
+    -- @param depth number  The nesting depth.
+    -- @return boolean  False when the value is not portable or a limit is exceeded.
     local function visit(v, depth)
         nodes = nodes + 1
 
@@ -60,7 +67,9 @@ local function portable(value)
     return visit(value, 0)
 end
 
--- True for a sequence table with no holes and at most MAX_ENTRIES entries.
+-- Reports whether a value is a sequence table with no holes and at most MAX_ENTRIES entries.
+-- @param value any  The candidate list.
+-- @return boolean  True for such a list.
 local function dense(value)
     if type(value) ~= 'table' or #value > MAX_ENTRIES then
         return false
@@ -79,7 +88,10 @@ local function dense(value)
     return n == #value
 end
 
--- True when `value` is a table whose keys are all in `allowed`.
+-- Reports whether a value is a table whose keys are all allowed.
+-- @param value any  The candidate table.
+-- @param allowed table  The set of allowed keys.
+-- @return boolean  True when every key is in `allowed`.
 local function fields(value, allowed)
     if type(value) ~= 'table' then
         return false
@@ -94,23 +106,30 @@ local function fields(value, allowed)
     return true
 end
 
--- True for a usable function or condition identifier: a non-empty string of at most 512 characters without control
--- characters.
+-- Reports whether an id is a usable function or condition identifier.
+-- @param id any  The candidate id.
+-- @return boolean  True for a non-empty string of at most 512 characters without control characters.
 local function identity(id)
     return type(id) == 'string' and #id > 0 and #id <= 512 and not id:find('%c')
 end
 
--- True for an absent display name or a string of at most 256 characters.
+-- Reports whether a value is an acceptable display name.
+-- @param value any  The candidate name.
+-- @return boolean  True for an absent display name or a string of at most 256 characters.
 local function name(value)
     return value == nil or type(value) == 'string' and #value <= 256
 end
 
--- True when an identifier names a Built In helper ('builtin:' prefix).
+-- Reports whether an identifier names a Built In helper ('builtin:' prefix).
+-- @param id any  The candidate id.
+-- @return boolean  True when it does.
 local function builtin(id)
     return type(id) == 'string' and id:sub(1, 8) == 'builtin:'
 end
 
--- Sorted list of a table's keys, so bundles are built in a stable order.
+-- Returns the sorted list of a table's keys, so bundles are built in a stable order.
+-- @param value table|nil  The table; nil gives an empty list.
+-- @return table  The sorted keys.
 local function keys(value)
     local r = {}
 
@@ -122,7 +141,10 @@ local function keys(value)
     return r
 end
 
--- Deterministic string form of a value (sorted keys, length-prefixed parts) that the source hash is computed over.
+-- Builds the deterministic string form of a value (sorted keys, length-prefixed parts) that the source hash is computed
+-- over.
+-- @param value any  The value.
+-- @return string  The canonical form.
 local function canonical(value)
     if type(value) ~= 'table' then
         return type(value) .. ':' .. tostring(value)
@@ -158,8 +180,11 @@ end
 -- Source hashing and helper-binding checks
 -- ============================================================================
 
--- Returns an 8-digit hex hash of a function or condition source, or nil when it is not portable data. The same hash is
--- stored in a bundle's requirements and compared on import.
+-- Hashes a function or condition source.
+-- @param source table  The source.
+-- @return string|nil  An 8-digit hex hash; nil when the source is not portable data.
+--
+-- The same hash is stored in a bundle's requirements and compared on import.
 function addon:FunctionSourceHash(source)
     if not portable(source) then
         return nil
@@ -175,9 +200,13 @@ function addon:FunctionSourceHash(source)
     return string.format('%08x', hash)
 end
 
--- Explicit bindings are the only remappable helper reference. Ignore comments
--- and strings when detecting handwritten resolver calls, without executing Lua.
--- Linear in the source: nothing here copies the remainder of the code.
+-- Detects a hand-written call that resolves a function binding.
+-- @param code string  The Lua source to scan.
+-- @return boolean|nil  True when the code reaches a helper by a hand-written resolver call or computed access on the
+--   RM namespace; nil otherwise.
+--
+-- Explicit bindings are the only remappable helper reference. Ignores comments and strings when detecting handwritten
+-- resolver calls, without executing Lua. Linear in the source: nothing here copies the remainder of the code.
 local function manualReference(code)
     local tokens, i = {}, 1
 
@@ -263,8 +292,15 @@ local function manualReference(code)
     end
 end
 
--- Validates one bundled source for its kind with the normal custom-source validators, and rejects code that reaches a
--- helper by a hand-written binding call. Returns the validated source or nil and a reason.
+-- Validates one bundled source for its kind with the normal custom-source validators.
+-- @param self table  The addon.
+-- @param kind string  'function' or 'condition'.
+-- @param id string  The function or condition id.
+-- @param source table  The source to validate.
+-- @return table|nil  The validated source; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Rejects code that reaches a helper by a hand-written binding call.
 local function checkSource(self, kind, id, source)
     if type(source) ~= 'table' then
         return nil, 'invalid-bundle-source'
@@ -291,15 +327,25 @@ local function checkSource(self, kind, id, source)
     return self:ValidateCustomConditionSource(id, source, false, true)
 end
 
--- Finds a function source by id among the Built In and custom functions; also returns whether it is Built In.
+-- Finds a function source by id among the Built In and custom functions.
+-- @param self table  The addon.
+-- @param id string  The function id.
+-- @return table|nil  The source; nil when not found.
+-- @return boolean  True when it is a Built In function.
 local function lookup(self, id)
     local built = self.builtinFunctions and self.builtinFunctions[id]
     return built and built.source or (self.db.global.custom_functions or {})[id], built ~= nil
 end
 
--- True when the local source matches the hash a bundle recorded. A Built In helper may differ from an older packaged
--- form only by a declared namespace move or by the old display-name shape; code, arguments, bindings and docs stay
--- hashed.
+-- Reports whether the local source matches the hash a bundle recorded.
+-- @param self table  The addon.
+-- @param requirement table  The bundle requirement { id, name, hash, builtin }.
+-- @param current table  The local source.
+-- @param isBuiltin boolean  True when the local source is a Built In helper.
+-- @return boolean  True when the hashes match.
+--
+-- A Built In helper may differ from an older packaged form only by a declared namespace move or by the old display-name
+-- shape; code, arguments, bindings and docs stay hashed.
 local function requirementHashMatches(self, requirement, current, isBuiltin)
     if self:FunctionSourceHash(current) == requirement.hash then
         return true
@@ -340,9 +386,16 @@ end
 -- Building a bundle
 -- ============================================================================
 
--- Builds a bundle for the custom function or condition `id` (or the supplied `source`) with its dependency closure, as
--- `bundle, nil` or `nil, reason`. Custom helpers travel inside the bundle unless `includeDependencies` is false; Built
--- In helpers travel only as an id and source hash. Fails on cycles, missing helpers and size limits.
+-- Builds a transfer bundle for a custom function or condition with its dependency closure.
+-- @param kind string  'function' or 'condition'.
+-- @param id string  The function or condition id.
+-- @param source table|nil  The source to bundle instead of the saved one.
+-- @param includeDependencies boolean|nil  False to leave custom helpers out of the bundle; otherwise they travel inside
+--   it.
+-- @return table|nil  The bundle; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Built In helpers travel only as an id and source hash. Fails on cycles, missing helpers and size limits.
 function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
     if kind ~= 'function' and kind ~= 'condition' or not identity(id) then
         return nil, 'invalid-bundle-root'
@@ -376,8 +429,12 @@ function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
         active[id] = true
     end
 
-    -- Adds one helper and, for custom helpers, its own bindings to the bundle; fails on cycles, missing helpers and
-    -- limits.
+    -- Adds one helper and, for custom helpers, its own bindings to the bundle.
+    -- @param dependency string  The helper's function id.
+    -- @param depth number  The nesting depth.
+    -- @return boolean|nil  True when added (or already added); nil on failure.
+    -- @return string|nil  The reason ('function-depth', 'function-cycle', 'bundle-entry-limit', 'bundle-data-limit',
+    --   'missing-function:<id>' or a validation reason) when the first return is nil; nil otherwise.
     local function visit(dependency, depth)
         if depth > MAX_DEPTH then
             return nil, 'function-depth'
@@ -467,8 +524,16 @@ end
 -- Parsing and validating a bundle
 -- ============================================================================
 
--- Validates and normalizes a pasted value into a version-1 bundle copy or `nil, reason`: exact field sets, hash format,
--- declared dependencies that match their recorded hashes, no cycles, no missing or unrelated entries.
+-- Validates and normalizes a pasted value into a version-1 bundle copy.
+-- @param self table  The addon.
+-- @param value any  The decoded value (an RM-FunctionBundle, or an older RM-CustomCondition or RM-CustomFunction
+--   envelope).
+-- @return table|nil  The normalized bundle copy; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Checks exact field sets, hash format, declared dependencies that match their recorded hashes, no cycles, no missing
+-- or
+-- unrelated entries.
 local function normalize(self, value)
     if not portable(value) or type(value) ~= 'table' then
         return nil, 'bundle-data-limit'
@@ -572,6 +637,11 @@ local function normalize(self, value)
 
     -- Confirms that a bound helper is either carried in the bundle or listed in its requirements, following carried
     -- helpers' own bindings and rejecting cycles.
+    -- @param id string  The helper's function id.
+    -- @param depth number  The nesting depth.
+    -- @return boolean|nil  True when accounted for; nil on failure.
+    -- @return string|nil  The reason ('function-depth', 'function-cycle' or 'missing-bundle-requirement:<id>') when the
+    --   first return is nil; nil otherwise.
     local function visit(id, depth)
         if depth > MAX_DEPTH then
             return nil, 'function-depth'
@@ -621,7 +691,11 @@ local function normalize(self, value)
     return self:CopySettingsData(value)
 end
 
--- Decodes pasted text with `codec` and normalizes it; returns the bundle or nil and a reason.
+-- Decodes pasted text and normalizes it into a bundle.
+-- @param text string  The pasted text.
+-- @param codec table  The codec whose Decode(text) method decodes it.
+-- @return table|nil  The bundle; nil on failure.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:ParseFunctionBundleImport(text, codec)
     local decoded, why = codec:Decode(text)
 
@@ -638,8 +712,11 @@ end
 
 local pending = setmetatable({}, { __mode = 'k' })
 
--- Lists the 'function:<id>' and 'condition:<id>' entries that depend, directly or through other helpers, on function
--- `id`, so the review can show what an import would change.
+-- Lists the entries that depend on a function, so the review can show what an import would change.
+-- @param self table  The addon.
+-- @param id string  The function id.
+-- @return string[]  The sorted 'function:<id>' and 'condition:<id>' entries that depend on function `id`, directly or
+--   through other helpers.
 local function effects(self, id)
     local functions, conditions = self.db.global.custom_functions or {}, self.db.global.custom_conditions or {}
     local affected = { [id] = true }
@@ -686,10 +763,14 @@ local function effects(self, id)
     return result
 end
 
--- Turns a bundle plus per-item `choices` (action, destination id, name) into a reviewable plan: one row per item with
--- its destination and action (create, reuse, replace, rename or conflict), the status of every required helper,
--- problems and warnings. Nothing is written. The plan records a snapshot and baselines of everything it read so apply
--- can detect changes. Returns the plan, or nil and a reason for malformed input.
+-- Turns a bundle plus per-item choices into a reviewable plan. Nothing is written.
+-- @param value any  The bundle (or a pasted value that normalizes to one).
+-- @param choices table|nil  Per-item choices keyed by id: { action, id, name }.
+-- @return table|nil  The plan: one row per item with its destination and action (create, reuse, replace, rename or
+--   conflict), the status of every required helper, problems and warnings; nil for malformed input.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- The plan records a snapshot and baselines of everything it read so apply can detect changes.
 function addon:PlanFunctionBundleImport(value, choices)
     local bundle, why = normalize(self, value)
 
@@ -727,13 +808,20 @@ function addon:PlanFunctionBundleImport(value, choices)
     local registry = self.conditionDefinitions or self.definitions or {}
 
     -- Marks the plan invalid and records why this item cannot be imported.
+    -- @param id string  The item id.
+    -- @param reason string  The reason code.
     local function problem(id, reason)
         plan.valid = false
         plan.problems[#plan.problems + 1] = { id = id, reason = reason }
     end
 
     -- Plans one bundled item: resolves its destination (refusing a Built In or duplicate one), picks the action and
-    -- appends the row. Returns true, or nil and a reason.
+    -- appends
+    -- the row.
+    -- @param record table  The bundled item { id, name, source, provenance }.
+    -- @param kind string  'function' or 'condition'.
+    -- @return boolean|nil  True when planned; nil on failure.
+    -- @return string|nil  The reason when the first return is nil; nil otherwise.
     local function row(record, kind)
         local choiceKey = kind .. ':' .. record.id
         chosenIDs[record.id] = true
@@ -928,7 +1016,20 @@ function addon:PlanFunctionBundleImport(value, choices)
     -- follow their declarations to reject cycles created by reuse/remapping.
     local graphSeen, graphCount = {}, 0
 
-    -- Walks the staged graph from `id`, recording baselines and rejecting depth, cycle and missing-function problems.
+    -- Walks the staged graph from a function, recording baselines and rejecting depth, cycle and missing-function
+    -- problems.
+    -- @param id string  The function id to start from.
+    -- @param active table  The ids being visited (cycle detection).
+    -- @param depth number  The nesting depth.
+    -- @param seen table  The ids already accepted.
+    -- @return boolean|nil  True when the graph below `id` is sound; nil on failure.
+    -- @return string|nil  The reason ('bundle-entry-limit', 'function-depth', 'function-cycle', 'missing-function' or
+    --   the
+    --   record's own problem) when the first return is nil; nil otherwise.
+    --
+    -- Availability stops at disabled records; structural validation must still follow their declarations to reject
+    -- cycles
+    -- created by reuse/remapping.
     local function structural(id, active, depth, seen)
         if not graphSeen[id] then
             graphSeen[id] = true
@@ -1030,10 +1131,14 @@ end
 -- Applying an import
 -- ============================================================================
 
--- Applies a plan returned by PlanFunctionBundleImport. Refuses a plan that changed, is unresolved, or whose
--- destinations changed since it was planned; replans against the current graph, compiles everything first, then swaps
--- the registries and registers the conditions. If any trusted hook fails, every table, registry version and condition
--- is restored. Returns true, or nil and a reason.
+-- Applies a plan returned by PlanFunctionBundleImport.
+-- @param plan table  The plan.
+-- @return boolean|nil  True when applied; nil on failure, in which case nothing changed.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
+--
+-- Refuses a plan that changed, is unresolved, or whose destinations changed since it was planned; replans against the
+-- current graph, compiles everything first, then swaps the registries and registers the conditions. If any trusted hook
+-- fails, every table, registry version and condition is restored.
 function addon:ApplyFunctionBundleImport(plan)
     local saved = pending[plan]
 
@@ -1142,7 +1247,8 @@ function addon:ApplyFunctionBundleImport(plan)
     end
 
     -- Puts every previously registered condition's suspended and unavailable flags back and resumes the old hooks that
-    -- the failed import had paused.
+    -- the
+    -- failed import had paused.
     local function restoreConsumers()
         for id, record in pairs(oldDefinitions) do
             local definition = record.definition

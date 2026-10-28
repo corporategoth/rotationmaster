@@ -43,19 +43,23 @@ local manager = { ready = false, userOverride = false, applying = false, logging
 addon.AssistedHighlight = manager
 addon.assistedGlowHidden = false
 
--- Returns the active profile table, or nil before the database exists.
+-- Returns the active profile table.
+-- @return table|nil  The profile; nil before the database exists.
 local function profile()
     local db = addon.db
     return type(db) == 'table' and type(db.profile) == 'table' and db.profile or nil
 end
 
--- Returns the per-character saved table (where the restore record lives), or nil before the database exists.
+-- Returns the per-character saved table (where the restore record lives).
+-- @return table|nil  The table; nil before the database exists.
 local function characterStore()
     local db = addon.db
     return type(db) == 'table' and type(db.char) == 'table' and db.char or nil
 end
 
--- True in combat lockdown. An unreadable or unknown answer counts as combat, because the CVar must not be written then.
+-- Reports whether the player is in combat lockdown.
+-- @return boolean  True in combat lockdown; an unreadable or unknown answer counts as combat, because the CVar must not
+--   be written then.
 local function inCombat()
     if type(InCombatLockdown) ~= 'function' then
         return false
@@ -65,7 +69,9 @@ local function inCombat()
     return not ok or (locked ~= false and locked ~= nil)
 end
 
--- Returns the configured mode, 'rm', 'blizzard' or 'both'; anything else (unset or corrupt) reads as 'rm'.
+-- Returns the configured assisted highlight mode.
+-- @param settings table|nil  The profile to read; defaults to the active profile.
+-- @return string  'rm', 'blizzard' or 'both'; anything else (unset or corrupt) reads as 'rm'.
 function addon:GetAssistedHighlightMode(settings)
     local source = settings or profile()
     local mode = type(source) == 'table' and source.assisted_highlight or nil
@@ -77,7 +83,9 @@ function addon:GetAssistedHighlightMode(settings)
     return 'rm'
 end
 
--- true, or nil plus a reason when this client has no Blizzard highlight.
+-- Reports whether this client has Blizzard's assisted highlight.
+-- @return boolean|nil  True when it does; nil otherwise.
+-- @return string|nil  The reason when the first return is nil; nil otherwise.
 function addon:GetAssistedHighlightSupport()
     local platform = self.Platform
 
@@ -88,8 +96,9 @@ function addon:GetAssistedHighlightSupport()
     return platform:GetAssistedHighlightSupport()
 end
 
--- Whether the active rotation has an enabled, reachable "Blizzard's
--- suggestion" step in its rotation list. Every lookup is guarded, so a missing service reads as false.
+-- Reports whether the active rotation has an enabled, reachable "Blizzard's suggestion" step in its rotation list.
+-- @param self table  The addon.
+-- @return boolean  True when it has one. Every lookup is guarded, so a missing service reads as false.
 local function rotationUsesAssisted(self)
     local id, spec = self.currentRotation, self.currentSpec
 
@@ -132,8 +141,11 @@ local function rotationUsesAssisted(self)
     return false
 end
 
--- True when the CVar should be on now: a mode that uses Blizzard's highlight, a client that supports it, and an active
--- rotation that has an assisted step.
+-- Reports whether the CVar should be on now.
+-- @param self table  The addon.
+-- @return boolean  True for a mode that uses Blizzard's highlight, a client that supports it, and an active rotation
+--   that
+--   has an assisted step.
 local function wanted(self)
     if self:GetAssistedHighlightMode() == 'rm' or self.currentRotation == nil then
         return false
@@ -148,13 +160,20 @@ local function wanted(self)
     return rotationUsesAssisted(self)
 end
 
--- True for a well-formed restore record { previous, applied }; a corrupt saved record is dropped by the caller.
+-- Reports whether a value is a well-formed restore record { previous, applied }; a corrupt saved record is dropped by
+-- the caller.
+-- @param record any  The saved record.
+-- @return boolean  True when it is well formed.
 local function validRecord(record)
     return type(record) == 'table' and type(record.previous) == 'string' and type(record.applied) == 'string'
 end
 
--- Writes the CVar through the Platform adapter. The applying flag makes the resulting CVAR_UPDATE event ignore our own
--- write. Returns the value now in effect, or nil and a reason.
+-- Writes the CVar through the Platform adapter.
+-- @param value string  The CVar value to write.
+-- @return string|nil  The value now in effect; nil on failure.
+-- @return string|nil  The reason when the write failed; nil otherwise.
+--
+-- The applying flag makes the resulting CVAR_UPDATE event ignore our own write.
 local function write(value)
     manager.applying = true
     local ok, now, why = pcall(addon.Platform.SetAssistedHighlightCVar, addon.Platform, value)
@@ -171,8 +190,10 @@ end
 -- Reconciliation
 -- ============================================================================
 
--- Brings the CVar and addon.assistedGlowHidden in line with what the rotation wants. Called on every relevant event,
--- not per poll. In combat it only marks the work pending; PLAYER_REGEN_ENABLED finishes it.
+-- Brings the CVar and addon.assistedGlowHidden in line with what the rotation wants.
+--
+-- Called on every relevant event, not per poll. In combat it only marks the work pending; PLAYER_REGEN_ENABLED finishes
+-- it.
 function manager:Reconcile()
     if not self.ready or self.loggingOut or self.applying then
         return
@@ -251,9 +272,9 @@ function manager:Reconcile()
     addon.assistedGlowHidden = want and addon:GetAssistedHighlightMode() == 'blizzard' and current == CVAR_ON or false
 end
 
--- At logout or reload: put the user's value back now, keeping the record
--- (marked) until the next login sees it stuck. In combat the record alone
--- restores it at the next login.
+-- At logout or reload: puts the user's value back now, keeping the record (marked) until the next login sees it stuck.
+--
+-- In combat the record alone restores it at the next login.
 function manager:Logout()
     self.loggingOut = true
     local store = characterStore()
@@ -277,8 +298,9 @@ function manager:Logout()
     end
 end
 
--- A mode chosen in settings also ends a user override from this session.
--- Public entry for settings changes and rotation switches; clearOverride is true when the user picked a mode.
+-- Re-reconciles the CVar; the public entry for settings changes and rotation switches.
+-- @param clearOverride boolean|nil  True when the user picked a mode, which also ends a user override from this
+--   session.
 function addon:RefreshAssistedHighlight(clearOverride)
     if clearOverride then
         manager.userOverride = false
@@ -293,8 +315,13 @@ end
 
 local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' }
 
--- Single event handler for the frame events, the AceDB profile callbacks and the rotation message. The first
--- PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles before that.
+-- Single event handler for the frame events, the AceDB profile callbacks and the rotation message.
+-- @param event string  The event name.
+-- @param ... any  The event's arguments.
+--
+-- The first PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles
+-- before
+-- that.
 function manager:OnEvent(event, ...)
     if event == 'PLAYER_LOGOUT' then
         return self:Logout()
