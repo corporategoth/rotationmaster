@@ -6,6 +6,8 @@ local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Enables or disables button according to value.
+-- @param button Button  The button to change.
+-- @param value boolean|nil  True to enable, otherwise disable.
 local function enable(button, value)
     if value then
         button:Enable()
@@ -16,10 +18,13 @@ end
 
 -- Adds the View changes button to the rotation editor pane and to its metadata window, and chains the pane's
 -- UpdateHistory and RefreshUnsaved to keep both enabled correctly. Called once per pane, after the unsaved tracking.
+-- @param pane table  The rotation editor pane.
 function addon:InstallRotationChangeReview(pane)
-    -- Returns snapshot, pending: the workspace snapshot overlaid with edits still sitting in the text fields, and a
-    -- list of { label, before, after } for fields whose text does not yet parse (so they cannot enter the snapshot).
-    -- metadataOnly leaves out the name and the step fields.
+    -- Builds the snapshot of the rotation as the editor currently shows it.
+    -- @param metadataOnly boolean|nil  True leaves out the name and the step fields.
+    -- @return table  The workspace snapshot overlaid with edits still sitting in the text fields.
+    -- @return table[]  The pending list of { label, before, after } for fields whose text does not yet parse (so they
+    --   cannot enter the snapshot).
     function pane:ReviewSnapshot(metadataOnly)
         local snapshot = self.workspace:Snapshot()
         local pending = {}
@@ -91,6 +96,8 @@ function addon:InstallRotationChangeReview(pane)
         return snapshot, pending
     end
 
+    -- View changes button handler for the pane: opens the draft diff of the whole rotation against its baseline, valid
+    -- only while the same pane drawing and workspace are current.
     pane.viewChanges = addon:CreateViewChangesButton(pane.frame, pane.apply, function()
         if not pane.active or pane.workspace.readOnly then
             return
@@ -125,6 +132,8 @@ function addon:InstallRotationChangeReview(pane)
 
     local dialog = pane.metadataWindow
 
+    -- View changes button handler for the metadata window: compares the description, metadata, tags and priority
+    -- against the baseline.
     dialog.viewChanges = addon:CreateViewChangesButton(dialog.frame, dialog.apply, function()
         if not dialog:Valid() or pane.workspace.readOnly then
             return
@@ -135,6 +144,8 @@ function addon:InstallRotationChangeReview(pane)
         local before = workspace.session:Baseline()
 
         -- Reduces a rotation body to the fields the metadata window edits, so the comparison shows only those.
+        -- @param body table  A rotation body.
+        -- @return table  { description, metadata, tags, priority }.
         local function metadata(body)
             return {
                 description = body.description,
@@ -164,9 +175,11 @@ function addon:InstallRotationChangeReview(pane)
     end
 end
 
--- Adds the View changes button to the condition editor shell. The diff is the working condition against its baseline
--- (a comparison baseline when one is set) plus pending edits from every open card pane.
+-- Adds the View changes button to the condition editor shell. The diff is the working condition against its baseline (a
+-- comparison baseline when one is set) plus pending edits from every open card pane.
+-- @param shell table  The condition editor shell.
 function addon:InstallConditionChangeReview(shell)
+    -- View changes button handler: opens the draft diff for the condition being edited.
     shell.viewChanges = addon:CreateViewChangesButton(shell.frame, shell.apply, function()
         local active = shell.active
 
@@ -215,11 +228,12 @@ function addon:InstallConditionChangeReview(shell)
     end
 end
 
--- Adds the View changes button to a settings pane (create form or settings draft); p is the pane from
--- UI/settings_form.lua.
+-- Adds the View changes button to a settings pane (create form or settings draft).
+-- @param p table  The pane from UI/settings_form.lua.
 function addon:InstallSettingsChangeReview(p)
     -- Opens the draft diff for the pane: the transaction keys of the settings draft, or the creation state against its
     -- baseline, plus every dirty text field as a pending row labeled from its unsaved binding.
+    -- @return any  What addon:ShowWorkbenchDraftChanges returns.
     function p:ReviewSettingsChanges()
         local before, after
 
@@ -279,6 +293,7 @@ function addon:InstallSettingsChangeReview(p)
 
     -- Chains the creation row so the View changes button sits left of Apply; the button is acquired from the pane's
     -- pool.
+    -- @param ... any  The arguments of the original CreationActions.
     function p:CreationActions(...)
         creation(self, ...)
 
@@ -309,12 +324,15 @@ function addon:InstallSettingsChangeReview(p)
     end
 end
 
--- Adds the View changes button to the custom condition dialog, comparing its saved definition with the pending
--- source and field edits as { identifier, definition, preferences }.
+-- Adds the View changes button to the custom condition dialog, comparing its saved definition with the pending source
+-- and field edits as { identifier, definition, preferences }.
+-- @param dialog table  The custom condition editor dialog.
 function addon:InstallCustomChangeReview(dialog)
     local p = dialog.form
     dialog.viewChanges = dialog.viewChanges or addon:CreateViewChangesButton(dialog.frame, dialog.apply, function() end)
 
+    -- View changes button handler: opens the draft diff of the saved definition against the pending source and dirty
+    -- field edits.
     addon:SetUIScript(dialog.viewChanges, 'OnClick', function()
         if not dialog.OwnerValid or not dialog.OwnerValid() then
             return
@@ -336,6 +354,8 @@ function addon:InstallCustomChangeReview(dialog)
         end
 
         -- Maps a custom condition record to the definition shape shown in the diff.
+        -- @param value table  { key, value, context }.
+        -- @return table  { identifier, definition, preferences }.
         local function definition(value)
             return { identifier = value.key, definition = value.value, preferences = value.context }
         end

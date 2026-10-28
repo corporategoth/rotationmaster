@@ -6,8 +6,8 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Errors in the main editor must not hide this independent native report.
--- Opens the window (building it on first use), always at the newest report with the redacted text selected.
+-- Opens the window (building it on first use), always at the newest report with the redacted text selected. Errors in
+-- the main editor must not hide this independent native report.
 function addon:ShowErrors()
     local window = self.errorsWindow
 
@@ -43,6 +43,10 @@ function addon:ShowErrors()
         )
 
         -- Creates one bottom-row push button at horizontal offset `x`.
+        -- @param label string  The button text.
+        -- @param width number  The button width.
+        -- @param x number  The offset from the left edge.
+        -- @return Button  The new button.
         local function button(label, width, x)
             local b = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
             b:SetSize(width, 24)

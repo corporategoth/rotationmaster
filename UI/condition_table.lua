@@ -44,27 +44,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -- ============================================================================
 
 -- True for a real, finite number; rejects NaN and both infinities so bad geometry cannot reach SetPoint.
+-- @param value any  The value to test.
+-- @return boolean  True when value is a finite number.
 local function finite(value)
     return type(value) == 'number' and value == value and value ~= math.huge and value ~= -math.huge
 end
 
 -- True when an align value is absent, a name, a callback or a finite offset.
+-- @param value any  The align value.
+-- @return boolean  True when the value is acceptable.
 local function alignment(value)
     return value == nil or type(value) == 'string' or type(value) == 'function' or finite(value)
 end
 
 -- Checks the three alignment keys (align, alignH, alignV) of a settings, column or cell table.
+-- @param value table  A Table settings, column or cell descriptor.
+-- @return boolean  True when all three keys are acceptable.
 local function alignments(value)
     return alignment(value.align) and alignment(value.alignH) and alignment(value.alignV)
 end
 
 -- True when a rowspan or colspan is absent or a whole number of at least one.
+-- @param value any  The span value.
+-- @return boolean  True when the value is nil or a whole number of at least one.
 local function span(value)
     return value == nil or finite(value) and value >= 1 and value == math.floor(value)
 end
 
 -- Raises 'condition-table-work-limit' when a Table group has too many columns, children or span cells to lay out
 -- cheaply. Runs before any geometry work so an oversized descriptor cannot freeze the client.
+-- @param group table  The condition group; groups that are not Table layouts are ignored.
 local function guardWork(group)
     if group.layout ~= 'Table' then
         return
@@ -92,8 +101,12 @@ local function guardWork(group)
     end
 end
 
--- Decides which route lays the group out. Returns true when the group uses a rich feature (spans, spacing, alignment,
--- table columns), false for the plain compact numeric Table, and raises on malformed settings, columns or cells.
+-- Decides which route lays the group out.
+-- @param group table  The condition group.
+-- @return boolean  True when the group uses a rich feature (spans, spacing, alignment, table columns); false for the
+--   plain compact numeric Table or a non-Table group.
+--
+-- Raises on malformed settings, columns or cells.
 local function supported(group)
     if group.layout ~= 'Table' then
         return false
@@ -201,6 +214,11 @@ end
 -- ============================================================================
 
 -- Total size of lanes first..last (column widths or row heights) including the gaps between them.
+-- @param lanes number[]  The column widths or row heights.
+-- @param first number  The first lane index.
+-- @param last number  The last lane index; a value below `first` gives 0.
+-- @param spacing number  The gap between neighbouring lanes.
+-- @return number  The summed size.
 local function dimension(lanes, first, last, spacing)
     local result = 0
 
@@ -211,8 +229,19 @@ local function dimension(lanes, first, last, spacing)
     return result + math.max(0, last - first) * spacing
 end
 
--- Resolves a cell's alignment on one axis ('H' or 'V'). Precedence is cell, column, then table settings; names are
--- normalized to start, middle, end or fill. Returns the method and the clamped offset inside the available space.
+-- Resolves a cell's alignment on one axis. Precedence is cell, column, then table settings; names are normalized to
+-- start, middle, end or fill.
+-- @param direction string  'H' for horizontal or 'V' for vertical.
+-- @param settings table  The Table settings.
+-- @param column table  The column descriptor.
+-- @param cell table|nil  The child's cell descriptor.
+-- @param available number  The space available on this axis.
+-- @param size number  The child's size on this axis.
+-- @return string|number|function  The normalized method ('start', 'middle', 'end', 'fill'), or the raw numeric offset
+--   or callback.
+-- @return number  The offset inside the available space, clamped to 0 through available.
+--
+-- Raises 'invalid-condition-table-alignment' when the result is not a finite number.
 local function offset(direction, settings, column, cell, available, size)
     local method = cell and (cell['align' .. direction] or cell.align)
         or column['align' .. direction]
@@ -252,9 +281,12 @@ local function offset(direction, settings, column, cell, available, size)
     return method, math.max(0, math.min(result, available))
 end
 
--- Places every shown child of a Table group: assigns cells to a grid (honoring rowspan and colspan), sizes the
--- columns, then the rows, and anchors each child. Reuses a per-group scratch cache so a relayout allocates nothing
--- new; reports the final height through group:LayoutFinished.
+-- Places every shown child of a Table group: assigns cells to a grid (honoring rowspan and colspan), sizes the columns,
+-- then the rows, and anchors each child.
+-- @param group table  The Table-layout condition group with validated settings.
+--
+-- Reuses a per-group scratch cache so a relayout allocates nothing new; reports the final height through
+-- group:LayoutFinished.
 local function layout(group)
     local content, children = group.content, group.children
     local settings = group:GetUserData('table')
@@ -437,13 +469,18 @@ end
 -- Group integration
 -- ============================================================================
 
--- Install the native rich-table route once on each owned group. Replaces the group's DoLayout with a wrapper that
--- falls back to the original compact layout when the group is not a rich table.
+-- Install the native rich-table route once on each owned group. Replaces the group's DoLayout with a wrapper that falls
+-- back to the original compact layout when the group is not a rich table.
+-- @param group table  The condition group to wrap.
 function addon:PrepareNativeConditionTable(group)
     if not group.rmNativeTableOriginal then
         local original = group.DoLayout
         group.rmNativeTableOriginal = original
 
+        -- Lays the group out: rich Table groups go through layout(), everything else through the original DoLayout.
+        --
+        -- Does nothing while paused, already laying out or queued for release; raises after clearing the pause when
+        -- layout fails, then lays out the parent.
         function group:DoLayout()
             if self.paused or self.layingOut or self.isQueuedForRelease then
                 return

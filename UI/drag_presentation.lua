@@ -6,16 +6,21 @@
 local _, addon = ...
 local tones = { red = { .85, .3, .25 }, green = { .25, .7, .35 }, gray = { .4, .4, .4 }, neutral = { .55, .58, .6 } }
 
--- Preview only RM-owned editor frames. Restore them before a command, rerender,
--- release or canceled drag can recycle their controls or replace their model.
--- Adds the presentation methods to `ghost`, using `decoration` (its fill and border textures) for the stock look.
--- Call once per ghost frame.
+-- Adds the presentation methods to `ghost`, using `decoration` (its fill and border textures) for the stock look. Call
+-- once per ghost frame.
+-- @param ghost Frame  The drag card from addon:CreateWorkbenchDragCard.
+-- @param decoration table  The ghost's rounded card decoration ({ fill, border } texture lists).
+--
+-- Preview only RM-owned editor frames. Restore them before a command, rerender, release or canceled drag can recycle
+-- their controls or replace their model.
 function addon:InstallDragPresentation(ghost, decoration)
     -- Registers a stand-in window (unlayered) with the window registry so that closing it, which Escape does, calls
     -- `callback` and cancels the drag.
+    -- @param callback function  Called when the stand-in window is closed.
     function ghost:CaptureCancel(callback)
         self.cancelOwner = self.cancelOwner or { frame = self }
 
+        -- Window-registry hook: closing the stand-in cancels the drag.
         function self.cancelOwner:Hide()
             callback()
         end
@@ -28,6 +33,7 @@ function addon:InstallDragPresentation(ghost, decoration)
     ghost.previewLines = {}
 
     -- Shows or hides the ghost's stock fill and border textures (hidden while real cards are drawn on it).
+    -- @param show boolean|nil  True to show the textures.
     local function artwork(show)
         for _, layer in ipairs({ 'fill', 'border' }) do
             for _, texture in ipairs(decoration[layer]) do
@@ -41,8 +47,10 @@ function addon:InstallDragPresentation(ghost, decoration)
     end
 
     -- Gives every lifted card frame back to its original parent, anchors, level and strata, and clears the placeholders
-    -- and preview lines. Safe to call when nothing is lifted. A failure restoring one frame does not stop the rest;
-    -- the first error is re-raised after everything has been restored.
+    -- and preview lines. Safe to call when nothing is lifted.
+    --
+    -- A failure restoring one frame does not stop the rest; the first error is re-raised after everything has been
+    -- restored.
     function ghost:RestoreCards()
         local entries = self.liveEntries
         self.liveEntries = nil
@@ -52,6 +60,7 @@ function addon:InstallDragPresentation(ghost, decoration)
             local firstError
 
             for _, entry in ipairs(entries) do
+                -- Restores one lifted frame's parent, anchors, frame level and strata.
                 local ok, why = pcall(function()
                     local frame = entry.frame
                     frame:SetParent(entry.parent)
@@ -101,6 +110,7 @@ function addon:InstallDragPresentation(ghost, decoration)
     end
 
     -- Shows the ghost as the plain summary chip (label, summary, count) instead of lifted cards.
+    -- @param ... any  The arguments of the stock Present: title, summary, source and count.
     function ghost:Present(...)
         self:RestoreCards()
         self:SetClampedToScreen(true)
@@ -113,8 +123,8 @@ function addon:InstallDragPresentation(ghost, decoration)
         present(self, ...)
     end
 
-    -- Moves the ghost with the cursor, keeping the point where the player grabbed the card under the pointer; without
-    -- a grab offset (summary chip) it defers to the stock follow behavior.
+    -- Moves the ghost with the cursor, keeping the point where the player grabbed the card under the pointer; without a
+    -- grab offset (summary chip) it defers to the stock follow behavior.
     function ghost:FollowPointer()
         if self.grabOffset and GetCursorPosition then
             local x, y = GetCursorPosition()
@@ -134,15 +144,23 @@ function addon:InstallDragPresentation(ghost, decoration)
     end
 
     -- Lifts a single control onto the ghost at its current position; a one-entry PresentCards.
+    -- @param control Frame  The control to lift.
+    -- @return boolean  What PresentCards returns.
     function ghost:PresentSource(control)
         return self:PresentCards({
             { frame = control, x = 0, y = 0, width = control:GetWidth(), height = control:GetHeight() },
         }, control:GetParent())
     end
 
-    -- Lifts the card frames in `entries` (each { frame, x, y, width, height } in the source's coordinates) onto the
-    -- ghost, leaves a placeholder at each original spot, hides `sourceLines` and draws `edges` as preview lines.
-    -- `source` supplies the scale. Returns false for an empty list; on an error it restores the cards and re-raises.
+    -- Lifts the card frames in `entries` onto the ghost, leaves a placeholder at each original spot, hides
+    -- `sourceLines` and draws `edges` as preview lines. On an error it restores the cards and re-raises.
+    -- @param entries table[]  Each { frame, x, y, width, height } in the source's coordinates.
+    -- @param source Frame|nil  The frame that supplies the scale.
+    -- @param edges table[]|nil  Preview lines: each { points = { {x, y}, ... }, tone = 'red'|'green'|'gray'|'neutral',
+    --   inactive = boolean }.
+    -- @param sourceLines Texture[]|nil  The source's own connector textures, hidden while the cards are lifted and
+    --   restored afterwards.
+    -- @return boolean  False for an empty list; true when the cards were lifted.
     function ghost:PresentCards(entries, source, edges, sourceLines)
         self:RestoreCards()
 
@@ -186,6 +204,8 @@ function addon:InstallDragPresentation(ghost, decoration)
             baseLevel = math.min(baseLevel, entry.frame:GetFrameLevel())
         end
 
+        -- Lifts the cards onto the ghost, places the placeholders, draws the preview lines and shows the ghost; runs
+        -- under pcall so a failure can restore the cards.
         local ok, why = pcall(function()
             for i, entry in ipairs(entries) do
                 local control = entry.frame

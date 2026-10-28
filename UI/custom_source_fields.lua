@@ -20,10 +20,15 @@ local types = {
 
 -- Serializes `value` as a Lua-like literal for the raw schema box when the schema cannot be formatted normally (it is
 -- invalid). Bounded to 512 nodes, depth 16 and 32 KiB, with cycles marked, so a corrupt saved value cannot hang the UI.
+-- @param value any  The schema value.
+-- @return string  The text, at most 32768 characters.
 local function recoveryText(value)
     local active, nodes = {}, 0
 
     -- Renders one value; keys are sorted so the text is stable between redraws.
+    -- @param v any  The value.
+    -- @param depth number  The nesting depth; 0 at the root.
+    -- @return string  The literal text.
     local function render(v, depth)
         nodes = nodes + 1
 
@@ -58,10 +63,12 @@ local function recoveryText(value)
     return render(value, 0):sub(1, 32768)
 end
 
--- Source metadata shows its schema directly. The same schema draft/editor
--- handles every entry; Advanced changes its presentation, never its format.
 -- Adds the schema row to `form` for the custom condition editor `owner`. An invalid schema still shows (as raw text in
 -- a red frame) so it can be repaired; the field list is built from a draft that ignores fieldOrder when that is stale.
+-- @param form table  The settings form.
+-- @param owner table  The custom condition editor dialog.
+--
+-- The same schema draft/editor handles every entry; Advanced changes its presentation, never its format.
 function addon:BuildCustomSourceFields(form, owner)
     local graph, why = self:NewFieldSchemaDraft(
         owner.model.value.fields,
@@ -205,6 +212,8 @@ function addon:BuildCustomSourceFields(form, owner)
         row:GetFontString():SetWidth(row:GetWidth() * .5 - 4)
         row.tooltip = L['Edit fields']
 
+        -- Field row click: opens the graphical schema editor (or switches to Advanced when the schema cannot be
+        -- drafted).
         addon:SetUIScript(row, 'OnClick', form:Guard(function()
             if not owner:Flush() then
                 return
