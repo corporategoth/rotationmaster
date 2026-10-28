@@ -46,7 +46,7 @@ above it. A translation file maps the ID to the translation, with the English it
 - The files are generated: `tools/locales.py` writes them in one canonical layout, the header comes from
   `tools/locale_translators.json`, and `locales.py check` fails if a header, a hash or an ID has been edited by hand. The
   tools read and write the main catalog and the text bundles as one language. You may edit a translation string in your
-  editor; run `check` afterwards, and `python3 tools/locales.py rebuild` normalises the layout.
+  editor; run `check` afterwards, and `python3 tools/locales.py rebuild` puts every file back into the canonical layout.
 - A few strings are names (`Rotation Master`, addon and site names): they stay identical in every language and the
   tools do not ask for them (`tools/translation_exempt.json`).
 
