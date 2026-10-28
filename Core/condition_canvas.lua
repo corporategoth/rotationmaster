@@ -51,8 +51,8 @@ local function at(root, path)
     return root
 end
 
--- Returns a measured size when it is a positive finite number, else the fallback.
--- @param value any  The measured size.
+-- Returns a measured size clamped to a maximum, or a fallback when the measurement is unusable.
+-- @param value any  The measured size; a positive number is usable, while zero, negatives, NaN and non-numbers are not.
 -- @param fallback number  The size to use when the measurement is unusable.
 -- @param maximum number  The upper bound the measurement is clamped to.
 -- @return number  The clamped measurement or the fallback.
