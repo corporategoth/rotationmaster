@@ -14,7 +14,10 @@ local presentation = {}
 addon.Functions = addon.Functions or {}
 addon.Functions.presentation = presentation
 
--- Returns the value, or a red placeholder (the default text, else "<value>") when it is nil.
+-- Returns the value, or a red placeholder when it is nil.
+-- @param value any  The value to show.
+-- @param default string|nil  The placeholder text; nil means "<value>".
+-- @return any  The value unchanged, or the red placeholder text when the value is nil.
 presentation.nullable = function(value, default)
     if value == nil then
         if default ~= nil then
@@ -28,6 +31,10 @@ end
 
 -- Looks the value up in a label table and returns the label, or the red placeholder when the value or the table is
 -- missing or the table has no entry for it.
+-- @param value any  The key to look up.
+-- @param array table|nil  The label table.
+-- @param default string|nil  The placeholder text; nil means "<value>".
+-- @return any  The label, or the red placeholder text.
 presentation.nullable_value = function(value, array, default)
     if value == nil or array == nil or type(array) ~= "table" then
         if default ~= nil then
@@ -40,6 +47,10 @@ presentation.nullable_value = function(value, array, default)
 end
 
 -- Picks the wording for the player ("you") or another unit when a summary reads differently for each.
+-- @param unit string  The unit token.
+-- @param player any  The wording used when unit is "player".
+-- @param nonplayer any  The wording used for any other unit.
+-- @return any  player or nonplayer.
 presentation.playerize = function(unit, player, nonplayer)
     if (unit == "player") then
         return player
@@ -48,8 +59,15 @@ presentation.playerize = function(unit, player, nonplayer)
     end
 end
 
--- Returns "left <operator text> right" for a stored operator. When the operator has a negated form the text carries a
--- {{positive|negative}} alternative (marked with "!" when primary) that the summary renderer picks from.
+-- Builds the text "left <operator text> right" for a stored operator.
+-- @param operator string  The stored operator name (a key of addon.operators).
+-- @param left string  The text before the operator.
+-- @param right string  The text after the operator.
+-- @param primary boolean|nil  True marks the predicate as the one that flips under negation.
+-- @return string  The comparison text.
+--
+-- When the operator has a negated form the text carries a {{positive|negative}} alternative (marked with "!" when
+-- primary) that the summary renderer picks from.
 presentation.compareString = function(operator, left, right, primary)
     local positive=addon.nullable(operators[operator], L["<operator>"])
     local negative=(addon.negatedOperators or {})[operator]
@@ -57,13 +75,20 @@ presentation.compareString = function(operator, left, right, primary)
     return left .. " " .. predicate .. " " .. right
 end
 
--- Named summaries delegate to one canonical manager, including editable clones.
 -- Expands a summary phrase template with its values through the condition summary manager.
+-- @param template string  The phrase template (see addon:CreateConditionSummaryPhrase).
+-- @param values table  The values the template inserts, by name.
+-- @return table  The summary object (the invalid object for bad input).
+--
+-- Named summaries delegate to one canonical manager, including editable clones.
 presentation.phrase = function(template, values)
     return addon:CreateConditionSummaryPhrase(template, values)
 end
 
--- Returns the summary predicate text for a stored operator, with its negated alternative when one exists.
+-- Builds the summary predicate for a stored operator, with its negated alternative when one exists.
+-- @param operator string  The stored operator name (a key of addon.operators).
+-- @param primary boolean|nil  True marks the predicate as the one that flips under negation.
+-- @return table  The summary predicate object (see addon:CreateConditionSummaryPredicate).
 presentation.predicate = function(operator, primary)
     local positive=addon.nullable(operators[operator], L["<operator>"])
     return addon:CreateConditionSummaryPredicate(positive, (addon.negatedOperators or {})[operator], primary)
