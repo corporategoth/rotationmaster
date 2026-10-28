@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Frost Death Knight after Wowhead (reference): Empower Rune Weapon at two
 -- charges first, then Reaper's Mark, Pillar of Frost, Breath of Sindragosa and Frostwyrm's Fury in the
 -- rotation; Obliterate on two Killing Machines (or one with Exterminate), Howling Blast on Rime,

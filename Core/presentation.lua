@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Presentation helpers shared by condition prose and editors: readable spell and aura labels, spell hyperlinks and
 -- tooltips on a label widget, and the highlight color with inherited channels. It formats and draws nothing of its own
 -- beyond that and must not write saved data. Loaded from the TOC after Core/build_context.lua, before the UI files that

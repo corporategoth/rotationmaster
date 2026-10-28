@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Runtime half of the lean evaluation engine's compiled plan: it decides, once per poll, whether main.lua may run the
 -- active rotation from a cached plan prepared by Core/rotation_scope.lua, and hands back the leases that prove the plan
 -- is still current while it runs. It owns the cached plan, its execution generation and the route counters; it must

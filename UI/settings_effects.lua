@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Effects settings page: a roster of the global highlight effects (db.global.effects) with a live glow preview,
 -- per-type sliders, an ordered sequence editor for the animated types, duplicate, import/export and delete. Edits and
 -- new effects go through the settings form's draft (p:SettingsData()); deletion is confirmed and then removes the saved

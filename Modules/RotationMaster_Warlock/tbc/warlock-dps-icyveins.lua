@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warlock, every talent tree, levels 1–70; the default Warlock premade. One loop for all
 -- trees: curse, the tree's DoTs, one filler, Life Tap. Differences come from learned spells
 -- and talents (Unstable Affliction, Siphon Life, Incinerate, Seed, sacrifice buffs).

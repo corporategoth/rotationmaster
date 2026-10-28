@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Run, on Lua 5.1, the suites that exercise the Lua files you changed. Seconds, not minutes.
 
   python3 tools/fast_tests.py Core/rotation_scope.lua UI/window.lua     as the pre-commit hook calls it

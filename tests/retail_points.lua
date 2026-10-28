@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (and Forever) POINT: class secondary resources under the restricted
 -- combat-data policy. UnitPower and GetComboPoints are
 -- SecretWhenUnitPowerRestricted ("secret values for power types not explicitly

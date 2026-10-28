@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Undo only the two General/inventory additions before the existing complete
 -- Masque successor proof. Its original full-file equality remains the authority.
 local changes = {

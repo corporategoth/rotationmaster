@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition GROUP_COUNT: compares a count taken over your party or raid (its size, the members with an
 -- assigned tank, healer or damage role, or the dead or ghost members; optionally as a percent of the group) with a
 -- number. It reads one cached Platform:GetGroupSnapshot (Platform/world_state.lua) per evaluation. Group members

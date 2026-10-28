@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local file=assert(io.open('tests/rotation_scope_runtime.lua'));local source=file:read('*a');file:close()
 local runtimeFixture=assert(loadstring(assert(source:match('^(.-)\nlocal function gate'))..'\nreturn fixture','@adjacent-stamp-real-runtime'))()

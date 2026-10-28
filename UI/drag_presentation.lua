@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Drag ghost behavior for the card editors. Turns the ghost frame made in UI/controls.lua into a presenter that lifts
 -- the real card frames onto itself while a drag runs, leaves a dimmed placeholder where each card was, and draws the
 -- preview edges. It must give every lifted frame back (parent, anchors, level, strata) on hide, cancel or error, and

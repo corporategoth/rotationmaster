@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Elemental Shaman, levels 10–60 (primary tree 1). wowsims/sod Phase 6 order,
 -- which Wowhead's matches: Earth Shock interrupts; while moving Flame Shock, Rolling Thunder Earth
 -- Shock and Power Surge casts; on three engaged enemies Flame Shock, Chain Lightning, Fire Nova,

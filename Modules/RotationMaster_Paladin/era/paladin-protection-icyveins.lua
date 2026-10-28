@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Protection, Seal of Wisdom style (Icy Veins' raid list with Askalon's Wisdom rotation):
 -- keep Seal of Wisdom and Judgement of Wisdom up for mana, Holy Shield, Consecration every cooldown,
 -- Judgement otherwise only to pull, and Greater Blessing of Kings as the raid threat filler.

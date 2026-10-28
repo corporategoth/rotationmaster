@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Restoration, from level 10 when Restoration is the primary talent tree. After
 -- Icy Veins and Wowhead: acts on the current friendly target (choosing whom to heal and downranking
 -- beyond rank 4 Healing Touch stay with you). Nature's Swiftness Healing Touch, Swiftmend in an

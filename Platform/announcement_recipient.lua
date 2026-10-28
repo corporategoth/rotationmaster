@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for announcements: group membership of a cast recipient, and the chat channels a message can go to.
 -- Owns the `value or nil, reason` readers over UnitExists, UnitName, UnitGUID, GetNormalizedRealmName and
 -- GetChannelName; it must not send anything or cache a roster. Both channel readers return an "ownership" check that

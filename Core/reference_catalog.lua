@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Reference providers for item, glyph and spell pickers: what a typed value resolves to, how a search matches, and what
 -- name and icon to show. It owns the item metadata caches and nothing else; spell answers come from addon.SpellCatalog
 -- (Core/spell_catalog.lua). Every game value is read through addon.Platform and checked with CanReadValue first.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Holy, Wowhead tank-healing: Holy Light on anyone missing a tenth of their health,
 -- Flash of Light only for small deficits, Holy Shock while moving, Divine Favor and
 -- Divine Illumination on cooldown. Same switch as the blended Holy premade, lower priority.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warlock premades: all trees after Icy Veins (recommended) and the Wowhead drain-tank
 -- variant. Real catalog, composition, predicates, sequence executor, readiness and auto-select
 -- order; native observations are modeled (tests/fixtures/tbc_premades.lua). The armor cases

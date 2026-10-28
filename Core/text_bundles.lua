@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Load-on-demand text: answers a key the main table lacks from the text bundle add-on that owns it (Locales/bundles.json,
 -- hash index in Data/text_bundle_index.lua). Owns the one-time load of each bundle, its failed/loaded state, and the
 -- credits of the language's human translators; it must not read bundle text while the game is loading and must not change

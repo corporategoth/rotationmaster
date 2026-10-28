@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Warlock tank, levels 1–60 (Metamorphosis engraved). wowsims/sod Phase 4 tank
 -- order with Icy Veins, Wowhead and Warcraft Tavern: Shadow Cleave whenever Defender's Resolve is
 -- missing or ending (even on one target); a Soul Fire! proc; Incinerate to keep its fire buff; on

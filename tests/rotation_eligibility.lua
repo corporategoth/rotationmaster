@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Why a rotation can or cannot be selected, said in plain words.
 --
 -- The user's report (Retail 12.0.5, a level-4 Monk): a custom fallback with a

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation profile lifecycle: reacts to AceDB profile change, copy and reset by retiring the active rotation,
 -- rebuilding the scoped rotation storage and library, and re-enabling the engine. It owns the guard that drops events
 -- from a replaced database, and must re-check the active transition after every step that can call out. Loaded after

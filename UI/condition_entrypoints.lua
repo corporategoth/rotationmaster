@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Stable public entry points for the condition editor: addon.LayoutConditionFrame and addon:EditCondition.
 -- Callers (Built In condition widgets in Conditions/, the rotation editor) use these names so they do not depend on
 -- whether the native editor in UI/condition_editor.lua is present; each returns nil and a localized reason when it is

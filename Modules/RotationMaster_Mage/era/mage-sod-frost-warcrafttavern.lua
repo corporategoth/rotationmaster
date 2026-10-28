@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Mage Frost after Warcraft Tavern's Phase 4 Fire-rune build (Overheat, Hot
 -- Streak, Brain Freeze), levels 10–60; same switch as rm.sod.mage.frost at a lower priority, for
 -- players who pick it. Pyroblast opens; Hot Streak Pyroblast; Living Bomb kept up; Improved Scorch

@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Set Mark step in the rotation editor (UI/rotation_mark_fields.lua, UI/rotation_fields.lua): it is offered only
 -- where the client can place marks, choosing it fills in a valid unit and mark, the unit and mark are choices from fixed
 -- lists, Bind makes and picks up the macro and reports why it cannot, and the step shows readable names. The card

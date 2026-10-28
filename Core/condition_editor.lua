@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Detached edit sessions for one condition tree: a draft copy, bounded undo and redo, and a validated Apply.
 -- It owns the session object and its history rules; the window that shows it is UI/condition_editor.lua. Nothing here
 -- writes the live condition except Apply, which checks schema, semantics and concurrent edits first and then mutates

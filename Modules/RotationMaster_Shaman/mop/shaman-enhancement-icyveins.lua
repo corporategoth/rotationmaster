@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Enhancement Shaman, Icy Veins variant (player-chosen, off by default). Same switch
 -- as the recommended premade (Enhancement specialization). Stormstrike (Stormblast in Ascendance), then Lava Lash ahead of
 -- the spender; Lightning Bolt at five Maelstrom Weapon or from three when it lands before the next swing;

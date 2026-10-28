@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition display widgets: the text label, the clickable link (label plus optional image) and the button that the
 -- condition editor's layout engine places, built on the widget pool in UI/condition_widgets.lua.
 -- They own only their own frames and measurement; they must not decide layout, which belongs to the parent container

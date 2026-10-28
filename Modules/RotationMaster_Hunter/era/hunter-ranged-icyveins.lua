@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Hunter ranged DPS after Icy Veins' "clipped" rotation (for ranged weapons faster than
 -- 3.0 s), levels 1–60. Off by default: Rotation Master cannot read weapon speed. Same switch as
 -- rm.era.hunter.ranged; differs in a group by casting Aimed Shot and Multi-Shot as soon as they are

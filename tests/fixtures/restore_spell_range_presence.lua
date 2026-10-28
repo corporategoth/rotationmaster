@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict complete-body and complete-module inverses frozen from5fb3250.
 local old = {
     ["SPELL_RANGE"] = "\n        if not Functions.cache.getCached(cache, UnitExists, \"target\") then return false end\n        local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)\n        if not spellid then return nil, reason or \"spell-data-unavailable\" end\n        local range, why = Functions.cache.getCached(cache, addon.Platform.GetSpellRangeState, addon.Platform, spellid, \"target\", \"spell\")\n        if not range then return nil, why end\n        return range.applicable and range.inRange or false\n    ",

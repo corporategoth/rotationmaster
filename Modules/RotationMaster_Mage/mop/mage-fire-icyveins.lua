@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Fire Mage after Icy Veins, Method and wowtbc.gg, levels 10–90: hold
 -- Pyroblast! until a Heating Up joins it, then cast both (Fireball, then the instant Pyroblast); spend
 -- it alone only before it expires. Otherwise as rm.mop.mage.fire, the recommended Fire premade (same

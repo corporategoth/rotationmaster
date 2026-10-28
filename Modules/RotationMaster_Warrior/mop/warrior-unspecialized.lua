@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Warrior catch-all: levels 1-9, or a warrior of 10+ who has not chosen a
 -- specialization (the specialization switches do not match then), so it carries the lowest priority.
 -- RM policy built from the 1-9 kit (no guide gives a list): Charge to pull, Victory Rush, Execute, Heroic Strike

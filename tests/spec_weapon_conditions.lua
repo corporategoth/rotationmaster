@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- SPECIALIZATION and WEAPON_TYPE, and the temporary weapon enchant conditions
 -- on Retail: true/false/unavailable per client family (Era, TBC, Wrath, Mists,
 -- Retail, Forever), restricted values, event-driven caching (no native read

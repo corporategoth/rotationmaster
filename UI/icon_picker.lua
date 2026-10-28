@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Paged icon chooser window used when an author picks an icon for a custom condition (UI/custom_condition_editor.lua).
 -- It lists icon groups (a short built-in set, the addon's own artwork, spells the player knows and the client's macro
 -- icon lists), filters by name, and hands the chosen texture path to the caller's `choose` callback. It owns only the

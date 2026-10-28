@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict inverses of only two consumed-timestamp readiness bodies against actual4d1c4a9.
 local old = {
     SPELL_HISTORY_TIME = [====[ -- Cooldown until the spell is available

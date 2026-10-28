@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Settings > Functions page: the roster of Built In helper functions and custom functions with its New, Duplicate,
 -- Import/Export and Compare actions, plus the helpers that name, find and open a function source. It builds the left
 -- roster and delegates the editor to UI/function_source_pane.lua; it never saves a function itself.

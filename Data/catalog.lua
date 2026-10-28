@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation catalog: the store of saved custom rotation envelopes plus the registered Built In ones, with enable
 -- preferences, withdrawn Built Ins and clone lineage. Every read returns a validated, detached snapshot; every write
 -- validates first and stamps the content and envelope revisions.

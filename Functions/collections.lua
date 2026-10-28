@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Table helpers (keys, spairs, tomap, index, tablelength, multiinsert, cleanArray, deepcopy, compareArray) for
 -- conditions, the UI and saved custom code.
 -- This file owns the canonical bodies; utils.lua re-exports them as addon.keys, addon.spairs and the rest so saved

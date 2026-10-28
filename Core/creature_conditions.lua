@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Creature-type matching for the Built In creature type condition (Conditions/character.lua calls it).
 -- Owns the key-to-creature-type-id map and the platform read; it holds no state and must not cache anything itself.
 -- Loaded from RotationMaster.toc between Core/class_group_conditions.lua and Core/health_forecast_conditions.lua.

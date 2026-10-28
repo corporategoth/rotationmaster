@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Combat Rogue, Sinister Strike builder (Icy Veins, Warcraft Tavern, Method, wowtbc.gg; off by
 -- default): how Combat played before the Siege of Orgrimmar patch raised Sinister Strike to 50 energy on 2026-06-02,
 -- superseded for Phase 5. Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single fight and

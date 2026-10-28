@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Frost Death Knight with a two-handed weapon, levels 55–90 (wowsims'
 -- obliterate APL, the same as Hekili's obliterate_build; Warcraft Tavern's leveling advice). The
 -- default Frost premade: Killing Machine goes to Obliterate, Obliterate spends any capped rune pair,

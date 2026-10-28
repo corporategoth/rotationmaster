@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Brewmaster Monk, Blizzard Assisted with brews (recommended): the rotation
 -- is Blizzard's Assisted Combat suggestion, which Icy Veins endorses for Brewmaster only with the
 -- brews handled by hand, so the cooldowns are Icy Veins' brew list: Black Ox Brew, Invoke Niuzao,

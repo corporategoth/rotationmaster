@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Write docs/translators/glossary.md: the wording each locale already uses for the addon's recurring terms.
 
   python3 tools/translation_glossary.py            print the glossary

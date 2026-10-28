@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for showing a talent tree: a registry of talent tree providers (the UI picks the first one that can
 -- open) and the trait-API reader that builds a drawable view of a specialization's tree and encodes a loadout string
 -- for Blizzard's view-loadout window (C_Traits, C_ClassTalents, PlayerUtil). Reads are `ok, value` or `nil, reason`

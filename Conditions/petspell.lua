@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pet spell conditions: PETSPELL_AVAIL, PETSPELL_RANGE, PETSPELL_COOLDOWN, PETSPELL_REMAIN, PETSPELL_CHARGES,
 -- PETSPELL_HISTORY, PETSPELL_HISTORY_TIME and PETSPELL_ACTIVE. They mirror the player spell conditions but pick the
 -- spell from the pet spellbook (BOOKTYPE_PET) and are false whenever the spell is not known. Every game read goes

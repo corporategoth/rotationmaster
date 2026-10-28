@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Edit workspaces for rotations: the object the rotation editor holds while a rotation is open. A workspace wraps an
 -- edit session over a detached copy of the body and decides whether the target is still the same, what Apply saves and
 -- where. It owns the per-profile cache of open workspaces and the read-only import-preview workspace; it draws nothing,

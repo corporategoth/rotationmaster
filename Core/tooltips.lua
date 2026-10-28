@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Tooltip integration (details below): adds Rotation Master lines to spell and item tooltips. It only appends lines,
 -- never reads or changes anything else on the tooltip, and builds its indexes lazily and never in combat. Loaded last
 -- of the Core files, after Core/assisted_highlight.lua; it installs itself at the first PLAYER_ENTERING_WORLD.

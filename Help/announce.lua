@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help document for the Announces settings page: the ordered list of sections (title plus one authored paragraph per
 -- control), the renderer that lays them out in a help frame, and the subset shown from an announcement card's output
 -- controls. Paragraph text lives in the locale tables under Help.Announces.*; this file only orders and selects it.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Paladin premades: switches, priorities, boundaries and reminders through
 -- the real catalog, predicates, composition and sequence executor on a modeled 5.5.4 client
 -- (tests/fixtures/mop_premade_model_a.lua). Holy Power is POINT (s.resource[9]); seals are stances read

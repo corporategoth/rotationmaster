@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- One-time migration seed for profiles created before the world-state and edition conditions existed: adds those
 -- condition tags to the profile's condition categories and Switch picker, and drops tags from an abandoned draft.
 -- Loaded last among the Conditions/ files in RotationMaster.toc; addon:InstallWorldConditions is called from init.lua

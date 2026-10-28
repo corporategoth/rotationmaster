@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Cache diagnostic mode: chooses once per session whether the observation cache memoizes (cached) or every call goes
 -- straight to its function (direct), so /rm perf can measure what the cache costs.
 -- Owns the one-shot switch handed over by Functions/cache.lua (BindCacheDiagnosticDispatcher) and the saved choice

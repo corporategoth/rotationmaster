@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Restoration Druid in a group, levels 10–60, after Warcraft Tavern: heals your current
 -- friendly target (RM suggests the spell; you choose the target). Swiftmend first when a HoT is
 -- on the target (it no longer consumes the HoT), Wild Growth, Regrowth and Rejuvenation when they

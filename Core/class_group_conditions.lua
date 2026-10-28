@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Roster class counting for the Built In "class in group" condition (Conditions/character.lua).
 -- Owns addon:GetClassGroupCount only; it reads group membership and roster classes through the Platform adapters and
 -- the evaluation-pass cache, and must keep returning `nil, reason` when any needed fact is unavailable.

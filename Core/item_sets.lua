@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Item set lookups: given an item reference (an item set name or a literal list, see Core/item_conditions.lua), find
 -- the first item, a specific item, or the first item the player carries or wears. Used by the action-bar binding code
 -- in main.lua and the item set settings page. Owns no saved data and never reads the game directly: identities, counts

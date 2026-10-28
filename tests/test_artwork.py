@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Asset and release-manifest checks use only the Python standard library."""
 import fnmatch
 import hashlib

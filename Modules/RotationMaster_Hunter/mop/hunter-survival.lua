@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Survival Hunter, levels 10–90, in the Survival
 -- specialization (255). Wowhead's Phase 5 order with wowsims' pack gates and Black Arrow
 -- refresh: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on a target

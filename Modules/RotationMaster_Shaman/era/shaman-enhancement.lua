@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Enhancement Shaman, levels 1–60 (the recommended vanilla premade and the catch-all
 -- for every Shaman with no points, a tie or a hybrid leveling build; also Hardcore and Self-Found).
 -- Icy Veins order with wowsims' gates: Lightning Bolt pull from range; Earth Shock interrupts; in

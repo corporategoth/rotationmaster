@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Holy Priest, Icy Veins order (a player-chosen variant, off by default). The chakra
 -- picks the list. Chakra: Sanctuary: Holy Word: Sanctuary on three hurt allies, Renew, Circle of Healing, Prayer of
 -- Mending, Prayer of Healing, then Binding Heal and Flash Heal only in emergencies. Otherwise (Serenity, or no

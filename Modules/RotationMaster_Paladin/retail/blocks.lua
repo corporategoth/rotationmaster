@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Retail (Midnight) Paladin blocks (Built In composition; authoring-time only).
 -- Consumers: rm.retail.paladin.retribution, .retribution.icyveins, .protection,
 -- .protection.icyveins, .protection.wowhead and .holy. A content change needs a block revision

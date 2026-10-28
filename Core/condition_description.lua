@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition description service: returns one readable text for a whole condition tree, for the editor's summaries,
 -- the unsaved-changes comparison and draft diffs. It prefers the registered printers, and falls back to a bounded,
 -- data-only description that never runs custom code when the tree could be unsafe to print (custom definitions,

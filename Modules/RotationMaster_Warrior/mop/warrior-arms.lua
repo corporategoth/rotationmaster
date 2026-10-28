@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Arms Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order in
 -- wowtbc.gg's simpler shape. Selected in the Arms specialization (71) from level 10 (RM stores MoP
 -- rotations per talent group, so the switch reads the specialization). Colossus Smash is the window: refreshed when it is

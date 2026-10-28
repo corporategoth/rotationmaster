@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Window layering through the real RM windows: every popup type opened from every kind of parent it has in the
 -- addon, over the client's frame-ordering model (tests/fixtures/layer_model.lua), under both readings of Raise().
 -- tests/window_layering.lua covers the registry itself with synthetic windows.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Talent tree names (Data/talent_trees.lua): every place a tree is shown names it,
 -- for the class the rotation is for, and the shipped table agrees with the Built Ins.
 local F = dofile('tests/fixtures/addon.lua')

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Announcement delivery: copies an announcement for one cast (a lease), walks a series' output cards, checks each
 -- card's conditions against the cast recipient, and sends the text to chat, an emote or a sound. Owns the delivery and
 -- emote request serials and the two retained emote diagnostics; it never builds the message text (the caller passes a

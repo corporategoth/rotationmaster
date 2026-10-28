@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure v1 replay of validated normalized evidence. No native capture or API calls.
 -- Exact selected-spell agreement is not native adherence/visibility certification.
 -- Caller supplies TBC/player evidence; aliases are local numeric keys, never GUIDs.

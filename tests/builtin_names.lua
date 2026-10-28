@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In display names (the user, 2026-10-25): the list row, the minimap and the website already show
 -- the class, the edition and a declared specialization, so the name keeps only the variant, source or
 -- approach. Rules, for every shipped pack on every client: no class, edition or "Class:" prefix; a pack that

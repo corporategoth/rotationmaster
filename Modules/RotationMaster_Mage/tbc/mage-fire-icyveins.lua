@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Mage Fire after Icy Veins, levels 10–70 when Fire is the primary talent tree; the default
 -- Fire premade. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire
 -- Vulnerability stacks, Fireball fills, and Fire Blast is kept for movement.

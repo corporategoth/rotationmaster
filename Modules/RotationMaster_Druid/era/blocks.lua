@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era Druid blocks (Built In composition; authoring-time only), vanilla and
 -- Season of Discovery. Consumers: rm.era.druid.balance[.icyveins], rm.era.druid.feral[.wowhead,
 -- .warcrafttavern,.warcrafttavern.casual], rm.era.druid.restoration[.warcrafttavern],

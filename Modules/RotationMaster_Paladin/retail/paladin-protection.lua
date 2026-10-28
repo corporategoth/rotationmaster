@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Protection Paladin, Blizzard Assisted (recommended). The rotation is Blizzard's
 -- Assisted Combat suggestion after the cast and no-target Stops; it already spends Holy Power on
 -- Shield of the Righteous. Reminders for what it never suggests: aura, Rebuke, Ardent Defender,

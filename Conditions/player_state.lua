@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition PLAYER_STATE: one fact about the player (mounted, swimming, flying, falling, in a rested area,
 -- dead or ghost) chosen from a list. It reads Platform:GetPlayerStateObservation (Platform/world_state.lua) through the
 -- per-poll cache, which answers only under the probe and restricted combat-data policies (Retail and Forever) and

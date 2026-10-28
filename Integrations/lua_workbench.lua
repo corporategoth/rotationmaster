@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Optional adapter that embeds the released LuaWorkbench editor, debugger, completion and API knowledge inside RM's
 -- themed panes (docs/architecture/condition-authoring.md, "Optional advanced editing"). CreateLuaWorkbenchEngine builds
 -- an isolated engine from the vendored module factories (Libs/LuaWorkbench-Embed/modules.lua);

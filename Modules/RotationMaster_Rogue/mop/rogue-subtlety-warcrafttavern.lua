@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Subtlety Rogue with Subterfuge (Warcraft Tavern): selected instead of the recommended
 -- Subtlety premade when the tier-1 talent is Subterfuge (grid TALENT 2), which RM can read. Premeditation and Slice and
 -- Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger: finishers at five points, then Ambush as

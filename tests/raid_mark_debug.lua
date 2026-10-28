@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- /rm debug marks (Diagnostics/raid_marks.lua): it reports the capabilities, the table and what every mark unit resolves
 -- to, it is read only (no mark is set, no saved data changes, no button is made), it is cheap, and it is reachable
 -- through the /rm debug router. See docs/raid-marks.md.

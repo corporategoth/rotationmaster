@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Feral cat and bear, Wowhead: Rip whenever it is down at four or more combo points,
 -- Ferocious Bite only on a target about to die (no bite-weaving), Mangle kept up, Shred;
 -- bear spends free GCDs on Lacerate (static threat) before Swipe; Innervate for a cat's mana.

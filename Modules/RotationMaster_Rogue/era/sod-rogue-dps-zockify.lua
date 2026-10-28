@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Rogue melee DPS, Zockify Phase 8 lean Envenom list (alternative premade).
 -- Same switch and shared blocks as the recommended SoD premade (era/blocks.lua). Differs where
 -- Zockify differs: no bleed upkeep at all (no Rupture, no Crimson Tempest) and no Expose Armor;

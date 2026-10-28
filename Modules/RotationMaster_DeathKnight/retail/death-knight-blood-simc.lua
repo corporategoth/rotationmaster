@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Blood Death Knight after SimulationCraft's Deathbringer list (reference):
 -- Death and Decay kept up, Death's Caress for Bone Shield while runes are short, runic power spent on
 -- Death Strike whenever it is affordable (runic power is secret on Retail, so its cap dump is gone).

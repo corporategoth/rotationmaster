@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Golden legacy rotation exports generated with original bundled LibCompress 90083.
 -- AceSerializer revision1; modes Store/LZW/Huffman; standard Base64.
 return {

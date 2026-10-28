@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Create or update the Gitea release for a tag and attach the package, using only the standard library.
 
   python3 tools/gitea_release.py --tag 2.0.0-beta.1 --notes notes.md --asset .release/RotationMaster-2.0.0-beta.1.zip --prerelease

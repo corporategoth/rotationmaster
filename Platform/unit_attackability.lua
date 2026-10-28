@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for "can the player attack this unit" (UnitExists, UnitCanAttack, UnitIsDead). Returns
 -- `true/false, nil` or `nil, reason`; game values pass platform:CanReadValue first. Only the probe and restricted
 -- combat-data policies read. Loaded from RotationMaster.toc after Platform/player_movement.lua; consumed by the

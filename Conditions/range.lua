@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition BEYOND_MELEE: whether a unit is farther away than melee range. The distance question itself is
 -- answered by addon.Platform:IsBeyondMeleeRange (Platform/range.lua), which prefers the game's native Attack range
 -- check and falls back to a LibRangeCheck-3.0 estimate; this file only validates the saved fields and checks that the

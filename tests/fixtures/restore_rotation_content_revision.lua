@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact whole-module inverse for the persisted rotation revision slice (61ad6ad).
 local rows = {
     ['Data/validation.lua'] = {

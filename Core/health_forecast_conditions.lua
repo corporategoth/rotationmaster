@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Health forecast reader for the health-until-target conditions in Conditions/stats.lua. Owns
 -- addon:GetConditionHealthForecast, which turns a unit's current health, a target and the recorded damage history into
 -- an ETA in seconds; the arithmetic itself lives in Functions/forecast.lua. Draws nothing and stores nothing. Runs only

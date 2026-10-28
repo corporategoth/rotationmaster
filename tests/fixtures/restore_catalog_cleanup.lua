@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact inverse of the 2026-10-25 integration catalog cleanup in
 -- UI/settings_integrations.lua: the WowLua detection-only row is gone, the
 -- notification group lists ForeverAuras, and the action-bar group lists the

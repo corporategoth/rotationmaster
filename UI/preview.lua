@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The on-screen recommendation preview: a small movable, resizable strip of 1 to 5 icons showing the spells or items
 -- the poll currently recommends (addon.nextWindow). Owns the frame, its icons, the unlocked drag and grip, the right-
 -- click menu, the sample icons mode and the saved position and size (profile.preview_window, preview_icon_size);

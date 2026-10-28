@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Unsaved-change markers for the native settings forms: after every draw it compares each bound control, and each
 -- roster row, with the saved baseline (`draftBaseline`) and marks the ones that differ, including text still being
 -- typed. Owns the per-form binding table and the "defaults" remembered for fields a baseline lacks; it only reads the

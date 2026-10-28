@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation identifiers (ID in the editor): a short, case-insensitive name for /rm set and lists.
 -- The user's report: "/rm set Blizzard Assisted with brews" is
 -- hard to type and case sensitive. Built Ins derive theirs from the pack id (unique per

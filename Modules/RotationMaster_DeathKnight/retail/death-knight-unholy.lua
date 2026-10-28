@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Unholy Death Knight, Blizzard Assisted (recommended): the rotation is
 -- Blizzard's Assisted Combat suggestion (it raises your ghoul and uses Army of the Dead and Dark
 -- Transformation itself). Around it, highlights for Mind Freeze, Icebound Fortitude and racial

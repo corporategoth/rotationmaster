@@ -1,3 +1,4 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001
 ## Title: Rotation Master - Integrations text
 ## Notes: The Integrations page: addons Rotation Master can use and what each adds. Rotation Master loads this itself, the first time that text is needed; it holds only translations.
@@ -7,7 +8,7 @@
 ## LoadOnDemand: 1
 ## Group: RotationMaster
 ## X-Category: Action Bars
-## X-License: MIT
+## X-License: MIT + Attribution
 
 deDE.lua
 esES.lua

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Retribution Paladin after Warcraft Tavern, levels 10–90: an alternative
 -- to rm.mop.paladin.retribution, off by default (same switch, lower priority). Exorcism first and on
 -- every Art of War reset; Inquisition at any Holy Power when it is missing and refreshed at 3 in its

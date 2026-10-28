@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In spell-state conditions for any spell ID: ANYSPELL_AVAIL, ANYSPELL_RANGE, ANYSPELL_COOLDOWN, ANYSPELL_REMAIN
 -- and ANYSPELL_CHARGES. They test the same things as SPELL_AVAIL, SPELL_RANGE, SPELL_COOLDOWN, SPELL_REMAIN and
 -- SPELL_CHARGES in Conditions/spell.lua, but the picker takes any spell instead of one from the rotation's

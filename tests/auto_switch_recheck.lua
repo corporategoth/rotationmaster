@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Auto mode re-checks rotation selection every autoswitch_poll seconds, in
 -- and out of combat; target/focus/pet changes check at once; 0 turns
 -- automatic switching off. An unchanged selection leaves the plan alone.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery melee (Survival) Hunter, dual-wield or two-hander, levels 1–60 (Phase 8
 -- runes). Chosen once a melee rune is engraved (Flanking Strike, Wyvern Strike or Carve) and no
 -- ranged hands rune (Chimera or Explosive Shot) is. Keeps the Flanking Strike buff up, Mongoose Bite

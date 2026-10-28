@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Undo and redo for the draft-based settings form (item sets and effects): snapshots the draft before and after each
 -- wrapped edit, keeps bounded undo/redo stacks (100 entries or 8 MiB) and draws the Undo/Redo buttons. Edits reach it
 -- through p:WithSettingsHistory, called from the form's Guard (UI/settings_form.lua). Works on the draft only, never on

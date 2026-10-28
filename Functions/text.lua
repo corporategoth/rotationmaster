@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- String helpers (split, wrap, trim, starts_with, ends_with) for conditions, help text and saved custom code.
 -- This file owns the canonical bodies; utils.lua re-exports them as addon.split, addon.wrap, addon.trim,
 -- addon.starts_with and addon.ends_with so saved custom source that binds to those names keeps working.

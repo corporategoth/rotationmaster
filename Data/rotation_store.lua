@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Scoped rotation store: the pure data layer over profile.rotationStore, where custom rotation records live under a
 -- Class or Character owner, a specialization key and a rotation id, next to preserved unassigned legacy data.
 -- It owns store validation (including aliasing checks), detached reads, fallback lookup, the legacy migration plan and

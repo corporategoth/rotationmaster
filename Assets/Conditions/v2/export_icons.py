@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Import original imagegen bytes, export RGBA TGA, and compose QA only.
 Never draws or reconstructs artwork; contact-sheet labels are inspection aids.
 """

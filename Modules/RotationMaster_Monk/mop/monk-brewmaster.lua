@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Brewmaster Monk, levels 10–90, in the Brewmaster specialization
 -- (268). wowsims' Phase 5 Generic order with Wowhead's
 -- Shuffle-first purify rule: Shuffle through Blackout Kick, Keg Smash under the Chi cap, Expel

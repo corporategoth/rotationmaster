@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Shared helpers for the translation tools (translation_status.py, translation_todo.py, translation_apply.py).
 
 Everything about reading and writing locale files stays in tools/locales.py; this module only classifies

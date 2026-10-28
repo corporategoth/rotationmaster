@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Arcane Mage, levels 10–60, once Arcane is the main tree with 11 points and Arcane Blast
 -- is known (a Frost Mage who took Missile Barrage first stays Frost). Written for the
 -- current Arcane Blast (a 15 s stacking spell-power buff that other spells do not consume, with

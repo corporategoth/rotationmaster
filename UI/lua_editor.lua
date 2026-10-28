@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Lua source editor control for the custom condition and function editors. Owns the registry of editor providers
 -- (native EditBox, plain text, optional ones such as LuaWorkbench), picks one from the profile (lua_editor,
 -- lua_editor_disabled, lua_native_highlighting) and the client scope in Integrations/catalog.lua, and builds the

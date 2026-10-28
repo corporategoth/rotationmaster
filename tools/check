@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Run Rotation Master validation from any working directory; fail closed in CI/hooks."""
 import argparse
 from pathlib import Path
@@ -19,7 +21,8 @@ def main():
                 [sys.executable, 'tools/generate_builtin_sources.py'],
                 [sys.executable, 'tools/generate_artwork_catalog.py'],
                 [sys.executable, 'tools/generate_integration_projects.py'],
-                [sys.executable, 'tools/format_lua.py', '--check', '--tree']]
+                [sys.executable, 'tools/format_lua.py', '--check', '--tree'],
+                [sys.executable, 'tools/copyright.py', '--check']]
     if not args.static:
         commands.extend([
             [sys.executable, 'tests/test_integration_projects.py'],

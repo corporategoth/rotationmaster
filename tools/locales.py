@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Locale tooling: stable-ID translations. Export the English, list what needs translating, build locale files from
 translations, check them, reword English without losing translations, move text between catalogs, credit translators.
 
@@ -53,6 +55,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import locale_format as F  # noqa: E402
+from copyright import TOC_LICENSE_FIELD, notice_line  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCALES = F.LOCALES
@@ -614,11 +617,11 @@ def ensure_bundle_toc(catalog):
     toc = toc_path(catalog)
     files = bundle_files(catalog)
     if not toc.exists():
-        header = [f'## Interface: {BUNDLE_INTERFACE}',
+        header = [notice_line('toc'), f'## Interface: {BUNDLE_INTERFACE}',
                   f'## Title: Rotation Master - {catalog.title or catalog.name}',
                   f'## Notes: {catalog.notes or "Text Rotation Master shows on one screen."} Rotation Master loads this itself, the first time that text is needed; it holds only translations.',
                   '## Author: PreZ', '## Version: @project-version@', '## Dependencies: RotationMaster', '## LoadOnDemand: 1',
-                  '## Group: RotationMaster', '## X-Category: Action Bars', '## X-License: MIT', '']
+                  '## Group: RotationMaster', '## X-Category: Action Bars', TOC_LICENSE_FIELD, '']
         toc.write_text('\n'.join(header + files) + '\n', encoding='utf-8')
         return
     lines = toc.read_text(encoding='utf-8').splitlines()

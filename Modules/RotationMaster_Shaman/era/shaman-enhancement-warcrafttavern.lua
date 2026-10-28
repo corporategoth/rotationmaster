@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Enhancement Shaman, Warcraft Tavern order (alternative premade; same catch-all
 -- switch at a lower priority). Totems as the recommended premade (era/blocks.lua), then
 -- Stormstrike, Flame Shock before any direct shock, Earth Shock while your threat is low and Frost

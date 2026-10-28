@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Historical health-trend formulas: calculateOld works from health snapshots, calculate from damage and heal history.
 -- utils.lua re-exports them as addon.calculate_trend_old and addon.calculate_trend for saved custom source.
 -- Loaded from RotationMaster.toc after Functions/cache.lua and before Functions/forecast.lua. They read the live

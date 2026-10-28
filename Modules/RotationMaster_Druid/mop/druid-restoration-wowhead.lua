@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Restoration Druid for tank healing, after Wowhead's single-target
 -- scenario (Method's single-target block agrees): keep the tank targeted. Lifebloom on it, Rejuvenation kept on your
 -- target, Regrowth for heavy damage, Nourish for light damage, Healing Touch once Lifebloom and

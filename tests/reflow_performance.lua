@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Live reflow cost. Simulates a 60-frame window-grip drag, a 60-frame divider
 -- drag and 60 idle frames on the heaviest pages under client-faithful sizing
 -- (tests/fixtures/deferred_layout.lua), counting per rendered frame: page

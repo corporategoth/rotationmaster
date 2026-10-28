@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Elemental, NextActionTBC: keep Flame Shock up, Chain Lightning only against two or
 -- more enemies with mana to spare, Lightning Bolt otherwise; Lightning Shield upkeep.
 -- Totems are not part of this source's priority and stay manual here.

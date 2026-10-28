@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 # Rotation Master CI: everything the pre-commit and pre-push hooks run, plus the slow suites, and the release
 # package as an artifact. Gitea reads only this directory once it exists (not .github/workflows), so the old
 # GitHub workflows do not run on Gitea.

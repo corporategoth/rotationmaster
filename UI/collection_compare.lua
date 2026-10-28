@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Collection comparison: the read-only side-by-side window that shows how two saved records differ (profiles, custom
 -- conditions, announcements, categories, item sets, effects, rotations through their callers), and the row builder that
 -- decides what "different" means for each kind. It owns the window and the plain-language row text; it never edits

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Announces settings page: a roster of announcements (a spell, pet spell, item or macro action plus an event) each with
 -- one or more outputs (channel, text, sound or emote, optional conditions), with create, duplicate, delete, import and
 -- export. It edits the profile's announces list through the settings pane and never speaks anything itself; sending is

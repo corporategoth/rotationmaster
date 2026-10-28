@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The implicit auto-attack (Attack or Shoot): Attack in melee range, Auto Shot
 -- or wand Shoot beyond it when that button is on the bars and the target is in
 -- its range, nothing out of range or when melee range cannot be read.

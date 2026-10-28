@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the player's threat status against a unit (UnitExists, UnitIsEnemy, UnitThreatSituation).
 -- Returns `status, nil`, `false` for known absence, non-enemy or no threat, or `nil, reason`; game values pass
 -- platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from RotationMaster.toc

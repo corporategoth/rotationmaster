@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Real scanner fixtures: missing keys, comments and escaped keys, against English files in the generated ID layout."""
 import importlib.util
 from pathlib import Path

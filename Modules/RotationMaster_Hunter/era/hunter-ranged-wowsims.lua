@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Hunter ranged DPS after the wowsims/classic P1 list, levels 1–60. Off by default:
 -- it keeps Serpent Sting up in raids too, which the 16-debuff limit on standard Era realms usually
 -- forbids. Same switch as rm.era.hunter.ranged; in a group: Aimed Shot and Multi-Shot after an Auto

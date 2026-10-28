@@ -1,3 +1,4 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
 ## Interface: 11509, 20506, 30405, 38002, 40402, 50504, 120105, 16001
 ## Interface-Classic: 11509
 ## Interface-BCC: 20506
@@ -19,7 +20,7 @@
 ## SavedVariables: RotationMasterDB
 ## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque
 ## X-Credits: None
-## X-License: MIT
+## X-License: MIT + Attribution
 ## X-Author-Server: Atiesh
 ## X-Author-Faction: Horde
 

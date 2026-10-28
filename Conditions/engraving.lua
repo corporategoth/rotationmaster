@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition RUNE_ENGRAVED: whether a Season of Discovery rune is engraved on one of your equipped items. It
 -- reads the engraved set from addon:IsRuneEngraved (Core/build_context.lua, refreshed on equipment or rune changes;
 -- the underlying C_Engraving calls are in Platform/engraving.lua), so a poll is a table lookup. Without C_Engraving,

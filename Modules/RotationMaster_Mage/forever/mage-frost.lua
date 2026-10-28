@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Frost Mage, levels 1–60, and the Mage catch-all (lowest priority): every Mage before
 -- a talent spell (levels 1–19) and Missile-Barrage-only builds level here. Icy Veins' Frost order
 -- with Warcraft Tavern's Missile Barrage rule: Ice Lance on Fingers of Frost or a frozen target,

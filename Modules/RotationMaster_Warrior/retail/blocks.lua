@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Retail (Midnight) Warrior blocks (Built In composition; authoring-time only).
 -- Consumers: rm.retail.warrior.arms, .arms.slayer, .arms.colossus, .fury, .fury.slayer,
 -- .fury.thane, .protection and .protection.icyveins. A content change needs a block revision

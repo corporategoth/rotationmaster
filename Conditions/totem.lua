@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In Shaman totem conditions: TOTEM (the totem in an element slot is active), TOTEM_REMAIN (compares its seconds
 -- left), TOTEM_SPELL (a specific totem spell is active in any slot) and TOTEM_SPELL_REMAIN (compares that totem's
 -- seconds left). Slots are read through Platform:GetTotemInfo and GetTotemSlotCount (Platform/totems.lua), which return

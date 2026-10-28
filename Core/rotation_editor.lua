@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation edit session: the transaction object behind the rotation editor window. A session holds a private draft of
 -- one rotation body, an undo and redo history bounded by count and size, the pending ownership change and the Apply
 -- step that validates the draft and publishes it into the saved record. It must not draw, and nothing outside a

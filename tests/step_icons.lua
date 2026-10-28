@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The icon on a rotation card: Stop has its own artwork (the condition icon
 -- of whatever it checks is not its icon), and Blizzard's suggestion wears the
 -- icon of Blizzard's one-button assistant. Either falls back to the condition

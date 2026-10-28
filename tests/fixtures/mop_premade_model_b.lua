@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared world model for the Mists of Pandaria Classic Priest, Rogue, Shaman, Warlock and Warrior
 -- premade scenario tests (defaults_mop_<class>.lua). A modeled MoP Classic client (WOW_PROJECT_MISTS_CLASSIC,
 -- LE_EXPANSION_LEVEL_CURRENT 4, family progression, combatDataPolicy probe, so Built Ins auto-select);

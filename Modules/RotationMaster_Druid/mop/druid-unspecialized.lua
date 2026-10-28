@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Druid before a specialization (levels 1–9, or a druid who has not chosen
 -- one): the catch-all, lowest priority. No source writes a 1–9 list, so this is RM policy built from
 -- the kit (Warcraft Tavern: Wrath and Moonfire first): Cat Form Rake/Bite/Mangle, Bear Form

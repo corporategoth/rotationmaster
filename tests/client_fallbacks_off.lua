@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Clients with loadDeprecationFallbacks off (Blizzard's default is on, but a player or
 -- a future patch can turn it off) and Retail/Forever globals removed outright: the
 -- engine reaches the same results through the C_* APIs (tests/fixtures/client_api_*.lua).

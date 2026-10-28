@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for macro buttons: GetMacroItem and GetMacroSpell.
 -- Owns platform:GetMacroAction, the `value or nil, reason` reader that says which item or spell an existing macro
 -- uses; it must not parse, run or reconstruct a macro body. Runs only under the probe policy (a restricted client

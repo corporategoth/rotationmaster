@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Mage Frost, levels 1–60, and the Mage default (lowest priority): Frost and Arcane
 -- builds play Frostbolt, as every Era source has them do. Fireball until Frostbolt (level 4);
 -- Frost Nova when a mob reaches you; Arcane Missiles in melee with Improved Arcane Missiles;

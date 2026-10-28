@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A small diagnostic window for the Lua editor's input problems: a plain, unhooked multi-line EditBox with a fixed
 -- sample so a player can compare caret and Up/Down behavior in the stock chat font and the RM font. It must stay free
 -- of the editor's completion, gutter, paint and diagnostic hooks and must never read or save an owner's buffer; the

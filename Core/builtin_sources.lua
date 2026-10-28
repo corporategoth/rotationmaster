@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In source browser support: registers the packaged helper modules as read-only Built In functions and rebuilds a
 -- Built In condition's callback source for display and cloning. The tables come from the generated
 -- Data/builtin_sources.lua (addon.BuiltinSourceCatalog); this file only reads them and must never edit or reformat the

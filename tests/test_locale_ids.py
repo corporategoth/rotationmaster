@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Stable-ID translations: the file formats, the registry, reword, build/missing/check, credits, notes and `where`.
 
 Every test works in a throwaway repository (tools/locales.py is pointed at it), never in the real one; the last class

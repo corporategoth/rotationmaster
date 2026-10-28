@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter that answers one question: does this client have a focus target at all.
 -- Owns platform:IsFocusUnitSupported only; the focus unit's own state is read by the unit readers, and this file must
 -- not read it. It asks the client (event catalog, FocusUnit, FocusFrame) rather than branching on the client version.

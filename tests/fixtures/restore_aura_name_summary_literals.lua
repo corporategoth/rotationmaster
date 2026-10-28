@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact additive inverse of six aura print callbacks; baseline5d00bff.
 local old = {
     ["BUFF"] = "\n        return string.format(Functions.presentation.playerize(value.unit, L[\"%s {{!have|do not have}} %s\"], L[\"%s {{!has|does not have}} %s\"]),\n                Functions.presentation.nullable(addon.units[value.unit], L[\"<unit>\"]),\n                string.format(value.ownbuff and L[\"your own %s\"] or \"%s\", (value.spell and addon:AuraSpellLabel(value) or L[\"<buff>\"])))\n    ",

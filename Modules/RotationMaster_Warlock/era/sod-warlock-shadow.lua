@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Shadow Warlock, levels 1–60: Affliction and Felguard builds, and every SoD
 -- Warlock no other premade fits (the SoD catch-all). wowsims/sod Phase 6 order with Wowhead and
 -- Icy Veins: Nightfall procs; Shadowburn or Drain Soul to finish; a dying solo target gets Drain

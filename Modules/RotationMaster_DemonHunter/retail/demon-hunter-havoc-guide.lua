@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Havoc Demon Hunter after Icy Veins, SimulationCraft and Wowhead (optimal
 -- reference): Aldrachi Reaver's Glaive and Rending Strike, Fel-Scarred Metamorphosis spending,
 -- Essence Break windows, Eye Beam, Blade Dance, Immolation Aura, Chaos Strike, Felblade, Throw

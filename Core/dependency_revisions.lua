@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Dependency revision service: the private execution generation (a table stamp that is replaced on every managed
 -- dependency write) and the aggregate dependency stamp and epoch that rotation_references.lua reads. It owns that state
 -- and hands it out only through bind callbacks at startup; it must not scan or copy any dependency map itself.

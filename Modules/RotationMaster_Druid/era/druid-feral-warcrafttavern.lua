@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Druid Feral after Warcraft Tavern's powershifting guide: Rip first at five combo points
 -- whenever it is missing (raids too), then Ferocious Bite from four combo points under 63 energy,
 -- Shred, powershift. Bear as recommended. Same switch as rm.era.druid.feral at a lower priority.

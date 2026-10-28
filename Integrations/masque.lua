@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Optional Masque integration for the recommendation preview window: skins the preview icons through Masque's public
 -- Group API (AddButton, RemoveButton, ReSkin) and lets the user pick a Masque skin from Rotation Master's settings.
 -- Owns the per-window Masque state (masqueOwner on each icon, masqueEpoch and masqueBusy on the window), the

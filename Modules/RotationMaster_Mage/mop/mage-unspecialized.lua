@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Mage before a specialization: levels 1–9, and any Mage who has not
 -- chosen one (the spec premades switch on the specialization and outrank this). Frostfire
 -- Bolt, Fire Blast to finish or on the move, Ice Lance on the move, Arcane Explosion on packs,

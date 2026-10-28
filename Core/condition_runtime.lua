@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Private executor for the condition trees of the active rotation body (lean engine): compiles a body's condition roots
 -- into nodes, remembers results of stable (event-driven) conditions between polls and invalidates them on level and
 -- aura events, and hands main.lua a per-poll session that proves the plan is still current. Owns the compiled plan, the

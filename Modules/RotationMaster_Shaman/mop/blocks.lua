@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Mists of Pandaria Classic Shaman blocks (Built In composition; authoring-time only).
 -- Consumers: rm.mop.shaman.{unspecialized,elemental,enhancement,enhancement.wowsims,enhancement.icyveins,
 -- restoration,restoration.hekili}. A content change needs a block revision bump, every consumer's pin and

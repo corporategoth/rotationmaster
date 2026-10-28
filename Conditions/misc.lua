@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Miscellaneous character and place conditions: SELF_LEVEL (your level), PVP (a unit's PVP flag), ZONEPVP (the zone's
 -- PVP status), INSTANCE (the kind, difficulty and ID of the instance you are in) and OUTDOORS. Level comes from
 -- addon:GetConditionUnitLevel (Core/level_conditions.lua); the rest come from Platform readers (GetUnitFlagObservation,

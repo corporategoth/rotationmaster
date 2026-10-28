@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Warrior tank, levels 10–60 (chosen in Defensive Stance). Wowhead Phase 8
 -- order: Charge; on two engaged enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind
 -- and Devastate; Shield Slam whenever Defender's Resolve is missing or ending; Revenge; Shield

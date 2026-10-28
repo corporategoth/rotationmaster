@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Custom condition authoring: the typed callback contract (names, parameters, help text), the field schema grammar
 -- (format and parse), validation and compilation of a saved custom condition source, installation into the condition
 -- registry, and the undoable draft the source editor works on. User code is compiled here but never run except

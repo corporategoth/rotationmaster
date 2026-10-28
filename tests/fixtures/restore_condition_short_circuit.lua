@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict inverse of the two decisive-prefix exits only. Existing historical
 -- whole-module proofs run after this inverse and keep all prior byte assertions.
 local changes = {

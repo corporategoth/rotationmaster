@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Reordering for the settings form's roster (the scrolling, searchable list of entries such as item sets): which rows
 -- show Move Up/Down buttons and a drag handle, the drag ghost and the gap drop zones between rows, and the commit of a
 -- move into `roster.options.order`, followed by options.orderChanged. Changes only the draft order list the owner

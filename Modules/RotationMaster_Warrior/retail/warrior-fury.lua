@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Fury Warrior, Blizzard Assisted (recommended). Midnight hides rage, Enrage,
 -- procs, cooldown times and health from addons in combat; Blizzard's Assisted Combat pick stays
 -- readable, so the rotation is that suggestion after the cast and no-target Stops. Reminders for

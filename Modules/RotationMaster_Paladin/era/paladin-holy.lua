@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Holy (Icy Veins and Wowhead agree): heals act on your friendly target, choosing the
 -- rank by missing health: Holy Light for big deficits (rank 6 for most), Flash of Light (rank 4 for
 -- small ones), Holy Shock while moving, Cleanse first. With an enemy in melee range: Seal of Wisdom

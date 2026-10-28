@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Guardian Druid after SimulationCraft (defensive reference): Ironfur first in
 -- Berserk; Thrash kept refreshed and stacked; Maul on Gory Fur; Thrash on packs; Mangle while Red Moon
 -- ticks; Red Moon; Mangle; Thrash; Moonfire; Swipe. Rage is secret on Retail, so its rage thresholds

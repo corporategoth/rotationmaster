@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Registers the raid mark unit types (skull, cross, square, moon, triangle, diamond, circle, star and anymark) with the
 -- unit lists constants.lua built, next to the group unit types (main tank, group leader ...). Like those they have no
 -- token of their own: Core/group_unit_resolution.lua swaps in the token of the unit that carries the mark when a

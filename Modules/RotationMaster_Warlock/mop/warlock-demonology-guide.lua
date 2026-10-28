@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Demonology Warlock, pool Molten Core (guide consensus: Method, wowtbc.gg, Warcraft
 -- Tavern, Wowhead), off by default. Same switch as the recommended premade (Demonology specialization) at a lower
 -- priority. It differs in caster form: Metamorphosis at 900 fury or inside Dark Soul: Knowledge, and Soul

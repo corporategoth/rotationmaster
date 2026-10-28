@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict inverse: fixed Ghost Wolf presentation identity only, baseline0f73dbf.
 local old = {
     print = "\n        local form\n        if value.value ~= nil then\n            if value.value == 0 then\n                form = L[\"humanoid\"]\n            elseif character_class == \"SHAMAN\" then\n                local info = addon.Platform:GetSpellInfo(\"Ghost Wolf\")\n                form = info and info.name\n            else\n                local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))\n                form = info and info.name\n            end\n        end\n        return string.format(L[\"you {{!are|are not}} in %s form\"], Functions.presentation.nullable(form, L[\"<form>\"]))\n    ",

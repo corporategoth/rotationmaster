@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era Shaman blocks, vanilla and Season of Discovery (Built In composition;
 -- authoring-time only). Consumers: rm.era.shaman.enhancement, .enhancement.warcrafttavern,
 -- .elemental, .elemental.wowsims, .restoration, .restoration.warcrafttavern and

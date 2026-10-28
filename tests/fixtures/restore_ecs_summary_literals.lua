@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict additive inverse of only the two ECS summary prints at26e0ca4.
 local old = {
     ["ECS_STAT"] = "\n        return Functions.presentation.compareString(value.operator,\n                Functions.presentation.nullable_value(value.stat, ecs_state.stats, L[\"<stat>\"]), Functions.presentation.nullable(value.value))\n    ",

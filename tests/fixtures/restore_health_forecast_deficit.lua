@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact test-only inverse for the one approved TT_HEALTH target field guard.
 local old = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end

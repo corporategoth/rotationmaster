@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era and Season of Discovery Priest premades: damage (default, Warcraft Tavern, wowsims),
 -- healer, and their Season of Discovery counterparts. Real catalog, composition, predicates, build
 -- context, sequence executor, readiness and auto-select order on a modeled 1.15 client

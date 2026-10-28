@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared native model for the Retail premade scenario suites of Death Knight, Demon Hunter, Druid,
 -- Evoker, Hunter, Mage and Monk (defaults_retail_<class>.lua). Real catalog, predicates,
 -- composition, sequence executor, readiness, Assisted Combat reader and auto-select order on a

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A minimal SavedVariables table in the shape release 1.4.3e wrote (raw AceDB
 -- layout: profiles, char, global), derived from that release's defaults,
 -- validators and upgrade code. It deliberately holds the older formats the

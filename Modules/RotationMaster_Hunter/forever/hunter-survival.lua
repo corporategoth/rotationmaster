@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Survival Hunter in melee (dual-wield), levels 10–60, once Survival is the main tree
 -- with 21 points (Strider Kick's tier); until then Survival levels with the ranged premade, as every
 -- source advises. Wowhead's level-30 order: Mongoose Bite, Strider Kick, Raptor Strike,

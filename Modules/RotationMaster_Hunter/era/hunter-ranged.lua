@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Hunter ranged DPS, levels 1–60, every talent tree (the recommended premade and the
 -- Hunter default). Spec buttons (Aimed Shot, Bestial Wrath, Trueshot Aura, Intimidation,
 -- Counterattack) are offered once known. Solo: the pet tanks, your own sting, extra shots only on

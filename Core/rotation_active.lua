@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Owner of the active rotation: which rotation is selected for the current specialization, plus a detached private copy
 -- of its body that the evaluation engines read. A selection change is a transition: Begin hands out a token and every
 -- later step proves the token, profile, specialization and rotation are unchanged, so a nested or superseded change

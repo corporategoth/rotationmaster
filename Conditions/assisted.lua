@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions on Blizzard's Assisted Combat: ASSISTED_SUGGESTION (the spell it suggests next, or any spell),
 -- ASSISTED_ROTATION_SPELL (a spell is in the specialization's Assisted Combat set) and ASSISTED_AVAILABLE (the game
 -- offers it to this character). All read Platform observations from Platform/assisted_combat.lua through the per-poll

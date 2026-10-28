@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The editor's spell pickers on every client family: the spellbook ("Spell")
 -- view lists what the character can cast for the rotation's specialization,
 -- and a spell picked from either view is stored and shown again.

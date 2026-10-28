@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about raid target markers: MARKED (whether a unit carries a mark, none, or one of several marks)
 -- and MARK_COUNT (how many marked units the mark table knows). MARKED reads one unit's mark directly through
 -- Platform:GetUnitRaidMark; MARK_COUNT reads the event-driven table in Platform/raid_marks.lua, which exists only while

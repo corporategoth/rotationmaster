@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter that scans the player's and pet's spellbook (C_SpellBook skill lines and items on modern clients;
 -- GetSpellTabInfo, GetSpellBookItemInfo and IsPassiveSpell on legacy ones). The only public entry is
 -- platform:GetSpellBookSnapshot, which returns the raw entries for Core/spell_catalog.lua to attribute to

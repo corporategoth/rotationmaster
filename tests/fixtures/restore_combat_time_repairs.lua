@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact inverse of only TIME_IN_COMBAT.evaluate from checkpoint087a686.
 local original = [=[    evaluate = function(value, _, evalStart)
         if addon.combatStart ~= nil then

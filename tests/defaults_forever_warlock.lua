@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Warlock premades: all trees (recommended), Icy Veins and Wowhead. Real predicates,
 -- catalog, composition, sequence and publisher under a synthetic probe-policy Forever context;
 -- WoW observations are modeled in tests/fixtures/forever_rogue_shaman_warlock_warrior.lua.

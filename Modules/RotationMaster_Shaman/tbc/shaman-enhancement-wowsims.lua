@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Enhancement, Wowhead and wowsims level-70 model: Stormstrike, Fire Nova weave,
 -- Flame Shock whenever it is down, Earth Shock as the main shock, Windfury /
 -- Grace of Air totem twist. Same catch-all switch as the Icy Veins variant, lower priority.

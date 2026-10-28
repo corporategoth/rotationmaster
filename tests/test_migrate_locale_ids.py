@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """The one-time converter (tools/migrate_locale_ids.py) on a small tree in the OLD layout: no translation is lost, a
 translation made from older English is stale by hash and never silently current, IDs follow file order, every file is
 credited to the AI, and a second conversion of the result changes nothing."""

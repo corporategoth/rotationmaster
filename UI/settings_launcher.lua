@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Landing page registered with the game's AddOns settings panel: logo, version and author, an Open Options button, the
 -- slash-command list and credits. It owns only this page frame; the real options live in the Rotation Master window.
 -- Loaded from RotationMaster.toc just before UI/settings_setup.lua, which calls addon:CreateSettingsLauncher once.

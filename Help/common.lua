@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared builders for the Help/ files and the condition help callbacks: text blocks, picture and button rows, an
 -- indent and a gap, built from the condition widget set (addon:CreateCondition*). Exposed as addon.help_funcs.
 -- Loaded first of the Help/ files (RotationMaster.toc), after UI/ has defined the widget constructors; each helper

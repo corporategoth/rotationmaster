@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Layered inverse for the optional difficulty and instance ID of INSTANCE: the
 -- block of Conditions/misc.lua that registers INSTANCE (with the difficulty
 -- helpers placed before it) is replaced by the registration as it was before

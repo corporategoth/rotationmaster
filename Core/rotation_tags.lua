@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Read and color access to rotation tags for the roster and tag filters. Owns the lookups (one rotation's tag view, its
 -- tags, every tag in use for a specification) and the per-profile tag color palette in db.profile.rotationTagColors,
 -- keyed by lower-cased tag. Reads metadata only: it never copies an action tree and never writes a rotation, so

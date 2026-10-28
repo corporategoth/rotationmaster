@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Aura scan for the Built In buff/debuff conditions (Conditions/buffs.lua): decides whether a unit has an aura matching
 -- a spell, a stealable aura or a dispellable one, and compares its remaining time or stacks. Owns
 -- addon:EvaluateAuraCondition and the per-pass aura cache under it; draws nothing and stores nothing. Every aura read

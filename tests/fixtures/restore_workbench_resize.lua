@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- QA-only exact inverse of the responsive workbench layout change (list/detail
 -- divider, list rows that fill their column, shared row widths and window
 -- size bounds). Exactly the current bytes of each touched file map back to

@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """One rank option, one wording: "Use this exact spell rank", unticked by default.
 
 "Match all ranks" (and its translations) was the aura option's old label; the

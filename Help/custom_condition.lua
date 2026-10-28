@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help layout for the custom condition editor page: what a custom condition is, then each editor field (icon, key,
 -- description, validity, evaluation, print, widget and help functions), the Import/Export button and the Add and Save
 -- buttons, with the parameters each function receives.

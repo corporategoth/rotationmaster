@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Main-loop protocol controls. Fake private producers test routing/lifetime only;
 -- actual plan admission, graph correctness and native cost have separate suites.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()

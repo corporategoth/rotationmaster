@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Restore only the3 active main selections, retaining the post-CPU-slash source.
 local selections = {
     { 'getCached = addon.Functions.cache.getCached', 'getCached = addon.getCached' },

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The shared text transfer windows of the settings pages: the import/export dialog (addon:ShowSettingsTextTransfer),
 -- the read-only copyable report (addon:CreateWorkbenchTextReport) and the shell both are built on. It owns the window
 -- widgets, the fixed-pitch export font choice and the Help button lease, and it hands the pasted text to the caller's

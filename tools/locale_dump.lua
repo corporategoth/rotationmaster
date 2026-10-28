@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Boots the locale machinery of an add-on tree exactly as the game does and dumps what the addon reads.
 --   lua5.1 tools/locale_dump.lua ROOT CLIENT KEYS OUT
 -- ROOT is a checkout (or an older copy of one) holding Libs/, globals.lua, locales.xml, Data/text_bundle_index.lua,

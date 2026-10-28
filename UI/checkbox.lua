@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition-editor check box widget (type 'RM-CheckBox'): a 180x24 frame around one workbench check box that speaks the
 -- condition-widget contract (SetLabel/SetValue/GetValue/SetDisabled, fires OnValueChanged on a user click). Loaded from
 -- RotationMaster.toc after UI/selector.lua and before UI/condition_inputs.lua; needs UI/controls.lua

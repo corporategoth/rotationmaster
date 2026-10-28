@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Report how hard the authored Lua is to read. A report only: it never fails and never edits a file.
 
   python3 tools/readability_report.py                 the worst files first, with totals

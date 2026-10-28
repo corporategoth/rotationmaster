@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Detail fields of a rotation card in the rotation editor, and the staging of text typed into them. Text fields (name,
 -- items, sound, magnification, offsets, color) are held as pending strings per step in `view.pendingFields` and become
 -- one `PatchStep` command only when they flush (Enter, Apply or leaving), so a half-typed value never reaches the

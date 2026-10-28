@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact event-context stage inverse before historical complete-source proofs.
 local rows = {
     ['Core/rotation_scope.lua'] = {

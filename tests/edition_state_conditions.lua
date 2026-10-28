@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The conditions that belong to particular editions (Conditions/edition_state.lua):
 -- PET_HAPPINESS (Classic Era, Burning Crusade, Wrath), STAGGER (Mists of
 -- Pandaria, Retail, Forever), ECLIPSE (Wrath through Mists of Pandaria) and the

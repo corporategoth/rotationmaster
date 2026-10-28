@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- First file in RotationMaster.toc: defines the global `color` table of chat color codes (|cAARRGGBB strings) that the
 -- rest of the addon uses wherever it colors text.
 -- This file should NOT rely on the addon.  It loads BEFORE everything else, so it cannot use the addon table, the

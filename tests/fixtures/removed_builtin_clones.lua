@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Saved profiles captured from b5eb3d9 (before the TBC Warrior/Rogue/Hunter rewrite):
 -- clones of since-removed Built In packs, their origins and enable preferences.
 -- Generated once from the shipped packs; never regenerate from the current tree.

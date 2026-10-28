@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Arcane Mage, Blizzard Assisted (recommended): the rotation is Blizzard's
 -- Assisted Combat suggestion, the one rotation input an addon can still read in combat. Around it,
 -- highlights for what Assisted Combat leaves to you: Arcane Surge, Prismatic Barrier whenever it is

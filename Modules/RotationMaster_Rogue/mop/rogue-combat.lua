@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Combat Rogue, levels 10-90 (the recommended variant): Wowhead's Phase 5 page and wowsims
 -- after the Siege of Orgrimmar patch (Sinister Strike now costs 50 energy), so Revealing Strike is the builder and
 -- Sinister Strike is used only under a Bloodlust effect with Adrenaline Rush. Selected in the Combat specialization (260).

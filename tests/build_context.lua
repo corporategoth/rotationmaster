@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Build context: equipment, enchants, gems, set pieces, temporary weapon
 -- enchants, talents/loadouts and season rules are normalized once per
 -- notification, read from cache by conditions and pack applicability, and

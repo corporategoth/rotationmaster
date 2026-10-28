@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Retribution Paladin and every melee Paladin, levels 1–60; the Paladin catch-all
 -- (lowest priority). Wowhead's level-30 order: keep a damage seal up (Seal of the Crusader judged
 -- once on an elite, then Command with a slow weapon, else Righteousness), Holy Strike on cooldown,

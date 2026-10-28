@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition HERO_TALENT: which hero talent tree (subtree) you have chosen. Retail only: Forever has the API
 -- but no hero talents, and the Classic clients have neither, so Core/condition_support.lua marks it unsupported there.
 -- The tree comes from addon.Platform.GetActiveHeroTree and the editor lists trees through Platform:GetHeroTreeChoices

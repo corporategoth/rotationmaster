@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Cached snapshot of the player's build (equipment, item-set pieces, enchants, gems, talents or loadout, season and
 -- ruleset, engraved runes) that conditions, rotation applicability and the UI read instead of the game. Owns the
 -- snapshot, its dirty flags and the notification frame, and rebuilds a section lazily after an event marks it dirty; it

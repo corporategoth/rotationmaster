@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Restoration Druid after Icy Veins, levels 10–60: a player-chosen alternative to
 -- rm.forever.druid.restoration (same switch, lower priority, off by default). HoT-first on your
 -- friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs

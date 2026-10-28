@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The client the rotation library and scope suites model: a TBC Anniversary Shaman. They load the real
 -- Platform/client.lua (Core/rotation_library.lua reads addon.Platform while it loads, as in the TOC, where all of
 -- Platform/ comes first), and a Built In whose families do not include the client's is not registered

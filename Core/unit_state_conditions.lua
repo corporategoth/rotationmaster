@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Profile seeding for the condition categories and the Switch picker: adds conditions that arrived after a profile was
 -- created (action context, set pieces, weapon imbue, Assisted Combat, rune engraving, DEAD and FRIENDLY) to their
 -- categories exactly once, each under its own profile flag, so a later removal by the player stays saved. Owns only

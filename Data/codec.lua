@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation transport codec: turns a table into an export string (AceSerializer protocol 1 payload, LibCompress stream,
 -- Base64, "RM1:" marker for envelopes) and back, with every size and shape bound checked BEFORE the expensive library
 -- steps run. The contract is docs/quality/rotation-transport.md.

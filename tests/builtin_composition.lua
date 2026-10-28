@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In composition: authoring-time blocks expand once at registration into an
 -- independent tree. Catalog, clone, export and corpus validation never see a block.
 local F = dofile('tests/fixtures/addon.lua')

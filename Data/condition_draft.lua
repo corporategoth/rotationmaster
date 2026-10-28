@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition draft: an in-memory editable copy of one condition tree with a command interface (Replace, Wrap, Unwrap,
 -- Add, Remove, Move, Group/Negate/Duplicate/Remove/Transfer on a selection, Rows, ...) for the condition editor.
 -- Every command runs as one transaction on a detached copy and replaces the tree only when the result is still a valid

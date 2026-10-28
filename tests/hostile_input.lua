@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Text a stranger can paste must cost time in proportion to its length, and
 -- an imported item string is data, never a macro line. Each case here failed
 -- before the fix: a long run of spaces froze the client in a quadratic trim,

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Protection, Icy Veins: Judgement of the Crusader when nobody has it up, Righteousness
 -- (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, Avenger's
 -- Shield and Hammer of Wrath on cooldown. Same switch as the Wowhead variant, lower priority.

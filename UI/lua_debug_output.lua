@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Lua debug output window: a read-only, copyable report of what a custom condition's code printed and what its
 -- debugger terminal showed. It owns one window per code-editor control (cached on control.outputWindow) and never
 -- accepts edits: the text box reverts any typing so the user can only select and copy.

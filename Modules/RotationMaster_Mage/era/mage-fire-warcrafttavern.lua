@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Mage Fire after Warcraft Tavern, levels 10–60; same switch as rm.era.mage.fire at a
 -- lower priority, for players who pick it. Combustion goes at the pull on elites and bosses rather
 -- than waiting for Scorch stacks; Pyroblast pre-cast; Scorch to five stacks; Fireball; Fire Blast

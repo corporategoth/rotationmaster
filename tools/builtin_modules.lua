@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Offline only (tools and tests); never loaded by the addon. The packaged Built
 -- In modules: one load-on-demand addon per class (Modules/RotationMaster_<Class>)
 -- with one client-flavour TOC per edition, each listing only that edition's

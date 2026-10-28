@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform side of the Set Mark step: the fixed whitelist of units a mark can be placed on, the pseudo spell id a Set
 -- Mark step stands for (so the bar index, the glow and the preview can treat it like a spell), the one macro line each
 -- (unit, mark) pair runs ("/tm [@unit] N"), how a macro on an action bar is recognized as that pair, whether placing the

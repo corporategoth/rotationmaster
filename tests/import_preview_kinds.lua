@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The preview step of the import window for every kind that imports directly: replacing an entry COMPARES the
 -- import with it, a new copy PREVIEWS everything the import contains, and Check import lists the problems. Looking
 -- is optional (Import is never gated) and never saves or changes anything.

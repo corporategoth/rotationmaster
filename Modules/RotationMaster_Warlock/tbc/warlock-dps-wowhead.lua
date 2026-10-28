@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Warlock after Wowhead's guides, levels 1–70; same switch as the Icy Veins premade with a
 -- lower priority, shipped disabled: enable it to use it. It differs where Wowhead differs:
 -- solo it drain-tanks (Drain Life as the filler once DoTs are up, no wand) and keeps Immolate

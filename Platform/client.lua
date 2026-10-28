@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for client identity and secret-value readability.
 -- Owns the client family (retail, forever, era, tbc, progression, unknown), the combat data policy derived from it
 -- (restricted, probe, unsupported), platform:CanReadValue and the API surface and assisted-combat availability probes.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help documents for the General settings: the ordered field help (enable, polling, history, preview window, highlight
 -- effect, tooltips, specs, logging and the capture and report buttons) and the two page layouts, the primary options
 -- help and the rotation options help. Paragraphs live in the locale tables under Help.General.*.

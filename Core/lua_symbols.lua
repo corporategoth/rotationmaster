@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Symbol documentation and completion for the Lua editors: builds the table of names (the addon helpers, the bound and
 -- bindable custom and Built In functions, the callback's parameters and `value.*` fields) that the optional
 -- LuaWorkbench engine shows for a custom function or condition, and patches that engine's API help, name list,

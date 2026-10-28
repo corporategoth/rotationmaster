@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict additive inverse of only3 named literal summaries, baseline5d00bff.
 local old = {
     ["CASTING_SPELL"] = "\n        return string.format(Functions.presentation.playerize(value.unit, L[\"%s {{!are|are not}} currently casting %s\"], L[\"%s {{!is|is not}} currently casting %s\"]),\n            Functions.presentation.nullable(addon.units[value.unit], L[\"<unit>\"]), Functions.presentation.nullable(value.spell, L[\"<spell>\"]))\n    ",

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Shaman premades: Elemental, Enhancement (Wowhead, recommended), Enhancement wowsims
 -- and Icy Veins variants (off by default), Restoration, Restoration Hekili (off) and the Unspecialized catch-all.
 -- Real predicates, catalog, composition, sequence executor, readiness and publisher on a modeled MoP Classic

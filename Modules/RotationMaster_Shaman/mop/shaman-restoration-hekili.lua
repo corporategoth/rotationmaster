@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Restoration Shaman, Hekili ladder variant (player-chosen, off by default, low
 -- value). Same switch as the recommended premade (Restoration specialization). Keeps Riptide on the target, Healing Stream
 -- and Healing Rain up whenever they are down (Rain is assumed down 10 s after you cast it), then heals by the

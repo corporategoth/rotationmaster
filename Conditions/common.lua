@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared editor widgets for the Built In conditions: the spell, item, operator and rank pickers that the other
 -- Conditions/ files call as addon:Widget_*. Each builds a condition editor group bound to a field of the saved `value`
 -- table and calls update() after every change, so the caller re-validates and re-prints the condition.

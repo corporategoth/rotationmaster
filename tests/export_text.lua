@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Export text format (docs/quality/export-text-format.md): the pure helpers. Runs
 -- under Lua 5.1 and LuaJIT; the codec and window suites are export_text_transfer.lua.
 local F = dofile('tests/fixtures/addon.lua')

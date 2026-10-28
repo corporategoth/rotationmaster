@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Import/export dialog for one custom (Lua) condition, opened from the native custom condition editor. It encodes the
 -- condition as an RM-CustomCondition text, lets the player paste one back, and hands a parsed import to the editor
 -- only after an explicit "this contains Lua code" confirmation; it never saves or runs the imported code itself.

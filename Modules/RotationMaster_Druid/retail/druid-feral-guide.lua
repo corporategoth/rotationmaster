@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Feral Druid after Icy Veins and SimulationCraft (optimal reference): Cat
 -- Form, Prowl and Rake to open; Chomp; Ferocious Bite on Apex Predator's Craving; at five combo
 -- points Primal Wrath on two or more enemies, Rip when missing or in its last 7 seconds, else

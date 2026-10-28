@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The raid mark table (Platform/raid_marks.lua): lazy event registration, the rescan, single-token updates, pruning,
 -- unreachable units kept by GUID, unreadable values, the lease, capability gating by what the client has, and the mark
 -- unit types resolved through the existing group unit path. See docs/raid-marks.md.

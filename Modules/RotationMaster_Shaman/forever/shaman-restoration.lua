@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Restoration Shaman, from Mana Tide Totem (16-point talent, level 25) to 60,
 -- Icy Veins leveling order. Chosen with Restoration as the main tree and 16 points in it (Mana
 -- Tide's tier); it outranks the other Shaman premades. With a friendly target: the instant Healing

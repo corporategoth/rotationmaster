@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Actual diagnostic OnDisable and actual native cast adapter; boundary doubles
 -- are inherited from the reviewed adapter fixture, not replacement services.
 local F = dofile('tests/fixtures/addon.lua')

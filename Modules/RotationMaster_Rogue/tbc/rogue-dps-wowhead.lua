@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Rogue melee DPS, levels 1–70, Wowhead order (alternative variant).
 -- Same switch and shared blocks as the wowsims variant (Defaults/blocks/rogue.lua). Differs where
 -- Wowhead differs: Slice and Dice from one combo point, and every five-point finisher is

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Paladin premades: the shipped packs on the real catalog, predicates, readiness and
 -- sequence executor; native APIs modeled.
 local F = dofile('tests/fixtures/addon.lua')

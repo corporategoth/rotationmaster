@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Rogue melee DPS, levels 1–60, every spec (the recommended vanilla premade; also
 -- Hardcore and Self-Found). wowsims/classic order with Icy Veins and Wowhead: Slice and Dice from
 -- one point when missing on a target worth it, refreshed at five in its last three seconds;

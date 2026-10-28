@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Survival Hunter after SimulationCraft (reference; Icy Veins' openers
 -- agree): Kill Command builds Tip of the Spear, which Takedown, Boomstick, Wildfire Bomb and Raptor
 -- Strike spend. Pack Leader: Kill Command on Howl of the Pack Leader; Sentinel: Wildfire Bomb on

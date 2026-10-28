@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Runtime services of the Set Mark step: the hidden secure button for each (unit, mark) pair, the Bind flow that puts a
 -- macro for that button on the player's cursor, the step's spell ids, its readable description and its client support.
 -- This is the second place Rotation Master writes secure text (the first is Core/itemset_services.lua), and it is held

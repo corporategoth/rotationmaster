@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for Season of Discovery rune engraving (C_Engraving on Classic Era).
 -- Owns the `value or nil, reason` readers for whether engraving is readable, the runes engraved on the player's
 -- equipped items and the runes the character knows; it must not engrave or target anything. The namespace is absent

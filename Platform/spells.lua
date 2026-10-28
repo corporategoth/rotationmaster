@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for spell data: info (C_Spell.GetSpellInfo / GetSpellInfo), known state, cooldown, charges, links,
 -- current and auto-repeat state, and the spell readiness decision that every action step uses. Readers return
 -- `value, nil` or `nil, reason`; every game value passes platform:CanReadValue first, and on Retail and Forever a

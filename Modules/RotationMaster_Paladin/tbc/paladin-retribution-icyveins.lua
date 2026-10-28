@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retribution, Icy Veins: Judgement of the Crusader once per target, Righteousness (or
 -- Command with a slow two-hander, Blood or Martyr once known), Crusader Strike, Hammer of
 -- Wrath and Judgement on cooldown, Consecration on two or more enemies with mana to

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Warlock, levels 1–60, every tree (the recommended vanilla premade; also Hardcore and
 -- Self-Found). Wowhead's raid gates with every source's finish and Icy Veins' leveling: procs
 -- first; Shadowburn and Searing Pain to finish a group target; a dying solo target gets Drain Soul

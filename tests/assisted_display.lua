@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Blizzard Assisted Combat as a display and a signal source: the rotation-set
 -- and availability conditions (ASSISTED_ROTATION_SPELL, ASSISTED_AVAILABLE)
 -- and the option to let Blizzard's Assisted Highlight draw a "Blizzard's

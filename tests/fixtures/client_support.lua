@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Restricted clients run complete rotations like any other; a Built In that
 -- uses a condition the restricted policy keeps secret is incomplete, so it is
 -- listed but never eligible. Every shipped Retail and Forever premade uses

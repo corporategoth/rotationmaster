@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Mage Frost AoE grinding after Icy Veins (with Warcraft Tavern's and Wowhead's leveling
 -- notes), levels 20–60: auto-selected solo once Improved Blizzard is talented. Blizzard is the main
 -- spell from two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is spent, Blizzard

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Vengeance Demon Hunter after SimulationCraft (reference). Aldrachi Reaver:
 -- Sigil of Flame and Immolation Aura first, Metamorphosis, the Reaver's Glaive cycle, Fiery Brand,
 -- Sigil of Spite, Spirit Bomb on packs, Soul Carver in Fiery Demise, then Fracture, Soul Cleave,

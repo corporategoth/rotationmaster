@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Protection Paladin after the wowsims tank lists (Sha, Horridon, Iron
 -- Juggernaut) and wowtbc.gg, levels 10–90: an alternative to rm.mop.paladin.protection, off by
 -- default (same switch, lower priority). Shield of the Righteous pools to full Holy Power unless

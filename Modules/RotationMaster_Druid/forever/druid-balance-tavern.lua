@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Balance Druid after Warcraft Tavern's Multi-DoT leveling build, levels 1–60: a
 -- player-chosen alternative to rm.forever.druid.balance (same switch, lower priority, off by
 -- default). DoT the

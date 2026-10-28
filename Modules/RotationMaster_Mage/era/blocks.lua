@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era and Season of Discovery Mage blocks (Built In composition; authoring-time only).
 -- Consumers: rm.era.mage.frost, rm.era.mage.frost.icyveins, rm.era.mage.fire,
 -- rm.era.mage.fire.warcrafttavern, rm.sod.mage.fire, rm.sod.mage.frost, rm.sod.mage.frost.warcrafttavern,

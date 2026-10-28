@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era Hunter blocks (Built In composition; authoring-time only).
 -- Consumers: rm.era.hunter.ranged, rm.era.hunter.ranged.icyveins, rm.era.hunter.ranged.wowsims,
 -- rm.sod.hunter.ranged and rm.sod.hunter.melee (which use sod.hunter.upkeep). A content change needs a block revision bump, every

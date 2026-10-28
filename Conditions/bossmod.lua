@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions fed by the selected boss mod (DBM or BigWigs): BOSSMOD_ENCOUNTER (an encounter, optionally one
 -- ID, is in progress), BOSSMOD_STAGE (compares the encounter stage) and BOSSMOD_TIMER (compares the seconds until the
 -- boss mod expects an ability). They read addon:GetBossModEncounter and addon:GetBossModTimerRemaining from

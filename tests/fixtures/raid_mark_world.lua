@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A model of the parts of a client that raid marks touch, for the raid mark suites: unit tokens that point at units
 -- (a unit has a GUID, a mark and a hostility), the group, the event frames Platform/raid_marks.lua creates, the timer,
 -- the clock and the macro calls the Bind button makes. Every capability can be switched off, so a suite can model a

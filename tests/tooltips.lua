@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Tooltip integration (Core/tooltips.lua): item tooltips name the item sets
 -- that contain the item; spell and item tooltips name the rotations that use
 -- it. Run against the whole-poll fixture (real scoped rotation store, real

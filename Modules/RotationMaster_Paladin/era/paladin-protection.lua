@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Protection after Wowhead's tanking guide (Askalon) with Icy Veins: Righteous Fury
 -- selects it at any level and in any tree. Seal of Righteousness (Wisdom when mana runs low),
 -- Holy Shield up, Consecration and Holy Wrath on packs, Judgement of the Crusader then Judgement

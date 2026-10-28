@@ -37,7 +37,10 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
 9. **Releases only contain what the game loads.** `tests/`, `tools/`, `docs/`, `.claude/`, `.gitea/` and the
    generators' source files are not in the package; `python3 tools/package_release.py --check` proves it. Never put a credential in a file.
    `learnings/deploy-and-release.md`.
-10. **In-game probes need a copy box.** Anything a tester must paste back goes into a selectable multi-line window (focus and
+10. **Every original source file starts with the copyright notice line** and every TOC says `## X-License: MIT + Attribution`.
+    `python3 tools/copyright.py --write` adds it; the check is part of `tools/check --static`. Never copy the licence terms into
+    a file and never hand-edit the notice in a generated file. `learnings/copyright-notice.md`.
+11. **In-game probes need a copy box.** Anything a tester must paste back goes into a selectable multi-line window (focus and
     highlight so Ctrl-A, Ctrl-C works), not only chat; make test visuals visible in their resting state.
 
 ## Where things are
@@ -46,7 +49,7 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
 | --- | --- |
 | Layout, load order, engines, condition registry, how to add things | `docs/dev/architecture.md` |
 | Commands: checks, generators, packaging, translation, slash commands | `docs/dev/running-things.md` |
-| Style and naming | `docs/dev/conventions.md` |
+| Style and naming, the copyright notice | `docs/dev/conventions.md` |
 | Debugging a report from game | `docs/dev/debugging.md` |
 | Premade rotations, modules, policy | `Modules/README.md` |
 | Restricted clients | `docs/restricted-clients.md`, `docs/quality/client-support.md` |

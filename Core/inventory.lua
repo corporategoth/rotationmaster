@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The runtime snapshot of what the player carries in bags (addon.bagContents), kept in the legacy shape that custom
 -- conditions and the UI still read. It owns only that snapshot; it never queries the bag APIs itself, every read goes
 -- through addon.Platform (GetBagSnapshot, GetItemUseSpell), so restricted-client rules are already applied.

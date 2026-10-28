@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Holy Paladin, levels 10–90, in the Holy specialization (65). Icy Veins' Eternal
 -- Flame and Selfless Healer builds (the talent decides which steps apply) with Warcraft Tavern's
 -- triage. A friendly target is healed: spend 3 Holy Power (or Divine Purpose) on Light of Dawn for a

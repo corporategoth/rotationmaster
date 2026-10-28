@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Names the load-on-demand Built In rotation modules and loads the current character's class module.
 -- It owns the edition/class tables (also read by tools/builtin_modules.lua), the RotationMasterBuiltIns.Bind global the
 -- modules' bind.lua calls, and the one-shot module load; it never reads rotation data itself. Class and client family

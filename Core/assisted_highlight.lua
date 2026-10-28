@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Assisted highlight manager: owns the one character CVar that turns Blizzard's Assisted Highlight on, so it is on only
 -- while the active rotation has a "Blizzard's suggestion" step, and always restored. The design is described below.
 -- It must not run per poll and never touches the CVar in combat. Loaded late in the TOC (after

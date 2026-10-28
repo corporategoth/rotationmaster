@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """One-time converter (historical): English-text-keyed locale files -> stable-ID locale files. Kept so the migration
 can be audited and re-proved; it is of no use once the repository is converted.
 

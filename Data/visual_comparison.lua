@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Visual comparison model: turns a structural diff (Data/diff.lua) plus the two detached rotation snapshots into the
 -- row-by-row model the comparison window draws (cooldown and rotation rows paired by step identity, with changed,
 -- moved, added and removed flags and counts of changes the rows do not show).

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the PvP classification of the current zone (C_PvP.GetZonePVPInfo, falling back to the global
 -- GetZonePVPInfo). Returns a record or `nil, reason`; every value, including the namespace and the function itself,
 -- passes platform:CanReadValue and canaccessvalue first. Only identified client families read. Loaded from

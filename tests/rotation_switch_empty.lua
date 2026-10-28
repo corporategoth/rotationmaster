@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A rotation with no switch condition: the editor's switch pane says what that means (in English and
 -- another language), and says nothing of the kind for a switch that has conditions.
 local F = dofile('tests/fixtures/addon.lua')

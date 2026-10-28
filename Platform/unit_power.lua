@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for a unit's mana or current primary power (UnitExists, UnitPowerType, UnitPower, UnitPowerMax,
 -- Enum.PowerType). Returns a record or `nil, reason`; game values pass platform:CanReadValue and canaccessvalue first,
 -- because Retail and Forever make primary power secret (docs/restricted-clients.md). Secondary point resources live

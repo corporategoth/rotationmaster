@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Export/import text presentation: wraps an encoded export string into 76-character lines and strips wrapping and
 -- invisible copy artifacts from pasted text before it is decoded.
 -- It owns only the text shape (docs/quality/export-text-format.md; the website follows the same rule) and must never

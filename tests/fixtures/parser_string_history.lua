@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Compose older feature proofs without weakening the strict three-module inverse.
 local restore = dofile('tests/fixtures/restore_parser_string_operations.lua')
 local restorePreview = dofile('tests/fixtures/restore_cpu_preview_context.lua')

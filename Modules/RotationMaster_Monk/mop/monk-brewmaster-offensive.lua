@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Brewmaster Monk, damage-first, after wowsims' "Offensive" APL (Phase 5).
 -- Same switch as rm.mop.monk.brewmaster, lower priority and off by default: no routine Purifying
 -- Brew or Guard (Purifying Brew only on the tier-15 Purifier proc), Rushing Jade Wind before Keg

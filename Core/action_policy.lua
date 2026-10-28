@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Spell and item readiness for the poll, and the implicit auto-attack fallback. It owns the per-poll readiness memo
 -- (known, usable, off cooldown, in range) that conditions and both evaluation engines share; it must not decide what to
 -- recommend, only whether something can be used now. Every game value goes through addon.Platform, which applies the

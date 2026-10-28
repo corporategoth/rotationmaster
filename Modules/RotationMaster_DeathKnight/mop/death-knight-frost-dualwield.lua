@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Frost Death Knight with two one-handed weapons (Masterfrost), levels
 -- 55–90, after Icy Veins' rotation with wowsims' masterfrost cap guards. Selected in the Frost
 -- specialization (251) while the off hand holds a weapon (with a two-hander rm.mop.deathknight.frost

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared world model for the TBC Warrior, Rogue and Hunter premade scenario tests.
 -- Native WoW observations are modeled here; the real platform, conditions, catalog,
 -- composition, sequence executor, readiness and initialized publisher run on top.

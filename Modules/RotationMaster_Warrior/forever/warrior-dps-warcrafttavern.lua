@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Warrior melee DPS, Warcraft Tavern's spend-rage list (player-chosen variant).
 -- Same switch as the recommended DPS premade, lower priority, off by default. Group and raid play
 -- that always spends: five Sunder Armors on every target first, Execute above everything (it can

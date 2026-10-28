@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid Balance after Wowhead's Phase 8 guide: Wrath to open, Starsurge on
 -- cooldown, Hurricane on six or more, Insect Swarm only on the move, Sunfire and Moonfire kept up,
 -- Wrath while your Sunfire has under 5 seconds with Elune's Fires engraved (it extends it), Starfire on Lunar

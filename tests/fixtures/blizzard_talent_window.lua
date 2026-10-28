@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A model of Blizzard's talent window (PlayerSpellsFrame) in the parts Rotation
 -- Master drives: view (inspect) mode through SetInspectString, the tab, the
 -- talent buttons and the EventRegistry events they fire. NO REAL CLIENT WAS

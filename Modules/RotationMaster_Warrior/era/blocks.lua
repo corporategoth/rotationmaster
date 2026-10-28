@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared Classic Era Warrior blocks, vanilla and Season of Discovery (Built In composition;
 -- authoring-time only). Consumers: rm.era.warrior.dps, .protection, .protection.icyveins and
 -- rm.sod.warrior.dps, .dps.wowhead, .dps.icyveins, .tank. A content change needs a block revision

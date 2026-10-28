@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Mage Frost, levels 1–70, and the default for an unspecced Mage (lowest priority, so the
 -- talent-specific Mage premades win when their tree is primary). Adapts by learned spells:
 -- Fireball until Frostbolt, Ice Lance from 66, talents as learned. Enemy count is the number of

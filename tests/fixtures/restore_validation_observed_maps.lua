@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict whole-module inverse of the private retained-map eligibility guard.
 local addition = [==[    -- Public option copying uses live pairs; a prior override can retain its
     -- private input maps. Their later lookups must remain callback-free too.

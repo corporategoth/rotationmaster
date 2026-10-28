@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Guardian Druid, levels 10–90, in the Guardian specialization (104). wowsims'
 -- default list as Wowhead writes it, with the guides' Tooth and Claw Maul: Savage Defense whenever
 -- it is down (Enrage to fund it), Frenzied Regeneration when low or rage-capped, Thrash for Weakened

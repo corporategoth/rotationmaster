@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The world-state conditions (PLAYER_STATE, ENCOUNTER, KEYSTONE_LEVEL, GROUP_COUNT,
 -- HERO_TALENT, SPELL_GLOW), the optional difficulty and ID of INSTANCE and the trinket
 -- slot of ITEM_COOLDOWN, on every client family: which client declares which unsupported (Core/condition_support.lua,

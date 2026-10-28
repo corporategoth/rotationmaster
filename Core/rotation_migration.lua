@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation storage migrations: the one-way move of legacy profile rotation roots into the scoped rotation store, the
 -- two in-place renames that follow it (body.handle to body.identifier, specialization evidence into body.specs), and
 -- the plan/apply pairs for adopting an unassigned rotation into a class or character scope. Planning never writes;

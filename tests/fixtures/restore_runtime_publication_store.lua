@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact source inverse to a609a28; compose before the prior complete proofs.
 local rows = {
     ["Data/rotation_store.lua"] = {

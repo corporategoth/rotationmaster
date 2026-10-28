@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Client-faithful frame sizing for the native UI mock. In the WoW client a
 -- frame's rect is resolved on the next layout pass: GetWidth()/GetHeight()
 -- keep returning the previous size after SetWidth/SetSize, and OnSizeChanged

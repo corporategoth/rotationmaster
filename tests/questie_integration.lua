@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Original public-contract fixtures; no Questie implementation is included.
 local test, finish = dofile('tests/fixtures/addon.lua').suite()
 

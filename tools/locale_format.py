@@ -1,3 +1,5 @@
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """The shipped locale file formats: how tools/locales.py writes them and every other tool reads them.
 
 Pure functions over text; nothing here knows where the repository is. Two kinds of file, one per catalog and

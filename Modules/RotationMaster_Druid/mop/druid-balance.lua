@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Balance Druid, levels 10–90, in the Balance specialization (102). Wowhead's Phase 5
 -- list (close to wowsims): Moonfire and Sunfire kept up and refreshed inside the matching Eclipse,
 -- Starfall in Lunar, Starsurge on Shooting Stars and on cooldown, Hurricane or Astral Storm at five

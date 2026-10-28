@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Conditions that can never work on a client (missing API, restricted combat
 -- data policy, another talent or glyph layout, an unknown family) are caught
 -- statically: validation reports them unresolved, so the rotation is

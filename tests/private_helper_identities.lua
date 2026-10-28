@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The private helpers a Built In condition shares (builtin:<module>:<name>) are what saved custom copies, exported bundles
 -- and requirement hashes bind to (Core/function_data.lua: a bundle names each Built In dependency by id and source hash).
 -- Their source identity therefore changes only on purpose: edit a helper, run this suite, read the failure, and record the new

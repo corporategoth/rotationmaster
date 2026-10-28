@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for death knight runes: GetRuneType, GetRuneCooldown and GetTime. Readers return
 -- `value, nil` or `nil, reason` (the cooldown reader returns a record whose fields carry their own reasons); game
 -- values pass platform:CanReadValue first. Only the probe and restricted combat-data policies read. Loaded from

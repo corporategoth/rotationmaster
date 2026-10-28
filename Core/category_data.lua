@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Condition category helpers: validating a category icon, picking the icon a category shows, and parsing a category
 -- import (either an "RM-ConditionCategory" envelope or a plain comma/space separated tag list). Pure data: it owns no
 -- saved state and must not draw; the settings windows (UI/settings_conditions.lua) call it and do the writing. Loaded

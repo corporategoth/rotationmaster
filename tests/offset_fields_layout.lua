@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Horizontal and Vertical offset sit side by side, splitting the row beside
 -- the position pad (50/50 with a small gap), in the rotation card's effect
 -- fields and on the General page, at the narrowest editor and settings width,

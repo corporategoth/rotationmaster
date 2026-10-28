@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Built In rotation library: registration of the packaged rotations and their reusable step blocks, the per-profile
 -- catalog built from them, eligibility for the player's client, class and context, and the runtime lookups that hand
 -- rotations to the poll. It also owns clone, duplicate, compare and delete for rotations, and the narrow reader handed

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Compatibility shims for the options panel API that differs between clients: the Settings category API on modern
 -- clients, InterfaceOptions on clients that predate it.
 -- Loaded from RotationMaster.toc after the Platform adapters and before the libraries and constants. It owns only

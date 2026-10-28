@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Lean evaluation must publish exactly what the standard evaluation publishes:
 -- same advice and the same ordered outputs (WeakAuras, messages, glow
 -- textures, preview), across state changes, with and without a preview.

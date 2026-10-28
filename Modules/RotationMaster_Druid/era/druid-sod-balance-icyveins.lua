@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Druid Balance after Icy Veins: Insect Swarm kept up with Moonfire and Sunfire,
 -- Hurricane on four or more (for Gale Winds), Starfire when Starsurge empowers it, Wrath filler.
 -- Same switch as rm.sod.druid.balance at a lower priority.

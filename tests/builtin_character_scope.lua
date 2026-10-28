@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Only this character's Built In packs are kept: other editions and other
 -- classes never register, so a client holds its own premades, not every one.
 local corpus = dofile('tests/fixtures/default_corpus.lua')

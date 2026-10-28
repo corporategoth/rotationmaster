@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Holy (Icy Veins and Warcraft Tavern, Phase 4: no later healing guide exists):
 -- chosen in a group by an engraved Beacon of Light, Divine Light or Sacred Shield, or by the Holy tree
 -- without Crusader Strike. Heals act on your friendly target: Cleanse, Holy Shock while moving or for

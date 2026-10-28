@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Mistweaver Monk, levels 10–90, in the Mistweaver specialization
 -- (270). Icy Veins' and Wowhead's modes as one Branch on the target: a friendly
 -- target is healed (Renewing Mist, Uplift on a hurt group, Expel Harm, Chi talents, Soothing Mist

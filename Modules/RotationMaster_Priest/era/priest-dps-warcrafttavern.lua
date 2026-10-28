@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Priest damage after Warcraft Tavern's wand economy, levels 1–60; same switch as
 -- rm.era.priest.dps at a lower priority, for players who pick it. Solo: Mind Blast opens, Shadow
 -- Word: Pain once per target, Mind Blast again only above 30% target health, and the wand between

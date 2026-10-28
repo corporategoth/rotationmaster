@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The Set Mark step: the whitelist, the pseudo spell id, the one macro line a hidden button runs, hostile saved or
 -- imported values that must never reach secure text, button creation (lazy, out of combat, never over a foreign global),
 -- recognizing the macro on a bar, readiness (exists, not already marked, the group rule), the Bind flow, validation and

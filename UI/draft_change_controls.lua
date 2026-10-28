@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- View changes buttons for the editors' draft workflows. Each Install function adds a button beside Apply and wraps the
 -- owner's refresh method so the button is enabled only while there is something unsaved. The diff itself is built and
 -- shown by UI/draft_changes.lua; this file only snapshots the current draft against its baseline and collects pending

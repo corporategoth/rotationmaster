@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Client-data identities: CreatureType DB2, build2.5.4.44833, enUS/frFR/deDE/koKR.
 -- Frozen primary/API and extraction provenance: external creaturetype-clientdata-provenance.json.
 local F = dofile('tests/fixtures/addon.lua')

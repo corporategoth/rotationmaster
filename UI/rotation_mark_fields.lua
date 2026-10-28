@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Detail fields of a Set Mark step on a rotation card: the unit to mark (a fixed list of unit tokens, never free text),
 -- the mark to place (or none to clear it) and the Bind button that makes the macro for the step and puts it on the
 -- cursor. It builds controls on the card and commits through the callbacks UI/rotation_fields.lua passes in ctx; it

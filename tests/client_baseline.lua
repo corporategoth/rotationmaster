@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Modeled native host, real initialization/library/reference workflows.
 -- No complete TOC/vendor boot or actual-client acceptance is claimed.
 -- Run default controls with lua5.1 and luajit; --wire requires LuaJIT's bit.

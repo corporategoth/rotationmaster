@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Balance Druid, levels 1–60, and the Druid catch-all (lowest priority): levels 1–9,
 -- untalented casters and solo Restoration level here. Icy Veins' Balance order with Warcraft
 -- Tavern's moving branch and Clearcasting Starfire: own DoTs, then Starfire while Eclipse charges

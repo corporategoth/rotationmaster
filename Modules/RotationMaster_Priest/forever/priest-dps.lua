@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever damage Priest, levels 1–60, and the Priest catch-all (lowest priority): Shadow, and
 -- every Priest's solo play (Smite, Holy and Discipline levelers too). Icy Veins' and Wowhead's
 -- order with Mobalytics' level-40 Shadowform play: Shield and Mind Blast (Holy Fire for Holy and

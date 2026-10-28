@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Run from repository root: lua5.1 tests/logging.lua
 -- Use actual AceDB shutdown to reproduce defaults disappearing before late events.
 local frames, messages = {}, {}

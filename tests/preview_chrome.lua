@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The recommendation preview has no title bar or close button: it is only its
 -- icons and their padded background. Unlocked, the body moves it and a hover
 -- grip resizes it; a right-click menu locks, unlocks or opens General. Only

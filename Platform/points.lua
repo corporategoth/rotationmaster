@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for point resources (combo points, runes, soul shards, holy power, chi, arcane charges, essence,
 -- Burning Embers) behind the POINT condition. Wraps UnitExists, UnitClass, UnitPower, UnitPowerMax and GetComboPoints;
 -- every reader returns `value, nil` or `nil, reason` and passes each game value through platform:CanReadValue before

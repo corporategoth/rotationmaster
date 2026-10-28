@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition SPELL_KNOWN: whether you (or your pet) have learned an exact spell ID. It reads the learned state
 -- through addon.Platform:IsSpellKnown, which returns the answer or nil and a reason; this file never calls a game API
 -- itself, so restricted-client handling stays in the Platform adapter. It stores `spell` (a spell ID) and `pet`

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Priest healer after Icy Veins, levels 10–70; same switch as the Wowhead healer premade
 -- with a lower priority, shipped disabled: enable it to use it. It follows Icy Veins' order:
 -- Shield, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of

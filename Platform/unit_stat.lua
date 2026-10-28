@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for a unit's effective primary stat or armor (UnitExists, UnitStat, UnitArmor). Returns a record or
 -- `nil, reason`; game values pass platform:CanReadValue and canaccessvalue first. Only the probe and restricted
 -- combat-data policies read. Loaded from RotationMaster.toc after Platform/unit_health.lua.

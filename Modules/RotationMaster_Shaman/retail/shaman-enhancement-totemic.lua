@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Enhancement Shaman, Totemic (SimulationCraft's single_totemic list, Icy Veins
 -- and Wowhead notes): the optimal reference, disabled by default because Flame Shock, Hot Hand,
 -- Whirling Fire, Crash Lightning and Doom Winds are hidden in Midnight combat. Three or more

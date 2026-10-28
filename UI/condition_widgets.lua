@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Registry and lifecycle for the native condition widgets (the AceGUI replacement used by the condition editor, Help
 -- and Test surfaces). Owns the pool of reusable widgets per kind, the base widget methods (callbacks, userdata, sizing,
 -- parenting) and the lease that stops a released widget's callbacks from firing. It does not draw anything: concrete

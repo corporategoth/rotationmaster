@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- What the locale files say, read through the very files the game runs (no copy of their format): `key -> displayed text`
 -- for the English or for a game language, without AceLocale. Tests that need the strings of a catalog use this instead of
 -- reading Locales/*.lua as text.

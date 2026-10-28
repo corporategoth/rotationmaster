@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for action-level facts about spells: usability (IsSpellUsable), range (IsSpellInRange,
 -- SpellHasRange and their spellbook-slot legacy forms) and whether a plain melee swing is worth suggesting.
 -- Owns the `value or nil, reason` readers and the per-pass range reader; it must not operate a button or infer

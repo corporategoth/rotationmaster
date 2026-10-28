@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Which selection of the Rotations list can an import replace, and what the import window does for each: a custom
 -- rotation can be replaced (checkable and uncheckable at will); a Built In, the Default that was never saved, and a
 -- new unsaved rotation cannot (Replace unticked and disabled, Preview works). Looked at in the fixtures exactly as

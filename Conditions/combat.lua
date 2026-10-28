@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about combat and the player's own state: COMBAT, PET, PET_NAME, STEALTHED, INCONTROL, LOC_TYPE,
 -- LOC_BLOCKED, MOVING, THREAT, THREAT_COUNT, FORM, ATTACKABLE, ENEMY, COMBAT_HISTORY, COMBAT_HISTORY_TIME and
 -- TIME_IN_COMBAT. Game data comes through addon.Platform observation readers and the combat history that main.lua

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Saved-variable defaults and startup upgrades. Owns the stock data new profiles start with (default item sets,
 -- cooldown effects, condition-picker groups, switch and hidden condition lists) and the one-way upgrades that bring
 -- older saved data forward. It does not evaluate rotations or draw anything. main.lua (OnInitializeInternal) calls

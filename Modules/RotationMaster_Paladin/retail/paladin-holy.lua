@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Holy Paladin, Icy Veins (with Wowhead's damage order on an enemy). RM picks a
 -- spell, not a target, and every unit's health is hidden in Midnight combat, so this keeps the
 -- Holy Power economy going on whatever you target and leaves triage to you. Holy Power is never

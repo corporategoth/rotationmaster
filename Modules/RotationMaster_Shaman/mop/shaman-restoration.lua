@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Restoration Shaman, levels 10-90: Icy Veins' order with Wowhead's group block.
 -- Selected in the Restoration specialization (264)
 -- from level 10 (RM stores MoP rotations per talent group). Heals act on your friendly target (or none); RM cannot choose whom to heal. An

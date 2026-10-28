@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Elemental Shaman, wowsims order (alternative premade; same switch, lower priority).
 -- The only measured list: Chain Lightning on cooldown even on one target, Earth Shock while
 -- Elemental Mastery is up, otherwise Lightning Bolt (wowsims also drops to rank 4 below 30% mana,

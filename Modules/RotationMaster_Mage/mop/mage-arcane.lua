@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Arcane Mage, levels 10–90, in the Arcane specialization
 -- (62). wowsims' measured list (Hekili matches it): Arcane Blast builds four Arcane
 -- Charges; with four, a single Arcane Missiles! proc is spent above 95% mana and Barrage comes out

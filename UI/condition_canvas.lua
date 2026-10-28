@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The condition canvas: the scrolling surface of the condition editor that shows a condition tree as cards joined by
 -- connector lines. Owns card pooling and virtualization (past 200 cards only the visible viewport is bound), click,
 -- shift/ctrl and box selection, and drag-and-drop with its drop zones. It owns no condition data: every change goes

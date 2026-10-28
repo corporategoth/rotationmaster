@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Marksmanship Hunter, levels 10–90, in the Marksmanship
 -- specialization (254). Wowhead's Phase 5 order with wowsims' rule for when to hard-cast
 -- Aimed Shot: Steady Shots in pairs for Steady Focus (63), Chimera Shot, Serpent Sting, Aimed

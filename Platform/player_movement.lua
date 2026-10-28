@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for GetUnitSpeed("player"): how fast the player is currently moving.
 -- Owns platform:GetPlayerMovementObservation (the `value or nil, reason` reader); it must not decide what counts as
 -- "moving" for a rotation. Runs under the probe and restricted policies. The reader is a Built In helper whose body

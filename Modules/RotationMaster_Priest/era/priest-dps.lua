@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Priest damage, levels 1–60; the default Priest premade whenever the healer premade
 -- does not apply (solo, Shadow, or no talents yet). Smite and the wand early, Holy Fire opener for
 -- builds without Shadowform, Mind Flay and Shadowform as talented; Shadow Word: Pain once per

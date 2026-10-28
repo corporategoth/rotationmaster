@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The rotation editor's footer: Discard, Apply, View Changes, the selection
 -- bar (count and card actions) and the hint/status text. Every visible
 -- control owns its space, at the narrowest width the editor gets (a minimum

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Augmentation Evoker after Icy Veins (recommended; SimulationCraft agrees):
 -- Ebon Might refreshed under 4 s and on cooldown unless Breath of Eons is ready, Prescience, Fire
 -- Breath, Upheaval, Eruption in Ebon Might or on two Essence Bursts, Azure Strike, Living Flame

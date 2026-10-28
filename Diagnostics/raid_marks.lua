@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- /rm debug marks: prints, read only, what this client offers for raid marks (which functions and events exist), the
 -- raid mark table (mark, GUID, token, reachable, age since last seen), what each mark unit type resolves to now, and the
 -- state of the Set Mark step (support, hidden buttons made). It starts the mark watch for the usual lease so the table

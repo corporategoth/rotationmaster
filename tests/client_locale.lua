@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation Master follows the game's language: the real AceLocale, English and generated translations by stable ID,
 -- loaded in locales.xml order as the client loads them. The game's translation is applied once, when the files load
 -- (nothing is resolved per lookup), untranslated keys stay English, English loads no translation, and the other

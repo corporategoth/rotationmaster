@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Pure layout for the rotation editor's diagram and list views: given a rotation body and a view description it
 -- computes card, connector, drop target and arm label geometry as plain data. It owns the scene shape the canvas
 -- widgets draw; it must not create frames, read live combat state or run condition printers. Loaded from

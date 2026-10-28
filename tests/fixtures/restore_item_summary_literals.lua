@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict test-only inverse of CARRYING named-summary ownership and print body.
 -- Frozen item module frozen from 4d5f0bb (FunctionSourceHash 2154174d).
 local old = "\n        return Functions.presentation.compareString(value.operator,\n                string.format(L[\"the number of %s you are carrying\"], Functions.presentation.nullable(get_item_desc(value.item), L[\"<item>\"])),\n                Functions.presentation.nullable(value.value, L[\"<quantity>\"]))\n    "

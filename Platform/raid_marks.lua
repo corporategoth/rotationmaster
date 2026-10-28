@@ -1,4 +1,5 @@
 -- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for raid target markers (skull, cross, square, moon, triangle, diamond, circle, star).
 -- The game has no unit token for a mark: GetRaidTargetIndex(unit) answers only for a token you already hold, and
 -- RAID_TARGET_UPDATE says that some mark changed without saying which. This file keeps an event-driven table, mark ->

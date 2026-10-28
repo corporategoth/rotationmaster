@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Rogue before a specialization (levels 1-9, or a rogue who has not picked one): the catch-all
 -- at the lowest priority, so each spec premade wins once a specialization is chosen. Stealth opens with Cheap Shot solo,
 -- Ambush, or Sinister Strike; out of combat Stealth; Slice and Dice from two points, Recuperate and Kidney Shot solo,

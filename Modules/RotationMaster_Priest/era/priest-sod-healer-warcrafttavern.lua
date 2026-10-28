@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Priest healer after Warcraft Tavern's Holy and Discipline guides (Phase 4),
 -- levels 10–60; same switch as rm.sod.priest.healer at a lower priority, for players who pick it.
 -- Built for the Serendipity and Soul Warding runes: Prayer of Mending on cooldown, Shield on anyone

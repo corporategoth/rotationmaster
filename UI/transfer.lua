@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation transfer: the Import/Export window for one rotation and the two read-only previews an import can open (a
 -- comparison against the rotation it would replace, or the full incoming content in a read-only editor). It stages
 -- pasted text through an import session, previews the result and applies it only through ApplyRotationImport; it never

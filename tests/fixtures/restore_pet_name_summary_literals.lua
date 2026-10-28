@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict additive inverse of the PET_NAME print repair only, baseline 5a54d42.
 local old = '\n        return string.format(L["you {{!have|do not have}} a pet named %s"], Functions.presentation.nullable(value.value, L["<name>"]))\n    '
 local repaired = '\n        return PetSummary.phrase(L["you {{!have|do not have}} a pet named {name}"], {name = Functions.presentation.nullable(value.value, L["<name>"])})\n    '

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact additive inverse of only two nonplayer channeling wording keys.
 local old = {
     ["CHANNELING"] = "\n        return string.format(Functions.presentation.playerize(value.unit, L[\"%s {{!are|are not}} currently channeling\"], L[\"%s {{!is|is not}} currently casting\"]),\n            Functions.presentation.nullable(addon.units[value.unit], L[\"<unit>\"]))\n    ",

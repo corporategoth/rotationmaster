@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Scenario harness for the TBC Shaman, Druid and Paladin premades: the shipped blocks and
 -- packs on the real catalog, condition predicates, readiness and sequence executor, with
 -- native WoW APIs modeled from one state table. Health forecasts (TT_HEALTH), nameplate

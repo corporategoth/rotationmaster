@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- QA only: exact private-index successor to its deployed b55 predecessor.
 local before = [======[local _,addon=...
 local data=addon.RotationData

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared world model for the Classic Era and Season of Discovery Rogue, Shaman, Warlock and
 -- Warrior premade scenario tests. The client is the real 'era' family (probe policy), so the
 -- packs auto-select as in game. Native WoW observations are modeled here (talent trees, the

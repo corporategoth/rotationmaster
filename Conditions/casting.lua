@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In conditions about cast-time spells: CASTING, CASTING_SPELL, CASTING_REMAIN, CASTING_PROGRESS and
 -- CAST_INTERRUPTABLE. All of them read one cached Platform:GetUnitCastObservation(unit, "cast") record per unit per
 -- evaluation (Platform/casting.lua, which owns the restricted-client rule: a field the client hides as a secret value

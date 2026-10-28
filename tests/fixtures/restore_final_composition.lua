@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Generated QA-only outer bridge. Complete source equality precedes unchanged historical proofs.
 local texts={}
 texts[1]=""

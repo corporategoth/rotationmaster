@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Preservation Evoker (reference only, off by default). Ally health, Echo,
 -- Reversion, Essence Burst and every cooldown are secret in Midnight combat, RM cannot choose a heal
 -- target, and Blizzard ships no Assisted Combat rotation for healers, so this keeps only what the

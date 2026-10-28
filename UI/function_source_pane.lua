@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The inline editor for one function on the settings Functions page: identity (namespace, name, description), typed
 -- argument and return documentation as reorderable cards, dependency bindings, and the Lua body in a code control.
 -- BuildInlineFunction(p, key, source, readOnly) is called by UI/settings_functions.lua for a custom function (editable)

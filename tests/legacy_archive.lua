@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Upgrading from a release before 2.0: a synthetic 1.4.3e SavedVariables table
 -- (tests/fixtures/legacy_143e_profile.lua) goes through the real AceDB,
 -- main.lua, init.lua and the scoped rotation store. The rotations land in the

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Legacy archive banner: the strip under the settings window's tabs that tells the user rotations from before version 2
 -- are waiting in the archive. It owns only its own frame and the dismiss click; the archive itself lives in
 -- Core/legacy_archive.lua, and dismissing hides the banner without touching the archive.

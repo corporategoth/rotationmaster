@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Talent tree popup: the window the TALENT condition opens so a talent can be chosen by clicking it, with the two
 -- providers that fill it (Blizzard's own talent window in view mode, and RM's drawn tree). It owns one shared window
 -- (addon.talentTreeWindow) and the session state of the Blizzard provider; it never changes the player's talents and

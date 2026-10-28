@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation tags as pure data: normalizing and validating a tag list, parsing and formatting the comma-separated text
 -- box, resolving a body's effective tags, matching a tag filter and building the search text for a rotation.
 -- It owns the tag limits (64 tags, 64 characters each, 32 KiB of CSV text) and must never write saved data or

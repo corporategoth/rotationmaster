@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Private current-graph reuse; public APIs retain fresh dispatch.
 local make = dofile('tests/fixtures/rotation_execution.lua')
 local pass, fail = 0, 0

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Configuration window spell, pet action and item icon control: an icon with a tooltip that accepts a drag from the
 -- cursor and fires OnEnterPressed with the dropped id (or "" on a right click). It wraps the pooled condition icon
 -- (UI/condition_icon.lua) and must undo every override on release. It only displays and relays ids; saving them is the

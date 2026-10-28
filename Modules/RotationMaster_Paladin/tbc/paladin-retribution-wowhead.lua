@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retribution, Wowhead with wowsims: a judgement opener chosen by mana (Wisdom when
 -- low, else the Crusader), the best seal you know, Crusader Strike, Judgement only of a
 -- seal worth judging (Command only on a stunned target), Exorcism on Undead and Demons,

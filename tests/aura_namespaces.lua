@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'BUFF','BUFF_REMAIN','BUFF_STACKS','STEALABLE','DEBUFF','DEBUFF_REMAIN','DEBUFF_STACKS','DISPELLABLE'}
 local modes={BUFF={'HELPFUL','present'},BUFF_REMAIN={'HELPFUL','remaining'},BUFF_STACKS={'HELPFUL','stacks'},STEALABLE={'HELPFUL','stealable'},DEBUFF={'HARMFUL','present'},DEBUFF_REMAIN={'HARMFUL','remaining'},DEBUFF_STACKS={'HARMFUL','stacks'},DISPELLABLE={'HARMFUL','dispel'}}

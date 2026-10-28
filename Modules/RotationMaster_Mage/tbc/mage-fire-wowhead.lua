@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Mage Fire after Wowhead and wowsims, levels 10–70 when Fire is the primary talent tree.
 -- Same switch as the Icy Veins Fire premade but a lower priority, shipped disabled: enable it to use it.
 -- It differs in two places: no Pyroblast opener, and Fire Blast is woven in whenever it is

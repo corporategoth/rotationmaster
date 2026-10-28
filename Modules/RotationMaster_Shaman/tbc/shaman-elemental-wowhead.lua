@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Elemental, Wowhead: Chain Lightning on cooldown with Bolts between at 70 (with
 -- Elemental Mastery or Clearcasting while leveling), Flame Shock only while moving,
 -- Earth Shock only to finish a target that dies before a cast lands.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Shadow Priest, levels 10-90 (the recommended variant): wowsims' order with the
 -- guides' simplifications. Selected in the Shadow specialization (258) from level 10 (RM stores MoP rotations
 -- per talent group, so the switch reads the specialization). Devouring Plague at three Shadow Orbs when Mind Blast is

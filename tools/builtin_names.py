@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Built In rotation display names: derive, apply, check and document them.
 
 The rule (also in Modules/README.md and tests/builtin_names.lua): the name keeps only what

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 local test, finish = dofile('tests/fixtures/addon.lua').suite()
 
 -- Actual bundled AceDB/CallbackHandler remain runtime services. No GUI,

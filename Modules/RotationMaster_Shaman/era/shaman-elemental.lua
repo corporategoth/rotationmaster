@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Classic Era Elemental Shaman, levels 10–60 (the recommended vanilla Elemental premade; primary
 -- tree 1). Icy Veins and Wowhead order: Earth Shock interrupts and finishes; while moving Flame
 -- Shock then Frost Shock; solo with the target in melee, Earth Shock above 30% and melee; on three

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail TALENT: the talent picker and the evaluation, driven with a Retail class
 -- tree modeled on Blizzard's generated API documentation and talent window
 -- (tests/fixtures/retail_traits.lua). No real client was available: this proves

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- addon.Analytics.NativeCasts: an explicit, volatile TBC player-cast receipt capture
 -- (docs/architecture/analytics-replay.md). Start registers one owned frame and one duration timer and feeds
 -- UNIT_SPELLCAST_* receipts into the bounded Analytics.NewCapture builder; Stop, Clear, the timeout or a world/control

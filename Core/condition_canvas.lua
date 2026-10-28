@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Scene model for the condition canvas (the card view of a rotation step's condition tree). It turns the editor's flat
 -- row list into detached card, connector and drop-target geometry and answers viewport queries; it creates no widgets,
 -- calls no condition printers and never edits the condition data. Loaded after Core/rotation_workspace.lua and drawn by

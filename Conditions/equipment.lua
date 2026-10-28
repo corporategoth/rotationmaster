@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In condition WEAPON_TYPE: what is equipped in the main hand, off hand or ranged slot (a category such as
 -- two-handed weapon or shield, or one weapon subclass such as daggers). It reads the equipment snapshot through
 -- addon:GetEquippedWeaponSlot (Core/build_context.lua), so an evaluation calls no native API and uses only item class

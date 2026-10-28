@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Priest damage, levels 1–60 (Phase 8 runes); the default Priest premade on a
 -- Season of Discovery realm whenever the healer premade does not apply. Runes count only while
 -- engraved. Shadowform; Vampiric Touch pre-cast; Void Plague, Shadow Word: Pain and Vampiric Touch

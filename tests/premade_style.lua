@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Built In premade style rules that hold for every edition. A Branch whose whole condition is a NOT
 -- is not allowed: test the condition itself and put the steps in the other arm ("you are in combat"
 -- with the pull in onFalse, never "you are not in combat"). NOT inside AND/OR stays allowed; Stops

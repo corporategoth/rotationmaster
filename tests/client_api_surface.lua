@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The addon calls only what each real client provides, or feature-detects it.
 -- tests/fixtures/client_api_<client>.lua (tools/generate_client_api.py, from Blizzard's UI
 -- source and in-game API dumps) says, per client, whether each global or C_* function the

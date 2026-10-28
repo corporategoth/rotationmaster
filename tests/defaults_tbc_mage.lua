@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Mage premades: Frost (default), Fire (Icy Veins, recommended), Fire (Wowhead), Arcane.
 -- Real catalog, composition, predicates, sequence executor, readiness and auto-select order;
 -- native observations are modeled (tests/fixtures/tbc_premades.lua).

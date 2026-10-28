@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Help layouts for the condition editor: the structural conditions (AND, OR, NOT), the shared field widgets (spell,
 -- spell name, item set, operator, percent operator, unit) and the cast-spell and aura-rank notes. Each layout function
 -- takes the help frame (some also the field's name, value and description) and adds the text widgets that explain it.

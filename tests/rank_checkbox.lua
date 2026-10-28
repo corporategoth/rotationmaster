@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- One rank option, one label ("Use this exact spell rank"), unticked by default,
 -- and no rank checkbox anywhere on a client without spell ranks. Stored fields
 -- are unchanged: spell families store `ranked` (ticked = true), aura families

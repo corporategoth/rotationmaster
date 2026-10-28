@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Rogue melee DPS, levels 1–60 (the recommended SoD premade and the SoD
 -- catch-all). wowsims/sod Phase 6 presets with Icy Veins and Zockify Phase 8: on three engaged
 -- enemies Blunderbuss, Crimson Tempest and Fan of Knives first; Ambush on a Cutthroat proc; Saber

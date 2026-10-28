@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Export the talent tree names (Data/talent_trees.lua) as plain JSON.
 
   python3 tools/export_talent_trees.py           write Data/talent_trees.json

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Test-only copy of the retired rm.tbc.shaman.starter Built In (revision 9): engine tests use it
 -- as a fixed, known pack. It is not in the TOC and never ships.
 local _, addon = ...

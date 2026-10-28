@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Check the Gitea workflows and composite actions: structure, pinning, shell syntax, secret handling.
 
   python3 tools/lint_workflows.py              every file under .gitea/workflows and .gitea/actions

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- /rm debug timeline (Diagnostics/timeline.lua): a read-only probe of
 -- Blizzard's encounter timeline. It must say which functions exist, mark every
 -- event field readable or secret (and flag a field the documentation calls

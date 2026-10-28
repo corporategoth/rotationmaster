@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Season of Discovery Retribution seal twisting (Wowhead Phase 8, wowsims): Seal of Martyrdom and Seal
 -- of Command swapped in the last 0.4 s before each swing, nothing on the global cooldown in the 1.9 s
 -- before it, Judgement while both seals linger, then one filler per swing: Divine Storm at three Holy

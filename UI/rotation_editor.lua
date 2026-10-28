@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The rotation editor pane: the header (name, description, specializations, identifier, priority, Enabled, Delete), the
 -- switch condition, the Rotation and Cooldowns canvas, the footer (Apply, Discard, View Changes, bulk actions) and the
 -- live condition bars. The pane is a view over a workspace from `addon:GetRotationEditWorkspace`

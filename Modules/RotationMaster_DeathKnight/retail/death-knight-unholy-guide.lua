@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight 12.x) Unholy Death Knight after Icy Veins and Wowhead (optimal reference): ghoul
 -- up; Festering Scythe to keep its plague haste; Soul Reaper with Reaping; Putrefy in Dark
 -- Transformation; Death Coil (Epidemic on four or more) on Sudden Doom or Forbidden Knowledge;

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Arms Warrior, pool rage for Colossus Smash (Icy Veins, Wowhead Phase 1, MaxDps;
 -- off by default). Same switch as the recommended Arms premade (Arms specialization), lower priority. Differs by
 -- rage policy: outside the Colossus Smash window Slam only above 80 rage and Overpower before it, so rage is

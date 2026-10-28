@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail Monk premades: per-spec storage, auto-select, the Blizzard Assisted step with Icy Veins'
 -- brews, the reference priorities (Combo Strikes on readable cast history), Stops and reminders
 -- through the real catalog, predicates, composition and sequence executor on a modeled Retail client

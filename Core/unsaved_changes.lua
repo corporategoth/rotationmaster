@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Change detection for the rotation editor: compares a baseline with a working copy so unsaved fields and step cards
 -- can be marked. Pure data comparison; it owns no state and must not write to either table or draw anything.
 -- Loaded from RotationMaster.toc after Core/condition_editor.lua and before Core/rotation_editor.lua; uses

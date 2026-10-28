@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- The window registry: one place that decides what is in front of what for every RM window, popup, prompt and menu, the
 -- Escape target that closes only the frontmost one, window scale and opacity, and the shared dialog chrome (title bar,
 -- drag, right-click close). Windows open through `addon:OpenPopup` and never set their own strata, frame level or

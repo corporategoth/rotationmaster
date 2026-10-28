@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Warlock, levels 1–60, all three trees (the recommended premade).
 -- One pack: every tree runs pet + Bane + Curse + DoTs + filler, and the tree steps are gated
 -- by talent-taught spells (Demonic Brand/Fel Domination, Decimation, Conflagrate, Incinerate,

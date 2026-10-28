@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 """Validate a translated work file and merge it into the locale files of one language.
 
   python3 tools/translation_apply.py deDE deDE-todo.json --dry-run                   validate and show what would change

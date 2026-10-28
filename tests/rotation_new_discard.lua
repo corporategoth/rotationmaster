@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- A new rotation that was never saved can be thrown away: Discard, the header
 -- Delete, the leave prompt's Discard, or just moving on to another rotation
 -- remove it from the list (it used to stay until a reload). A saved one still

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Affliction Warlock, Haunt pooling (Warcraft Tavern and Method), off by default.
 -- Same switch as the recommended premade (Affliction specialization) at a lower priority. It differs only in
 -- the shard policy: Haunt is cast at four shards or inside Dark Soul: Misery (not kept rolling), and below

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Generated from 40de4c1 (before body.specs): each premade whose switch named a
 -- specialization, with that switch. tests/premade_specs.lua checks the conversion.
 return {

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- TBC Priest healer after Wowhead, levels 10–70, selected in a group when Holy or Discipline is
 -- the primary talent tree; the default healer premade. RM advises on the friendly unit you
 -- target: choosing whom to heal stays with you. Prayer of Mending before every pull and

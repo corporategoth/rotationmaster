@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict test-only inverse of the four remaining item summary prints.
 -- Frozen92c8fe8 CARRYING-fixed item module: FunctionSourceHash50f07ef7.
 local tags = { 'EQUIPPED', 'ITEM', 'ITEM_RANGE', 'ITEM_COOLDOWN' }

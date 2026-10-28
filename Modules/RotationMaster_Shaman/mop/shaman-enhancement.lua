@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Enhancement Shaman, levels 10-90 (the recommended variant): Wowhead's Phase 5
 -- order, which Warcraft Tavern, Method and Hekili follow. Selected in the Enhancement specialization (263)
 -- from level 10 (RM stores MoP rotations per talent group). Out of combat Unleash

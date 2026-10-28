@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Feral Druid, levels 10–90, in the Feral specialization (103). wowsims' measured
 -- order, which Wowhead's Phase 5 list matches except for Ferocious Bite: Savage Roar never drops,
 -- Healing Touch on Predatory Swiftness at four or five combo points for Dream of Cenarius, Rip at

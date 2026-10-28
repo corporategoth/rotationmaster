@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Exact authorized source delta; rejects partial, repeated or unrelated edits.
 local changes = {
     ['Core/rotation_sequence.lua'] = {

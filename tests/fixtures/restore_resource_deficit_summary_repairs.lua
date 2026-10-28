@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Strict test-only inverse of exactly POWER and POINT print signs from efad377
 -- (the current bodies also carry the deficit spelling and "point total").
 local old = {

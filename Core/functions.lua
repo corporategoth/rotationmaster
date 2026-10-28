@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Custom function registry: validates the user's custom functions (db.global.custom_functions), compiles them into a
 -- registry keyed by function id, resolves a binding id to a callable (custom or Built In), and compiles callback bodies
 -- (custom conditions and functions) with their bindings. Install and remove are all-or-nothing: the new registry is

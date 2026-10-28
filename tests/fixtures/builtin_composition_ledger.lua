@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Append-only record of shipped Built In composition revisions; never rewrite a row.
 -- blocks: block id -> {[revision]=content digest of the authored block}.
 -- packs: composed pack id -> {[pack revision]={[block id]=pinned block revision}}.

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- WoW Forever Warrior premades: Protection (Icy Veins, recommended tank), Protection debuff upkeep
 -- (Warcraft Tavern), melee DPS (Icy Veins, recommended default) and spend-rage DPS (Warcraft
 -- Tavern). Real predicates, catalog, composition, sequence and publisher under a synthetic

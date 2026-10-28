@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Mists of Pandaria Classic Fury Warrior, levels 10-90 (the recommended variant): wowsims' Phase 5 order,
 -- simplified. Selected in the Fury specialization (72). The off hand tells Titan's Grip (a two-hander) from
 -- Single-Minded Fury (a one-hander) where wowsims plays them apart. Colossus Smash when two Raging Blow charges

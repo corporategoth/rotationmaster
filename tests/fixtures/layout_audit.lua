@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Resolves native-frame mock anchors into rectangles so UI tests can prove
 -- horizontal containment. Coordinates follow WoW: x grows right, y grows up.
 -- Only frames that would be drawn are audited: shown, anchored and inside a

@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Retail (Midnight) Arms Warrior, Colossus (SimulationCraft's colossus_st list, Icy Veins): the
 -- optimal reference, disabled by default because rage, Rend, Colossus Smash, Colossal Might and
 -- Sudden Death are hidden in Midnight combat. Charge to open. Sweeping Strikes on two or more

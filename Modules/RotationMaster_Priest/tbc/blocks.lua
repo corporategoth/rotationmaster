@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Shared TBC Priest blocks (Built In composition; authoring-time only).
 -- Consumers: rm.tbc.priest.dps.icyveins, rm.tbc.priest.dps.wowhead,
 -- rm.tbc.priest.healer.wowhead and rm.tbc.priest.healer.icyveins. A content change needs a

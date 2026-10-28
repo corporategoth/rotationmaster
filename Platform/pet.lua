@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Platform adapter for the player's pet: UnitExists("pet") and, on request, GetUnitName("pet").
 -- Owns platform:GetPetObservation (the `value or nil, reason` reader); it must not decide what a pet means for a
 -- rotation. Runs under the probe and restricted policies. The reader is a Built In helper whose body is recorded in

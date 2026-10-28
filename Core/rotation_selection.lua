@@ -1,3 +1,5 @@
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+
 -- Rotation selection support: the automatic switch candidate order, the plain-words explanations of why a rotation
 -- cannot be selected (/rm why), the specialization naming helpers, switch overlap analysis and the stable rotation
 -- identifiers behind /rm set and /rm list. It reads rotations and validation results and never writes them; the
