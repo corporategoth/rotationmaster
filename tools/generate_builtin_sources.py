@@ -11,8 +11,6 @@ from catalog_check import TOKEN
 ROOT=Path(__file__).resolve().parents[1]
 BEGIN='-- BEGIN GENERATED RM SOURCE BINDINGS'
 END='-- END GENERATED RM SOURCE BINDINGS'
-DOCS_BEGIN='-- BEGIN GENERATED RM PUBLIC HELPER DOCS'
-DOCS_END='-- END GENERATED RM PUBLIC HELPER DOCS'
 
 def function_source(source,record,name):
     lines=source.splitlines(keepends=True)
@@ -270,14 +268,12 @@ def generated():
                 descriptions.add(row['description'])
             if row.get('callName'):
                 descriptions.update(item['description'] for item in row['args']+row['returns'])
-    locale=(ROOT/'Locales/enUS.lua').read_text()
-    if DOCS_BEGIN in locale:
-        before,after=locale.split(DOCS_BEGIN,1)
-        if DOCS_END not in after: raise ValueError('unterminated generated public helper locale block')
-        _,after=after.split(DOCS_END,1)
-        locale=before.rstrip()+'\n'+after.lstrip('\n')
-    declarations=[DOCS_BEGIN]+['L['+lua(text)+'] = true' for text in sorted(descriptions)]+[DOCS_END]
-    outputs['Locales/enUS.lua']=locale.rstrip()+'\n\n'+'\n'.join(declarations)+'\n'
+    # The descriptions are strings of the main catalog like any other: each has a stable ID in tools/locale_registry.json,
+    # and the registry remembers which IDs this generator owns so it can add and retire exactly those.
+    import locales
+    model=locales.Model()
+    model.sync_group('public-helper-docs',descriptions)
+    outputs.update(model.outputs())
     return outputs,catalog
 
 

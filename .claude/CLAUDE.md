@@ -24,8 +24,9 @@ Start with `README.md`, `CONTRIBUTING.md` and `docs/dev/architecture.md`; the de
    or does not exist on that edition. Fixtures must model ABSENT globals. `learnings/restricted-clients.md`.
 5. **User-facing text is American English** (color, behavior, gray, -ize) and goes through `L["literal"]` and
    `Locales/enUS.lua`. Keep it at or below **3,900** entries: text only read when a window opens belongs in a load-on-demand
-   text bundle (`tools/locales.py move`; `docs/dev/architecture.md`, "Text bundles"). Translations are written only by
-   `tools/locales.py` through the translation tools; never hand-edit `Locales/<xx>.lua` or a bundle's locale files.
+   text bundle (`tools/locales.py move`; `docs/dev/architecture.md`, "Text bundles"). Strings have stable IDs; translations are written only by
+   `tools/locales.py` through the translation tools and English is changed only with `tools/locales.py reword/add/move`; never
+   hand-edit headers, hashes or IDs of `Locales/<xx>.lua` or a bundle's locale files.
    `learnings/translations.md`.
 6. **Generated files are never hand-edited** (`.pkgmeta`, `Data/artwork.lua`, `Data/builtin_sources.lua`, the integration
    tables, locale files, the glossary). Run the generator; `python3 tools/check --static` proves freshness.

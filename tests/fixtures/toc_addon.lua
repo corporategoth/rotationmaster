@@ -191,7 +191,7 @@ function T.new(o)
     env.C_Secrets = { HasSecretRestrictions = function() return project == 1 or project == 18 end }
     env.GetTime = function() return state.clock end
     env.time = os.time
-    env.GetLocale = function() return 'enUS' end
+    env.GetLocale = function() return o.locale or 'enUS' end
 
     local BUILDS = {
         [1] = { '12.1.5', '70575', 120105 },
@@ -662,6 +662,11 @@ function T.new(o)
                 clientLoad(path)
             end
         elseif line == 'locales.xml' then
+            -- The game language's file first, then English, as locales.xml lists them (the other languages' files return at once).
+            if o.locale and o.locale ~= 'enUS' then
+                clientLoad('Locales/' .. o.locale .. '.lua')
+            end
+
             clientLoad('Locales/enUS.lua')
         elseif line:match('%.lua$') then
             clientLoad(line)

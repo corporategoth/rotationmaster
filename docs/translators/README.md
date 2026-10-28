@@ -1,7 +1,7 @@
 # Translating Rotation Master
 
 Rotation Master uses the game client's own language; there is no language picker. English (`Locales/enUS.lua`) is the
-source. Ten translations exist, each a generated file:
+source. Ten translations exist, each a generated file (the main catalog in `Locales/`, plus the same files in each text bundle under `Modules/`):
 
 | Code | Language | Style notes |
 | --- | --- | --- |
@@ -21,20 +21,52 @@ programmer except running the tools below.
 
 ## How the files work
 
-`Locales/enUS.lua` assigns each string as `L["English text"] = true`: the key *is* the English the player sees. A translation
-file maps the same key to the translated text:
+Every string has a **stable ID**, a number from `tools/locale_registry.json` that is never reused and never derived from the
+wording. Code still reads `L["English text"]`; `Locales/enUS.lua` holds `[1234] = "English text"` with a hash of that English
+above it. A translation file maps the ID to the translation, with the English it was made from in the comment above:
 
 ```lua
--- en: "Choose a duration from 1 to %d seconds."
-L["Choose a duration from 1 to %d seconds."] = "Wähle eine Dauer von 1 bis %d Sekunden."
+-- 1a2b3c4d English: Choose a duration from 1 to %d seconds.
+-- %d #1: the longest duration in seconds, e.g. 60
+[1234] = "Wähle eine Dauer von 1 bis %d Sekunden.",
 ```
 
-- **Never edit `Locales/<xx>.lua` (or a text bundle's `<xx>.lua` under `Modules/RotationMaster_*`) by hand and never translate a key.** The tools read and write the main catalog and the bundles as one language; the files are written by `tools/locales.py`, which keeps
-  their order and format. You provide `{key: translation}` and the tools do the rest.
-- The `-- en:` comment above each entry is the English that entry was translated from. When the English later changes, the
-  entry becomes **stale**: the game still shows the old translation until someone updates it, and the tools list it again.
-- A few keys are names (`Rotation Master`, addon and site names): they stay identical in every language and the
+- **The translation line holds only the ID and the string**, so in vim `f=lC"text",` replaces just the translation. Change
+  nothing else on that line and leave the comment lines alone. Never translate or renumber an ID.
+- **The first comment line is `-- <hash> English: <text>`**: the short hash is how the tools know the English this
+  translation was made from. When the English later changes (a typo fix, a reworded sentence) the ID stays, your translation
+  stays and the game keeps showing it, but the hash no longer matches: the entry is **stale** and `python3 tools/locales.py
+  missing <xx>` lists it, with the English it was made from. Fix it, or - if the old translation is still right - confirm it
+  with `python3 tools/locales.py accept <xx> <id>`.
+- **`-- Context:` lines** say where a short or abstract string appears and what it does ("Step type dropdown entry in the
+  rotation editor: the step casts a pet ability"), so you can tell a verb from a noun and a button from a heading.
+- **`-- %s #1: ...` lines** say what each placeholder receives, in order, with an example (`the profile name, e.g.
+  "Default"`). **Lua 5.1 `string.format` has no positional arguments (no `%1$s`): keep every `%s`, `%d` ... in the order of
+  the English.** If your language would put them the other way round, reword the sentence so the order still works.
+- The files are generated: `tools/locales.py` writes them in one canonical layout, the header comes from
+  `tools/locale_translators.json`, and `locales.py check` fails if a header, a hash or an ID has been edited by hand. The
+  tools read and write the main catalog and the text bundles as one language. You may edit a translation string in your
+  editor; run `check` afterwards, and `python3 tools/locales.py rebuild` puts every file back into the canonical layout.
+- A few strings are names (`Rotation Master`, addon and site names): they stay identical in every language and the
   tools do not ask for them (`tools/translation_exempt.json`).
+
+### Where is this string used?
+
+```sh
+python3 tools/locales.py where 1234                  # by ID
+python3 tools/locales.py where "Pet Spell"           # exact English, or a unique part of it
+python3 tools/locales.py where -C 5 1234             # five lines around each use, merged like grep
+python3 tools/locales.py where --id 1234 --json      # for editors
+```
+
+It prints the ID, the English, the catalog, any context and token notes, and each place the code reads the string (file,
+line, the function it sits in, and as many surrounding lines as you ask for with `-B`, `-A`, `-C`). A string the code reads
+through a variable is reported as "no direct call site found (looked up dynamically?)". In vim, with the cursor on the
+`[1234]` of a translation line:
+
+```vim
+nnoremap <leader>w :!python3 tools/locales.py where -C 5 <C-r>=expand('<cword>')<CR><CR>
+```
 
 ## Workflow
 
@@ -43,7 +75,7 @@ python3 tools/translation_status.py                       # what is open, per la
 python3 tools/translation_todo.py deDE --out deDE.json     # the work file for one language
 # translate deDE.json (fill in each "translation")
 python3 tools/translation_apply.py deDE deDE.json --dry-run
-python3 tools/translation_apply.py deDE deDE.json
+python3 tools/translation_apply.py deDE deDE.json --translator "Your Name"
 python3 tools/locales.py check
 ```
 
@@ -52,8 +84,9 @@ python3 tools/locales.py check
    zero). `--json` is machine readable; `--json --details` lists the keys; `--fail-on invalid,orphans` is what CI runs.
    Words such as `Paladin` or `Frost` that really are the same in a language show up under *same*: review them and, when they
    are right, apply them with `--allow-identical --record-keep` so they are remembered and not asked again.
-2. **Work file.** `translation_todo.py <locale>` writes a JSON list. Each item has the key, the English, why it is listed
-   (`missing`, `stale` or `same`), for a stale entry the English it was translated from and the current translation, the
+   `python3 tools/locales.py missing <xx>` is the plain list: untranslated IDs and stale IDs, nothing else.
+2. **Work file.** `translation_todo.py <locale>` writes a JSON list. Each item has the ID, the key, the English, why it is
+   listed (`missing`, `stale` or `same`), for a stale entry the English it was translated from and the current translation, the
    placeholders that must survive, where the string is used (help text, editor window, Built In premade, ...) with the first
    source lines, the glossary words found in it, and a note when length or tone matters. `--limit 50` makes a batch,
    `--include missing` narrows it, `--format markdown` makes a readable list.
@@ -61,15 +94,65 @@ python3 tools/locales.py check
    used for the same thing, and `style.md` for the register of your language. Use the game client's own wording for game
    terms (spells, classes, specializations, stats, zones).
 4. **Apply.** `translation_apply.py <locale> <file>` validates everything first and writes nothing unless every translation
-   passes; `--dry-run` only validates. It then writes the locale file through `tools/locales.py` and re-reads it to prove that
-   exactly the supplied entries changed and each has the right `-- en:` source. It restores the previous file if that proof
-   fails.
-5. **Check.** `python3 tools/locales.py check` must pass for every locale. Commit `Locales/<xx>.lua` (and `locales.xml` if a
-   language is new) with a message that says which language and how many strings, and how they were produced and reviewed.
+   passes; `--dry-run` only validates. It then writes the locale files through `tools/locales.py` and re-reads them to prove
+   that exactly the supplied entries changed and each has the right hash. It restores the previous files if that proof
+   fails. A work file may also be a plain JSON object `{"1234": "translation"}`; the English key works in place of an ID.
+5. **Check.** `python3 tools/locales.py check` must pass for every locale. Commit the locale files with a message that says
+   which language and how many strings, and how they were produced and reviewed.
+
+## Getting credited
+
+Every locale file starts with the copyright line, then a header that is **generated** from `tools/locale_translators.json`:
+
+```lua
+-- Translators: Claude (AI-assisted, not yet reviewed by a native speaker; 3041 strings), Jane Doe <https://example.org/jane> (120 strings, 2026-11-02)
+```
+
+The existing translations of all ten languages were produced by Claude (Anthropic) and have **not** been reviewed by a native
+speaker; the header says so, truthfully. To be credited for your work, pass your name when the file is applied:
+
+```sh
+python3 tools/translation_apply.py deDE deDE.json --translator "Jane Doe" --url https://example.org/jane
+python3 tools/locales.py build deDE translations.json --translator "Jane Doe"      # the same, without the validation tool
+python3 tools/locales.py credit deDE --translator "Jane Doe"                     # credit hand edits made in a locale file
+```
+
+`--translator` adds you to the header of **every file that application wrote** (the main file and each text bundle), counting
+the strings you changed (applying the same file again changes nothing); a second application only updates your counts and date
+range. Names are matched case-insensitively, so one person is listed once. A model is credited with `--ai` and appears in
+the header only.
+
+The **About page** (the AddOns panel page and the About tab of the window) also credits you, in the language you translated:
+`Translation (<language name>): Jane Doe, ...`. That line is built from a small data table, `L[0] = { "Jane Doe" }`, that
+the tool writes into the same locale file, so it exists only while that language is the game's language, English never loads
+it, and it lists **human translators only** (the AI is credited in the header, not on screen). The main file of a language
+carries the human translators of all its catalogs, so the About page never has to load a text bundle. The list is cut after
+about 480 bytes on the launcher page (whole names, then an ellipsis).
+
+## Authoring context and token notes
+
+For maintainers: `python3 tools/locales.py notes todo` lists the strings that have placeholders and no note per placeholder
+(`needs: ["notes"]`) and the short strings (three words or fewer, no sentence punctuation; `--context-words N`) that have no
+context (`needs: ["context"]`), each with the call sites found by searching the code, so the author can see the arguments
+and the screen. `python3 tools/locales.py notes set notes.json` takes `{"1234": ["first token ...", "second token ..."],
+"Pet Spell": {"context": "Step type dropdown entry ..."}}` (an ID or the English; an author may write `%s = what goes in`, the
+`%s #1:` label is generated from the English) and regenerates the comments in every file. Notes and context live in
+`tools/locale_registry.json` under `annotations`; they survive `rebuild`, `reword` and `move`. `check` fails when the number
+of notes differs from the number of placeholders; `check --require-notes` and `check --require-context` fail for every string
+that still lacks one.
+
+## Developers: changing the English
+
+`python3 tools/locales.py reword "old English" "new English"` rewrites every `L["old English"]` in the addon (the whole
+literal only, in the quote style it uses, escapes handled), changes the enUS text and hash, **keeps the ID** and leaves every
+translation in place, stale by hash. Plain strings equal to the old English are listed, not changed (`--all-literals`
+changes them); `tests/` is listed, not changed (`--tests` rewrites its `L[...]` sites). `--dry-run` shows the plan. Text
+whose code key is symbolic (`Default.*`, `Help.*`) is reworded by its English text and no code changes. Adding is
+`locales.py add "New text"` (or `sync` after writing `L["New text"]` in code); `remove` retires the ID; `move` keeps IDs.
 
 ## What the tools check
 
-Errors (nothing is written): the key is not in English; empty text; a placeholder differs (`%s`, `%d`, `{{name}}`,
+Errors (nothing is written): the ID or key is not in the English; empty text; a placeholder differs (`%s`, `%d`, `{{name}}`,
 `{name}`, `|cAARRGGBB`, `|r`, `|n`, `\n`); the order of `%` specifiers changed (Lua's `string.format` has no positional
 arguments); a bare `%` in a formatted string; a `{{!yes|no}}` alternative pair lost its pipe or an empty half; a stray `|` or
 backslash; a control or zero-width character; leading or trailing whitespace or the number of line breaks differs from the
@@ -122,7 +205,7 @@ open `/rm config`:
 - the Built In list and the help text read naturally;
 - `/rm help` and the chat messages (colors intact).
 
-Report problems with the key (copy the English from the window) so they can be found.
+Report problems with the ID or the English (copy it from the window; `locales.py where` finds the rest) so they can be found.
 
 ## Adding a language
 

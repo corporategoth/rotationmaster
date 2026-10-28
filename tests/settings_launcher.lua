@@ -164,4 +164,140 @@ test('normal load order retains native services without any retired Options rend
     end
 end)
 
+-- Translator credit (Core/text_bundles.lua GetTranslationCredit): one more wrapped line under the credits, only when the
+-- game's language has a human translator. The real function is loaded over the fixture's locale table.
+local function withTranslators(names, languageName)
+    local f, registered, frames = fixture()
+    local a = f.addon
+    local L = f.libraries['AceLocale-3.0']:GetLocale()
+    f.env.GetLocale = function() return languageName end
+
+    if names then
+        rawset(L, 0, names)
+    end
+
+    f.load('Core/text_bundles.lua')
+    a:SetupOptions()
+    return f, a, a.settingsLauncher
+end
+
+test('no translator line when nobody human has translated the language (the AI is never credited there)', function()
+    local _, a, page = withTranslators(nil, 'deDE')
+    assert(a:GetTranslationCredit() == nil)
+
+    assert(
+        not page.credits.text:find('Translation', 1, true) and not page.credits.text:find('Deutsch', 1, true),
+        page.credits.text
+    )
+
+    local _, _, english = withTranslators({}, 'enUS')
+    assert(not english.credits.text:find('Translation', 1, true))
+end)
+
+test('two human translators give one Translation (language) line, each name once', function()
+    local f, a, page = withTranslators({ 'Anna Beispiel', 'Bruno', 'anna beispiel' }, 'deDE')
+    f.translations['Translation (%s): %s'] = 'Übersetzung (%s): %s'
+    local line = a:GetTranslationCredit()
+    assert(line == 'Übersetzung (Deutsch): Anna Beispiel, Bruno', tostring(line))
+    local f2, a2, page2 = withTranslators({ 'Anna Beispiel', 'Bruno' }, 'deDE')
+    assert(page2.credits.text:find('Translation (Deutsch): Anna Beispiel, Bruno', 1, true), page2.credits.text)
+    -- the three existing credit lines are still first
+    assert(page2.credits.text:find('^License'), page2.credits.text)
+end)
+
+test(
+    'a long list is cut at a name boundary with an ellipsis and wraps inside the credits width in every script',
+    function()
+        local samples = {
+            Latin = { 'Maximilian von Beispielhausen-Müller', 'Anna-Katharina Schmidt-Wagner' },
+            Cyrillic = { 'Иван Петров-Водкин', 'Екатерина Александровна' },
+            Hangul = { '김철수', '박영희', '이민호' },
+            Han = { '王小明', '李小龍', '陳大文' },
+        }
+
+        for script, names in pairs(samples) do
+            local many = {}
+
+            for i = 1, 80 do
+                many[#many + 1] = names[(i - 1) % #names + 1] .. (i > #names and (' ' .. i) or '')
+            end
+
+            local f, a, page = withTranslators(many, 'koKR')
+            local line = a:GetTranslationCredit(480)
+            assert(line:len() <= 480 + 60, script .. ' ' .. line:len())
+            assert(line:sub(-3) == '\226\128\166', script .. ' list was not cut with an ellipsis')
+            -- Whole names only: what precedes the ellipsis ends exactly at the end of one of the names.
+            local kept = line:match(': (.*), \226\128\166$')
+            local last
+
+            for _, name in ipairs(many) do
+                if kept:sub(-#name) == name then
+                    last = name
+                end
+            end
+
+            assert(last, script .. ' the cut is not at a name boundary: ' .. tostring(kept):sub(-12))
+            assert(page.credits.text:find(line, 1, true), 'the page does not show the capped line')
+
+            -- Wrapped height under a conservative model (7 points a character, 13 per line): the block ends above the page's bottom.
+            local function characters(text)
+                local n = 0
+
+                for _ in text:gmatch('[^\128-\191]') do
+                    n = n + 1
+                end
+
+                return n
+            end
+
+            local lines = 0
+
+            for paragraph in (page.credits.text .. '\n'):gmatch('(.-)\n') do
+                lines = lines + math.max(1, math.ceil(characters(paragraph) * 7 / 592))
+            end
+
+            assert(460 + lines * 13 <= 600 - 8, script .. ': credits need ' .. lines .. ' lines and run past the page')
+            -- The label keeps its wrap on and follows the panel's width.
+            assert(page.credits.wordWrap == true)
+            page.frame.scripts.OnSizeChanged(page.frame, 300)
+            assert(page.credits:GetWidth() <= 300 - 48 + 0.5, page.credits:GetWidth())
+        end
+    end
+)
+
+test('the About page of the workbench lists the translators too, in full, and nothing for English', function()
+    local function about(names)
+        local f, a = withTranslators(names, 'deDE')
+        f.load('UI/settings_profiles.lua')
+        local texts = {}
+
+        local p = {
+            Heading = function() end,
+            Text = function(_, text)
+                texts[#texts + 1] = text
+            end,
+            Edit = function() return {} end,
+            Guard = function(_, fn) return fn end,
+        }
+
+        a:BuildAboutSettings(p)
+        return table.concat(texts, '\n')
+    end
+
+    assert(about({ 'Anna', 'Bruno' }):find('Translation (Deutsch): Anna, Bruno', 1, true))
+    assert(not about(nil):find('Translation', 1, true))
+    local many = {}
+
+    for i = 1, 100 do
+        many[i] = 'Translator ' .. i
+    end
+
+    assert(about(many):find('Translator 100', 1, true), 'the About page of the workbench must not cap the list')
+end)
+
+test('the launcher caps by whole names', function()
+    local _, a = withTranslators({ 'Anna', 'Bruno' }, 'deDE')
+    assert(a:GetTranslationCredit(8) == 'Translation (Deutsch): Anna, \226\128\166', a:GetTranslationCredit(8))
+end)
+
 finish()

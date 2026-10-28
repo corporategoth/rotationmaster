@@ -11,7 +11,7 @@ local function read(path)
     return s
 end
 
-local enUS = read('Locales/enUS.lua')
+local enUS = dofile('tests/fixtures/locale_entries.lua').english()
 
 local function lookup(project, expansion, class)
     local f = F.new(project, expansion, class)
@@ -42,11 +42,7 @@ test('every family lists three distinct trees per class, each with a locale key'
             for _, name in ipairs(names) do
                 assert(not seen[name], key .. ' ' .. class .. ' repeats ' .. name)
                 seen[name] = true
-
-                assert(
-                    enUS:find('L["TalentTree.' .. name .. '"] = "' .. name .. '"', 1, true),
-                    'no locale key for tree name ' .. name
-                )
+                assert(enUS['TalentTree.' .. name] == name, 'no locale key for tree name ' .. name)
             end
         end
 

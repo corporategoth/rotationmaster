@@ -321,12 +321,8 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
         )
     end
 
-    local english = {}
-
-    for key, value in pairs(f.translations) do
-        english[key] = value
-    end
-
+    local entries = dofile('tests/fixtures/locale_entries.lua')
+    local english = entries.entries('enUS')
     localize(f)
     local rows = a:ListDefaultRotations(0)
     assert(#rows > 0)
@@ -359,29 +355,8 @@ test('no shipped Built In shows a dotted key as its name, in English, in German,
     end
 
     check('enUS', english)
-    -- The German file as the client reads it: its own entries over English (AceLocale falls back to English).
-    local german = {}
-
-    for key, value in pairs(english) do
-        german[key] = value
-    end
-
-    do
-        local target = setmetatable({}, {
-            __newindex = function(_, key, value)
-                german[key] = value == true and key or value
-            end,
-        })
-
-        local env = setmetatable({ LibStub = function() return { NewLocale = function() return target end } end }, {
-            __index = _G,
-        })
-
-        local chunk = assert(loadfile('Locales/deDE.lua'))
-        setfenv(chunk, env)
-        chunk('RotationMaster', {})
-    end
-
+    -- The German file as the client reads it: its own entries over English.
+    local german = entries.entries('deDE')
     localize(f, german)
     check('deDE', german)
     local differs = 0

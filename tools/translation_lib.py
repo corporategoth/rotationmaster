@@ -74,18 +74,23 @@ class Corpus:
     def __init__(self, locales=None):
         self.english = L.english()
         self.locales = list(locales or LOCALES)
+        self.hash = {key: L.text_hash(text) for key, text in self.english.items()}
+        self.ids = {e.key: e.id for e in L.english_entries()}
         self.entries = {}
         self.sources = {}
+        self.hashes = {}
         for locale in LOCALES:
             # Every catalog: the main one and each load-on-demand text bundle.
             self.entries[locale] = dict(L.locale_entries(locale))
+            # The English each translation was made from (the comment above it) and the hash of it that decides staleness.
             self.sources[locale] = L.read_sources(locale)
+            self.hashes[locale] = L.read_hashes(locale)
         self.exempt = load_exempt()
         self.names = known_names(self.exempt)
         votes = Counter()
         for locale in LOCALES:
             for key, value in self.entries[locale].items():
-                if key in self.english and value == self.english[key] and self.sources[locale].get(key) == value:
+                if key in self.english and value == self.english[key] and self.hashes[locale].get(key) == self.hash[key]:
                     votes[key] += 1
         self.votes = votes
         for key, count in votes.items():
@@ -112,7 +117,7 @@ class Corpus:
 
     def classify(self, locale):
         """Keys of one locale by state: complete, missing, stale, identical (suspect), exempt, invalid, orphans."""
-        entries, sources = self.entries[locale], self.sources[locale]
+        entries, hashes = self.entries[locale], self.hashes[locale]
         out = {'complete': [], 'missing': [], 'stale': [], 'suspect': [], 'exempt': {}, 'invalid': {}, 'orphans': []}
         for key, english in self.english.items():
             if key not in entries:
@@ -122,7 +127,7 @@ class Corpus:
             problems = L.problems(key, english, value)
             if problems:
                 out['invalid'][key] = problems
-            if sources.get(key) != english:
+            if hashes.get(key) != self.hash[key]:
                 out['stale'].append(key)
             elif value == english:
                 reason = self.identical_reason(locale, key)

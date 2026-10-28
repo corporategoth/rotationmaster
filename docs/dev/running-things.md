@@ -29,7 +29,7 @@ touch `core.hooksPath`).
 | `python3 tools/fast_tests.py Core/foo.lua` | Only the suites named after the files you changed (the pre-commit hook) | seconds |
 | `python3 tools/test_devtools.py` | The tools' own tests (package builder, release notes, translation tools, workflow lint) | about 10 s |
 | `python3 tests/test_us_spelling.py` | American English in enUS (main and text bundles), help text and Markdown | seconds |
-| `python3 tests/test_locale_bundles.py`, `lua5.1 tests/text_bundles.lua` | The load-on-demand text bundles: complete in ten languages, one owner per key, fresh index, nothing loaded at startup | seconds |
+| `python3 tests/test_locale_bundles.py`, `python3 tests/test_locale_ids.py`, `lua5.1 tests/text_bundles.lua` | The load-on-demand text bundles: complete in ten languages, one owner per key, fresh index, nothing loaded at startup | seconds |
 | `lua5.1 tests/<name>.lua`, `luajit tests/<name>.lua` | One suite | usually under a second |
 
 `tools/check_all.py --json out.json` also writes every command's exit code and duration. `default_corpus.lua` is the one
@@ -128,7 +128,7 @@ python3 tools/locales.py check
 | `tools/test_devtools.py` | Tests of the tools in this table |
 | `tools/setup_lint.py`, `tools/lint.py`, `tools/lint-tool.json`, `tools/lint-baseline.json` | Pinned wowlua-ls: download once, run against the baseline |
 | `tools/catalog_check.py` | Literal `L["key"]` definitions and reads; raw-prose inventory (`docs/quality/localization-inventory.json`) |
-| `tools/locales.py` | Export, missing, build, check, rebuild locale files, list and move text between the main catalog and the text bundles, write the bundle index (the translation tools wrap it) |
+| `tools/locales.py` | Stable-ID locale files: export, missing (untranslated + stale IDs), build (`--translator`), accept, credit, check, rebuild, reword (change English, keep IDs and translations), add/remove/sync, notes and context for translators, where (a string's uses in the code), move text between catalogs, write the bundle index (the translation tools wrap it). `tools/locale_format.py` is the file format; `tools/migrate_locale_ids.py` the historical one-time converter |
 | `tools/translation_status.py`, `translation_todo.py`, `translation_apply.py`, `translation_glossary.py`, `translation_lib.py`, `translation_exempt.json` | Translator workflow (`docs/translators/README.md`) |
 | `tools/generate_artwork_catalog.py` | `Data/artwork.lua` and `.pkgmeta` |
 | `tools/generate_builtin_sources.py`, `tools/collect_builtin_sources.lua`, `tools/public_helpers.lua` | `Data/builtin_sources.lua` and the public helper documentation |

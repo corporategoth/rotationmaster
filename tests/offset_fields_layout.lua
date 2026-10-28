@@ -31,10 +31,7 @@ local function characters(text)
 end
 
 local function language(f, name)
-    if name ~= 'enUS' then
-        f.env.GetLocale = function() return name end
-        f.load('Locales/' .. name .. '.lua')
-    end
+    f.language(name)
 end
 
 -- Both inputs on one row, left and right halves of the space beside the pad, not overlapping, inside the pane.

@@ -1,7 +1,7 @@
--- Rotation Master follows the game's language: the real AceLocale, English and
--- generated translations, loaded in locales.xml order as the client loads them.
--- The game's translation is applied, untranslated keys stay English, and the
--- other translations are never kept.
+-- Rotation Master follows the game's language: the real AceLocale, English and generated translations by stable ID,
+-- loaded in locales.xml order as the client loads them. The game's translation is applied once, when the files load
+-- (nothing is resolved per lookup), untranslated keys stay English, English loads no translation, and the other
+-- translations are never kept.
 local passed, failed = 0, 0
 
 local function test(name, fn)
@@ -29,6 +29,8 @@ for file in read('locales.xml'):gmatch('<Script file="([^"]+)"') do
     files[#files + 1] = file:gsub('\\', '/')
 end
 
+local E = dofile('tests/fixtures/locale_entries.lua')
+
 local function boot(client)
     local env = setmetatable({
         GetLocale = function() return client end,
@@ -51,67 +53,41 @@ local function boot(client)
     load('Libs/LibStub/LibStub.lua')
     load('Libs/AceLocale-3.0/AceLocale-3.0.lua')
     load('globals.lua')
+    -- Every file of the add-on shares one private table, as the client gives it.
+    local addon = {}
 
     for _, path in ipairs(files) do
-        load(path, 'RotationMaster', {})
+        load(path, 'RotationMaster', addon)
     end
 
     -- The TOC loads the bundle index and the loader straight after locales.xml.
-    local addon = {}
     load('Data/text_bundle_index.lua', 'RotationMaster', addon)
     load('Core/text_bundles.lua', 'RotationMaster', addon)
     return env.LibStub('AceLocale-3.0'):GetLocale('RotationMaster'), addon, env
 end
 
--- Resident memory first: the reference tables below intern every string and
--- would hide what a translation costs.
+-- Resident memory first: the reference tables below intern every string and would hide what a translation costs.
 local memory = {}
 
 for _, client in ipairs({ 'enUS', 'deDE' }) do
-    collectgarbage('collect')
-    collectgarbage('collect')
+    for _ = 1, 6 do
+        collectgarbage('collect')
+    end
+
     local before = collectgarbage('count')
     local keep = boot(client)
-    collectgarbage('collect')
-    collectgarbage('collect')
+
+    for _ = 1, 6 do
+        collectgarbage('collect')
+    end
+
     memory[client] = collectgarbage('count') - before
     keep = nil
 end
 
 -- English and German entries, read without AceLocale's selection.
-local english, german = {}, {}
-
-do
-    local function into(t, first)
-        return setmetatable({}, {
-            __newindex = function(_, k, v)
-                if not (first and t[k] ~= nil) then
-                    t[k] = v == true and k or v
-                end
-            end,
-        })
-    end
-
-    local target
-
-    local env = setmetatable({
-        NORMAL_FONT_COLOR_CODE = '|cffffd200',
-        LibStub = function() return { NewLocale = function() return target end } end,
-    }, { __index = _G })
-
-    local function run(path)
-        local fn = assert(loadfile(path))
-        setfenv(fn, env)
-        fn('RotationMaster', {})
-    end
-
-    run('globals.lua')
-    target = into(english, true)
-    run('Locales/enUS.lua')
-    target = into(german)
-    run('Locales/deDE.lua')
-end
-
+local english = E.entries('enUS')
+local german = E.entries('deDE')
 local translated, untranslated
 
 for key, value in pairs(german) do
@@ -151,8 +127,8 @@ test('the main English table stays well below the 4096-entry hash boundary', fun
     )
 end)
 
-test('locales.xml loads English first, then every translation', function()
-    assert(files[1] == 'Locales/enUS.lua' and #files == 11, table.concat(files, ','))
+test('locales.xml loads every translation, then English last', function()
+    assert(files[#files] == 'Locales/enUS.lua' and #files == 11, table.concat(files, ','))
 
     assert(
         not read('RotationMaster.toc'):find('LoadSavedVariablesFirst', 1, true),
@@ -177,10 +153,45 @@ test('the game language is used and missing keys fall back to English', function
     assert(L[translated] ~= english[translated], 'Korean game did not show Korean')
 end)
 
+test('the translation is applied when the files load: no lazy resolution, no tables left behind', function()
+    local L, addon = boot('deDE')
+
+    -- Every translated entry is already an ordinary entry of L.
+    for key, value in pairs(german) do
+        if value ~= english[key] then
+            assert(rawget(L, key) == value, ('%q was not written into L'):format(key:sub(1, 60)))
+        end
+    end
+
+    assert(addon.translation == nil, 'the language\'s ID table is still referenced')
+    assert(addon.localeIsTranslated == true)
+    assert(getmetatable(L).__index ~= nil)
+end)
+
+test('an English game loads no translation table: only the keys whose English is not their text are entries', function()
+    local L, addon = boot('enUS')
+    local entries = 0
+
+    for key, value in pairs(L) do
+        assert(type(key) == 'string' and type(value) == 'string')
+        assert(value ~= key, ('%q is its own English and should not be resident'):format(key:sub(1, 60)))
+        entries = entries + 1
+    end
+
+    print('  resident entries in an English game: ' .. entries)
+    assert(entries > 0 and entries <= 1000, entries)
+    assert(addon.translation == nil and addon.localeIsTranslated == false)
+
+    -- Reading anything still answers with its English.
+    for key, value in pairs(english) do
+        assert(L[key] == value, key)
+    end
+end)
+
 test('only English and the game language stay resident', function()
     print(string.format('  resident KB: enUS %.0f, deDE %.0f', memory.enUS, memory.deDE))
     assert(memory.deDE > memory.enUS * 1.3, 'the German translation did not load')
-    assert(memory.enUS < 1000, 'an English game keeps translations resident: ' .. memory.enUS .. ' KB')
+    assert(memory.enUS < 500, 'an English game keeps translations resident: ' .. memory.enUS .. ' KB')
 end)
 
 test('a language choice saved by the retired picker is dropped at startup', function()

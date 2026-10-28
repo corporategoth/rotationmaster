@@ -7,7 +7,8 @@
   python3 tools/translation_todo.py deDE --limit 50                       the first 50 (a batch)
 
 Each item carries:
-  key, english      the string to translate (the key is also the English the game shows)
+  id, key, english  the string to translate; the numeric id is its stable identity, the key what the code reads
+                    (usually the English itself; apply the result with either)
   reason            missing | stale | same
   existing          the current translation, when there is one (stale: translated from older English)
   previous_english  for a stale entry, the English that translation was made from, so you can see what changed
@@ -60,7 +61,7 @@ def build_items(corpus, locale, include, limit, context):
         english = corpus.english[key]
         files = index.get(key, [])
         area = T.key_area(key, files)
-        item = {'key': key, 'english': english, 'reason': reason}
+        item = {'id': corpus.ids[key], 'key': key, 'english': english, 'reason': reason}
         if reason == 'stale':
             item['previous_english'] = corpus.sources[locale].get(key)
         if key in corpus.entries[locale]:

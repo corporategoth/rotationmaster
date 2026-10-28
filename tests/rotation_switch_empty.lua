@@ -16,28 +16,7 @@ local KEY = 'No switch condition: this rotation can be selected automatically wh
 
 -- The entry a locale file holds for KEY.
 local function translation(language)
-    if language == 'enUS' then
-        return KEY
-    end
-
-    local found
-
-    local L = setmetatable({}, {
-        __newindex = function(_, key, value)
-            if key == KEY then
-                found = value
-            end
-        end,
-    })
-
-    local env = setmetatable({ LibStub = function() return { NewLocale = function() return L end } end }, {
-        __index = _G,
-    })
-
-    local chunk = assert(loadfile('Locales/' .. language .. '.lua'))
-    setfenv(chunk, env)
-    chunk('rotationmaster')
-    return found
+    return dofile('tests/fixtures/locale_entries.lua').entries(language)[KEY]
 end
 
 for _, language in ipairs({ 'enUS', 'deDE' }) do
@@ -46,12 +25,7 @@ for _, language in ipairs({ 'enUS', 'deDE' }) do
             .. ': an empty switch says it is selected automatically whenever the rotation applies; a real one shows its condition',
         function()
             local f, parent = fixture()
-
-            if language ~= 'enUS' then
-                f.env.GetLocale = function() return language end
-                f.load('Locales/' .. language .. '.lua')
-            end
-
+            f.language(language)
             local a = f.addon
             a.HasSwitchCondition = function(_, switch) return type(switch) == 'table' and switch.type ~= nil end
             local expected = assert(translation(language), language .. ' has no translation of the empty switch text')

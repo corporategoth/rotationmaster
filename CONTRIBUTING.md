@@ -37,7 +37,7 @@ the suites named after the changed files. The full suite and a package build run
 
 - **American English** in everything a player or developer reads: color, behavior, gray, -ize. `tests/test_us_spelling.py` checks.
 - **User-facing text** goes through `L["literal English"]` and `Locales/enUS.lua`; see `docs/dev/architecture.md`
-  ("Add or change a locale string"). Translations go through the tools in `docs/translators/`, never by hand.
+  ("Add or change a locale string"). Each string has a stable ID; change wording with `python3 tools/locales.py reword`. Translations go through the tools in `docs/translators/`, never by hand.
 - **Generated files are never edited by hand** (`docs/dev/architecture.md` lists them). `.pkgmeta` is one of them.
 - **Platform first.** Game APIs are read only in `Platform/` and return `nil, reason` when they cannot be read. Retail and Forever
   hide combat data from addons; never compare a value you have not checked with `CanReadValue`.

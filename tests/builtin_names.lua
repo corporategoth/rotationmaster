@@ -9,24 +9,7 @@ local test, finish = F.suite()
 local corpus = dofile('tests/fixtures/default_corpus.lua')
 local modules = dofile('tools/builtin_modules.lua')
 
-local names = {}
-
-do
-    local L = setmetatable({}, {
-        __newindex = function(_, key, value)
-            names[key] = value == true and key or value
-        end,
-    })
-
-    local env = setmetatable({
-        LibStub = function() return { NewLocale = function() return L end } end,
-        color = setmetatable({}, { __index = function() return '' end }),
-    }, { __index = _G })
-
-    local chunk = assert(loadfile('Locales/enUS.lua'))
-    setfenv(chunk, env)
-    chunk('rotationmaster')
-end
+local names = dofile('tests/fixtures/locale_entries.lua').english()
 
 local function packs()
     local f = corpus.load(5, 1, 'ROGUE', { modules = false })

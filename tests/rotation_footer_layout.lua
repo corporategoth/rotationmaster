@@ -34,12 +34,7 @@ end
 
 local function open(language, id, width)
     local f, parent = fixture()
-
-    if language ~= 'enUS' then
-        f.env.GetLocale = function() return language end
-        f.load('Locales/' .. language .. '.lua')
-    end
-
+    f.language(language)
     parent:SetSize(width, HEIGHT)
     local pane = assert(f.addon:CreateRotationEditor(parent, 0, id))
 

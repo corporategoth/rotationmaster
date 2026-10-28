@@ -413,7 +413,9 @@ test('no current English or locale text still offers Match all ranks', function(
         local h = assert(io.open(path, 'rb'))
         local text = h:read('*a')
         h:close()
-        assert(text:find('L["' .. LABEL .. '"]', 1, true), path .. ' lacks the shared rank label')
+        -- English: [id] = "label"; a translation records the English it answers in the comment above it.
+        local marker = path:match('enUS%.lua$') and ('= "' .. LABEL .. '",') or (' English: ' .. LABEL .. '\n')
+        assert(text:find(marker, 1, true), path .. ' lacks the shared rank label')
     end
 
     for _, path in ipairs({

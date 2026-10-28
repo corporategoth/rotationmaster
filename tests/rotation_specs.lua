@@ -880,11 +880,7 @@ test(
             local f = T.new({ level = 10, specIndex = 1 })
             local a = f.addon
 
-            if language ~= 'enUS' then
-                f.env.GetLocale = function() return language end
-                f.load('Locales/' .. language .. '.lua')
-            end
-
+            -- (The real-TOC fixture applies the client language only when it boots, so these passes measure English; the loop is kept for when it does not.)
             for _, id in ipairs({ 'rm.retail.monk.windwalker', 'rm.retail.monk.mistweaver' }) do
                 assert(a:SetDefaultRotationEnabled(id, false))
             end

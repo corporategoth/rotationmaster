@@ -1,3735 +1,6110 @@
-local addon_name = ...
-
-local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
-if not L then return end
-L['/rm perf probe - Check native profiler access.'] = true
-L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'] = '/rm perf engine [lean||standard] - Show or choose the rotation evaluation engine.'
-L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'] = '/rm perf cpu||runtime||memory [seconds||stop||report] - Capture performance observations.'
-L['Capture memory (10m)'] = true
-L['Memory report'] = true
-L['Stop memory capture'] = true
-L["Capture runtime (10s)"] = true
-L["Runtime report"] = true
-L["Report"] = true
-L["Capture CPU (10s)"] = true
-L["CPU report"] = true
-L["disabled"] = true
-L["enabled"] = true
-L["exact"] = true
-L["mismatch"] = true
-L["present"] = true
-L["restricted"] = true
-L["Bypass observation cache (reload required)"] = true
-L["Enable observation cache (reload required)"] = true
-L["Enable observation cache (pending)"] = true
-L["Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode."] = true
-L["Observation cache: %s\nNext reload: %s"] = true
-L["cached"] = true
-L["direct"] = true
-L["Cache diagnostic saved for the next reload. Active mode: %s."] = true
-L["Cache diagnostic is unavailable."] = true
-L["Cancel capture"] = true
-L["Invalid rotation ownership data in profile %s (%s); record preserved."] = true
-L['View source'] = true
-L['Change source helper'] = true
-L['Dependencies (%d)'] = true
-L['Function dependencies'] = true
-L['Add dependency'] = true
-L['Remove dependency'] = true
-L['Arcane Ring'] = true
-L['Ember Corners'] = true
-L['Frost Shards'] = true
-L['Nature Vines'] = true
-L['Lightning Sweep'] = true
-L['Holy Rays'] = true
-L['Shadow Claws'] = true
-L['Rune Diamond'] = true
-L['Neutral Arcane Ring'] = true
-L['Choose overlay'] = true
-L['This character'] = true
-L['Applies to'] = true
-L['Legacy character %s data conflicts with the active profile; character data preserved.'] = true
-L['Invalid rotation fallback configuration in profile %s; data preserved.'] = true
-L['Condition summary unavailable: invalid template or values.'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}'] = true
-L['The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}'] = true
-L['The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L['The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}'] = true
-L['A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported.'] = true
-L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
-L['Test values changed. Updating results.'] = true
-L['Complete the highlighted test inputs before testing.'] = true
-L['The current source could not be compiled. Fix it before testing again.'] = true
-L['Refresh'] = true
-L['Debug output'] = true
-L['Output'] = true
-L['Set values in Test before debugging this condition.'] = true
-L['Rotation Master addon instance. Public helper functions are documented in Functions.'] = true
-L['Localized Rotation Master text, indexed by its English key.'] = true
-L["Undo"] = true
-L["Redo"] = true
-L["Invalid item reference for announce %s:%s; reference preserved; announcement disabled."] = true
-L["Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement."] = true
-L["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."] = true
-L["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."] = true
-L["Non-finite minimap value in profile %s: %s."] = true
-L["Invalid effect ID for rotation step %s:%s:%d."] = true
-L["Unknown effect type for %s:%s (%s); record preserved."] = true
-
-local color = color
-
--- from main.lua
-
-L["/rm help                - This text."] = true
-L["/rm config              - Open the config dialog."] = true
-L["/rm disable             - Disable battle rotation."] = true
-L["/rm enable              - Enable battle rotation."] = true
-L["/rm toggle              - Toggle between enabled and disabled."] = true
-L["/rm current             - Print out the name of the current rotation."] = true
-L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = "/rm set [auto||profile]  - Switch to a specific rotation, or use automatic switching again."
-L["                          Manual choices are remembered for this character, specialization and action context."] = true
-L["/rm check               - Check the database integrity."] = true
-L["/rm repair              - Fix any DB errors found in the data with internal validation."] = true
-
-L["No rotation is currently active."] = true
-L["The current rotation is |cFFFFFFFF%s|cFF7BC653"] = true
-L["Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653"] = true
-L["Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization."] = true
-L["Invalid option |cFFFFFFFF%s|cFFB212B7"] = true
-
-L["Starting up version %s"] = true
-L["Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653"] = true
-L["No rotation is active as there is none suitable to automatically switch to."] = true
-L["Battle rotation enabled"] = true
-L["Battle rotation disabled"] = true
-L["Current Rotation"] = true
-L["Automatic Switching"] = true
-L["Toggle %s |cFF00FFFF/rm toggle|r"] = true
-L["Validating database integrity"] = true
-
-L["[Tier: %d, Column: %d]"] = true
-L["Autoswitch rotation list has been updated."] = true
-
-L["Button Fetch triggered."] = true
-L["Notified configuration to update it's status."] = true
-L["Removing all glows."] = true
-L["Active rotation is incomplete and may not work correctly!"] = true
-L["Cache hit rate at %.02f%%"] = true
-
--- from constants.lua
-
-L["Spells"] = true
-L["Items"] = true
-L["Buffs"] = true
-L["Combat"] = true
-L["Character"] = true
-L["Other"] = true
-L["Spatial"] = true
-L["Custom"] = true
-
-L["Bind"] = true
-L["Unbind"] = true
-L["{unit} {stacks} {comparison} {quantity}"] = true
-
-L["is less than"] = true
-L["is less than or equal to"] = true
-L["is greater than"] = true
-L["is greater than or equal to"] = true
-L["is equal to"] = true
-L["is not equal to"] = true
-L["is evenly divisible by"] = true
-
-L["you"] = true
-L["your pet"] = true
-L["your target"] = true
-L["your focus target"] = true
-L["your mouseover target"] = true
-L["your pet's target"] = true
-L["your target's target"] = true
-L["your focus target's target"] = true
-L["your mouseover target's target"] = true
-
-L["your"] = true
-L["your pet's"] = true
-L["your target's"] = true
-L["your focus target's"] = true
-L["your mouseover target's"] = true
-L["your pet's target's"] = true
-L["your target's target's"] = true
-L["your focus target's target's"] = true
-L["your mouseover target's target's"] = true
-
-L["healed"] = true
-L["dodged"] = true
-L["blocked"] = true
-L["hit"] = true
-L["critically hit"] = true
-L["hit with a crushing blow"] = true
-L["hit with a glancing blow"] = true
-L["missed"] = true
-L["parried"] = true
-L["resisted"] = true
-
-L["Center"] = true
-L["Top Left"] = true
-L["Top Right"] = true
-L["Bottom Left"] = true
-L["Bottom Right"] = true
-L["Top Center"] = true
-L["Bottom Center"] = true
-L["Left Center"] = true
-L["Right Center"] = true
-
-L["Select Icon"] = true
-L["Key"] = true
-L["Custom Condition"] = true
-L["Edit Condition"] = true
-L["Description"] = true
-L["Post-Registration Function"] = true
-L["Pre-Unregistration Function"] = true
-
-L["Warrior"] = true
-L["Paladin"] = true
-L["Hunter"] = true
-L["Rogue"] = true
-L["Priest"] = true
-L["Death Knight"] = true
-L["Shaman"] = true
-L["Mage"] = true
-L["Warlock"] = true
-L["Monk"] = true
-L["Druid"] = true
-L["Demon Hunter"] = true
-
-L["Beast"] = true
-L["Dragonkin"] = true
-L["Demon"] = true
-L["Elemental"] = true
-L["Giant"] = true
-L["Undead"] = true
-L["Humanoid"] = true
-L["Critter"] = true
-L["Mechanical"] = true
-L["Not specified"] = true
-L["Totem"] = true
-L["Non-combat Pet"] = true
-L["Gas Cloud"] = true
-
-L["World Boss"] = true
-L["Rare Elite"] = true
-L["Elite"] = true
-L["Rare"] = true
-L["Normal"] = true
-L["Trivial"] = true
-L["Minus"] = true
-
-L["Tank"] = true
-L["DPS"] = true
-L["Healer"] = true
-
-L["Magic"] = true
-L["Disease"] = true
-L["Poison"] = true
-L["Curse"] = true
-L["Enrage"] = true
-
-L["Arena"] = true
-L["Controlled by your faction"] = true
-L["Contested"] = true
-L["Controlled by opposing faction"] = true
-L["Sanctuary (no PVP)"] = true
-L["Combat (auto-flagged)"] = true
-
-L["Outside"] = true
-L["Battleground"] = true
-L["Arena"] = true
-L["Dungeon"] = true
-L["Raid"] = true
-
-L["Fire"] = true
-L["Earth"] = true
-L["Water"] = true
-L["Air"] = true
-
-L["Minimum"] = true
-L["lowest"] = true
-L["Maximum"] = true
-L["highest"] = true
-L["Average"] = true
-L["average"] = true
-
-L["no threat risk"] = true
-L["higher threat than tank"] = true
-L["tanking, at risk"] = true
-L["tanking, secure"] = true
-
--- from utils.lua
-
-L["<value>"] = true
-L["<operator>"] = true
-
--- from Options/general.lua
-
-L["Enable Rotation Master"] = true
-L["Polling Interval (seconds)"] = true
-L["Idle Re-check Interval (seconds)"] = true
-L["Auto-Switch Re-check Interval (seconds)"] = true
-L["Ignore Mana"] = true
-L["Ignore Range"] = true
-L["Skip rotation entries or disable cooldown highlights because you don't have enough to cast them."] = true
-L["Effect Options"] = true
-L["Magnification"] = true
-L["Highlight Color"] = true
-L["Position"] = true
-L["Specialization Names"] = true
-L["Tooltips"] = true
-L["Show Rotation Master in tooltips"] = true
-L["List item sets in item tooltips"] = true
-L["List rotations in spell and item tooltips"] = true
-L["Include rotation conditions"] = true
-L["Names listed per tooltip line"] = true
-L["Rotation Master item sets"] = true
-L["Rotation Master rotations"] = true
-L["%s (disabled)"] = true
-L["(+%d more)"] = true
-L["Debugging Options"] = true
-L["Log Level"] = true
-L["Quiet"] = true
-L["Debug"] = true
-L["Verbose"] = true
-L["Detailed Profiling"] = true
-L["Disable Auto-Switching"] = true
-L["Minimap Icon"] = true
-L["Spell History Memory (seconds)"] = true
-L["Combat History Memory (seconds)"] = true
-L["Damage History Memory (seconds)"] = true
-L["Live Status Update Frequency (seconds)"] = true
-L["Disable Bar Highlighting"] = true
-L["Preview Spells"] = true
-L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
-L["Are you sure you wish to delete this rotation?"] = true
-L["This item set is in use, are you sure you wish to delete it?"] = true
-L["Default effects have changed since the previous release, do you want to reset the effect list?"] = true
-L["Import/Export Rotation"] = true
-L["Import/Export Item Set"] = true
-L["Import/Export Effect"] = true
-L["Import/Export Condition"] = true
-L["Import/Export Condition Group"] = true
-L["Copy and paste this text share your rotation with others, or import someone else's."] = true
-L["Copy and paste this text share your effect with others, or import someone else's."] = true
-L["Copy and paste this text share your item set with others, or import someone else's."] = true
-L["Copy and paste this text share your custom condition with others, or import someone else's."] = true
-L["bytes"] = true
-L["lines"] = true
-L["Parse Error"] = true
-L["Copy of %s"] = true
-L["Imported on %c"] = true
-L["Import/Export"] = true
-L["Import"] = true
-L["Switch Condition"] = true
-L["No other rotations match."] = true
-L["Manual switch only."] = true
-L["THIS CONDITION DOES NOT VALIDATE"] = true
-L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] = true
-L["Cooldowns"] = true
-L["Rotation"] = true
-L["Switch"] = true
-L["Condition Options"] = true
-L["Rotations"] = true
-L["Search"] = true
-L["Type"] = true
-L["Texture"] = true
-L["Effect"] = true
-L["Pixel"] = true
-L["Auto Cast"] = true
-L["Glow"] = true
-L["Dazzle"] = true
-L["Animate"] = true
-L["Pulse"] = true
-L["Rotate"] = true
-L["Sequence"] = true
-L["Event"] = true
-L["Effects"] = true
-L["Item Sets"] = true
-L["Announces"] = true
-L["Profiles"] = true
-L["Lines"] = true
-L["Frequency"] = true
-L["Steps"] = true
-L["Reverse"] = true
-L["Angle"] = true
-L["Length"] = true
-L["Thickness"] = true
-L["Particles"] = true
-L["Scale"] = true
-L["Level"] = true
-L["Disabled"] = true
-L["Enabled"] = true
-L["Help"] = true
-L["Time Until Health"] = true
-L["Time Until Health Percentage"] = true
-L["Runner"] = true
-L["%s will run"] = true
-L["Resistant"] = true
-L["Immune"] = true
-
-L["Started"] = true
-L["Stopped"] = true
-L["Succeeded"] = true
-L["Interrupted"] = true
-L["Failed"] = true
-L["Delayed"] = true
--- from Options/rotations.lua and Options/rotations.lua
-
-L["Arcane"] = true
-L["Fire"] = true
-L["Frost"] = true
-L["Holy"] = true
-L["Nature"] = true
-L["Shadow"] = true
-
-L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
-L["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = true
-L["Move Up"] = true
-L["Move to Top"] = true
-L["Move to Bottom"] = true
-L["Move Down"] = true
-L["Move To"] = true
-L["Hidden"] = true
-L["Duplicate"] = true
-L["Action Type"] = true
-L["No Action"] = true
-L["Spell"] = true
-L["Pet Spell"] = true
-L["Any Spell"] = true
-L["Item"] = true
-L["Conditions"] = true
-L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."] = true
-L["%s is now available!"] = true
-L["Announce"] = true
-L["Audible Announce"] = true
-L["None"] = true
-L["Raid or Party"] = true
-L["Party Only"] = true
-L["Raid Warning"] = true
-L["Say"] = true
-L["Yell"] = true
-L["Emote"] = true
-L["Local Only"] = true
-L["Text"] = true
-L["Item Set"] = true
-L["Click the icon above to bind to your action bar"] = true
-L["time until %s is at %s%% health"] = true
-L["time until %s is at %s health"] = true
-L["time until %s is at %s health defecit"] = true
-L["The %s health defecit of %s members%s within %d yards of %s"] = true
-L["The %s health of %s members%s within %d yards of %s"] = true
-L["The number %s members%s within %d yards of %s whose"] = true
-L["The %s health percentage of %s members%s within %d yards of %s"] = true
-L["The number %s members%s within %d yards of %s whose health percentage"] = true
-L["The %s mana defecit of %s members%s within %d yards of %s"] = true
-L["The %s mana of %s members%s within %d yards of %s"] = true
-L["The number %s members%s within %d yards of %s whose"] = true
-L["The %s mana percentage of %s members%s within %d yards of %s"] = true
-L["The number %s members%s within %d yards of %s whose mana percentage"] = true
-
--- from Options/conditional.lua
-
-L["AND"] = true
-L["OR"] = true
-L["NOT"] = true
-L["<INVALID CONDITION>"] = true
-L["Please Choose ..."] = true
-L["Condition Type"] = true
-L["Edit Condition #%d"] = true
-L["Edit Condition"] = true
-L["Up"] = true
-L["Down"] = true
-
--- From the Conditions
-
-L["<spell>"] = true
-
-L["Your talent is a %s role"] = true
-L["%s is in a %s role"] = true
-L["%s is a %s"] = true
-L["%s are a %s"] = true
-L["%s have %s"] = true
-L["%s has %s"] = true
-L["%s is %s"] = true
-L["%s are %s"] = true
-L["%s were %s"] = true
-L["%s was %s"] = true
-L["%s have %s where %s"] = true
-L["%s has %s where %s"] = true
-L["you are talented in %s"] = true
-L["talent points in %s (%s)"] = true
-L["%s's resistance to %s"] = true
-L["%s is sometimes immune to %s"] = true
-L["%s is immune to %s"] = true
-L["you have %s glyph"] = true
-
-L["Unit"] = true
-L["Role"] = true
-L["Class"] = true
-L["Class In Group"] = true
-L["Is Same As"] = true
-L["Creature Type"] = true
-L["Unit Classification"] = true
-L["Talent"] = true
-L["Glyph"] = true
-L["Talent Tree"] = true
-L["Operator"] = true
-L["Distance"] = true
-L["Distance Count"] = true
-L["yards"] = true
-
-L["Health"] = true
-L["%s health defecit"] = true
-L["Health Percentage"] = true
-
-L["Mana"] = true
-L["%s mana defecit"] = true
-L["Mana Percentage"] = true
-
-L["Power"] = true
-L["%s power defecit"] = true
-L["Power Percentage"] = true
-
-L["Points"] = true
-L["%s points"] = true
-L["%s point defecit"] = true
-
-L["Runes"] = true
-L["Rune Cooldown"] = true
-L["%s runes available"] = true
-L["cooldown on %s rune"] = true
-
-L["Blood"] = true
-L["Frost"] = true
-L["Unholy"] = true
-L["Death"] = true
-
-L["Character Stat"] = true
-L["Extended Character Stat"] = true
-L["Extended Character Stat Percentage"] = true
-
-L["Spell Available"] = true
-L["Pet Spell Available"] = true
-L["%s is available"] = true
-L["Spell In Range"] = true
-L["Pet Spell In Range"] = true
-L["%s is in range"] = true
-L["Spell Cooldown"] = true
-L["Pet Spell Cooldown"] = true
--- This is used for things like "the cooldown on <spell> is less than 5 seconds"
-L["Boss Mod Encounter"] = true
-L["Boss Mod Encounter Stage"] = true
-L["Boss Mod Timer"] = true
-L["none"] = true
-L["Spell Active or Pending"] = true
-L["Pet Spell Active or Pending"] = true
-L["%s is active or pending"] = true
-
-L["Spell Time Remaining"] = true
-L["Pet Spell Time Remaining"] = true
-L["remaining time on %s"] = true
-L["Spell Charges"] = true
-L["Pet Spell Charges"] = true
-
-L["Spell Cast History Time"] = true
-L["Spell Cast History"] = true
-L["Pet Spell Cast History Time"] = true
-L["Pet Spell Cast History"] = true
-L["%s was cast"] = true
-L["Combat Action History Time"] = true
-L["Combat Action History"] = true
-L["fewer than %s casts ago"] = true
-L["at most %s casts ago"] = true
-L["more than %s casts ago"] = true
-L["at least %s casts ago"] = true
-L["exactly %s casts ago"] = true
-L["other than %s casts ago"] = true
-L["a multiple of %s casts ago"] = true
-L["fewer than %s actions ago"] = true
-L["at most %s actions ago"] = true
-L["more than %s actions ago"] = true
-L["at least %s actions ago"] = true
-L["exactly %s actions ago"] = true
-L["other than %s actions ago"] = true
-L["a multiple of %s actions ago"] = true
-L["less than %s seconds ago"] = true
-L["at most %s seconds ago"] = true
-L["more than %s seconds ago"] = true
-L["at least %s seconds ago"] = true
-L["exactly %s seconds ago"] = true
-L["other than %s seconds ago"] = true
-L["a multiple of %s seconds ago"] = true
-
-L["Any Spell Available"] = true
-L["Any Spell In Range"] = true
-L["Any Spell Cooldown"] = true
-L["Any Spell Time Remaining"] = true
-L["Any Spell Charges"] = true
-
-L["Buff Present"] = true
-L["Buff Time Remaining"] = true
-L["Buff Stacks"] = true
-L["stacks of %s"] = true
-L["stacks"] = true
-L["Has Stealable Buff"] = true
-L["%s has a stealable buff"] = true
-
-L["Debuff Present"] = true
-L["Debuff Time Remaining"] = true
-L["Debuff Stacks"] = true
-L["Debuff Type Present"] = true
-L["%s have a %s debuff"] = true
-L["%s has a %s debuff"] = true
-
-L["Totem Present"] = true
-L["%s totem is active"] = true
-L["%s is active"] = true
-L["Totem"] = true
-L["Specific Totem Present"] = true
-L["Totem Time Remaining"] = true
-L["Specific Totem Time Remaining"] = true
-L["you have a %s totem active with %s"] = true
-L["%s is active with %s"] = true
-
-L["Have Item Equipped"] = true
-L["you have %s equipped"] = true
-L["Have Item In Bags"] = true
-L["the number of %s you are carrying"] = true
-L["Item Available"] = true
-L["Item In Range"] = true
-L["Item Cooldown"] = true
-
-L["In Combat"] = true
-L["%s are in combat"] = true
-L["%s is in combat"] = true
-L["Have Pet"] = true
-L["you have a pet"] = true
-L["Have Named Pet"] = true
-L["you have a pet named %s"] = true
-L["Stealth"] = true
-L["you are stealthed"] = true
-L["In Control"] = true
-L["you are in control of your character"] = true
-L["Loss Of Control Type"] = true
-L["Loss Of Control Type"] = true
-L["Loss Of Control Blocked"] = true
-L["Moving"] = true
-L["you are moving"] = true
-L["Threat"] = true
-L["Threat Count"] = true
-L["you are at least %s on %s"] = true
-L["Shapeshift Form"] = true
-L["Attackable"] = true
-L["Hostile"] = true
-L["Allies Within Range"] = true
-L["Health Within Range"] = true
-L["Health Count Within Range"] = true
-L["Health Percentage Within Range"] = true
-L["Health Percentage Count Within Range"] = true
-L["Mana Within Range"] = true
-L["Mana Count Within Range"] = true
-L["Mana Percentage Within Range"] = true
-L["Mana Percentage Count Within Range"] = true
-L["%s is an enemy"] = true
-L["%s is attackable"] = true
-L["number of %s members%s within %d yards"] = true
-L["number of %s members%s within %s yards"] = true
-L["number of enemies you are at least %s"] = true
-L["you {{!are|are not}} on %s threat table"] = true
-L["you {{!have|do not have}} at least as much threat on %s as its tank"] = true
-L["you {{!are|are not}} tanking %s"] = true
-L["you {{!are|are not}} securely tanking %s"] = true
-L["the number of enemies whose threat table you are on"] = true
-L["the number of enemies on which you have at least as much threat as their tank"] = true
-L["the number of enemies you are tanking"] = true
-L["the number of enemies you are securely tanking"] = true
-L["you are in %s form"] = true
-
-L["Channeling"] = true
-L["Specific Spell Channeling"] = true
-L["%s are currently channeling"] = true
-L["%s is currently channeling"] = true
-L["%s are currently channeling %s"] = true
-L["%s is currently channeling %s"] = true
-L["Channel Time Remaining"] = true
-L["time remaining on spell channel"] = true
-L["Channel Interruptable"] = true
-L["Channel Interruptible"] = true
-L["%s's channeled spell is interruptable"] = true
-
-L["Casting"] = true
-L["Specific Spell Casting"] = true
-L["%s are currently casting"] = true
-L["%s is currently casting"] = true
-L["%s are currently casting %s"] = true
-L["%s is currently casting %s"] = true
-L["Cast Time Remaining"] = true
-L["time remaining on spell cast"] = true
-L["Cast Interruptable"] = true
-L["Cast Interruptible"] = true
-L["%s's spell is interruptable"] = true
-
-L["PVP Flagged"] = true
-L["%s are PVP flagged"] = true
-L["%s is PVP flagged"] = true
-L["Zone PVP"] = true
-L["zone is a %s zone"] = true
-L["Instance"] = true
-L["you are in a %s instance"] = true
-L["in %s"] = true
-L["Zone"] = true
-L["In Group"] = true
-L["you are in a group"] = true
-L["In Raid"] = true
-L["you are in a raid"] = true
-L["Outdoors"] = true
-L["Scenario"] = true
-L["you are in a outdoors"] = true
-
-L["Weapon Enchant Present"] = true
-L["Different season or game rules"] = true
--- Action and build contexts
-L["Action Context"] = true
-L["Advice is suspended: no rotation applies while you are using another action bar."] = true
-L["Item Set Pieces Equipped"] = true
-L["Weapon Enchant Type"] = true
-L["a pet battle"] = true
-L["a possessed unit"] = true
-L["a vehicle"] = true
-L["an override action bar"] = true
-L["your own action bar"] = true
-L["Weapon Enchant Time Remaining"] = true
-L["Weapon Enchant Stacks"] = true
-L["Your %s weapon buff has %s"] = true
-L["Your %s weapon is enchanted"] = true
-L["Off Hand"] = true
-L["Weapon Swing Time"] = true
-L["Weapon Swing Time Remaining"] = true
-
-L["Global"] = true
-
-L["Damage and Heals"] = true
-L["Damage Only"] = true
-L["Heals Only"] = true
-
--- Condition help and elapsed-combat summaries.
-L["Action"] = true
-L["Time Since Combat Start"] = true
-L["Time in combat is %s %s seconds"] = true
-
--- Native diagnostic report access.
-L["Copy report"] = true
-L["Close"] = true
-L["/rm errors              - View and copy Rotation Master errors."] = true
-L["Spell Known"] = true
-L["You know %s"] = true
-L["Your pet knows %s"] = true
-L["%s (spell ID %s)"] = true
-L["Spell ID"] = true
-L["Pet spell"] = true
-
--- Packaged rotation browser
-L["Unavailable conditions or unsupported data"] = true
-L["%s is not available on this client (%s)."] = true
-L["the combat log is not available to addons on this client"] = true
-L["health is secret on this client"] = true
-L["this power is secret on this client"] = true
--- Rotation eligibility: why a rotation cannot be selected (/rm why, editor, roster)
-L["Active rotation: %s"] = true
-L["a fallback saved for this character takes precedence"] = true
-L["automatic"] = true
-L["Cooldown %d"] = true
-L["%d Built In rotations are disabled."] = true
-L["%d other Built In rotations are disabled (for another specialization, level or edition)."] = true
-L["%s: disabled by you (turn it back on in Rotations, in its Built In view)."] = true
-L["%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view)."] = true
-L["then the fallback (%s)"] = true
-L["Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name."] = true
-L["Automatic switching would choose: %s"] = true
-L["%d Built In disabled: %s"] = true
-L["Read-Only"] = true
-L["Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile."] = true
-L["Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import."] = true
-L["Import preview: the metadata is shown as imported and cannot be edited here."] = true
-L["level %d+"] = true
-L["Season of Mastery"] = true
-L["Season of Discovery"] = true
-L["Hardcore"] = true
-L["Anniversary"] = true
-L["Anniversary Hardcore"] = true
-L["Self-Found"] = true
-L["Standard realms"] = true
-L["Season %s"] = true
-L["Game mode %s"] = true
-L["Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now."] = true
-L["Revision %s"] = true
-L["you switched it off (turn it back on in Rotations)"] = true
-L["it ships disabled, an alternative to the recommended one (turn it on in Rotations)"] = true
-L["Identifier: %s (/rm set %s)"] = true
-L["The fallback is always /rm set default."] = true
-L["A Built In's identifier is fixed. Use it with /rm set."] = true
-L["Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive."] = true
-L["Made from the name until you change it. Use it with /rm set."] = true
-L["has an invalid identifier"] = true
-L["%s is reserved for /rm set."] = true
-L["An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters."] = true
-L["%s already uses the identifier %s."] = true
-L["Rotations for %s (use /rm set <id>):"] = true
-L["disabled by you"] = true
-L["ships disabled"] = true
-L["not for this character now"] = true
-L["cannot be selected: %s"] = true
-L["active"] = true
-L["ready"] = true
-L["fallback"] = true
-L["yours"] = true
-L["The rotation list opened in a window you can copy from."] = true
-L["Rotations and their identifiers"] = true
-L["More than one rotation uses the identifier %s. Give one of them another identifier in Rotations."] = true
-L["Identifiers you can use now: %s (or auto). /rm list shows every rotation."] = true
-L["ID"] = true
-L["Priority"] = true
-L["Reset to default"] = true
-L["Use the Built In as it ships: its own Enabled setting and priority."] = true
-L["Your setting for this profile. The Built In ships %s."] = true
-L["As the Built In ships. Click to change it for this profile."] = true
-L["Your priority for this profile; the Built In ships with %d."] = true
-L["Turn on"] = true
-L["Turn this Built In back on for this profile."] = true
-L["Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on."] = true
-L["Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on."] = true
-L["Disabled: automatic switching skips it."] = true
-L["Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone."] = true
-L["Same priority as %s: both can be selected at once, and the tie is decided by name."] = true
-L["Can be selected together with %s: only priority decides which is chosen."] = true
-L["expansions %s–%s"] = true
-L["Loads only for: %s. Its specializations and switch condition decide the rest."] = true
-L["Built In rotations turned back on (they had been switched off without your choice): %s"] = true
-L["Disabled Built In rotations"] = true
-L["Open Rotations, select the Built In and turn it back on to make it selectable."] = true
-L["Fallback (%s)"] = true
-L["has an action type this version does not understand (%s)"] = true
-L["has an invalid setting (%s)"] = true
-L["has an invalid switch priority"] = true
-L["has a problem (%s)"] = true
-L["has a setting this version does not understand (%s)"] = true
-L["has no items"] = true
-L["is missing a required setting (%s)"] = true
-L["it has incomplete or unsupported data"] = true
-L["It has incomplete or unsupported data"] = true
-L["it is disabled"] = true
-L["it is for another class"] = true
-L["it is for another expansion"] = true
-L["it is for another game build"] = true
-L["it is for another season or game rules"] = true
-L["it is for another specialization"] = true
-L["it is for another WoW edition"] = true
-L["it is unavailable (%s)"] = true
-L["it needs context Rotation Master cannot read yet"] = true
-L["it uses a condition, item set or function that is disabled"] = true
-L["manual"] = true
-L["No %d"] = true
-L["no fallback rotation is saved for %s"] = true
-L["No rotation can run until your specialization is available."] = true
-L["Reason: %s. Type /rm why to check every rotation."] = true
-L["/rm why                 - Explain why each rotation can or cannot be selected."] = true
-L["Rotation eligibility opened in a window you can copy from."] = true
--- Glow diagnostic (/rm debug glow, Diagnostics/glow.lua)
-L["/rm debug glow [seconds] - Explain why a recommendation does or does not light a button."] = true
-L['/rm debug editor        - Copy native Lua input diagnostics.'] = true
-L['/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.'] = true
-L["rotations cannot be read (%s)"] = true
-L["Rotation %s cannot be selected."] = true
-L["Rotation settings"] = true
-L["Rotation step %d"] = true
-L["%s (Built In)"] = true
-L["%s: cannot be selected, %s."] = true
-L["Specialization: %s (%s), level %s"] = true
-L["Spell %d"] = true
-L["%s: ready"] = true
-L["the game build is unavailable"] = true
-L["(there is one for %s)"] = true
-L["This rotation cannot be selected. %s."] = true
-L["uses a condition that is disabled in Settings (%s)"] = true
-L["uses a condition this client does not have (%s)"] = true
-L["uses a custom condition whose function is unavailable (%s)"] = true
-L["uses a highlight effect that no longer exists"] = true
-L["uses an item set that no longer exists"] = true
-L["uses Blizzard's suggestion, which only works in the rotation list"] = true
-L["Why rotations are or are not selected"] = true
-L["Yes %d"] = true
-L["you are using another action bar"] = true
-L["your level is outside its level range"] = true
-L["your level is unavailable"] = true
-L["your specialization is not available yet"] = true
-L["No specialization"] = true
-L["Primary talents"] = true
-L["Secondary talents"] = true
-L["Talent group %d"] = true
-L["%s (%s)"] = true
-L["Unknown specialization"] = true
-L["Any specialization"] = true
-L["All specializations"] = true
-L["no specialization yet"] = true
-L["it is for %s"] = true
-L["has an invalid specialization list"] = true
-L["This is not your current specialization."] = true
-L["Show the rotations for this specialization (and those for any specialization)."] = true
-L["The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization."] = true
-L["You are playing %s; this fallback is for %s, so it is not used now."] = true
-L["You are playing %s; this rotation is for %s, so it is not selectable now."] = true
-L["you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer"] = true
-L["You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization."] = true
-L["this client has no ranged slot"] = true
-L["this client has no specializations for your class"] = true
-L["combat data is restricted on this client"] = true
-L["the game API it needs is missing"] = true
-L["this client is not supported"] = true
-L["this client uses a different talent system"] = true
-L["glyphs are not supported on this client build"] = true
-L["this edition has no point resource"] = true
-L["Different WoW edition"] = true
-L["Different class"] = true
-L["Different specialization"] = true
-L["Different action context"] = true
-L["Character level is unavailable"] = true
-L["Outside its level range"] = true
-L["Game build is unavailable"] = true
-L["Different game build"] = true
-L["Required context is not supported yet"] = true
-L["Reference only on this client"] = true
-L["The Built In rotation is unavailable."] = true
-L["Built In · read-only"] = true
-L["Level range: %s–%s; revision %s"] = true
-L["Available for this character"] = true
-L["Not available for this character: %s"] = true
-L["Enable Built In"] = true
-L["Could not update this Built In rotation: %s"] = true
-L["Clone to edit"] = true
-L["Could not duplicate this Built In rotation: %s"] = true
-L["%d. %s"] = true
-L["Condition preview unavailable"] = true
-L["Sources"] = true
-L["Unavailable"] = true
-
-L["Default.TBC.Shaman.Enhancement.IcyVeins.Name"] = "Enhancement (Icy Veins)"
-L["Default.TBC.Shaman.Enhancement.IcyVeins.Description"] = "Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you."
-L["Default.TBC.Shaman.Enhancement.Wowsims.Name"] = "Enhancement (Wowhead & wowsims)"
-L["Default.TBC.Shaman.Enhancement.Wowsims.Description"] = "The level-70 raid model for totem twisting, an alternative to the recommended Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep."
-L["Default.TBC.Shaman.Elemental.IcyVeins.Name"] = "Elemental (Icy Veins & wowsims)"
-L["Default.TBC.Shaman.Elemental.IcyVeins.Description"] = "Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism."
-L["Default.TBC.Shaman.Elemental.Wowhead.Name"] = "Elemental (Wowhead)"
-L["Default.TBC.Shaman.Elemental.Wowhead.Description"] = "Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain Lightning on cooldown with Lightning Bolts in between (while leveling only with Elemental Mastery or Clearcasting), Flame Shock only while moving, Earth Shock to finish a target that would die before a cast lands. Same totem, shield and cooldown reminders as the Icy Veins variant."
-L["Default.TBC.Shaman.Elemental.NextAction.Name"] = "Elemental (NextActionTBC)"
-L["Default.TBC.Shaman.Elemental.NextAction.Description"] = "NextActionTBC's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. Keeps Flame Shock on the target, Chain Lightning only against two or more enemies while above 30% mana, Lightning Bolt otherwise. Reminds you of Lightning Shield, a weapon imbue, Elemental Mastery and Bloodlust/Heroism; totems stay manual."
-L["Default.TBC.Shaman.Restoration.Name"] = "Restoration"
-L["Default.TBC.Shaman.Restoration.Description"] = "Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you."
-
-L["Could not duplicate this rotation: %s"] = true
-L["Could not duplicate this step: %s"] = true
-
--- Rotation comparisons
-L["absent"] = true
-L["This comparison could not be completed."] = true
-L["This comparison is incomplete; some changes are omitted."] = true
-L["No differences."] = true
-L["Added %s: %s"] = true
-L["Removed %s: %s"] = true
-L["Moved %s: priority %s → %s"] = true
-L["Changed %s: %s → %s"] = true
-L["Read-only comparison. Priority moves are listed; rotations are not merged."] = true
-L["Changes in the Built In rotation since cloning"] = true
-L["Your changes since cloning"] = true
-L["Differences from the current Built In rotation"] = true
-L["Overlapping field edits"] = true
-L["No overlapping field edits detected. Priority order still needs review."] = true
-L["Selected rotation → your rotation"] = true
-L["Some display text was truncated. Rotation data has not been changed."] = true
-L["Compare rotations"] = true
-L["Your rotation: %s"] = true
-L["Compare against"] = true
-L["Copy comparison"] = true
-L["Review the differences, then select Copy and press Ctrl+C."] = true
-L["Comparison unavailable: %s"] = true
-
-L["Unknown spell (%s)"] = true
-
-L["Beyond Melee Range"] = true
-L["%s is beyond melee range"] = true
-
-L["Switch conditions"] = true
-L["Optional highlight"] = true
-L["Priority %s"] = true
-L["Stop the sequence here"] = true
-L["Item or item set: %s"] = true
-L["Use this exact spell rank"] = true
-L["No steps in this section."] = true
-L["Optional highlights"] = true
-L["These reminders highlight independently whenever their conditions are met."] = true
-L["Sequential priority"] = true
-L["The first eligible step is recommended. Later steps provide alternatives."] = true
-L["View full rotation"] = true
-L["Built In rotation reference"] = true
-
-L["Read-only comparison. Rotations are not merged."] = true
-L["Additional settings changed. Copy diagnostic details to inspect all fields."] = true
-L["At cloning"] = true
-L["Selected rotation"] = true
-L["Your rotation"] = true
-L["No corresponding step"] = true
-L["Added"] = true
-L["Removed"] = true
-L["Changed"] = true
-L["Moved"] = true
-L["Unchanged"] = true
-L["Comparison diagnostic details"] = true
-L["Press Ctrl+C to copy the selected diagnostic details."] = true
-L["Comparison view"] = true
-L["Copy diagnostic details"] = true
-L["Built In updates since cloning"] = true
-L["Your edits since cloning"] = true
-L["Current Built In rotation"] = true
-
-L["Unknown item"] = true
-L["Item %s"] = true
-L["Item set: %s"] = true
-L["Unknown action type"] = true
-
-L["Player spell"] = true
-L["Player or pet spell"] = true
-L["General"] = true
-
-L["Copy this export, or paste a rotation and preview it. Import creates a new editable copy."] = true
-L["Rotation text"] = true
-L["Name for imported copy"] = true
-L["Imported rotation"] = true
-L["Copy export"] = true
-L["Preview import"] = true
-L["Compare import"] = true
-L["Import preview"] = true
-L["Import as new rotation"] = true
-L["Export unavailable: %s"] = true
-L["Preview a pasted rotation before importing it."] = true
-L["Text changed. Preview again before importing."] = true
-L["Text changed. Compare again before importing."] = true
-L["This import cannot be shown in full (%s). Use Check import for details."] = true
-L["Import preview unavailable: %s"] = true
-L["Ready to import as a new copy."] = true
-L["This import cannot be applied: %s"] = true
-L["Legacy export: WoW edition and class scope were not supplied."] = true
-L["Could not import this rotation: %s"] = true
-L["Incoming rotation"] = true
-
-L["Always"] = true
-L["Condition reference (code is not run)."] = true
-L["Check import"] = true
-L["This import window is out of date. Close it and open it again."] = true
-L["Incoming"] = true
-L["Problems"] = true
-L["Notes"] = true
-L["No problems found."] = true
-L["This import can be applied."] = true
-L["Fields shown: %d"] = true
-L["Field order"] = true
-L["Required fields"] = true
-L["Parameters"] = true
-L["Code: %s"] = true
-L["%d more settings are not shown."] = true
-L["... %d more characters not shown."] = true
-L["This is a dependency bundle. Import opens the bundle review."] = true
-
-L["Export Built In"] = true
-
-L["Comparison"] = true
-
--- Compact condition editor
-L["A condition could not be validated. Use /rm errors for details."] = true
-L["A custom validator changed the condition while checking it. Fix the validator before applying."] = true
-L["AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable."] = "AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated."
-L["Add condition"] = true
-L["All (AND)"] = true
-L["Any (OR)"] = true
-L["Apply"] = true
-L["Apply or cancel the open condition before editing another."] = true
-L["Cancel"] = true
-L["Changes not applied."] = true
-L["Choose a condition"] = true
-L["Complete the selected condition's fields before applying."] = true
-L["Disable condition"] = true
-L["Enable condition"] = true
-L["Find condition type"] = true
-L["Group with %s"] = true
-L["Invalid disabled flag"] = true
-L["Not (NOT)"] = true
-L["Only the first 200 conditions are shown. Other conditions are preserved."] = true
-L["Remove condition"] = true
-L["Select a child on the left to edit its fields. Use Add condition to extend this group."] = true
-L["Some condition fields have invalid values. Check them before applying."] = true
-L["That change could not be applied. Check the selected condition."] = true
-L["The condition editor could not display these fields. Use /rm errors for details."] = true
-L["This condition changed in another editor. Cancel and reopen it before applying."] = true
-L["This condition has no adjacent sibling in that direction."] = true
-L["This draft contains conditions or fields that this version cannot apply."] = true
-L["This draft refers to missing data. Resolve those references before applying."] = true
-L["Ungroup"] = true
-L["Ungroup requires a group with at most one child."] = true
-L["Unknown condition: %s"] = true
-L["Always (no condition)"] = true
-L["An empty AND group always matches. Add a condition to restrict it."] = true
-L["An empty OR group never matches. Add a condition that can match."] = true
-L["An empty condition always matches. Choose a type to restrict it."] = true
-L["The original rotation or step was removed or replaced. Cancel this draft and reopen the current one."] = true
-
-L["Show unchanged steps"] = true
-L["%s unchanged steps hidden."] = true
-L["No other rotations to compare."] = true
-
-L["Spell Recharge Time"] = true
-L["Pet Spell Recharge Time"] = true
-L["Any Spell Recharge Time"] = true
-
-L["Rotation names"] = true
-L["Custom step name"] = true
-L["Automatic step name"] = true
-
-L["Spell search data is unavailable."] = true
-L["No matching spells."] = true
-L["More matches available. Keep typing to narrow the search."] = true
-L["Spells from this spellbook. Click a result or press Enter."] = true
-L["Known and referenced spells. Enter a spell ID or link to find another spell."] = true
-
--- Native rotation roster
-L["Search rotations"] = true
-L["All"] = true
-L["Built In"] = true
-L["No rotations match this search."] = true
-L["New rotation"] = true
-L["Fallback"] = true
-L["%d of %d rotations"] = true
-
--- Totem observation semantics
-
-L["Stop"] = true
-L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."] = true
-L["When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button."] = true
-L["Implicit final fallback"] = true
-
-
-L["Also suppress auto-attack (Attack or Shoot)"] = true
-L["Implicit auto-attack (Attack or Shoot) is suppressed by this Stop."] = true
-L["Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop."] = true
-
--- Native condition cards
-L["Group name"] = true
-L["All categories"] = true
-L["Choose or search condition type"] = true
-L["Incomplete: %s is required"] = true
-L["Invalid or unsupported condition fields"] = true
-L["%d conditions"] = true
-L["Expand to edit fields"] = true
-L["Negate each"] = true
-
-
-L["Version: %s  ·  Author: %s"] = true
-L["Configure rotations, conditions and highlights in the Rotation Master window."] = true
-L["Open Options"] = true
-L["Unknown"] = true
-
-L["Scale: %d%%"] = true
-L["Right-click the title bar to close."] = true
-L["Choose a tab to configure Rotation Master. Rotations contains the library and editors. Changes in the condition editor remain a draft until Apply; Cancel abandons them."] = true
-L["Drag the title bar to move this window; right-click it to close. Resize from the lower-right corner and adjust Scale in the footer."] = true
-
-L["Click to add group name"] = true
-L["Negate condition"] = true
-L["Enable or disable condition"] = true
-L["Switch All / Any"] = true
-L["Off"] = true
-L["On"] = true
-
-L["Negated"] = true
-L["New condition"] = true
-L["New All group"] = true
-L["New Any group"] = true
-L["Drag into the tree to insert"] = true
-L["Collapse all"] = true
-L["Expand all"] = true
-L["Group as All"] = true
-L["Group as Any"] = true
-L["Move %d conditions"] = true
-L["Insert condition"] = true
-L["Duplicate condition"] = true
-L["Copy"] = true
-L["Any"] = true
-L["Resolve the wrapper's name or unsupported fields before removing its negation."] = true
-L["Not evaluated: an enclosing group is disabled"] = true
-L["%d selected"] = true
-
-L["Conditional branch"] = true
-L["Evaluate condition"] = true
-L["Always true"] = true
-L["Always false"] = true
-L["Unknown branch mode"] = true
-L["True"] = true
-L["False"] = true
-L["Rotation tree cannot be displayed."] = true
-
-L["If"] = true
-L["Unless"] = true
-L["If matches this condition; Unless negates it."] = true
-
-L["Condition description unavailable: invalid data."] = true
-L["Condition description truncated; the draft is unchanged."] = true
-
-L["New group"] = true
-L["Drag card headers to move; drag New into a gap."] = true
-
-L["Incomplete condition group: choose its conditions."] = true
-L["Always (empty All group)"] = true
-L["Never (empty Any group)"] = true
-
-L["Browse, view and edit rotations."] = true
-L["Configure recommendations and display."] = true
-L["Organize condition types and custom conditions."] = true
-L["Configure highlight effects."] = true
-L["Manage interchangeable items and consumables."] = true
-L["Configure optional announcements."] = true
-L["Manage saved configuration profiles."] = true
-L["Rotation Master information and credits."] = true
-L["TBC"] = true
-L["Classic Era"] = true
-L["Classic Progression"] = true
-L["Retail"] = true
-L["Forever"] = true
-L["Development"] = true
-L["Right-click to close"] = true
-L["Drag to resize the list. Double-click to reset."] = true
-L["Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot."] = true
-L["English"] = true
-L["Website"] = true
-L["English is the installed translation; other languages use English until translated."] = true
-L["Drag the title bar to move. Adjust Scale at the top left; right-click the content to close."] = true
-L["Optional addon settings."] = true
-L["Read-only condition"] = true
-
-L["Delete"] = true
-L["Only the first 200 rotation cards are shown. Other cards are preserved."] = true
-L["Branches select one arm, then rejoin the following priority. Forced modes skip condition evaluation."] = true
-L["New action"] = true
-L["New branch"] = true
-L["New optional"] = true
-L["Drag into a gap, or click to append."] = true
-L["Discard"] = true
-L["Changes applied."] = true
-L["Choose"] = true
-L["Items: separate item IDs or names with commas"] = true
-L["Use profile effect"] = true
-L["Color: red, green, blue, alpha (0–1); blank inherits"] = true
-L["Use profile position"] = true
-L["Horizontal offset"] = true
-L["Vertical offset"] = true
-L["Created by %s"] = true
-L["Unsaved rotation changes"] = true
-L["Apply this draft, discard its changes, or keep editing."] = true
-L["The draft could not be applied. Complete the marked fields or Cancel to keep editing."] = true
-
-L["Drag to place"] = true
-L["Copy full condition"] = true
-L["Full condition text"] = true
-
-L["Default"] = true
-
-L["Click to add branch name"] = true
-
-L["Switch condition"] = true
-L["No switch condition: this rotation can be selected automatically whenever its specialization and level apply."] = true
-
-L["Edit"] = true
-
-L["Delete rotation"] = true
-L["Discard this new rotation"] = true
-
-L["Add action"] = true
-
-L["Add branch"] = true
-
-L["Add cooldown"] = true
-
-L["Delete this custom rotation and its unsaved draft? This cannot be undone."] = true
-
-L['Rotation details'] = true
-
-
-
-
-
-
-
-
-
-
-
-
-L['Complete the highlighted input fields before applying.'] = true
-
-L['Drop in a highlighted gap.'] = true
-
-L['Name'] = true
-
-L['Incomplete input: %s'] = true
-
-L['Click condition text on any card to view or edit its conditions.'] = true
-L['View condition'] = true
-L['Edit condition'] = true
-
-L['Cycle between summary, fields and name only. Drag the name to move the card.'] = true
-
-L['Metadata'] = true
-L['This rotation cannot run until its incomplete or unavailable data is resolved.'] = true
-L['Rotation validation'] = true
-
-L['Preview effect'] = true
-L['Show or hide branch paths'] = true
-
-L['Expand or collapse the card. Click action or condition text for details.'] = true
-
-L["Click to expand"] = "Click to expand"
-
-L["Add group"] = "Add group"
-
-L["Click to append; drag into a gap to insert."] = "Click to append; drag into a gap to insert."
-
-L["Preview highlight"] = "Preview highlight"
-
-L["This previews the glow used on action buttons. Click the preview icon again to close."] = "This previews the glow used on action buttons. Click the preview icon again to close."
-
-L["Choose a highlight effect in the action details or General settings."] = "Choose a highlight effect in the action details or General settings."
-
-L["Rotation metadata"] = "Rotation metadata"
-
-L["Author"] = "Author"
-
-L["Realm"] = "Realm"
-
-L["Email"] = "Email"
-
-L["Version"] = "Version"
-
-L["Use changes"] = "Use changes"
-
-L["Use changes updates the draft. Apply the rotation to save it."] = "Use changes updates the draft. Apply the rotation to save it."
-
-L["Built In rotation: duplicate it to edit its metadata."] = "Built In rotation: duplicate it to edit its metadata."
-
-L["Source"] = "Source"
-
-L["Saved metadata is invalid (%s). Editing these fields replaces it."] = "Saved metadata is invalid (%s). Editing these fields replaces it."
-
-L["Color"] = "Color"
-
-
-L["Choose an effect"] = "Choose an effect"
-
-L["Use profile color"] = "Use profile color"
-
-L["Center the highlight"] = "Center the highlight"
-
-L["Move highlight; hold Shift for ten pixels"] = "Move highlight; hold Shift for ten pixels"
-
-L["Preview sound"] = "Preview sound"
-
-L["Sound preview is unavailable."] = "Sound preview is unavailable."
-
-L["Choose an available sound to preview."] = "Choose an available sound to preview."
-
-L["Use color"] = "Use color"
-
-L["Offsets"] = "Offsets"
-L["V"] = "V"
-L["H"] = "H"
-
-L["RGBA channels accept decimal values from 0 to 1."] = true
-
-L["%s: %s"] = true
-L["Rotation Master"] = true
-L["Condition"] = true
-L["Cooldown"] = true
-
-L["Sources"] = true
-
-L["All of"] = true
-L["Any of"] = true
-
--- Native settings pages
-L["Action bar binding"] = true
-L["Add announcement"] = true
-L["Add custom condition"] = true
-L["Add effect"] = true
-L["Add item"] = true
-L["Add item set"] = true
-L["Add step"] = true
-L["An item from this set must be available before binding."] = true
-L["Bind item set"] = true
-L["Category"] = true
-L["Choose an action first."] = true
-L["Choose an item first."] = true
-L["Commands"] = true
-L["Confirm"] = true
-L["Copy and reset"] = true
-L["Copy from profile"] = true
-L["Copy this text to export. Import replaces the selected settings."] = true
-L["Create profile"] = true
-L["Current profile"] = true
-L["Delete profile"] = true
-L["Delete profile %s? This cannot be undone."] = true
-L["Delete this custom condition? Existing rotations using it will become unavailable."] = true
-L["Delete this effect? Rotations using it will need another effect."] = true
-L["Delete this item set and its binding? Rotations referencing it will need another item set."] = true
-L["Enable"] = true
-L["Enter a name first."] = true
-L["Enter a profile name first."] = true
-L["History and preview"] = true
-L["Identifier"] = true
-L["Invalid effect."] = true
-L["Invalid import."] = true
-L["Invalid item list."] = true
-L["Item %d"] = true
-L["Items in priority order"] = true
-L["Links"] = true
-L["New profile name"] = true
-L["Not bound"] = true
-L["Profile changes apply immediately. Rotations and settings belong to the active profile."] = true
-L["Recommendations"] = true
-L["Remove binding"] = true
-L["Replace the current profile with %s?"] = true
-L["Reset"] = true
-L["Reset current profile"] = true
-L["Reset preview position"] = true
-L["Reset this profile to its defaults? Custom rotations and settings in it will be replaced."] = true
-L["Select"] = true
-L["Step %d"] = true
-L["This name is already in use."] = true
-
--- Contextual native help
-L["Branch"] = true
-L["Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted."] = true
-L["Choose a current profile or enter a new profile name and create it. Copy replaces the current profile’s settings; Reset restores defaults. Delete removes another saved profile. Copy, Reset and Delete ask for confirmation."] = true
-L["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list."] = true
-L["Condition editor"] = true
-L["Description and attribution"] = true
-L["Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area."] = true
-L["Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected."] = true
-L["Groups and toggles"] = true
-L["Help and saving"] = true
-L["Move, copy and remove"] = true
-L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = true
-L["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
-
-L["Unknown spell"] = true
-
-L["Item data loading"] = true
-
-
-
-L["No matches."] = true
-
-L["New"] = true
-
-L["No matching items."] = true
-
-L["Click a result or enter an item name, ID or link."] = true
-
-L["Anchor"] = true
-
-L["Return the preview window to the center of the screen."] = true
-
-L["The icon shows your selected profile effect, color, size, anchor and offsets."] = true
-
-L["Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets."] = true
-
-L["Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets."] = true
-
-L["Manage categories"] = true
-
-L["Back to conditions"] = true
-
-L["Built-in category"] = true
-
-
-L["Delete this category? Its conditions will remain available under Other."] = true
-
-L["Filter the condition list by All, Switch, Custom, Other or a named category. Search narrows the visible conditions without changing their category."] = true
-
-L["Open Manage categories below the list for category maintenance. Back to conditions returns to individual condition settings."] = true
-
-L["Name"] = true
-
-
-
-
-
-
-L["In Manage categories, copy or replace a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."] = true
-
-
-
-
-
-L["The condition ordering controls in condition settings move the selected condition to the top, up, down or to the bottom within its current category. These are separate from the Up and Down controls for category order."] = true
-
-L["Move the selected condition to a named category or Other. Use Switch Condition separately for automatic-switch availability."] = true
-
-L["Yes"] = true
-
-L["No"] = true
-
-L["Show unchanged"] = true
-
-L["Changed fields: %d"] = true
-
-L["Compare"] = true
-
-L["Read-only"] = true
-
-L["Imported item set"] = true
-
-L["Drag to reorder"] = true
-
-L["Item ID: %s"] = true
-L["Item reference: %s"] = true
-
-L['Built-in'] = true
-
-L['Built-in condition'] = true
-
-L['Custom condition'] = true
-
-L['Game icon'] = true
-
-L['Game icons'] = true
-
-L['Icon'] = true
-
-L['Item icons'] = true
-
-L['Known spells'] = true
-
-L['Manage conditions'] = true
-
-L['Next'] = true
-
-L['Page %d of %d'] = true
-
-L['Previous'] = true
-
-L['Activate profile'] = true
-
-L['Active profile'] = true
-
-
-L['Apply pending changes before leaving? Use Cancel on the page to discard them.'] = true
-
-L['Audible'] = true
-
-L['Categories'] = true
-
-L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.'] = true
-
-
-L['Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.'] = true
-
-L['Clone sources'] = true
-
-L['Comparison history'] = true
-
-L['Complete the effect settings before applying.'] = true
-
-L['Credits'] = true
-
-L['Built In preferences'] = true
-
-L['Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.'] = true
-
-L['Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.'] = true
-
-L['Ignore mana'] = true
-
-L['Ignore range'] = true
-
-L['Imports'] = true
-
-L['Invalid announcement.'] = true
-
-L['Invalid profile.'] = true
-
-L['Leave combat before applying these settings.'] = true
-
-L['Leave combat before changing action bar bindings.'] = true
-
-L['License'] = true
-
-L['Localizations'] = true
-
-L['No rotations in this profile.'] = true
-
-L['Preview position'] = true
-
-L['Rotation library'] = true
-
-L['Search or drag a spell here'] = true
-L['Move %d selected cards'] = true
-L['Duplicate selected cards'] = true
-L['Enable selected cards'] = true
-L['Disable selected cards'] = true
-L['Delete selected cards'] = true
-L['Clear selection'] = true
-L['Target casting: %s'] = true
-L['Focus casting: %s'] = true
-L['Target channeling: %s'] = true
-L['Focus channeling: %s'] = true
-L['Recently cast: %s'] = true
-L['Trinket 1: %s'] = true
-L['Trinket 2: %s'] = true
-L['No equipped trinket to insert.'] = true
-L['Nothing to insert: no target or focus cast and no recent casts.'] = true
-L['Click to insert. Right-click the field again to close.'] = true
-L['Right-click to insert an equipped trinket.'] = true
-L["Right-click to insert your target's cast or a recent cast."] = true
-
-L['Search or drag an item here'] = true
-
-
-L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement.'] = true
-
-L['Settings changed elsewhere. Cancel to reload them before applying.'] = true
-
-L['Slots %s · Unbind'] = true
-
-L['Sound'] = true
-
-L['Structured settings'] = true
-
-L['Unnamed rotation'] = true
-
-L['Use arrows or drag rows in the condition sidebar to reorder within the selected category. In Manage categories, the same controls order the categories themselves.'] = true
-
-L['Value'] = true
-
-L['Choose an action and complete the announcement before applying.'] = true
-
-
-L['Apply changes before leaving this page?'] = true
-
-L['Apply or discard current settings before opening the custom code editor.'] = true
-
--- Shared import destinations and editing history.
-L['Apply item-set changes before binding it to an action bar.'] = true
-L['Choose a new named copy or replace the selected editable entry. Review the destination before importing.'] = true
-L['Clear'] = true
-L['Confirm the Lua import, then review it before saving.'] = true
-L['IMPORTED_CONDITION'] = true
-L['Import comparison'] = true
-L['Imported announcement'] = true
-L['Imported category'] = true
-L['Imported effect'] = true
-L['Imported profile'] = true
-L['Invalid custom condition.'] = true
-L['Name not supplied'] = true
-L['Original name'] = true
-L['Ready to import. Choose replacement or a named copy.'] = true
-L['Replace selected entry'] = true
-L['That condition identifier already exists.'] = true
-L['The selected profile changed. Reopen the import window.'] = true
-L['This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.'] = true
-L['Use letters, numbers and underscores for the condition identifier.'] = true
-
--- Native custom condition authoring.
-L['Check %s: %s'] = true
-L['Check syntax'] = true
-L['Choose icon'] = true
-L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.'] = true
-L['Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua.'] = true
-L['Definition'] = true
-L['Editing code'] = true
-L['Evaluate'] = true
-L['Field schema'] = true
-L['Fields UI'] = true
-L['Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs.'] = true
-L['On register'] = true
-L['On unregister'] = true
-L['Summary'] = true
-L['Syntax checked. No custom code was executed.'] = true
-L['The custom condition changed elsewhere. Reopen it before saving.'] = true
-L['Trusted code'] = true
-L['Validate'] = true
-
--- Rotation tags and roster filtering.
-L['All tags'] = true
-L['Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.'] = true
-L['Invalid tags. Use up to 64 tags of 64 characters, separated by commas.'] = true
-L['Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.'] = true
-L['Tags'] = true
-
--- Explicit auto-switch precedence.
-L["Switch priority"] = true
-L["Priority %d"] = true
-L["Invalid priority"] = true
-L["Switch priority must be a whole number between -100000 and 100000."] = true
-L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero."] = true
-L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
-
--- Rank-aware aura families.
-L["%s (any rank)"] = true
-L["Unticked, any rank of the spell matches. Ticked, only the rank you chose matches."] = true
-
--- Spell ID identity for casts, channels and forms.
-L["Cast Progress"] = true
-L["Channel Progress"] = true
-
--- Classic tree selection for adaptive rotations.
-L["Talent Tree Points"] = true
-L["points spent in %s"] = true
-L["Primary Talent Tree"] = true
-L["your primary talent tree is %s"] = true
--- Talent tree names (Data/talent_trees.lua): what a tree is called when the game cannot say,
--- for a class you are not playing or before the talent data has loaded. Own keys, because a
--- plain "Elemental" or "Fire" also names a creature type and a spell school.
-L["TalentTree.Arms"] = "Arms"
-L["TalentTree.Fury"] = "Fury"
-L["TalentTree.Protection"] = "Protection"
-L["TalentTree.Holy"] = "Holy"
-L["TalentTree.Retribution"] = "Retribution"
-L["TalentTree.Beast Mastery"] = "Beast Mastery"
-L["TalentTree.Marksmanship"] = "Marksmanship"
-L["TalentTree.Survival"] = "Survival"
-L["TalentTree.Assassination"] = "Assassination"
-L["TalentTree.Combat"] = "Combat"
-L["TalentTree.Subtlety"] = "Subtlety"
-L["TalentTree.Discipline"] = "Discipline"
-L["TalentTree.Shadow"] = "Shadow"
-L["TalentTree.Blood"] = "Blood"
-L["TalentTree.Frost"] = "Frost"
-L["TalentTree.Unholy"] = "Unholy"
-L["TalentTree.Elemental"] = "Elemental"
-L["TalentTree.Enhancement"] = "Enhancement"
-L["TalentTree.Restoration"] = "Restoration"
-L["TalentTree.Arcane"] = "Arcane"
-L["TalentTree.Fire"] = "Fire"
-L["TalentTree.Affliction"] = "Affliction"
-L["TalentTree.Demonology"] = "Demonology"
-L["TalentTree.Destruction"] = "Destruction"
-L["TalentTree.Balance"] = "Balance"
-L["TalentTree.Feral Combat"] = "Feral Combat"
-
--- Protected item observations
-
--- TBC early Frost Mage preview.
-L["Default.TBC.Mage.Frost.Name"] = "Frost"
-L["Default.TBC.Mage.Frost.Description"] = "Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you."
-L["Default.TBC.Mage.FireIcyVeins.Name"] = "Fire (Icy Veins)"
-L["Default.TBC.Mage.FireIcyVeins.Description"] = "Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball fills, Fire Blast is for moving; Blast Wave, Dragon's Breath and Flamestrike for three or more enemies. Reminders: Molten, Mage or Ice Armor, Combustion below 20% target health, mana gem, Evocation and the shared Mage utilities."
-L["Default.TBC.Mage.FireWowhead.Name"] = "Fire (Wowhead)"
-L["Default.TBC.Mage.FireWowhead.Description"] = "Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.TBC.Mage.Arcane.Name"] = "Arcane"
-L["Default.TBC.Mage.Arcane.Description"] = "Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation."
-
--- Alternate rotation presentation.
-L["Diagram view"] = true
-L["List view"] = true
-L["Switch between the diagram and compact tree list. This changes only the view."] = true
-
--- Independent rotation viewport navigation.
-L["Zoom out"] = true
-L["Zoom in"] = true
-L["Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged."] = true
-L["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved."] = true
-
--- Current native announcement help: whole paragraphs, not English fragments.
-L["Custom emote"] = true
-L["Use spell recipient ({{target}})"] = true
-L["Automatic Say and Yell are unavailable. Choose another announcement destination."] = true
-L["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
-
--- Item-set and item-list help: translate each paragraph as a whole.
-
-L["Default rotation view"] = true
-
-L["Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."] = true
-
-L["Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan."] = true
-
-L["Move this and following entries"] = true
-L["Drag one entry; Ctrl-drag moves it and all following siblings."] = true
-
-L["%d cards"] = true
-L[" (%d hidden)"] = true
-L["Click to fold or unfold this branch arm. Other cards and conditions are unchanged."] = true
-
-
-
-L["%s {{!are|are not}} PVP flagged"] = true
-
-L["%s {{!are|are not}} a %s"] = true
-
-
-L["%s {{!are|are not}} currently casting %s"] = true
-
-
-L["%s {{!are|are not}} currently channeling %s"] = true
-
-L["%s {{!are|are not}} in combat"] = true
-
-L["%s {{!has|does not have}} %s"] = true
-
-L["%s {{!has|does not have}} a %s debuff"] = true
-
-
-L["%s {{!have|do not have}} %s"] = true
-
-L["%s {{!have|do not have}} %s where %s"] = true
-
-L["%s {{!have|do not have}} a %s debuff"] = true
-
-
-L["%s {{!is|is not}} PVP flagged"] = true
-
-L["%s {{!is|is not}} a %s"] = true
-
-
-
-L["%s {{!is|is not}} active with %s"] = true
-
-L["%s {{!is|is not}} an enemy"] = true
-
-L["%s {{!is|is not}} attackable"] = true
-
-
-
-
-L["%s {{!is|is not}} currently casting %s"] = true
-
-
-L["%s {{!is|is not}} in a %s role"] = true
-
-L["%s {{!is|is not}} in combat"] = true
-
-
-
-
-L["%s's channeled spell {{!is|is not}} interruptable"] = true
-
-L["%s's spell {{!is|is not}} interruptable"] = true
-
-
-
-
-
-
-L["Your talent {{!is|is not}} a %s role"] = true
-
-L["is not evenly divisible by"] = true
-
-L["is not greater than"] = true
-
-L["is not greater than or equal to"] = true
-
-L["is not less than"] = true
-
-L["is not less than or equal to"] = true
-
-L["not (%s)"] = true
-
-
-
-L["you {{!are|are not}} in %s form"] = true
-
-L["you {{!are|are not}} in a %s instance"] = true
-
-
-L["you {{!are|are not}} in a outdoors"] = true
-
-
-
-
-
-
-L["you {{!have|do not have}} %s equipped"] = true
-
-L["you {{!have|do not have}} %s glyph"] = true
-
-L["you {{!have|do not have}} a %s totem active with %s"] = true
-
-
-L["you {{!have|do not have}} a pet named %s"] = true
-
-
-L["zone {{!is|is not}} a %s zone"] = true
-
-L["{{!in|not in}} %s"] = true
-
-
-L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.'] = true
-L['Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.'] = true
-
-L['Decrease priority'] = true
-L['Increase priority'] = true
-
-L["Horizontal"] = true
-
-L["Vertical"] = true
-
-L["Lock preview position and size"] = true
-
-L["Preview window opacity"] = true
-
-L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."] = true
-
-L["Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row."] = true
-
-
-
-L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."] = true
-
-L["Lock position and size"] = true
-L["Open General settings"] = true
-
-L["View Changes"] = true
-
-L["Saved"] = true
-
-L["Unsaved"] = true
-
-L["Pending input"] = true
-
-L["Not inspected"] = true
-
-L["Custom widget has pending input."] = true
-
-L["Selected entry"] = true
-
-L["Compared entry"] = true
-
-L["Use step name"] = true
-
-L["Preview icon size"] = true
-
-L["Add or search tags"] = true
-
-L["Search tags"] = true
-
-L["Click to remove this tag. Right-click to choose its color."] = true
-
-L["Apply updates the draft. Apply the rotation to save it."] = true
-
-L["Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-
-L["Fields"] = true
-L['Search...'] = true
-L['Add'] = true
-
-
-
-L['Comparison limit'] = true
-L['Showing the first 512 conditions per side.'] = true
-
-L['Weapon'] = true
-L['Location'] = true
-L['Book'] = true
-L['Question'] = true
-L['Swords'] = true
-L['Shield'] = true
-L['Healing'] = true
-L['Lightning'] = true
-L['Fire'] = true
-L['Nature'] = true
-L['Potions'] = true
-L['Food'] = true
-L['Armor'] = true
-L['Groups'] = true
-L['Group'] = true
-
-L['Automatic'] = true
-L['Built In syntax highlighting'] = true
-L['Plain text'] = true
-L['Integrations'] = true
-L['Lua editor'] = true
-L['Unavailable'] = true
-L['Choose optional addon integrations.'] = true
-L['Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.'] = true
-L['Loaded; editor integration not connected.'] = true
-L['Not loaded.'] = true
-L['These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.'] = true
-L['Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.'] = true
-
-L["Invalid condition: %s"] = true
-
-L["Unavailable condition: %s"] = true
-L["This condition definition is disabled. Rotations using it are unavailable."] = true
-L["Availability"] = true
-
--- Native authoring and tag controls
-L['Edit fields'] = true
-L['Advanced'] = true
-L['Number'] = true
-L['Boolean'] = true
-L['Condition list'] = true
-L['Record / map'] = true
-L['Allowed types / list alternatives'] = true
-L['Invalid field schema: %s'] = true
-L['Back'] = true
-L['Named fields. Choose a type, then edit its children for nested data.'] = true
-L['Allowed types. A nested record or type list describes each item in a list.'] = true
-L['Showing the first 200 fields. Use Advanced schema for larger definitions.'] = true
-L['Add field'] = true
-L['Tag color'] = true
-L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.'] = true
-L['Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.'] = true
-L['Click to remove this tag. Use the search results to change tag colors.'] = true
-
-L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.'] = true
-L['No native Lua editor has been opened this session.'] = true
-L['Lua input diagnostics'] = true
-L['Native input test'] = true
-L['Input test'] = true
-L['Stock font'] = true
-L['RM font'] = true
-L['Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.'] = true
-L['Arrow test'] = true
-L['Arrows: on'] = true
-L['Arrows'] = true
-L['Info'] = true
-L['Show input diagnostics for this open Lua editor.'] = true
-L['Move'] = true
-L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
-
--- Callback documentation
-L['Decide whether this condition currently matches.'] = true
-L['The stored values for this condition.'] = true
-L['Shared data for this evaluation cycle.'] = true
-L['Evaluation start time, in seconds from GetTime().'] = true
-L['True matches; false or nil does not match.'] = true
-L['Check whether the stored condition values are complete and valid.'] = true
-L['Rotation specialization scope.'] = true
-L['True when the condition can be evaluated.'] = true
-L['Describe the condition in readable words.'] = true
-L['The human-readable condition summary.'] = true
-L['Build the controls used to edit this condition.'] = true
-L['The condition field container supplied by the UI adapter.'] = true
-L['Add controls to the supplied container.'] = true
-L['Build the help content for this condition.'] = true
-L['The help container supplied by the UI adapter.'] = true
-L['Add help content to the supplied container.'] = true
-L['Initialize resources when the condition is registered.'] = true
-L['The condition identifier.'] = true
-L['No return value is used.'] = true
-L['Release resources when the condition is removed or replaced.'] = true
-L['Arguments'] = true
-L['Returns'] = true
-
-L['Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.'] = true
-L['A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.'] = true
-L['The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.'] = true
-
-L['Packaged helper from %s.'] = true
-
-L['Functions'] = true
-L['Browse packaged helpers and edit reusable custom Lua functions.'] = true
-L['Function unavailable: %s'] = true
-L['Argument name'] = true
-L['Add argument'] = true
-L['Add return'] = true
-L['Built-in function'] = true
-L['Custom function'] = true
-L['Delete this function? Existing dependents will become unavailable.'] = true
-L['Deletion staged. Apply to remove this function.'] = true
-L['Function bindings'] = true
-L['Alias'] = true
-L['This alias is already in use.'] = true
-L['Function'] = true
-L['Add binding'] = true
-L['Packaged source is read-only. Duplicate it to create an editable custom function.'] = true
-L['Arguments become Lua parameters. Bindings expose selected helpers under explicit local aliases. Editing an alias does not rewrite your Lua body.'] = true
-L['New function'] = true
-L['Describe what this function does.'] = true
-L['Add a function or duplicate a packaged helper to edit its source.'] = true
-
-L['LuaWorkbench supplies editing, completion, API knowledge and debugging. Debug runs this buffer explicitly using the test arguments. It does not replace the saved rotation or live callback.']=true
-L['Connected: embedded editing, completion, API knowledge and debugging.']=true
-
-L['Review the dependency bundle before applying it.'] = true
-L['Function bindings (%d)'] = true
-L['Aliases are local names in your Lua body. Changing an alias does not rewrite the body.'] = true
-L['Reuse existing'] = true
-L['Replace existing'] = true
-L['Import with new identifier'] = true
-L['Create'] = true
-L['Review source'] = true
-L['Original identifier'] = true
-L['Destination identifier'] = true
-L['Callback'] = true
-L['Include custom function dependencies'] = true
-L['Review import'] = true
-L['Apply import'] = true
-L['Function dependency bundle'] = true
-L['Review the complete bundle before applying an import. Imported Lua can execute when registered; only apply code you trust.'] = true
-L['Review each original name, destination and dependency below. Apply import saves the complete reviewed bundle.'] = true
-L['Conflict action'] = true
-L['Imported name'] = true
-L['Existing dependents'] = true
-L['This imported definition is disabled. Its dependents remain unavailable.'] = true
-L['Required functions'] = true
-L['Paste a bundle above, then review its original names, destinations and required functions.'] = true
-
-L['Filter Built In or Custom helpers and search their names, identifiers or descriptions. Packaged helpers show read-only source and typed documentation. Duplicate creates an editable copy with a new stable identifier. Argument and return rows document the Lua signature.'] = true
-L['Expand Function bindings to add explicit helper aliases and choose their targets. Changing an alias does not rewrite your Lua body. Missing, disabled or invalid dependencies keep their dependents unavailable until repaired.'] = true
-L['Check'] = true
-L['Live'] = true
-L['Preview'] = true
-L['The preview failed. Use /rm errors for details.'] = true
-L['Test values were not saved because they are not bounded plain data.'] = true
-L['Condition check'] = true
-L['Fields UI preview'] = true
-L['Help preview'] = true
-L['Edit detached test values below. Check validates them before evaluating. Live is opt-in; test values are saved separately from the condition source.'] = true
-L['Preview runs only this callback with detached sample values. It does not save or register the condition.'] = true
-L['Complete the source fields before checking.'] = true
-L['Check could not compile the current source. Fix the source before checking again.'] = true
-L['Skipped: invalid test values'] = true
-L['Validation: %s'] = true
-L['Passed'] = true
-L['Evaluation: %s'] = true
-L['Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback.'] = true
-L['Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live.'] = true
-L['Functions reference'] = true
-L['The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.'] = true
-
-L["The imported definition type does not match this editor."] = true
-
-L['Test values changed. Check again to refresh the result.'] = true
-L['Complete the highlighted test inputs before checking.'] = true
-
-L['Test'] = true
-L['Run test'] = true
-L['Test condition'] = true
-L['Debugger output'] = true
-L['Set test values in Test before debugging Evaluate.'] = true
-L['Debugger output uses a detached sample and the normal field or help container.'] = true
-L['Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.'] = true
-L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
-
-L['Nullable'] = true
-L['Add return value'] = true
-L['Lua returns multiple values in order. Each row documents one result.'] = true
-L['Expand code editor'] = true
-L['Restore code editor'] = true
-L['Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name.'] = true
-L['Local name in code'] = true
-L['Source helper'] = true
-L['Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.'] = true
-
-
-L['This cannot be undone.'] = true
-L['Delete this announcement?'] = true
-
-L["Type: %s"] = true
-L["Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client."] = true
-L["Supported unit-token to localized possessive unit-name lookup, such as your target."] = true
-L["Rotation Master client compatibility adapter. Its methods return ordinary readable results or nil with a reason when an observation is unavailable. Use a colon call, or pass addon.Platform explicitly as self with a dot reference."] = true
-L["Rotation Master spell catalog for resolving client-specific spell IDs, ranks, names, icons and links."] = true
-L["Utility functions explicitly bound to this condition or function. Choose a completion to bind an available custom function before inserting its reference."] = true
-L["Rotation Master custom function"] = true
-L["Rotation Master built-in function"] = true
-L["Rotation Master value"] = true
-L["Global function (documentation unavailable on this client)"] = true
-L["This client does not provide signature documentation for this function. No arguments or return types have been inferred."] = true
-L["Invoke"] = true
-L["Functions are shared across profiles after Apply. Call custom utilities as functions.name(...); accepting completion adds the dependency binding. Typed calls need a binding under Function bindings. Built In examples show dot or colon explicitly."] = true
-L["Show line numbers"] = true
-L["Line-number visibility applies to every condition and function code editor."] = true
-L["Call a saved custom utility as functions.name(...). Accepting a completion attaches its stable dependency binding; for a typed call, choose its helper under Function bindings. Existing direct aliases still work. The Invoke example shows required addon dot or colon syntax for Built In functions. Renaming an alias does not rewrite source. Missing, disabled or invalid dependencies keep consumers unavailable."] = true
-L["Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability."] = true
-
-L['All namespaces'] = true
-L['Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.'] = true
-L['Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.'] = true
-L['Existing API'] = true
-L['Name in code'] = true
-L['Namespace'] = true
-L['Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply.'] = true
-L['Private utility-function namespace. It contains only explicit bindings for this callback.'] = true
-
-L['Argument'] = true
-L['Bindings (%d)'] = true
-L['Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.'] = true
-L['Changing argument or return order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] = true
-L['Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.'] = true
-L['Return'] = true
-
-L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] = true
-L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'] = true
-
-L['Card controls'] = true
-L['Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.'] = true
-L['Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.'] = true
-L['Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.'] = true
-L['Rendered output appears here when the callback runs or steps through widget creation.'] = true
-L['Set values in Test before running or debugging this condition.'] = true
-L['The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.'] = true
-L['Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.'] = true
-
--- Whole-field General help; each paragraph can be translated independently.
-
--- Complete Effects field and interaction documentation.
-
-L["Debuffs"] = true
-L["Resources"] = true
-L["Pet"] = true
-L["Logic"] = true
-L["Environment"] = true
-L["Time"] = true
-
-L["Spell Auto-Repeat Active"] = true
-
-
-L["Default.TBC.Paladin.Retribution.Wowhead.Name"] = "Retribution (Wowhead & wowsims)"
-L["Default.TBC.Paladin.Retribution.Wowhead.Description"] = "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade."
-L["Default.TBC.Paladin.Retribution.IcyVeins.Name"] = "Retribution (Icy Veins)"
-L["Default.TBC.Paladin.Retribution.IcyVeins.Description"] = "Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once per target, Seal of Righteousness (Command only with a slow weapon, Blood or Martyr once learned), Crusader Strike, Hammer of Wrath and Judgement on cooldown, Consecration on two or more enemies, Exorcism on Undead and Demons, and Holy Shock for Holy levelers. Same reminders as the Wowhead variant."
-L["Default.TBC.Paladin.Retribution.Twist.Name"] = "Retribution seal twisting"
-L["Default.TBC.Paladin.Retribution.Twist.Description"] = "Off by default; enable it if you twist seals (level 64+, Seal of Command and Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of Command (rank 1) early and switches to Blood or Martyr in the last 0.4 seconds, Crusader Strike between twists, judges only Blood or Martyr, Exorcism and Consecration only as fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer; latency is not accounted for."
-L["Default.TBC.Paladin.Protection.Wowhead.Name"] = "Protection (Wowhead & wowsims)"
-L["Default.TBC.Paladin.Protection.Wowhead.Description"] = "Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you."
-L["Default.TBC.Paladin.Protection.IcyVeins.Name"] = "Protection (Icy Veins)"
-L["Default.TBC.Paladin.Protection.IcyVeins.Description"] = "Icy Veins' tanking, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader when nobody keeps it up, Righteousness (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, then Avenger's Shield and Hammer of Wrath on cooldown. Same reminders as the Wowhead variant without Avenging Wrath."
-L["Default.TBC.Paladin.Holy.Name"] = "Holy (Icy Veins & Wowhead)"
-L["Default.TBC.Paladin.Holy.Description"] = "Healing for a Holy Paladin in a group, on your friendly target: Lay on Hands or Holy Shock for a dying target, Cleanse (Purify before 42), Holy Shock while moving, Holy Light for heavy damage, rank-5 Holy Light to keep Light's Grace up, Flash of Light otherwise. With a hostile target it keeps Judgement of Wisdom up. Reminders: Concentration Aura, Blessing of Wisdom, Divine Illumination and Divine Favor. A soloing Holy Paladin gets a Retribution premade instead."
-L["Default.TBC.Paladin.Holy.Wowhead.Name"] = "Holy (Wowhead tank healing)"
-L["Default.TBC.Paladin.Holy.Wowhead.Description"] = "Wowhead's raid tank healing, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade."
-
-L["Default.TBC.Hunter.Ranged.Wowsims.Name"] = "Ranged DPS (wowsims)"
-L["Default.TBC.Hunter.Ranged.Wowsims.Description"] = "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you."
-L["Default.TBC.Hunter.Ranged.Wowhead.Name"] = "Ranged DPS (Wowhead)"
-L["Default.TBC.Hunter.Ranged.Wowhead.Description"] = "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended wowsims ranged premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.TBC.Rogue.DPS.Wowsims.Name"] = "Melee DPS (wowsims)"
-L["Default.TBC.Rogue.DPS.Wowsims.Description"] = "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you."
-L["Default.TBC.Rogue.DPS.Wowhead.Name"] = "Melee DPS (Wowhead)"
-L["Default.TBC.Rogue.DPS.Wowhead.Description"] = "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.TBC.Druid.Balance.Name"] = "Balance"
-L["Default.TBC.Druid.Balance.Description"] = "Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low."
-L["Default.TBC.Druid.Feral.IcyVeins.Name"] = "Feral (Icy Veins, Warcraft Tavern & wowsims)"
-L["Default.TBC.Druid.Feral.IcyVeins.Description"] = "Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro)."
-L["Default.TBC.Druid.Feral.Wowhead.Name"] = "Feral (Wowhead)"
-L["Default.TBC.Druid.Feral.Wowhead.Description"] = "Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off by default: enable it and disable that one, or raise its priority. Rip whenever it is down at four combo points and Ferocious Bite only on a target about to die (no bite-weaving); bears spend free global cooldowns on Lacerate before Swipe. Innervate when a cat runs low on mana. Otherwise the same as the Icy Veins variant."
-L["Default.TBC.Druid.Restoration.Name"] = "Restoration"
-L["Default.TBC.Druid.Restoration.Description"] = "Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you."
-
-L["Default.TBC.Warrior.DPS.Wowsims.Name"] = "Melee DPS (wowsims)"
-L["Default.TBC.Warrior.DPS.Wowsims.Description"] = "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you."
-L["Default.TBC.Warrior.DPS.IcyVeins.Name"] = "Melee DPS (Icy Veins)"
-L["Default.TBC.Warrior.DPS.IcyVeins.Description"] = "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.TBC.Warrior.Protection.Wowhead.Name"] = "Tank (Wowhead)"
-L["Default.TBC.Warrior.Protection.Wowhead.Description"] = "Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block (with a shield equipped) against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you."
-L["Default.TBC.Warrior.Protection.IcyVeins.Name"] = "Tank (Icy Veins)"
-L["Default.TBC.Warrior.Protection.IcyVeins.Description"] = "Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you and you carry a shield. Taunting and other utility stay with you. An alternative to the recommended Wowhead tank premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.TBC.Priest.DpsIcyVeins.Name"] = "Damage (Icy Veins)"
-L["Default.TBC.Priest.DpsIcyVeins.Description"] = "Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. A Mind Flay past its first tick is cut short for a ready Mind Blast, or Shadow Word: Death above half health. Shields and healing stay with you."
-L["Default.TBC.Priest.DpsWowhead.Name"] = "Damage (Wowhead)"
-L["Default.TBC.Priest.DpsWowhead.Description"] = "Damage after Wowhead's guides, an alternative to the recommended Icy Veins damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your health drops, and a dying target gets spells instead of the wand. Otherwise the same as the recommended premade."
-L["Default.TBC.Priest.HealerWowhead.Name"] = "Healer (Wowhead)"
-L["Default.TBC.Priest.HealerWowhead.Description"] = "Healing in a group when Holy or Discipline is your main talent tree. It advises on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and whenever ready, Renew, Power Word: Shield in emergencies, dispels, Circle of Healing or Prayer of Healing for group damage, Binding, Flash and Greater Heal, and Greater Heal rank 1 as a cheap top-up. With an enemy targeted it offers light damage."
-L["Default.TBC.Priest.HealerIcyVeins.Name"] = "Healer (Icy Veins)"
-L["Default.TBC.Priest.HealerIcyVeins.Description"] = "Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. An alternative to the recommended Wowhead healer premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.TBC.Warlock.DpsIcyVeins.Name"] = "All trees (Icy Veins)"
-L["Default.TBC.Warlock.DpsIcyVeins.Description"] = "Every talent tree from level 1 to 70. Curse, then Unstable Affliction, Immolate, Corruption and Siphon Life as learned, Shadow Bolt or Incinerate; Nightfall and Backlash procs first; Seed, Hellfire and Shadowfury for three or more enemies. Solo it drains when hurt, Life Taps, wands, and uses Drain Soul or a finisher on a dying target. Reminders: Fel Armor, Demon Armor or Demon Skin, your demon, sacrifice, Soul Link, Amplify Curse and Soulshatter. Fears and other curses stay with you."
-L["Default.TBC.Warlock.DpsWowhead.Name"] = "Drain-tank (Wowhead)"
-L["Default.TBC.Warlock.DpsWowhead.Description"] = "Warlock after Wowhead's guides, an alternative to the recommended Icy Veins Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the recommended premade."
-
-
-L["Activate profile"] = true
-
--- Native condition item-list editor
-L["Apply changes to this selected item list. Other settings keep their own Apply action."] = true
-L["Choose an item list before editing."] = true
-L["The item list changed elsewhere. Close and reopen it before applying."] = true
-
-L["Native settings page unavailable: %s"] = true
-
-L["The native rotation editor is unavailable."] = true
-L["Required"] = true
-
-L["Required field references need review. Apply keeps the displayed root requirements."] = true
-
-L["Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged."] = true
-L["Copy condition description"] = true
-
-L["This condition exceeds the supported editor limits."] = true
-
-L["Proc Glow"] = true
-L["Loop duration"] = true
-L["Start burst"] = true
-L["Proc Glow is unavailable on this client; Pixel glow will be used."] = true
-L['Rotation data requires recovery: %s'] = true
-L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.'] = true
-L['Archive report truncated; saved data is unchanged.'] = true
-L['Recover unassigned rotations'] = true
-L['Ownership required'] = true
-L['These records have no assigned owner. Choose Class or This character explicitly. No ownership is inferred from names, spells or profile history.'] = true
-L['Recovery unavailable: %s'] = true
-L['Unassigned rotation archive'] = true
-L['Character archive'] = true
-L['Profile archive'] = true
-L['No unassigned rotations.'] = true
-L['Archive: %s; specialization: %s; identifier: %s'] = true
-L['Export archive'] = true
-L['Adopt rotation'] = true
-L['Could not adopt this record: %s'] = true
-L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'] = true
-L['The fallback rotation is unavailable. Open Rotations to complete or recover it.'] = true
-L['Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.'] = true
-L["Unsupported condition editor frame."] = true
-
-L["The native condition editor is unavailable."] = true
-
-L["Native custom condition editor required."] = true
-L["Stock"] = true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Optional Questie receipt integration
-L["Questie"] = true
-L["Waiting for Questie."] = true
-L["Questie API incompatible."] = true
-L["Questie callback connection available."] = true
-L["Questie values are restricted by this client."] = true
-L["Questie integration unavailable after an adapter error."] = true
-L["Questie adapter unavailable."] = true
-L["Questie version: %s (%s)"] = true
-L["unverified"] = true
-L["Client family: %s (%s)"] = true
-L["declared; unverified"] = true
-L["unsupported"] = true
-L["Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection."] = true
-L["Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used."] = true
-L["Refresh Questie status"] = true
-L["Supported addons"] = true
-L["Loaded; integration not connected."] = true
-L["%s (version %s)"] = true
-L["Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available."] = true
-L["ExtendedCharacterStats"] = true
-L["LuaWorkbench"] = true
-L["ElvUI"] = true
-L["Bartender4"] = true
-L["ButtonForge"] = true
-L["LUI"] = true
-L["Dominos"] = true
-L["AzeriteUI"] = true
-L["FarmingBar"] = true
-L["TotemTimers"] = true
-L["AzeriteUI6"] = true
-L["BigWigs"] = true
-L["Boss mods"] = true
-L["Top panels"] = true
-L["Connected"] = true
-L["Incompatible"] = true
-
-L["Loaded; connection not confirmed."] = true
-
--- Volatile cast receipt diagnostic controls.
-L["Capture casts (30s)"] = true
-L["Cast report"] = true
-L["Stop CPU capture"] = true
-L["Stop runtime capture"] = true
-L["Stop cast capture"] = true
-L["unavailable"] = true
-
-
-
-
-L["Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it."] = true
-L["Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor)."] = true
-L["Baseline plain editor; always available."] = true
-L["Built in"] = true
-L["Description / status"] = true
-L["Editor options"] = true
-L["Enable / Select"] = true
-L["Lua editors"] = true
-L["None (plain editor)"] = true
-L["Shared editor settings."] = true
-L["Editor settings"] = true
-L["Enable built-in syntax highlighting"] = true
-
-L["Syntax highlighting"] = true
-
-
-
-
-
-
-L["Addon release pages"] = true
-
-L["Publisher listings describe release availability; integration behavior on this client may be unverified."] = true
-
-L["Copy %s"] = true
-
-L["Release links checked: 2026-10-20."] = true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-L["CurseForge — LUI Classic"] = true
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-L["Copy link %d"] = true
-
-
-
-
--- Official integration project labels and edition notes.
-
-
-
-L['Preview appearance'] = true
-L['Skin preview buttons with Masque'] = true
-
-
-
-
-L["History"] = true
-L["Bypass observation cache"] = true
-L["Bypass observation cache (requires restart)"] = true
-L["Bypass observation cache (pending)"] = true
-L["Skin"] = true
-L["Blizzard Classic"] = true
-L["Preview skin is unavailable."] = true
-
-L["Sample icon"] = true
-
-
--- Explicit unscored advice/native-preview receipt coverage.
-
-
-L['Saved manual choice is unavailable in the current context.'] = true
-
--- Capture-only START witness diagnostics.
-L["Edit announcement conditions"] = "Edit announcement conditions"
-L["Announcement conditions"] = "Announcement conditions"
-
-L["Spell recipient"] = "Spell recipient"
-L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
-L["Announcement target"] = "Announcement target"
--- Unit death and friendliness conditions.
-L["Is Dead or Ghost"] = true
-L["Is Friendly"] = true
-L["{unit} {{!is dead or a ghost|is alive}}"] = true
-L['Workbench Help'] = 'Workbench Help'
-
-L['Navigation'] = 'Navigation'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-L["Destination"] = "Destination"
-
--- Direct, configured macro announcements.
-L["Via Macro"] = true
-L["Via Script/Macro"] = true
-L["Use a unique Via Script/Macro identifier."] = true
-L["Whisper"] = true
-L["Use supplied macro target ({{target}})"] = true
-L["Macro call: %s"] = true
-
-L['Announcement Condition'] = true
-L['Announcement'] = true
-L['Show this condition in the announcement condition editor.'] = true
--- Ordered announcement outputs (configuration only).
-L['Outputs']='Outputs'
-L['Output %d']='Output %d'
-L['Output state']='Output state'
-L['Add output']='Add output'
-L['Channel']='Channel'
-L['Complete this output or choose a destination available for this action type.']='Complete this output or choose a destination available for this action type.'
-
-
-
--- Read-only human condition summaries.
-L["{unit} {{!is friendly|is not friendly}}"] = true
-L["{unit} {{!are friendly|are not friendly}}"] = true
-L["{unit} {{!are dead or a ghost|are alive}}"] = true
-L["%s {{!are|are not}} an enemy"] = true
-L["%s {{!are|are not}} attackable"] = true
-L["{unit} {{!are|are not}} in a raid"] = true
-L["{unit} {{!is|is not}} in a party or raid"] = true
-L["{unit} {{!are|are not}} in a party or raid"] = true
-L["Choose a unit for this condition."] = true
-L["Group membership option is invalid."] = true
-L["For %s"] = true
-L["Saved settings"] = true
-L["Default.Forever.Rogue.DPS.Name"] = "Melee DPS"
-L["Default.Forever.Rogue.DPS.Description"] = "Melee damage for every Rogue specialization from level 1 to 60, built from Icy Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister Strike for the fifth point), Hemorrhage, Backstab when the target is not facing you, else Sinister Strike. From Stealth it opens with Premeditation, Cheap Shot when solo, Garrote for Subtlety on group elites, else Ambush or Garrote. It keeps Slice and Dice and Venom up, uses Expose Armor in groups on elites when no warrior has five Sunders, then spends five points on Rupture (Subtlety, long fights) or Eviscerate, and never builds past five. Reminders: poisons on each weapon, Kick, Blade Flurry and Adrenaline Rush on packs and elites, Cold Blood, Evasion, Feint, Thistle Tea and Preparation. Left to you: Vanish, Sprint, Kidney Shot, Blind, Sap and positioning. Forever restricts combat data, so Rotation Master lists this premade for reference and does not select it automatically yet."
-L["Default.Forever.Rogue.Subtlety.WarcraftTavern.Name"] = "Subtlety, Ambush build (Warcraft Tavern)"
-L["Default.Forever.Rogue.Subtlety.WarcraftTavern.Description"] = "Warcraft Tavern's Ambush/Cutthroat Subtlety build: Premeditation and Ambush on every opener, Ambush again whenever Cutthroat allows it, Backstab from behind as the builder (Hemorrhage when the target is facing you), Ghostly Strike on cooldown, and Slice and Dice then Eviscerate at five points with no Rupture. Reminds you to Vanish for another Ambush on a tanked boss. Choose it instead of the recommended Rogue premade if you took the Cutthroat talents; it applies with Subtlety as your main talent tree and Cutthroat talented. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.Forever.Rogue.Subtlety.Wowhead.Name"] = "Subtlety, Garrote build (Wowhead)"
-L["Default.Forever.Rogue.Subtlety.Wowhead.Description"] = "Wowhead's Subtlety: Premeditation and Garrote on every opener, and Vanish (then Preparation) used in the rotation to open with Garrote again once the last one has run out. Slice and Dice kept up, Expose Armor in groups, Rupture as the five-point finisher, Hemorrhage as the only builder. This spends Vanish, your escape, on damage: choose it deliberately. It applies with Subtlety as your main talent tree, Dirty Deeds talented and Premeditation known. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.Forever.Shaman.Restoration.Name"] = "Restoration"
-L["Default.Forever.Shaman.Restoration.Description"] = "Healing once Restoration is your main talent tree with 16 points (Mana Tide Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use Nature's Swiftness, Cure Poison and Cure Disease, Riptide on a target without it, Chain Heal in a group, Healing Wave. You pick who to heal by targeting them; health and mana are hidden from addons on Forever, so when to use Nature's Swiftness and Lesser Healing Wave is your call. With a hostile target and nothing to heal: Fire Nova and Chain Lightning on packs, Stormstrike and Earth Shock if you know Stormstrike, Flame Shock on elites and bosses, Lightning Bolt, then melee. Reminders: Water Shield, the Earth Shock interrupt, Mana Tide and group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf."
-L["Default.Forever.Shaman.Elemental.Name"] = "Elemental"
-L["Default.Forever.Shaman.Elemental.Description"] = "Ranged Elemental once Elemental is your main talent tree with 21 points (Lava Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid every guide recommends). Pulls with Lightning Bolt (Chain Lightning on a pack), casts only instants while moving, uses Fire Nova and Chain Lightning on three or more enemies, keeps Flame Shock up, Lava Burst on cooldown, Stormstrike and Earth Shock if you know Stormstrike, Fire Nova on Clearcasting in groups, then Lightning Bolt. Reminders: shield, weapon imbue, Searing or Magma Totem, group totems, Elemental Mastery, interrupt. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call. Left to you: Earthbind kiting, Frost Shock, Purge and other totems."
-L["Default.Forever.Shaman.Enhancement.Name"] = "Enhancement (Icy Veins)"
-L["Default.Forever.Shaman.Enhancement.Description"] = "Melee Enhancement from level 1 to 60, and the default for any Shaman before Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on cooldown, an instant Lightning Bolt at five Maelstrom Weapon stacks, Fire Nova (with a Fire totem down) and Flame Shock on three or more enemies, Earth Shock into the Stormstrike debuff, Flame Shock in groups, and Earth Shock on cooldown; Lightning Bolt fills the gap while the target is out of reach. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call (the Wowhead premade saves mana instead). Reminders: weapon imbue (Windfury, else Flametongue, else Rockbiter), Water or Lightning Shield, the Earth Shock interrupt, Searing or Magma Totem, group totems, Rage of the Farseer, Stoneclaw Totem. Left to you: totem presets, Frost Shock, Purge and other totems."
-L["Default.Forever.Shaman.Enhancement.Wowhead.Name"] = "Enhancement, mana-efficient (Wowhead)"
-L["Default.Forever.Shaman.Enhancement.Wowhead.Description"] = "Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.Forever.Warlock.DPS.Name"] = "All trees"
-L["Default.Forever.Warlock.DPS.Description"] = "Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate and Bane of Agony (Destruction precasts Shadow Bolt), uses Nightfall and Decimation procs, keeps Demonic Brand up with Searing Pain. While moving it casts only instants. On packs: Hellfire in a group, Rain of Fire, Corruption and Agony. Then Bane of Doom on elites and bosses or Bane of Agony, Curse of the Elements in groups and on elites, Immolate, Corruption, Siphon Life, Conflagrate and Shadowburn; solo it fills with Wrack, Drain Life (with a drain talent) or the wand; otherwise Incinerate or Shadow Bolt. Reminders: armor, a demon (Succubus, else Voidwalker, else Imp), Fel Domination, Demonic Sacrifice with Demonic Pact, Soul Link, weapon stones, Amplify Curse and Bane of Havoc for a second enemy. Left to you: sending the pet in, other curses, Fear, Healthstones and other targets. Health and mana are hidden from addons on Forever, so the execute window (Drain Soul, Shadowburn as the killing blow), Life Tap, Health Funnel and draining when hurt are your call."
-L["Default.Forever.Warlock.DPS.IcyVeins.Name"] = "All trees (Icy Veins)"
-L["Default.Forever.Warlock.DPS.IcyVeins.Description"] = "Icy Veins' Warlock leveling: the wand is the solo filler, Voidwalker is the default demon, Affliction and Destruction sacrifice their demon and play without one (from 41 and 55), Demonology keeps Demonic Brand up and uses Immolate only as a filler, and Destruction puts Bane of Havoc on the durable enemy of a pack and Conflagrates on cooldown once Incinerate is known. Choose it instead of the recommended Warlock premade if you follow Icy Veins. Health, mana and time to die are hidden from addons on Forever, so Drain Life when hurt, Life Tap and which targets will live long enough for DoTs are your call. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.Forever.Warlock.DPS.Wowhead.Name"] = "All trees (Wowhead)"
-L["Default.Forever.Warlock.DPS.Wowhead.Description"] = "Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight; health and mana are hidden on Forever, so Life Tap is your call), Demonology keeps Demonic Brand up and Agonies only big targets, Destruction puts Agony, Corruption and Immolate on every mob, Conflagrates just before Immolate ends, saves Shadowburn for the killing blow and wands with the Voidwalker. Amplify Curse on every cooldown; Curse of the Elements and Bane of Doom only on elites and bosses; no pack section. Wowhead's guides stop at level 30. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.Forever.Warrior.Protection.Name"] = "Protection (Icy Veins)"
-L["Default.Forever.Warrior.Protection.Description"] = "Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies Thunder Clap on cooldown, Demoralizing Shout, Shield Slam, Revenge and Rend. On one target: Shield Slam, Revenge, Demoralizing Shout, Rend, Sunder Armor (five on elites) and Thunder Clap on dangerous targets. Reminders: Battle Shout, Bloodrage, Shield Bash, Shield Block while you hold the target, Heroic Strike while Shield Slam and Revenge are both recovering, Cleave on packs; Taunt and Shield Wall are listed but off. Rage, health and the target's mana are hidden from addons on Forever, so the rage thresholds, casters and Last Stand are your call. Left to you: swapping to Battle Stance to Charge before Vanguard, taunting other enemies and picking up loose ones."
-L["Default.Forever.Warrior.Protection.WarcraftTavern.Name"] = "Protection, debuff upkeep (Warcraft Tavern)"
-L["Default.Forever.Warrior.Protection.WarcraftTavern.Description"] = "Warcraft Tavern's tanking order: Thunder Clap, Demoralizing Shout and five Sunder Armors kept on every target first, then Revenge, Rend and Shield Slam last, with Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold). No Shield Block or defensive reminders. Choose it instead of the Icy Veins tank premade if you prefer to keep the debuffs up first. An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.Forever.Warrior.DPS.Name"] = "Arms and Fury (Icy Veins)"
-L["Default.Forever.Warrior.DPS.Description"] = "Melee Arms and Fury from level 1 to 60, and the default for any warrior outside Defensive Stance. Forever rage is scarce and hidden from addons, so it pools by spending on anything else only while Mortal Strike or Bloodthirst is recovering: Charge to pull, Victory Rush, Intercept, Execute (in its range) on elites, bosses or in a group, Whirlwind or Thunder Clap, Demoralizing Shout and Slam on packs, Spearing Strike on Giants and Dragonkin, Rend until Bloodthirst, Overpower, Mortal Strike, Bloodthirst, then Whirlwind, Slam while standing and two Sunder Armors (five on elites). Reminders: Battle Shout, Bloodrage, the interrupt, Heroic Strike while the main strike recovers, Cleave on packs, Sweeping Strikes, Death Wish and Berserker Rage; Recklessness and Retaliation are listed but off. Left to you: stance dancing, Hamstring and consumables."
-L["Default.Forever.Warrior.DPS.WarcraftTavern.Name"] = "Arms and Fury, spend rage (Warcraft Tavern)"
-L["Default.Forever.Warrior.DPS.WarcraftTavern.Description"] = "Warcraft Tavern's always-spend list for groups and raids: five Sunder Armors first, Execute above everything below 20%, Overpower, Rend until Bloodthirst, Mortal Strike, Bloodthirst, Whirlwind, Spearing Strike on cooldown, Slam once Improved Slam is taken; Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold or spare-rage Hamstring), Recklessness on cooldown with Death Wish beside it. Choose it instead of the Icy Veins premade if you play in groups and do not need to save rage between pulls. An alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority."
-
-L["Default.Forever.Druid.Balance.Name"] = "Balance"
-L["Default.Forever.Druid.Balance.Description"] = "Balance from level 1 to 60, and the default for any Forever Druid no other premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while moving, refreshes Moonfire, Insect Swarm and, in a group, Faerie Fire. Hurricane when three or more enemies are fighting you, then your own Moonfire and Insect Swarm, Starfire while Eclipse charges or Clearcasting are up, and Wrath; when you cannot afford Wrath it lets you melee. Health and mana are hidden from addons on Forever, so healing yourself and judging whether a target is worth a DoT are your call. Reminders: Mark of the Wild, Thorns while solo, Moonkin Form, a pre-pull Rejuvenation while solo, Nature's Grasp when a mob is on you, Innervate whenever it is ready in combat while solo. Form changes, crowd control, Barkskin and target choice stay with you. Built from level-30 beta guides; level 31–60 steps follow the class design and are untested."
-L["Default.Forever.Druid.BalanceTavern.Name"] = "Balance, Multi-DoT (Warcraft Tavern)"
-L["Default.Forever.Druid.BalanceTavern.Description"] = "Warcraft Tavern's Multi-DoT leveling style, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Pulls with Wrath, keeps your Moonfire and Insect Swarm on the target, roots it with Entangling Roots once both are running while another enemy is fighting you, then Wrath. No Starfire (the build skips Eclipse). Switching to the next enemy is up to you. Reminders: Mark of the Wild, Thorns while solo."
-L["Default.Forever.Druid.Feral.Name"] = "Feral, Cat and Bear"
-L["Default.Forever.Druid.Feral.Description"] = "Cat and Bear in one premade, chosen by your form; it takes over once Feral is your main talent tree (or has 11 points), or when you shift into Cat or Bear Form. Cat: Ravage or Shred from Prowl, Faerie Fire, Rip at four combo points, Ferocious Bite once Rip runs, Rake, then Shred when the target is not facing you (Claw otherwise). Bear: Faerie Fire and Feral Charge at range, Demoralizing Roar in a group or on two enemies, Primal Bite, Swipe on three or more, Lacerate, Swipe. In caster form it suggests Cat Form (Bear before you have Cat). Reminders: Maul whenever you can afford it in Bear Form, Enrage, Berserk on big pulls or elites, Innervate while solo, Mark of the Wild, Thorns. Health, energy, rage and mana are hidden from addons on Forever, so powershifting, Frenzied Regeneration and healing yourself are your call. Taunts, interrupts and positioning stay with you."
-L["Default.Forever.Druid.Restoration.Name"] = "Restoration"
-L["Default.Forever.Druid.Restoration.Description"] = "Group healing after Warcraft Tavern, once Restoration is your main talent tree with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild Growth, Regrowth and Rejuvenation when missing, Healing Touch. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing. On a hostile target: Moonfire, Insect Swarm, Wrath. Reminders: Innervate in combat, Nature's Swiftness on a friendly target in combat, Remove Curse and Abolish Poison, Mark of the Wild; Tranquility is yours. You pick who to heal and the spell rank; solo Restoration uses the Balance premade."
-L["Default.Forever.Druid.RestorationIcyVeins.Name"] = "Restoration, HoTs first (Icy Veins)"
-L["Default.Forever.Druid.RestorationIcyVeins.Description"] = "Icy Veins' HoT-first healing, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs running, Swiftmend on a HoT target, then Wild Growth (health is hidden on Forever, so the target you pick decides who is healed). Innervate on cooldown. Otherwise the same reminders and hostile-target list as the Restoration premade."
-
-L["Default.Forever.Hunter.Ranged.Name"] = "Ranged (Wowhead)"
-L["Default.Forever.Hunter.Ranged.Description"] = "Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper Shot while Rapid Killing lasts, Auto Shot. Then your own Serpent Sting, Summon Hawk twice and Arcane Shot once on their shared cooldown (Arcane Shot on cooldown before Summon Hawk), Sniper Shot under Rapid Killing or on elites, Aimed Shot. Two or more enemies fighting you: Multi-Shot instead of Aimed Shot, Explosive Trap with three near you, Volley on five. Moving: instant shots only. A mob in melee range gets Raptor Strike and Mongoose Bite. Reminders: Aspect of the Hawk (Monkey before it), Trueshot Aura, pet calling and reviving, Rapid Fire, Bestial Wrath and Blood Fury on elites or in dungeons, Intimidation when a mob is on you. Pet commands, feeding, kiting and Feign Death stay with you; disable the pet reminders if you play Lone Wolf. It never reads your mana or anyone's health, which Forever hides from addons, so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours."
-L["Default.Forever.Hunter.RangedMobalytics.Name"] = "Ranged, mana-saving (Mobalytics)"
-L["Default.Forever.Hunter.RangedMobalytics.Description"] = "Mobalytics' mana-saving leveling style, an alternative to the recommended Wowhead ranged premade, off by default: enable it and disable that one, or raise its priority. Keeps your Serpent Sting up, one Summon Hawk out, Aimed Shot (Multi-Shot on two or more enemies), and never Arcane Shot once Summon Hawk is known; its second Hawk on a healthy target is left out, as Forever hides target health. Same pull, melee, movement and reminders as the Wowhead premade."
-L["Default.Forever.Hunter.Survival.Name"] = "Survival melee (Wowhead)"
-L["Default.Forever.Hunter.Survival.Description"] = "Dual-wield melee Survival once Survival is your main talent tree with 21 points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise). Pull with Hunter's Mark and Serpent Sting, then Mongoose Bite, Strider Kick, Raptor Strike and Counterattack, with Explosive Trap on three or more enemies. Out of melee it shoots: Serpent Sting, Arcane Shot, Aimed Shot, Auto Shot. Reminders: Aspect of the Beast, Hunter's Mark (Expose Prey needs it), Rapid Fire and Blood Fury on elites or in dungeons, Deterrence while you hold the target's attention, pet care (health is hidden on Forever, so Mend Pet is yours). An optional Immolation Trap step is off by default."
-L["Default.Forever.Hunter.SurvivalWeave.Name"] = "Survival two-hand weave (Wowhead)"
-L["Default.Forever.Hunter.SurvivalWeave.Description"] = "Wowhead's in-and-out weave for a two-handed Survival Hunter, an alternative to the recommended Survival melee premade, off by default: enable it and disable that one, or raise its priority. In melee: Mongoose Bite and Raptor Strike; when Raptor Strike is more than 2.5 seconds away, Strider Kick and step out. Out of melee: Serpent Sting, Arcane Shot, Aimed Shot and Auto Shot until Raptor Strike is nearly ready, then back in. You do the moving; RM follows your range."
-
-L["Default.Forever.Mage.Frost.Name"] = "Frost"
-L["Default.Forever.Mage.Frost.Description"] = "Frost from level 1 to 60, and the Forever Mage default before talent spells (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of Frost or a frozen target (also while Frostbolt is still casting, to cancel or batch), Cone of Cold at five Winter's Chill stacks, Arcane Missiles on Missile Barrage, Frostbolt, and a wand when solo and you cannot afford Frostbolt. Moving: Ice Lance, else Fire Blast. Three or more enemies fighting you: Cone of Cold; five or more: Blizzard, or Arcane Explosion with a mob on you. Warcraft Tavern's Flamestrike and Arcane Explosion AoE is included but off. Reminders: Arcane Intellect, armor (Ice or Frost solo, Mage Armor in a group, never replacing one you chose), Ice Barrier, Counterspell, Remove Lesser Curse, Frost Nova when a mob reaches you, Cold Snap. Health and mana are hidden from addons on Forever, so finishing low targets with Fire Blast, Evocation and Ice Block are your call; Blink, kiting, Polymorph and mana gems stay with you too."
-L["Default.Forever.Mage.Fire.Name"] = "Fire"
-L["Default.Forever.Mage.Fire.Description"] = "Fire once Fire is your main talent tree with 11 points (Pyroblast's tier). Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three Heating Up stacks, Ice Lance on Fingers of Frost or a frozen target (Fire/Frost hybrids), Fire Blast on cooldown, Scorch to keep your five Fire Vulnerability stacks on elites, Frostfire Bolt (from 40) or Fireball, wand when solo and you cannot afford a spell. Moving: Fire Blast or Ice Lance. Four or more enemies fighting you: Flamestrike, Blast Wave, Arcane Explosion. Scorch starts the stacks only once you have Improved Scorch; a close-range Scorch is off until you enable it. Reminders: Combustion and Presence of Mind on elites, plus the Mage upkeep reminders."
-L["Default.Forever.Mage.FireIcyVeins.Name"] = "Fire leveling (Icy Veins)"
-L["Default.Forever.Mage.FireIcyVeins.Description"] = "Icy Veins' Fire leveling build without Improved Scorch, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Pulls with Pyroblast, uses Fire Blast to spend Wake of Fire, Scorch as the mob closes (target health is hidden on Forever, so its low-target finishers are yours), then Frostfire Bolt (from 40) or Fireball. Same AoE, movement, wand and reminders as the Fire premade, without Combustion and Presence of Mind."
-L["Default.Forever.Mage.Arcane.Name"] = "Arcane"
-L["Default.Forever.Mage.Arcane.Description"] = "Arcane once Arcane is your main talent tree with 11 points and you know Arcane Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile Barrage, Arcane Blast on Clearcasting, Arcane Wrath at three Arcane Blast stacks, Arcane Blast up to four stacks on elites and two on other targets while you can afford it (mana is hidden on Forever), then Frostfire Bolt, Frostbolt or Fireball to fish for Missile Barrage, and a wand when solo and you cannot afford a spell. Without Arcane Wrath (the older beta design) Fire Blast spends the stacks. Moving: Fire Blast. Three or more enemies fighting you: Arcane Explosion. Reminders: Presence of Mind and Arcane Power on elites (Arcane Power no longer waits for half your mana), plus the Mage upkeep reminders."
-
-L["Default.Forever.Paladin.Retribution.Name"] = "Retribution"
-L["Default.Forever.Paladin.Retribution.Description"] = "Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged once on an elite target, then Seal of Command with a slow (3.0 s) weapon, else Seal of Righteousness. Then Holy Strike on cooldown, Holy Shock and Light's Vigil for a Shockadin, Exorcism on Undead and Demons, Consecration on three or more enemies, Hammer of Wrath when it can be cast, and melee. Judgement is off the global cooldown, so it is a reminder whenever a seal is up. Other reminders: your aura and Blessing (Retribution Aura and Kings once learned; yours are kept). Optional step, off by default: Hammer of Justice before a Seal of Command Judgement. Mana, health and the swing timer are hidden from addons on Forever, so mana saving, healing yourself, Lay on Hands and Twist of Light seal swapping are your call. Built from level-30 beta guides."
-L["Default.Forever.Paladin.Protection.Name"] = "Protection (Wowhead)"
-L["Default.Forever.Paladin.Protection.Description"] = "Tanking, once Protection is your main talent tree or you turn on Righteous Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt), Swift Judgement to reset it. Two or more enemies engaged: Consecration, Exorcism and Holy Wrath on Undead and Demons, Holy Strike. One enemy: Exorcism on Undead and Demons, Holy Strike, Consecration. Reminders: Righteous Fury, Seal of Fury, Judgement on cooldown, Holy Shield while tanking, your aura and Blessing. Health and mana are hidden from addons on Forever, so Templar's Bulwark and Lay on Hands are your call. Pulling, positioning and other taunts stay with you."
-L["Default.Forever.Paladin.ProtectionIcyVeins.Name"] = "Protection, Consecration first (Icy Veins)"
-L["Default.Forever.Paladin.ProtectionIcyVeins.Description"] = "Icy Veins' tanking style, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Consecration first whenever you can afford it, on one enemy too; Judgement is kept for taunts (no on-cooldown reminder), with Swift Judgement to reset it; then Holy Strike and Exorcism on Undead and Demons. Same tank reminders otherwise."
-L["Default.Forever.Paladin.Holy.Name"] = "Holy"
-L["Default.Forever.Paladin.Holy.Description"] = "Group healing once Holy is your main talent tree with 21 points (Holy Shock's tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current friendly target: Holy Shock on a target with your Light's Vigil, Light's Vigil in combat, Cleanse or Purify, Holy Shock while moving, Holy Light with Infusion of Light, Flash of Light as the main heal. On an enemy: Judgement of Light when Seal of Light is up, Holy Shock, Light's Vigil, Holy Strike, Exorcism. Reminders: Seal of Light when you have no seal, Divine Favor in combat on a friendly target, your aura and Blessing. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency Holy Shocks, big Holy Lights and Lay on Hands are your call."
-L["Default.Forever.Paladin.HolyWowhead.Name"] = "Holy, Holy Shock on cooldown (Wowhead)"
-L["Default.Forever.Paladin.HolyWowhead.Description"] = "Wowhead's healing style, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Shock as a routine heal on cooldown, dispels, Flash of Light (health is hidden on Forever, so Holy Light for big deficits is your call). On an enemy it keeps your Judgement of Light up by swapping to Seal of Light, judging and swapping back to Seal of Righteousness, then Holy Strike, Exorcism on Undead and Demons, Holy Shock and Consecration. Same reminders as the Holy premade."
-
-L["Default.Forever.Priest.Dps.Name"] = "Shadow and solo damage"
-L["Default.Forever.Priest.Dps.Description"] = "Shadow, and every Priest's solo play, from level 1 to 60; the Forever Priest default. Pulls with Power Word: Shield (solo) and Mind Blast (Holy Fire for Holy and Discipline, Smite before Mind Blast). Then Shadowform once learned, your own Shadow Word: Pain and Devouring Plague, Mind Blast, Holy Fire into Penance for Discipline, Mind Flay in Shadowform; solo before Shadowform, Holy Nova on three enemies with Holy Purpose, then the wand (Smite without one). Moving: Pain, Plague. Reminders: Inner Fire, Fortitude, Divine Spirit, racial buffs, Vampiric Embrace, Inner Focus, Silence, Elune's Light; Psychic Scream is off by default. Health and mana are hidden from addons on Forever, so executing with Shadow Word: Death, healing yourself and Dark Sacrifice are your call. Built from level-30 beta guides; Shadowform play follows Mobalytics."
-L["Default.Forever.Priest.DpsMobalytics.Name"] = "DoT and wand leveling (Mobalytics)"
-L["Default.Forever.Priest.DpsMobalytics.Description"] = "Mobalytics' leveling style, an alternative to the recommended Shadow premade, off by default: enable it and disable that one, or raise its priority. Mind Blast and Holy Fire only on tough mobs (elites, or two levels above you), your own Shadow Word: Pain and Devouring Plague, then the wand (Smite without one). From Shadowform: Mind Blast, Pain, Plague, Mind Flay. Shield and Renew on yourself between pulls, Cure Disease on yourself. Health and mana are hidden from addons on Forever, so healing yourself is your call. Spreading Pain across several mobs is up to you."
-L["Default.Forever.Priest.Healer.Name"] = "Discipline and Holy healing"
-L["Default.Forever.Priest.Healer.Description"] = "Group healing once Discipline or Holy is your main talent tree and you do not know Shadowform. Heals your current friendly target: before the pull Power Word: Shield, Prayer of Mending and Renew; Dispel Magic and Abolish or Cure Disease; Prayer of Mending; Holy Nova on Holy Purpose; Penance; Renew when missing; Heal (Lesser Heal before it). On an enemy: Shadow Word: Pain, Holy Fire, Penance, Smite, wand. Reminders: Inner Fire, Fortitude, Divine Spirit, Power Infusion on another player, Inner Focus in combat and the racial spells. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency heals, Prayer of Healing, Binding Heal, Greater and Flash Heal, Desperate Prayer and Dark Sacrifice are your call. You pick who to heal and the rank; a Discipline healer before Penance (20–29) selects it by hand."
-
-L["Default.Retail.DeathKnight.Blood.Name"] = "Blizzard Assisted"
-L["Default.Retail.DeathKnight.Blood.Description"] = "Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Vampiric Blood and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call. Active mitigation timing, Anti-Magic Shell, taunts and trinkets stay with you."
-L["Default.Retail.DeathKnight.BloodGuide.Name"] = "Reference (Icy Veins and Wowhead)"
-L["Default.Retail.DeathKnight.BloodGuide.Description"] = "Reference only, off by default: the guides' Blood priority. In Midnight combat your buffs and the target's debuffs are hidden from addons, so the steps that read them wait there; read it, or clone it to experiment. Health and runic power are hidden on Retail, so Death Strike is used whenever you can afford it. Pulls with Death's Caress. Death Strike; Marrowrend (Death's Caress out of melee) when Bone Shield is missing, under five charges, about to expire, or Exterminate is up; during Gift of the San'layn, Death Strike, one Blood Boil, Death and Decay on Crimson Scourge and Heart Strike; Death and Decay on Crimson Scourge or four enemies; Vampiric Strike; Consumption; Blood Boil on Boiling Point, a missing Blood Plague or full charges; Heart Strike. Reminders: Raise Dead, Vampiric Blood, Reaper's Mark, Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders."
-L["Default.Retail.DeathKnight.BloodSimc.Name"] = "Deathbringer reference (SimulationCraft)"
-L["Default.Retail.DeathKnight.BloodSimc.Description"] = "Reference only, off by default: SimulationCraft's Deathbringer list, which spends runic power on Death Strike for damage. Hidden combat data keeps it from running in Midnight combat, and runic power is hidden on Retail, so there is no cap dump. Death and Decay whenever it is down, Reaper's Mark, Marrowrend on Exterminate, Death's Caress for Bone Shield while runes are short (else Marrowrend), Death Strike, Blood Boil, Consumption outside Dancing Rune Weapon, Heart Strike. Reminders: Raise Dead, Dancing Rune Weapon, Vampiric Blood and the utility reminders."
-L["Default.Retail.DeathKnight.Frost.Name"] = "Blizzard Assisted"
-L["Default.Retail.DeathKnight.Frost.Description"] = "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Breath of Sindragosa and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call."
-L["Default.Retail.DeathKnight.FrostGuide.Name"] = "Reference (Icy Veins and SimulationCraft)"
-L["Default.Retail.DeathKnight.FrostGuide.Description"] = "Reference only, off by default: the guides' Frost priority. Killing Machine, Rime and Razorice are hidden in Midnight combat, so it cannot run there; runic power is hidden on Retail, so there is no cap check. Obliterate on two Killing Machines or one with three runes, Frost Strike into five Razorice with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike, Obliterate; three or more enemies swap in Frostscythe and Glacial Advance; Howling Blast out of melee. Reminders: Remorseless Winter, Pillar of Frost, Breath of Sindragosa and Frostwyrm's Fury in Pillar, Reaper's Mark, Raise Dead, Empower Rune Weapon at two charges, plus the utility reminders."
-L["Default.Retail.DeathKnight.FrostWowhead.Name"] = "Reference (Wowhead)"
-L["Default.Retail.DeathKnight.FrostWowhead.Description"] = "Reference only, off by default: Wowhead's Frost order, which puts its cooldowns in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is hidden on Retail, so there is no cap check. Empower Rune Weapon at two charges, Reaper's Mark, Pillar of Frost, Breath of Sindragosa, Frostwyrm's Fury; then Obliterate on two Killing Machines or one with Exterminate, Howling Blast on Rime, Obliterate on Killing Machine, Empower Rune Weapon for a new one, Frost Strike, Obliterate, Howling Blast. Three or more enemies swap in Frostscythe and Glacial Advance."
-L["Default.Retail.DeathKnight.Unholy.Name"] = "Blizzard Assisted"
-L["Default.Retail.DeathKnight.Unholy.Description"] = "Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it raises your ghoul and uses Army of the Dead and Dark Transformation itself); it waits while you cast or channel. Alongside it: Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call."
-L["Default.Retail.DeathKnight.UnholyGuide.Name"] = "Reference (Icy Veins and Wowhead)"
-L["Default.Retail.DeathKnight.UnholyGuide.Description"] = "Reference only, off by default: the guides' Unholy priority. Procs and plagues are hidden in Midnight combat, so it cannot run there; runic power and the target's health are hidden on Retail, so the execute window and the San'layn runic power spend are left out. Raise Dead without a ghoul; Festering Scythe to keep its plague haste up; Soul Reaper on Reaping; Putrefy during Dark Transformation; Death Coil (Epidemic on four or more enemies) on Sudden Doom or Forbidden Knowledge; Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Reminders: Army of the Dead, Dark Transformation, Outbreak when your plagues are missing, plus the utility reminders."
-L["Default.Retail.DeathKnight.UnholySimc.Name"] = "Reference (SimulationCraft)"
-L["Default.Retail.DeathKnight.UnholySimc.Description"] = "Reference only, off by default: SimulationCraft's Unholy list, which spends Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic power and target health are hidden on Retail, so the cap and execute checks are left out. Festering Scythe upkeep, Soul Reaper in Dark Transformation, Death Coil on Sudden Doom, Putrefy in Dark Transformation, Death Coil in Dark Transformation or Forbidden Knowledge and whenever Army of the Dead is over 5 seconds away, Scourge Strike with Lesser Ghoul charges, Festering Strike. Three or more enemies: Epidemic for Death Coil and Festering Strike below three charges. Reminders: Outbreak, Death and Decay on packs, Army of the Dead, Dark Transformation."
-L["Default.Retail.DeathKnight.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.DeathKnight.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Death Knight premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.DemonHunter.Havoc.Name"] = "Blizzard Assisted"
-L["Default.Retail.DemonHunter.Havoc.Description"] = "Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the game's assistant leaves to you: Metamorphosis and The Hunt in combat, Vengeful Retreat if you have Inertia or Exergy, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Movement, Darkness and trinkets stay with you."
-L["Default.Retail.DemonHunter.HavocGuide.Name"] = "Reference (Icy Veins, SimulationCraft and Wowhead)"
-L["Default.Retail.DemonHunter.HavocGuide.Description"] = "Reference only, off by default: the guides' Havoc priority. Your procs, Metamorphosis and Essence Break are hidden from addons in Midnight combat, so this list cannot run there; read it, or clone it to experiment. Fury is hidden on Retail, so Felblade does not wait for room. Aldrachi Reaver: Reaver's Glaive when neither Rending Strike nor Glaive Flurry is up, Chaos Strike on Rending Strike. Fel-Scarred: Essence Break, Blade Dance and Chaos Strike in Metamorphosis. Then Blade Dance and Chaos Strike inside Essence Break, Immolation Aura at two charges, Eye Beam, Felblade for Inertia, Essence Break when Eye Beam is over 4 seconds away, Blade Dance, Immolation Aura on two enemies, Chaos Strike, Felblade, Immolation Aura, Throw Glaive, Fel Rush. Reminders: Metamorphosis once Eye Beam and Blade Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur."
-L["Default.Retail.DemonHunter.Vengeance.Name"] = "Blizzard Assisted"
-L["Default.Retail.DemonHunter.Vengeance.Description"] = "Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the assistant leaves to you: Demon Spikes, Fiery Brand, Fel Devastation and Metamorphosis whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Infernal Strike, Darkness, taunts and trinkets stay with you."
-L["Default.Retail.DemonHunter.VengeanceGuide.Name"] = "Reference (Wowhead and Icy Veins)"
-L["Default.Retail.DemonHunter.VengeanceGuide.Description"] = "Reference only, off by default: Wowhead's Vengeance order with Icy Veins' hero-tree goals. Your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so spenders wait only for their cost and builders do not avoid capping. Aldrachi Reaver: Reaver's Glaive, Fracture on Rending Strike, Soul Cleave on Glaive Flurry. Then Fracture at full charges, Spirit Bomb on three or more enemies, Immolation Aura, Sigil of Flame, Soul Cleave against one target, Fel Devastation, Soul Cleave, Fracture, Felblade, Throw Glaive. Rotation Master cannot count Soul Fragments, so Spirit Bomb follows the enemy count. Reminders: Demon Spikes when it is down, Metamorphosis, Fiery Brand, Sigil of Spite, Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur."
-L["Default.Retail.DemonHunter.VengeanceSimc.Name"] = "Reference (SimulationCraft)"
-L["Default.Retail.DemonHunter.VengeanceSimc.Description"] = "Reference only, off by default: SimulationCraft's Vengeance lists. Hidden combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its Fury thresholds are left out. Aldrachi Reaver: Sigil of Flame and Immolation Aura first, Metamorphosis, the Reaver's Glaive cycle with Felblade, Fiery Brand, Sigil of Spite, Spirit Bomb on packs, Soul Carver in Fiery Demise, then Fracture, Soul Cleave, Felblade, Fel Devastation. Annihilator: spend a ready Voidfall with Spirit Bomb or Soul Cleave, Fracture at two Voidfall stacks, Metamorphosis, Spirit Bomb, Sigil of Spite, Fracture at full charges, Immolation Aura, Sigil of Flame, Fracture, Soul Cleave, Felblade, Throw Glaive. Reminders: Demon Spikes, Disrupt, Blur."
-L["Default.Retail.DemonHunter.Devourer.Name"] = "Blizzard Assisted"
-L["Default.Retail.DemonHunter.Devourer.Description"] = "Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel Void Ray. Alongside it, reminders for what the assistant leaves to you: Void Metamorphosis, The Hunt and Voidblade whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call."
-L["Default.Retail.DemonHunter.DevourerGuide.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.DemonHunter.DevourerGuide.Description"] = "Reference only, off by default: Icy Veins' Annihilator priority. Most of your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so Void Ray waits only for its cost. Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation when it is not burning, Voidblade and The Hunt once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray, Consume. Inside it: Devour on Soulburst, Void Ray, the Void-Scarred strikes if you have them, Collapsing Star, Cull, Devour, Soul Immolation. Rotation Master cannot count Soul Fragments, so Reap and Cull go on cooldown. Reminders: Disrupt and Blur."
-L["Default.Retail.DemonHunter.DevourerSimc.Name"] = "Reference (SimulationCraft)"
-L["Default.Retail.DemonHunter.DevourerSimc.Description"] = "Reference only, off by default: SimulationCraft's Annihilator list, which enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in Midnight combat. Outside: Voidblade with Devourer's Bite on up to three enemies and a full Void Metamorphosis, Void Metamorphosis, Consume on Soulburst, Reap, Void Ray, Soul Immolation on packs, Consume. Inside: Devour on Soulburst against one target, The Hunt and Voidblade with Devourer's Bite, Void Ray on packs, Collapsing Star, Cull, Void Ray, Soul Immolation, Devour. Reminders: Disrupt and Blur."
-L["Default.Retail.DemonHunter.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.DemonHunter.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Demon Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Druid.Balance.Name"] = "Blizzard Assisted"
-L["Default.Retail.Druid.Balance.Description"] = "Recommended for Balance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation) in combat, Solar Beam on an interruptible cast, Moonkin Form and Mark of the Wild between pulls, and Barkskin and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Solar Beam lights only where the game shows them; health is hidden on Retail, so when to use Barkskin is your call."
-L["Default.Retail.Druid.BalanceGuide.Name"] = "Reference (Icy Veins, SimulationCraft and Wowhead)"
-L["Default.Retail.Druid.BalanceGuide.Description"] = "Reference only, off by default: the guides' Balance priority. Your DoTs, Eclipse and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Astral Power is hidden on Retail, so Starsurge spends at its cost instead of before the cap. Pulls with Moonkin Form and Wrath. Sunfire and Moonfire when missing or about to fall off; Eclipse when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos; New, Half and Full Moon; Wild Mushroom in an Eclipse; Starsurge whenever you can afford it; Starfire in a Lunar Eclipse or on packs, else Wrath. Reminders: Celestial Alignment or Incarnation, Fury of Elune and Force of Nature before an Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders."
-L["Default.Retail.Druid.Feral.Name"] = "Blizzard Assisted"
-L["Default.Retail.Druid.Feral.Description"] = "Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Berserk (or Incarnation) in combat, Skull Bash on an interruptible cast, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, and Cat Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use the defensives is your call."
-L["Default.Retail.Druid.FeralGuide.Name"] = "Reference (Icy Veins and SimulationCraft)"
-L["Default.Retail.Druid.FeralGuide.Description"] = "Reference only, off by default: the guides' Feral priority. Bleeds and procs are hidden in Midnight combat (combo points are not), so it cannot run there; energy is hidden on Retail. Opens with Cat Form, Prowl and Rake. Chomp; Ferocious Bite on Apex Predator's Craving; at five combo points Primal Wrath on two or more enemies, Rip when missing or in its last seconds, else Ferocious Bite, waiting for energy rather than building past five; below five, Rake when missing or about to fall off, Lunar Inspiration Moonfire, Swipe on three or more enemies, Shred. Reminders: Tiger's Fury whenever it is ready in combat, Berserk or Incarnation and Feral or Frantic Frenzy (at two points or fewer) in Tiger's Fury, Convoke in Tiger's Fury and Berserk with Rip up, Skull Bash, Survival Instincts, plus the utility reminders. Snapshotting is left to you."
-L["Default.Retail.Druid.Guardian.Name"] = "Blizzard Assisted"
-L["Default.Retail.Druid.Guardian.Description"] = "Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; Assisted Combat plays for damage only. Alongside it, reminders for what it leaves to you: Berserk (or Incarnation) and Convoke the Spirits in combat, Ironfur, Frenzied Regeneration, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, Skull Bash on an interruptible cast, and Bear Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so Skull Bash lights only where the game shows them; health and rage are hidden on Retail, so when to use the defensives is your call and Ironfur cannot wait for a rage threshold."
-L["Default.Retail.Druid.GuardianGuide.Name"] = "Reference (Icy Veins and Wowhead)"
-L["Default.Retail.Druid.GuardianGuide.Description"] = "Reference only, off by default: the guides' Guardian priority. Debuffs and procs are hidden in Midnight combat, so it cannot run there; rage and health are hidden on Retail, so the 80-rage Raze and Maul dump is left to you. Thrash and Mangle on cooldown, Red Moon on a single target, Moonfire when missing or on Galactic Guardian, Swipe. Reminders whenever they are ready in combat: Ironfur, Frenzied Regeneration, Survival Instincts; Bear Form between pulls; Berserk or Incarnation, Lunar Beam, Convoke, Heart of the Wild, Skull Bash, plus the utility reminders."
-L["Default.Retail.Druid.GuardianSimc.Name"] = "Defensive reference (SimulationCraft)"
-L["Default.Retail.Druid.GuardianSimc.Description"] = "Reference only, off by default: SimulationCraft's Guardian list, which spends rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage is hidden on Retail, so its rage thresholds are left out. Ironfur in Berserk; Thrash when missing, about to fall off or under three stacks; Maul on Gory Fur; Thrash on three or more enemies; Mangle while Red Moon ticks; Red Moon; Mangle; Thrash; Moonfire; Swipe. Its cat-form weaving is left out. Reminders: Bear Form, Frenzied Regeneration, Survival Instincts, Berserk or Incarnation, Lunar Beam, Convoke, Skull Bash, plus the utility reminders."
-L["Default.Retail.Druid.Restoration.Name"] = "Blizzard Assisted with maintenance"
-L["Default.Retail.Druid.Restoration.Description"] = "Recommended for Restoration. With an enemy targeted it highlights Blizzard's Assisted Combat suggestion, Blizzard's Restoration damage list in cat or caster form. Otherwise it suggests Icy Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence in combat, Swiftmend on a Rejuvenation, Wild Growth in a group in combat, Regrowth on Clearcasting or five Abundance stacks, Rejuvenation when missing. Health and mana are hidden on Retail, so these follow the target you choose, not how hurt anyone is; your heals over time are hidden in Midnight combat, so the steps that read them wait there. Whom to heal, and every healing cooldown, is yours. Reminders: Innervate, Barkskin and your racial cooldown whenever they are ready in combat, Mark of the Wild between pulls."
-L["Default.Retail.Druid.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Druid.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Druid premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Evoker.Devastation.Name"] = "Blizzard Assisted"
-L["Default.Retail.Evoker.Devastation.Description"] = "Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast, channel Disintegrate or hold an empowered spell. Choosing the empower rank is up to you. Alongside it, reminders in combat for Dragonrage, Deep Breath and Tip the Scales, Quell on an interruptible cast and Obsidian Scales whenever it is ready, and out of combat Blessing of the Bronze when it is missing and Source of Magic on a friendly target in your group. Enemy casts are hidden in combat, so Quell lights only where the game shows them; health is hidden on Retail, so when to use Obsidian Scales is your call."
-L["Default.Retail.Evoker.DevastationGuide.Name"] = "Reference (SimulationCraft and Icy Veins)"
-L["Default.Retail.Evoker.DevastationGuide.Description"] = "Reference only, off by default: the optimal Devastation priority. Procs, cooldowns and the target's burn are hidden in Midnight combat, so it cannot run there; read it, or clone it to experiment. Pulls with Living Flame. Scalecommander (Mass Disintegrate known): Eternity Surge, Fire Breath, Deep Breath on two or more enemies, Disintegrate with Mass Disintegrate charges, Pyre on five or more, Disintegrate, Living Flame on Burnout with Leaping Flames, Unbound Flame below two Essence Bursts, Azure Sweep. Flameshaper: Eternity Surge, Fire Breath when its burn is missing or ending, Pyre on five or more, Disintegrate, Deep Breath on four or more, Unbound Flame, Living Flame on Burnout with Leaping Flames, Azure Sweep. Then Azure Strike while moving, Living Flame, Azure Strike. Use empowers at rank 1 on one target (Icy Veins). Reminders: Dragonrage, Tip the Scales in Dragonrage or with Fire Breath ready, Deep Breath for Scalecommander, plus the utility reminders."
-L["Default.Retail.Evoker.Augmentation.Name"] = "Icy Veins"
-L["Default.Retail.Evoker.Augmentation.Description"] = "Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one of the few buffs the game still shows addons in Midnight combat, so its upkeep works there. Out of combat: Blistering Scales on a friendly group target without it, Living Flame on an enemy. Then Ebon Might when missing or under 4 seconds, and on cooldown unless Breath of Eons is ready; Prescience; Fire Breath; Upheaval; Eruption in Ebon Might or with two Essence Bursts; Azure Strike; Living Flame. Hidden buffs only skip their own step in combat. Reminders: Breath of Eons and Deep Breath (you aim them), Tip the Scales with Fire Breath ready, Time Skip with Fire Breath and Upheaval both cooling, plus the utility reminders. Prescience and Blistering Scales go on your target: choosing the ally, and the empower rank, is up to you."
-L["Default.Retail.Evoker.AugmentationAssisted.Name"] = "Blizzard Assisted"
-L["Default.Retail.Evoker.AugmentationAssisted.Description"] = "Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the recommended Icy Veins Augmentation premade, off by default: enable it and disable that one, or raise its priority. It recasts Ebon Might only after it has fallen off, and waits while you cast or hold an empowered spell. Reminders in combat for Breath of Eons, Deep Breath, Tip the Scales and Time Skip, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic as in the other Evoker premades."
-L["Default.Retail.Evoker.Preservation.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Evoker.Preservation.Description"] = "Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom to heal, and Blizzard has no Assisted Combat rotation for healers, so this premade does not heal. It reminds you of Blessing of the Bronze and Source of Magic out of combat, and when your target is an enemy it suggests damage: Fire Breath, Disintegrate, Living Flame, and Azure Strike while moving. Quell and Obsidian Scales reminders as in the other Evoker premades. Healing stays with you."
-L["Default.Retail.Evoker.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Evoker.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Evoker premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Hunter.BeastMastery.Name"] = "Blizzard Assisted"
-L["Default.Retail.Hunter.BeastMastery.Description"] = "Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Bloodshed and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call. Trinkets, Misdirection and pet care stay with you."
-L["Default.Retail.Hunter.BeastMasteryGuide.Name"] = "Reference (SimulationCraft and Icy Veins)"
-L["Default.Retail.Hunter.BeastMasteryGuide.Description"] = "Reference only, off by default: the optimized Beast Mastery priority. Charges, cooldowns and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Focus is hidden on Retail. Calls your pet, marks the target before the pull. Barbed Shot just before Bestial Wrath or before it caps; Bestial Wrath; Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off; Cobra Shot on Cobra Fang; Cobra Shot; Barbed Shot when Cobra Shot is unaffordable. Dark Ranger: Black Arrow during Withering Fire and Wailing Arrow as it ends. Three or more enemies (two with Beast Cleave): Wild Thrash to start Beast Cleave, then Kill Command, Barbed Shot and Cobra Shot while it lasts. Reminders: Bloodshed and the Assisted premade's utility reminders."
-L["Default.Retail.Hunter.Marksmanship.Name"] = "Blizzard Assisted"
-L["Default.Retail.Hunter.Marksmanship.Description"] = "Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Trueshot and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call."
-L["Default.Retail.Hunter.MarksmanshipGuide.Name"] = "Reference (SimulationCraft and Icy Veins)"
-L["Default.Retail.Hunter.MarksmanshipGuide.Description"] = "Reference only, off by default: the optimized Marksmanship priority, which spends Precise Shots before the next Aimed Shot. Procs and charges are hidden in Midnight combat, so it cannot run there; Focus is hidden on Retail, so the 70-Focus Multi-Shot dump on packs is left out. Marks the target and opens with Aimed Shot. Sentinel: Explosive Shot, Volley, Trueshot, Moonlight Chakram before its window ends, Aimed Shot in Trueshot without Precise Shots, Rapid Fire, Kill Shot, Multi-Shot (two enemies with Aspect of the Hydra) or Arcane Shot on Precise Shots, Aimed Shot, Moonlight Chakram, Steady Shot. Dark Ranger: Black Arrow on Precise Shots first, no Explosive Shot during Lock and Load, Aimed Shot before it caps, Wailing Arrow. Three or more enemies with Trick Shots: Explosive Shot, Volley, Multi-Shot to apply Trick Shots, Trueshot, then Rapid Fire and Aimed Shot while it lasts. Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you."
-L["Default.Retail.Hunter.Survival.Name"] = "Blizzard Assisted"
-L["Default.Retail.Hunter.Survival.Description"] = "Recommended for Survival. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Takedown and your racial cooldown in combat, Muzzle on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call."
-L["Default.Retail.Hunter.SurvivalGuide.Name"] = "Reference (SimulationCraft)"
-L["Default.Retail.Hunter.SurvivalGuide.Description"] = "Reference only, off by default: SimulationCraft's Survival priority, where Kill Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike spend it. Tip of the Spear and charges are hidden in Midnight combat, so it cannot run there. Calls your pet, marks the target and opens with Wildfire Bomb. Sentinel: Kill Command without Tip of the Spear, Boomstick, Wildfire Bomb on Sentinel's Mark, Kill Command before a ready Takedown, Takedown, Moonlight Chakram, Raptor Strike, then Kill Command, Wildfire Bomb and Takedown. Pack Leader: Kill Command on Howl of the Pack Leader, then Takedown, Wildfire Bomb, Boomstick and Raptor Strike with Tip of the Spear. Three or more enemies: Boomstick and Wildfire Bomb before Takedown, Raptor Swipe. Reminders: Aspect of the Eagle out of melee and the utility reminders."
-L["Default.Retail.Hunter.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Hunter.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Mage.Arcane.Name"] = "Blizzard Assisted"
-L["Default.Retail.Mage.Arcane.Description"] = "Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Arcane Surge in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Prismatic Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call. Mirror Image, Alter Time, Blink and trinkets stay with you."
-L["Default.Retail.Mage.ArcaneGuide.Name"] = "Reference (Icy Veins and SimulationCraft)"
-L["Default.Retail.Mage.ArcaneGuide.Description"] = "Reference only, off by default: the guides' Arcane priority. Arcane Salvo and Clearcasting are hidden from addons in Midnight combat (only Arcane Charges stay visible), so it cannot run there; mana is hidden on Retail, so the low-mana Evocation is yours; read it, or clone it to experiment. Pulls with Arcane Blast. Sunfury: Arcane Missiles on Clearcasting below 12 Salvo, Prismatic Bolt outside Arcane Soul, Arcane Barrage at four charges with 12 Salvo and Clearcasting or 25 Salvo, or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on three enemies or at no charges, Arcane Blast. Spellslinger (Splintering Sorcery known): Prismatic Bolt, Orb on packs, Barrage at 20 Salvo (only at four charges against two or more enemies), Missiles on Clearcasting below 15 Salvo, Orb and Pulse below three charges (no Pulse in Arcane Surge), Arcane Blast. Arcane Barrage when Blast cannot be cast. Reminders: Arcane Surge, Touch of the Magi after a Barrage or Prismatic Bolt in or well before Surge, Presence of Mind at no charges after a Barrage, plus the Assisted premade's reminders."
-L["Default.Retail.Mage.Fire.Name"] = "Blizzard Assisted"
-L["Default.Retail.Mage.Fire.Description"] = "Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Combustion in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Blazing Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call."
-L["Default.Retail.Mage.FireGuide.Name"] = "Reference (Icy Veins, Wowhead and SimulationCraft)"
-L["Default.Retail.Mage.FireGuide.Description"] = "Reference only, off by default: the guides' Fire priority. Hot Streak, Heating Up, Pyroclasm and Fire Blast charges are hidden in Midnight combat, so it cannot run there. Fire Blast while a cast is finishing to turn Heating Up into Hot Streak; pulls with Pyroblast. Pyroblast (Flamestrike on four or more enemies) on Hyperthermia, Meteor, Pyroblast on Hot Streak, Fire Blast on Heating Up inside Combustion, Pyroblast on Pyroclasm, Scorch on Heat Shimmer or while moving, Fire Blast on Heating Up, then Frostfire Bolt or Fireball. Reminders: Combustion as a hard cast finishes, Blazing Barrier and the utility reminders. Waiting for Firestarter and timing Meteor into Combustion stay with you."
-L["Default.Retail.Mage.Frost.Name"] = "Blizzard Assisted"
-L["Default.Retail.Mage.Frost.Description"] = "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Summon Water Elemental when you have the talent and no elemental, Arcane Intellect out of combat, Counterspell on an interruptible cast, Ice Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call."
-L["Default.Retail.Mage.FrostGuide.Name"] = "Reference (Icy Veins and SimulationCraft)"
-L["Default.Retail.Mage.FrostGuide.Description"] = "Reference only, off by default: the guides' Frost priority for each hero tree. Procs, Freezing stacks and cooldowns are hidden in Midnight combat, so it cannot run there. Pulls with Frostfire Bolt or Frostbolt. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one or two enemies, Flurry on Brain Freeze without Thermal Void, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen Orb, Blizzard on Freezing Rain with three enemies, Ice Lance on Fingers of Frost with Thermal Void or at twelve Freezing, Flurry, Ice Nova or Cone of Cold on five, then Glacial Spike or Frostfire Bolt. Spellslinger: Comet Storm, Flurry on Brain Freeze, Ice Lance on two Fingers, Frozen Orb, Glacial Spike when ready, Blizzard on Freezing Rain, Ice Lance on Fingers of Frost or six Freezing, Ray of Frost, Flurry, Ice Nova or Cone of Cold on four, Blizzard on seven, then Glacial Spike or Frostbolt. Ice Lance while moving. Reminders: Summon Water Elemental, Ice Barrier and the utility reminders."
-L["Default.Retail.Mage.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Mage.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Mage premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Monk.Brewmaster.Name"] = "Blizzard Assisted with brews"
-L["Default.Retail.Monk.Brewmaster.Description"] = "Recommended for Brewmaster. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Assisted Combat presses no brews, so, as Icy Veins advises, the brews are reminders beside it: Black Ox Brew, Invoke Niuzao, Purifying Brew, Celestial Brew or Celestial Infusion and Touch of Death light whenever they are ready in combat (Rotation Master cannot read Stagger yet, so how heavy it is stays your call). Also Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat; enemy casts are hidden in combat, so the interrupt lights only where the game shows them, and health is hidden on Retail, so when to use Fortifying Brew is your call."
-L["Default.Retail.Monk.BrewmasterGuide.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Monk.BrewmasterGuide.Description"] = "Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so it cannot run there. Pulls with Keg Smash. Blackout Kick; Chi Burst (Master of Harmony); Tiger Palm on Blackout Combo; Keg Smash at full charges or with Empty Barrel; Breath of Fire; Rushing Jade Wind before Exploding Keg; Chi Burst (Shado-Pan); Keg Smash; Rushing Jade Wind and Spinning Crane Kick on three or more enemies; Tiger Palm; Expel Harm. Reminders: Black Ox Brew once Purifying and Celestial Brew are spent, Invoke Niuzao, Purifying Brew, Celestial Brew or Infusion, Touch of Death, plus the utility reminders."
-L["Default.Retail.Monk.Windwalker.Name"] = "Blizzard Assisted"
-L["Default.Retail.Monk.Windwalker.Description"] = "Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it already keeps Combo Strikes); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch of Karma in combat, Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use Fortifying Brew is your call."
-L["Default.Retail.Monk.WindwalkerGuide.Name"] = "Reference (Icy Veins and SimulationCraft)"
-L["Default.Retail.Monk.WindwalkerGuide.Description"] = "Reference only, off by default: Icy Veins' Conduit of the Celestials priority. Every step keeps Combo Strikes (never the spell you cast last); Chi and your own casts stay readable, but Heart of the Jade Serpent, Zenith, Blackout Kick! and Dance of Chi-Ji are hidden in Midnight combat, so it cannot run there; energy is hidden on Retail, so the Tiger Palm before the energy cap is left out. Whirling Dragon Punch with Xuen over 10 seconds away; Zenith Stomp when low on Chi or as Zenith ends; Celestial Conduit without Heart; Fists of Fury as Heart ends; Celestial Conduit, Invoke Xuen, Fists of Fury, Whirling Dragon Punch, Strike of the Windlord; Blackout Kick when short of Chi for Fists; Rushing Wind Kick, Rising Sun Kick; Blackout Kick on two Blackout Kick! charges or in Zenith; Spinning Crane Kick in Zenith or on Dance of Chi-Ji; Touch of Death; Tiger Palm, Blackout Kick, Slicing Winds as fillers. Reminder: Touch of Karma, plus the utility reminders."
-L["Default.Retail.Monk.Mistweaver.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Monk.Mistweaver.Description"] = "Reference only, off by default. Blizzard offers no Assisted Combat list for healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks and procs are hidden from addons, so healing advice is not possible; choose your heals yourself. On a hostile target it suggests the fistweaving filler, Rising Sun Kick, Blackout Kick and Tiger Palm; on a friendly target or none it suggests nothing. Reminders: Spear Hand Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat."
-L["Default.Retail.Monk.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Monk.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Monk premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-L["Default.Retail.Paladin.Retribution.Name"] = "Blizzard Assisted"
-L["Default.Retail.Paladin.Retribution.Description"] = "Recommended for Retribution in Midnight. In combat the game now hides buffs, debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation) on your action bars, and stops while you cast or have no enemy targeted. It also reminds you of what that suggestion never covers: an aura between pulls, Rebuke on an interruptible cast, and Divine Protection whenever it is ready in combat. Health is hidden on Retail, so when to use Divine Protection and Lay on Hands is your call. Trinkets and racials stay with you."
-L["Default.Retail.Paladin.Retribution.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Paladin.Retribution.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order reads buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably there. Hammer of Light; a free Divine Purpose spender; at 5 Holy Power while Wake of Ashes is cooling, the spender; Wake of Ashes; Divine Toll; Blade of Justice on Art of War; Hammer of Wrath before it caps; at 3 or more Holy Power, Divine Storm on two or more enemies (or with Empyrean Power), else Final Verdict; Hammer of Wrath; Blade of Justice; Judgment; Templar Strike or Crusader Strike. Holy Power stays visible in combat, so its spending points work there. Reminders: Avenging Wrath, Execution Sentence with Wake of Ashes ready, aura, Rebuke, defensives."
-L["Default.Retail.Paladin.Protection.Name"] = "Blizzard Assisted"
-L["Default.Retail.Paladin.Protection.Description"] = "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and stops while you cast or have no enemy targeted. Reminders for what it leaves out: an aura between pulls, Rebuke on an interruptible cast, and Ardent Defender and Guardian of Ancient Kings whenever they are ready in combat. Health is hidden on Retail, so when to use them, and Lay on Hands, is your call. Taunting and positioning stay with you."
-L["Default.Retail.Paladin.Protection.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Paladin.Protection.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order needs the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat. Consecration before the pull; then Divine Toll, Hammer of Light, Consecration when you are not standing in it, Avenger's Shield with Vanguard, Shield of the Righteous at 3 or more Holy Power, Hammer of Wrath, Judgment, Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light, Consecration. Reminders: Avenging Wrath or Sentinel, Holy Bulwark, Sacred Weapon outside Avenging Wrath, defensives, aura, Rebuke."
-L["Default.Retail.Paladin.Protection.Wowhead.Name"] = "Consecration filler reference (Wowhead)"
-L["Default.Retail.Paladin.Protection.Wowhead.Description"] = "Reference only, off by default: Wowhead's tank order. Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll at 0 Holy Power, Blessed Hammer or Hammer of the Righteous, and Consecration only as the filler. Health is hidden on Retail, so Word of Glory below half health is left to you. Same reminders as the Icy Veins reference."
-L["Default.Retail.Paladin.Holy.Name"] = "Icy Veins"
-L["Default.Retail.Paladin.Holy.Description"] = "Holy in Midnight, for reference: Rotation Master picks a spell, not a target, and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns turning over on whatever you target and leaves deciding who needs healing to you. Holy Power stays visible in combat, so it is spent at 5 first and at 3 or more after your other heals. On a friendly target: Eternal Flame or Word of Glory at 5 Holy Power, Flash of Light on Infusion of Light, Holy Shock, Eternal Flame or Word of Glory at 3 or more, Holy Light, Flash of Light; Light of Dawn is left to you. On an enemy: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous at 3 or more, Judgment, Crusader Strike, Consecration. Reminders in combat: Divine Toll, Holy Prism, Holy Bulwark or Sacred Weapon, Beacon of Virtue on a friendly target, Divine Protection; an aura between pulls; Rebuke. Lay on Hands is left to you. Avenging Wrath and Aura Mastery are left to you."
-L["Default.Retail.Paladin.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Paladin.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Paladin premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Priest.Shadow.Name"] = "Blizzard Assisted"
-L["Default.Retail.Priest.Shadow.Description"] = "Recommended for Shadow in Midnight. In combat the game now hides your DoTs, buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps your DoTs, Shadowform and Voidform going and lets Mind Flay finish), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Power Infusion in the 20 seconds after you cast Voidform, Shadowform and Power Word: Fortitude between pulls, Silence on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Desperate Prayer is your call."
-L["Default.Retail.Priest.Shadow.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Priest.Shadow.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order reads DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are hidden on Retail, so the Insanity-cap Madness, the Shadow Word: Death execute and Desperate Prayer are left to you. Vampiric Touch before the pull; Tentacle Slam to apply Vampiric Touch; Vampiric Touch and Shadow Word: Pain refreshed in their last 30%; Shadow Word: Madness when it is ending or in Voidform; Void Blast during Madness; Tentacle Slam at two charges; Void Torrent; Mind Blast; Tentacle Slam; Mind Flay: Insanity during Madness; Void Volley; Death and Pain while moving; Mind Flay, clipped for a ready Mind Blast. Reminders: Halo, Voidform with both DoTs up, Power Infusion in Voidform."
-L["Default.Retail.Priest.Discipline.Name"] = "Atonement (Icy Veins)"
-L["Default.Retail.Priest.Discipline.Description"] = "Discipline in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this runs the damage that heals through Atonement and leaves deciding who to heal to you. On a friendly target: Power Word: Shield (Void Shield), Penance, Flash Heal. On an enemy: Shadow Word: Pain when you have not cast it for 12 seconds, Mind Blast, Penance, Shield, Shadow Word: Death, Void Blast, Smite. Reminders in combat: Power Word: Radiance, Evangelism, Ultimate Penitence, Pain Suppression on a friendly target; Fortitude between pulls. Desperate Prayer is your call. Raid ramps before big damage are yours to time."
-L["Default.Retail.Priest.Discipline.Wowhead.Name"] = "Death first reference (Wowhead)"
-L["Default.Retail.Priest.Discipline.Wowhead.Description"] = "Reference only, off by default: Wowhead's Season 1 Oracle order, which keeps Shadow Word: Pain up by reading the debuff that Midnight hides in combat. Shadow Word: Pain, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; Penance first on a friendly target. Same reminders as the Icy Veins premade."
-L["Default.Retail.Priest.Holy.Name"] = "Icy Veins"
-L["Default.Retail.Priest.Holy.Description"] = "Holy in Midnight, for reference: the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending and procs moving on whatever you target and leaves triage to you. On a friendly target: Holy Word: Sanctify, Holy Word: Serenity, Prayer of Mending, Prayer of Healing with Surge of Light, Benediction, Prayer of Healing with Lightweaver, Flash Heal with Surge of Light, Prayer of Healing in a group, Holy Nova while moving, Flash Heal. On an enemy: Holy Word: Chastise, Holy Fire, Holy Nova while moving, Smite. Reminders: Apotheosis, Divine Hymn and Halo in combat, Guardian Spirit on a friendly target (health is hidden on Retail, so whether it is about to die is your call), Fortitude. Desperate Prayer is yours."
-L["Default.Retail.Priest.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Priest.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Priest premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Rogue.Assassination.Name"] = "Blizzard Assisted"
-L["Default.Retail.Rogue.Assassination.Description"] = "Recommended for Assassination in Midnight. In combat the game now hides your bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which handles the stealth opener, Garrote, Rupture, Envenom, Deathmark and Kingsbane), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: a lethal and a non-lethal poison and Stealth between pulls, Vanish when you are out of stealth in combat, Kick on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Crimson Vial is your call."
-L["Default.Retail.Rogue.Assassination.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Rogue.Assassination.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order keeps bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its energy pooling is left out. From stealth Garrote, then Ambush. Garrote in its last 30% while you are not at full combo points, Rupture at 5+ in its last 30%; at 5+ combo points Coup de Grace or Envenom; below, Crimson Tempest on three or more enemies, Fan of Knives on two or more close by, Ambush, Mutilate. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders."
-L["Default.Retail.Rogue.Outlaw.Name"] = "Blizzard Assisted"
-L["Default.Retail.Rogue.Outlaw.Description"] = "Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the Eyes and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Vanish when you are out of stealth in combat, Kick. Health is hidden on Retail, so Crimson Vial is your call. Keep It Rolling stays with you: the game hides how many Roll the Bones buffs you have."
-L["Default.Retail.Rogue.Outlaw.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Rogue.Outlaw.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in combat. From stealth Ambush. One combo point short of full or more: Between the Eyes, Killing Spree, Coup de Grace, Dispatch. Otherwise Ambush with Audacity, Pistol Shot at six Opportunity stacks (three when low on combo points), Ambush, Sinister Strike. Reminders: Roll the Bones with no roll up, Adrenaline Rush at two or fewer combo points, Blade Flurry kept up on two or more enemies, Blade Rush, Preparation when Adrenaline Rush, Between the Eyes and Blade Rush are all cooling. Keep It Rolling stays manual."
-L["Default.Retail.Rogue.Subtlety.Name"] = "Blizzard Assisted"
-L["Default.Retail.Rogue.Subtlety.Description"] = "Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance, Secret Technique and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Kick on an interruptible cast. Health is hidden on Retail, so Crimson Vial is your call."
-L["Default.Retail.Rogue.Subtlety.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Rogue.Subtlety.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order holds Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which Midnight hides in combat. Stealthed before the pull: Shadowstrike. One combo point short of full or more: Eviscerate with Darkest Night, Secret Technique in Shadow Dance, Coup de Grace, Black Powder on three or more enemies, Eviscerate. Otherwise Shadowstrike, Shuriken Storm on two or more, Gloomblade or Backstab. Reminders: Goremaw's Bite in Shadow Dance, Shadow Blades with Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points when Secret Technique is ready or Shadow Blades is up, Vanish out of stealth at two or fewer combo points."
-L["Default.Retail.Rogue.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Rogue.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Rogue premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Shaman.Elemental.Name"] = "Blizzard Assisted"
-L["Default.Retail.Shaman.Elemental.Description"] = "Recommended for Elemental in Midnight. In combat the game now hides Flame Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Fire or Storm Elemental and Nature's Swiftness in combat, Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps your weapon and shield imbues), Wind Shear on an interruptible cast (it lights only where the game lets the cast be read), Astral Shift whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)."
-L["Default.Retail.Shaman.Elemental.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Shaman.Elemental.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order reads Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat; Maelstrom is hidden on Retail, so the spenders go at their cost instead of near full Maelstrom. Stormkeeper and Lava Burst before the pull. On three or more engaged enemies: Stormkeeper, Ancestral Swiftness, Flame Shock, Chain Lightning with Stormkeeper, Elemental Blast, Earthquake, Lava Burst on Lava Surge, Tempest, Chain Lightning. Otherwise Stormkeeper, Ancestral Swiftness, Flame Shock and Voltaic Blaze in their last 30% outside Master of the Elements, Lava Burst to start it, Tempest and Stormkeeper's Lightning Bolt inside it, Elemental Blast or Earth Shock inside it, Voltaic Blaze, Tempest, Flame Shock or Frost Shock while moving, Elemental Blast or Earth Shock whenever you can afford it, Lightning Bolt. Reminders: Ascendance once Stormkeeper is used, elementals, Spiritwalker's Grace, and the shared ones."
-L["Default.Retail.Shaman.Enhancement.Name"] = "Blizzard Assisted"
-L["Default.Retail.Shaman.Enhancement.Description"] = "Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and Sundering), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift."
-L["Default.Retail.Shaman.Enhancement.Stormbringer.Name"] = "Stormbringer reference (SimulationCraft)"
-L["Default.Retail.Shaman.Enhancement.Stormbringer.Description"] = "Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning for its buff, Tempest at 10 Maelstrom Weapon, Chain Lightning at 9, Crash Lightning, Lava Lash, Sundering. Then Primordial Storm at 9, Voltaic Blaze or Flame Shock when Flame Shock is missing, Sundering, Crash Lightning for its buff, Lava Lash for Lashing Flames, Windstrike, Tempest or Lightning Bolt at 10 (8 with Voltaic Blaze or Crash Lightning about ready), Stormstrike at two charges, Lava Lash, Stormstrike, Voltaic Blaze, Crash Lightning, Lightning Bolt at 5, Flame Shock. Reminders: Doom Winds, Ascendance outside Doom Winds, Feral Spirit, and the shared ones."
-L["Default.Retail.Shaman.Enhancement.Totemic.Name"] = "Totemic reference (SimulationCraft)"
-L["Default.Retail.Shaman.Enhancement.Totemic.Description"] = "Reference only, off by default: SimulationCraft's Totemic list reads Flame Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning, Chain Lightning at 5 Maelstrom Weapon. Then Voltaic Blaze or Flame Shock when Flame Shock is missing, Surging Totem, Sundering, Lava Lash with Hot Hand or Whirling Fire, Crash Lightning for its buff, Primordial Storm at 10, Windstrike, Crash Lightning and Stormstrike in Doom Winds, Lightning Bolt at 5, Crash Lightning, Lava Lash, Stormstrike, Voltaic Blaze, Flame Shock. Same reminders as the Stormbringer reference."
-L["Default.Retail.Shaman.Restoration.Name"] = "Icy Veins"
-L["Default.Retail.Shaman.Restoration.Description"] = "Restoration in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this orders your healing tools by readiness on whatever you target and leaves deciding who to heal to you. On a friendly target: Healing Stream Totem, Unleash Life, Healing Rain in a group, Surging Totem, Riptide, Chain Heal in a group, Healing Wave. On an enemy: Flame Shock when missing, Lava Burst, Lightning Bolt. Reminders: Water Shield, Earth Shield on a friendly target and Skyfury between pulls; Nature's Swiftness in combat; Healing Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift."
-L["Default.Retail.Shaman.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Shaman.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Shaman premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Warlock.Affliction.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warlock.Affliction.Description"] = "Recommended for Affliction in Midnight. In combat the game now hides your DoTs, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps Agony and Corruption, spends shards on Unstable Affliction and handles Grimoire of Sacrifice), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed your demon, Command Demon on an interruptible cast (it lights only where the game lets the cast be read), Dark Pact and Unending Resolve whenever they are ready in combat (health is hidden on Retail, so when to use them is your call)."
-L["Default.Retail.Warlock.Affliction.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Warlock.Affliction.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft (Soul Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in combat. Haunt before the pull; Seed of Corruption on three or more engaged enemies without your Corruption; Haunt; Agony and Corruption or Wither under 3 seconds; Dark Harvest at two shards or fewer; Unstable Affliction at 5 shards; Malefic Grasp, else Shadow Bolt, on two Nightfall; Unstable Affliction on Shard Instability or at 4 shards; Drain Soul; Shadow Bolt. Reminders: Summon Darkglare once Dark Harvest is cooling, Malevolence, your Felhunter, and the shared ones."
-L["Default.Retail.Warlock.Demonology.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warlock.Demonology.Description"] = "Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Demonic Tyrant while the Dreadstalkers you called in the last 12 seconds are out, Grimoire: Imp Lord, Grimoire: Fel Ravager and Summon Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve."
-L["Default.Retail.Warlock.Demonology.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Warlock.Demonology.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist) order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat. Power Siphon, Demonbolt and Shadow Bolt before the pull; then Power Siphon at one Demonic Core or none, Grimoire: Imp Lord, Grimoire: Fel Ravager, Summon Doomguard, Call Dreadstalkers, Summon Demonic Tyrant at 5 shards, Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3 shards or more, Infernal Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt."
-L["Default.Retail.Warlock.Destruction.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warlock.Destruction.Description"] = "Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire, Malevolence), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Infernal in combat, an Imp between pulls unless you sacrificed your demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you."
-L["Default.Retail.Warlock.Destruction.Simc.Name"] = "Reference (SimulationCraft)"
-L["Default.Retail.Warlock.Destruction.Simc.Description"] = "Reference only, off by default: SimulationCraft's order reads Immolate, Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and Incinerate before the pull; on three or more engaged enemies Rain of Fire at 3 shards and Cataclysm; then Soul Fire at 4 shards or fewer, Chaos Bolt only at 5, Conflagrate at two charges or below 4 shards without Backdraft, Summon Infernal, Malevolence, Wither or Immolate in its last 30%, Ruination, Cataclysm, Infernal Bolt at 3 shards or fewer, Incinerate."
-L["Default.Retail.Warlock.Destruction.IcyVeins.Name"] = "Chaos Bolt before capping reference (Icy Veins)"
-L["Default.Retail.Warlock.Destruction.IcyVeins.Description"] = "Reference only, off by default: Icy Veins' Hellcaller order, which spends shards on Chaos Bolt before they cap and uses Shadowburn and Channel Demonfire on cooldown. Rain of Fire on three or more engaged enemies; Wither or Immolate kept up; Summon Infernal; Malevolence; Shadowburn; Soul Fire below 4 shards; Chaos Bolt at 4 or more; Cataclysm; Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate."
-L["Default.Retail.Warlock.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warlock.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warlock premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Retail.Warrior.Arms.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warrior.Arms.Description"] = "Recommended for Arms in Midnight. In combat the game now hides rage, Rend, Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Heroic Strike (a core button the suggestion never uses), Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel on an interruptible cast (it lights only where the game lets the cast be read), Die by the Sword whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)."
-L["Default.Retail.Warrior.Arms.Slayer.Name"] = "Slayer reference (SimulationCraft)"
-L["Default.Retail.Warrior.Arms.Slayer.Description"] = "Reference only, off by default: the Slayer order from SimulationCraft, Icy Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which Midnight hides in combat. Charge to open; Sweeping Strikes on two or more engaged enemies; Rend before Colossus Smash when it is running out; Ravager just before Colossus Smash; Execute at two Sudden Death; Colossus Smash; Bladestorm in Colossus Smash or Avatar; Heroic Strike; Overpower at two Opportunist; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Slam. Reminders: Avatar with Colossus Smash ready, Die by the Sword, Battle Shout, Pummel."
-L["Default.Retail.Warrior.Arms.Colossus.Name"] = "Colossus reference (SimulationCraft)"
-L["Default.Retail.Warrior.Arms.Colossus.Description"] = "Reference only, off by default: the Colossus order from SimulationCraft and Icy Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat. Charge to open; Sweeping Strikes on two or more; Mortal Strike below five Colossal Might; Rend before Colossus Smash; Ravager; Execute at two Sudden Death; Colossus Smash; Champion's Spear; Demolish in Colossus Smash with Colossal Might; Heroic Strike; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Bladestorm on two or more; Slam. Reminders: Avatar, Die by the Sword, Battle Shout, Pummel."
-L["Default.Retail.Warrior.Fury.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warrior.Fury.Description"] = "Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Recklessness, Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)."
-L["Default.Retail.Warrior.Fury.Slayer.Name"] = "Slayer reference (SimulationCraft)"
-L["Default.Retail.Warrior.Fury.Slayer.Description"] = "Reference only, off by default: SimulationCraft's Slayer order reads Enrage, Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so Rampage waits only for its cost. Charge to open; Whirlwind for its buff on two or more engaged enemies; Rampage when Enrage is ending; in Recklessness Rampage, Bladestorm, Execute on Sudden Death, Odyn's Fury; Crushing Blow; Bloodbath; Execute; Odyn's Fury; Raging Blow; Rampage; Bloodthirst; Whirlwind. Reminders: Recklessness, Avatar, Enraged Regeneration, Battle Shout, Pummel."
-L["Default.Retail.Warrior.Fury.Thane.Name"] = "Mountain Thane reference (Icy Veins)"
-L["Default.Retail.Warrior.Fury.Thane.Description"] = "Reference only, off by default: the Mountain Thane order from SimulationCraft and Icy Veins weaves Thunder Blast and reads buffs Midnight hides in combat. Charge to open; Whirlwind for its buff on two or more; Rampage when Enrage is missing or ending (rage is hidden on Retail, so there is no 100-rage Rampage); Bloodbath in Recklessness; Thunder Blast at two stacks; Crushing Blow; Bloodbath; Rampage in Recklessness; Thunder Blast in Avatar; Raging Blow; Thunder Blast; Rampage; Bloodthirst; Execute; Odyn's Fury; Thunder Clap; Whirlwind. Same reminders as the Slayer reference."
-L["Default.Retail.Warrior.Protection.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warrior.Protection.Description"] = "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion for your damage and threat, and stops while you cast or have no enemy targeted. The suggestion never casts Shield Block or Ignore Pain, so both are reminders whenever they are usable and your target is attacking you; the game hides rage, so Ignore Pain will light more often than you need it. Other reminders: Avatar, Demoralizing Shout and Champion's Spear in combat, Shield Wall and Last Stand whenever they are ready in combat (health is hidden on Retail, so when to use them is your call), Taunt in a group when your target attacks someone else, Battle Shout between pulls, Pummel."
-L["Default.Retail.Warrior.Protection.IcyVeins.Name"] = "Reference (Icy Veins)"
-L["Default.Retail.Warrior.Protection.IcyVeins.Description"] = "Reference only, off by default: the Icy Veins and SimulationCraft order reads Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and health are hidden on Retail. Charge to open; Ravager; Thunder Blast at two stacks; Demolish at five Colossal Might; Shield Charge; Thunder Blast; Shield Slam; Thunder Clap; Execute; Revenge; Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain, Avatar, Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand whenever they are ready in combat, Battle Shout, Pummel."
-L["Default.Retail.Warrior.Initial.Name"] = "Blizzard Assisted"
-L["Default.Retail.Warrior.Initial.Description"] = "Recommended before you choose a specialization (while the game reports the Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warrior premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over."
-
-L["Default.Era.Druid.Balance.Name"] = "Balance"
-L["Default.Era.Druid.Balance.Description"] = "Balance from level 1 to 60, and the Druid default before talents or when no other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on a Nature's Grace proc), Moonfire and Insect Swarm kept on targets that will live while your mana is above 30%, Hurricane when three or more enemies are on you, Faerie Fire in a group, instants while moving, melee when out of mana. In Cat or Bear Form it gives the Feral advice instead. Reminders: Mark of the Wild, Thorns when solo, Omen of Clarity, Moonkin Form when you are in no form, Innervate, Nature's Grasp. Downranking Starfire, roots and target choice stay with you."
-L["Default.Era.Druid.Balance.IcyVeins.Name"] = "Balance (Icy Veins)"
-L["Default.Era.Druid.Balance.IcyVeins.Description"] = "Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Starfire and nothing else, no Moonfire or Insect Swarm, Hurricane when three or more enemies are on you, Wrath only before Starfire is learned. Same reminders as the recommended premade."
-L["Default.Era.Druid.Feral.Name"] = "Feral"
-L["Default.Era.Druid.Feral.Description"] = "Feral cat and bear from level 10 when Feral is your main talent tree; your form decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned and on long fights outside raids, Bite under 63 energy), Rake outside raids, Shred from behind or Claw when the target is on you, and a powershift (Cat Form again) when far short of energy with Furor 5/5 and mana to spare. Bear: Enrage when starved, Demoralizing Roar on packs and elites unless a warrior's Shout is up, Swipe on two or more and with spare rage, Faerie Fire (Feral) otherwise. Caster form: shift. Reminders: Maul every swing, Tiger's Fury before a pull, Manual Crowd Pummeler, Innervate, Frenzied Regeneration. Positioning stays with you."
-L["Default.Era.Druid.Feral.WarcraftTavern.Name"] = "Feral (Warcraft Tavern, Rip and Bite)"
-L["Default.Era.Druid.Feral.WarcraftTavern.Description"] = "Warcraft Tavern's powershifting list, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Rip at five combo points whenever it is missing, raids included, then Ferocious Bite from four combo points under 63 energy, Shred from behind, powershift when far short of energy. Bear and reminders as the recommended premade."
-L["Default.Era.Druid.Feral.WarcraftTavernCasual.Name"] = "Feral (Warcraft Tavern, no powershifting)"
-L["Default.Era.Druid.Feral.WarcraftTavernCasual.Description"] = "Warcraft Tavern's list without powershifting, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Build to five combo points with Shred (Claw from the front), then Rip on a target that will live, Tiger's Fury, Ferocious Bite; otherwise wait for energy. Bear and reminders as the recommended premade."
-L["Default.Era.Druid.Feral.Wowhead.Name"] = "Feral (Wowhead raid bear)"
-L["Default.Era.Druid.Feral.Wowhead.Description"] = "The cat of the recommended Feral premade with Wowhead's geared raid bear: Maul every swing (tab-Maul packs yourself), Swipe only with 60 rage to spare, Faerie Fire (Feral) otherwise, no Demoralizing Roar and no Enrage in combat. An alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.Era.Druid.Restoration.Name"] = "Restoration"
-L["Default.Era.Druid.Restoration.Description"] = "Restoration from level 10 when Restoration is your main talent tree. Heals your current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your own HoT, Rejuvenation and Regrowth kept rolling, Regrowth as the main heal with Improved Regrowth, full Healing Touch below 45% or on a Nature's Grace proc, rank 4 Healing Touch otherwise. On an enemy: Moonfire, Insect Swarm and Wrath. Silent in Cat or Bear Form. Reminders: Mark of the Wild, Omen of Clarity, Nature's Swiftness, Tranquility, Innervate, Rebirth, poison and curse removal. Choosing whom to heal stays with you."
-L["Default.Era.Druid.Restoration.WarcraftTavern.Name"] = "Restoration (Warcraft Tavern)"
-L["Default.Era.Druid.Restoration.WarcraftTavern.Description"] = "Warcraft Tavern's damage tiers, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target, with no HoT upkeep while damage is low: Swiftmend below 40%, rank 5 Regrowth below 50%, Rejuvenation and rank 3 Regrowth below 75%, full Healing Touch on a Nature's Grace proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade."
-L["Default.SoD.Druid.Balance.Name"] = "Balance (SoD)"
-L["Default.SoD.Druid.Balance.Description"] = "Season of Discovery Balance from level 1 to 60, and the default for any Druid no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and Moonfire on targets that will live, Starfire only when Starsurge or Lunar Eclipse empowers it, Wrath as the filler, Hurricane on six or more enemies (four with Gale Winds engraved), Insect Swarm only while moving. Runes are used as you engrave them. In Cat or Bear Form it gives the Feral advice. Reminders: Moonkin Form, Starfall, instant Healing Touch on a dying friend, curse and poison removal, Wild Growth on a hurt group, Innervate. Spreading DoTs to other targets stays with you."
-L["Default.SoD.Druid.Balance.IcyVeins.Name"] = "Balance (SoD, Icy Veins)"
-L["Default.SoD.Druid.Balance.IcyVeins.Description"] = "Icy Veins' Season of Discovery list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Starsurge on cooldown, Hurricane on four or more enemies (for Gale Winds), Starfire when Starsurge empowers it, Moonfire, Sunfire and Insect Swarm all kept up, Wrath as the filler. Reminders as the recommended premade."
-L["Default.SoD.Druid.Balance.Wowhead.Name"] = "Balance (SoD, Wowhead)"
-L["Default.SoD.Druid.Balance.Wowhead.Description"] = "Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath to open, Starsurge on cooldown, Hurricane on six or more, Insect Swarm only while moving, Sunfire and Moonfire kept up, Wrath while your Sunfire has under 5 seconds when Elune's Fires is engraved to extend it, Starfire on Lunar Eclipse, Wrath otherwise. Reminders as the recommended premade."
-L["Default.SoD.Druid.Feral.Name"] = "Feral cat (SoD)"
-L["Default.SoD.Druid.Feral.Description"] = "Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe (Cat) on four or more enemies, the Mangle debuff, Clearcasting on Shred, Rip at five combo points while Savage Roar has 8 seconds left, Rake, Shred from behind or Mangle from the front, powershift with Furor 5/5, Faerie Fire refresh last. In Bear Form it gives the tank advice. Reminders: Tiger's Fury at 60 energy or less, Berserk with Tiger's Fury, Maul, Innervate. Positioning stays with you."
-L["Default.SoD.Druid.Tank.Name"] = "Bear tank (SoD)"
-L["Default.SoD.Druid.Tank.Description"] = "Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown, Lacerate, Swipe; on three or more enemies Mangle under Berserk and Swipe. In Cat Form it plays the cat list for off-tanking; in caster form it shifts to Bear. Reminders: Maul with 30 rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you."
-L["Default.SoD.Druid.Tank.Wowsims.Name"] = "Bear tank (SoD, wowsims cat weave)"
-L["Default.SoD.Druid.Tank.Wowsims.Description"] = "Off by default; for experts whose gear also grants Savage Roar. The wowsims Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade."
-L["Default.SoD.Druid.Restoration.Name"] = "Restoration (SoD)"
-L["Default.SoD.Druid.Restoration.Description"] = "Season of Discovery Restoration, chosen when Lifebloom is engraved (or Restoration is your main tree without another legs rune). Heals your current friendly target: instant Healing Touch after Nature's Swiftness or Fury of Stormrage, Wild Growth when two or more nearby are hurt, Swiftmend on your HoT for Efflorescence or below 40%, three Lifebloom stacks refreshed with a second left, Rejuvenation, Regrowth below 60%, Nourish, rank 4 Healing Touch. On an enemy: Sunfire, Moonfire, Wrath. Reminders: Tree of Life and Survival Instincts in heavy moments, Nature's Swiftness, Tranquility, Innervate, Rebirth, Revive, dispels. Choosing whom to heal stays with you."
-
-L["Default.Era.Hunter.Ranged.Name"] = "Ranged"
-L["Default.Era.Hunter.Ranged.Description"] = "Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark, Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot, Arcane Shot and Multi-Shot only while mana is above half, Concussive Shot to kite before you have a pet. In a group, Aimed Shot and Multi-Shot right after an Auto Shot so it is never delayed, Serpent Sting outside raids, Arcane Shot only before Aimed Shot or on a dying target. Melee buttons when an enemy is too close, instants while moving, Multi-Shot and Volley on three or more enemies. Reminders: Hawk (Monkey before it), Trueshot Aura, pet care, Rapid Fire, Bestial Wrath and racials on elites and in instances, Intimidation and Feign Death. Traps, Wing Clip, Feed Pet, Tranquilizing Shot and positioning stay with you."
-L["Default.Era.Hunter.Ranged.IcyVeins.Name"] = "Ranged, clipped (Icy Veins)"
-L["Default.Era.Hunter.Ranged.IcyVeins.Description"] = "Off by default; enable it for a ranged weapon faster than 3.0 seconds. Like Hunter: Ranged, but in a group Aimed Shot and Multi-Shot go out as soon as they are ready, even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath and racials are used on every pull."
-L["Default.Era.Hunter.Ranged.Wowsims.Name"] = "Ranged, raid Serpent Sting (wowsims)"
-L["Default.Era.Hunter.Ranged.Wowsims.Description"] = "Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used."
-L["Default.SoD.Hunter.Ranged.Name"] = "Ranged (SoD)"
-L["Default.SoD.Hunter.Ranged.Description"] = "Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot legs rune: Multi-Shot at four Trick Shots, Kill Shot during Rapid Fire and on targets in execute, Chimera Shot, then Explosive Trap and Arcane Shot while Multi-Shot is cooling. Without it: Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune, right after an Auto Shot), traps just before Chimera Shot is ready (Frost Trap only to feed Lock and Load), Explosive Shot, Steady Shot, Multi-Shot, Arcane Shot. Melee buttons when an enemy is too close, instants while moving, traps, Multi-Shot and Volley on three or more enemies. Reminders: Hawk, Viper below 10% mana, Heart of the Lion, Trueshot Aura, pet care (none with Lone Wolf engraved), Focus Fire at five Frenzy stacks, Rapid Fire, racials and Bestial Wrath on elites and in instances. With Lock and Load engraved, a Frost Trap before the pull. Melee weaving and positioning stay with you."
-L["Default.SoD.Hunter.Melee.Name"] = "Melee (SoD)"
-L["Default.SoD.Hunter.Melee.Description"] = "Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff up, Mongoose Bite at four Raptor Fury stacks, Wyvern Strike on Clever Strikes, Raptor Strike on every reset, then Mongoose Bite, Wyvern Strike, Flanking Strike and Carve; Immolation Trap and Wing Clip only in empty moments. Carve and Explosive Trap on three or more enemies; Serpent Sting and shots while you cannot reach the target. Reminders: Aspect of the Falcon (Hawk before 60), Viper below 5% mana, pet care (none with Lone Wolf engraved), Rapid Fire and racials once Flanking Strike has stacked, Bestial Wrath. Positioning and pet commands stay with you."
-
-L["Default.Era.Mage.Frost.Name"] = "Frost"
-L["Default.Era.Mage.Frost.Description"] = "Frost from level 1 to 60, also for Arcane builds and the Mage default before talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on raid bosses; Arcane Missiles once a mob reaches you if you have Improved Arcane Missiles; Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast while moving with mana to spare; Fire Blast and the wand finish ordinary mobs when solo; wand when out of mana. Reminders: armor (Ice Armor solo, Mage Armor in a group, never replacing one you chose), Arcane Intellect, conjuring and using mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Cold Snap, Arcane Power and Presence of Mind. Off by default: the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill. Blink, Polymorph, kiting and target choice stay with you."
-L["Default.Era.Mage.Frost.IcyVeins.Name"] = "Frost AoE grinding (Icy Veins)"
-L["Default.Era.Mage.Frost.IcyVeins.Description"] = "Blizzard leveling after Icy Veins' AoE grinding guide, chosen automatically when you play solo with Improved Blizzard. From two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is cooling, Blizzard once nothing is next to you, Arcane Explosion when they are; Frostbolt on a single target, Fire Blast and the wand to finish. Mana Shield and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you."
-L["Default.Era.Mage.Fire.Name"] = "Fire"
-L["Default.Era.Mage.Fire.Description"] = "Fire from level 10 to 60, chosen when you have Fire points and none in Frost, or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind; Scorch keeps five Fire Vulnerability stacks with Improved Scorch on targets that will live; Fire Blast and Scorch finish; Fireball fills. Three or more engaged enemies: Blast Wave, Flamestrike, Arcane Explosion, Cone of Cold, Blizzard. Reminders: Combustion at five Scorch stacks on elites and long fights, armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Presence of Mind. Off by default: weaving Fire Blast whenever it is ready."
-L["Default.Era.Mage.Fire.WarcraftTavern.Name"] = "Fire (Warcraft Tavern)"
-L["Default.Era.Mage.Fire.WarcraftTavern.Description"] = "Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Combustion is spent at the pull on elites and bosses instead of waiting for Scorch stacks; Pyroblast opens; Scorch keeps five stacks with Improved Scorch; Fireball fills; Fire Blast only while moving. Packs: Flamestrike first, then Arcane Explosion, Cone of Cold and Blast Wave close in, Blizzard at range. Same reminders as the Fire premade."
-L["Default.SoD.Mage.Fire.Name"] = "Fire (SoD)"
-L["Default.SoD.Mage.Fire.Description"] = "Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets that will live; Scorch with Improved Scorch while Fire Vulnerability is below two stacks or about to fade; Living Flame on cooldown; Balefire Bolt at five Fire Vulnerability stacks, never at four Balefire stacks or more (the fifth kills you); Frostfire Bolt, else Fireball. Living Bomb, Living Flame and Fire Blast while moving; Living Flame, Living Bomb, Blast Wave, Cone of Cold, Flamestrike and Blizzard on packs. Reminders: Fire Blast with Overheat, Combustion, Icy Veins and Cold Snap, Molten or other armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, curse removal, Ice Block. Spreading Living Bomb across targets stays with you."
-L["Default.SoD.Mage.Frost.Name"] = "Frost (SoD)"
-L["Default.SoD.Mage.Frost.Description"] = "Season of Discovery Frost from level 10, chosen when Frost is your main tree. Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into Deep Freeze; Balefire Bolt on a Brain Freeze proc and otherwise when safe, never at four Balefire stacks or more; Living Bomb and Living Flame when engraved; Spellfrost Bolt, else Frostfire Bolt, else Frostbolt. Ice Lance, Frozen Orb, Living Bomb and Fire Blast while moving; Frozen Orb, Living Flame, Living Bomb, Blizzard and Cone of Cold on packs. Reminders: Frozen Orb, Icy Veins, Cold Snap, armor, mana gems and the other Mage reminders. Queuing a spell as a bolt lands stays with you."
-L["Default.SoD.Mage.Frost.WarcraftTavern.Name"] = "Frost, Fire runes (SoD, Warcraft Tavern)"
-L["Default.SoD.Mage.Frost.WarcraftTavern.Description"] = "Warcraft Tavern's Phase 4 Frost build on Fire runes, an alternative to the recommended Season of Discovery Frost premade, off by default: enable it and disable that one, or raise its priority. Pyroblast opens; Pyroblast on Hot Streak; Living Bomb kept up; Scorch to five stacks with Improved Scorch; Balefire Bolt only on a Brain Freeze proc and never at four Balefire stacks or more; Frostfire Bolt fills. Living Bomb and Fire Blast while moving; Living Bomb, Cone of Cold and Blizzard on packs. Reminders: Fire Blast with Overheat, Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders."
-L["Default.SoD.Mage.Arcane.Name"] = "Arcane (SoD)"
-L["Default.SoD.Mage.Arcane.Description"] = "Season of Discovery Arcane damage, chosen when Arcane is your main tree and Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe, never at four Balefire stacks or more; Living Flame on cooldown; Arcane Blast fills. Arcane Barrage and Fire Blast while moving; Living Flame and Arcane Explosion on packs. Reminders: Arcane Power on elites and long fights, Presence of Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders."
-L["Default.SoD.Mage.Healer.Name"] = "Healer (SoD)"
-L["Default.SoD.Mage.Healer.Description"] = "Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half health, Regeneration when your Temporal Beacon is missing, Mass Regeneration, Temporal Anomaly. With an enemy target, damage that heals your beacons: Spellfrost Bolt for Frost healers, otherwise Arcane Missiles on Missile Barrage, Arcane Barrage at two Arcane Blast stacks, Balefire Bolt when safe (never at four Balefire stacks or more) and Arcane Blast. Reminders: Arcane Power, Presence of Mind, Frozen Orb and the other Mage reminders. Off by default: Arcane Explosion on packs, and Ice Lance and Deep Freeze for Frost healers. While you channel Mass Regeneration the next spell already shows, so you can cancel it at once (its direct healing is small). Choosing whom to heal stays with you."
-
-L["Default.Era.Paladin.Retribution.Name"] = "Retribution"
-L["Default.Era.Paladin.Retribution.Description"] = "Melee Retribution from level 1 to 60, and the default for any Paladin no other premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and judges it once; otherwise keeps a seal up (Command with a weapon of 3.5 seconds or slower, else Righteousness), Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Judgement on cooldown, Consecration while Vengeance is up or on two or more close enemies. Reminders: Sanctity, Retribution or Devotion Aura, Blessing of Wisdom solo or Might in a group, a heal between fights, Divine Shield, Divine Protection or Lay on Hands when you are about to die. Seal twisting is a separate premade; target choice and positioning stay with you."
-L["Default.Era.Paladin.Retribution.Twist.Name"] = "Retribution, seal twisting"
-L["Default.Era.Paladin.Retribution.Twist.Description"] = "Off by default; enable it if you twist seals. For a Retribution Paladin with Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last 0.4 seconds before a swing and back again, Judgement whenever it is ready, Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Consecration with Vengeance. Needs a lot of mana and good timing. Same reminders as the Retribution premade."
-L["Default.Era.Paladin.Protection.Name"] = "Protection"
-L["Default.Era.Paladin.Protection.Description"] = "Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree. Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement to pull, Holy Shield kept up, Consecration and Holy Wrath (Undead and Demons) when two or more enemies are on you, otherwise Judgement of the Crusader once, then Judgement and Consecration with mana to spare, Exorcism on Undead and Demons. Reminders: Righteous Fury, Devotion Aura, Sanctuary, Kings or Might, Lay on Hands when nearly dead. Taunting, Blessing of Kings spam and spell ranks stay with you."
-L["Default.Era.Paladin.Protection.IcyVeins.Name"] = "Protection, Seal of Wisdom (Icy Veins)"
-L["Default.Era.Paladin.Protection.IcyVeins.Description"] = "Icy Veins' raid tanking with Wowhead's Wisdom rotation, an alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Keeps Seal of Wisdom up and judges it whenever the target lacks Judgement of Wisdom, otherwise judges only to pull; Holy Shield, Consecration every cooldown, Holy Wrath on Undead and Demon packs, Exorcism, and Greater Blessing of Kings as the threat filler in a raid. Same reminders as the recommended premade."
-L["Default.Era.Paladin.Holy.Name"] = "Holy"
-L["Default.Era.Paladin.Holy.Description"] = "Healing in a group with the Holy tree, from level 10. Acts on your friendly target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move, maximum-rank Holy Light below 40%, rank-6 Holy Light below 65%, maximum-rank Flash of Light below 85%, rank-4 Flash of Light below 95%. With an enemy in melee range: Seal of Wisdom and, outside raids, Judgement. Reminders: Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. Choosing whom to heal stays with you; soloing Holy Paladins get the Retribution premade."
-L["Default.SoD.Paladin.Retribution.Name"] = "Retribution (SoD)"
-L["Default.SoD.Paladin.Retribution.Description"] = "Season of Discovery melee from level 1 to 60, and the default for any Paladin there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism, casts Divine Storm at three Holy Power, then by weapon speed: with a two-hander of 3.3 seconds or slower, Crusader Strike, Exorcism, Divine Storm and Judgement; with a faster one, Judgement only as the seal runs out, then Exorcism, Crusader Strike and Divine Storm. Consecration with mana or three close enemies, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Hammer of Wrath with mana to spare (always with Improved Hammer of Wrath engraved). Runes are used as you engrave them. Reminders: Sanctity Aura, a Blessing, Avenging Wrath with Aura Mastery, a heal between fights, Divine Shield when about to die."
-L["Default.SoD.Paladin.Retribution.IcyVeins.Name"] = "Retribution (SoD, Icy Veins Phase 4)"
-L["Default.SoD.Paladin.Retribution.IcyVeins.Description"] = "The older Phase 4 list from Icy Veins and Warcraft Tavern, also fine for leveling, an alternative to the recommended Season of Discovery Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once on elites and long fights, Seal of Martyrdom, Exorcism, Crusader Strike, Divine Storm and Judgement on cooldown, Consecration with mana or three close enemies, Hammer of Wrath. Same reminders as the recommended premade."
-L["Default.SoD.Paladin.Retribution.Twist.Name"] = "Retribution, seal twisting (SoD)"
-L["Default.SoD.Paladin.Retribution.Twist.Description"] = "Off by default; enable it if you twist with a slow two-hander. Swaps between Seal of Martyrdom and Seal of Command in the last 0.4 seconds before each swing, suggests nothing on the global cooldown in the 1.9 seconds before it, judges while both seals linger, and uses one filler per swing: Divine Storm at three Holy Power, Crusader Strike, Exorcism. Needs a swing timer and practice."
-L["Default.SoD.Paladin.Retribution.Stacking.Name"] = "Retribution, seal stacking (SoD)"
-L["Default.SoD.Paladin.Retribution.Stacking.Description"] = "Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up."
-L["Default.SoD.Paladin.Shockadin.Name"] = "Shockadin (SoD, wowsims)"
-L["Default.SoD.Paladin.Shockadin.Description"] = "Off by default; enable it if you deal damage with the Holy tree. It applies with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power, Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade."
-L["Default.SoD.Paladin.Protection.Name"] = "Protection (SoD)"
-L["Default.SoD.Paladin.Protection.Description"] = "Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull with Holy Shield, Avenger's Shield and Exorcism, Holy Shield kept up; on one target Hammer of the Righteous, Shield of Righteousness, Exorcism, Avenger's Shield, Judgement, Divine Storm, Consecration; with three or more enemies on you Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism. Reminders: Righteous Fury, Holy Shield before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below 40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else."
-L["Default.SoD.Paladin.Protection.Wowsims.Name"] = "Protection (SoD, wowsims)"
-L["Default.SoD.Paladin.Protection.Wowsims.Description"] = "The wowsims tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade."
-L["Default.SoD.Paladin.Holy.Name"] = "Holy (SoD)"
-L["Default.SoD.Paladin.Holy.Description"] = "Season of Discovery healing in a group, chosen by an engraved Beacon of Light, Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your friendly target: Cleanse, Holy Shock while moving or below 30%, Divine Light (Holy Light when mana is under half) below 60%, Flash of Light below 90%. With an enemy in melee range it only keeps a seal up. Reminders: Beacon of Light and Sacred Shield on the target that lacks them, Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. The guides behind it are from Phase 4; choosing whom to heal stays with you."
-L["Default.SoD.Paladin.Holy.Wowhead.Name"] = "Holy, Holy Light first (SoD, Wowhead)"
-L["Default.SoD.Paladin.Holy.Wowhead.Description"] = "Wowhead's Phase 4 healing order for crit-heavy gear, an alternative to the recommended Season of Discovery Holy premade, off by default: enable it and disable that one, or raise its priority. Divine Light or Holy Light below 75%, then Cleanse, Holy Shock for small deficits or while moving, Flash of Light below 95%. Same reminders as the recommended premade."
-
-L["Default.Era.Priest.Dps.Name"] = "Damage"
-L["Default.Era.Priest.Dps.Description"] = "Damage from level 1 to 60, and the Priest default whenever the healer premade does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a shield when solo, then Holy Fire (without Shadowform), Mind Blast or Smite. Shadow Word: Pain once per target that will live, Mind Blast on cooldown, Mind Flay as the filler (Smite and Holy Nova before you have it), and the wand on a dying target or when your mana runs low while solo. Vampiric Embrace and Devouring Plague on long fights, never in raids. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus with Mind Blast, Psychic Scream when two enemies reach you at half health, Fade when your target turns on you, Desperate Prayer. Target choice, multi-dotting and downranking stay with you."
-L["Default.Era.Priest.Dps.WarcraftTavern.Name"] = "Damage (Warcraft Tavern wand economy)"
-L["Default.Era.Priest.Dps.WarcraftTavern.Description"] = "Warcraft Tavern's low-downtime leveling style, an alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority. Solo: Mind Blast to pull, Shadow Word: Pain once, Mind Blast again only while the target is above 30%, and your wand between Mind Blasts instead of Smite or Mind Flay. No automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same reminders as the recommended premade."
-L["Default.Era.Priest.Dps.Wowsims.Name"] = "Damage (wowsims Undead raid)"
-L["Default.Era.Priest.Dps.Wowsims.Description"] = "The recommended damage priority with wowsims' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority."
-L["Default.Era.Priest.Healer.Name"] = "Healer"
-L["Default.Era.Priest.Healer.Description"] = "Chosen in a group when Holy or Discipline is your main talent tree. Heals the friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer of Healing when three of your party are hurt, Greater Heal (Heal or Lesser Heal before you learn it) below half health, Renew while moving or on light damage, then Heal rank 3 as the efficient top-up. Out of combat it offers Fortitude on your target. Targeting an enemy gives Shadow Word: Pain and Smite. Reminders: Inner Fire, Fortitude, Divine Spirit, Inner Focus, Desperate Prayer; Power Infusion is off by default. Choosing whom to heal and downranking stay with you."
-L["Default.SoD.Priest.Dps.Name"] = "Damage (SoD)"
-L["Default.SoD.Priest.Dps.Description"] = "Damage on Season of Discovery realms, from level 1 to 60, using the runes you have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite before Shadowform). Void Plague, Shadow Word: Pain and Vampiric Touch kept up (refreshed near the end only without Pain and Suffering engraved), Mind Blast on cooldown, Mind Flay on Melting Faces, Shadow Word: Death while you are above half health, then Mind Spike as the filler, or Mind Flay with the Phase 8 six-piece set. Void Zone and Mind Sear on four or more enemies. The wand on a dying solo target. Reminders: Inner Fire, Fortitude, Homunculi, Shadowfiend, Eye of the Void and Dispersion, Inner Focus, Psychic Scream, Fade, Desperate Prayer."
-L["Default.SoD.Priest.Dps.Wowhead.Name"] = "Damage (SoD, Wowhead Mind Spike stacks)"
-L["Default.SoD.Priest.Dps.Wowhead.Description"] = "The Wowhead and Warcraft Tavern way for Season of Discovery, an alternative to the recommended Season of Discovery damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast waits for three of your Mind Spike stacks on the target (it is cast normally until you engrave Mind Spike), Mind Flay only on Melting Faces, Mind Spike as the filler. Everything else matches the recommended premade."
-L["Default.SoD.Priest.Healer.Name"] = "Healer (SoD)"
-L["Default.SoD.Priest.Healer.Description"] = "Chosen on Season of Discovery realms in a group when Holy or Discipline is your main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending before the pull and whenever ready, Shield below half health, Penance, instant Flash Heal on Surge of Light, emergency Flash Heal, dispels, Circle of Healing and Prayer of Healing when three of your party are hurt, Greater Heal below half health, Renew while moving or on light damage, then Heal. Targeting an enemy gives Pain, Void Plague, Penance, Holy Fire and Smite. Reminders include Shadowfiend, Pain Suppression on a dying target, Power Word: Barrier and Spirit of the Redeemer when the party is hurt."
-L["Default.SoD.Priest.Healer.WarcraftTavern.Name"] = "Healer (SoD, Warcraft Tavern)"
-L["Default.SoD.Priest.Healer.WarcraftTavern.Description"] = "Warcraft Tavern's Serendipity loop, built for Serendipity and Soul Warding, an alternative to the recommended Season of Discovery healer premade, off by default: enable it and disable that one, or raise its priority. Prayer of Mending on cooldown, Shield on your target whenever it can take one (with Soul Warding engraved; else below half health), Penance on heavy damage, Circle of Healing for three hurt, Greater Heal or Prayer of Healing at three Serendipity stacks, Renew on minor damage, and Flash Heal on minor injuries to build the stacks (with Serendipity engraved; else below 30%)."
-
-L["Default.Era.Rogue.DPS.Name"] = "Melee DPS"
-L["Default.Era.Rogue.DPS.Description"] = "Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you."
-L["Default.Era.Rogue.DPS.WarcraftTavern.Name"] = "Melee DPS, five-point finishers (Warcraft Tavern)"
-L["Default.Era.Rogue.DPS.WarcraftTavern.Description"] = "Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher waits for five combo points so Relentless Strikes refunds it. Slice and Dice is used from its second rank (level 42) when missing or ending, otherwise Eviscerate; no low-point Slice, no near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers, builders and reminders as the recommended premade."
-L["Default.Era.Rogue.DPS.Wowsims.Name"] = "Swords, swing-synced Sinister Strike (wowsims)"
-L["Default.Era.Rogue.DPS.Wowsims.Description"] = "The wowsims \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade."
-L["Default.SoD.Rogue.DPS.Name"] = "Melee DPS (SoD)"
-L["Default.SoD.Rogue.DPS.Description"] = "Season of Discovery, levels 1–60 with runes as you engrave them; built from wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation."
-L["Default.SoD.Rogue.DPS.IcyVeins.Name"] = "Melee DPS, Rupture for Carnage (SoD, Icy Veins)"
-L["Default.SoD.Rogue.DPS.IcyVeins.Description"] = "Icy Veins' Season of Discovery order, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher at five combo points, first Slice and Dice when missing or ending, then Rupture kept up when Carnage is engraved, then Envenom; Poisoned Knife only at five poison stacks; Blunderbuss or Fan of Knives on three enemies. Same openers, builders and reminders as the recommended premade; Sebacious Poison duty stays with you."
-L["Default.SoD.Rogue.DPS.Zockify.Name"] = "Melee DPS, lean Envenom (SoD, Zockify)"
-L["Default.SoD.Rogue.DPS.Zockify.Description"] = "Zockify's lean Season of Discovery list, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. No bleeds and no Expose Armor. Poisoned Knife at four poison stacks, Slice and Dice when missing (from two points, four with Saber Slash), Envenom at five, then the glove-rune builder. The Vanish and Cold Blood burst stays with you."
-L["Default.SoD.Rogue.Tank.Name"] = "Tank (SoD)"
-L["Default.SoD.Rogue.Tank.Description"] = "Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you."
-
-L["Default.Era.Shaman.Enhancement.Name"] = "Enhancement"
-L["Default.Era.Shaman.Enhancement.Description"] = "Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you."
-L["Default.Era.Shaman.Enhancement.WarcraftTavern.Name"] = "Enhancement, Flame Shock first (Warcraft Tavern)"
-L["Default.Era.Shaman.Enhancement.WarcraftTavern.Description"] = "Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority. Windfury Weapon as soon as you learn it, Stormstrike, Flame Shock before any direct shock, then Earth Shock while your threat is low, or Frost Shock in a group once it is high; Magma and Chain Lightning on packs. Same totems and reminders as the recommended premade."
-L["Default.Era.Shaman.Elemental.Name"] = "Elemental"
-L["Default.Era.Shaman.Elemental.Description"] = "Elemental from level 10 (most points in Elemental); built from Icy Veins and Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame Shock, else Frost Shock. Solo with the target in melee: Earth Shock above 30% health, then melee. On three or more enemies: Fire Nova and Magma totems when you are in melee, and Chain Lightning. Chain Lightning under Elemental Mastery or Clearcasting, otherwise Lightning Bolt. Reminders: Lightning Shield, Rockbiter outside raids, Searing or Magma, Mana Spring or Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you."
-L["Default.Era.Shaman.Elemental.Wowsims.Name"] = "Elemental, Chain Lightning on cooldown (wowsims)"
-L["Default.Era.Shaman.Elemental.Wowsims.Description"] = "The wowsims Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders."
-L["Default.Era.Shaman.Restoration.Name"] = "Restoration"
-L["Default.Era.Shaman.Restoration.Description"] = "Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's Swiftness below 30%, Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Chain Heal when three group members near you are below 85%, otherwise Healing Wave below 90%. On an enemy it fights: Earth Shock interrupt, Chain Lightning on packs, Flame Shock, Lightning Bolt from range, melee. Reminders: Lightning Shield and Rockbiter solo, Mana Tide in a group, Mana Spring, Strength of Earth, Searing. Choosing whom to heal, downranking and Tremor or cleansing totems stay with you; keeping Healing Way on the tank is listed off."
-L["Default.Era.Shaman.Restoration.WarcraftTavern.Name"] = "Restoration, Chain Heal first (Warcraft Tavern)"
-L["Default.Era.Shaman.Restoration.WarcraftTavern.Description"] = "Warcraft Tavern's Restoration, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. Chain Heal is the heal for anyone below 90%, with Lesser Healing Wave for someone about to die; Healing Wave is only for an assigned tank healer with Healing Way (listed off). Same cures, damage on enemies and totem reminders as the recommended premade."
-L["Default.SoD.Shaman.Enhancement.Name"] = "Enhancement (SoD)"
-L["Default.SoD.Shaman.Enhancement.Description"] = "Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you."
-L["Default.SoD.Shaman.Elemental.Name"] = "Elemental (SoD)"
-L["Default.SoD.Shaman.Elemental.Description"] = "Season of Discovery Elemental from level 10 (most points in Elemental); built from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you."
-L["Default.SoD.Shaman.Restoration.Name"] = "Restoration (SoD)"
-L["Default.SoD.Shaman.Restoration.Description"] = "Season of Discovery Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Healing Rain when three group members near you are below 85%, Chain Heal when two are (at once on a Power Surge proc), Riptide below 95% for Tidal Waves, Healing Wave below 90%. On an enemy it fights. Reminders: Water Shield (Lightning Shield before), Earth Shield on your friendly target or yourself, Shamanistic Rage, Mana Tide, Mana Spring and Strength of Earth. Choosing whom to heal and Tremor or cleansing totems stay with you."
-L["Default.SoD.Shaman.Tank.Name"] = "Tank (SoD, Way of Earth)"
-L["Default.SoD.Shaman.Tank.Description"] = "Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems."
-
-L["Default.Era.Warlock.DPS.Name"] = "Every tree"
-L["Default.Era.Warlock.DPS.Description"] = "Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you."
-L["Default.Era.Warlock.DPS.WarcraftTavern.Name"] = "Drain tank (Warcraft Tavern)"
-L["Default.Era.Warlock.DPS.WarcraftTavern.Description"] = "Warcraft Tavern's leveling style, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. The Imp, then the Succubus from level 20. Immolate, Siphon Life and Corruption, then solo Drain Life as the filler once you learn its fourth rank (the wand before), Life Tap whenever your health is nearly full and Dark Pact before your pet's mana is full. In raids every DoT the slots allow, then Shadow Bolt. Same finishers, curse and safety reminders as the recommended premade; fearing a second mob stays with you."
-L["Default.Era.Warlock.DPS.IcyVeins.Name"] = "Curse and Corruption raids (Icy Veins)"
-L["Default.Era.Warlock.DPS.IcyVeins.Description"] = "Icy Veins' list for realms with the 16-debuff limit, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. In raids only your curse and Corruption, then Shadow Bolt, with no Immolate and no Siphon Life. Leveling and dungeons play as the recommended premade."
-L["Default.SoD.Warlock.Tank.Name"] = "Tank (SoD, Metamorphosis)"
-L["Default.SoD.Warlock.Tank.Description"] = "Season of Discovery tank, chosen once Metamorphosis is engraved; built from wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you."
-L["Default.SoD.Warlock.Fire.Name"] = "Fire (SoD)"
-L["Default.SoD.Warlock.Fire.Description"] = "Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish; instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony); Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders: Fel Armor, the Imp, Amplify Curse and the safety reminders."
-L["Default.SoD.Warlock.Fire.IcyVeins.Name"] = "Fire, Conflagrate on cooldown (SoD, Icy Veins)"
-L["Default.SoD.Warlock.Fire.IcyVeins.Description"] = "Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an alternative to the recommended Season of Discovery Fire premade, off by default: enable it and disable that one, or raise its priority. Immolate kept up, Conflagrate and Chaos Bolt on cooldown (Chaos Bolt also below 35%), Incinerate's buff, Soul Fire under Decimation below 35%, Incinerate filler; the damage curse only while moving, with Recklessness in a group when nobody has it."
-L["Default.SoD.Warlock.Shadow.Name"] = "Shadow, Affliction and Felguard (SoD)"
-L["Default.SoD.Warlock.Shadow.Description"] = "Season of Discovery Affliction and Felguard builds, and every SoD Warlock no other premade fits; built from wowsims Phase 6, Wowhead and Icy Veins. Nightfall procs; Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life, Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (each renewed under 6 seconds with Invocation engraved); Drain Soul below 20% with Soul Siphon engraved; solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved), Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and Shadow Bolt Volley packs stay with you."
-L["Default.SoD.Warlock.Shadow.Wowsims.Name"] = "Shadow, Drain Soul filler (SoD, wowsims)"
-L["Default.SoD.Warlock.Shadow.Wowsims.Description"] = "The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade."
-
-L["Default.Era.Warrior.DPS.Name"] = "Melee DPS"
-L["Default.Era.Warrior.DPS.Description"] = "Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you."
-L["Default.Era.Warrior.Protection.Name"] = "Tank"
-L["Default.Era.Warrior.Protection.Description"] = "Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing Shout and Battle Shout for threat. Then Revenge, Shield Slam, Bloodthirst, Sunder Armor to five, Demoralizing Shout on elites, Sunder Armor as the filler, and Rend before Shield Slam or Bloodthirst. Shield Slam and Shield Block only with a shield on. Reminders: Battle Shout, Shield Block while the target hits you, Bloodrage, Heroic Strike and Cleave from 50 rage, Shield Bash, Last Stand. Taunt, Shield Wall and Death Wish are listed off; Battle Stance for Execute (the DPS premade takes over) and Challenging Shout stay with you."
-L["Default.Era.Warrior.Protection.IcyVeins.Name"] = "Tank, Battle Shout threat (Icy Veins)"
-L["Default.Era.Warrior.Protection.IcyVeins.Description"] = "Icy Veins' \"sunderless\" tanking for groups where four or more players hear your shout (Phase 5 Battle Shout onward), an alternative to the recommended tank premade, off by default: enable it and disable that one, or raise its priority. Demoralizing Shout kept up, Revenge, Shield Slam or Bloodthirst, then Battle Shout as the threat filler instead of Sunder Armor; Shield Slam and Shield Block only with a shield on. Same reminders as the recommended tank; go back to Sunder when focusing one target in a crowd."
-L["Default.SoD.Warrior.DPS.Name"] = "Melee DPS (SoD)"
-L["Default.SoD.Warrior.DPS.Description"] = "Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off."
-L["Default.SoD.Warrior.DPS.Wowhead.Name"] = "Battle Forecaster stance dance (SoD, Wowhead)"
-L["Default.SoD.Warrior.DPS.Wowhead.Description"] = "Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1 six-piece (which Rotation Master cannot see), an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Stance swaps to keep the forecast buffs up, Heroic Strike almost always, then Bloodthirst, Blood Surge Slam, Whirlwind, Raging Blow and Hamstring; no Rend and no Overpower. Check the swap timing in game before relying on it."
-L["Default.SoD.Warrior.DPS.IcyVeins.Name"] = "Melee DPS (SoD, Icy Veins)"
-L["Default.SoD.Warrior.DPS.IcyVeins.Description"] = "Icy Veins' Season of Discovery Fury and Arms pages, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Execute near the top below 20% or on Sudden Death, Slam on Blood Surge, Bloodthirst or Mortal Strike, Whirlwind, Overpower, Raging Blow, then Quick Strike and Hamstring only above 60 rage; no Rend; Heroic Strike only above 80 rage. Same reminders as the recommended premade."
-L["Default.SoD.Warrior.Tank.Name"] = "Tank (SoD)"
-L["Default.SoD.Warrior.Tank.Description"] = "Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you."
-
-L["Default.MoP.DeathKnight.Blood.Name"] = "Recommended"
-L["Default.MoP.DeathKnight.Blood.Description"] = "Recommended for Blood tanks, chosen in the Blood specialization. Pulls from range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood Shield is missing (from 80), and before all four Frost and Unholy runes sit full; Rune Strike near 90 runic power (Death Coil at 80 before you learn it); Outbreak, else Icy Touch and Plague Strike, for diseases, and Blood Boil to refresh them from 68; Soul Reaper under 35%; Heart Strike (Blood Strike before 60) on two Blood runes; Crimson Scourge on Death and Decay while diseases last, else Blood Boil; Blood Tap at eleven charges; then Death Strike, Heart Strike, Rune Strike and Horn of Winter. Three enemies on you: Death and Decay, a disease spread (Blood Boil with Roiling Blood, else Pestilence) and Blood Boil. Reminders: Blood Presence when you have none, Bone Shield, Horn of Winter, Mind Freeze, Rune Tap, Vampiric Blood, Icebound Fortitude, Empower Rune Weapon and Death Pact by your health, Dancing Rune Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so Anti-Magic Shell (off) and big defensives are yours."
-L["Default.MoP.DeathKnight.Blood.Wowsims.Name"] = "Health-reactive (wowsims)"
-L["Default.MoP.DeathKnight.Blood.Wowsims.Description"] = "An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one."
-L["Default.MoP.DeathKnight.FrostDualWield.Name"] = "Two weapons"
-L["Default.MoP.DeathKnight.FrostDualWield.Description"] = "Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast (Death Grip solo). Death Strike on Dark Succor or below 35% health, Blood Tap at eleven charges, diseases (Unholy Blight, Outbreak, Howling Blast, Plague Strike), Soul Reaper under 35%, Frost Strike on Killing Machine or above 89 runic power, Howling Blast on Rime or with both Frost or both Death runes ready, Obliterate on two Unholy runes below 77 runic power, Frost Strike above 76, Obliterate, Howling Blast, Plague Leech before diseases fade with Outbreak ready, Frost Strike at 40, Horn of Winter. Three enemies on you: a disease spread, Death and Decay and Howling Blast. Reminders: Frost Presence, Pillar of Frost, Raise Dead, Empower Rune Weapon with every rune down, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss."
-L["Default.MoP.DeathKnight.Frost.Name"] = "Two-hander"
-L["Default.MoP.DeathKnight.Frost.Description"] = "Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost specialization whenever the two-weapon premade does not apply. Same opening, diseases, survival and AoE as the two-weapon premade, then Obliterate on Killing Machine, Frost Strike above 76 runic power, Howling Blast on Rime, Obliterate whenever a rune pair is full, Obliterate, Howling Blast, Plague Leech, Frost Strike at 40 and Horn of Winter. Before Obliterate (58) Death Strike spends your Unholy runes. Same reminders as the two-weapon premade."
-L["Default.MoP.DeathKnight.Unholy.Name"] = "Unholy"
-L["Default.MoP.DeathKnight.Unholy.Description"] = "Recommended for Unholy, and the premade for any Death Knight Blood and Frost do not claim, including one without a specialization. Pulls from range with Outbreak or Icy Touch (Death Grip solo). Death Strike on Dark Succor or below 35% health, diseases (Unholy Blight, Outbreak, Plague Strike, Icy Touch), Blood Tap at eleven charges, Soul Reaper under 35%, Dark Transformation at five Shadow Infusion stacks, Death Coil near the runic power cap, Death and Decay on a target that will live, Scourge Strike, Death Coil on Sudden Doom or at 40, Outbreak while Unholy Strength is up, Festering Strike (Blood Strike before you learn it), Plague Leech, Horn of Winter. Three enemies on you: a disease spread, Death and Decay, Blood Boil and Icy Touch on a Frost rune. Reminders: Unholy Presence, your ghoul, Summon Gargoyle under Bloodlust or on a long elite fight, Unholy Frenzy, Empower Rune Weapon, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss; Anti-Magic Shell is off."
-L["Default.MoP.DeathKnight.Unholy.Wowsims.Name"] = "Unholy, rune-cap pooling (wowsims)"
-L["Default.MoP.DeathKnight.Unholy.Wowsims.Description"] = "An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one."
-
-L["Default.MoP.Druid.Unspecialized.Name"] = "Before a specialization"
-L["Default.MoP.Druid.Unspecialized.Description"] = "For levels 1 to 9, or any druid who has not chosen a specialization yet; the specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends five combo points (or two on a dying target) on Ferocious Bite and builds with Mangle; in Bear Form it uses Mangle and Maul. Otherwise it pulls with Wrath, keeps Moonfire on targets that will last, casts Wrath (Moonfire while moving) and suggests Rejuvenation on yourself when you are below half health and alone. It stops while you cast, travel or have no enemy targeted."
-L["Default.MoP.Druid.Balance.Name"] = "Recommended"
-L["Default.MoP.Druid.Balance.Description"] = "Recommended for Balance from level 10, after Wowhead's Phase 5 list and wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted."
-L["Default.MoP.Druid.Feral.Name"] = "Recommended"
-L["Default.MoP.Druid.Feral.Description"] = "Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual."
-L["Default.MoP.Druid.Feral.IcyVeins.Name"] = "Bite only in execute (Icy Veins)"
-L["Default.MoP.Druid.Feral.IcyVeins.Description"] = "Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the recommended Feral premade: enable it and disable that one, or raise its priority. Same opener, Savage Roar, Healing Touch and AoE, but combo points above 25% target health go only to Rip and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends five points before you learn Rip). Rake refreshes at two seconds, Thrash only on Clearcasting, and Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away."
-L["Default.MoP.Druid.Guardian.Name"] = "Recommended"
-L["Default.MoP.Druid.Guardian.Description"] = "Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default)."
-L["Default.MoP.Druid.Restoration.Name"] = "Recommended"
-L["Default.MoP.Druid.Restoration.Description"] = "Recommended for Restoration from level 10, after Wowhead's Phase 5 group healing. Heals your current friendly target, or you with no target; choosing whom to heal is up to you. Swiftmend on a target with your HoT when it is low, when Harmony has dropped, or into Wild Growth with Soul of the Forest; Wild Growth when three people nearby are hurt; instant Healing Touch on Nature's Swiftness; Regrowth on Clearcasting or a dying target; Rejuvenation; then Healing Touch and Nourish while standing still. An attackable target gets Moonfire and Wrath. Reminders: Lifebloom stacks and Ironbark on your focus (set the tank as focus), Wild Mushroom: Bloom on group damage, Force of Nature, Incarnation, Nature's Vigil, Nature's Swiftness, Innervate, Nature's Cure, Cenarion Ward, Barkskin, Mark of the Wild. Wild Mushroom placement, Tranquility and Genesis reminders are off by default."
-L["Default.MoP.Druid.Restoration.Wowhead.Name"] = "Tank healing (Wowhead)"
-L["Default.MoP.Druid.Restoration.Wowhead.Description"] = "Wowhead's single-target tank-healing order, an alternative to the recommended Restoration premade for when you are assigned to the tank: enable it and disable that one, or raise its priority. Keep the tank targeted: it keeps three Lifeblooms and Rejuvenation on it, uses Regrowth for heavy damage, Nourish for light damage, Healing Touch once Lifebloom and Rejuvenation are rolling and the tank is below half, and Swiftmend to keep it topped up. Same reminders as the recommended premade."
-
-L["Default.MoP.Hunter.BeastMastery.Name"] = "Recommended"
-L["Default.MoP.Hunter.BeastMastery.Description"] = "Chosen automatically in the Beast Mastery specialization. Opens with Hunter's Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is about to be ready), A Murder of Crows, Lynx Rush, Dire Beast and your tier-six shot when talented, Focus Fire at five Frenzy stacks (or four about to fall off) but not during Bestial Wrath, Serpent Sting on targets that will live, Cobra Shot to refresh it, Arcane Shot at 80 focus or during Bestial Wrath, then Cobra Shot (Steady Shot before 81). With two or more enemies fighting you it keeps Beast Cleave up with Multi-Shot, saves Kill Command for spare focus on big packs and suggests Explosive Trap from three. Reminders: pet out, revived and mended, Aspect of the Hawk or Iron Hawk, Counter Shot, Fervor, and Bestial Wrath, Rapid Fire, Stampede and racials when the fight is worth it (an elite, a dungeon or raid, or a target that will live). Trap placement, Misdirection, Feign Death and defensives stay with you; Exhilaration and Deterrence reminders are off by default."
-L["Default.MoP.Hunter.Marksmanship.Name"] = "Recommended"
-L["Default.MoP.Hunter.Marksmanship.Description"] = "Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot, then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on targets that will live, Aimed Shot whenever Fire! makes it instant, Kill Shot, your talents, and a hard-cast Aimed Shot while the target is above 80% health, under Rapid Fire or Bloodlust, at 85 focus or when Chimera Shot is a few seconds away. Arcane Shot only while you are moving; otherwise Steady Shot. Four or more enemies: Chimera Shot, instant Aimed Shot, Multi-Shot, Kill Shot, Explosive Trap. Same reminders as the other Hunter premades. If you prefer spending spare focus on Arcane Shot, use the Arcane Shot variant."
-L["Default.MoP.Hunter.Marksmanship.IcyVeins.Name"] = "Arcane Shot dump (Icy Veins)"
-L["Default.MoP.Hunter.Marksmanship.IcyVeins.Description"] = "An alternative to the Marksmanship premade, as Icy Veins, Method, wowtbc.gg and Hekili play it: Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or Bloodlust, and spare focus goes to Arcane Shot at 60 instead. Steady Focus is refreshed under 4 seconds; on four or more enemies Multi-Shot comes first. Off by default: enable it and disable the Marksmanship premade, or raise its priority."
-L["Default.MoP.Hunter.Survival.Name"] = "Recommended"
-L["Default.MoP.Hunter.Survival.Description"] = "Chosen automatically in the Survival specialization. Opens with Hunter's Mark, Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on targets that will live, your talents, Serpent Sting kept up by Cobra Shot, Arcane Shot at 75 focus, with Thrill of the Hunt, or at 55 when Black Arrow is not coming up, then Cobra Shot (Steady Shot before 81). Two or more enemies: Multi-Shot first on Lock and Load with full focus, Explosive Shot up to five targets, Kill Shot, Black Arrow, Explosive Trap from three, Multi-Shot to spend. Same reminders as the other Hunter premades; traps for Lock and Load procs stay with you."
-L["Default.MoP.Hunter.Unspecialized.Name"] = "Before a specialization"
-L["Default.MoP.Hunter.Unspecialized.Description"] = "For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization. Pulls with Hunter's Mark and Arcane Shot, then Serpent Sting on targets that will live, Multi-Shot on three or more enemies, Arcane Shot, Steady Shot and Auto Shot. Reminds you to call, revive and mend your pet and to keep Aspect of the Hawk up."
-
-L["Default.MoP.Mage.Arcane.Name"] = "Recommended"
-L["Default.MoP.Mage.Arcane.Description"] = "Recommended for Arcane, from level 10 to 90 (selected in the Arcane specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc is spent with Missiles, and without one Arcane Barrage comes out once your mana drops below 90%. Above 95% mana it keeps blasting, which is how the simulator plays it. Missiles is never left sitting on two procs, Barrage is cast before Alter Time snaps back, and with two or more enemies Barrage goes out every four charges; Cone of Cold and Arcane Explosion when five are close. Keeps your talented bomb up, and Fire Blast or Ice Lance while moving without Ice Floes. Reminders: Arcane Power and Alter Time at four charges with a proc, Frost Armor (Molten before 54), Arcane Brilliance, Counterspell, Mana Gem, Mirror Image, Ice Barrier, Ice Floes, Rune of Power or Invocation. Time Warp, Spellsteal and Presence of Mind are off; Rune of Power still needs placing by hand."
-L["Default.MoP.Mage.Arcane.IcyVeins.Name"] = "Barrage at four charges (Icy Veins)"
-L["Default.MoP.Mage.Arcane.IcyVeins.Description"] = "The guides' Arcane rule (Icy Veins, Wowhead, Method, wowtbc.gg), an alternative to the recommended Arcane premade: at four Arcane Charges, Arcane Missiles if a proc is up, otherwise Arcane Barrage, whatever your mana; Missiles only at four charges. Everything else (Alter Time, bombs, AoE, moving, reminders) matches the recommended one, except that Arcane Power is suggested at four charges without waiting for a proc. Off by default: enable it and disable the recommended Arcane premade, or raise its priority."
-L["Default.MoP.Mage.Fire.Name"] = "Recommended"
-L["Default.MoP.Mage.Fire.Description"] = "Recommended for Fire, from level 10 to 90 (selected in the Fire specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns Heating Up into a Pyroblast! proc, which is cast at once unless Combustion is about to come off cooldown; then it waits for the next Heating Up while you cast Fireball. Combustion lights right after a Pyroblast while Ignite and the Pyroblast burn are on the target; the addon cannot see how big Ignite is, so judge a weak one yourself. Keeps your talented bomb up, spreads with Inferno Blast when two or more enemies fight you, Cone of Cold and Arcane Explosion for five close by, Scorch on the move. Reminders: Molten Armor, Presence of Mind, Alter Time with both procs, Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Dragon's Breath, Time Warp and Spellsteal are off."
-L["Default.MoP.Mage.Fire.IcyVeins.Name"] = "Hold Pyroblast! (Icy Veins)"
-L["Default.MoP.Mage.Fire.IcyVeins.Description"] = "Icy Veins', Method's and wowtbc.gg's Fire play, an alternative to the recommended Fire premade: a Pyroblast! proc is held until a Heating Up joins it, then cast together with your Fireball, and spent alone only when it is about to expire. Everything else matches the recommended one. Off by default: enable it and disable the recommended Fire premade, or raise its priority."
-L["Default.MoP.Mage.Frost.Name"] = "Recommended"
-L["Default.MoP.Mage.Frost.Description"] = "Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice Lance on one Fingers of Frost, Frostbolt; from 87 a proc is held for Alter Time when it is less than 10 seconds away. With two or more enemies: Frozen Orb, Cone of Cold and Arcane Explosion when they are close, Blizzard when four stand still. Ice Lance and Fire Blast on the move without Ice Floes. Reminders: Water Elemental, Freeze on anything but a boss (place it yourself), Icy Veins timed with Alter Time, Alter Time at two Fingers of Frost in Icy Veins, Frost Armor (Molten before 54), Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Cold Snap, Presence of Mind, Time Warp and Spellsteal are off."
-L["Default.MoP.Mage.Unspecialized.Name"] = "Before a specialization"
-L["Default.MoP.Mage.Unspecialized.Description"] = "For levels 1 to 9, and any Mage who has not chosen a specialization yet. Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once learned, Arcane Explosion when three or more enemies are in melee range. Reminders: Frost Nova when a mob reaches you, Counterspell, and Molten Armor and Arcane Brilliance if you reach them. Choosing a specialization at 10 switches to that specialization's premade."
-
-L["Default.MoP.Monk.Brewmaster.Name"] = "Recommended"
-L["Default.MoP.Monk.Brewmaster.Description"] = "Picked automatically in the Brewmaster specialization. Keeps Shuffle up with Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once below 35%), Jab to spend energy, Tiger Palm for Tiger Power and as the free filler (Jab builds Chi before level 34), and Touch of Death when it is usable. From range out of combat: Chi Wave, Dizzying Haze, Clash or Keg Smash. On three or more enemies: Rushing Jade Wind, Breath of Fire and Spinning Crane Kick only while Shuffle has time left. Reminders: Sturdy Ox, Legacy of the Emperor, Purifying Brew on Heavy Stagger (Moderate when Shuffle is banked), Elusive Brew from six stacks, Guard with Power Guard, Chi Brew, Xuen, Fortifying Brew, Dampen Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert Harm, Zen Meditation and Provoke stay with you."
-L["Default.MoP.Monk.Brewmaster.Offensive.Name"] = "Damage first (wowsims)"
-L["Default.MoP.Monk.Brewmaster.Offensive.Description"] = "An alternative to the Brewmaster premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's damage-first list for a tank who outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for damage, and no routine Purifying Brew or Guard (Purifying Brew only lights on the tier-15 Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders."
-L["Default.MoP.Monk.Windwalker.Name"] = "Recommended"
-L["Default.MoP.Monk.Windwalker.Description"] = "Picked automatically in the Windwalker specialization. Touch of Death when usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker procs, Fists of Fury when you are standing still and its channel will not cap your energy, Jab when two Chi are missing (Expel Harm instead when hurt), Blackout Kick without starving the next Rising Sun Kick. On two or more enemies Rising Sun Kick keeps its debuff up and Spinning Crane Kick or Rushing Jade Wind joins from three. Reminders: Fierce Tiger, Legacy of the Emperor and of the White Tiger, Tigereye Brew at 19 stacks (15 with Chi to spend, 10 under Bloodlust or near the end of a fight), Energizing Brew at low energy, Chi Brew, Xuen, Storm, Earth, and Fire on two enemies (you cast it on the second one), Touch of Karma, defensives and Spear Hand Strike. Energy-to-cap checks are energy thresholds, so tune them to your haste."
-L["Default.MoP.Monk.Windwalker.Simc.Name"] = "SimulationCraft 5.4.8 (Hekili and MaxDps)"
-L["Default.MoP.Monk.Windwalker.Simc.Description"] = "An alternative to the Windwalker premade, off by default: enable it and disable that one, or raise its priority. The original SimulationCraft list that the Hekili and MaxDps addons ship: Tiger Power refreshed at three seconds, Rising Sun Kick first while its debuff is missing, Fists of Fury saved for Tigereye Brew (active or 15 stacks), Tigereye Brew at 20 stacks or at 15 with Chi and both buffs up. On three or more enemies it spends on Spinning Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60."
-L["Default.MoP.Monk.Mistweaver.Name"] = "Recommended"
-L["Default.MoP.Monk.Mistweaver.Description"] = "Picked automatically in the Mistweaver specialization. With a friendly target it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are hurt, Expel Harm and your Chi talent for Chi, Rushing Jade Wind or Spinning Crane Kick for a hurt group, Surging Mist on five Vital Mists, Soothing Mist when the target is below 80%, then Enveloping Mist and Surging Mist inside that channel. With an enemy target it fistweaves: Tiger Palm and Blackout Kick on Muscle Memory to keep Tiger Power and Serpent's Zeal, Blackout Kick when Chi is full, Surging Mist on five Vital Mists, Renewing Mist and Expel Harm for Chi, Jab. Reminders: Wise Serpent, Legacy of the Emperor, the Jade Serpent Statue in a group, Mana Tea in quiet moments, Thunder Focus Tea, Chi Brew, Life Cocoon on a friend below 35%, Xuen, Detox, defensives, Spear Hand Strike. You choose whom to heal; Revival (reminder off) and Healing Sphere stay with you."
-L["Default.MoP.Monk.Unspecialized.Name"] = "Before a specialization"
-L["Default.MoP.Monk.Unspecialized.Description"] = "For levels 1 to 9, or any monk who has not chosen a specialization; a specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise."
-
-L["Default.MoP.Paladin.Retribution.Name"] = "Recommended"
-L["Default.MoP.Paladin.Retribution.Description"] = "Recommended for Retribution, from level 10 in the Retribution specialization. Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends Templar's Verdict at full Holy Power or on a free proc before generating more, then Hammer of Wrath, Crusader Strike, Judgment and Exorcism, and Templar's Verdict at 3 when nothing else is ready. In Avenging Wrath it spends at once and puts Judgment ahead of Crusader Strike. Two or more enemies on you switch to Divine Storm, with Hammer of the Righteous when four are close. Pulls from range with Judgment or Exorcism, and suggests Word of Glory when you are solo and in danger. Reminders: Seal of Truth when another seal is active or none (Seal of Righteousness is kept), Blessing of Kings or Might, Rebuke, Avenging Wrath and Guardian of Ancient Kings with Inquisition up on elites, Holy Avenger in wings, Execution Sentence and Light's Hammer, and Divine Protection and Lay on Hands when low. Seal of Righteousness for packs and glyph choices stay with you."
-L["Default.MoP.Paladin.Retribution.WarcraftTavern.Name"] = "Exorcism first (Warcraft Tavern)"
-L["Default.MoP.Paladin.Retribution.WarcraftTavern.Description"] = "An alternative to the recommended Retribution premade, off by default: enable it and disable that one, or raise its priority. Exorcism on every cooldown and Art of War reset comes first; Inquisition is cast at any Holy Power when it is missing and refreshed at 3 in its last 20 seconds; then Crusader Strike, Judgment, Templar's Verdict and Hammer of Wrath (first in wings with Sanctified Wrath). Two or more enemies use Crusader Strike, Light's Hammer, Judgment, Divine Storm and Hammer of Wrath. Avenging Wrath and Guardian of Ancient Kings are suggested only on elites. The guide's Seal of Righteousness on any cleave is left to you."
-L["Default.MoP.Paladin.Protection.Name"] = "Recommended"
-L["Default.MoP.Paladin.Protection.Description"] = "Recommended for Protection, from level 10 in the Protection specialization. Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, your level-90 talent, Consecration, Holy Wrath and Sacred Shield. Three or more enemies on you switch to Avenger's Shield, Consecration, Hammer of the Righteous, Judgment and Holy Wrath. Shield of the Righteous, Eternal Flame and Word of Glory are off the global cooldown, so they light beside the rotation: Shield of the Righteous whenever you can afford it, Eternal Flame on yourself when it is running out with 3 Holy Power and three Bastion of Glory stacks, Word of Glory below half health without that talent. Other reminders: Righteous Fury, Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Sacred Shield, Avenging Wrath and Holy Avenger while you are tanking, and Guardian of Ancient Kings, Ardent Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage, so plan big defensives yourself."
-L["Default.MoP.Paladin.Protection.Wowsims.Name"] = "Pool Holy Power (wowsims)"
-L["Default.MoP.Paladin.Protection.Wowsims.Description"] = "An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours."
-L["Default.MoP.Paladin.Holy.Name"] = "Recommended"
-L["Default.MoP.Paladin.Holy.Description"] = "For Holy, from level 10 in the Holy specialization. With a friend targeted it heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt, else Eternal Flame on a target without it, else Word of Glory; Holy Shock on cooldown; Infusion of Light into Holy Radiance or Divine Light, three Selfless Healer stacks into Holy Radiance or Flash of Light; Flash of Light below 35%; Holy Radiance for a hurt group; Divine Light, then Holy Light to top off. With an enemy targeted it deals damage: Holy Shock, Judgment, Crusader Strike, Holy Prism, Execution Sentence, Hammer of Wrath, Denounce. Reminders: Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Beacon of Light and Sacred Shield on your focus (set the tank as focus), Divine Plea below 60% mana, Light's Hammer and your healing cooldowns when three people are below 70%, Lay on Hands on a dying target. Choosing whom to heal, dispels and mouseover healing stay with you."
-L["Default.MoP.Paladin.Unspecialized.Name"] = "Before a specialization"
-L["Default.MoP.Paladin.Unspecialized.Description"] = "For levels 1 to 9, and any paladin who has not chosen a specialization yet; a specialization's premade takes over as soon as you pick one. Pulls from range with Judgment, then Crusader Strike and Judgment, with Hammer of Justice when you are solo and below half health and Word of Glory below 40%. Reminders: Seal of Command (Seal of Truth from 24) when you are not in it, Blessing of Kings, Rebuke, and Flash of Light out of combat when you are hurt."
-
--- Mists of Pandaria Classic premades: Priest, Rogue, Shaman, Warlock, Warrior.
-L["Default.MoP.Priest.Discipline.Name"] = "Recommended"
-L["Default.MoP.Priest.Discipline.Description"] = "Discipline healing from level 10 to 90, chosen in the Discipline specialization. Target a friend to heal them: Power Word: Shield when they are low, before the pull and about every 12 seconds for Rapture; Flash Heal on Surge of Light; Penance; Flash Heal when they are very low; Binding Heal when you are both hurt; Prayer of Mending; Prayer of Healing and your tier-6 talent when three allies are hurt; Greater Heal; Renew while moving; Heal to top up. Under Spirit Shell it suggests Prayer of Healing or Greater Heal. Target an enemy to heal through Atonement: Penance, Power Word: Solace or Holy Fire, your tier-6 talent on packs, Shadow Word: Pain when solo, Smite. Reminders: Inner Fire, Fortitude, Archangel at five Evangelism, Inner Focus, Pain Suppression on a dying target, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, Spirit Shell timing (a reminder you can switch on), Power Word: Barrier, Void Shift and Grace stacks on the tank."
-L["Default.MoP.Priest.Holy.Name"] = "Recommended"
-L["Default.MoP.Priest.Holy.Description"] = "Holy healing from level 10 to 90, chosen in the Holy specialization. Target a friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when they are about to die; Flash Heal on Surge of Light; Prayer of Mending; Flash Heal when very low; Binding Heal when you are both hurt; in a group with three allies hurt, Circle of Healing, Holy Word: Sanctuary in Chakra: Sanctuary, your tier-6 talent and Prayer of Healing; Renew; Greater Heal when low or at two Serendipity; Heal. Target an enemy to deal damage: Holy Word: Chastise, Power Word: Solace or Holy Fire, Shadow Word: Pain when solo, your tier-6 talent on packs, Smite. An empty chakra is filled for you (Sanctuary in a raid, Serenity in a party, Chastise solo) and never swapped. Reminders: Inner Fire, Fortitude, Guardian Spirit on a dying target, Divine Hymn when five allies are badly hurt, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, placing Holy Word: Sanctuary, Lightwell and Void Shift."
-L["Default.MoP.Priest.Holy.IcyVeins.Name"] = "Emergency heals last (Icy Veins)"
-L["Default.MoP.Priest.Holy.IcyVeins.Description"] = "Off by default. Icy Veins' Holy order, picked by your chakra. In Chakra: Sanctuary: Holy Word: Sanctuary when three allies are hurt, Renew, Circle of Healing, Prayer of Mending, Prayer of Healing, then Binding Heal and Flash Heal only in emergencies. Otherwise: Renew, Holy Word: Serenity, Prayer of Mending, Greater Heal, Heal, Binding Heal, Flash Heal, Power Word: Shield last, and Flash Heal as the filler before you learn Heal. Same switch, reminders and damage list as the recommended Holy premade; enable it and disable that one to use it."
-L["Default.MoP.Priest.Shadow.Name"] = "Recommended"
-L["Default.MoP.Priest.Shadow.Description"] = "Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind Blast is ready or still six seconds away), Mind Blast, Shadow Word: Death below 20% health, Mind Flay while your Devouring Plague is up if you took Solace and Insanity, Shadow Word: Pain and Vampiric Touch refreshed near the end on a target that will live, Mind Spike on Surge of Darkness, Halo, Cascade or Divine Star at their best range, then Mind Flay. A Mind Flay is cut short for Mind Blast or Shadow Word: Death, or after its second tick; other channels are never interrupted. While moving it suggests instants only. On five or more enemies: your tier-6 talent, DoTs on your target and Mind Sear. Reminders: Shadowform, Inner Fire, Fortitude, Silence on interruptible casts, Shadowfiend or Mindbender and Power Infusion on long fights, Vampiric Embrace, Desperate Prayer and Dispersion when low. Left to you: DoTs on other targets and where Mind Sear lands."
-L["Default.MoP.Priest.Shadow.WarcraftTavern.Name"] = "No Insanity priority (Warcraft Tavern)"
-L["Default.MoP.Priest.Shadow.WarcraftTavern.Description"] = "Off by default. Warcraft Tavern's Shadow order: Devouring Plague at three Shadow Orbs, Shadow Word: Death below 20%, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Spike on Surge of Darkness, your tier-6 talent, Mind Flay. Unlike the recommended Shadow premade it never raises Mind Flay under Devouring Plague and does not hold Devouring Plague for Mind Blast. Same opener, movement, pack and reminder steps; enable it and disable the recommended one to use it."
-L["Default.MoP.Priest.Unspecialized.Name"] = "Unspecialized"
-L["Default.MoP.Priest.Unspecialized.Description"] = "For levels 1 to 9, or any priest who has not chosen a specialization yet. On an enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal when they are low, otherwise Power Word: Shield. Reminders: Inner Fire, and a shield on yourself when you are solo and hurt. Choosing a specialization at 10 switches to its own premade."
-
-L["Default.MoP.Rogue.Assassination.Name"] = "Recommended"
-L["Default.MoP.Rogue.Assassination.Description"] = "Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning."
-L["Default.MoP.Rogue.Assassination.IcyVeins.Name"] = "Envenom at five (Icy Veins)"
-L["Default.MoP.Rogue.Assassination.IcyVeins.Description"] = "Off by default. The Icy Veins and Method order: Vanish on cooldown for a stealthed Mutilate, Vendetta on cooldown when the fight is long enough, Envenom only at five points, Rupture kept up, Dispatch below 35% or on Blindside, Mutilate. Four to eight enemies: Fan of Knives with Rupture at three points or more; nine or more: Fan of Knives and Envenom only. The recommended Assassination premade follows the newer Phase 5 advice instead; to use this one, enable it and disable the recommended one."
-L["Default.MoP.Rogue.Combat.Name"] = "Recommended"
-L["Default.MoP.Rogue.Combat.Description"] = "Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up from two points and Revealing Strike on the target, spends five points only while Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint and positioning behind the target for Ambush."
-L["Default.MoP.Rogue.Combat.IcyVeins.Name"] = "Sinister Strike builder (Icy Veins)"
-L["Default.MoP.Rogue.Combat.IcyVeins.Description"] = "Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern, Method and wowtbc.gg order from before the Siege of Orgrimmar patch: Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single-target fight and Eviscerate, with Sinister Strike as the builder. Same reminders and pack play as the recommended Combat premade. Choose it only if you follow those guides; enable it and disable the recommended one."
-L["Default.MoP.Rogue.Combat.Hekili.Name"] = "Anticipation (Hekili)"
-L["Default.MoP.Rogue.Combat.Hekili.Description"] = "Off by default. The Hekili MoP order for Combat with Anticipation: Revealing Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four Anticipation charges or Shadow Blades coming back, then Slice and Dice, Rupture on one or two long-lived targets, Crimson Tempest at seven enemies and Eviscerate; Slice and Dice is refreshed early at 11 Bandit's Guile stacks; Fan of Knives from four enemies. It applies only with Anticipation talented. Enable it and disable the recommended Combat premade to use it."
-L["Default.MoP.Rogue.Subtlety.Name"] = "Recommended"
-L["Default.MoP.Rogue.Subtlety.Description"] = "Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked for Death; Hemorrhage to keep its bleed; Backstab (with a dagger) when the target is not attacking you, otherwise Hemorrhage. Against three or more enemies: Slice and Dice, Crimson Tempest, Eviscerate and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Shadow Dance at 75 energy with Slice and Dice and Rupture up, Vanish when Find Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and Expose Armor (listed but off)."
-L["Default.MoP.Rogue.Subtlety.WarcraftTavern.Name"] = "Subterfuge (Warcraft Tavern)"
-L["Default.MoP.Rogue.Subtlety.WarcraftTavern.Description"] = "Chosen automatically instead of the Shadow Focus premade when your tier-1 talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger, finishers at five points and then Ambush as often as it lands. Two or three enemies: keep Rupture up and spend five points on Crimson Tempest instead of Eviscerate; four or more add Fan of Knives. One target: Slice and Dice, Rupture, Eviscerate, Hemorrhage for its bleed, Backstab from behind with a dagger, else Hemorrhage. Shadow Dance and Vanish are reminders at 60 energy with Slice and Dice up; timing them to trinket procs, as Tavern suggests, is up to you."
-L["Default.MoP.Rogue.Unspecialized.Name"] = "Unspecialized"
-L["Default.MoP.Rogue.Unspecialized.Description"] = "For levels 1 to 9, or a rogue who has not chosen a specialization yet; each specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot when solo, Ambush or Sinister Strike; suggests Stealth out of combat; Slice and Dice from two points, Recuperate and Kidney Shot when solo and hurt, Eviscerate at four points (two when the target is about to die), Sinister Strike. Reminders: poisons once learned, Kick, Evasion solo."
-
-L["Default.MoP.Shaman.Elemental.Name"] = "Recommended"
-L["Default.MoP.Shaman.Elemental.Description"] = "Recommended for Elemental from level 10, chosen in the Elemental specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury), Unleash Elements with Unleashed Fury, Flame Shock when it is missing or about to run out on a target that will live, Lava Burst into Flame Shock (and on every Lava Surge), Elemental Blast, Earth Shock at six Lightning Shield charges while Flame Shock has 6 seconds left, Chain Lightning on two enemies, Lightning Bolt. Four or more enemies on you: Magma in melee, free Lava Bursts, Lava Beam in Ascendance, Chain Lightning. While moving it shows only instants. Reminders: Lightning Shield, Flametongue, Searing Totem, Fire Elemental on elites and bosses, Elemental Mastery, Ascendance after a Lava Burst, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Thunderstorm for mana, Shamanistic Rage and Astral Shift when low. Earthquake and Earth Elemental are listed but off. Left to you: Spiritwalker's Grace, Flame Shock on extra targets and where to stand."
-L["Default.MoP.Shaman.Enhancement.Name"] = "Recommended"
-L["Default.MoP.Shaman.Enhancement.Description"] = "Recommended for Enhancement from level 10, chosen in the Enhancement specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements with Unleashed Fury, Elemental Blast and Lightning Bolt at five Maelstrom Weapon (or woven at three when your next swing is over a second away), Stormblast in Ascendance, Stormstrike (Primal Strike before 26), Lava Lash, Flame Shock under Unleash Flame, Unleash Elements, Earth Shock. Two or more enemies on you: Chain Lightning instead of Lightning Bolt, Lava Lash to spread Flame Shock, Fire Nova from four, Magma from six. Reminders: Lightning Shield, Windfury on the main hand and Flametongue on the off hand, Searing Totem, Fire Elemental, Feral Spirit, Ascendance after Stormstrike, Elemental Mastery, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth Elemental is listed but off."
-L["Default.MoP.Shaman.Enhancement.Wowsims.Name"] = "Weave every stack (wowsims)"
-L["Default.MoP.Shaman.Enhancement.Wowsims.Description"] = "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. The simulator's list for players who time casts between swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon stacks whenever the cast finishes before your next main-hand swing, Unleash Elements also whenever Flame Shock is missing, and Earth Shock only below two stacks. Reminders as the recommended premade."
-L["Default.MoP.Shaman.Enhancement.IcyVeins.Name"] = "Lava Lash first (Icy Veins)"
-L["Default.MoP.Shaman.Enhancement.IcyVeins.Description"] = "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. Icy Veins' order: Stormstrike, then Lava Lash before spending Maelstrom Weapon, Lightning Bolt at five stacks or from three when it lands before your next swing, Unleash Elements then Flame Shock, Earth Shock. On four or more enemies it spreads Flame Shock with Lava Lash and uses Fire Nova; Chain Lightning replaces Lightning Bolt on packs. Shamanistic Rage is suggested on cooldown in combat; other reminders as the recommended premade."
-L["Default.MoP.Shaman.Restoration.Name"] = "Recommended"
-L["Default.MoP.Shaman.Restoration.Description"] = "Recommended for Restoration from level 10, chosen in the Restoration specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater Healing Wave under Ancestral Swiftness, Healing Surge below 35%, Purify Spirit on Magic or Curses, Unleash Elements then Healing Rain when three allies nearby are hurt, Riptide, Chain Heal for group damage, Greater Healing Wave below 60%, Healing Wave below 90%. With an attackable target it deals damage instead (Flame Shock, Lava Burst, Elemental Blast, Lightning Bolt). Reminders: Water Shield, Earthliving, Earth Shield on your focus, Healing Stream when someone is hurt, Mana Tide, Healing Tide for heavy group damage, Elemental Mastery or Ancestral Guidance, Ancestral Swiftness on a low target, Spiritwalker's Grace while moving, Bloodlust, Wind Shear. Ascendance and Spirit Link Totem are listed but off: use them when your raid assigns them."
-L["Default.MoP.Shaman.Restoration.Hekili.Name"] = "Health ladder (Hekili)"
-L["Default.MoP.Shaman.Restoration.Hekili.Description"] = "Off by default; same switch as the recommended Restoration premade, so enable it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your target and Healing Stream and Healing Rain going whenever they are down, then heals by the average health of your group within 40 yards: Chain Heal below 80%, Healing Wave on a target below 70%, Greater Healing Wave below 60%, Healing Surge below 40%, with Healing Tide, Ancestral Guidance and Mana Tide on the same ladder. An attackable target gets damage plus Earth Shock."
-L["Default.MoP.Shaman.Unspecialized.Name"] = "Unspecialized"
-L["Default.MoP.Shaman.Unspecialized.Description"] = "For levels 1 to 9, and any Shaman who has not chosen a specialization yet; every specialization premade takes over once you pick one. Lightning Bolt to pull from range, Healing Surge when you are low and alone, Primal Strike, Earth Shock, and Lightning Bolt while out of melee range. Keeps Lightning Shield up."
-
-L["Default.MoP.Warlock.Affliction.Name"] = "Recommended"
-L["Default.MoP.Warlock.Affliction.Description"] = "Recommended for Affliction from level 10 to 90 (chosen in the Affliction specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn and Soul Swap, keeps Agony, Corruption and Unstable Affliction up (refreshing them early while Dark Soul: Misery is up), casts Haunt whenever it runs low and you have two shards (or in Dark Soul), channels Drain Soul for a shard when Haunt is ending and you have none, Drain Soul below 20%, otherwise Malefic Grasp (Shadow Bolt before 42). Seed of Corruption on three or more enemies (with Soulburn on six). Moving: instants and Fel Flame. Reminders: your pet, Dark Intent, Curse of the Elements in a group, Dark Soul, Doomguard or Infernal, Grimoire of Service or Sacrifice, Life Tap, defensives. Left to you: spreading DoTs to other targets and Soul Swap moves between them."
-L["Default.MoP.Warlock.Affliction.WarcraftTavern.Name"] = "Pool Haunt (Warcraft Tavern)"
-L["Default.MoP.Warlock.Affliction.WarcraftTavern.Description"] = "Off by default. Warcraft Tavern's and Method's shard policy: the same DoT upkeep as the recommended Affliction premade, but Haunt is saved for four shards or Dark Soul: Misery, and below 20% Soulburn and Soul Swap refresh every DoT whenever you have a shard. Enable it and disable the recommended Affliction premade to use it."
-L["Default.MoP.Warlock.Demonology.Name"] = "Recommended"
-L["Default.MoP.Warlock.Demonology.Description"] = "Recommended for Demonology from level 10 to 90 (chosen in the Demonology specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of Gul'dan into Metamorphosis when a one-stack Shadowflame is about to drop, Metamorphosis with Dark Soul: Knowledge (or near full fury), Soul Fire at two Molten Core stacks or below 25%, Hellfire on four or more enemies, Shadow Bolt. In Metamorphosis: Doom, Touch of Chaos to keep Corruption up, Soul Fire on Molten Core, Immolation Aura or Void Ray on packs, Touch of Chaos, and a cue to leave it when Dark Soul is down and fury is at 300 or less. Reminders: Felguard (or Wrathguard), Dark Intent, Dark Soul, Imp Swarm, Grimoire: Felguard, Doomguard or Infernal, Life Tap, Health Funnel solo. Left to you: Felstorm (pet autocast) and Demonic Leap."
-L["Default.MoP.Warlock.Demonology.Guide.Name"] = "Pool Molten Core (guides)"
-L["Default.MoP.Warlock.Demonology.Guide.Description"] = "Off by default. The guide consensus (Method, wowtbc.gg, Warcraft Tavern, Wowhead): the recommended Demonology premade, except that in caster form Metamorphosis waits for 900 fury or Dark Soul and Soul Fire is only cast at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Enable it and disable the recommended Demonology premade to use it."
-L["Default.MoP.Warlock.Destruction.Name"] = "Recommended"
-L["Default.MoP.Warlock.Destruction.Description"] = "For Destruction from level 10 to 90 (chosen in the Destruction specialization). Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers on Chaos Bolt (Shadowburn below 20%) at 3.5 embers or in Dark Soul: Instability, uses Backdraft on Incinerate, and fills with Incinerate; a dying target gets Shadowburn. On three or more enemies: Rain of Fire and Fire and Brimstone on four, then Immolate, Conflagrate and Incinerate, and a cue to switch Fire and Brimstone off when your embers run out. Moving: Shadowburn, Conflagrate, Fel Flame. Reminders: your pet or Grimoire of Sacrifice, Flames of Xoroth, Dark Intent, Dark Soul, Havoc on two or more enemies (cast it on the second target yourself), Doomguard or Infernal, Ember Tap and defensives."
-L["Default.MoP.Warlock.Unspecialized.Name"] = "Unspecialized"
-L["Default.MoP.Warlock.Unspecialized.Description"] = "For a Warlock without a specialization (levels 1 to 9, or later before you choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt. Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls."
-
-L["Default.MoP.Warrior.Arms.Name"] = "Recommended"
-L["Default.MoP.Warrior.Arms.Description"] = "Recommended for Arms from level 10 to 90, picked in the Arms specialization. Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing or about to end, Mortal Strike, Storm Bolt in the Smash window, Dragon Roar and Bladestorm outside it. Below 20% health: Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood. Otherwise Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam. Two or more enemies fighting you add Sweeping Strikes, Thunder Clap for Deep Wounds, Bladestorm and Dragon Roar. Victory Rush below 70% health; Battle Shout for rage. Reminders: a shout when none is up, Battle Stance, Berserker Rage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap in the window, Pummel, Die by the Sword and Enraged Regeneration when low. Shattering Throw is listed but off. Left to you: canceling Bladestorm, stance dancing and positioning."
-L["Default.MoP.Warrior.Arms.IcyVeins.Name"] = "Pool for Colossus Smash (Icy Veins)"
-L["Default.MoP.Warrior.Arms.IcyVeins.Description"] = "Off by default. The Icy Veins and Wowhead Arms order: outside the Colossus Smash window it uses Overpower and Slams only above 80 rage, banking rage for the window instead of Slamming as filler. In the window: Mortal Strike, Slam, Overpower, Heroic Throw. Below 20% health: Colossus Smash, Mortal Strike, Execute, Overpower, Dragon Roar. Sweeping Strikes on two enemies, a Thunder Clap pack list on three or more. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Arms premade. Enable it and disable that one to use it."
-L["Default.MoP.Warrior.Fury.Name"] = "Recommended"
-L["Default.MoP.Warrior.Fury.Description"] = "Recommended for Fury from level 10 to 90, picked in the Fury specialization. Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one with Recklessness), Raging Blow as the window closes, Bloodthirst, Colossus Smash, Storm Bolt, Dragon Roar outside the window, Execute here with Single-Minded Fury (one-handers), Bladestorm while Bloodthirst cools, with Titan's Grip (two-handers) one more Raging Blow outside the window, Execute, Wild Strike on Bloodsurge, Raging Blow keeping a charge for the next window, Wild Strike, Heroic Throw, Battle Shout for rage. Two or more enemies fighting you add Bladestorm, Dragon Roar, Whirlwind for Meat Cleaver and cleaving Raging Blows. Reminders: a shout when none is up, Battle Stance, Berserker Rage for Enrage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap, Pummel and defensives when low. Left to you: canceling Bladestorm."
-L["Default.MoP.Warrior.Fury.IcyVeins.Name"] = "Cooldowns in Colossus Smash (Icy Veins)"
-L["Default.MoP.Warrior.Fury.IcyVeins.Description"] = "Off by default. Icy Veins' Fury order spends Bladestorm or Dragon Roar first inside the Colossus Smash window, and puts Execute ahead of Bloodthirst below 20% health. Outside the window: Colossus Smash, Bloodthirst, Raging Blow only at two charges, Wild Strike on Bloodsurge, shout, Wild Strike. Four or more enemies: Bloodthirst for Enrage, Whirlwind to three Meat Cleaver stacks, Raging Blow. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Fury premade. Enable it and disable that one to use it."
-L["Default.MoP.Warrior.Protection.Name"] = "Recommended"
-L["Default.MoP.Warrior.Protection.Description"] = "Tanking from level 10 to 90, picked in the Protection specialization. Charge or Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon Roar, Bladestorm, Shockwave on three enemies and Thunder Clap on cooldown on three or more. Then Revenge for the last rage of a Shield Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory Rush below 60% health, Revenge, Thunder Clap for Weakened Blows, Execute, Storm Bolt, a shout for rage and Devastate (Sunder Armor before 26). Reminders: Defensive Stance, a shout when none is up, Shield Block whenever it is down, Shield Barrier when hurt with rage to spare, Heroic Strike or Cleave on Ultimatum, Incite or near the cap, Demoralizing Shout, Berserker Rage, Enraged Regeneration, Last Stand and Shield Wall when low, your offensive cooldowns, Pummel. Taunt and Heroic Leap are listed but off. Left to you: whom to taunt, and Block versus Barrier against magic."
-L["Default.MoP.Warrior.Unspecialized.Name"] = "Unspecialized"
-L["Default.MoP.Warrior.Unspecialized.Description"] = "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance."
-
-
-L['Silent'] = true
-
-
--- Original condition artwork picker labels.
-L["Set Pieces"] = true
-L["Weapon Imbue"] = true
-
--- Blizzard Assisted Combat (condition and rotation step).
-L["Assisted Combat Suggestion"] = true
-L["Blizzard's suggestion"] = true
-L["Recommends the spell Blizzard's Assisted Combat suggests"] = true
-L["Assisted Combat Rotation Spell"] = true
-L["Assisted Combat Available"] = true
--- Who highlights a "Blizzard's suggestion" step (General settings).
-L["Blizzard's suggestion highlight"] = true
-L["Rotation Master's glow"] = true
-L["Blizzard's Assisted Highlight"] = true
-L["Both"] = true
-L["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."] = true
-
--- Season of Discovery rune engraving and trait talents.
-L["Engraved Rune"] = true
-L["ranks in %s"] = true
-L["Show talent tree"] = true
-L["Hero Talents"] = true
-L["The talent tree cannot be shown during combat."] = true
-L["Finish or discard the changes in your own talent window first."] = true
-L["The talent tree cannot be shown right now. Use the Talent list instead."] = true
-L["Click a talent to choose it for this condition."] = true
-L["Selected: %s"] = true
-L["Ranks: %d"] = true
-L["Choose one of the talents on this node."] = true
-L["Click to choose this talent."] = true
-L["Click to clear this talent."] = true
-L["Close the build shown in your own talent window first."] = true
-
--- Specialization and weapon type conditions (Conditions/specialization.lua, Conditions/equipment.lua).
-L["Arms"] = true
-L["Fury"] = true
-L["Protection"] = true
-L["Retribution"] = true
-L["Beast Mastery"] = true
-L["Marksmanship"] = true
-L["Survival"] = true
-L["Assassination"] = true
-L["Subtlety"] = true
-L["Discipline"] = true
-L["Enhancement"] = true
-L["Restoration"] = true
-L["Affliction"] = true
-L["Demonology"] = true
-L["Destruction"] = true
-L["Balance"] = true
-L["Initial"] = true
-L["Specialization"] = true
-L["specialization %d"] = true
-L["Weapon Type"] = true
-L["Main Hand"] = true
-L["Ranged"] = true
-L["Nothing equipped"] = true
-L["Any weapon"] = true
-L["One-handed weapon"] = true
-L["Two-handed weapon"] = true
-L["Ranged weapon"] = true
-L["Held in off hand"] = true
-
--- Steps whose action is on no action bar (buttons.lua GetStepBinding).
-L["Not on your action bars, so it can't be highlighted. It is skipped."] = true
-L["1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it."] = true
-L["%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them."] = true
-L['%s, and %d more'] = true
-L['Not on your action bars: %s.'] = true
-L["Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
-L["Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail)."] = true
-L["Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them."] = true
-L["Skipped, not on your action bars (they cannot be highlighted): %s."] = true
-L["step %s"] = true
-L["cooldown"] = true
-
--- Live condition bars (UI/rotation_cards.lua, UI/rotation_editor.lua).
-L["Currently Matches"] = true
-L["Does Not Currently Match"] = true
-L["Unavailable: %s"] = true
-L["unreadable right now"] = true
-L["the condition could not be evaluated"] = true
-L["Checked %d seconds ago."] = true
-L["Rotation Master is advising this step now."] = true
-L["This cooldown is showing now."] = true
-L["This rotation is advising now."] = true
-
--- Conditions for the state of the world and for particular editions.
-L["Mounted"] = true
-L["Swimming"] = true
-L["Falling"] = true
-L["Flying"] = true
-L["In a Rested Area"] = true
-L["Boss Encounter"] = true
-L["Instance Difficulty"] = true
-L["Mythic+ Keystone Level"] = true
-L["Hero Talent Tree"] = true
-L["Spell Proc Glow"] = true
-L["Trinket 1"] = true
-L["Trinket 2"] = true
-L["Pet Happiness"] = true
-L["Unhappy"] = true
-L["Content"] = true
-L["Happy"] = true
-L["Stagger"] = true
-L["Eclipse Direction"] = true
-L["a Solar Eclipse"] = true
-L["a Lunar Eclipse"] = true
-L["Energy"] = true
-L["only Retail has this"] = true
-L["this edition has no pet happiness"] = true
-L["this edition has no Stagger"] = true
-L["this edition has no Eclipse"] = true
-L["this client has no assigned group roles"] = true
-
--- /rm debug timeline (Diagnostics/timeline.lua).
-L["/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons."] = true
-
-L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations."] = true
-L["%d rotations from before version 2 are waiting in an archive and do not run until you adopt them."] = true
-L["Dismiss"] = true
-L["Adopt all %d for %s"] = true
-L["Adopt all %d from specialization %d for %s"] = true
-L["Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive."] = true
-L["Adopted %d of %d. These stay in the archive: %s"] = true
-L["Player State"] = true
-L["Group Count"] = true
-L["Eclipse"] = true
-L["your group's main tank"] = true
-L["your group's main tank's"] = true
-L["your group's main assist"] = true
-L["your group's main assist's"] = true
-L["your group's assigned tank"] = true
-L["your group's assigned tank's"] = true
-L["your group's assigned healer"] = true
-L["your group's assigned healer's"] = true
-L["your group's leader"] = true
-L["your group's leader's"] = true
-
--- BEGIN GENERATED RM PUBLIC HELPER DOCS
-L["Absolute health target (negative means deficit) or percentage fraction."] = true
-L["All original results, preserving nil positions and return count."] = true
-L["Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator."] = true
-L["Arguments forwarded unchanged to the observed function."] = true
-L["Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries."] = true
-L["Availability or query-validation reason for a nil level observation."] = true
-L["Availability or query-validation reason for a nil level."] = true
-L["Availability or query-validation reason when no current state can be read."] = true
-L["Availability or query-validation reason when the whole observation is unavailable."] = true
-L["Availability or validation reason for a nil result."] = true
-L["Availability or validation reason when the record is nil."] = true
-L["Availability or validation reason when the result is nil."] = true
-L["Availability reason for a nil result."] = true
-L["Availability reason when resolution fails; nil on success."] = true
-L["Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached."] = true
-L["Calculate a checked health-history rate using an explicit finite window and clock. Preserve ordered weighting, per-row live canonical rounding, skipped streams, array holes, fractional keys and final visited ages. A fixed 4096-unit budget covers visited rows and accumulation bins across both streams; excess or invalid consumed arithmetic returns unavailable, never a partial estimate or clamp. This new API has its own source identity; historical trend functions remain unchanged."] = true
-L["Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly."] = true
-L["Callback invoked after changing the selected unit."] = true
-L["Callback receiving the committed spell value."] = true
-L["Caller-owned evaluation observation cache; nil queries afresh."] = true
-L["Capability or clock observation availability reason."] = true
-L["Capability or observation availability reason for a nil class."] = true
-L["Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime()."] = true
-L["Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values."] = true
-L["Checkbox widget with boolean value and callback methods."] = true
-L["Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved."] = true
-L["Classification, validation or availability reason for a nil result."] = true
-L["Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping."] = true
-L["Client-family, query-validation or required-observation availability reason for a nil result."] = true
-L["Client-policy, capability, call or observation availability reason for a nil form."] = true
-L["Client-policy, capability, call or observation availability reason for a nil record."] = true
-L["Client-policy, native-call or required membership availability reason for a nil record."] = true
-L["Closed kind: runner, resist or immune."] = true
-L["Closed scalar kind: current or maximum."] = true
-L["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = true
-L["Combat-policy, capability, observation or scan-budget reason for a nil count."] = true
-L["Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior."] = true
-L["Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added."] = true
-L["Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added."] = true
-L["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = true
-L["Comparison operator key, such as EQUALS or LESSTHAN."] = true
-L["Comparison result, or nil for an unknown operator."] = true
-L["Comparison text retaining named Boolean alternative markup."] = true
-L["Complete matching class count, including zero, or nil when unavailable."] = true
-L["Complete nonnegative observed count including zero, or nil when unavailable."] = true
-L["Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout."] = true
-L["Condition value record containing spell, ranked and disabled fields; updated in place."] = true
-L["Condition value record updated when a unit is chosen."] = true
-L["Configured unit selector; add it with parent:AddChild(widget)."] = true
-L["Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order."] = true
-L["Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero."] = true
-L["Count matching class tokens in the current fixed roster. Read group membership first; when requested, raid membership selects raid1 through raid40 without a separate player fact. Solo and party paths read player first, then party1 through party4 when grouped. A complete known roster returns a count, including zero; any required unavailable fact returns nil with a reason. Complete observations share the evaluation-pass cache; no player class persists across passes. Archived raw callbacks retain their original load-time class separately."] = true
-L["Count only GUID-keyed units already in the observed membership snapshot. Verify current token identity before using the published threat observer; known absent or reused tokens are excluded without adding replacements. Complete identity and threat observations share only the supplied evaluation cache, while membership is traversed fresh. Known nonenemy or optional nil threat is not counted; required unreadable, malformed or failed facts make the entire result unavailable. This does not enumerate a complete roster, apply a range filter or modify tracked records."] = true
-L["Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent."] = true
-L["Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent."] = true
-L["Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget)."] = true
-L["Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the callback parent with parent:AddChild(widget)."] = true
-L["Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget)."] = true
-L["Create a native image control using the condition widget lifecycle. SetImage and SetImageSize choose the texture; SetText optionally adds a caption. OnClick, OnEnter and OnLeave use the shared callback contract. Add the control to the callback parent with parent:AddChild(widget)."] = true
-L["Create a native numeric condition input with a slider and typed numeric field. Configure SetSliderValues, SetValue, SetIsPercent and SetCallback; OnValueChanged reports committed values. Add it with parent:AddChild(widget)."] = true
-L["Create a native position pad using the shared directional controls. OnOffsetChanged reports horizontal and vertical direction, whether Center was pressed, and the increment (one, or ten with Shift). SetDisabled controls interaction; add the pad to the callback parent with parent:AddChild(widget)."] = true
-L["Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget)."] = true
-L["Create a shallow filtered copy despite the historical deepcopy name. Nested values retain their original identities and the source metatable is not copied. By default exclude keys listed among except values; invert true includes only listed keys. Nil input returns nil."] = true
-L["Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent."] = true
-L["Create a transient named condition summary. Use {name} for scalar values and {{positive|negative}} for predicate alternatives; prefix a primary alternative with !. Escape literal double braces as {{{{ and }}}}. Values are inserted literally without parsing their percent signs, links, colors or braces. Typed predicate values participate in primary selection. Templates, values and rendered text are bounded; malformed input renders a localized unavailable summary. This changes presentation only and runs no condition observations."] = true
-L["Create a typed comparison predicate for a named condition phrase. Positive wording uses the original captured operator map and negative wording uses the current negated operator map. A primary predicate takes precedence over qualifiers; only the first eligible predicate negates. Unknown operators use the existing operator placeholder. This formats wording without comparing values or evaluating a condition."] = true
-L["Create an iterator over a sorted snapshot of table keys. Default ordering compares keys; a custom order callback receives the original table and two keys. Values are read from the original table when each key is yielded. The legacy iterator ends when the next captured key is nil or false."] = true
-L["Create native wrapping text that measures its height from its width and font. SetText, SetFont or SetFontObject configure its contents. Add it to the callback parent with parent:AddChild(widget) so layout can track its measured height."] = true
-L["Create native wrapping text with optional leading image and pointer callbacks. SetImage and SetImageSize configure the image; OnEnter, OnLeave and OnClick use the condition callback contract. Add it to the callback parent with parent:AddChild(widget); callbacks expire when its lease is released."] = true
-L["Current evaluation time in seconds from GetTime(), normally evalStart."] = true
-L["Current positive visibility distance in yards; nil when unavailable."] = true
-L["Current unit token whose distance from the player should be observed."] = true
-L["Damage/heals arrays of time/value rows; only selected streams are consumed."] = true
-L["Decimal places, default zero; negative values round to tens or larger powers of ten."] = true
-L["Dense array of keys sorted by associated value."] = true
-L["Dense array of nonempty text fields."] = true
-L["Destination array modified in place."] = true
-L["Display lookup table."] = true
-L["Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results."] = true
-L["Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate."] = true
-L["Evaluation cache, or nil to bypass caching."] = true
-L["Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot."] = true
-L["Evaluation-pass cache, or nil for fresh observations."] = true
-L["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = true
-L["Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live."] = true
-L["Evaluation-pass native observation cache; nil queries afresh."] = true
-L["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = true
-L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
-L["Exact integral native rune slot from 1 through 6."] = true
-L["Exact nonempty unit token to observe."] = true
-L["Exact nonempty unit token, passed unchanged."] = true
-L["Exact readable recipient name recorded for this cast."] = true
-L["Exact selected unit token; only the literal player token may select the TBC combo transport."] = true
-L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
-L["Exact selected unit token; the attacker remains player."] = true
-L["Exact unit token checked for existence and passed to the selected metadata API."] = true
-L["Exact unit token passed unchanged to UnitExists and, when required, UnitClass."] = true
-L["Exact unit token used for existence and as the recipient of player hostility and threat queries."] = true
-L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
-L["Exact unit token whose selected flag should be observed."] = true
-L["Exact unit token whose selected resource quantity is requested."] = true
-L["Exactly current for UnitPower or maximum for UnitPowerMax."] = true
-L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
-L["Exactly current for the player/target combo query or maximum for the player capacity query."] = true
-L["Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit)."] = true
-L["Exactly type or school; selects the required subject field without requiring the other."] = true
-L["Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD."] = true
-L["Explicit finite clock snapshot; signed and fractional values remain valid."] = true
-L["Explicit finite weighting window; no profile fallback or clamp."] = true
-L["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = true
-L["Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable."] = true
-L["Explicit readable finite nonnegative integer power selector, including zero."] = true
-L["Explicit readable finite nonnegative integer power selector."] = true
-L["Finite ETA including zero, false for known absence/no estimate, or nil when unavailable."] = true
-L["Finite final stream age, or nil when unavailable."] = true
-L["Finite minimum native threat status, preserving signed and fractional thresholds."] = true
-L["Finite native creature ID, false for known unit absence, or nil when required observations are unavailable."] = true
-L["Finite native resource quantity, retaining its sign and fractional part; nil when unavailable."] = true
-L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
-L["Finite nonnegative native health scalar, or nil when unavailable."] = true
-L["Finite quantity in whole units with its fractional part; nil when unavailable."] = true
-L["Finite signed combined rate, or nil for unavailable calculation."] = true
-L["First exact unit token, checked for existence before comparison."] = true
-L["First table to compare."] = true
-L["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = true
-L["Fresh finite native clock value, or nil when unavailable."] = true
-L["Fresh readable class filename, or nil when unavailable."] = true
-L["Fresh readable finite clock, or nil when unavailable."] = true
-L["Fresh readable record with active, then name or nameReason, remainingSeconds, durationSeconds, interruptible and spellID. Remaining time and duration are in seconds; remaining time is clamped to zero. An unavailable optional field has its own reason; it does not invalidate an active record."] = true
-L["Fresh readable record with exists and, when present, a positive integer level."] = true
-L["Fresh readable record with exists and, when present, current health. Maximum health is included only when requested."] = true
-L["Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed."] = true
-L["Fresh readable record with finite nonnegative speed, or nil when unavailable."] = true
-L["Function or global function name to call."] = true
-L["History record with newest-first damage and heals arrays of time/value entries. Falsy history returns only zero without reading the clock."] = true
-L["Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created."] = true
-L["Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index."] = true
-L["Integral RM statistic selector 1..5, or 6 for effective armor."] = true
-L["Iterator yielding a captured key and its current table value, or no values when exhausted."] = true
-L["Key to look up."] = true
-L["Known active count from zero through the RM scan budget, or nil when unavailable."] = true
-L["Known nonempty role string, false for known absent unit, or nil when unavailable."] = true
-L["Known nonempty role string, or nil when unavailable."] = true
-L["Known unit presence or absence; nil when the required observation is unavailable."] = true
-L["Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy."] = true
-L["Left operand; use numbers for ordering and divisibility."] = true
-L["Literal prefix, including an empty prefix."] = true
-L["Literal suffix, including an empty suffix."] = true
-L["Live selected talent-group argument, forwarded unchanged as one argument after readability checking."] = true
-L["Localized complete sentence with named slots and optional explicit predicate alternatives."] = true
-L["Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text."] = true
-L["Lookup key."] = true
-L["Lua pattern character-class separator, default %s for whitespace."] = true
-L["Mark the positive wording as the primary named alternative."] = true
-L["Matching key, including a false key, or nil when no match exists."] = true
-L["Missing-value display text; omitted uses the localized value placeholder."] = true
-L["Native button with label, disabled state and lease-protected callbacks."] = true
-L["Native directional pad with center reset and lease-protected callbacks."] = true
-L["Native image control with label, texture, disabled state and callbacks."] = true
-L["Native interactive text and image control with measured height and disabled state."] = true
-L["Native one-based integral active-row index within the 256-row RM scan budget."] = true
-L["Native wrapping text control with font, color and alignment methods."] = true
-L["New shallow filtered table, or nil for nil input."] = true
-L["New table with stringified keys and unchanged values."] = true
-L["Newest-first health snapshots containing time, value and max. Falsy input returns only zero without reading the clock."] = true
-L["No return values. The destination array is modified in place."] = true
-L["No return values. The supplied table is modified in place."] = true
-L["Nonempty class filename token to count; no class-token whitelist is applied."] = true
-L["Nonempty historical school key for resist/immune; unused for runner."] = true
-L["Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable."] = true
-L["Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable."] = true
-L["Number of entries visited."] = true
-L["Number or string to inspect; other types do not match."] = true
-L["Numeric widget supporting slider bounds, percent display and pending-edit validation."] = true
-L["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = true
-L["Observation, history, work-limit or arithmetic availability reason."] = true
-L["Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used."] = true
-L["Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added."] = true
-L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
-L["Observe a selected unit role on probe- and restricted-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = true
-L["Observe a unit casting or channeling on probe- and restricted-policy clients. A known absent unit or a readable inactive result returns active=false. Active records contain name, or nameReason when the name is secret (the unit is still casting), and independently available remainingSeconds, durationSeconds, interruptible and spellID fields, with remainingReason, durationReason, interruptibleReason or spellReason when an optional field is unavailable. Missing, failed or restricted presence observations return nil with a reason."] = true
-L["Observe creature identity from native UnitCreatureType return two on probe- and restricted-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added."] = true
-L["Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe- and restricted-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained."] = true
-L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
-L["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = true
-L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
-L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
-L["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = true
-L["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = true
-L["Observe one exact native rune slot using GetRuneType with its single index argument. Require a readable finite positive integral type; known future numeric types remain distinct from the selected type, and Death is an exact type rather than a wildcard. Missing, failed, restricted or malformed observations remain unavailable. No class, unit, count or inferred base-rune query is added."] = true
-L["Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added."] = true
-L["Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added."] = true
-L["Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added."] = true
-L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
-L["Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added."] = true
-L["Observe the effective statistic from native return two only. On probe- and restricted-policy clients, query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit."] = true
-L["Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache."] = true
-L["Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact."] = true
-L["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = true
-L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
-L["Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added."] = true
-L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
-L["Observed class filename string, false for a known absent unit, or nil when unavailable."] = true
-L["Observed membership, or nil when unavailable."] = true
-L["On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport."] = true
-L["On probe- and restricted-policy clients, observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added."] = true
-L["One of class, creature or classification; other metadata kinds are unsupported."] = true
-L["One of combat, enemy or pvp; other flag kinds are not supported."] = true
-L["One of stealthed, control or outdoors; no other predicate is invoked."] = true
-L["One rounded numeric result from the original formula."] = true
-L["Optional collection of key values selecting entries; its own keys are ignored."] = true
-L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
-L["Optional positive class ID; nil queries the current player class under protection."] = true
-L["Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query."] = true
-L["Original non-nil lookup result, or a colored placeholder string."] = true
-L["Original non-nil value, or a colored placeholder string."] = true
-L["Original rounded-age bucket count, omitted when the result is the lone zero."] = true
-L["Packaged helper from Conditions/spatial.lua."] = true
-L["Packaged helper from utils.lua."] = true
-L["Partial current/maximum record, empty when provider absent, or nil when unavailable."] = true
-L["Partial record containing ready or readyReason, start or startReason, and duration or durationReason; nil only when the query itself is unavailable."] = true
-L["Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable."] = true
-L["Policy or availability reason for a nil movement observation."] = true
-L["Policy, capability or clock observation availability reason for a nil time."] = true
-L["Policy, capability or required-observation availability reason."] = true
-L["Policy, query, capability or required row/subject availability reason for a nil record."] = true
-L["Policy, query-validation or availability reason for a nil metadata observation."] = true
-L["Policy, query-validation or availability reason for a nil pet observation."] = true
-L["Policy, query-validation or availability reason for a nil player flag."] = true
-L["Policy, query-validation or availability reason for a nil quantity."] = true
-L["Policy, query-validation or availability reason for a nil resource observation."] = true
-L["Policy, query-validation or availability reason for a nil threat observation."] = true
-L["Policy, query-validation or availability reason for a nil unit flag."] = true
-L["Policy, query-validation or availability reason for nil attackability."] = true
-L["Policy, query-validation or identity/selector availability reason for a nil selector."] = true
-L["Policy, query-validation or required observation availability reason for a nil quantity."] = true
-L["Policy, query-validation or required observation availability reason for a nil record."] = true
-L["Policy, query-validation or required-observation availability reason for a nil ID."] = true
-L["Policy, query-validation or required-observation availability reason for a nil match."] = true
-L["Policy, slot-validation or required observation availability reason for a nil type."] = true
-L["Policy, slot-validation, capability or native-call availability reason for a nil record."] = true
-L["Policy, snapshot, identity or threat observation availability reason."] = true
-L["Policy, token-validation or availability reason for a nil identity result."] = true
-L["Policy, validation or availability reason for a nil health observation."] = true
-L["Policy, validation or availability reason for a nil snapshot."] = true
-L["Policy, validation or observation availability reason."] = true
-L["Policy, validation or required observation availability reason."] = true
-L["Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references."] = true
-L["Positive integer level, false for a known absent unit, or nil when unavailable."] = true
-L["Positive integer spell ID, not a spell-book slot."] = true
-L["Positive item ID or native-recognized item name/link to classify."] = true
-L["Predicate that validates the proposed spell value."] = true
-L["Present GUID, false for known absence, or nil when unavailable."] = true
-L["Provider, validation or observation availability reason."] = true
-L["Query, policy or observation availability reason."] = true
-L["RM comparison operator identifier; missing labels use the operator placeholder."] = true
-L["RM operator identifier."] = true
-L["Range record with applicable and, when applicable, inRange; nil when unavailable."] = true
-L["Read a fresh protected UnitClass player observation for rotation ownership. Consume only the readable nonempty class filename from return two. No existence, level, vehicle, family or combat-policy read is added, and no result persists across calls. Core ownership still validates the class token and character key separately; overridden context providers retain their complete original path."] = true
-L["Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied."] = true
-L["Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe- and restricted-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added."] = true
-L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
-L["Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification."] = true
-L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read."] = true
-L["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID, plus equipLoc, the non-localized INVTYPE_* equip location token, when it is readable and nonempty; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = true
-L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
-L["Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily."] = true
-L["Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates."] = true
-L["Read optional MobInfo2 historical observations on probe- and restricted-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records."] = true
-L["Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used."] = true
-L["Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason."] = true
-L["Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason."] = true
-L["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = true
-L["Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason."] = true
-L["Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable."] = true
-L["Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell."] = true
-L["Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason."] = true
-L["Readability authority for consumed values."] = true
-L["Readable canonical item classification record (itemID, classID, subClassID and optional equipLoc), or nil when unavailable."] = true
-L["Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata."] = true
-L["Readable charge record, or nil when unavailable."] = true
-L["Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable."] = true
-L["Readable cooldown record, or nil when unavailable."] = true
-L["Readable current state, or nil when unavailable."] = true
-L["Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable."] = true
-L["Readable finite positive integral rune type, or nil when unavailable."] = true
-L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
-L["Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries."] = true
-L["Readable nonempty unit token or native-recognized name, passed unchanged."] = true
-L["Readable nonempty unit token to match, unchanged in the native observation."] = true
-L["Readable nonempty unit token, passed unchanged as the single native argument."] = true
-L["Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable."] = true
-L["Readable selected flag or nil when required data is unavailable."] = true
-L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
-L["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = true
-L["Record with exists=false, or exists=true and finite value; nil when unavailable."] = true
-L["Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable."] = true
-L["Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable."] = true
-L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
-L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
-L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
-L["Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh."] = true
-L["Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts."] = true
-L["Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here."] = true
-L["Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity."] = true
-L["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = true
-L["Resolved spell ID, or nil when unavailable."] = true
-L["Resolver mapping a typed spell name to its ID."] = true
-L["Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback."] = true
-L["Return the first key whose value equals the supplied value during pairs traversal. Nil or false input tables and absent values return nil. Multiple matching keys have no guaranteed selection order."] = true
-L["Right operand; DIVISIBLE requires a nonzero divisor."] = true
-L["Rotation Master addon instance (implicit with colon calls)."] = true
-L["Rotation Master platform adapter (implicit with colon calls)."] = true
-L["Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly."] = true
-L["Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added."] = true
-L["Run the historical health-snapshot trend formula using the live profile history window, clock and legacy rounding service. Preserve its maximum-health transitions, early stop at full or zero health, weighting, errors and return counts. An empty array, or snapshots that record no weighted change, return only zero rather than a 0/0 result; this is the legacy algorithm rather than a validated forecast."] = true
-L["Second exact unit token, passed unchanged to UnitIsUnit."] = true
-L["Second table to compare."] = true
-L["Selected nonempty unit token, unchanged in native calls."] = true
-L["Selected nonempty unit token, unchanged in native/provider calls."] = true
-L["Selected nonempty unit token."] = true
-L["Selected nonempty unit token; this call alone does not establish presence."] = true
-L["Selected nonempty unit token; unchanged native argument."] = true
-L["Selected unit token forwarded as the only provider argument."] = true
-L["Selected unit token, unchanged in observations."] = true
-L["Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks."] = true
-L["Shared evaluation cache; nil observes directly without a per-pass cache."] = true
-L["Source array whose ipairs prefix is inserted without copying nested values."] = true
-L["Specialization scope used to resolve spell suggestions."] = true
-L["Spell ID or client-recognized spell name whose charges should be read."] = true
-L["Spell ID or client-recognized spell name whose cooldown should be checked."] = true
-L["Spell ID or client-recognized spell name whose cooldown should be read."] = true
-L["Spell ID whose range should be checked."] = true
-L["Spell field group containing an action icon, reference input and optional rank control."] = true
-L["Spell-book scope: spell, pet or any."] = true
-L["Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted."] = true
-L["Stored spell ID to resolve."] = true
-L["Successful observation record with pvpType string or nil; nil record means unavailable."] = true
-L["Table to copy shallowly, or nil."] = true
-L["Table to count, or nil for zero."] = true
-L["Table to inspect."] = true
-L["Table to modify, or nil to do nothing."] = true
-L["Table to search; nil or false returns nil."] = true
-L["Table to traverse; keys must be mutually comparable when no custom ordering is supplied."] = true
-L["Table whose keys should be converted to strings."] = true
-L["Table whose values must be mutually comparable."] = true
-L["Target line width, default 72 characters."] = true
-L["Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved."] = true
-L["Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved."] = true
-L["Text or number shown after the comparison wording."] = true
-L["Text or number shown before the comparison wording."] = true
-L["Text to inspect."] = true
-L["Text to split."] = true
-L["Text to trim."] = true
-L["Text to wrap."] = true
-L["Text widget supporting label, text, pending-edit and callback methods."] = true
-L["Text with line breaks inserted at word boundaries."] = true
-L["The selected value, including false or nil."] = true
-L["Transient trusted phrase recognized by condition summary rendering; do not persist it as condition data."] = true
-L["Transient typed predicate used as a named phrase value; do not persist it as condition data."] = true
-L["Trimmed text."] = true
-L["True also observes maximum health; false or nil reads current health only."] = true
-L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
-L["True also requires the present unit class filename; false reads existence only."] = true
-L["True checks raid membership only; false or nil checks party or raid."] = true
-L["True checks raid membership only; false or nil checks party then raid."] = true
-L["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = true
-L["True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable."] = true
-L["True includes only listed entries; false or nil excludes listed entries."] = true
-L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true
-L["True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster."] = true
-L["True removes listed entries; false or nil preserves only listed entries."] = true
-L["True requests raid membership; false or nil requests any group membership."] = true
-L["True requests the formatted pet name; false or omitted reads presence only."] = true
-L["True selects percentage target and optional fresh provider facts."] = true
-L["True skips all access to the damage stream."] = true
-L["True skips all access to the healing stream."] = true
-L["True to require this exact rank; false or nil follows the available rank."] = true
-L["True when array[value] is non-nil."] = true
-L["True when every visited entry compares equal in both directions."] = true
-L["True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result."] = true
-L["True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable."] = true
-L["Truthy skips the damage stream without reading its array."] = true
-L["Truthy skips the heals stream without reading its array."] = true
-L["Unit key-to-display-name map shown in the selector."] = true
-L["Unit token to compare with the literal player token."] = true
-L["Unit token whose current cast or channel should be observed."] = true
-L["Unit token whose current health should be observed."] = true
-L["Unit token whose raw level should be observed."] = true
-L["Unit token whose raw level should be resolved."] = true
-L["Unit token, such as target; nil uses target."] = true
-L["Validation or availability reason for a nil result."] = true
-L["Validation, policy or availability reason for a nil result."] = true
-L["Validation, policy or required-fact availability reason for a nil count."] = true
-L["Value compared with each table value using Lua equality."] = true
-L["Value passed to the original arithmetic formula."] = true
-L["Value record field to edit; defaults to unit."] = true
-L["Value returned for every other unit."] = true
-L["Value returned when unit is player."] = true
-L["Value to display; false is preserved."] = true
-L["Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively."] = true
-L["Weighted health-snapshot change from the original total/count formula; zero for falsy input or when no weighted change was recorded."] = true
-L["Weighting window in seconds; nil or false uses the current profile damage_history setting."] = true
-L["Whether the original floor-equality or exact numeric-spelling predicate matches."] = true
-L["Whether the text begins with the exact prefix."] = true
-L["Whether the text ends with the exact suffix."] = true
-L["With restricted-value only: isActive, true while a cooldown (its own or the global one) is running."] = true
-L["With restricted-value only: isEnabled, false while the cooldown is on hold."] = true
-L["With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil."] = true
-L["Work-limit, data or arithmetic availability reason for nil rate/age."] = true
-L["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = true
-L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
-L["noheals selects damage only; nodmg selects healing only; other readable values select both."] = true
--- END GENERATED RM PUBLIC HELPER DOCS
+-- Copyright 2018-2026 Preston A. Elder <prez@neuromancy.net>. Released under a modified MIT license (MIT + Attribution); see the LICENSE file for details.
+-- Generated by tools/locales.py; do not edit by hand. The English text of one catalog, by stable ID.
+-- Add, reword, move or remove text with `python3 tools/locales.py add|reword|move|remove` (docs/translators/README.md).
+-- Catalog "main": the text read while the game loads (Locales/, listed in locales.xml).
+local addon_name, addon = ...
+
+local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true, true)
+-- The game language's translation, set by that language's file (loaded before this one); nil for English.
+local T = addon.translation
+addon.translation = nil
+addon.localeIsTranslated = T ~= nil
+
+-- Read under a key that is not their text: [id] = { key, English }. An English game reads only these.
+local S = {
+-- 562eb99f
+[2] = { "/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.", "/rm perf engine [lean||standard] - Show or choose the rotation evaluation engine." },
+-- 4c0510e8
+[3] = { "/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.", "/rm perf cpu||runtime||memory [seconds||stop||report] - Capture performance observations." },
+-- 465830f3
+[84] = { "/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again.", "/rm set [auto||profile]  - Switch to a specific rotation, or use automatic switching again." },
+-- d580a703
+[834] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Name", "Enhancement (Icy Veins)" },
+-- a97cd0b7
+[835] = { "Default.TBC.Shaman.Enhancement.IcyVeins.Description", "Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you." },
+-- 7637d9eb
+[836] = { "Default.TBC.Shaman.Enhancement.Wowsims.Name", "Enhancement (Wowhead & wowsims)" },
+-- 1ec4e078
+[837] = { "Default.TBC.Shaman.Enhancement.Wowsims.Description", "The level-70 raid model for totem twisting, an alternative to the recommended Icy Veins Enhancement premade, off by default: enable it and disable that one, or raise its priority. Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep." },
+-- 3a3fe11d
+[838] = { "Default.TBC.Shaman.Elemental.IcyVeins.Name", "Elemental (Icy Veins & wowsims)" },
+-- c334526c
+[839] = { "Default.TBC.Shaman.Elemental.IcyVeins.Description", "Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism." },
+-- 6c2dcf2e
+[840] = { "Default.TBC.Shaman.Elemental.Wowhead.Name", "Elemental (Wowhead)" },
+-- c4c0aa4c
+[841] = { "Default.TBC.Shaman.Elemental.Wowhead.Description", "Wowhead's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. At 70 Chain Lightning on cooldown with Lightning Bolts in between (while leveling only with Elemental Mastery or Clearcasting), Flame Shock only while moving, Earth Shock to finish a target that would die before a cast lands. Same totem, shield and cooldown reminders as the Icy Veins variant." },
+-- bb13bf18
+[842] = { "Default.TBC.Shaman.Elemental.NextAction.Name", "Elemental (NextActionTBC)" },
+-- 2ec2f692
+[843] = { "Default.TBC.Shaman.Elemental.NextAction.Description", "NextActionTBC's Elemental, an alternative to the recommended Icy Veins Elemental premade, off by default: enable it and disable that one, or raise its priority. Keeps Flame Shock on the target, Chain Lightning only against two or more enemies while above 30% mana, Lightning Bolt otherwise. Reminds you of Lightning Shield, a weapon imbue, Elemental Mastery and Bloodlust/Heroism; totems stay manual." },
+-- 6a3c6c77
+[844] = { "Default.TBC.Shaman.Restoration.Name", "Restoration" },
+-- e6f434e0
+[845] = { "Default.TBC.Shaman.Restoration.Description", "Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you." },
+-- 87587359
+[952] = { "AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.", "AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated." },
+-- f831a06b
+[1396] = { "TalentTree.Arms", "Arms" },
+-- 8d6b26d9
+[1397] = { "TalentTree.Fury", "Fury" },
+-- 0e97ad02
+[1398] = { "TalentTree.Protection", "Protection" },
+-- 56eee6a5
+[1399] = { "TalentTree.Holy", "Holy" },
+-- 1d79fa22
+[1400] = { "TalentTree.Retribution", "Retribution" },
+-- 5d6f7884
+[1401] = { "TalentTree.Beast Mastery", "Beast Mastery" },
+-- 03f000fc
+[1402] = { "TalentTree.Marksmanship", "Marksmanship" },
+-- 8302496d
+[1403] = { "TalentTree.Survival", "Survival" },
+-- 727eeac8
+[1404] = { "TalentTree.Assassination", "Assassination" },
+-- 49fcf2c7
+[1405] = { "TalentTree.Combat", "Combat" },
+-- fca36d62
+[1406] = { "TalentTree.Subtlety", "Subtlety" },
+-- a1b14db9
+[1407] = { "TalentTree.Discipline", "Discipline" },
+-- 4c764cb6
+[1408] = { "TalentTree.Shadow", "Shadow" },
+-- 8a7961ab
+[1409] = { "TalentTree.Blood", "Blood" },
+-- 17636dd6
+[1410] = { "TalentTree.Frost", "Frost" },
+-- 4de5fe95
+[1411] = { "TalentTree.Unholy", "Unholy" },
+-- 4309e83a
+[1412] = { "TalentTree.Elemental", "Elemental" },
+-- b12b36cf
+[1413] = { "TalentTree.Enhancement", "Enhancement" },
+-- 6a3c6c77
+[1414] = { "TalentTree.Restoration", "Restoration" },
+-- 93006d61
+[1415] = { "TalentTree.Arcane", "Arcane" },
+-- c141faa8
+[1416] = { "TalentTree.Fire", "Fire" },
+-- ed64274f
+[1417] = { "TalentTree.Affliction", "Affliction" },
+-- c0e4afa6
+[1418] = { "TalentTree.Demonology", "Demonology" },
+-- e848f2c5
+[1419] = { "TalentTree.Destruction", "Destruction" },
+-- d05e07b7
+[1420] = { "TalentTree.Balance", "Balance" },
+-- 454d4a9c
+[1421] = { "TalentTree.Feral Combat", "Feral Combat" },
+-- 17636dd6
+[1422] = { "Default.TBC.Mage.Frost.Name", "Frost" },
+-- 35223466
+[1423] = { "Default.TBC.Mage.Frost.Description", "Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you." },
+-- 7c2241f3
+[1424] = { "Default.TBC.Mage.FireIcyVeins.Name", "Fire (Icy Veins)" },
+-- 1e584220
+[1425] = { "Default.TBC.Mage.FireIcyVeins.Description", "Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball fills, Fire Blast is for moving; Blast Wave, Dragon's Breath and Flamestrike for three or more enemies. Reminders: Molten, Mage or Ice Armor, Combustion below 20% target health, mana gem, Evocation and the shared Mage utilities." },
+-- c3a8c4ee
+[1426] = { "Default.TBC.Mage.FireWowhead.Name", "Fire (Wowhead)" },
+-- a335455e
+[1427] = { "Default.TBC.Mage.FireWowhead.Description", "Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. An alternative to the recommended Icy Veins Fire premade, off by default: enable it and disable that one, or raise its priority." },
+-- 93006d61
+[1428] = { "Default.TBC.Mage.Arcane.Name", "Arcane" },
+-- d64a2c81
+[1429] = { "Default.TBC.Mage.Arcane.Description", "Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation." },
+-- 35f743e1
+[1741] = { "Default.TBC.Paladin.Retribution.Wowhead.Name", "Retribution (Wowhead & wowsims)" },
+-- 6fc82107
+[1742] = { "Default.TBC.Paladin.Retribution.Wowhead.Description", "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade." },
+-- 89f00a09
+[1743] = { "Default.TBC.Paladin.Retribution.IcyVeins.Name", "Retribution (Icy Veins)" },
+-- c68e9ea0
+[1744] = { "Default.TBC.Paladin.Retribution.IcyVeins.Description", "Icy Veins' Retribution, an alternative to the recommended Wowhead Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once per target, Seal of Righteousness (Command only with a slow weapon, Blood or Martyr once learned), Crusader Strike, Hammer of Wrath and Judgement on cooldown, Consecration on two or more enemies, Exorcism on Undead and Demons, and Holy Shock for Holy levelers. Same reminders as the Wowhead variant." },
+-- 85d846bd
+[1745] = { "Default.TBC.Paladin.Retribution.Twist.Name", "Retribution seal twisting" },
+-- 34a6a34f
+[1746] = { "Default.TBC.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist seals (level 64+, Seal of Command and Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of Command (rank 1) early and switches to Blood or Martyr in the last 0.4 seconds, Crusader Strike between twists, judges only Blood or Martyr, Exorcism and Consecration only as fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer; latency is not accounted for." },
+-- 316a63c1
+[1747] = { "Default.TBC.Paladin.Protection.Wowhead.Name", "Protection (Wowhead & wowsims)" },
+-- c9c2efbf
+[1748] = { "Default.TBC.Paladin.Protection.Wowhead.Description", "Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you." },
+-- 80b938a1
+[1749] = { "Default.TBC.Paladin.Protection.IcyVeins.Name", "Protection (Icy Veins)" },
+-- 3ae9045e
+[1750] = { "Default.TBC.Paladin.Protection.IcyVeins.Description", "Icy Veins' tanking, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader when nobody keeps it up, Righteousness (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, then Avenger's Shield and Hammer of Wrath on cooldown. Same reminders as the Wowhead variant without Avenging Wrath." },
+-- 9d88b75a
+[1751] = { "Default.TBC.Paladin.Holy.Name", "Holy (Icy Veins & Wowhead)" },
+-- 879586c5
+[1752] = { "Default.TBC.Paladin.Holy.Description", "Healing for a Holy Paladin in a group, on your friendly target: Lay on Hands or Holy Shock for a dying target, Cleanse (Purify before 42), Holy Shock while moving, Holy Light for heavy damage, rank-5 Holy Light to keep Light's Grace up, Flash of Light otherwise. With a hostile target it keeps Judgement of Wisdom up. Reminders: Concentration Aura, Blessing of Wisdom, Divine Illumination and Divine Favor. A soloing Holy Paladin gets a Retribution premade instead." },
+-- 2261d994
+[1753] = { "Default.TBC.Paladin.Holy.Wowhead.Name", "Holy (Wowhead tank healing)" },
+-- 63b194ff
+[1754] = { "Default.TBC.Paladin.Holy.Wowhead.Description", "Wowhead's raid tank healing, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade." },
+-- 4396ff42
+[1755] = { "Default.TBC.Hunter.Ranged.Wowsims.Name", "Ranged DPS (wowsims)" },
+-- 2b43c4a1
+[1756] = { "Default.TBC.Hunter.Ranged.Wowsims.Description", "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you." },
+-- 825c84d1
+[1757] = { "Default.TBC.Hunter.Ranged.Wowhead.Name", "Ranged DPS (Wowhead)" },
+-- fb9ad1ee
+[1758] = { "Default.TBC.Hunter.Ranged.Wowhead.Description", "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you. An alternative to the recommended wowsims ranged premade, off by default: enable it and disable that one, or raise its priority." },
+-- 469b61e4
+[1759] = { "Default.TBC.Rogue.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
+-- a600e4ad
+[1760] = { "Default.TBC.Rogue.DPS.Wowsims.Description", "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush (with a dagger in the main hand). In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab (dagger) when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you." },
+-- 5f9b3940
+[1761] = { "Default.TBC.Rogue.DPS.Wowhead.Name", "Melee DPS (Wowhead)" },
+-- 19e52877
+[1762] = { "Default.TBC.Rogue.DPS.Wowhead.Description", "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- d05e07b7
+[1763] = { "Default.TBC.Druid.Balance.Name", "Balance" },
+-- 8177cc43
+[1764] = { "Default.TBC.Druid.Balance.Description", "Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low." },
+-- 9a2fa639
+[1765] = { "Default.TBC.Druid.Feral.IcyVeins.Name", "Feral (Icy Veins, Warcraft Tavern & wowsims)" },
+-- 43a0ca32
+[1766] = { "Default.TBC.Druid.Feral.IcyVeins.Description", "Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro)." },
+-- 4c55a525
+[1767] = { "Default.TBC.Druid.Feral.Wowhead.Name", "Feral (Wowhead)" },
+-- 9092413a
+[1768] = { "Default.TBC.Druid.Feral.Wowhead.Description", "Wowhead's Feral, an alternative to the recommended Icy Veins Feral premade, off by default: enable it and disable that one, or raise its priority. Rip whenever it is down at four combo points and Ferocious Bite only on a target about to die (no bite-weaving); bears spend free global cooldowns on Lacerate before Swipe. Innervate when a cat runs low on mana. Otherwise the same as the Icy Veins variant." },
+-- 6a3c6c77
+[1769] = { "Default.TBC.Druid.Restoration.Name", "Restoration" },
+-- da5557c1
+[1770] = { "Default.TBC.Druid.Restoration.Description", "Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you." },
+-- 469b61e4
+[1771] = { "Default.TBC.Warrior.DPS.Wowsims.Name", "Melee DPS (wowsims)" },
+-- e30bf8c3
+[1772] = { "Default.TBC.Warrior.DPS.Wowsims.Description", "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you." },
+-- 6d10d944
+[1773] = { "Default.TBC.Warrior.DPS.IcyVeins.Name", "Melee DPS (Icy Veins)" },
+-- c50ff4f3
+[1774] = { "Default.TBC.Warrior.DPS.IcyVeins.Description", "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you. An alternative to the recommended wowsims melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- 871d5911
+[1775] = { "Default.TBC.Warrior.Protection.Wowhead.Name", "Tank (Wowhead)" },
+-- 91dfa1ce
+[1776] = { "Default.TBC.Warrior.Protection.Wowhead.Description", "Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block (with a shield equipped) against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you." },
+-- ea76d926
+[1777] = { "Default.TBC.Warrior.Protection.IcyVeins.Name", "Tank (Icy Veins)" },
+-- aa141592
+[1778] = { "Default.TBC.Warrior.Protection.IcyVeins.Description", "Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you and you carry a shield. Taunting and other utility stay with you. An alternative to the recommended Wowhead tank premade, off by default: enable it and disable that one, or raise its priority." },
+-- 3adec7ba
+[1779] = { "Default.TBC.Priest.DpsIcyVeins.Name", "Damage (Icy Veins)" },
+-- 9b0711bb
+[1780] = { "Default.TBC.Priest.DpsIcyVeins.Description", "Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. A Mind Flay past its first tick is cut short for a ready Mind Blast, or Shadow Word: Death above half health. Shields and healing stay with you." },
+-- ce79d246
+[1781] = { "Default.TBC.Priest.DpsWowhead.Name", "Damage (Wowhead)" },
+-- fe006eaa
+[1782] = { "Default.TBC.Priest.DpsWowhead.Description", "Damage after Wowhead's guides, an alternative to the recommended Icy Veins damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your health drops, and a dying target gets spells instead of the wand. Otherwise the same as the recommended premade." },
+-- d0f0e9e6
+[1783] = { "Default.TBC.Priest.HealerWowhead.Name", "Healer (Wowhead)" },
+-- d31781e0
+[1784] = { "Default.TBC.Priest.HealerWowhead.Description", "Healing in a group when Holy or Discipline is your main talent tree. It advises on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and whenever ready, Renew, Power Word: Shield in emergencies, dispels, Circle of Healing or Prayer of Healing for group damage, Binding, Flash and Greater Heal, and Greater Heal rank 1 as a cheap top-up. With an enemy targeted it offers light damage." },
+-- 45321807
+[1785] = { "Default.TBC.Priest.HealerIcyVeins.Name", "Healer (Icy Veins)" },
+-- e31d4277
+[1786] = { "Default.TBC.Priest.HealerIcyVeins.Description", "Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. An alternative to the recommended Wowhead healer premade, off by default: enable it and disable that one, or raise its priority." },
+-- 8283f17a
+[1787] = { "Default.TBC.Warlock.DpsIcyVeins.Name", "All trees (Icy Veins)" },
+-- da4da042
+[1788] = { "Default.TBC.Warlock.DpsIcyVeins.Description", "Every talent tree from level 1 to 70. Curse, then Unstable Affliction, Immolate, Corruption and Siphon Life as learned, Shadow Bolt or Incinerate; Nightfall and Backlash procs first; Seed, Hellfire and Shadowfury for three or more enemies. Solo it drains when hurt, Life Taps, wands, and uses Drain Soul or a finisher on a dying target. Reminders: Fel Armor, Demon Armor or Demon Skin, your demon, sacrifice, Soul Link, Amplify Curse and Soulshatter. Fears and other curses stay with you." },
+-- e3790b25
+[1789] = { "Default.TBC.Warlock.DpsWowhead.Name", "Drain-tank (Wowhead)" },
+-- 522ed69f
+[1790] = { "Default.TBC.Warlock.DpsWowhead.Description", "Warlock after Wowhead's guides, an alternative to the recommended Icy Veins Warlock premade, off by default: enable it and disable that one, or raise its priority. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the recommended premade." },
+-- e5b321d7
+[1937] = { "Default.Forever.Rogue.DPS.Name", "Melee DPS" },
+-- f8f8f256
+[1938] = { "Default.Forever.Rogue.DPS.Description", "Melee damage for every Rogue specialization from level 1 to 60, built from Icy Veins, Wowhead and Warcraft Tavern. The builder follows what you know: Mutilate (Sinister Strike for the fifth point), Hemorrhage, Backstab when the target is not facing you, else Sinister Strike. From Stealth it opens with Premeditation, Cheap Shot when solo, Garrote for Subtlety on group elites, else Ambush or Garrote. It keeps Slice and Dice and Venom up, uses Expose Armor in groups on elites when no warrior has five Sunders, then spends five points on Rupture (Subtlety, long fights) or Eviscerate, and never builds past five. Reminders: poisons on each weapon, Kick, Blade Flurry and Adrenaline Rush on packs and elites, Cold Blood, Evasion, Feint, Thistle Tea and Preparation. Left to you: Vanish, Sprint, Kidney Shot, Blind, Sap and positioning. Forever restricts combat data, so Rotation Master lists this premade for reference and does not select it automatically yet." },
+-- 3333c1f0
+[1939] = { "Default.Forever.Rogue.Subtlety.WarcraftTavern.Name", "Subtlety, Ambush build (Warcraft Tavern)" },
+-- 776899da
+[1940] = { "Default.Forever.Rogue.Subtlety.WarcraftTavern.Description", "Warcraft Tavern's Ambush/Cutthroat Subtlety build: Premeditation and Ambush on every opener, Ambush again whenever Cutthroat allows it, Backstab from behind as the builder (Hemorrhage when the target is facing you), Ghostly Strike on cooldown, and Slice and Dice then Eviscerate at five points with no Rupture. Reminds you to Vanish for another Ambush on a tanked boss. Choose it instead of the recommended Rogue premade if you took the Cutthroat talents; it applies with Subtlety as your main talent tree and Cutthroat talented. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- 208fc263
+[1941] = { "Default.Forever.Rogue.Subtlety.Wowhead.Name", "Subtlety, Garrote build (Wowhead)" },
+-- 919f756d
+[1942] = { "Default.Forever.Rogue.Subtlety.Wowhead.Description", "Wowhead's Subtlety: Premeditation and Garrote on every opener, and Vanish (then Preparation) used in the rotation to open with Garrote again once the last one has run out. Slice and Dice kept up, Expose Armor in groups, Rupture as the five-point finisher, Hemorrhage as the only builder. This spends Vanish, your escape, on damage: choose it deliberately. It applies with Subtlety as your main talent tree, Dirty Deeds talented and Premeditation known. Same poison and cooldown reminders as the recommended premade. An alternative to the recommended Rogue DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- 6a3c6c77
+[1943] = { "Default.Forever.Shaman.Restoration.Name", "Restoration" },
+-- d54e5a0a
+[1944] = { "Default.Forever.Shaman.Restoration.Description", "Healing once Restoration is your main talent tree with 16 points (Mana Tide Totem's tier), after Icy Veins. With a friendly target: an instant Healing Wave once you use Nature's Swiftness, Cure Poison and Cure Disease, Riptide on a target without it, Chain Heal in a group, Healing Wave. You pick who to heal by targeting them; health and mana are hidden from addons on Forever, so when to use Nature's Swiftness and Lesser Healing Wave is your call. With a hostile target and nothing to heal: Fire Nova and Chain Lightning on packs, Stormstrike and Earth Shock if you know Stormstrike, Flame Shock on elites and bosses, Lightning Bolt, then melee. Reminders: Water Shield, the Earth Shock interrupt, Mana Tide and group buff totems. Left to you: downranking, other totems, Purge and Ghost Wolf." },
+-- 4309e83a
+[1945] = { "Default.Forever.Shaman.Elemental.Name", "Elemental" },
+-- 2fcd0801
+[1946] = { "Default.Forever.Shaman.Elemental.Description", "Ranged Elemental once Elemental is your main talent tree with 21 points (Lava Burst's tier), after Icy Veins (before that the Enhancement premade plays the melee hybrid every guide recommends). Pulls with Lightning Bolt (Chain Lightning on a pack), casts only instants while moving, uses Fire Nova and Chain Lightning on three or more enemies, keeps Flame Shock up, Lava Burst on cooldown, Stormstrike and Earth Shock if you know Stormstrike, Fire Nova on Clearcasting in groups, then Lightning Bolt. Reminders: shield, weapon imbue, Searing or Magma Totem, group totems, Elemental Mastery, interrupt. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call. Left to you: Earthbind kiting, Frost Shock, Purge and other totems." },
+-- d580a703
+[1947] = { "Default.Forever.Shaman.Enhancement.Name", "Enhancement (Icy Veins)" },
+-- 339ec7e4
+[1948] = { "Default.Forever.Shaman.Enhancement.Description", "Melee Enhancement from level 1 to 60, and the default for any Shaman before Lava Burst or Mana Tide Totem. Pulls with Lightning Bolt from range, then Stormstrike on cooldown, an instant Lightning Bolt at five Maelstrom Weapon stacks, Fire Nova (with a Fire totem down) and Flame Shock on three or more enemies, Earth Shock into the Stormstrike debuff, Flame Shock in groups, and Earth Shock on cooldown; Lightning Bolt fills the gap while the target is out of reach. Health and mana are hidden from addons on Forever, so healing yourself and pausing to refill mana are your call (the Wowhead premade saves mana instead). Reminders: weapon imbue (Windfury, else Flametongue, else Rockbiter), Water or Lightning Shield, the Earth Shock interrupt, Searing or Magma Totem, group totems, Rage of the Farseer, Stoneclaw Totem. Left to you: totem presets, Frost Shock, Purge and other totems." },
+-- eb2363b2
+[1949] = { "Default.Forever.Shaman.Enhancement.Wowhead.Name", "Enhancement, mana-efficient (Wowhead)" },
+-- abc72f43
+[1950] = { "Default.Forever.Shaman.Enhancement.Wowhead.Description", "Wowhead's and Mobalytics' mana-saving Enhancement: auto-attack does the work, Stormstrike only while Improved Stormstrike's mana regeneration is down, no Earth Shock in the rotation (shocks pull and interrupt), and in groups or on packs Searing Totem with Fire Nova on cooldown. Same imbue, shield and interrupt reminders as the Icy Veins premade. Choose it instead of that premade if mana runs out. An alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority." },
+-- 7e8fd1de
+[1951] = { "Default.Forever.Warlock.DPS.Name", "All trees" },
+-- 157e4fa1
+[1952] = { "Default.Forever.Warlock.DPS.Description", "Every Warlock talent tree from level 1 to 60, merged from Icy Veins, Wowhead and Method; the steps for a tree appear once you know its talent spells. Pulls with Immolate and Bane of Agony (Destruction precasts Shadow Bolt), uses Nightfall and Decimation procs, keeps Demonic Brand up with Searing Pain. While moving it casts only instants. On packs: Hellfire in a group, Rain of Fire, Corruption and Agony. Then Bane of Doom on elites and bosses or Bane of Agony, Curse of the Elements in groups and on elites, Immolate, Corruption, Siphon Life, Conflagrate and Shadowburn; solo it fills with Wrack, Drain Life (with a drain talent) or the wand; otherwise Incinerate or Shadow Bolt. Reminders: armor, a demon (Succubus, else Voidwalker, else Imp), Fel Domination, Demonic Sacrifice with Demonic Pact, Soul Link, weapon stones, Amplify Curse and Bane of Havoc for a second enemy. Left to you: sending the pet in, other curses, Fear, Healthstones and other targets. Health and mana are hidden from addons on Forever, so the execute window (Drain Soul, Shadowburn as the killing blow), Life Tap, Health Funnel and draining when hurt are your call." },
+-- 8283f17a
+[1953] = { "Default.Forever.Warlock.DPS.IcyVeins.Name", "All trees (Icy Veins)" },
+-- 8573424f
+[1954] = { "Default.Forever.Warlock.DPS.IcyVeins.Description", "Icy Veins' Warlock leveling: the wand is the solo filler, Voidwalker is the default demon, Affliction and Destruction sacrifice their demon and play without one (from 41 and 55), Demonology keeps Demonic Brand up and uses Immolate only as a filler, and Destruction puts Bane of Havoc on the durable enemy of a pack and Conflagrates on cooldown once Incinerate is known. Choose it instead of the recommended Warlock premade if you follow Icy Veins. Health, mana and time to die are hidden from addons on Forever, so Drain Life when hurt, Life Tap and which targets will live long enough for DoTs are your call. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- b9f016be
+[1955] = { "Default.Forever.Warlock.DPS.Wowhead.Name", "All trees (Wowhead)" },
+-- 02cc5c3e
+[1956] = { "Default.Forever.Warlock.DPS.Wowhead.Description", "Wowhead's level-30 Warlock: Affliction and Demonology drain-tank with the Succubus (Corruption and Agony, no Immolate, then Drain Life for the rest of the fight; health and mana are hidden on Forever, so Life Tap is your call), Demonology keeps Demonic Brand up and Agonies only big targets, Destruction puts Agony, Corruption and Immolate on every mob, Conflagrates just before Immolate ends, saves Shadowburn for the killing blow and wands with the Voidwalker. Amplify Curse on every cooldown; Curse of the Elements and Bane of Doom only on elites and bosses; no pack section. Wowhead's guides stop at level 30. An alternative to the recommended Warlock DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- 80b938a1
+[1957] = { "Default.Forever.Warrior.Protection.Name", "Protection (Icy Veins)" },
+-- 95bdeac5
+[1958] = { "Default.Forever.Warrior.Protection.Description", "Tanking whenever you are in Defensive Stance, from level 10 to 60. Charges to pull (in Defensive Stance once you have Vanguard), Victory Rush, and on two or more enemies Thunder Clap on cooldown, Demoralizing Shout, Shield Slam, Revenge and Rend. On one target: Shield Slam, Revenge, Demoralizing Shout, Rend, Sunder Armor (five on elites) and Thunder Clap on dangerous targets. Reminders: Battle Shout, Bloodrage, Shield Bash, Shield Block while you hold the target, Heroic Strike while Shield Slam and Revenge are both recovering, Cleave on packs; Taunt and Shield Wall are listed but off. Rage, health and the target's mana are hidden from addons on Forever, so the rage thresholds, casters and Last Stand are your call. Left to you: swapping to Battle Stance to Charge before Vanguard, taunting other enemies and picking up loose ones." },
+-- 79d0620e
+[1959] = { "Default.Forever.Warrior.Protection.WarcraftTavern.Name", "Protection, debuff upkeep (Warcraft Tavern)" },
+-- f36ad073
+[1960] = { "Default.Forever.Warrior.Protection.WarcraftTavern.Description", "Warcraft Tavern's tanking order: Thunder Clap, Demoralizing Shout and five Sunder Armors kept on every target first, then Revenge, Rend and Shield Slam last, with Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold). No Shield Block or defensive reminders. Choose it instead of the Icy Veins tank premade if you prefer to keep the debuffs up first. An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority." },
+-- 823b4c3f
+[1961] = { "Default.Forever.Warrior.DPS.Name", "Arms and Fury (Icy Veins)" },
+-- f6c638d4
+[1962] = { "Default.Forever.Warrior.DPS.Description", "Melee Arms and Fury from level 1 to 60, and the default for any warrior outside Defensive Stance. Forever rage is scarce and hidden from addons, so it pools by spending on anything else only while Mortal Strike or Bloodthirst is recovering: Charge to pull, Victory Rush, Intercept, Execute (in its range) on elites, bosses or in a group, Whirlwind or Thunder Clap, Demoralizing Shout and Slam on packs, Spearing Strike on Giants and Dragonkin, Rend until Bloodthirst, Overpower, Mortal Strike, Bloodthirst, then Whirlwind, Slam while standing and two Sunder Armors (five on elites). Reminders: Battle Shout, Bloodrage, the interrupt, Heroic Strike while the main strike recovers, Cleave on packs, Sweeping Strikes, Death Wish and Berserker Rage; Recklessness and Retaliation are listed but off. Left to you: stance dancing, Hamstring and consumables." },
+-- c9c030cd
+[1963] = { "Default.Forever.Warrior.DPS.WarcraftTavern.Name", "Arms and Fury, spend rage (Warcraft Tavern)" },
+-- 469a4f88
+[1964] = { "Default.Forever.Warrior.DPS.WarcraftTavern.Description", "Warcraft Tavern's always-spend list for groups and raids: five Sunder Armors first, Execute above everything below 20%, Overpower, Rend until Bloodthirst, Mortal Strike, Bloodthirst, Whirlwind, Spearing Strike on cooldown, Slam once Improved Slam is taken; Heroic Strike or Cleave whenever you can afford them (rage is hidden on Forever, so there is no 60-rage threshold or spare-rage Hamstring), Recklessness on cooldown with Death Wish beside it. Choose it instead of the Icy Veins premade if you play in groups and do not need to save rage between pulls. An alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority." },
+-- d05e07b7
+[1965] = { "Default.Forever.Druid.Balance.Name", "Balance" },
+-- fdac9d3d
+[1966] = { "Default.Forever.Druid.Balance.Description", "Balance from level 1 to 60, and the default for any Forever Druid no other premade fits (levels 1–9, untalented casters, solo Restoration). Pulls with Wrath; while moving, refreshes Moonfire, Insect Swarm and, in a group, Faerie Fire. Hurricane when three or more enemies are fighting you, then your own Moonfire and Insect Swarm, Starfire while Eclipse charges or Clearcasting are up, and Wrath; when you cannot afford Wrath it lets you melee. Health and mana are hidden from addons on Forever, so healing yourself and judging whether a target is worth a DoT are your call. Reminders: Mark of the Wild, Thorns while solo, Moonkin Form, a pre-pull Rejuvenation while solo, Nature's Grasp when a mob is on you, Innervate whenever it is ready in combat while solo. Form changes, crowd control, Barkskin and target choice stay with you. Built from level-30 beta guides; level 31–60 steps follow the class design and are untested." },
+-- 78805a61
+[1967] = { "Default.Forever.Druid.BalanceTavern.Name", "Balance, Multi-DoT (Warcraft Tavern)" },
+-- 3841b7e5
+[1968] = { "Default.Forever.Druid.BalanceTavern.Description", "Warcraft Tavern's Multi-DoT leveling style, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Pulls with Wrath, keeps your Moonfire and Insect Swarm on the target, roots it with Entangling Roots once both are running while another enemy is fighting you, then Wrath. No Starfire (the build skips Eclipse). Switching to the next enemy is up to you. Reminders: Mark of the Wild, Thorns while solo." },
+-- 78daf4ac
+[1969] = { "Default.Forever.Druid.Feral.Name", "Feral, Cat and Bear" },
+-- 420ae9f2
+[1970] = { "Default.Forever.Druid.Feral.Description", "Cat and Bear in one premade, chosen by your form; it takes over once Feral is your main talent tree (or has 11 points), or when you shift into Cat or Bear Form. Cat: Ravage or Shred from Prowl, Faerie Fire, Rip at four combo points, Ferocious Bite once Rip runs, Rake, then Shred when the target is not facing you (Claw otherwise). Bear: Faerie Fire and Feral Charge at range, Demoralizing Roar in a group or on two enemies, Primal Bite, Swipe on three or more, Lacerate, Swipe. In caster form it suggests Cat Form (Bear before you have Cat). Reminders: Maul whenever you can afford it in Bear Form, Enrage, Berserk on big pulls or elites, Innervate while solo, Mark of the Wild, Thorns. Health, energy, rage and mana are hidden from addons on Forever, so powershifting, Frenzied Regeneration and healing yourself are your call. Taunts, interrupts and positioning stay with you." },
+-- 6a3c6c77
+[1971] = { "Default.Forever.Druid.Restoration.Name", "Restoration" },
+-- 2bcf6375
+[1972] = { "Default.Forever.Druid.Restoration.Description", "Group healing after Warcraft Tavern, once Restoration is your main talent tree with 11 points. Heals your current friendly target: Swiftmend on a target with your HoT, Wild Growth, Regrowth and Rejuvenation when missing, Healing Touch. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing. On a hostile target: Moonfire, Insect Swarm, Wrath. Reminders: Innervate in combat, Nature's Swiftness on a friendly target in combat, Remove Curse and Abolish Poison, Mark of the Wild; Tranquility is yours. You pick who to heal and the spell rank; solo Restoration uses the Balance premade." },
+-- e898fb57
+[1973] = { "Default.Forever.Druid.RestorationIcyVeins.Name", "Restoration, HoTs first (Icy Veins)" },
+-- 62addd5b
+[1974] = { "Default.Forever.Druid.RestorationIcyVeins.Description", "Icy Veins' HoT-first healing, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target: Rejuvenation, then Regrowth when missing, Healing Touch only with both HoTs running, Swiftmend on a HoT target, then Wild Growth (health is hidden on Forever, so the target you pick decides who is healed). Innervate on cooldown. Otherwise the same reminders and hostile-target list as the Restoration premade." },
+-- 8335d07b
+[1975] = { "Default.Forever.Hunter.Ranged.Name", "Ranged (Wowhead)" },
+-- 5c5cdd9b
+[1976] = { "Default.Forever.Hunter.Ranged.Description", "Every ranged Hunter from level 1 to 60 (Beast Mastery, Marksmanship, and Survival until Strider Kick), and the Forever Hunter default. Pull: Hunter's Mark, Sniper Shot while Rapid Killing lasts, Auto Shot. Then your own Serpent Sting, Summon Hawk twice and Arcane Shot once on their shared cooldown (Arcane Shot on cooldown before Summon Hawk), Sniper Shot under Rapid Killing or on elites, Aimed Shot. Two or more enemies fighting you: Multi-Shot instead of Aimed Shot, Explosive Trap with three near you, Volley on five. Moving: instant shots only. A mob in melee range gets Raptor Strike and Mongoose Bite. Reminders: Aspect of the Hawk (Monkey before it), Trueshot Aura, pet calling and reviving, Rapid Fire, Bestial Wrath and Blood Fury on elites or in dungeons, Intimidation when a mob is on you. Pet commands, feeding, kiting and Feign Death stay with you; disable the pet reminders if you play Lone Wolf. It never reads your mana or anyone's health, which Forever hides from addons, so Hunter's Mark and Serpent Sting go on every target and Mend Pet is yours." },
+-- a82fce4f
+[1977] = { "Default.Forever.Hunter.RangedMobalytics.Name", "Ranged, mana-saving (Mobalytics)" },
+-- 530b5b4d
+[1978] = { "Default.Forever.Hunter.RangedMobalytics.Description", "Mobalytics' mana-saving leveling style, an alternative to the recommended Wowhead ranged premade, off by default: enable it and disable that one, or raise its priority. Keeps your Serpent Sting up, one Summon Hawk out, Aimed Shot (Multi-Shot on two or more enemies), and never Arcane Shot once Summon Hawk is known; its second Hawk on a healthy target is left out, as Forever hides target health. Same pull, melee, movement and reminders as the Wowhead premade." },
+-- 5f8e7ecc
+[1979] = { "Default.Forever.Hunter.Survival.Name", "Survival melee (Wowhead)" },
+-- 8da10e55
+[1980] = { "Default.Forever.Hunter.Survival.Description", "Dual-wield melee Survival once Survival is your main talent tree with 21 points, Strider Kick's tier (until then the ranged premade levels you, as the guides advise). Pull with Hunter's Mark and Serpent Sting, then Mongoose Bite, Strider Kick, Raptor Strike and Counterattack, with Explosive Trap on three or more enemies. Out of melee it shoots: Serpent Sting, Arcane Shot, Aimed Shot, Auto Shot. Reminders: Aspect of the Beast, Hunter's Mark (Expose Prey needs it), Rapid Fire and Blood Fury on elites or in dungeons, Deterrence while you hold the target's attention, pet care (health is hidden on Forever, so Mend Pet is yours). An optional Immolation Trap step is off by default." },
+-- 5f76137b
+[1981] = { "Default.Forever.Hunter.SurvivalWeave.Name", "Survival two-hand weave (Wowhead)" },
+-- bce9f264
+[1982] = { "Default.Forever.Hunter.SurvivalWeave.Description", "Wowhead's in-and-out weave for a two-handed Survival Hunter, an alternative to the recommended Survival melee premade, off by default: enable it and disable that one, or raise its priority. In melee: Mongoose Bite and Raptor Strike; when Raptor Strike is more than 2.5 seconds away, Strider Kick and step out. Out of melee: Serpent Sting, Arcane Shot, Aimed Shot and Auto Shot until Raptor Strike is nearly ready, then back in. You do the moving; RM follows your range." },
+-- 17636dd6
+[1983] = { "Default.Forever.Mage.Frost.Name", "Frost" },
+-- 115d3d5e
+[1984] = { "Default.Forever.Mage.Frost.Description", "Frost from level 1 to 60, and the Forever Mage default before talent spells (Fireball until Frostbolt at level 4). Pulls with Frostbolt; then Ice Lance on Fingers of Frost or a frozen target (also while Frostbolt is still casting, to cancel or batch), Cone of Cold at five Winter's Chill stacks, Arcane Missiles on Missile Barrage, Frostbolt, and a wand when solo and you cannot afford Frostbolt. Moving: Ice Lance, else Fire Blast. Three or more enemies fighting you: Cone of Cold; five or more: Blizzard, or Arcane Explosion with a mob on you. Warcraft Tavern's Flamestrike and Arcane Explosion AoE is included but off. Reminders: Arcane Intellect, armor (Ice or Frost solo, Mage Armor in a group, never replacing one you chose), Ice Barrier, Counterspell, Remove Lesser Curse, Frost Nova when a mob reaches you, Cold Snap. Health and mana are hidden from addons on Forever, so finishing low targets with Fire Blast, Evocation and Ice Block are your call; Blink, kiting, Polymorph and mana gems stay with you too." },
+-- c141faa8
+[1985] = { "Default.Forever.Mage.Fire.Name", "Fire" },
+-- 0f5f59f3
+[1986] = { "Default.Forever.Mage.Fire.Description", "Fire once Fire is your main talent tree with 11 points (Pyroblast's tier). Pulls with Pyroblast on elites, else Frostfire Bolt or Fireball; then Pyroblast at three Heating Up stacks, Ice Lance on Fingers of Frost or a frozen target (Fire/Frost hybrids), Fire Blast on cooldown, Scorch to keep your five Fire Vulnerability stacks on elites, Frostfire Bolt (from 40) or Fireball, wand when solo and you cannot afford a spell. Moving: Fire Blast or Ice Lance. Four or more enemies fighting you: Flamestrike, Blast Wave, Arcane Explosion. Scorch starts the stacks only once you have Improved Scorch; a close-range Scorch is off until you enable it. Reminders: Combustion and Presence of Mind on elites, plus the Mage upkeep reminders." },
+-- 62e66205
+[1987] = { "Default.Forever.Mage.FireIcyVeins.Name", "Fire leveling (Icy Veins)" },
+-- 34690108
+[1988] = { "Default.Forever.Mage.FireIcyVeins.Description", "Icy Veins' Fire leveling build without Improved Scorch, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Pulls with Pyroblast, uses Fire Blast to spend Wake of Fire, Scorch as the mob closes (target health is hidden on Forever, so its low-target finishers are yours), then Frostfire Bolt (from 40) or Fireball. Same AoE, movement, wand and reminders as the Fire premade, without Combustion and Presence of Mind." },
+-- 93006d61
+[1989] = { "Default.Forever.Mage.Arcane.Name", "Arcane" },
+-- c17e7c93
+[1990] = { "Default.Forever.Mage.Arcane.Description", "Arcane once Arcane is your main talent tree with 11 points and you know Arcane Blast. Pulls with Frostbolt solo or Arcane Blast in a group; then Arcane Missiles on Missile Barrage, Arcane Blast on Clearcasting, Arcane Wrath at three Arcane Blast stacks, Arcane Blast up to four stacks on elites and two on other targets while you can afford it (mana is hidden on Forever), then Frostfire Bolt, Frostbolt or Fireball to fish for Missile Barrage, and a wand when solo and you cannot afford a spell. Without Arcane Wrath (the older beta design) Fire Blast spends the stacks. Moving: Fire Blast. Three or more enemies fighting you: Arcane Explosion. Reminders: Presence of Mind and Arcane Power on elites (Arcane Power no longer waits for half your mana), plus the Mage upkeep reminders." },
+-- 1d79fa22
+[1991] = { "Default.Forever.Paladin.Retribution.Name", "Retribution" },
+-- 4d5c0907
+[1992] = { "Default.Forever.Paladin.Retribution.Description", "Retribution and every melee Paladin from level 1 to 60, and the Forever Paladin default. Keeps a damage seal up, refreshed only when it runs low: Seal of the Crusader judged once on an elite target, then Seal of Command with a slow (3.0 s) weapon, else Seal of Righteousness. Then Holy Strike on cooldown, Holy Shock and Light's Vigil for a Shockadin, Exorcism on Undead and Demons, Consecration on three or more enemies, Hammer of Wrath when it can be cast, and melee. Judgement is off the global cooldown, so it is a reminder whenever a seal is up. Other reminders: your aura and Blessing (Retribution Aura and Kings once learned; yours are kept). Optional step, off by default: Hammer of Justice before a Seal of Command Judgement. Mana, health and the swing timer are hidden from addons on Forever, so mana saving, healing yourself, Lay on Hands and Twist of Light seal swapping are your call. Built from level-30 beta guides." },
+-- 2ba64aad
+[1993] = { "Default.Forever.Paladin.Protection.Name", "Protection (Wowhead)" },
+-- 65aad40e
+[1994] = { "Default.Forever.Paladin.Protection.Description", "Tanking, once Protection is your main talent tree or you turn on Righteous Fury. When the target is fighting someone else: Judgement with Seal of Fury (the taunt), Swift Judgement to reset it. Two or more enemies engaged: Consecration, Exorcism and Holy Wrath on Undead and Demons, Holy Strike. One enemy: Exorcism on Undead and Demons, Holy Strike, Consecration. Reminders: Righteous Fury, Seal of Fury, Judgement on cooldown, Holy Shield while tanking, your aura and Blessing. Health and mana are hidden from addons on Forever, so Templar's Bulwark and Lay on Hands are your call. Pulling, positioning and other taunts stay with you." },
+-- 6bae5e51
+[1995] = { "Default.Forever.Paladin.ProtectionIcyVeins.Name", "Protection, Consecration first (Icy Veins)" },
+-- 7d470fde
+[1996] = { "Default.Forever.Paladin.ProtectionIcyVeins.Description", "Icy Veins' tanking style, an alternative to the recommended Wowhead Protection premade, off by default: enable it and disable that one, or raise its priority. Consecration first whenever you can afford it, on one enemy too; Judgement is kept for taunts (no on-cooldown reminder), with Swift Judgement to reset it; then Holy Strike and Exorcism on Undead and Demons. Same tank reminders otherwise." },
+-- 56eee6a5
+[1997] = { "Default.Forever.Paladin.Holy.Name", "Holy" },
+-- 23d8ec27
+[1998] = { "Default.Forever.Paladin.Holy.Description", "Group healing once Holy is your main talent tree with 21 points (Holy Shock's tier), while Righteous Fury is off (a grouped Shockadin lands here too). Heals your current friendly target: Holy Shock on a target with your Light's Vigil, Light's Vigil in combat, Cleanse or Purify, Holy Shock while moving, Holy Light with Infusion of Light, Flash of Light as the main heal. On an enemy: Judgement of Light when Seal of Light is up, Holy Shock, Light's Vigil, Holy Strike, Exorcism. Reminders: Seal of Light when you have no seal, Divine Favor in combat on a friendly target, your aura and Blessing. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency Holy Shocks, big Holy Lights and Lay on Hands are your call." },
+-- b959207f
+[1999] = { "Default.Forever.Paladin.HolyWowhead.Name", "Holy, Holy Shock on cooldown (Wowhead)" },
+-- f6c7691e
+[2000] = { "Default.Forever.Paladin.HolyWowhead.Description", "Wowhead's healing style, an alternative to the recommended Holy premade, off by default: enable it and disable that one, or raise its priority. Holy Shock as a routine heal on cooldown, dispels, Flash of Light (health is hidden on Forever, so Holy Light for big deficits is your call). On an enemy it keeps your Judgement of Light up by swapping to Seal of Light, judging and swapping back to Seal of Righteousness, then Holy Strike, Exorcism on Undead and Demons, Holy Shock and Consecration. Same reminders as the Holy premade." },
+-- e64b45e0
+[2001] = { "Default.Forever.Priest.Dps.Name", "Shadow and solo damage" },
+-- 4394336c
+[2002] = { "Default.Forever.Priest.Dps.Description", "Shadow, and every Priest's solo play, from level 1 to 60; the Forever Priest default. Pulls with Power Word: Shield (solo) and Mind Blast (Holy Fire for Holy and Discipline, Smite before Mind Blast). Then Shadowform once learned, your own Shadow Word: Pain and Devouring Plague, Mind Blast, Holy Fire into Penance for Discipline, Mind Flay in Shadowform; solo before Shadowform, Holy Nova on three enemies with Holy Purpose, then the wand (Smite without one). Moving: Pain, Plague. Reminders: Inner Fire, Fortitude, Divine Spirit, racial buffs, Vampiric Embrace, Inner Focus, Silence, Elune's Light; Psychic Scream is off by default. Health and mana are hidden from addons on Forever, so executing with Shadow Word: Death, healing yourself and Dark Sacrifice are your call. Built from level-30 beta guides; Shadowform play follows Mobalytics." },
+-- 05426e5b
+[2003] = { "Default.Forever.Priest.DpsMobalytics.Name", "DoT and wand leveling (Mobalytics)" },
+-- df96ccf0
+[2004] = { "Default.Forever.Priest.DpsMobalytics.Description", "Mobalytics' leveling style, an alternative to the recommended Shadow premade, off by default: enable it and disable that one, or raise its priority. Mind Blast and Holy Fire only on tough mobs (elites, or two levels above you), your own Shadow Word: Pain and Devouring Plague, then the wand (Smite without one). From Shadowform: Mind Blast, Pain, Plague, Mind Flay. Shield and Renew on yourself between pulls, Cure Disease on yourself. Health and mana are hidden from addons on Forever, so healing yourself is your call. Spreading Pain across several mobs is up to you." },
+-- ef4ae5d0
+[2005] = { "Default.Forever.Priest.Healer.Name", "Discipline and Holy healing" },
+-- 787c3a6e
+[2006] = { "Default.Forever.Priest.Healer.Description", "Group healing once Discipline or Holy is your main talent tree and you do not know Shadowform. Heals your current friendly target: before the pull Power Word: Shield, Prayer of Mending and Renew; Dispel Magic and Abolish or Cure Disease; Prayer of Mending; Holy Nova on Holy Purpose; Penance; Renew when missing; Heal (Lesser Heal before it). On an enemy: Shadow Word: Pain, Holy Fire, Penance, Smite, wand. Reminders: Inner Fire, Fortitude, Divine Spirit, Power Infusion on another player, Inner Focus in combat and the racial spells. Health and mana are hidden from addons on Forever, so the target you pick is the only sign of who needs healing; emergency heals, Prayer of Healing, Binding Heal, Greater and Flash Heal, Desperate Prayer and Dark Sacrifice are your call. You pick who to heal and the rank; a Discipline healer before Penance (20–29) selects it by hand." },
+-- 00b5eb13
+[2007] = { "Default.Retail.DeathKnight.Blood.Name", "Blizzard Assisted" },
+-- d2ca4d91
+[2008] = { "Default.Retail.DeathKnight.Blood.Description", "Recommended for Blood. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Vampiric Blood and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call. Active mitigation timing, Anti-Magic Shell, taunts and trinkets stay with you." },
+-- 05c7030d
+[2009] = { "Default.Retail.DeathKnight.BloodGuide.Name", "Reference (Icy Veins and Wowhead)" },
+-- 8314e483
+[2010] = { "Default.Retail.DeathKnight.BloodGuide.Description", "Reference only, off by default: the guides' Blood priority. In Midnight combat your buffs and the target's debuffs are hidden from addons, so the steps that read them wait there; read it, or clone it to experiment. Health and runic power are hidden on Retail, so Death Strike is used whenever you can afford it. Pulls with Death's Caress. Death Strike; Marrowrend (Death's Caress out of melee) when Bone Shield is missing, under five charges, about to expire, or Exterminate is up; during Gift of the San'layn, Death Strike, one Blood Boil, Death and Decay on Crimson Scourge and Heart Strike; Death and Decay on Crimson Scourge or four enemies; Vampiric Strike; Consumption; Blood Boil on Boiling Point, a missing Blood Plague or full charges; Heart Strike. Reminders: Raise Dead, Vampiric Blood, Reaper's Mark, Dancing Rune Weapon after Reaper's Mark, plus the Assisted premade's utility reminders." },
+-- 2b5ecbd1
+[2011] = { "Default.Retail.DeathKnight.BloodSimc.Name", "Deathbringer reference (SimulationCraft)" },
+-- 8ed0754d
+[2012] = { "Default.Retail.DeathKnight.BloodSimc.Description", "Reference only, off by default: SimulationCraft's Deathbringer list, which spends runic power on Death Strike for damage. Hidden combat data keeps it from running in Midnight combat, and runic power is hidden on Retail, so there is no cap dump. Death and Decay whenever it is down, Reaper's Mark, Marrowrend on Exterminate, Death's Caress for Bone Shield while runes are short (else Marrowrend), Death Strike, Blood Boil, Consumption outside Dancing Rune Weapon, Heart Strike. Reminders: Raise Dead, Dancing Rune Weapon, Vampiric Blood and the utility reminders." },
+-- 00b5eb13
+[2013] = { "Default.Retail.DeathKnight.Frost.Name", "Blizzard Assisted" },
+-- 9750dd93
+[2014] = { "Default.Retail.DeathKnight.Frost.Description", "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Breath of Sindragosa and Raise Dead in combat, Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call." },
+-- c8d06db9
+[2015] = { "Default.Retail.DeathKnight.FrostGuide.Name", "Reference (Icy Veins and SimulationCraft)" },
+-- 91f86ae6
+[2016] = { "Default.Retail.DeathKnight.FrostGuide.Description", "Reference only, off by default: the guides' Frost priority. Killing Machine, Rime and Razorice are hidden in Midnight combat, so it cannot run there; runic power is hidden on Retail, so there is no cap check. Obliterate on two Killing Machines or one with three runes, Frost Strike into five Razorice with Shattering Blade, Howling Blast on Rime, Obliterate on Killing Machine, Frost Strike, Obliterate; three or more enemies swap in Frostscythe and Glacial Advance; Howling Blast out of melee. Reminders: Remorseless Winter, Pillar of Frost, Breath of Sindragosa and Frostwyrm's Fury in Pillar, Reaper's Mark, Raise Dead, Empower Rune Weapon at two charges, plus the utility reminders." },
+-- 0d4e8b80
+[2017] = { "Default.Retail.DeathKnight.FrostWowhead.Name", "Reference (Wowhead)" },
+-- 6899840b
+[2018] = { "Default.Retail.DeathKnight.FrostWowhead.Description", "Reference only, off by default: Wowhead's Frost order, which puts its cooldowns in the rotation. Hidden combat data keeps it from running in Midnight combat; runic power is hidden on Retail, so there is no cap check. Empower Rune Weapon at two charges, Reaper's Mark, Pillar of Frost, Breath of Sindragosa, Frostwyrm's Fury; then Obliterate on two Killing Machines or one with Exterminate, Howling Blast on Rime, Obliterate on Killing Machine, Empower Rune Weapon for a new one, Frost Strike, Obliterate, Howling Blast. Three or more enemies swap in Frostscythe and Glacial Advance." },
+-- 00b5eb13
+[2019] = { "Default.Retail.DeathKnight.Unholy.Name", "Blizzard Assisted" },
+-- c11d2249
+[2020] = { "Default.Retail.DeathKnight.Unholy.Description", "Recommended for Unholy. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it raises your ghoul and uses Army of the Dead and Dark Transformation itself); it waits while you cast or channel. Alongside it: Mind Freeze on an interruptible cast, and Icebound Fortitude and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Mind Freeze lights only where the game shows them; health is hidden on Retail, so when to use Icebound Fortitude is your call." },
+-- 05c7030d
+[2021] = { "Default.Retail.DeathKnight.UnholyGuide.Name", "Reference (Icy Veins and Wowhead)" },
+-- d0121955
+[2022] = { "Default.Retail.DeathKnight.UnholyGuide.Description", "Reference only, off by default: the guides' Unholy priority. Procs and plagues are hidden in Midnight combat, so it cannot run there; runic power and the target's health are hidden on Retail, so the execute window and the San'layn runic power spend are left out. Raise Dead without a ghoul; Festering Scythe to keep its plague haste up; Soul Reaper on Reaping; Putrefy during Dark Transformation; Death Coil (Epidemic on four or more enemies) on Sudden Doom or Forbidden Knowledge; Festering Strike with no Lesser Ghoul charges, Scourge Strike with them; Death Coil. Reminders: Army of the Dead, Dark Transformation, Outbreak when your plagues are missing, plus the utility reminders." },
+-- df190019
+[2023] = { "Default.Retail.DeathKnight.UnholySimc.Name", "Reference (SimulationCraft)" },
+-- 100d5361
+[2024] = { "Default.Retail.DeathKnight.UnholySimc.Description", "Reference only, off by default: SimulationCraft's Unholy list, which spends Death Coil far more often. Hidden combat data keeps it from running in Midnight combat; runic power and target health are hidden on Retail, so the cap and execute checks are left out. Festering Scythe upkeep, Soul Reaper in Dark Transformation, Death Coil on Sudden Doom, Putrefy in Dark Transformation, Death Coil in Dark Transformation or Forbidden Knowledge and whenever Army of the Dead is over 5 seconds away, Scourge Strike with Lesser Ghoul charges, Festering Strike. Three or more enemies: Epidemic for Death Coil and Festering Strike below three charges. Reminders: Outbreak, Death and Decay on packs, Army of the Dead, Dark Transformation." },
+-- 00b5eb13
+[2025] = { "Default.Retail.DeathKnight.Initial.Name", "Blizzard Assisted" },
+-- 16bdde1a
+[2026] = { "Default.Retail.DeathKnight.Initial.Description", "Recommended before you choose a specialization (while the game reports the Death Knight's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Death Knight premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2027] = { "Default.Retail.DemonHunter.Havoc.Name", "Blizzard Assisted" },
+-- c4a310af
+[2028] = { "Default.Retail.DemonHunter.Havoc.Description", "Recommended for Havoc. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the game's assistant leaves to you: Metamorphosis and The Hunt in combat, Vengeful Retreat if you have Inertia or Exergy, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Movement, Darkness and trinkets stay with you." },
+-- 333b8eab
+[2029] = { "Default.Retail.DemonHunter.HavocGuide.Name", "Reference (Icy Veins, SimulationCraft and Wowhead)" },
+-- 6f8624ec
+[2030] = { "Default.Retail.DemonHunter.HavocGuide.Description", "Reference only, off by default: the guides' Havoc priority. Your procs, Metamorphosis and Essence Break are hidden from addons in Midnight combat, so this list cannot run there; read it, or clone it to experiment. Fury is hidden on Retail, so Felblade does not wait for room. Aldrachi Reaver: Reaver's Glaive when neither Rending Strike nor Glaive Flurry is up, Chaos Strike on Rending Strike. Fel-Scarred: Essence Break, Blade Dance and Chaos Strike in Metamorphosis. Then Blade Dance and Chaos Strike inside Essence Break, Immolation Aura at two charges, Eye Beam, Felblade for Inertia, Essence Break when Eye Beam is over 4 seconds away, Blade Dance, Immolation Aura on two enemies, Chaos Strike, Felblade, Immolation Aura, Throw Glaive, Fel Rush. Reminders: Metamorphosis once Eye Beam and Blade Dance are spent, The Hunt, Vengeful Retreat, plus Disrupt and Blur." },
+-- 00b5eb13
+[2031] = { "Default.Retail.DemonHunter.Vengeance.Name", "Blizzard Assisted" },
+-- ad54981d
+[2032] = { "Default.Retail.DemonHunter.Vengeance.Description", "Recommended for Vengeance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what the assistant leaves to you: Demon Spikes, Fiery Brand, Fel Devastation and Metamorphosis whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call. Infernal Strike, Darkness, taunts and trinkets stay with you." },
+-- 56c0b232
+[2033] = { "Default.Retail.DemonHunter.VengeanceGuide.Name", "Reference (Wowhead and Icy Veins)" },
+-- 74b5fdc3
+[2034] = { "Default.Retail.DemonHunter.VengeanceGuide.Description", "Reference only, off by default: Wowhead's Vengeance order with Icy Veins' hero-tree goals. Your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so spenders wait only for their cost and builders do not avoid capping. Aldrachi Reaver: Reaver's Glaive, Fracture on Rending Strike, Soul Cleave on Glaive Flurry. Then Fracture at full charges, Spirit Bomb on three or more enemies, Immolation Aura, Sigil of Flame, Soul Cleave against one target, Fel Devastation, Soul Cleave, Fracture, Felblade, Throw Glaive. Rotation Master cannot count Soul Fragments, so Spirit Bomb follows the enemy count. Reminders: Demon Spikes when it is down, Metamorphosis, Fiery Brand, Sigil of Spite, Soul Carver (Infernal Strike at two charges is off), plus Disrupt and Blur." },
+-- df190019
+[2035] = { "Default.Retail.DemonHunter.VengeanceSimc.Name", "Reference (SimulationCraft)" },
+-- d4f52cf1
+[2036] = { "Default.Retail.DemonHunter.VengeanceSimc.Description", "Reference only, off by default: SimulationCraft's Vengeance lists. Hidden combat data keeps it from running in Midnight combat, and Fury is hidden on Retail, so its Fury thresholds are left out. Aldrachi Reaver: Sigil of Flame and Immolation Aura first, Metamorphosis, the Reaver's Glaive cycle with Felblade, Fiery Brand, Sigil of Spite, Spirit Bomb on packs, Soul Carver in Fiery Demise, then Fracture, Soul Cleave, Felblade, Fel Devastation. Annihilator: spend a ready Voidfall with Spirit Bomb or Soul Cleave, Fracture at two Voidfall stacks, Metamorphosis, Spirit Bomb, Sigil of Spite, Fracture at full charges, Immolation Aura, Sigil of Flame, Fracture, Soul Cleave, Felblade, Throw Glaive. Reminders: Demon Spikes, Disrupt, Blur." },
+-- 00b5eb13
+[2037] = { "Default.Retail.DemonHunter.Devourer.Name", "Blizzard Assisted" },
+-- ca03d1af
+[2038] = { "Default.Retail.DemonHunter.Devourer.Description", "Recommended for Devourer. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel Void Ray. Alongside it, reminders for what the assistant leaves to you: Void Metamorphosis, The Hunt and Voidblade whenever they are ready in combat, Disrupt on an interruptible cast, and Blur whenever it is ready in combat. Enemy casts are hidden in combat, so Disrupt lights only where the game shows them; health is hidden on Retail, so when to use Blur is your call." },
+-- 6befdd35
+[2039] = { "Default.Retail.DemonHunter.DevourerGuide.Name", "Reference (Icy Veins)" },
+-- 5da6da74
+[2040] = { "Default.Retail.DemonHunter.DevourerGuide.Description", "Reference only, off by default: Icy Veins' Annihilator priority. Most of your buffs are hidden in Midnight combat, so it cannot run there; Fury is hidden on Retail, so Void Ray waits only for its cost. Outside Void Metamorphosis: Consume on Soulburst, Reap, Soul Immolation when it is not burning, Voidblade and The Hunt once Void Metamorphosis is ready, Void Metamorphosis, Hungering Slash, Void Ray, Consume. Inside it: Devour on Soulburst, Void Ray, the Void-Scarred strikes if you have them, Collapsing Star, Cull, Devour, Soul Immolation. Rotation Master cannot count Soul Fragments, so Reap and Cull go on cooldown. Reminders: Disrupt and Blur." },
+-- df190019
+[2041] = { "Default.Retail.DemonHunter.DevourerSimc.Name", "Reference (SimulationCraft)" },
+-- 0228846e
+[2042] = { "Default.Retail.DemonHunter.DevourerSimc.Description", "Reference only, off by default: SimulationCraft's Annihilator list, which enters Void Metamorphosis as soon as it is ready. Hidden combat data keeps it from running in Midnight combat. Outside: Voidblade with Devourer's Bite on up to three enemies and a full Void Metamorphosis, Void Metamorphosis, Consume on Soulburst, Reap, Void Ray, Soul Immolation on packs, Consume. Inside: Devour on Soulburst against one target, The Hunt and Voidblade with Devourer's Bite, Void Ray on packs, Collapsing Star, Cull, Void Ray, Soul Immolation, Devour. Reminders: Disrupt and Blur." },
+-- 00b5eb13
+[2043] = { "Default.Retail.DemonHunter.Initial.Name", "Blizzard Assisted" },
+-- a6d0d810
+[2044] = { "Default.Retail.DemonHunter.Initial.Description", "Recommended before you choose a specialization (while the game reports the Demon Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Demon Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2045] = { "Default.Retail.Druid.Balance.Name", "Blizzard Assisted" },
+-- 3941b2ad
+[2046] = { "Default.Retail.Druid.Balance.Description", "Recommended for Balance. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Celestial Alignment (or Incarnation) in combat, Solar Beam on an interruptible cast, Moonkin Form and Mark of the Wild between pulls, and Barkskin and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so Solar Beam lights only where the game shows them; health is hidden on Retail, so when to use Barkskin is your call." },
+-- 333b8eab
+[2047] = { "Default.Retail.Druid.BalanceGuide.Name", "Reference (Icy Veins, SimulationCraft and Wowhead)" },
+-- 9253fca4
+[2048] = { "Default.Retail.Druid.BalanceGuide.Description", "Reference only, off by default: the guides' Balance priority. Your DoTs, Eclipse and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Astral Power is hidden on Retail, so Starsurge spends at its cost instead of before the cap. Pulls with Moonkin Form and Wrath. Sunfire and Moonfire when missing or about to fall off; Eclipse when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on Starweaver's Warp, Touch the Cosmos or packs; Starsurge on Starweaver's Weft or Touch the Cosmos; New, Half and Full Moon; Wild Mushroom in an Eclipse; Starsurge whenever you can afford it; Starfire in a Lunar Eclipse or on packs, else Wrath. Reminders: Celestial Alignment or Incarnation, Fury of Elune and Force of Nature before an Eclipse, Convoke in Celestial Alignment, Solar Beam, plus the utility reminders." },
+-- 00b5eb13
+[2049] = { "Default.Retail.Druid.Feral.Name", "Blizzard Assisted" },
+-- e3e320b6
+[2050] = { "Default.Retail.Druid.Feral.Description", "Recommended for Feral. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Berserk (or Incarnation) in combat, Skull Bash on an interruptible cast, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, and Cat Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use the defensives is your call." },
+-- c8d06db9
+[2051] = { "Default.Retail.Druid.FeralGuide.Name", "Reference (Icy Veins and SimulationCraft)" },
+-- 2be7f2bb
+[2052] = { "Default.Retail.Druid.FeralGuide.Description", "Reference only, off by default: the guides' Feral priority. Bleeds and procs are hidden in Midnight combat (combo points are not), so it cannot run there; energy is hidden on Retail. Opens with Cat Form, Prowl and Rake. Chomp; Ferocious Bite on Apex Predator's Craving; at five combo points Primal Wrath on two or more enemies, Rip when missing or in its last seconds, else Ferocious Bite, waiting for energy rather than building past five; below five, Rake when missing or about to fall off, Lunar Inspiration Moonfire, Swipe on three or more enemies, Shred. Reminders: Tiger's Fury whenever it is ready in combat, Berserk or Incarnation and Feral or Frantic Frenzy (at two points or fewer) in Tiger's Fury, Convoke in Tiger's Fury and Berserk with Rip up, Skull Bash, Survival Instincts, plus the utility reminders. Snapshotting is left to you." },
+-- 00b5eb13
+[2053] = { "Default.Retail.Druid.Guardian.Name", "Blizzard Assisted" },
+-- 2a16fe9b
+[2054] = { "Default.Retail.Druid.Guardian.Description", "Recommended for Guardian. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; Assisted Combat plays for damage only. Alongside it, reminders for what it leaves to you: Berserk (or Incarnation) and Convoke the Spirits in combat, Ironfur, Frenzied Regeneration, Survival Instincts, Barkskin and your racial cooldown whenever they are ready in combat, Skull Bash on an interruptible cast, and Bear Form and Mark of the Wild between pulls. Enemy casts are hidden in combat, so Skull Bash lights only where the game shows them; health and rage are hidden on Retail, so when to use the defensives is your call and Ironfur cannot wait for a rage threshold." },
+-- 05c7030d
+[2055] = { "Default.Retail.Druid.GuardianGuide.Name", "Reference (Icy Veins and Wowhead)" },
+-- 32ed36e2
+[2056] = { "Default.Retail.Druid.GuardianGuide.Description", "Reference only, off by default: the guides' Guardian priority. Debuffs and procs are hidden in Midnight combat, so it cannot run there; rage and health are hidden on Retail, so the 80-rage Raze and Maul dump is left to you. Thrash and Mangle on cooldown, Red Moon on a single target, Moonfire when missing or on Galactic Guardian, Swipe. Reminders whenever they are ready in combat: Ironfur, Frenzied Regeneration, Survival Instincts; Bear Form between pulls; Berserk or Incarnation, Lunar Beam, Convoke, Heart of the Wild, Skull Bash, plus the utility reminders." },
+-- beb78fe5
+[2057] = { "Default.Retail.Druid.GuardianSimc.Name", "Defensive reference (SimulationCraft)" },
+-- f0f6bfc8
+[2058] = { "Default.Retail.Druid.GuardianSimc.Description", "Reference only, off by default: SimulationCraft's Guardian list, which spends rage on Ironfur first. Hidden combat data keeps it from running in Midnight combat, and rage is hidden on Retail, so its rage thresholds are left out. Ironfur in Berserk; Thrash when missing, about to fall off or under three stacks; Maul on Gory Fur; Thrash on three or more enemies; Mangle while Red Moon ticks; Red Moon; Mangle; Thrash; Moonfire; Swipe. Its cat-form weaving is left out. Reminders: Bear Form, Frenzied Regeneration, Survival Instincts, Berserk or Incarnation, Lunar Beam, Convoke, Skull Bash, plus the utility reminders." },
+-- f2046f35
+[2059] = { "Default.Retail.Druid.Restoration.Name", "Blizzard Assisted with maintenance" },
+-- fc05cf7d
+[2060] = { "Default.Retail.Druid.Restoration.Description", "Recommended for Restoration. With an enemy targeted it highlights Blizzard's Assisted Combat suggestion, Blizzard's Restoration damage list in cat or caster form. Otherwise it suggests Icy Veins' maintenance casts on your friendly target (or yourself): Lifebloom, Efflorescence in combat, Swiftmend on a Rejuvenation, Wild Growth in a group in combat, Regrowth on Clearcasting or five Abundance stacks, Rejuvenation when missing. Health and mana are hidden on Retail, so these follow the target you choose, not how hurt anyone is; your heals over time are hidden in Midnight combat, so the steps that read them wait there. Whom to heal, and every healing cooldown, is yours. Reminders: Innervate, Barkskin and your racial cooldown whenever they are ready in combat, Mark of the Wild between pulls." },
+-- 00b5eb13
+[2061] = { "Default.Retail.Druid.Initial.Name", "Blizzard Assisted" },
+-- 65160bfe
+[2062] = { "Default.Retail.Druid.Initial.Description", "Recommended before you choose a specialization (while the game reports the Druid's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Druid premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2063] = { "Default.Retail.Evoker.Devastation.Name", "Blizzard Assisted" },
+-- 4950c9f2
+[2064] = { "Default.Retail.Evoker.Devastation.Description", "Recommended for Devastation. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast, channel Disintegrate or hold an empowered spell. Choosing the empower rank is up to you. Alongside it, reminders in combat for Dragonrage, Deep Breath and Tip the Scales, Quell on an interruptible cast and Obsidian Scales whenever it is ready, and out of combat Blessing of the Bronze when it is missing and Source of Magic on a friendly target in your group. Enemy casts are hidden in combat, so Quell lights only where the game shows them; health is hidden on Retail, so when to use Obsidian Scales is your call." },
+-- 8d6607e4
+[2065] = { "Default.Retail.Evoker.DevastationGuide.Name", "Reference (SimulationCraft and Icy Veins)" },
+-- 3db659f5
+[2066] = { "Default.Retail.Evoker.DevastationGuide.Description", "Reference only, off by default: the optimal Devastation priority. Procs, cooldowns and the target's burn are hidden in Midnight combat, so it cannot run there; read it, or clone it to experiment. Pulls with Living Flame. Scalecommander (Mass Disintegrate known): Eternity Surge, Fire Breath, Deep Breath on two or more enemies, Disintegrate with Mass Disintegrate charges, Pyre on five or more, Disintegrate, Living Flame on Burnout with Leaping Flames, Unbound Flame below two Essence Bursts, Azure Sweep. Flameshaper: Eternity Surge, Fire Breath when its burn is missing or ending, Pyre on five or more, Disintegrate, Deep Breath on four or more, Unbound Flame, Living Flame on Burnout with Leaping Flames, Azure Sweep. Then Azure Strike while moving, Living Flame, Azure Strike. Use empowers at rank 1 on one target (Icy Veins). Reminders: Dragonrage, Tip the Scales in Dragonrage or with Fire Breath ready, Deep Breath for Scalecommander, plus the utility reminders." },
+-- bf31f812
+[2067] = { "Default.Retail.Evoker.Augmentation.Name", "Icy Veins" },
+-- 02c50a1b
+[2068] = { "Default.Retail.Evoker.Augmentation.Description", "Recommended for Augmentation: Icy Veins' Ebon Might priority. Ebon Might is one of the few buffs the game still shows addons in Midnight combat, so its upkeep works there. Out of combat: Blistering Scales on a friendly group target without it, Living Flame on an enemy. Then Ebon Might when missing or under 4 seconds, and on cooldown unless Breath of Eons is ready; Prescience; Fire Breath; Upheaval; Eruption in Ebon Might or with two Essence Bursts; Azure Strike; Living Flame. Hidden buffs only skip their own step in combat. Reminders: Breath of Eons and Deep Breath (you aim them), Tip the Scales with Fire Breath ready, Time Skip with Fire Breath and Upheaval both cooling, plus the utility reminders. Prescience and Blistering Scales go on your target: choosing the ally, and the empower rank, is up to you." },
+-- 00b5eb13
+[2069] = { "Default.Retail.Evoker.AugmentationAssisted.Name", "Blizzard Assisted" },
+-- 9442cdce
+[2070] = { "Default.Retail.Evoker.AugmentationAssisted.Description", "Blizzard's Assisted Combat suggestion for Augmentation, an alternative to the recommended Icy Veins Augmentation premade, off by default: enable it and disable that one, or raise its priority. It recasts Ebon Might only after it has fallen off, and waits while you cast or hold an empowered spell. Reminders in combat for Breath of Eons, Deep Breath, Tip the Scales and Time Skip, plus Quell, Obsidian Scales, Blessing of the Bronze and Source of Magic as in the other Evoker premades." },
+-- 6befdd35
+[2071] = { "Default.Retail.Evoker.Preservation.Name", "Reference (Icy Veins)" },
+-- 21ab41c4
+[2072] = { "Default.Retail.Evoker.Preservation.Description", "Reference only, off by default. Ally health, Echo, Reversion, Essence Burst and every cooldown are hidden from addons in Midnight combat, Rotation Master cannot choose whom to heal, and Blizzard has no Assisted Combat rotation for healers, so this premade does not heal. It reminds you of Blessing of the Bronze and Source of Magic out of combat, and when your target is an enemy it suggests damage: Fire Breath, Disintegrate, Living Flame, and Azure Strike while moving. Quell and Obsidian Scales reminders as in the other Evoker premades. Healing stays with you." },
+-- 00b5eb13
+[2073] = { "Default.Retail.Evoker.Initial.Name", "Blizzard Assisted" },
+-- 63133e23
+[2074] = { "Default.Retail.Evoker.Initial.Description", "Recommended before you choose a specialization (while the game reports the Evoker's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Evoker premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2075] = { "Default.Retail.Hunter.BeastMastery.Name", "Blizzard Assisted" },
+-- c71902c5
+[2076] = { "Default.Retail.Hunter.BeastMastery.Description", "Recommended for Beast Mastery. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Bloodshed and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call. Trinkets, Misdirection and pet care stay with you." },
+-- 8d6607e4
+[2077] = { "Default.Retail.Hunter.BeastMasteryGuide.Name", "Reference (SimulationCraft and Icy Veins)" },
+-- cad4949f
+[2078] = { "Default.Retail.Hunter.BeastMasteryGuide.Description", "Reference only, off by default: the optimized Beast Mastery priority. Charges, cooldowns and procs are hidden from addons in Midnight combat, so it cannot run there; read it, or clone it to experiment. Focus is hidden on Retail. Calls your pet, marks the target before the pull. Barbed Shot just before Bestial Wrath or before it caps; Bestial Wrath; Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off; Cobra Shot on Cobra Fang; Cobra Shot; Barbed Shot when Cobra Shot is unaffordable. Dark Ranger: Black Arrow during Withering Fire and Wailing Arrow as it ends. Three or more enemies (two with Beast Cleave): Wild Thrash to start Beast Cleave, then Kill Command, Barbed Shot and Cobra Shot while it lasts. Reminders: Bloodshed and the Assisted premade's utility reminders." },
+-- 00b5eb13
+[2079] = { "Default.Retail.Hunter.Marksmanship.Name", "Blizzard Assisted" },
+-- 494a0bb6
+[2080] = { "Default.Retail.Hunter.Marksmanship.Description", "Recommended for Marksmanship. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Trueshot and your racial cooldown in combat, Counter Shot on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call." },
+-- 8d6607e4
+[2081] = { "Default.Retail.Hunter.MarksmanshipGuide.Name", "Reference (SimulationCraft and Icy Veins)" },
+-- d525da1a
+[2082] = { "Default.Retail.Hunter.MarksmanshipGuide.Description", "Reference only, off by default: the optimized Marksmanship priority, which spends Precise Shots before the next Aimed Shot. Procs and charges are hidden in Midnight combat, so it cannot run there; Focus is hidden on Retail, so the 70-Focus Multi-Shot dump on packs is left out. Marks the target and opens with Aimed Shot. Sentinel: Explosive Shot, Volley, Trueshot, Moonlight Chakram before its window ends, Aimed Shot in Trueshot without Precise Shots, Rapid Fire, Kill Shot, Multi-Shot (two enemies with Aspect of the Hydra) or Arcane Shot on Precise Shots, Aimed Shot, Moonlight Chakram, Steady Shot. Dark Ranger: Black Arrow on Precise Shots first, no Explosive Shot during Lock and Load, Aimed Shot before it caps, Wailing Arrow. Three or more enemies with Trick Shots: Explosive Shot, Volley, Multi-Shot to apply Trick Shots, Trueshot, then Rapid Fire and Aimed Shot while it lasts. Calling Trueshot for 30 Bullseye stacks or an unmarked target stays with you." },
+-- 00b5eb13
+[2083] = { "Default.Retail.Hunter.Survival.Name", "Blizzard Assisted" },
+-- fc59d6b9
+[2084] = { "Default.Retail.Hunter.Survival.Description", "Recommended for Survival. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it calls your pet itself); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Takedown and your racial cooldown in combat, Muzzle on an interruptible cast, and Survival of the Fittest whenever it is ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use your defensives (Exhilaration and Aspect of the Turtle included) is your call." },
+-- df190019
+[2085] = { "Default.Retail.Hunter.SurvivalGuide.Name", "Reference (SimulationCraft)" },
+-- 1b766914
+[2086] = { "Default.Retail.Hunter.SurvivalGuide.Description", "Reference only, off by default: SimulationCraft's Survival priority, where Kill Command builds Tip of the Spear and Takedown, Boomstick, Wildfire Bomb and Raptor Strike spend it. Tip of the Spear and charges are hidden in Midnight combat, so it cannot run there. Calls your pet, marks the target and opens with Wildfire Bomb. Sentinel: Kill Command without Tip of the Spear, Boomstick, Wildfire Bomb on Sentinel's Mark, Kill Command before a ready Takedown, Takedown, Moonlight Chakram, Raptor Strike, then Kill Command, Wildfire Bomb and Takedown. Pack Leader: Kill Command on Howl of the Pack Leader, then Takedown, Wildfire Bomb, Boomstick and Raptor Strike with Tip of the Spear. Three or more enemies: Boomstick and Wildfire Bomb before Takedown, Raptor Swipe. Reminders: Aspect of the Eagle out of melee and the utility reminders." },
+-- 00b5eb13
+[2087] = { "Default.Retail.Hunter.Initial.Name", "Blizzard Assisted" },
+-- ea9140e9
+[2088] = { "Default.Retail.Hunter.Initial.Description", "Recommended before you choose a specialization (while the game reports the Hunter's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Hunter premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2089] = { "Default.Retail.Mage.Arcane.Name", "Blizzard Assisted" },
+-- 074da909
+[2090] = { "Default.Retail.Mage.Arcane.Description", "Recommended for Arcane. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Arcane Surge in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Prismatic Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call. Mirror Image, Alter Time, Blink and trinkets stay with you." },
+-- c8d06db9
+[2091] = { "Default.Retail.Mage.ArcaneGuide.Name", "Reference (Icy Veins and SimulationCraft)" },
+-- ade56803
+[2092] = { "Default.Retail.Mage.ArcaneGuide.Description", "Reference only, off by default: the guides' Arcane priority. Arcane Salvo and Clearcasting are hidden from addons in Midnight combat (only Arcane Charges stay visible), so it cannot run there; mana is hidden on Retail, so the low-mana Evocation is yours; read it, or clone it to experiment. Pulls with Arcane Blast. Sunfury: Arcane Missiles on Clearcasting below 12 Salvo, Prismatic Bolt outside Arcane Soul, Arcane Barrage at four charges with 12 Salvo and Clearcasting or 25 Salvo, or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on three enemies or at no charges, Arcane Blast. Spellslinger (Splintering Sorcery known): Prismatic Bolt, Orb on packs, Barrage at 20 Salvo (only at four charges against two or more enemies), Missiles on Clearcasting below 15 Salvo, Orb and Pulse below three charges (no Pulse in Arcane Surge), Arcane Blast. Arcane Barrage when Blast cannot be cast. Reminders: Arcane Surge, Touch of the Magi after a Barrage or Prismatic Bolt in or well before Surge, Presence of Mind at no charges after a Barrage, plus the Assisted premade's reminders." },
+-- 00b5eb13
+[2093] = { "Default.Retail.Mage.Fire.Name", "Blizzard Assisted" },
+-- 42f4c6c3
+[2094] = { "Default.Retail.Mage.Fire.Description", "Recommended for Fire. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Combustion in combat, Arcane Intellect out of combat, Counterspell on an interruptible cast, Blazing Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call." },
+-- e05707f3
+[2095] = { "Default.Retail.Mage.FireGuide.Name", "Reference (Icy Veins, Wowhead and SimulationCraft)" },
+-- 77d0e2fa
+[2096] = { "Default.Retail.Mage.FireGuide.Description", "Reference only, off by default: the guides' Fire priority. Hot Streak, Heating Up, Pyroclasm and Fire Blast charges are hidden in Midnight combat, so it cannot run there. Fire Blast while a cast is finishing to turn Heating Up into Hot Streak; pulls with Pyroblast. Pyroblast (Flamestrike on four or more enemies) on Hyperthermia, Meteor, Pyroblast on Hot Streak, Fire Blast on Heating Up inside Combustion, Pyroblast on Pyroclasm, Scorch on Heat Shimmer or while moving, Fire Blast on Heating Up, then Frostfire Bolt or Fireball. Reminders: Combustion as a hard cast finishes, Blazing Barrier and the utility reminders. Waiting for Firestarter and timing Meteor into Combustion stay with you." },
+-- 00b5eb13
+[2097] = { "Default.Retail.Mage.Frost.Name", "Blizzard Assisted" },
+-- 4d8c78c6
+[2098] = { "Default.Retail.Mage.Frost.Description", "Recommended for Frost. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Summon Water Elemental when you have the talent and no elemental, Arcane Intellect out of combat, Counterspell on an interruptible cast, Ice Barrier whenever it is ready in combat, and your racial cooldown in combat. Enemy casts are hidden in combat, so Counterspell lights only where the game shows them; health is hidden on Retail, so Ice Block and other emergency buttons are your call." },
+-- c8d06db9
+[2099] = { "Default.Retail.Mage.FrostGuide.Name", "Reference (Icy Veins and SimulationCraft)" },
+-- ae1059e6
+[2100] = { "Default.Retail.Mage.FrostGuide.Description", "Reference only, off by default: the guides' Frost priority for each hero tree. Procs, Freezing stacks and cooldowns are hidden in Midnight combat, so it cannot run there. Pulls with Frostfire Bolt or Frostbolt. Frostfire (Frostfire Bolt known): Glacial Spike when ready, Comet Storm on one or two enemies, Flurry on Brain Freeze without Thermal Void, Ice Lance on two Fingers of Frost, Ray of Frost, Frozen Orb, Blizzard on Freezing Rain with three enemies, Ice Lance on Fingers of Frost with Thermal Void or at twelve Freezing, Flurry, Ice Nova or Cone of Cold on five, then Glacial Spike or Frostfire Bolt. Spellslinger: Comet Storm, Flurry on Brain Freeze, Ice Lance on two Fingers, Frozen Orb, Glacial Spike when ready, Blizzard on Freezing Rain, Ice Lance on Fingers of Frost or six Freezing, Ray of Frost, Flurry, Ice Nova or Cone of Cold on four, Blizzard on seven, then Glacial Spike or Frostbolt. Ice Lance while moving. Reminders: Summon Water Elemental, Ice Barrier and the utility reminders." },
+-- 00b5eb13
+[2101] = { "Default.Retail.Mage.Initial.Name", "Blizzard Assisted" },
+-- f9d1d4a4
+[2102] = { "Default.Retail.Mage.Initial.Description", "Recommended before you choose a specialization (while the game reports the Mage's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Mage premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- aae690b6
+[2103] = { "Default.Retail.Monk.Brewmaster.Name", "Blizzard Assisted with brews" },
+-- 60341e2f
+[2104] = { "Default.Retail.Monk.Brewmaster.Description", "Recommended for Brewmaster. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Assisted Combat presses no brews, so, as Icy Veins advises, the brews are reminders beside it: Black Ox Brew, Invoke Niuzao, Purifying Brew, Celestial Brew or Celestial Infusion and Touch of Death light whenever they are ready in combat (Rotation Master cannot read Stagger yet, so how heavy it is stays your call). Also Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat; enemy casts are hidden in combat, so the interrupt lights only where the game shows them, and health is hidden on Retail, so when to use Fortifying Brew is your call." },
+-- 6befdd35
+[2105] = { "Default.Retail.Monk.BrewmasterGuide.Name", "Reference (Icy Veins)" },
+-- a07ba74a
+[2106] = { "Default.Retail.Monk.BrewmasterGuide.Description", "Reference only, off by default: Icy Veins' Brewmaster priority (SimulationCraft agrees in shape). Blackout Combo, Empty Barrel and charges are hidden in Midnight combat, so it cannot run there. Pulls with Keg Smash. Blackout Kick; Chi Burst (Master of Harmony); Tiger Palm on Blackout Combo; Keg Smash at full charges or with Empty Barrel; Breath of Fire; Rushing Jade Wind before Exploding Keg; Chi Burst (Shado-Pan); Keg Smash; Rushing Jade Wind and Spinning Crane Kick on three or more enemies; Tiger Palm; Expel Harm. Reminders: Black Ox Brew once Purifying and Celestial Brew are spent, Invoke Niuzao, Purifying Brew, Celestial Brew or Infusion, Touch of Death, plus the utility reminders." },
+-- 00b5eb13
+[2107] = { "Default.Retail.Monk.Windwalker.Name", "Blizzard Assisted" },
+-- ac8fdaae
+[2108] = { "Default.Retail.Monk.Windwalker.Description", "Recommended for Windwalker. Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat (it already keeps Combo Strikes); it waits while you cast or channel. Alongside it, reminders for what Assisted Combat leaves to you: Zenith, Celestial Conduit, Invoke Xuen and Touch of Karma in combat, Spear Hand Strike on an interruptible cast, and Fortifying Brew and your racial cooldown whenever they are ready in combat. Enemy casts are hidden in combat, so the interrupt lights only where the game shows them; health is hidden on Retail, so when to use Fortifying Brew is your call." },
+-- c8d06db9
+[2109] = { "Default.Retail.Monk.WindwalkerGuide.Name", "Reference (Icy Veins and SimulationCraft)" },
+-- 44ec6b35
+[2110] = { "Default.Retail.Monk.WindwalkerGuide.Description", "Reference only, off by default: Icy Veins' Conduit of the Celestials priority. Every step keeps Combo Strikes (never the spell you cast last); Chi and your own casts stay readable, but Heart of the Jade Serpent, Zenith, Blackout Kick! and Dance of Chi-Ji are hidden in Midnight combat, so it cannot run there; energy is hidden on Retail, so the Tiger Palm before the energy cap is left out. Whirling Dragon Punch with Xuen over 10 seconds away; Zenith Stomp when low on Chi or as Zenith ends; Celestial Conduit without Heart; Fists of Fury as Heart ends; Celestial Conduit, Invoke Xuen, Fists of Fury, Whirling Dragon Punch, Strike of the Windlord; Blackout Kick when short of Chi for Fists; Rushing Wind Kick, Rising Sun Kick; Blackout Kick on two Blackout Kick! charges or in Zenith; Spinning Crane Kick in Zenith or on Dance of Chi-Ji; Touch of Death; Tiger Palm, Blackout Kick, Slicing Winds as fillers. Reminder: Touch of Karma, plus the utility reminders." },
+-- 6befdd35
+[2111] = { "Default.Retail.Monk.Mistweaver.Name", "Reference (Icy Veins)" },
+-- 671bd99c
+[2112] = { "Default.Retail.Monk.Mistweaver.Description", "Reference only, off by default. Blizzard offers no Assisted Combat list for healers, and in Midnight combat your allies' health, Renewing Mist charges, Mana Tea stacks and procs are hidden from addons, so healing advice is not possible; choose your heals yourself. On a hostile target it suggests the fistweaving filler, Rising Sun Kick, Blackout Kick and Tiger Palm; on a friendly target or none it suggests nothing. Reminders: Spear Hand Strike, and Fortifying Brew and your racial cooldown whenever they are ready in combat." },
+-- 00b5eb13
+[2113] = { "Default.Retail.Monk.Initial.Name", "Blizzard Assisted" },
+-- 7799708b
+[2114] = { "Default.Retail.Monk.Initial.Description", "Recommended before you choose a specialization (while the game reports the Monk's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Monk premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2115] = { "Default.Retail.Paladin.Retribution.Name", "Blizzard Assisted" },
+-- d3e8f0e2
+[2116] = { "Default.Retail.Paladin.Retribution.Description", "Recommended for Retribution in Midnight. In combat the game now hides buffs, debuffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation) on your action bars, and stops while you cast or have no enemy targeted. It also reminds you of what that suggestion never covers: an aura between pulls, Rebuke on an interruptible cast, and Divine Protection whenever it is ready in combat. Health is hidden on Retail, so when to use Divine Protection and Lay on Hands is your call. Trinkets and racials stay with you." },
+-- 6befdd35
+[2117] = { "Default.Retail.Paladin.Retribution.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 66c84fb8
+[2118] = { "Default.Retail.Paladin.Retribution.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads buffs, charges and enemy counts that Midnight hides in combat, so it cannot run reliably there. Hammer of Light; a free Divine Purpose spender; at 5 Holy Power while Wake of Ashes is cooling, the spender; Wake of Ashes; Divine Toll; Blade of Justice on Art of War; Hammer of Wrath before it caps; at 3 or more Holy Power, Divine Storm on two or more enemies (or with Empyrean Power), else Final Verdict; Hammer of Wrath; Blade of Justice; Judgment; Templar Strike or Crusader Strike. Holy Power stays visible in combat, so its spending points work there. Reminders: Avenging Wrath, Execution Sentence with Wake of Ashes ready, aura, Rebuke, defensives." },
+-- 00b5eb13
+[2119] = { "Default.Retail.Paladin.Protection.Name", "Blizzard Assisted" },
+-- 3e1487eb
+[2120] = { "Default.Retail.Paladin.Protection.Description", "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion, which already includes Shield of the Righteous, Avenging Wrath and Sentinel, and stops while you cast or have no enemy targeted. Reminders for what it leaves out: an aura between pulls, Rebuke on an interruptible cast, and Ardent Defender and Guardian of Ancient Kings whenever they are ready in combat. Health is hidden on Retail, so when to use them, and Lay on Hands, is your call. Taunting and positioning stay with you." },
+-- 6befdd35
+[2121] = { "Default.Retail.Paladin.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
+-- f169797b
+[2122] = { "Default.Retail.Paladin.Protection.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order needs the Consecration, Vanguard and Shining Light buffs, which Midnight hides in combat. Consecration before the pull; then Divine Toll, Hammer of Light, Consecration when you are not standing in it, Avenger's Shield with Vanguard, Shield of the Righteous at 3 or more Holy Power, Hammer of Wrath, Judgment, Blessed Hammer or Hammer of the Righteous, Avenger's Shield, Word of Glory with Shining Light, Consecration. Reminders: Avenging Wrath or Sentinel, Holy Bulwark, Sacred Weapon outside Avenging Wrath, defensives, aura, Rebuke." },
+-- 58e3f59f
+[2123] = { "Default.Retail.Paladin.Protection.Wowhead.Name", "Consecration filler reference (Wowhead)" },
+-- 356b61a8
+[2124] = { "Default.Retail.Paladin.Protection.Wowhead.Description", "Reference only, off by default: Wowhead's tank order. Judgment on cooldown, Shield of the Righteous, Avenger's Shield, Divine Toll at 0 Holy Power, Blessed Hammer or Hammer of the Righteous, and Consecration only as the filler. Health is hidden on Retail, so Word of Glory below half health is left to you. Same reminders as the Icy Veins reference." },
+-- bf31f812
+[2125] = { "Default.Retail.Paladin.Holy.Name", "Icy Veins" },
+-- ce9bbe93
+[2126] = { "Default.Retail.Paladin.Holy.Description", "Holy in Midnight, for reference: Rotation Master picks a spell, not a target, and the game hides everyone's health in combat, so this keeps your Holy Power and cooldowns turning over on whatever you target and leaves deciding who needs healing to you. Holy Power stays visible in combat, so it is spent at 5 first and at 3 or more after your other heals. On a friendly target: Eternal Flame or Word of Glory at 5 Holy Power, Flash of Light on Infusion of Light, Holy Shock, Eternal Flame or Word of Glory at 3 or more, Holy Light, Flash of Light; Light of Dawn is left to you. On an enemy: Shield of the Righteous at 5 Holy Power, Holy Shock, Shield of the Righteous at 3 or more, Judgment, Crusader Strike, Consecration. Reminders in combat: Divine Toll, Holy Prism, Holy Bulwark or Sacred Weapon, Beacon of Virtue on a friendly target, Divine Protection; an aura between pulls; Rebuke. Lay on Hands is left to you. Avenging Wrath and Aura Mastery are left to you." },
+-- 00b5eb13
+[2127] = { "Default.Retail.Paladin.Initial.Name", "Blizzard Assisted" },
+-- 4c581641
+[2128] = { "Default.Retail.Paladin.Initial.Description", "Recommended before you choose a specialization (while the game reports the Paladin's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Paladin premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2129] = { "Default.Retail.Priest.Shadow.Name", "Blizzard Assisted" },
+-- e88d5282
+[2130] = { "Default.Retail.Priest.Shadow.Description", "Recommended for Shadow in Midnight. In combat the game now hides your DoTs, buffs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps your DoTs, Shadowform and Voidform going and lets Mind Flay finish), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Power Infusion in the 20 seconds after you cast Voidform, Shadowform and Power Word: Fortitude between pulls, Silence on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Desperate Prayer is your call." },
+-- 6befdd35
+[2131] = { "Default.Retail.Priest.Shadow.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 1cbf9308
+[2132] = { "Default.Retail.Priest.Shadow.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads DoT timers, Madness and Voidform, which Midnight hides in combat; Insanity and health are hidden on Retail, so the Insanity-cap Madness, the Shadow Word: Death execute and Desperate Prayer are left to you. Vampiric Touch before the pull; Tentacle Slam to apply Vampiric Touch; Vampiric Touch and Shadow Word: Pain refreshed in their last 30%; Shadow Word: Madness when it is ending or in Voidform; Void Blast during Madness; Tentacle Slam at two charges; Void Torrent; Mind Blast; Tentacle Slam; Mind Flay: Insanity during Madness; Void Volley; Death and Pain while moving; Mind Flay, clipped for a ready Mind Blast. Reminders: Halo, Voidform with both DoTs up, Power Infusion in Voidform." },
+-- 6a76d2e3
+[2133] = { "Default.Retail.Priest.Discipline.Name", "Atonement (Icy Veins)" },
+-- c8fa3896
+[2134] = { "Default.Retail.Priest.Discipline.Description", "Discipline in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this runs the damage that heals through Atonement and leaves deciding who to heal to you. On a friendly target: Power Word: Shield (Void Shield), Penance, Flash Heal. On an enemy: Shadow Word: Pain when you have not cast it for 12 seconds, Mind Blast, Penance, Shield, Shadow Word: Death, Void Blast, Smite. Reminders in combat: Power Word: Radiance, Evangelism, Ultimate Penitence, Pain Suppression on a friendly target; Fortitude between pulls. Desperate Prayer is your call. Raid ramps before big damage are yours to time." },
+-- db649bbf
+[2135] = { "Default.Retail.Priest.Discipline.Wowhead.Name", "Death first reference (Wowhead)" },
+-- e33c171d
+[2136] = { "Default.Retail.Priest.Discipline.Wowhead.Description", "Reference only, off by default: Wowhead's Season 1 Oracle order, which keeps Shadow Word: Pain up by reading the debuff that Midnight hides in combat. Shadow Word: Pain, Shadow Word: Death on cooldown, Penance, Mind Blast, Smite; Penance first on a friendly target. Same reminders as the Icy Veins premade." },
+-- bf31f812
+[2137] = { "Default.Retail.Priest.Holy.Name", "Icy Veins" },
+-- d7f52f6f
+[2138] = { "Default.Retail.Priest.Holy.Description", "Holy in Midnight, for reference: the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this keeps your Holy Words, Prayer of Mending and procs moving on whatever you target and leaves triage to you. On a friendly target: Holy Word: Sanctify, Holy Word: Serenity, Prayer of Mending, Prayer of Healing with Surge of Light, Benediction, Prayer of Healing with Lightweaver, Flash Heal with Surge of Light, Prayer of Healing in a group, Holy Nova while moving, Flash Heal. On an enemy: Holy Word: Chastise, Holy Fire, Holy Nova while moving, Smite. Reminders: Apotheosis, Divine Hymn and Halo in combat, Guardian Spirit on a friendly target (health is hidden on Retail, so whether it is about to die is your call), Fortitude. Desperate Prayer is yours." },
+-- 00b5eb13
+[2139] = { "Default.Retail.Priest.Initial.Name", "Blizzard Assisted" },
+-- 4b29903d
+[2140] = { "Default.Retail.Priest.Initial.Description", "Recommended before you choose a specialization (while the game reports the Priest's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Priest premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2141] = { "Default.Retail.Rogue.Assassination.Name", "Blizzard Assisted" },
+-- ea331596
+[2142] = { "Default.Retail.Rogue.Assassination.Description", "Recommended for Assassination in Midnight. In combat the game now hides your bleeds, buffs, energy, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which handles the stealth opener, Garrote, Rupture, Envenom, Deathmark and Kingsbane), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: a lethal and a non-lethal poison and Stealth between pulls, Vanish when you are out of stealth in combat, Kick on an interruptible cast (it lights only where the game lets the cast be read). Health is hidden on Retail, so Crimson Vial is your call." },
+-- 6befdd35
+[2143] = { "Default.Retail.Rogue.Assassination.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 04026a9b
+[2144] = { "Default.Retail.Rogue.Assassination.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order keeps bleeds up by their timers, which Midnight hides in combat; energy is hidden on Retail, so its energy pooling is left out. From stealth Garrote, then Ambush. Garrote in its last 30% while you are not at full combo points, Rupture at 5+ in its last 30%; at 5+ combo points Coup de Grace or Envenom; below, Crimson Tempest on three or more enemies, Fan of Knives on two or more close by, Ambush, Mutilate. Reminders: Deathmark with both bleeds up, Kingsbane alongside it, Vanish with Deathmark ready, Shiv on a Deathstalker's Mark target, Thistle Tea whenever it is ready in combat, plus the shared poison, Stealth and Kick reminders." },
+-- 00b5eb13
+[2145] = { "Default.Retail.Rogue.Outlaw.Name", "Blizzard Assisted" },
+-- bb9cc61b
+[2146] = { "Default.Retail.Rogue.Outlaw.Description", "Recommended for Outlaw in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Roll the Bones, Blade Flurry, Adrenaline Rush, Between the Eyes and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Vanish when you are out of stealth in combat, Kick. Health is hidden on Retail, so Crimson Vial is your call. Keep It Rolling stays with you: the game hides how many Roll the Bones buffs you have." },
+-- 6befdd35
+[2147] = { "Default.Retail.Rogue.Outlaw.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 3a3eecef
+[2148] = { "Default.Retail.Rogue.Outlaw.IcyVeins.Description", "Reference only, off by default: the Icy Veins, SimulationCraft and Wowhead order reads Roll the Bones buffs, Opportunity stacks and energy, which Midnight hides in combat. From stealth Ambush. One combo point short of full or more: Between the Eyes, Killing Spree, Coup de Grace, Dispatch. Otherwise Ambush with Audacity, Pistol Shot at six Opportunity stacks (three when low on combo points), Ambush, Sinister Strike. Reminders: Roll the Bones with no roll up, Adrenaline Rush at two or fewer combo points, Blade Flurry kept up on two or more enemies, Blade Rush, Preparation when Adrenaline Rush, Between the Eyes and Blade Rush are all cooling. Keep It Rolling stays manual." },
+-- 00b5eb13
+[2149] = { "Default.Retail.Rogue.Subtlety.Name", "Blizzard Assisted" },
+-- 96f6f8ea
+[2150] = { "Default.Retail.Rogue.Subtlety.Description", "Recommended for Subtlety in Midnight. Shows Blizzard's Assisted Combat suggestion (it handles the stealth opener, Shadow Blades, Goremaw's Bite, Shadow Dance, Secret Technique and the finishers), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: poisons and Stealth between pulls, Kick on an interruptible cast. Health is hidden on Retail, so Crimson Vial is your call." },
+-- 6befdd35
+[2151] = { "Default.Retail.Rogue.Subtlety.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 5fff6443
+[2152] = { "Default.Retail.Rogue.Subtlety.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order holds Shadow Dance for Secret Technique and reads Shadow Dance, Darkest Night and energy, which Midnight hides in combat. Stealthed before the pull: Shadowstrike. One combo point short of full or more: Eviscerate with Darkest Night, Secret Technique in Shadow Dance, Coup de Grace, Black Powder on three or more enemies, Eviscerate. Otherwise Shadowstrike, Shuriken Storm on two or more, Gloomblade or Backstab. Reminders: Goremaw's Bite in Shadow Dance, Shadow Blades with Shadow Dance ready, Shadow Dance at two or fewer (or six or more) combo points when Secret Technique is ready or Shadow Blades is up, Vanish out of stealth at two or fewer combo points." },
+-- 00b5eb13
+[2153] = { "Default.Retail.Rogue.Initial.Name", "Blizzard Assisted" },
+-- 797e018d
+[2154] = { "Default.Retail.Rogue.Initial.Description", "Recommended before you choose a specialization (while the game reports the Rogue's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Rogue premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2155] = { "Default.Retail.Shaman.Elemental.Name", "Blizzard Assisted" },
+-- 14b1a04b
+[2156] = { "Default.Retail.Shaman.Elemental.Description", "Recommended for Elemental in Midnight. In combat the game now hides Flame Shock, your buffs, Maelstrom, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Fire or Storm Elemental and Nature's Swiftness in combat, Spiritwalker's Grace while moving, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps your weapon and shield imbues), Wind Shear on an interruptible cast (it lights only where the game lets the cast be read), Astral Shift whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
+-- 6befdd35
+[2157] = { "Default.Retail.Shaman.Elemental.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 8fc57d38
+[2158] = { "Default.Retail.Shaman.Elemental.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads Flame Shock, Master of the Elements and Stormkeeper, which Midnight hides in combat; Maelstrom is hidden on Retail, so the spenders go at their cost instead of near full Maelstrom. Stormkeeper and Lava Burst before the pull. On three or more engaged enemies: Stormkeeper, Ancestral Swiftness, Flame Shock, Chain Lightning with Stormkeeper, Elemental Blast, Earthquake, Lava Burst on Lava Surge, Tempest, Chain Lightning. Otherwise Stormkeeper, Ancestral Swiftness, Flame Shock and Voltaic Blaze in their last 30% outside Master of the Elements, Lava Burst to start it, Tempest and Stormkeeper's Lightning Bolt inside it, Elemental Blast or Earth Shock inside it, Voltaic Blaze, Tempest, Flame Shock or Frost Shock while moving, Elemental Blast or Earth Shock whenever you can afford it, Lightning Bolt. Reminders: Ascendance once Stormkeeper is used, elementals, Spiritwalker's Grace, and the shared ones." },
+-- 00b5eb13
+[2159] = { "Default.Retail.Shaman.Enhancement.Name", "Blizzard Assisted" },
+-- 2b518620
+[2160] = { "Default.Retail.Shaman.Enhancement.Description", "Recommended for Enhancement in Midnight. Shows Blizzard's Assisted Combat suggestion (it spends Maelstrom Weapon, keeps Flame Shock and handles Surging Totem and Sundering), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Ascendance, Doom Winds and Feral Spirit in combat, Lightning Shield and Skyfury between pulls (Blizzard's suggestion keeps Windfury Weapon), Wind Shear, Astral Shift." },
+-- 5c90fed4
+[2161] = { "Default.Retail.Shaman.Enhancement.Stormbringer.Name", "Stormbringer reference (SimulationCraft)" },
+-- 4890c5e6
+[2162] = { "Default.Retail.Shaman.Enhancement.Stormbringer.Description", "Reference only, off by default: SimulationCraft's Stormbringer list (Icy Veins and Wowhead agree) reads Flame Shock, Crash Lightning, Lashing Flames and cooldown timers, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning for its buff, Tempest at 10 Maelstrom Weapon, Chain Lightning at 9, Crash Lightning, Lava Lash, Sundering. Then Primordial Storm at 9, Voltaic Blaze or Flame Shock when Flame Shock is missing, Sundering, Crash Lightning for its buff, Lava Lash for Lashing Flames, Windstrike, Tempest or Lightning Bolt at 10 (8 with Voltaic Blaze or Crash Lightning about ready), Stormstrike at two charges, Lava Lash, Stormstrike, Voltaic Blaze, Crash Lightning, Lightning Bolt at 5, Flame Shock. Reminders: Doom Winds, Ascendance outside Doom Winds, Feral Spirit, and the shared ones." },
+-- 33731fb7
+[2163] = { "Default.Retail.Shaman.Enhancement.Totemic.Name", "Totemic reference (SimulationCraft)" },
+-- 4485ad39
+[2164] = { "Default.Retail.Shaman.Enhancement.Totemic.Description", "Reference only, off by default: SimulationCraft's Totemic list reads Flame Shock, Hot Hand, Whirling Fire, Crash Lightning and Doom Winds, which Midnight hides in combat. On three or more engaged enemies: Crash Lightning, Chain Lightning at 5 Maelstrom Weapon. Then Voltaic Blaze or Flame Shock when Flame Shock is missing, Surging Totem, Sundering, Lava Lash with Hot Hand or Whirling Fire, Crash Lightning for its buff, Primordial Storm at 10, Windstrike, Crash Lightning and Stormstrike in Doom Winds, Lightning Bolt at 5, Crash Lightning, Lava Lash, Stormstrike, Voltaic Blaze, Flame Shock. Same reminders as the Stormbringer reference." },
+-- bf31f812
+[2165] = { "Default.Retail.Shaman.Restoration.Name", "Icy Veins" },
+-- 6bac9c2a
+[2166] = { "Default.Retail.Shaman.Restoration.Description", "Restoration in Midnight, for reference: Blizzard's Assisted Combat does not cover healers, the game hides everyone's health in combat and Rotation Master picks a spell, not a target, so this orders your healing tools by readiness on whatever you target and leaves deciding who to heal to you. On a friendly target: Healing Stream Totem, Unleash Life, Healing Rain in a group, Surging Totem, Riptide, Chain Heal in a group, Healing Wave. On an enemy: Flame Shock when missing, Lava Burst, Lightning Bolt. Reminders: Water Shield, Earth Shield on a friendly target and Skyfury between pulls; Nature's Swiftness in combat; Healing Tide Totem and Spirit Link Totem in grouped combat; Wind Shear; Astral Shift." },
+-- 00b5eb13
+[2167] = { "Default.Retail.Shaman.Initial.Name", "Blizzard Assisted" },
+-- 75442137
+[2168] = { "Default.Retail.Shaman.Initial.Description", "Recommended before you choose a specialization (while the game reports the Shaman's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Shaman premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2169] = { "Default.Retail.Warlock.Affliction.Name", "Blizzard Assisted" },
+-- be7ca540
+[2170] = { "Default.Retail.Warlock.Affliction.Description", "Recommended for Affliction in Midnight. In combat the game now hides your DoTs, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation, which keeps Agony and Corruption, spends shards on Unstable Affliction and handles Grimoire of Sacrifice), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Darkglare in combat, a Felhunter between pulls unless you sacrificed your demon, Command Demon on an interruptible cast (it lights only where the game lets the cast be read), Dark Pact and Unending Resolve whenever they are ready in combat (health is hidden on Retail, so when to use them is your call)." },
+-- 6befdd35
+[2171] = { "Default.Retail.Warlock.Affliction.IcyVeins.Name", "Reference (Icy Veins)" },
+-- d01f383a
+[2172] = { "Default.Retail.Warlock.Affliction.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft (Soul Harvester) order reads DoT timers, Nightfall and Shard Instability, which Midnight hides in combat. Haunt before the pull; Seed of Corruption on three or more engaged enemies without your Corruption; Haunt; Agony and Corruption or Wither under 3 seconds; Dark Harvest at two shards or fewer; Unstable Affliction at 5 shards; Malefic Grasp, else Shadow Bolt, on two Nightfall; Unstable Affliction on Shard Instability or at 4 shards; Drain Soul; Shadow Bolt. Reminders: Summon Darkglare once Dark Harvest is cooling, Malevolence, your Felhunter, and the shared ones." },
+-- 00b5eb13
+[2173] = { "Default.Retail.Warlock.Demonology.Name", "Blizzard Assisted" },
+-- c6249f11
+[2174] = { "Default.Retail.Warlock.Demonology.Description", "Recommended for Demonology in Midnight. Shows Blizzard's Assisted Combat suggestion (Call Dreadstalkers, Hand of Gul'dan, Demonbolt, Power Siphon and Tyrant), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Demonic Tyrant while the Dreadstalkers you called in the last 12 seconds are out, Grimoire: Imp Lord, Grimoire: Fel Ravager and Summon Doomguard in combat, a Felguard between pulls, Command Demon, Dark Pact, Unending Resolve." },
+-- 6befdd35
+[2175] = { "Default.Retail.Warlock.Demonology.IcyVeins.Name", "Reference (Icy Veins)" },
+-- 631224a9
+[2176] = { "Default.Retail.Warlock.Demonology.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft (Diabolist) order reads Demonic Core, imp counts and cooldown timers, which Midnight hides in combat. Power Siphon, Demonbolt and Shadow Bolt before the pull; then Power Siphon at one Demonic Core or none, Grimoire: Imp Lord, Grimoire: Fel Ravager, Summon Doomguard, Call Dreadstalkers, Summon Demonic Tyrant at 5 shards, Implosion on three or more engaged enemies, Ruination, Hand of Gul'dan at 3 shards or more, Infernal Bolt below 3, Demonbolt on Demonic Core below 4, Shadow Bolt." },
+-- 00b5eb13
+[2177] = { "Default.Retail.Warlock.Destruction.Name", "Blizzard Assisted" },
+-- e652e84a
+[2178] = { "Default.Retail.Warlock.Destruction.Description", "Recommended for Destruction in Midnight. Shows Blizzard's Assisted Combat suggestion (Immolate or Wither, Conflagrate, Chaos Bolt, Rain of Fire, Soul Fire, Malevolence), and stops while you cast, channel or have no enemy targeted. Reminders for what it leaves out: Summon Infernal in combat, an Imp between pulls unless you sacrificed your demon, Command Demon, Dark Pact, Unending Resolve. Havoc on a second target stays with you." },
+-- df190019
+[2179] = { "Default.Retail.Warlock.Destruction.Simc.Name", "Reference (SimulationCraft)" },
+-- ad764c7b
+[2180] = { "Default.Retail.Warlock.Destruction.Simc.Description", "Reference only, off by default: SimulationCraft's order reads Immolate, Backdraft, charges and cooldown timers, which Midnight hides in combat. Soul Fire and Incinerate before the pull; on three or more engaged enemies Rain of Fire at 3 shards and Cataclysm; then Soul Fire at 4 shards or fewer, Chaos Bolt only at 5, Conflagrate at two charges or below 4 shards without Backdraft, Summon Infernal, Malevolence, Wither or Immolate in its last 30%, Ruination, Cataclysm, Infernal Bolt at 3 shards or fewer, Incinerate." },
+-- e10ed7f7
+[2181] = { "Default.Retail.Warlock.Destruction.IcyVeins.Name", "Chaos Bolt before capping reference (Icy Veins)" },
+-- f093635c
+[2182] = { "Default.Retail.Warlock.Destruction.IcyVeins.Description", "Reference only, off by default: Icy Veins' Hellcaller order, which spends shards on Chaos Bolt before they cap and uses Shadowburn and Channel Demonfire on cooldown. Rain of Fire on three or more engaged enemies; Wither or Immolate kept up; Summon Infernal; Malevolence; Shadowburn; Soul Fire below 4 shards; Chaos Bolt at 4 or more; Cataclysm; Infernal Bolt below 4; Channel Demonfire; Conflagrate; Incinerate." },
+-- 00b5eb13
+[2183] = { "Default.Retail.Warlock.Initial.Name", "Blizzard Assisted" },
+-- 9f1e219f
+[2184] = { "Default.Retail.Warlock.Initial.Description", "Recommended before you choose a specialization (while the game reports the Warlock's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warlock premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- 00b5eb13
+[2185] = { "Default.Retail.Warrior.Arms.Name", "Blizzard Assisted" },
+-- 182c0efa
+[2186] = { "Default.Retail.Warrior.Arms.Description", "Recommended for Arms in Midnight. In combat the game now hides rage, Rend, Colossus Smash, procs, cooldown times and health from addons, so this shows Blizzard's own Assisted Combat suggestion (the one-button rotation), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Heroic Strike (a core button the suggestion never uses), Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel on an interruptible cast (it lights only where the game lets the cast be read), Die by the Sword whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
+-- b82b4f60
+[2187] = { "Default.Retail.Warrior.Arms.Slayer.Name", "Slayer reference (SimulationCraft)" },
+-- 4c91f0b4
+[2188] = { "Default.Retail.Warrior.Arms.Slayer.Description", "Reference only, off by default: the Slayer order from SimulationCraft, Icy Veins and Wowhead reads rage, Rend, Colossus Smash, Sudden Death and Opportunist, which Midnight hides in combat. Charge to open; Sweeping Strikes on two or more engaged enemies; Rend before Colossus Smash when it is running out; Ravager just before Colossus Smash; Execute at two Sudden Death; Colossus Smash; Bladestorm in Colossus Smash or Avatar; Heroic Strike; Overpower at two Opportunist; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Slam. Reminders: Avatar with Colossus Smash ready, Die by the Sword, Battle Shout, Pummel." },
+-- 8a86f34e
+[2189] = { "Default.Retail.Warrior.Arms.Colossus.Name", "Colossus reference (SimulationCraft)" },
+-- 5b252489
+[2190] = { "Default.Retail.Warrior.Arms.Colossus.Description", "Reference only, off by default: the Colossus order from SimulationCraft and Icy Veins builds Colossal Might with Mortal Strike and reads buffs Midnight hides in combat. Charge to open; Sweeping Strikes on two or more; Mortal Strike below five Colossal Might; Rend before Colossus Smash; Ravager; Execute at two Sudden Death; Colossus Smash; Champion's Spear; Demolish in Colossus Smash with Colossal Might; Heroic Strike; Mortal Strike; Execute; Overpower; Rend under 5 seconds; Bladestorm on two or more; Slam. Reminders: Avatar, Die by the Sword, Battle Shout, Pummel." },
+-- 00b5eb13
+[2191] = { "Default.Retail.Warrior.Fury.Name", "Blizzard Assisted" },
+-- b7ca5a34
+[2192] = { "Default.Retail.Warrior.Fury.Description", "Recommended for Fury in Midnight. Shows Blizzard's Assisted Combat suggestion (Rampage, Bloodthirst, Raging Blow, Execute, Odyn's Fury and Bladestorm), and stops while you cast or have no enemy targeted. Reminders for what it leaves out: Recklessness, Avatar and Champion's Spear in combat, Battle Shout between pulls, Pummel, Enraged Regeneration whenever it is ready in combat (health is hidden on Retail, so when to use it is your call)." },
+-- b82b4f60
+[2193] = { "Default.Retail.Warrior.Fury.Slayer.Name", "Slayer reference (SimulationCraft)" },
+-- 082fcea6
+[2194] = { "Default.Retail.Warrior.Fury.Slayer.Description", "Reference only, off by default: SimulationCraft's Slayer order reads Enrage, Recklessness and Sudden Death, which Midnight hides in combat; rage is hidden on Retail, so Rampage waits only for its cost. Charge to open; Whirlwind for its buff on two or more engaged enemies; Rampage when Enrage is ending; in Recklessness Rampage, Bladestorm, Execute on Sudden Death, Odyn's Fury; Crushing Blow; Bloodbath; Execute; Odyn's Fury; Raging Blow; Rampage; Bloodthirst; Whirlwind. Reminders: Recklessness, Avatar, Enraged Regeneration, Battle Shout, Pummel." },
+-- c14f6088
+[2195] = { "Default.Retail.Warrior.Fury.Thane.Name", "Mountain Thane reference (Icy Veins)" },
+-- 44b6f930
+[2196] = { "Default.Retail.Warrior.Fury.Thane.Description", "Reference only, off by default: the Mountain Thane order from SimulationCraft and Icy Veins weaves Thunder Blast and reads buffs Midnight hides in combat. Charge to open; Whirlwind for its buff on two or more; Rampage when Enrage is missing or ending (rage is hidden on Retail, so there is no 100-rage Rampage); Bloodbath in Recklessness; Thunder Blast at two stacks; Crushing Blow; Bloodbath; Rampage in Recklessness; Thunder Blast in Avatar; Raging Blow; Thunder Blast; Rampage; Bloodthirst; Execute; Odyn's Fury; Thunder Clap; Whirlwind. Same reminders as the Slayer reference." },
+-- 00b5eb13
+[2197] = { "Default.Retail.Warrior.Protection.Name", "Blizzard Assisted" },
+-- c6991b2c
+[2198] = { "Default.Retail.Warrior.Protection.Description", "Recommended for Protection in Midnight. Shows Blizzard's Assisted Combat suggestion for your damage and threat, and stops while you cast or have no enemy targeted. The suggestion never casts Shield Block or Ignore Pain, so both are reminders whenever they are usable and your target is attacking you; the game hides rage, so Ignore Pain will light more often than you need it. Other reminders: Avatar, Demoralizing Shout and Champion's Spear in combat, Shield Wall and Last Stand whenever they are ready in combat (health is hidden on Retail, so when to use them is your call), Taunt in a group when your target attacks someone else, Battle Shout between pulls, Pummel." },
+-- 6befdd35
+[2199] = { "Default.Retail.Warrior.Protection.IcyVeins.Name", "Reference (Icy Veins)" },
+-- b8b51708
+[2200] = { "Default.Retail.Warrior.Protection.IcyVeins.Description", "Reference only, off by default: the Icy Veins and SimulationCraft order reads Shield Block, Thunder Blast and Colossal Might, which Midnight hides in combat; rage and health are hidden on Retail. Charge to open; Ravager; Thunder Blast at two stacks; Demolish at five Colossal Might; Shield Charge; Thunder Blast; Shield Slam; Thunder Clap; Execute; Revenge; Devastate. Reminders: Shield Block when its buff is down and you are tanking, Ignore Pain, Avatar, Demoralizing Shout, Champion's Spear, Shield Wall and Last Stand whenever they are ready in combat, Battle Shout, Pummel." },
+-- 00b5eb13
+[2201] = { "Default.Retail.Warrior.Initial.Name", "Blizzard Assisted" },
+-- 2e97cda9
+[2202] = { "Default.Retail.Warrior.Initial.Description", "Recommended before you choose a specialization (while the game reports the Warrior's initial specialization). Highlights the spell Blizzard's Assisted Combat suggests next, the one rotation advice the game still lets an addon read in Midnight combat; it waits while you cast or channel. Alongside it, the reminders every Warrior premade shares, each once you know its spell. When you choose a specialization at level 10, that specialization's premades take over." },
+-- d05e07b7
+[2203] = { "Default.Era.Druid.Balance.Name", "Balance" },
+-- df418098
+[2204] = { "Default.Era.Druid.Balance.Description", "Balance from level 1 to 60, and the Druid default before talents or when no other premade fits. Starfire as the filler once learned (Wrath before that, Starfire first on a Nature's Grace proc), Moonfire and Insect Swarm kept on targets that will live while your mana is above 30%, Hurricane when three or more enemies are on you, Faerie Fire in a group, instants while moving, melee when out of mana. In Cat or Bear Form it gives the Feral advice instead. Reminders: Mark of the Wild, Thorns when solo, Omen of Clarity, Moonkin Form when you are in no form, Innervate, Nature's Grasp. Downranking Starfire, roots and target choice stay with you." },
+-- 3c5a26cc
+[2205] = { "Default.Era.Druid.Balance.IcyVeins.Name", "Balance (Icy Veins)" },
+-- 72e2ae3e
+[2206] = { "Default.Era.Druid.Balance.IcyVeins.Description", "Icy Veins' raid list for realms with the 16-debuff limit, an alternative to the recommended Balance premade, off by default: enable it and disable that one, or raise its priority. Starfire and nothing else, no Moonfire or Insect Swarm, Hurricane when three or more enemies are on you, Wrath only before Starfire is learned. Same reminders as the recommended premade." },
+-- 24983899
+[2207] = { "Default.Era.Druid.Feral.Name", "Feral" },
+-- 46898c22
+[2208] = { "Default.Era.Druid.Feral.Description", "Feral cat and bear from level 10 when Feral is your main talent tree; your form decides which. Cat: stealth opener, Faerie Fire (Feral) kept up, Clearcasting spent on Shred, a finisher from four combo points (Rip before Ferocious Bite is learned and on long fights outside raids, Bite under 63 energy), Rake outside raids, Shred from behind or Claw when the target is on you, and a powershift (Cat Form again) when far short of energy with Furor 5/5 and mana to spare. Bear: Enrage when starved, Demoralizing Roar on packs and elites unless a warrior's Shout is up, Swipe on two or more and with spare rage, Faerie Fire (Feral) otherwise. Caster form: shift. Reminders: Maul every swing, Tiger's Fury before a pull, Manual Crowd Pummeler, Innervate, Frenzied Regeneration. Positioning stays with you." },
+-- db52e95b
+[2209] = { "Default.Era.Druid.Feral.WarcraftTavern.Name", "Feral (Warcraft Tavern, Rip and Bite)" },
+-- eb72eaac
+[2210] = { "Default.Era.Druid.Feral.WarcraftTavern.Description", "Warcraft Tavern's powershifting list, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Rip at five combo points whenever it is missing, raids included, then Ferocious Bite from four combo points under 63 energy, Shred from behind, powershift when far short of energy. Bear and reminders as the recommended premade." },
+-- a2889e4e
+[2211] = { "Default.Era.Druid.Feral.WarcraftTavernCasual.Name", "Feral (Warcraft Tavern, no powershifting)" },
+-- 1f3cd5d3
+[2212] = { "Default.Era.Druid.Feral.WarcraftTavernCasual.Description", "Warcraft Tavern's list without powershifting, an alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority. Build to five combo points with Shred (Claw from the front), then Rip on a target that will live, Tiger's Fury, Ferocious Bite; otherwise wait for energy. Bear and reminders as the recommended premade." },
+-- a1394efb
+[2213] = { "Default.Era.Druid.Feral.Wowhead.Name", "Feral (Wowhead raid bear)" },
+-- ee7a8843
+[2214] = { "Default.Era.Druid.Feral.Wowhead.Description", "The cat of the recommended Feral premade with Wowhead's geared raid bear: Maul every swing (tab-Maul packs yourself), Swipe only with 60 rage to spare, Faerie Fire (Feral) otherwise, no Demoralizing Roar and no Enrage in combat. An alternative to the recommended Feral premade, off by default: enable it and disable that one, or raise its priority." },
+-- 6a3c6c77
+[2215] = { "Default.Era.Druid.Restoration.Name", "Restoration" },
+-- 877af0fd
+[2216] = { "Default.Era.Druid.Restoration.Description", "Restoration from level 10 when Restoration is your main talent tree. Heals your current friendly target: Healing Touch after Nature's Swiftness, Swiftmend below 40% on your own HoT, Rejuvenation and Regrowth kept rolling, Regrowth as the main heal with Improved Regrowth, full Healing Touch below 45% or on a Nature's Grace proc, rank 4 Healing Touch otherwise. On an enemy: Moonfire, Insect Swarm and Wrath. Silent in Cat or Bear Form. Reminders: Mark of the Wild, Omen of Clarity, Nature's Swiftness, Tranquility, Innervate, Rebirth, poison and curse removal. Choosing whom to heal stays with you." },
+-- b765b6c7
+[2217] = { "Default.Era.Druid.Restoration.WarcraftTavern.Name", "Restoration (Warcraft Tavern)" },
+-- 8cdc97b9
+[2218] = { "Default.Era.Druid.Restoration.WarcraftTavern.Description", "Warcraft Tavern's damage tiers, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. On your friendly target, with no HoT upkeep while damage is low: Swiftmend below 40%, rank 5 Regrowth below 50%, Rejuvenation and rank 3 Regrowth below 75%, full Healing Touch on a Nature's Grace proc, rank 3 Healing Touch below 90%. Reminders as the recommended premade." },
+-- d6247adc
+[2219] = { "Default.SoD.Druid.Balance.Name", "Balance (SoD)" },
+-- 5bcfabec
+[2220] = { "Default.SoD.Druid.Balance.Description", "Season of Discovery Balance from level 1 to 60, and the default for any Druid no other Season of Discovery premade fits. Starsurge whenever its buff is down, Sunfire and Moonfire on targets that will live, Starfire only when Starsurge or Lunar Eclipse empowers it, Wrath as the filler, Hurricane on six or more enemies (four with Gale Winds engraved), Insect Swarm only while moving. Runes are used as you engrave them. In Cat or Bear Form it gives the Feral advice. Reminders: Moonkin Form, Starfall, instant Healing Touch on a dying friend, curse and poison removal, Wild Growth on a hurt group, Innervate. Spreading DoTs to other targets stays with you." },
+-- fdb2f205
+[2221] = { "Default.SoD.Druid.Balance.IcyVeins.Name", "Balance (SoD, Icy Veins)" },
+-- babf9f32
+[2222] = { "Default.SoD.Druid.Balance.IcyVeins.Description", "Icy Veins' Season of Discovery list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Starsurge on cooldown, Hurricane on four or more enemies (for Gale Winds), Starfire when Starsurge empowers it, Moonfire, Sunfire and Insect Swarm all kept up, Wrath as the filler. Reminders as the recommended premade." },
+-- c4d16f19
+[2223] = { "Default.SoD.Druid.Balance.Wowhead.Name", "Balance (SoD, Wowhead)" },
+-- 75dabca6
+[2224] = { "Default.SoD.Druid.Balance.Wowhead.Description", "Wowhead's Phase 8 list, an alternative to the recommended Season of Discovery Balance premade, off by default: enable it and disable that one, or raise its priority. Wrath to open, Starsurge on cooldown, Hurricane on six or more, Insect Swarm only while moving, Sunfire and Moonfire kept up, Wrath while your Sunfire has under 5 seconds when Elune's Fires is engraved to extend it, Starfire on Lunar Eclipse, Wrath otherwise. Reminders as the recommended premade." },
+-- 3e1ff241
+[2225] = { "Default.SoD.Druid.Feral.Name", "Feral cat (SoD)" },
+-- e7b0a6ca
+[2226] = { "Default.SoD.Druid.Feral.Description", "Season of Discovery cat, chosen when Savage Roar is engraved (or Feral is your main tree without another legs rune). Faerie Fire (Feral) when none is up, Savage Roar, Swipe (Cat) on four or more enemies, the Mangle debuff, Clearcasting on Shred, Rip at five combo points while Savage Roar has 8 seconds left, Rake, Shred from behind or Mangle from the front, powershift with Furor 5/5, Faerie Fire refresh last. In Bear Form it gives the tank advice. Reminders: Tiger's Fury at 60 energy or less, Berserk with Tiger's Fury, Maul, Innervate. Positioning stays with you." },
+-- 3c52079f
+[2227] = { "Default.SoD.Druid.Tank.Name", "Bear tank (SoD)" },
+-- 6ae09c71
+[2228] = { "Default.SoD.Druid.Tank.Description", "Season of Discovery bear tank, chosen when Lacerate is engraved. Faerie Fire (Feral) or Sunfire (Bear) to pull from range, Lacerate before it drops, Mangle on cooldown, Lacerate, Swipe; on three or more enemies Mangle under Berserk and Swipe. In Cat Form it plays the cat list for off-tanking; in caster form it shifts to Bear. Reminders: Maul with 30 rage, Berserk, Survival Instincts, Frenzied Regeneration and Barkskin when low, Enrage between pulls, Demoralizing Roar on elites. Taunting and target choice stay with you." },
+-- 017c4426
+[2229] = { "Default.SoD.Druid.Tank.Wowsims.Name", "Bear tank (SoD, wowsims cat weave)" },
+-- 83e89d4a
+[2230] = { "Default.SoD.Druid.Tank.Wowsims.Description", "Off by default; for experts whose gear also grants Savage Roar. The wowsims Phase 7 cat weave: leave Bear for Cat when your Rake is down, keep Savage Roar and Rake up (Tiger's Fury, Mangle to build), then return to Dire Bear and play the tank list. Reminders as the recommended tank premade." },
+-- 24f21f83
+[2231] = { "Default.SoD.Druid.Restoration.Name", "Restoration (SoD)" },
+-- ba307284
+[2232] = { "Default.SoD.Druid.Restoration.Description", "Season of Discovery Restoration, chosen when Lifebloom is engraved (or Restoration is your main tree without another legs rune). Heals your current friendly target: instant Healing Touch after Nature's Swiftness or Fury of Stormrage, Wild Growth when two or more nearby are hurt, Swiftmend on your HoT for Efflorescence or below 40%, three Lifebloom stacks refreshed with a second left, Rejuvenation, Regrowth below 60%, Nourish, rank 4 Healing Touch. On an enemy: Sunfire, Moonfire, Wrath. Reminders: Tree of Life and Survival Instincts in heavy moments, Nature's Swiftness, Tranquility, Innervate, Rebirth, Revive, dispels. Choosing whom to heal stays with you." },
+-- 3f0b51a2
+[2233] = { "Default.Era.Hunter.Ranged.Name", "Ranged" },
+-- 9b31e6a0
+[2234] = { "Default.Era.Hunter.Ranged.Description", "Every Hunter from level 1 to 60, all talent trees. Pull with Hunter's Mark, Aimed Shot and Auto Shot. Solo, the pet tanks: your own Serpent Sting, then Aimed Shot, Arcane Shot and Multi-Shot only while mana is above half, Concussive Shot to kite before you have a pet. In a group, Aimed Shot and Multi-Shot right after an Auto Shot so it is never delayed, Serpent Sting outside raids, Arcane Shot only before Aimed Shot or on a dying target. Melee buttons when an enemy is too close, instants while moving, Multi-Shot and Volley on three or more enemies. Reminders: Hawk (Monkey before it), Trueshot Aura, pet care, Rapid Fire, Bestial Wrath and racials on elites and in instances, Intimidation and Feign Death. Traps, Wing Clip, Feed Pet, Tranquilizing Shot and positioning stay with you." },
+-- 06d85ed0
+[2235] = { "Default.Era.Hunter.Ranged.IcyVeins.Name", "Ranged, clipped (Icy Veins)" },
+-- 7fe04411
+[2236] = { "Default.Era.Hunter.Ranged.IcyVeins.Description", "Off by default; enable it for a ranged weapon faster than 3.0 seconds. Like Hunter: Ranged, but in a group Aimed Shot and Multi-Shot go out as soon as they are ready, even if that delays an Auto Shot, Serpent Sting is never used, and Rapid Fire, Bestial Wrath and racials are used on every pull." },
+-- 23771115
+[2237] = { "Default.Era.Hunter.Ranged.Wowsims.Name", "Ranged, raid Serpent Sting (wowsims)" },
+-- afe0ee0b
+[2238] = { "Default.Era.Hunter.Ranged.Wowsims.Description", "Off by default; enable it where the raid has debuff room for your sting. Like Hunter: Ranged, but in a group Serpent Sting is kept up everywhere, raids included, refreshed under 5 seconds while Aimed Shot and Multi-Shot are both cooling, and Arcane Shot is never used." },
+-- 1fa5802f
+[2239] = { "Default.SoD.Hunter.Ranged.Name", "Ranged (SoD)" },
+-- 09b14a5d
+[2240] = { "Default.SoD.Hunter.Ranged.Description", "Every ranged Hunter on a Season of Discovery realm, level 1 to 60; runes are used once engraved. Serpent Sting always up and refreshed by Chimera Shot. With the Kill Shot legs rune: Multi-Shot at four Trick Shots, Kill Shot during Rapid Fire and on targets in execute, Chimera Shot, then Explosive Trap and Arcane Shot while Multi-Shot is cooling. Without it: Chimera Shot, Aimed Shot at two Sniper Training stacks (without that rune, right after an Auto Shot), traps just before Chimera Shot is ready (Frost Trap only to feed Lock and Load), Explosive Shot, Steady Shot, Multi-Shot, Arcane Shot. Melee buttons when an enemy is too close, instants while moving, traps, Multi-Shot and Volley on three or more enemies. Reminders: Hawk, Viper below 10% mana, Heart of the Lion, Trueshot Aura, pet care (none with Lone Wolf engraved), Focus Fire at five Frenzy stacks, Rapid Fire, racials and Bestial Wrath on elites and in instances. With Lock and Load engraved, a Frost Trap before the pull. Melee weaving and positioning stay with you." },
+-- fb035172
+[2241] = { "Default.SoD.Hunter.Melee.Name", "Melee (SoD)" },
+-- 4c275cc2
+[2242] = { "Default.SoD.Hunter.Melee.Description", "Chosen on a Season of Discovery realm once you engrave Flanking Strike, Wyvern Strike or Carve and neither Chimera Shot nor Explosive Shot. Keeps the Flanking Strike buff up, Mongoose Bite at four Raptor Fury stacks, Wyvern Strike on Clever Strikes, Raptor Strike on every reset, then Mongoose Bite, Wyvern Strike, Flanking Strike and Carve; Immolation Trap and Wing Clip only in empty moments. Carve and Explosive Trap on three or more enemies; Serpent Sting and shots while you cannot reach the target. Reminders: Aspect of the Falcon (Hawk before 60), Viper below 5% mana, pet care (none with Lone Wolf engraved), Rapid Fire and racials once Flanking Strike has stacked, Bestial Wrath. Positioning and pet commands stay with you." },
+-- 17636dd6
+[2243] = { "Default.Era.Mage.Frost.Name", "Frost" },
+-- c7006e3e
+[2244] = { "Default.Era.Mage.Frost.Description", "Frost from level 1 to 60, also for Arcane builds and the Mage default before talents. Frostbolt (Fireball before level 4); Frost Nova when a mob reaches you, except on raid bosses; Arcane Missiles once a mob reaches you if you have Improved Arcane Missiles; Cone of Cold, Arcane Explosion and Blizzard when three or more enemies are engaged; Fire Blast while moving with mana to spare; Fire Blast and the wand finish ordinary mobs when solo; wand when out of mana. Reminders: armor (Ice Armor solo, Mage Armor in a group, never replacing one you chose), Arcane Intellect, conjuring and using mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Cold Snap, Arcane Power and Presence of Mind. Off by default: the Shatter Flamestrike and rank-1 Frostbolt to stack Winter's Chill. Blink, Polymorph, kiting and target choice stay with you." },
+-- 986e09ea
+[2245] = { "Default.Era.Mage.Frost.IcyVeins.Name", "Frost AoE grinding (Icy Veins)" },
+-- 18ab65f6
+[2246] = { "Default.Era.Mage.Frost.IcyVeins.Description", "Blizzard leveling after Icy Veins' AoE grinding guide, chosen automatically when you play solo with Improved Blizzard. From two engaged enemies: Frost Nova the pack, Cone of Cold while Nova is cooling, Blizzard once nothing is next to you, Arcane Explosion when they are; Frostbolt on a single target, Fire Blast and the wand to finish. Mana Shield and Ice Barrier go up before each pull. Gathering the pack, Blink and kiting stay with you." },
+-- c141faa8
+[2247] = { "Default.Era.Mage.Fire.Name", "Fire" },
+-- 2a7f1272
+[2248] = { "Default.Era.Mage.Fire.Description", "Fire from level 10 to 60, chosen when you have Fire points and none in Frost, or Fire is your main tree. Pyroblast (else Fireball) opens; Pyroblast after Presence of Mind; Scorch keeps five Fire Vulnerability stacks with Improved Scorch on targets that will live; Fire Blast and Scorch finish; Fireball fills. Three or more engaged enemies: Blast Wave, Flamestrike, Arcane Explosion, Cone of Cold, Blizzard. Reminders: Combustion at five Scorch stacks on elites and long fights, armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, Remove Lesser Curse, Ice Block, Presence of Mind. Off by default: weaving Fire Blast whenever it is ready." },
+-- 76354bcf
+[2249] = { "Default.Era.Mage.Fire.WarcraftTavern.Name", "Fire (Warcraft Tavern)" },
+-- 83ffa7ee
+[2250] = { "Default.Era.Mage.Fire.WarcraftTavern.Description", "Fire after Warcraft Tavern, an alternative to the recommended Fire premade, off by default: enable it and disable that one, or raise its priority. Combustion is spent at the pull on elites and bosses instead of waiting for Scorch stacks; Pyroblast opens; Scorch keeps five stacks with Improved Scorch; Fireball fills; Fire Blast only while moving. Packs: Flamestrike first, then Arcane Explosion, Cone of Cold and Blast Wave close in, Blizzard at range. Same reminders as the Fire premade." },
+-- 91d3c82e
+[2251] = { "Default.SoD.Mage.Fire.Name", "Fire (SoD)" },
+-- 67a08e15
+[2252] = { "Default.SoD.Mage.Fire.Description", "Season of Discovery Fire from level 1 to 60, and the Mage default there. Uses the runes you have engraved: Pyroblast on Hot Streak at once; Living Bomb kept on targets that will live; Scorch with Improved Scorch while Fire Vulnerability is below two stacks or about to fade; Living Flame on cooldown; Balefire Bolt at five Fire Vulnerability stacks, never at four Balefire stacks or more (the fifth kills you); Frostfire Bolt, else Fireball. Living Bomb, Living Flame and Fire Blast while moving; Living Flame, Living Bomb, Blast Wave, Cone of Cold, Flamestrike and Blizzard on packs. Reminders: Fire Blast with Overheat, Combustion, Icy Veins and Cold Snap, Molten or other armor, Arcane Intellect, mana gems, Ice Barrier, Mana Shield, Evocation, Counterspell, curse removal, Ice Block. Spreading Living Bomb across targets stays with you." },
+-- 0f6cec9f
+[2253] = { "Default.SoD.Mage.Frost.Name", "Frost (SoD)" },
+-- b6fc82b9
+[2254] = { "Default.SoD.Mage.Frost.Description", "Season of Discovery Frost from level 10, chosen when Frost is your main tree. Fingers of Frost goes into Ice Lance at three or more of your Glaciate stacks, otherwise into Deep Freeze; Balefire Bolt on a Brain Freeze proc and otherwise when safe, never at four Balefire stacks or more; Living Bomb and Living Flame when engraved; Spellfrost Bolt, else Frostfire Bolt, else Frostbolt. Ice Lance, Frozen Orb, Living Bomb and Fire Blast while moving; Frozen Orb, Living Flame, Living Bomb, Blizzard and Cone of Cold on packs. Reminders: Frozen Orb, Icy Veins, Cold Snap, armor, mana gems and the other Mage reminders. Queuing a spell as a bolt lands stays with you." },
+-- e1554ea3
+[2255] = { "Default.SoD.Mage.Frost.WarcraftTavern.Name", "Frost, Fire runes (SoD, Warcraft Tavern)" },
+-- 5ff1d58c
+[2256] = { "Default.SoD.Mage.Frost.WarcraftTavern.Description", "Warcraft Tavern's Phase 4 Frost build on Fire runes, an alternative to the recommended Season of Discovery Frost premade, off by default: enable it and disable that one, or raise its priority. Pyroblast opens; Pyroblast on Hot Streak; Living Bomb kept up; Scorch to five stacks with Improved Scorch; Balefire Bolt only on a Brain Freeze proc and never at four Balefire stacks or more; Frostfire Bolt fills. Living Bomb and Fire Blast while moving; Living Bomb, Cone of Cold and Blizzard on packs. Reminders: Fire Blast with Overheat, Frozen Orb during Icy Veins, Icy Veins, Cold Snap and the other Mage reminders." },
+-- 3a7614c3
+[2257] = { "Default.SoD.Mage.Arcane.Name", "Arcane (SoD)" },
+-- a0acdff9
+[2258] = { "Default.SoD.Mage.Arcane.Description", "Season of Discovery Arcane damage, chosen when Arcane is your main tree and Arcane Blast is engraved. Arcane Missiles on Missile Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe, never at four Balefire stacks or more; Living Flame on cooldown; Arcane Blast fills. Arcane Barrage and Fire Blast while moving; Living Flame and Arcane Explosion on packs. Reminders: Arcane Power on elites and long fights, Presence of Mind with Arcane Power or while moving, Icy Veins, Cold Snap and the other Mage reminders." },
+-- a23552e6
+[2259] = { "Default.SoD.Mage.Healer.Name", "Healer (SoD)" },
+-- 83b2fb47
+[2260] = { "Default.SoD.Mage.Healer.Description", "Season of Discovery Mage healing, chosen when Regeneration or Mass Regeneration is engraved. With a friendly target: Rewind Time and Chronostatic Preservation below half health, Regeneration when your Temporal Beacon is missing, Mass Regeneration, Temporal Anomaly. With an enemy target, damage that heals your beacons: Spellfrost Bolt for Frost healers, otherwise Arcane Missiles on Missile Barrage, Arcane Barrage at two Arcane Blast stacks, Balefire Bolt when safe (never at four Balefire stacks or more) and Arcane Blast. Reminders: Arcane Power, Presence of Mind, Frozen Orb and the other Mage reminders. Off by default: Arcane Explosion on packs, and Ice Lance and Deep Freeze for Frost healers. While you channel Mass Regeneration the next spell already shows, so you can cancel it at once (its direct healing is small). Choosing whom to heal stays with you." },
+-- 1d79fa22
+[2261] = { "Default.Era.Paladin.Retribution.Name", "Retribution" },
+-- 623b26cb
+[2262] = { "Default.Era.Paladin.Retribution.Description", "Melee Retribution from level 1 to 60, and the default for any Paladin no other premade fits. On elites and long fights outside raids, puts up Seal of the Crusader and judges it once; otherwise keeps a seal up (Command with a weapon of 3.5 seconds or slower, else Righteousness), Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Judgement on cooldown, Consecration while Vengeance is up or on two or more close enemies. Reminders: Sanctity, Retribution or Devotion Aura, Blessing of Wisdom solo or Might in a group, a heal between fights, Divine Shield, Divine Protection or Lay on Hands when you are about to die. Seal twisting is a separate premade; target choice and positioning stay with you." },
+-- a2754c34
+[2263] = { "Default.Era.Paladin.Retribution.Twist.Name", "Retribution, seal twisting" },
+-- 34017594
+[2264] = { "Default.Era.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist seals. For a Retribution Paladin with Seal of Command: keeps Seal of Righteousness up, swaps to rank-1 Seal of Command in the last 0.4 seconds before a swing and back again, Judgement whenever it is ready, Exorcism and Holy Wrath on Undead and Demons, Hammer of Wrath, Consecration with Vengeance. Needs a lot of mana and good timing. Same reminders as the Retribution premade." },
+-- 0e97ad02
+[2265] = { "Default.Era.Paladin.Protection.Name", "Protection" },
+-- 8b566adc
+[2266] = { "Default.Era.Paladin.Protection.Description", "Tanking from level 1 to 60, chosen by Righteous Fury or the Protection tree. Seal of Righteousness (Seal of Wisdom when mana drops below 40%), Holy Shield and Judgement to pull, Holy Shield kept up, Consecration and Holy Wrath (Undead and Demons) when two or more enemies are on you, otherwise Judgement of the Crusader once, then Judgement and Consecration with mana to spare, Exorcism on Undead and Demons. Reminders: Righteous Fury, Devotion Aura, Sanctuary, Kings or Might, Lay on Hands when nearly dead. Taunting, Blessing of Kings spam and spell ranks stay with you." },
+-- f094f171
+[2267] = { "Default.Era.Paladin.Protection.IcyVeins.Name", "Protection, Seal of Wisdom (Icy Veins)" },
+-- 6af9c398
+[2268] = { "Default.Era.Paladin.Protection.IcyVeins.Description", "Icy Veins' raid tanking with Wowhead's Wisdom rotation, an alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Keeps Seal of Wisdom up and judges it whenever the target lacks Judgement of Wisdom, otherwise judges only to pull; Holy Shield, Consecration every cooldown, Holy Wrath on Undead and Demon packs, Exorcism, and Greater Blessing of Kings as the threat filler in a raid. Same reminders as the recommended premade." },
+-- 56eee6a5
+[2269] = { "Default.Era.Paladin.Holy.Name", "Holy" },
+-- 9d4ec18a
+[2270] = { "Default.Era.Paladin.Holy.Description", "Healing in a group with the Holy tree, from level 10. Acts on your friendly target and picks the heal by missing health: Cleanse or Purify, Holy Shock while you move, maximum-rank Holy Light below 40%, rank-6 Holy Light below 65%, maximum-rank Flash of Light below 85%, rank-4 Flash of Light below 95%. With an enemy in melee range: Seal of Wisdom and, outside raids, Judgement. Reminders: Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. Choosing whom to heal stays with you; soloing Holy Paladins get the Retribution premade." },
+-- 8094efdd
+[2271] = { "Default.SoD.Paladin.Retribution.Name", "Retribution (SoD)" },
+-- 0cc623b4
+[2272] = { "Default.SoD.Paladin.Retribution.Description", "Season of Discovery melee from level 1 to 60, and the default for any Paladin there. Keeps Seal of Martyrdom up (Righteousness until you have it), opens with Exorcism, casts Divine Storm at three Holy Power, then by weapon speed: with a two-hander of 3.3 seconds or slower, Crusader Strike, Exorcism, Divine Storm and Judgement; with a faster one, Judgement only as the seal runs out, then Exorcism, Crusader Strike and Divine Storm. Consecration with mana or three close enemies, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Hammer of Wrath with mana to spare (always with Improved Hammer of Wrath engraved). Runes are used as you engrave them. Reminders: Sanctity Aura, a Blessing, Avenging Wrath with Aura Mastery, a heal between fights, Divine Shield when about to die." },
+-- a5e4661c
+[2273] = { "Default.SoD.Paladin.Retribution.IcyVeins.Name", "Retribution (SoD, Icy Veins Phase 4)" },
+-- 5f490b89
+[2274] = { "Default.SoD.Paladin.Retribution.IcyVeins.Description", "The older Phase 4 list from Icy Veins and Warcraft Tavern, also fine for leveling, an alternative to the recommended Season of Discovery Retribution premade, off by default: enable it and disable that one, or raise its priority. Judgement of the Crusader once on elites and long fights, Seal of Martyrdom, Exorcism, Crusader Strike, Divine Storm and Judgement on cooldown, Consecration with mana or three close enemies, Hammer of Wrath. Same reminders as the recommended premade." },
+-- 389af0dd
+[2275] = { "Default.SoD.Paladin.Retribution.Twist.Name", "Retribution, seal twisting (SoD)" },
+-- e5b0a2f5
+[2276] = { "Default.SoD.Paladin.Retribution.Twist.Description", "Off by default; enable it if you twist with a slow two-hander. Swaps between Seal of Martyrdom and Seal of Command in the last 0.4 seconds before each swing, suggests nothing on the global cooldown in the 1.9 seconds before it, judges while both seals linger, and uses one filler per swing: Divine Storm at three Holy Power, Crusader Strike, Exorcism. Needs a swing timer and practice." },
+-- ec76b9b6
+[2277] = { "Default.SoD.Paladin.Retribution.Stacking.Name", "Retribution, seal stacking (SoD)" },
+-- 1def9d31
+[2278] = { "Default.SoD.Paladin.Retribution.Stacking.Description", "Off by default; enable it with the Soul of the Sealbearer rune or the six-piece set that makes seals linger (Rotation Master cannot see either). Keeps both Seal of Command and Seal of Martyrdom up, Divine Storm at three Holy Power, Crusader Strike, Exorcism, Holy Wrath on Undead and Demons (on anything with Purifying Power engraved), Consecration, and Judgement while both seals are up." },
+-- 68461fe5
+[2279] = { "Default.SoD.Paladin.Shockadin.Name", "Shockadin (SoD, wowsims)" },
+-- 9a1756b6
+[2280] = { "Default.SoD.Paladin.Shockadin.Description", "Off by default; enable it if you deal damage with the Holy tree. It applies with Holy as your main tree and Shock and Awe engraved. Seal of Martyrdom (else Righteousness), judged as it runs out, Holy Shock to keep Sunlight up or at three Holy Power, Exorcism and Crusader Strike. Same reminders as the Season of Discovery Retribution premade." },
+-- 924f353b
+[2281] = { "Default.SoD.Paladin.Protection.Name", "Protection (SoD)" },
+-- 58619700
+[2282] = { "Default.SoD.Paladin.Protection.Description", "Season of Discovery tanking, chosen by Righteous Fury, an engraved Hammer of the Righteous or Shield of Righteousness, or the Protection tree. Seal of Martyrdom, a pull with Holy Shield, Avenger's Shield and Exorcism, Holy Shield kept up; on one target Hammer of the Righteous, Shield of Righteousness, Exorcism, Avenger's Shield, Judgement, Divine Storm, Consecration; with three or more enemies on you Hammer of the Righteous, Avenger's Shield, Consecration, Shield of Righteousness, Exorcism. Reminders: Righteous Fury, Holy Shield before a pull, Devotion Aura, Sanctuary or Kings, Avenging Wrath, Divine Protection below 40%, Lay on Hands, Hand of Reckoning in a group when your target attacks someone else." },
+-- 29a17682
+[2283] = { "Default.SoD.Paladin.Protection.Wowsims.Name", "Protection (SoD, wowsims)" },
+-- f2677084
+[2284] = { "Default.SoD.Paladin.Protection.Wowsims.Description", "The wowsims tank list, an alternative to the recommended Season of Discovery Protection premade, off by default: enable it and disable that one, or raise its priority. Judgement whenever a seal is up, the seal renewed just before it runs out, Holy Shield, Avenger's Shield, Hammer of the Righteous, Exorcism, Shield of Righteousness last. Same reminders as the recommended premade." },
+-- e757b87a
+[2285] = { "Default.SoD.Paladin.Holy.Name", "Holy (SoD)" },
+-- 45b566d4
+[2286] = { "Default.SoD.Paladin.Holy.Description", "Season of Discovery healing in a group, chosen by an engraved Beacon of Light, Divine Light or Sacred Shield, or the Holy tree without Crusader Strike. Acts on your friendly target: Cleanse, Holy Shock while moving or below 30%, Divine Light (Holy Light when mana is under half) below 60%, Flash of Light below 90%. With an enemy in melee range it only keeps a seal up. Reminders: Beacon of Light and Sacred Shield on the target that lacks them, Concentration or Devotion Aura, Blessing of Wisdom, Divine Favor and Lay on Hands for a target that is very low. The guides behind it are from Phase 4; choosing whom to heal stays with you." },
+-- e2f2ad93
+[2287] = { "Default.SoD.Paladin.Holy.Wowhead.Name", "Holy, Holy Light first (SoD, Wowhead)" },
+-- 12186f26
+[2288] = { "Default.SoD.Paladin.Holy.Wowhead.Description", "Wowhead's Phase 4 healing order for crit-heavy gear, an alternative to the recommended Season of Discovery Holy premade, off by default: enable it and disable that one, or raise its priority. Divine Light or Holy Light below 75%, then Cleanse, Holy Shock for small deficits or while moving, Flash of Light below 95%. Same reminders as the recommended premade." },
+-- 0c874f58
+[2289] = { "Default.Era.Priest.Dps.Name", "Damage" },
+-- 3af8cf40
+[2290] = { "Default.Era.Priest.Dps.Description", "Damage from level 1 to 60, and the Priest default whenever the healer premade does not apply (solo, Shadow, or no talents yet). Shadowform when learned; before a pull a shield when solo, then Holy Fire (without Shadowform), Mind Blast or Smite. Shadow Word: Pain once per target that will live, Mind Blast on cooldown, Mind Flay as the filler (Smite and Holy Nova before you have it), and the wand on a dying target or when your mana runs low while solo. Vampiric Embrace and Devouring Plague on long fights, never in raids. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus with Mind Blast, Psychic Scream when two enemies reach you at half health, Fade when your target turns on you, Desperate Prayer. Target choice, multi-dotting and downranking stay with you." },
+-- 7cf48919
+[2291] = { "Default.Era.Priest.Dps.WarcraftTavern.Name", "Damage (Warcraft Tavern wand economy)" },
+-- a52bcaac
+[2292] = { "Default.Era.Priest.Dps.WarcraftTavern.Description", "Warcraft Tavern's low-downtime leveling style, an alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority. Solo: Mind Blast to pull, Shadow Word: Pain once, Mind Blast again only while the target is above 30%, and your wand between Mind Blasts instead of Smite or Mind Flay. No automatic shield before pulls. In a group: Shadow Word: Pain, Mind Blast, Mind Flay. Same reminders as the recommended premade." },
+-- 73068ffe
+[2293] = { "Default.Era.Priest.Dps.Wowsims.Name", "Damage (wowsims Undead raid)" },
+-- f3ea634f
+[2294] = { "Default.Era.Priest.Dps.Wowsims.Description", "The recommended damage priority with wowsims' raid choice for Undead priests: Inner Focus is spent on Devouring Plague instead of Mind Blast, and Devouring Plague is cast in raids too, so use it only where your raid has debuff slots to spare. No Vampiric Embrace. An alternative to the recommended damage premade, off by default: enable it and disable that one, or raise its priority." },
+-- a491a33c
+[2295] = { "Default.Era.Priest.Healer.Name", "Healer" },
+-- dae36c27
+[2296] = { "Default.Era.Priest.Healer.Description", "Chosen in a group when Holy or Discipline is your main talent tree. Heals the friendly unit you target: Power Word: Shield below 30%, Flash Heal below 40%, dispels, Prayer of Healing when three of your party are hurt, Greater Heal (Heal or Lesser Heal before you learn it) below half health, Renew while moving or on light damage, then Heal rank 3 as the efficient top-up. Out of combat it offers Fortitude on your target. Targeting an enemy gives Shadow Word: Pain and Smite. Reminders: Inner Fire, Fortitude, Divine Spirit, Inner Focus, Desperate Prayer; Power Infusion is off by default. Choosing whom to heal and downranking stay with you." },
+-- 999e9eba
+[2297] = { "Default.SoD.Priest.Dps.Name", "Damage (SoD)" },
+-- 63f3ee22
+[2298] = { "Default.SoD.Priest.Dps.Description", "Damage on Season of Discovery realms, from level 1 to 60, using the runes you have engraved. Shadowform; Vampiric Touch or Mind Blast to pull (Penance, Holy Fire or Smite before Shadowform). Void Plague, Shadow Word: Pain and Vampiric Touch kept up (refreshed near the end only without Pain and Suffering engraved), Mind Blast on cooldown, Mind Flay on Melting Faces, Shadow Word: Death while you are above half health, then Mind Spike as the filler, or Mind Flay with the Phase 8 six-piece set. Void Zone and Mind Sear on four or more enemies. The wand on a dying solo target. Reminders: Inner Fire, Fortitude, Homunculi, Shadowfiend, Eye of the Void and Dispersion, Inner Focus, Psychic Scream, Fade, Desperate Prayer." },
+-- 57985f5a
+[2299] = { "Default.SoD.Priest.Dps.Wowhead.Name", "Damage (SoD, Wowhead Mind Spike stacks)" },
+-- 296f399b
+[2300] = { "Default.SoD.Priest.Dps.Wowhead.Description", "The Wowhead and Warcraft Tavern way for Season of Discovery, an alternative to the recommended Season of Discovery damage premade, off by default: enable it and disable that one, or raise its priority. Mind Blast waits for three of your Mind Spike stacks on the target (it is cast normally until you engrave Mind Spike), Mind Flay only on Melting Faces, Mind Spike as the filler. Everything else matches the recommended premade." },
+-- a23552e6
+[2301] = { "Default.SoD.Priest.Healer.Name", "Healer (SoD)" },
+-- 37b39f3b
+[2302] = { "Default.SoD.Priest.Healer.Description", "Chosen on Season of Discovery realms in a group when Holy or Discipline is your main talent tree; follows Icy Veins. Heals the friendly unit you target: Prayer of Mending before the pull and whenever ready, Shield below half health, Penance, instant Flash Heal on Surge of Light, emergency Flash Heal, dispels, Circle of Healing and Prayer of Healing when three of your party are hurt, Greater Heal below half health, Renew while moving or on light damage, then Heal. Targeting an enemy gives Pain, Void Plague, Penance, Holy Fire and Smite. Reminders include Shadowfiend, Pain Suppression on a dying target, Power Word: Barrier and Spirit of the Redeemer when the party is hurt." },
+-- 60216631
+[2303] = { "Default.SoD.Priest.Healer.WarcraftTavern.Name", "Healer (SoD, Warcraft Tavern)" },
+-- 25158fb1
+[2304] = { "Default.SoD.Priest.Healer.WarcraftTavern.Description", "Warcraft Tavern's Serendipity loop, built for Serendipity and Soul Warding, an alternative to the recommended Season of Discovery healer premade, off by default: enable it and disable that one, or raise its priority. Prayer of Mending on cooldown, Shield on your target whenever it can take one (with Soul Warding engraved; else below half health), Penance on heavy damage, Circle of Healing for three hurt, Greater Heal or Prayer of Healing at three Serendipity stacks, Renew on minor damage, and Flash Heal on minor injuries to build the stacks (with Serendipity engraved; else below 30%)." },
+-- e5b321d7
+[2305] = { "Default.Era.Rogue.DPS.Name", "Melee DPS" },
+-- b5cd3c00
+[2306] = { "Default.Era.Rogue.DPS.Description", "Levels 1–60, every spec, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. From Stealth: Premeditation, Ambush with a dagger when the target is not facing you, Cheap Shot solo, Garrote outside raids. In combat: Riposte, Slice and Dice from one combo point when it is missing on an elite or a healthy target (renewed at five points in its last three seconds), Expose Armor at five points in a group when you have Improved Expose Armor 2/2 and nobody Sunders, a two-point Eviscerate on a target about to die, otherwise Eviscerate at five and no builder past five. The builder follows what you know: Ghostly Strike and Hemorrhage outside raids, Backstab with a dagger when the target is not facing you, else Sinister Strike. Reminders: poisons on each weapon (Deadly on an off-hand weapon when carried), Kick, Thistle Tea, Blade Flurry and Adrenaline Rush on elites or two enemies with Slice and Dice up, Cold Blood at five, Evasion solo when hurt. Vanish, Gouge, Preparation, Kidney Shot and racials are listed off; Feint, Sprint, Blind, Sap and positioning stay with you." },
+-- 64659ecb
+[2307] = { "Default.Era.Rogue.DPS.WarcraftTavern.Name", "Melee DPS, five-point finishers (Warcraft Tavern)" },
+-- 6e2089d2
+[2308] = { "Default.Era.Rogue.DPS.WarcraftTavern.Description", "Warcraft Tavern's way, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher waits for five combo points so Relentless Strikes refunds it. Slice and Dice is used from its second rank (level 42) when missing or ending, otherwise Eviscerate; no low-point Slice, no near-death Eviscerate and no Expose Armor (a warrior's Sunder covers it). Same openers, builders and reminders as the recommended premade." },
+-- bd2e9cba
+[2309] = { "Default.Era.Rogue.DPS.Wowsims.Name", "Swords, swing-synced Sinister Strike (wowsims)" },
+-- 29c60f99
+[2310] = { "Default.Era.Rogue.DPS.Wowsims.Description", "The wowsims \"sweaty\" Combat order for Sword Specialization, an alternative to the recommended melee DPS premade, off by default: enable it and disable that one, or raise its priority. Sinister Strike only right after a main-hand swing (2.0 seconds or more to the next one, set for a 2.6–2.8 speed sword; change it in a clone), unless energy is near full or the target is about to die, so the extra sword attack does not delay your swing. Eviscerate at five also waits for Slice and Dice, full energy or a dying target. Otherwise as the recommended premade." },
+-- b33d1254
+[2311] = { "Default.SoD.Rogue.DPS.Name", "Melee DPS (SoD)" },
+-- d3dc0f9a
+[2312] = { "Default.SoD.Rogue.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them; built from wowsims Phase 6, Icy Veins and Zockify Phase 8. From Stealth: Shadowstrike, Garrote in a group, Ambush for a Backstab build with a dagger, Cheap Shot solo. On three or more enemies fighting you: Blunderbuss, Crimson Tempest, Fan of Knives first. Then Ambush on a Cutthroat proc (with a dagger), Saber Slash kept at three stacks, Poisoned Knife at four poison stacks, Slice and Dice from two points (renewed from four, unless Cut to the Chase is engraved), Expose Armor duty when nobody Sunders or keeps Sebacious Poison up, with Carnage engraved a bleed (Crimson Tempest, else Rupture; none with Saber Slash), Envenom at five (Eviscerate until you engrave it), and a builder by glove rune: Mutilate, Saber Slash, Backstab (with a dagger), else Sinister Strike. Reminders: a temporary enchant on each weapon, Kick, Thistle Tea, Blade Flurry, Adrenaline Rush, Cold Blood and Evasion, and with Master of Subtlety engraved Vanish to renew it and Preparation." },
+-- e2dafa09
+[2313] = { "Default.SoD.Rogue.DPS.IcyVeins.Name", "Melee DPS, Rupture for Carnage (SoD, Icy Veins)" },
+-- 9aaebdaf
+[2314] = { "Default.SoD.Rogue.DPS.IcyVeins.Description", "Icy Veins' Season of Discovery order, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Every finisher at five combo points, first Slice and Dice when missing or ending, then Rupture kept up when Carnage is engraved, then Envenom; Poisoned Knife only at five poison stacks; Blunderbuss or Fan of Knives on three enemies. Same openers, builders and reminders as the recommended premade; Sebacious Poison duty stays with you." },
+-- 0a82bcd6
+[2315] = { "Default.SoD.Rogue.DPS.Zockify.Name", "Melee DPS, lean Envenom (SoD, Zockify)" },
+-- b718caf6
+[2316] = { "Default.SoD.Rogue.DPS.Zockify.Description", "Zockify's lean Season of Discovery list, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. No bleeds and no Expose Armor. Poisoned Knife at four poison stacks, Slice and Dice when missing (from two points, four with Saber Slash), Envenom at five, then the glove-rune builder. The Vanish and Cold Blood burst stays with you." },
+-- ebb8b9e3
+[2317] = { "Default.SoD.Rogue.Tank.Name", "Tank (SoD)" },
+-- d50349d8
+[2318] = { "Default.SoD.Rogue.Tank.Description", "Season of Discovery tank, chosen when Just a Flesh Wound is engraved; built from wowsims Phase 6, Icy Veins, Zockify and Warcraft Tavern. Riposte, Main Gauche on cooldown, Blade Dance from one combo point (renewed from three), Slice and Dice from three (renewed from four), Fan of Knives, Crimson Tempest and Blunderbuss on three or more enemies, Blunderbuss while Blade Dance is up, Eviscerate at five with both buffs up, Poisoned Knife at low energy, then Saber Slash, Mutilate or Sinister Strike. Reminders: Tease in a group when your target attacks someone else, Kick, Evasion below half health, Blade Flurry, Adrenaline Rush, Thistle Tea and weapon poisons (the off-hand one only with an off-hand weapon). Shadowstep and Sebacious Poison duty stay with you." },
+-- b12b36cf
+[2319] = { "Default.Era.Shaman.Enhancement.Name", "Enhancement" },
+-- 5faeab70
+[2320] = { "Default.Era.Shaman.Enhancement.Description", "Levels 1–60, also on Hardcore and Self-Found realms, and every Shaman without a talent majority; built from Icy Veins, Wowhead and wowsims. Lightning Bolt pulls from range; Earth Shock interrupts. In raids only Stormstrike and Frost Shock (debuff slots). On three or more enemies fighting you, Fire Nova and Magma totems. Then Stormstrike, Earth Shock into the Stormstrike debuff or to finish, Flame Shock when it will run its course, Earth Shock while you have half your mana, and Lightning Bolt while out of reach. Reminders: Rockbiter solo and Windfury Weapon in dungeons, Lightning Shield, Strength of Earth, Searing, Windfury or Grace of Air, Mana Spring or Healing Stream, healing after a pull and in emergencies. Stoneclaw, Earthbind, totem twisting and racials are listed off; dispels, purges and cleansing totems stay with you." },
+-- 327189d1
+[2321] = { "Default.Era.Shaman.Enhancement.WarcraftTavern.Name", "Enhancement, Flame Shock first (Warcraft Tavern)" },
+-- bc01445d
+[2322] = { "Default.Era.Shaman.Enhancement.WarcraftTavern.Description", "Warcraft Tavern's Enhancement, an alternative to the recommended Enhancement premade, off by default: enable it and disable that one, or raise its priority. Windfury Weapon as soon as you learn it, Stormstrike, Flame Shock before any direct shock, then Earth Shock while your threat is low, or Frost Shock in a group once it is high; Magma and Chain Lightning on packs. Same totems and reminders as the recommended premade." },
+-- 4309e83a
+[2323] = { "Default.Era.Shaman.Elemental.Name", "Elemental" },
+-- 5ee9955c
+[2324] = { "Default.Era.Shaman.Elemental.Description", "Elemental from level 10 (most points in Elemental); built from Icy Veins and Wowhead. Earth Shock interrupts and finishes a target about to die. While moving: Flame Shock, else Frost Shock. Solo with the target in melee: Earth Shock above 30% health, then melee. On three or more enemies: Fire Nova and Magma totems when you are in melee, and Chain Lightning. Chain Lightning under Elemental Mastery or Clearcasting, otherwise Lightning Bolt. Reminders: Lightning Shield, Rockbiter outside raids, Searing or Magma, Mana Spring or Healing Stream, Elemental Mastery with Chain Lightning ready, Nature's Swiftness and Healing Wave below 30%, healing after a pull. Dispels, purges and downranking stay with you." },
+-- 7f93a27b
+[2325] = { "Default.Era.Shaman.Elemental.Wowsims.Name", "Elemental, Chain Lightning on cooldown (wowsims)" },
+-- d02c941a
+[2326] = { "Default.Era.Shaman.Elemental.Wowsims.Description", "The wowsims Elemental list, an alternative to the recommended Elemental premade, off by default: enable it and disable that one, or raise its priority. Chain Lightning on cooldown even on one target, Earth Shock while Elemental Mastery is up, otherwise Lightning Bolt. Faster but much hungrier for mana than the recommended premade; same interrupt, totems and reminders." },
+-- 6a3c6c77
+[2327] = { "Default.Era.Shaman.Restoration.Name", "Restoration" },
+-- 5119f4dc
+[2328] = { "Default.Era.Shaman.Restoration.Description", "Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Healing Wave under Nature's Swiftness, Nature's Swiftness below 30%, Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Chain Heal when three group members near you are below 85%, otherwise Healing Wave below 90%. On an enemy it fights: Earth Shock interrupt, Chain Lightning on packs, Flame Shock, Lightning Bolt from range, melee. Reminders: Lightning Shield and Rockbiter solo, Mana Tide in a group, Mana Spring, Strength of Earth, Searing. Choosing whom to heal, downranking and Tremor or cleansing totems stay with you; keeping Healing Way on the tank is listed off." },
+-- 4e388ff1
+[2329] = { "Default.Era.Shaman.Restoration.WarcraftTavern.Name", "Restoration, Chain Heal first (Warcraft Tavern)" },
+-- 7528f628
+[2330] = { "Default.Era.Shaman.Restoration.WarcraftTavern.Description", "Warcraft Tavern's Restoration, an alternative to the recommended Restoration premade, off by default: enable it and disable that one, or raise its priority. Chain Heal is the heal for anyone below 90%, with Lesser Healing Wave for someone about to die; Healing Wave is only for an assigned tank healer with Healing Way (listed off). Same cures, damage on enemies and totem reminders as the recommended premade." },
+-- 37e5b161
+[2331] = { "Default.SoD.Shaman.Enhancement.Name", "Enhancement (SoD)" },
+-- 929796a6
+[2332] = { "Default.SoD.Shaman.Enhancement.Description", "Season of Discovery, levels 1–60 with runes as you engrave them, dual wield or two-hander, and every SoD Shaman no other premade fits; built from wowsims Phase 6, Icy Veins and Wowhead. Flame Shock pulls; Earth Shock interrupts. On three or more enemies: Magma, Fire Nova from a fire totem, Chain Lightning at four Maelstrom stacks, Flame Shock. Then Lava Burst at five Maelstrom stacks, Stormstrike, Lava Lash, Lightning Bolt at five stacks, Flame Shock when it will run, Earth Shock, Molten Blast, Lightning Bolt from range. Reminders: Windfury Weapon (Rockbiter before), Flametongue on an off-hand weapon with Lava Lash (else Windfury; never on a shield; an Icy Veins Windfury-both line is listed off), Water or Lightning Shield, Spirit of the Alpha, Feral Spirit, Shamanistic Rage below 65% mana, totems, Ancestral Guidance. Totemic Projection, dispels and purges stay with you." },
+-- 0fb65642
+[2333] = { "Default.SoD.Shaman.Elemental.Name", "Elemental (SoD)" },
+-- f9d25821
+[2334] = { "Default.SoD.Shaman.Elemental.Description", "Season of Discovery Elemental from level 10 (most points in Elemental); built from wowsims Phase 6, Wowhead and Icy Veins. Earth Shock interrupts. While moving: Flame Shock, Earth Shock at eight Lightning Shield charges, Lava Burst or Chain Lightning on a Power Surge proc. On three or more enemies: Flame Shock, Chain Lightning, Fire Nova, Lava Burst, Earth Shock at eight charges, Magma. Then Lava Burst on Power Surge, Flame Shock kept up, Lava Burst while your Flame Shock lasts, Earth Shock at eight charges, Chain Lightning on two enemies, Lightning Bolt. Reminders: Flametongue for Burn, Lightning Shield, Earth Shield on yourself, Spirit of the Alpha, Feral Spirit, Shamanistic Rage, Elemental Mastery, totems. Trinkets, Totemic Projection, dispels and purges stay with you." },
+-- 24f21f83
+[2335] = { "Default.SoD.Shaman.Restoration.Name", "Restoration (SoD)" },
+-- ff16512c
+[2336] = { "Default.SoD.Shaman.Restoration.Description", "Season of Discovery Restoration from level 10 (most points in Restoration); built from Icy Veins and Wowhead. On your friendly target: Riptide then Lesser Healing Wave below 40%, Cure Poison or Cure Disease, Healing Rain when three group members near you are below 85%, Chain Heal when two are (at once on a Power Surge proc), Riptide below 95% for Tidal Waves, Healing Wave below 90%. On an enemy it fights. Reminders: Water Shield (Lightning Shield before), Earth Shield on your friendly target or yourself, Shamanistic Rage, Mana Tide, Mana Spring and Strength of Earth. Choosing whom to heal and Tremor or cleansing totems stay with you." },
+-- 007cf117
+[2337] = { "Default.SoD.Shaman.Tank.Name", "Tank (SoD, Way of Earth)" },
+-- 8ecde7ce
+[2338] = { "Default.SoD.Shaman.Tank.Description", "Season of Discovery tank, chosen once Way of Earth is engraved; built from Icy Veins, Wowhead, wowsims and Warcraft Tavern. Flame Shock pulls. Earth Shock taunts a target in melee that is not attacking you, and interrupts. On two or more enemies: Molten Blast, Flame Shock, Chain Lightning at five Maelstrom stacks or on Power Surge, Fire Nova at five stacks. Then Flame Shock kept up, Lava Burst on Power Surge or while Flame Shock lasts, Stormstrike, Earth Shock, Lightning Bolt at five stacks, Molten Blast, Frost Shock. Reminders: Rockbiter, Lightning Shield, Spirit of the Alpha on yourself, Feral Spirit, Shamanistic Rage, Searing or Magma, and group totems." },
+-- 2628a00c
+[2339] = { "Default.Era.Warlock.DPS.Name", "Every tree" },
+-- 67b0af4c
+[2340] = { "Default.Era.Warlock.DPS.Description", "Levels 1–60, every talent tree, also on Hardcore and Self-Found realms; built from Wowhead, Icy Veins, Warcraft Tavern and wowsims. Stops while you cast or channel and never tags a mob someone else is fighting while you are solo. Nightfall's Shadow Trance first; Shadowburn and Searing Pain to finish a group target; a solo target about to die gets Drain Soul (for a shard, or with Improved Drain Soul), Shadowburn or Conflagrate, then the wand, never new DoTs. While moving only instants. On three or more enemies: Hellfire when they are on you and you have half your health, otherwise Rain of Fire. One curse: in raids Curse of Shadow or the Elements when nobody has it, Doom on long elite fights, otherwise Agony. Immolate when it pays (Destruction, raids, or with 40% mana), Corruption, Siphon Life (in raids only on Shadow Vulnerability). Solo: Dark Pact, Life Tap when healthy, Drain Life when hurt, the wand. Shadow Bolt otherwise. Reminders: Demon Armor or Demon Skin, your pet (Voidwalker solo, Imp in a group, Succubus for Demonic Sacrifice), Fel Domination, Demonic Sacrifice, Amplify Curse, Voidwalker Sacrifice and a Healthstone when low, Health Funnel. Curse assignments, Curse of Recklessness on a fleeing mob, Fear, Banish, Soulstones and creating Healthstones stay with you." },
+-- 2a4e91fe
+[2341] = { "Default.Era.Warlock.DPS.WarcraftTavern.Name", "Drain tank (Warcraft Tavern)" },
+-- f3fb6b8f
+[2342] = { "Default.Era.Warlock.DPS.WarcraftTavern.Description", "Warcraft Tavern's leveling style, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. The Imp, then the Succubus from level 20. Immolate, Siphon Life and Corruption, then solo Drain Life as the filler once you learn its fourth rank (the wand before), Life Tap whenever your health is nearly full and Dark Pact before your pet's mana is full. In raids every DoT the slots allow, then Shadow Bolt. Same finishers, curse and safety reminders as the recommended premade; fearing a second mob stays with you." },
+-- 57dda3e2
+[2343] = { "Default.Era.Warlock.DPS.IcyVeins.Name", "Curse and Corruption raids (Icy Veins)" },
+-- 95411363
+[2344] = { "Default.Era.Warlock.DPS.IcyVeins.Description", "Icy Veins' list for realms with the 16-debuff limit, an alternative to the recommended Warlock premade, off by default: enable it and disable that one, or raise its priority. In raids only your curse and Corruption, then Shadow Bolt, with no Immolate and no Siphon Life. Leveling and dungeons play as the recommended premade." },
+-- 4f0bc39e
+[2345] = { "Default.SoD.Warlock.Tank.Name", "Tank (SoD, Metamorphosis)" },
+-- 1e24cbef
+[2346] = { "Default.SoD.Warlock.Tank.Description", "Season of Discovery tank, chosen once Metamorphosis is engraved; built from wowsims, Icy Veins, Wowhead and Warcraft Tavern. Shadow Cleave whenever Defender's Resolve is missing or ending, a Soul Fire! proc, Incinerate to keep its fire buff; on three or more enemies Shadow Cleave, Lake of Fire, Shadowflame and Hellfire. Then a curse (Agony, else Recklessness when nobody has it), Shadowflame (Immolate before you engrave it), Master Channeler Drain Life, Corruption, Siphon Life, Conflagrate for Backdraft, Soul Fire under Decimation below 35%, and Searing Pain as the threat filler. Reminders: Metamorphosis, Fel Armor, your pet, Immolation Aura, Demonic Grace, Vengeance when low, Menace when the target attacks someone else, Demonic Howl on packs, Amplify Curse, Life Tap for a pet low on mana. Infernal Armor stays with you." },
+-- 91d3c82e
+[2347] = { "Default.SoD.Warlock.Fire.Name", "Fire (SoD)" },
+-- b3afd0ce
+[2348] = { "Default.SoD.Warlock.Fire.Description", "Season of Discovery Destruction, chosen once Chaos Bolt or Incinerate is engraved; built from wowsims Phase 6 and Wowhead. Shadowburn and Searing Pain to finish; instants while moving; Incinerate's buff, Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, Doom on long elite fights, else Agony); Conflagrate only to keep Backdraft; Immolate and Incinerate's buff kept up; below 35% Soul Fire under Decimation instead of Chaos Bolt; Soul Fire! procs; Chaos Bolt; solo Master Channeler Drain Life and Life Tap; Incinerate (Shadow Bolt before you engrave it). Reminders: Fel Armor, the Imp, Amplify Curse and the safety reminders." },
+-- c007c49e
+[2349] = { "Default.SoD.Warlock.Fire.IcyVeins.Name", "Fire, Conflagrate on cooldown (SoD, Icy Veins)" },
+-- 11cdbaf7
+[2350] = { "Default.SoD.Warlock.Fire.IcyVeins.Description", "Icy Veins' and Warcraft Tavern's Season of Discovery Destruction, an alternative to the recommended Season of Discovery Fire premade, off by default: enable it and disable that one, or raise its priority. Immolate kept up, Conflagrate and Chaos Bolt on cooldown (Chaos Bolt also below 35%), Incinerate's buff, Soul Fire under Decimation below 35%, Incinerate filler; the damage curse only while moving, with Recklessness in a group when nobody has it." },
+-- 998799fe
+[2351] = { "Default.SoD.Warlock.Shadow.Name", "Shadow, Affliction and Felguard (SoD)" },
+-- 7646e9f2
+[2352] = { "Default.SoD.Warlock.Shadow.Description", "Season of Discovery Affliction and Felguard builds, and every SoD Warlock no other premade fits; built from wowsims Phase 6, Wowhead and Icy Veins. Nightfall procs; Shadowburn or Drain Soul to finish a group target; a dying solo target gets Drain Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (Recklessness in a group when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life, Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (each renewed under 6 seconds with Invocation engraved); Drain Soul below 20% with Soul Siphon engraved; solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor, your pet (a Felguard once engraved), Life Tap for a pet low on mana, Amplify Curse and the safety reminders. Curse assignments and Shadow Bolt Volley packs stay with you." },
+-- 9b2b374b
+[2353] = { "Default.SoD.Warlock.Shadow.Wowsims.Name", "Shadow, Drain Soul filler (SoD, wowsims)" },
+-- aff32cb7
+[2354] = { "Default.SoD.Warlock.Shadow.Wowsims.Description", "The wowsims Phase 6 Affliction list for a Soul Siphon build, an alternative to the recommended Season of Discovery Shadow premade, off by default: enable it and disable that one, or raise its priority. Drain Soul is the filler at any health, and the next step shows as soon as it is due so you can clip the channel for it; any other channel is left to finish. Unstable Affliction and Shadowflame renewed with 7.5 seconds left, Agony and Corruption with 6, Master Channeler Drain Life, Haunt, Shadow Bolt only on a Shadow Trance proc, Siphon Life, Life Tap below 10% mana. Same reminders as the recommended premade." },
+-- e5b321d7
+[2355] = { "Default.Era.Warrior.DPS.Name", "Melee DPS" },
+-- c080d284
+[2356] = { "Default.Era.Warrior.DPS.Description", "Levels 1–60, Arms and Fury, and every warrior outside Defensive Stance, also on Hardcore and Self-Found realms; built from wowsims, Icy Veins and Wowhead. Charge to pull, Intercept a distant target, Whirlwind (Thunder Clap before you learn it) on three or more enemies fighting you, then Execute first below 20%, Sunder Armor to five on bosses without Expose Armor, Bloodthirst, Mortal Strike, Slam right after a swing with Improved Slam (set for a two-hander; change it in a clone), Whirlwind while keeping rage for your main strike, Overpower, Rend until your main strike is learned, Sunder Armor on healthy targets and Hamstring near the rage cap. Reminders: Battle Shout, Heroic Strike from 40 rage (20 while leveling), Cleave on packs, Bloodrage, Sweeping Strikes, Death Wish (bosses: their last 30 seconds), Recklessness with Death Wish, Pummel or Shield Bash. Intimidating Shout and Retaliation are listed off for Hardcore emergencies; stance dancing stays with you." },
+-- c0b21fb1
+[2357] = { "Default.Era.Warrior.Protection.Name", "Tank" },
+-- 6949294b
+[2358] = { "Default.Era.Warrior.Protection.Description", "Chosen whenever you are in Defensive Stance (Protection, Fury-Prot or a two-hander tank); built from Icy Veins and MaxDps. On four or more enemies: Demoralizing Shout and Battle Shout for threat. Then Revenge, Shield Slam, Bloodthirst, Sunder Armor to five, Demoralizing Shout on elites, Sunder Armor as the filler, and Rend before Shield Slam or Bloodthirst. Shield Slam and Shield Block only with a shield on. Reminders: Battle Shout, Shield Block while the target hits you, Bloodrage, Heroic Strike and Cleave from 50 rage, Shield Bash, Last Stand. Taunt, Shield Wall and Death Wish are listed off; Battle Stance for Execute (the DPS premade takes over) and Challenging Shout stay with you." },
+-- 4c0c7d31
+[2359] = { "Default.Era.Warrior.Protection.IcyVeins.Name", "Tank, Battle Shout threat (Icy Veins)" },
+-- 3acacdc7
+[2360] = { "Default.Era.Warrior.Protection.IcyVeins.Description", "Icy Veins' \"sunderless\" tanking for groups where four or more players hear your shout (Phase 5 Battle Shout onward), an alternative to the recommended tank premade, off by default: enable it and disable that one, or raise its priority. Demoralizing Shout kept up, Revenge, Shield Slam or Bloodthirst, then Battle Shout as the threat filler instead of Sunder Armor; Shield Slam and Shield Block only with a shield on. Same reminders as the recommended tank; go back to Sunder when focusing one target in a crowd." },
+-- b33d1254
+[2361] = { "Default.SoD.Warrior.DPS.Name", "Melee DPS (SoD)" },
+-- dbdfa29c
+[2362] = { "Default.SoD.Warrior.DPS.Description", "Season of Discovery, levels 1–60 with runes as you engrave them: two-hander, dual wield, Gladiator and leveling, and every SoD warrior outside Defensive Stance; built from wowsims Phase 6 and Wowhead Phase 7/8. Charge, Victory Rush, Intercept, Whirlwind (Thunder Clap before it) on two or more enemies, Slam at three Slammin' stacks, Rend kept up, Slam on Blood Surge (on cooldown with Precise Timing engraved), Bloodthirst, Mortal Strike, Shield Slam (with a shield), Overpower; then Quick Strike when it is engraved (two-hander), otherwise Whirlwind, Raging Blow and Devastate (Sunder before it); Execute with 30 rage or on Sudden Death; Hamstring near the rage cap. Reminders: Battle and Commanding Shout, Heroic Strike from 50 rage (always while Consumed by Rage enrages you), Cleave, Bloodrage, Rampage, Death Wish, Recklessness, Sweeping Strikes, interrupts. Berserker Rage and the Taste for Blood Battle Stance dip are listed off." },
+-- c5bed192
+[2363] = { "Default.SoD.Warrior.DPS.Wowhead.Name", "Battle Forecaster stance dance (SoD, Wowhead)" },
+-- ef07220e
+[2364] = { "Default.SoD.Warrior.DPS.Wowhead.Description", "Wowhead's Phase 7/8 rotation for Soul of the Battle Forecaster or the Tier 1 six-piece (which Rotation Master cannot see), an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Stance swaps to keep the forecast buffs up, Heroic Strike almost always, then Bloodthirst, Blood Surge Slam, Whirlwind, Raging Blow and Hamstring; no Rend and no Overpower. Check the swap timing in game before relying on it." },
+-- 49e535b7
+[2365] = { "Default.SoD.Warrior.DPS.IcyVeins.Name", "Melee DPS (SoD, Icy Veins)" },
+-- d1f081a4
+[2366] = { "Default.SoD.Warrior.DPS.IcyVeins.Description", "Icy Veins' Season of Discovery Fury and Arms pages, an alternative to the recommended Season of Discovery melee DPS premade, off by default: enable it and disable that one, or raise its priority. Execute near the top below 20% or on Sudden Death, Slam on Blood Surge, Bloodthirst or Mortal Strike, Whirlwind, Overpower, Raging Blow, then Quick Strike and Hamstring only above 60 rage; no Rend; Heroic Strike only above 80 rage. Same reminders as the recommended premade." },
+-- ebb8b9e3
+[2367] = { "Default.SoD.Warrior.Tank.Name", "Tank (SoD)" },
+-- 93f460da
+[2368] = { "Default.SoD.Warrior.Tank.Description", "Season of Discovery tank, chosen in Defensive Stance; built from Wowhead Phase 8 and wowsims. Charge; on two or more enemies Thunder Clap, Shockwave, Shield Slam, Revenge, Whirlwind and Devastate; then Shield Slam whenever Defender's Resolve is missing or ending, Revenge, Shield Slam, Shockwave, Execute, Whirlwind at five Gladiator's Cunning stacks, Devastate (Sunder before it), Demoralizing Shout and Thunder Clap on elites, Rend before Shield Slam; Shield Slam and Shield Block only with a shield on. Reminders: Battle and Commanding Shout, Shield Block, Heroic Strike from 50 rage, Cleave from 55, Bloodrage, Rampage, Last Stand, interrupts. Taunt, Shield Wall, Death Wish, Recklessness and Retaliation are listed off; the Gladiator swap for Execute stays with you." },
+-- d70604e8
+[2369] = { "Default.MoP.DeathKnight.Blood.Name", "Recommended" },
+-- 235cf9c7
+[2370] = { "Default.MoP.DeathKnight.Blood.Description", "Recommended for Blood tanks, chosen in the Blood specialization. Pulls from range with Outbreak, Icy Touch or Death Grip. Death Strike below half health, whenever Blood Shield is missing (from 80), and before all four Frost and Unholy runes sit full; Rune Strike near 90 runic power (Death Coil at 80 before you learn it); Outbreak, else Icy Touch and Plague Strike, for diseases, and Blood Boil to refresh them from 68; Soul Reaper under 35%; Heart Strike (Blood Strike before 60) on two Blood runes; Crimson Scourge on Death and Decay while diseases last, else Blood Boil; Blood Tap at eleven charges; then Death Strike, Heart Strike, Rune Strike and Horn of Winter. Three enemies on you: Death and Decay, a disease spread (Blood Boil with Roiling Blood, else Pestilence) and Blood Boil. Reminders: Blood Presence when you have none, Bone Shield, Horn of Winter, Mind Freeze, Rune Tap, Vampiric Blood, Icebound Fortitude, Empower Rune Weapon and Death Pact by your health, Dancing Rune Weapon on elites, Army of the Dead before a group boss. It cannot see incoming damage, so Anti-Magic Shell (off) and big defensives are yours." },
+-- a7eb3532
+[2371] = { "Default.MoP.DeathKnight.Blood.Wowsims.Name", "Health-reactive (wowsims)" },
+-- a92e9e2e
+[2372] = { "Default.MoP.DeathKnight.Blood.Wowsims.Description", "An alternative to the recommended Blood premade for raid tanks with healers, off by default: enable it and disable that one, or raise its priority. Death Strike only below 70% health, when Blood Shield is missing or about to fade, or before the Frost and Unholy runes cap, instead of on every rune; a lone Blood rune goes to Heart Strike when the Frost and Unholy runes are more than a second away. It has no area-of-effect section, and the same reminders as the recommended one." },
+-- 747fb182
+[2373] = { "Default.MoP.DeathKnight.FrostDualWield.Name", "Two weapons" },
+-- 0c806576
+[2374] = { "Default.MoP.DeathKnight.FrostDualWield.Description", "Recommended for Frost with two one-handed weapons (Masterfrost); chosen in the Frost specialization while your off hand holds a weapon. Pulls with Outbreak or Howling Blast (Death Grip solo). Death Strike on Dark Succor or below 35% health, Blood Tap at eleven charges, diseases (Unholy Blight, Outbreak, Howling Blast, Plague Strike), Soul Reaper under 35%, Frost Strike on Killing Machine or above 89 runic power, Howling Blast on Rime or with both Frost or both Death runes ready, Obliterate on two Unholy runes below 77 runic power, Frost Strike above 76, Obliterate, Howling Blast, Plague Leech before diseases fade with Outbreak ready, Frost Strike at 40, Horn of Winter. Three enemies on you: a disease spread, Death and Decay and Howling Blast. Reminders: Frost Presence, Pillar of Frost, Raise Dead, Empower Rune Weapon with every rune down, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss." },
+-- 9562e8af
+[2375] = { "Default.MoP.DeathKnight.Frost.Name", "Two-hander" },
+-- d33a6f74
+[2376] = { "Default.MoP.DeathKnight.Frost.Description", "Frost with a two-handed weapon, the usual leveling setup; chosen in the Frost specialization whenever the two-weapon premade does not apply. Same opening, diseases, survival and AoE as the two-weapon premade, then Obliterate on Killing Machine, Frost Strike above 76 runic power, Howling Blast on Rime, Obliterate whenever a rune pair is full, Obliterate, Howling Blast, Plague Leech, Frost Strike at 40 and Horn of Winter. Before Obliterate (58) Death Strike spends your Unholy runes. Same reminders as the two-weapon premade." },
+-- 4de5fe95
+[2377] = { "Default.MoP.DeathKnight.Unholy.Name", "Unholy" },
+-- 5c6efba1
+[2378] = { "Default.MoP.DeathKnight.Unholy.Description", "Recommended for Unholy, and the premade for any Death Knight Blood and Frost do not claim, including one without a specialization. Pulls from range with Outbreak or Icy Touch (Death Grip solo). Death Strike on Dark Succor or below 35% health, diseases (Unholy Blight, Outbreak, Plague Strike, Icy Touch), Blood Tap at eleven charges, Soul Reaper under 35%, Dark Transformation at five Shadow Infusion stacks, Death Coil near the runic power cap, Death and Decay on a target that will live, Scourge Strike, Death Coil on Sudden Doom or at 40, Outbreak while Unholy Strength is up, Festering Strike (Blood Strike before you learn it), Plague Leech, Horn of Winter. Three enemies on you: a disease spread, Death and Decay, Blood Boil and Icy Touch on a Frost rune. Reminders: Unholy Presence, your ghoul, Summon Gargoyle under Bloodlust or on a long elite fight, Unholy Frenzy, Empower Rune Weapon, Horn of Winter, Mind Freeze, Icebound Fortitude and Death Pact when low, Army of the Dead before a group boss; Anti-Magic Shell is off." },
+-- 56eecd5b
+[2379] = { "Default.MoP.DeathKnight.Unholy.Wowsims.Name", "Unholy, rune-cap pooling (wowsims)" },
+-- 457f3061
+[2380] = { "Default.MoP.DeathKnight.Unholy.Wowsims.Description", "An alternative to the recommended Unholy premade, as the simulator, wowtbc.gg, Method and MaxDps play it; off by default: enable it and disable that one, or raise its priority. While Dark Transformation is down Death Coil goes to rebuilding Shadow Infusion, Scourge Strike comes first when both Unholy or both Death runes are ready, and Festering Strike first when both Blood and both Frost runes are; otherwise the same opening, diseases, AoE and reminders as the recommended one." },
+-- 5ea8498f
+[2381] = { "Default.MoP.Druid.Unspecialized.Name", "Before a specialization" },
+-- 3efc9d82
+[2382] = { "Default.MoP.Druid.Unspecialized.Description", "For levels 1 to 9, or any druid who has not chosen a specialization yet; the specialization premades take over once you pick one. In Cat Form it keeps Rake up, spends five combo points (or two on a dying target) on Ferocious Bite and builds with Mangle; in Bear Form it uses Mangle and Maul. Otherwise it pulls with Wrath, keeps Moonfire on targets that will last, casts Wrath (Moonfire while moving) and suggests Rejuvenation on yourself when you are below half health and alone. It stops while you cast, travel or have no enemy targeted." },
+-- d70604e8
+[2383] = { "Default.MoP.Druid.Balance.Name", "Recommended" },
+-- 625c32c1
+[2384] = { "Default.MoP.Druid.Balance.Description", "Recommended for Balance from level 10, after Wowhead's Phase 5 list and wowsims. Keeps Moonfire and Sunfire up and refreshes them inside the matching Eclipse, casts Starfall in Lunar Eclipse, Starsurge on Shooting Stars and on cooldown, Hurricane in Solar or Astral Storm in Lunar at five enemies, Starfire in and after Lunar and Wrath in and after Solar. Rotation Master cannot read Eclipse energy, so between Eclipses it keeps casting Starfire if Starfire was one of your last three casts, otherwise Wrath. Reminders: Mark of the Wild, Moonkin Form, Incarnation as an Eclipse starts and Celestial Alignment as one ends (on elites or long fights), Nature's Vigil, Force of Nature, Nature's Swiftness for Dream of Cenarius, Innervate, Solar Beam, Barkskin and Renewal when low. Wild Mushroom placement stays manual; the Detonate reminder is off by default. It stops while you cast, travel, are in Cat or Bear Form, or have no enemy targeted." },
+-- d70604e8
+[2385] = { "Default.MoP.Druid.Feral.Name", "Recommended" },
+-- 008c4d0b
+[2386] = { "Default.MoP.Druid.Feral.Description", "Recommended for Feral from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Cat Form, opens from Prowl with Savage Roar and Ravage, keeps Savage Roar up, uses Predatory Swiftness for a Healing Touch at four or five combo points with Dream of Cenarius, Rip at five points (Ferocious Bite refreshes it below 25% health), Ferocious Bite at five points while Rip and Savage Roar both have six seconds left, Rake, Thrash on Clearcasting, Shred on Clearcasting or Berserk when the target is not attacking you (Rotation Master cannot tell whether you are behind it) and Mangle; Thrash and Swipe at four enemies. In Bear Form it gives a short tanking list. Reminders: Tiger's Fury under 35 energy, Berserk with it on elites or long fights, Incarnation, Force of Nature, Nature's Vigil, Skull Bash, Survival Instincts and Barkskin when low, Mark of the Wild. Bear- and Wrath-weaving, and Heart of the Wild, stay manual." },
+-- 450e41c9
+[2387] = { "Default.MoP.Druid.Feral.IcyVeins.Name", "Bite only in execute (Icy Veins)" },
+-- 34b2bf98
+[2388] = { "Default.MoP.Druid.Feral.IcyVeins.Description", "Icy Veins' Feral order (Wowhead's Bite rule agrees), an alternative to the recommended Feral premade: enable it and disable that one, or raise its priority. Same opener, Savage Roar, Healing Touch and AoE, but combo points above 25% target health go only to Rip and Savage Roar: Ferocious Bite only refreshes Rip in execute (or spends five points before you learn Rip). Rake refreshes at two seconds, Thrash only on Clearcasting, and Berserk waits for 90 energy with Tiger's Fury at least 15 seconds away." },
+-- d70604e8
+[2389] = { "Default.MoP.Druid.Guardian.Name", "Recommended" },
+-- b19b167d
+[2390] = { "Default.MoP.Druid.Guardian.Description", "Recommended for Guardian tanks from level 10, after wowsims and Wowhead's Phase 5 list. Puts you in Bear Form, pulls with Faerie Fire from range or Mangle, keeps Weakened Blows up with Thrash and Weakened Armor with Faerie Fire on elites, uses a Dream of Cenarius Healing Touch when hurt, Mangle on cooldown, Thrash and Swipe at three enemies, then Lacerate, Thrash and Faerie Fire. In Cat Form (Heart of the Wild) it gives a short damage list. Reminders: Savage Defense whenever it is down, Enrage for rage, Frenzied Regeneration when low or rage-capped, Maul above 90 rage or on Tooth and Claw, Barkskin while the target attacks you, Survival Instincts when low, Berserk and Incarnation on two enemies or a boss, Force of Nature, Nature's Vigil, Cenarion Ward, Skull Bash, Mark of the Wild. Taunting and Might of Ursoc stay manual (both reminders are off by default)." },
+-- d70604e8
+[2391] = { "Default.MoP.Druid.Restoration.Name", "Recommended" },
+-- de6705ed
+[2392] = { "Default.MoP.Druid.Restoration.Description", "Recommended for Restoration from level 10, after Wowhead's Phase 5 group healing. Heals your current friendly target, or you with no target; choosing whom to heal is up to you. Swiftmend on a target with your HoT when it is low, when Harmony has dropped, or into Wild Growth with Soul of the Forest; Wild Growth when three people nearby are hurt; instant Healing Touch on Nature's Swiftness; Regrowth on Clearcasting or a dying target; Rejuvenation; then Healing Touch and Nourish while standing still. An attackable target gets Moonfire and Wrath. Reminders: Lifebloom stacks and Ironbark on your focus (set the tank as focus), Wild Mushroom: Bloom on group damage, Force of Nature, Incarnation, Nature's Vigil, Nature's Swiftness, Innervate, Nature's Cure, Cenarion Ward, Barkskin, Mark of the Wild. Wild Mushroom placement, Tranquility and Genesis reminders are off by default." },
+-- f3d02e30
+[2393] = { "Default.MoP.Druid.Restoration.Wowhead.Name", "Tank healing (Wowhead)" },
+-- 28164e24
+[2394] = { "Default.MoP.Druid.Restoration.Wowhead.Description", "Wowhead's single-target tank-healing order, an alternative to the recommended Restoration premade for when you are assigned to the tank: enable it and disable that one, or raise its priority. Keep the tank targeted: it keeps three Lifeblooms and Rejuvenation on it, uses Regrowth for heavy damage, Nourish for light damage, Healing Touch once Lifebloom and Rejuvenation are rolling and the tank is below half, and Swiftmend to keep it topped up. Same reminders as the recommended premade." },
+-- d70604e8
+[2395] = { "Default.MoP.Hunter.BeastMastery.Name", "Recommended" },
+-- 74d539a0
+[2396] = { "Default.MoP.Hunter.BeastMastery.Description", "Chosen automatically in the Beast Mastery specialization. Opens with Hunter's Mark and Kill Command, then: Kill Shot, Kill Command (held for a moment when Bestial Wrath is about to be ready), A Murder of Crows, Lynx Rush, Dire Beast and your tier-six shot when talented, Focus Fire at five Frenzy stacks (or four about to fall off) but not during Bestial Wrath, Serpent Sting on targets that will live, Cobra Shot to refresh it, Arcane Shot at 80 focus or during Bestial Wrath, then Cobra Shot (Steady Shot before 81). With two or more enemies fighting you it keeps Beast Cleave up with Multi-Shot, saves Kill Command for spare focus on big packs and suggests Explosive Trap from three. Reminders: pet out, revived and mended, Aspect of the Hawk or Iron Hawk, Counter Shot, Fervor, and Bestial Wrath, Rapid Fire, Stampede and racials when the fight is worth it (an elite, a dungeon or raid, or a target that will live). Trap placement, Misdirection, Feign Death and defensives stay with you; Exhilaration and Deterrence reminders are off by default." },
+-- d70604e8
+[2397] = { "Default.MoP.Hunter.Marksmanship.Name", "Recommended" },
+-- a1f9c291
+[2398] = { "Default.MoP.Hunter.Marksmanship.Description", "Chosen automatically in the Marksmanship specialization. Pre-casts Aimed Shot, then: Steady Shots in pairs to keep Steady Focus up (from 63), Chimera Shot, Serpent Sting on targets that will live, Aimed Shot whenever Fire! makes it instant, Kill Shot, your talents, and a hard-cast Aimed Shot while the target is above 80% health, under Rapid Fire or Bloodlust, at 85 focus or when Chimera Shot is a few seconds away. Arcane Shot only while you are moving; otherwise Steady Shot. Four or more enemies: Chimera Shot, instant Aimed Shot, Multi-Shot, Kill Shot, Explosive Trap. Same reminders as the other Hunter premades. If you prefer spending spare focus on Arcane Shot, use the Arcane Shot variant." },
+-- d99bb281
+[2399] = { "Default.MoP.Hunter.Marksmanship.IcyVeins.Name", "Arcane Shot dump (Icy Veins)" },
+-- c5e2dc12
+[2400] = { "Default.MoP.Hunter.Marksmanship.IcyVeins.Description", "An alternative to the Marksmanship premade, as Icy Veins, Method, wowtbc.gg and Hekili play it: Aimed Shot is hard-cast only above 80% target health or under Rapid Fire or Bloodlust, and spare focus goes to Arcane Shot at 60 instead. Steady Focus is refreshed under 4 seconds; on four or more enemies Multi-Shot comes first. Off by default: enable it and disable the Marksmanship premade, or raise its priority." },
+-- d70604e8
+[2401] = { "Default.MoP.Hunter.Survival.Name", "Recommended" },
+-- 1d1f9ae1
+[2402] = { "Default.MoP.Hunter.Survival.Description", "Chosen automatically in the Survival specialization. Opens with Hunter's Mark, Black Arrow and Explosive Shot, then: Explosive Shot on cooldown and on every Lock and Load, Kill Shot, Black Arrow on targets that will live, your talents, Serpent Sting kept up by Cobra Shot, Arcane Shot at 75 focus, with Thrill of the Hunt, or at 55 when Black Arrow is not coming up, then Cobra Shot (Steady Shot before 81). Two or more enemies: Multi-Shot first on Lock and Load with full focus, Explosive Shot up to five targets, Kill Shot, Black Arrow, Explosive Trap from three, Multi-Shot to spend. Same reminders as the other Hunter premades; traps for Lock and Load procs stay with you." },
+-- 5ea8498f
+[2403] = { "Default.MoP.Hunter.Unspecialized.Name", "Before a specialization" },
+-- d00315ae
+[2404] = { "Default.MoP.Hunter.Unspecialized.Description", "For levels 1 to 9 and any Hunter who has not chosen a specialization; the Beast Mastery, Marksmanship and Survival premades take over as soon as you choose a specialization. Pulls with Hunter's Mark and Arcane Shot, then Serpent Sting on targets that will live, Multi-Shot on three or more enemies, Arcane Shot, Steady Shot and Auto Shot. Reminds you to call, revive and mend your pet and to keep Aspect of the Hawk up." },
+-- d70604e8
+[2405] = { "Default.MoP.Mage.Arcane.Name", "Recommended" },
+-- 4f5292d5
+[2406] = { "Default.MoP.Mage.Arcane.Description", "Recommended for Arcane, from level 10 to 90 (selected in the Arcane specialization). Arcane Blast builds four Arcane Charges; with four, an Arcane Missiles! proc is spent with Missiles, and without one Arcane Barrage comes out once your mana drops below 90%. Above 95% mana it keeps blasting, which is how the simulator plays it. Missiles is never left sitting on two procs, Barrage is cast before Alter Time snaps back, and with two or more enemies Barrage goes out every four charges; Cone of Cold and Arcane Explosion when five are close. Keeps your talented bomb up, and Fire Blast or Ice Lance while moving without Ice Floes. Reminders: Arcane Power and Alter Time at four charges with a proc, Frost Armor (Molten before 54), Arcane Brilliance, Counterspell, Mana Gem, Mirror Image, Ice Barrier, Ice Floes, Rune of Power or Invocation. Time Warp, Spellsteal and Presence of Mind are off; Rune of Power still needs placing by hand." },
+-- feb13352
+[2407] = { "Default.MoP.Mage.Arcane.IcyVeins.Name", "Barrage at four charges (Icy Veins)" },
+-- 1cacc0fe
+[2408] = { "Default.MoP.Mage.Arcane.IcyVeins.Description", "The guides' Arcane rule (Icy Veins, Wowhead, Method, wowtbc.gg), an alternative to the recommended Arcane premade: at four Arcane Charges, Arcane Missiles if a proc is up, otherwise Arcane Barrage, whatever your mana; Missiles only at four charges. Everything else (Alter Time, bombs, AoE, moving, reminders) matches the recommended one, except that Arcane Power is suggested at four charges without waiting for a proc. Off by default: enable it and disable the recommended Arcane premade, or raise its priority." },
+-- d70604e8
+[2409] = { "Default.MoP.Mage.Fire.Name", "Recommended" },
+-- 82cfe9d2
+[2410] = { "Default.MoP.Mage.Fire.Description", "Recommended for Fire, from level 10 to 90 (selected in the Fire specialization). Opens with a hard Pyroblast, then Inferno Blast (Fire Blast before 24) turns Heating Up into a Pyroblast! proc, which is cast at once unless Combustion is about to come off cooldown; then it waits for the next Heating Up while you cast Fireball. Combustion lights right after a Pyroblast while Ignite and the Pyroblast burn are on the target; the addon cannot see how big Ignite is, so judge a weak one yourself. Keeps your talented bomb up, spreads with Inferno Blast when two or more enemies fight you, Cone of Cold and Arcane Explosion for five close by, Scorch on the move. Reminders: Molten Armor, Presence of Mind, Alter Time with both procs, Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Dragon's Breath, Time Warp and Spellsteal are off." },
+-- 3acf3c11
+[2411] = { "Default.MoP.Mage.Fire.IcyVeins.Name", "Hold Pyroblast! (Icy Veins)" },
+-- 7c4a7543
+[2412] = { "Default.MoP.Mage.Fire.IcyVeins.Description", "Icy Veins', Method's and wowtbc.gg's Fire play, an alternative to the recommended Fire premade: a Pyroblast! proc is held until a Heating Up joins it, then cast together with your Fireball, and spent alone only when it is about to expire. Everything else matches the recommended one. Off by default: enable it and disable the recommended Fire premade, or raise its priority." },
+-- d70604e8
+[2413] = { "Default.MoP.Mage.Frost.Name", "Recommended" },
+-- a656a280
+[2414] = { "Default.MoP.Mage.Frost.Description", "Frost from level 10 to 90 (selected in the Frost specialization). Ice Lance at two Fingers of Frost, Frostfire Bolt on Brain Freeze, your talented bomb, Frozen Orb, Ice Lance on one Fingers of Frost, Frostbolt; from 87 a proc is held for Alter Time when it is less than 10 seconds away. With two or more enemies: Frozen Orb, Cone of Cold and Arcane Explosion when they are close, Blizzard when four stand still. Ice Lance and Fire Blast on the move without Ice Floes. Reminders: Water Elemental, Freeze on anything but a boss (place it yourself), Icy Veins timed with Alter Time, Alter Time at two Fingers of Frost in Icy Veins, Frost Armor (Molten before 54), Mana Gem, Arcane Brilliance, Counterspell, Mirror Image, Ice Barrier, Ice Floes, Invocation or Rune of Power. Cold Snap, Presence of Mind, Time Warp and Spellsteal are off." },
+-- 5ea8498f
+[2415] = { "Default.MoP.Mage.Unspecialized.Name", "Before a specialization" },
+-- aa9bffd1
+[2416] = { "Default.MoP.Mage.Unspecialized.Description", "For levels 1 to 9, and any Mage who has not chosen a specialization yet. Frostfire Bolt, Fire Blast to finish a target or on the move, Ice Lance on the move once learned, Arcane Explosion when three or more enemies are in melee range. Reminders: Frost Nova when a mob reaches you, Counterspell, and Molten Armor and Arcane Brilliance if you reach them. Choosing a specialization at 10 switches to that specialization's premade." },
+-- d70604e8
+[2417] = { "Default.MoP.Monk.Brewmaster.Name", "Recommended" },
+-- 94fb9e53
+[2418] = { "Default.MoP.Monk.Brewmaster.Description", "Picked automatically in the Brewmaster specialization. Keeps Shuffle up with Blackout Kick, uses Keg Smash whenever its Chi fits, Expel Harm when you are hurt (at once below 35%), Jab to spend energy, Tiger Palm for Tiger Power and as the free filler (Jab builds Chi before level 34), and Touch of Death when it is usable. From range out of combat: Chi Wave, Dizzying Haze, Clash or Keg Smash. On three or more enemies: Rushing Jade Wind, Breath of Fire and Spinning Crane Kick only while Shuffle has time left. Reminders: Sturdy Ox, Legacy of the Emperor, Purifying Brew on Heavy Stagger (Moderate when Shuffle is banked), Elusive Brew from six stacks, Guard with Power Guard, Chi Brew, Xuen, Fortifying Brew, Dampen Harm or Diffuse Magic when low, Spear Hand Strike. The Black Ox Statue reminder is off; Avert Harm, Zen Meditation and Provoke stay with you." },
+-- fbb1d180
+[2419] = { "Default.MoP.Monk.Brewmaster.Offensive.Name", "Damage first (wowsims)" },
+-- e83b14c9
+[2420] = { "Default.MoP.Monk.Brewmaster.Offensive.Description", "An alternative to the Brewmaster premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's damage-first list for a tank who outgears the content: Rushing Jade Wind before Keg Smash, Chi spent on Blackout Kick for damage, and no routine Purifying Brew or Guard (Purifying Brew only lights on the tier-15 Purifier proc). Elusive Brew, Chi Brew, Xuen and Fortifying Brew are still reminders." },
+-- d70604e8
+[2421] = { "Default.MoP.Monk.Windwalker.Name", "Recommended" },
+-- d0726f89
+[2422] = { "Default.MoP.Monk.Windwalker.Description", "Picked automatically in the Windwalker specialization. Touch of Death when usable, Tiger Palm to keep Tiger Power, Rising Sun Kick on cooldown, Chi Wave, Combo Breaker procs, Fists of Fury when you are standing still and its channel will not cap your energy, Jab when two Chi are missing (Expel Harm instead when hurt), Blackout Kick without starving the next Rising Sun Kick. On two or more enemies Rising Sun Kick keeps its debuff up and Spinning Crane Kick or Rushing Jade Wind joins from three. Reminders: Fierce Tiger, Legacy of the Emperor and of the White Tiger, Tigereye Brew at 19 stacks (15 with Chi to spend, 10 under Bloodlust or near the end of a fight), Energizing Brew at low energy, Chi Brew, Xuen, Storm, Earth, and Fire on two enemies (you cast it on the second one), Touch of Karma, defensives and Spear Hand Strike. Energy-to-cap checks are energy thresholds, so tune them to your haste." },
+-- a4027deb
+[2423] = { "Default.MoP.Monk.Windwalker.Simc.Name", "SimulationCraft 5.4.8 (Hekili and MaxDps)" },
+-- c894fb14
+[2424] = { "Default.MoP.Monk.Windwalker.Simc.Description", "An alternative to the Windwalker premade, off by default: enable it and disable that one, or raise its priority. The original SimulationCraft list that the Hekili and MaxDps addons ship: Tiger Power refreshed at three seconds, Rising Sun Kick first while its debuff is missing, Fists of Fury saved for Tigereye Brew (active or 15 stacks), Tigereye Brew at 20 stacks or at 15 with Chi and both buffs up. On three or more enemies it spends on Spinning Crane Kick, uses Rising Sun Kick only at full Chi and pools energy below 60." },
+-- d70604e8
+[2425] = { "Default.MoP.Monk.Mistweaver.Name", "Recommended" },
+-- 2d084655
+[2426] = { "Default.MoP.Monk.Mistweaver.Description", "Picked automatically in the Mistweaver specialization. With a friendly target it heals that target: Renewing Mist on cooldown, Uplift when three or more nearby allies are hurt, Expel Harm and your Chi talent for Chi, Rushing Jade Wind or Spinning Crane Kick for a hurt group, Surging Mist on five Vital Mists, Soothing Mist when the target is below 80%, then Enveloping Mist and Surging Mist inside that channel. With an enemy target it fistweaves: Tiger Palm and Blackout Kick on Muscle Memory to keep Tiger Power and Serpent's Zeal, Blackout Kick when Chi is full, Surging Mist on five Vital Mists, Renewing Mist and Expel Harm for Chi, Jab. Reminders: Wise Serpent, Legacy of the Emperor, the Jade Serpent Statue in a group, Mana Tea in quiet moments, Thunder Focus Tea, Chi Brew, Life Cocoon on a friend below 35%, Xuen, Detox, defensives, Spear Hand Strike. You choose whom to heal; Revival (reminder off) and Healing Sphere stay with you." },
+-- 5ea8498f
+[2427] = { "Default.MoP.Monk.Unspecialized.Name", "Before a specialization" },
+-- e00ba6b1
+[2428] = { "Default.MoP.Monk.Unspecialized.Description", "For levels 1 to 9, or any monk who has not chosen a specialization; a specialization premade takes over as soon as you pick one. Keeps Fierce Tiger and Tiger Power up, spends two Chi on Blackout Kick, uses Expel Harm when you are hurt and Jab otherwise." },
+-- d70604e8
+[2429] = { "Default.MoP.Paladin.Retribution.Name", "Recommended" },
+-- a115bc01
+[2430] = { "Default.MoP.Paladin.Retribution.Description", "Recommended for Retribution, from level 10 in the Retribution specialization. Keeps Inquisition up (cast at 3 Holy Power, refreshed in its last 3 seconds; from 81), spends Templar's Verdict at full Holy Power or on a free proc before generating more, then Hammer of Wrath, Crusader Strike, Judgment and Exorcism, and Templar's Verdict at 3 when nothing else is ready. In Avenging Wrath it spends at once and puts Judgment ahead of Crusader Strike. Two or more enemies on you switch to Divine Storm, with Hammer of the Righteous when four are close. Pulls from range with Judgment or Exorcism, and suggests Word of Glory when you are solo and in danger. Reminders: Seal of Truth when another seal is active or none (Seal of Righteousness is kept), Blessing of Kings or Might, Rebuke, Avenging Wrath and Guardian of Ancient Kings with Inquisition up on elites, Holy Avenger in wings, Execution Sentence and Light's Hammer, and Divine Protection and Lay on Hands when low. Seal of Righteousness for packs and glyph choices stay with you." },
+-- 73ee5d82
+[2431] = { "Default.MoP.Paladin.Retribution.WarcraftTavern.Name", "Exorcism first (Warcraft Tavern)" },
+-- efa8e3a8
+[2432] = { "Default.MoP.Paladin.Retribution.WarcraftTavern.Description", "An alternative to the recommended Retribution premade, off by default: enable it and disable that one, or raise its priority. Exorcism on every cooldown and Art of War reset comes first; Inquisition is cast at any Holy Power when it is missing and refreshed at 3 in its last 20 seconds; then Crusader Strike, Judgment, Templar's Verdict and Hammer of Wrath (first in wings with Sanctified Wrath). Two or more enemies use Crusader Strike, Light's Hammer, Judgment, Divine Storm and Hammer of Wrath. Avenging Wrath and Guardian of Ancient Kings are suggested only on elites. The guide's Seal of Righteousness on any cleave is left to you." },
+-- d70604e8
+[2433] = { "Default.MoP.Paladin.Protection.Name", "Recommended" },
+-- 0c1b3a03
+[2434] = { "Default.MoP.Paladin.Protection.Description", "Recommended for Protection, from level 10 in the Protection specialization. Pulls with Avenger's Shield, then Avenger's Shield on a Grand Crusader proc, Avenger's Shield, Hammer of Wrath, Crusader Strike, Judgment, your level-90 talent, Consecration, Holy Wrath and Sacred Shield. Three or more enemies on you switch to Avenger's Shield, Consecration, Hammer of the Righteous, Judgment and Holy Wrath. Shield of the Righteous, Eternal Flame and Word of Glory are off the global cooldown, so they light beside the rotation: Shield of the Righteous whenever you can afford it, Eternal Flame on yourself when it is running out with 3 Holy Power and three Bastion of Glory stacks, Word of Glory below half health without that talent. Other reminders: Righteous Fury, Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Sacred Shield, Avenging Wrath and Holy Avenger while you are tanking, and Guardian of Ancient Kings, Ardent Defender, Divine Protection and Lay on Hands by your health. It cannot see incoming damage, so plan big defensives yourself." },
+-- 4816b24b
+[2435] = { "Default.MoP.Paladin.Protection.Wowsims.Name", "Pool Holy Power (wowsims)" },
+-- 0709f739
+[2436] = { "Default.MoP.Paladin.Protection.Wowsims.Description", "An alternative to the recommended Protection premade, off by default: enable it and disable that one, or raise its priority. Follows the simulator's tank lists: Shield of the Righteous waits for full Holy Power unless you fall below 40% health or Divine Purpose makes it free; Eternal Flame just before it fades with more than two Bastion of Glory stacks; Sacred Shield kept up; Holy Avenger and Avenging Wrath on cooldown. Generators run Crusader Strike, Judgment, then Avenger's Shield, Holy Wrath, the level-90 talent and Hammer of Wrath, with the same three-enemy AoE order. Boss-timed defensives are yours." },
+-- d70604e8
+[2437] = { "Default.MoP.Paladin.Holy.Name", "Recommended" },
+-- ba77c874
+[2438] = { "Default.MoP.Paladin.Holy.Description", "For Holy, from level 10 in the Holy specialization. With a friend targeted it heals: at 3 Holy Power (or Divine Purpose) Light of Dawn when three people near you are hurt, else Eternal Flame on a target without it, else Word of Glory; Holy Shock on cooldown; Infusion of Light into Holy Radiance or Divine Light, three Selfless Healer stacks into Holy Radiance or Flash of Light; Flash of Light below 35%; Holy Radiance for a hurt group; Divine Light, then Holy Light to top off. With an enemy targeted it deals damage: Holy Shock, Judgment, Crusader Strike, Holy Prism, Execution Sentence, Hammer of Wrath, Denounce. Reminders: Seal of Insight when another seal (except Righteousness) or none is active, blessings, Rebuke, Beacon of Light and Sacred Shield on your focus (set the tank as focus), Divine Plea below 60% mana, Light's Hammer and your healing cooldowns when three people are below 70%, Lay on Hands on a dying target. Choosing whom to heal, dispels and mouseover healing stay with you." },
+-- 5ea8498f
+[2439] = { "Default.MoP.Paladin.Unspecialized.Name", "Before a specialization" },
+-- fce883af
+[2440] = { "Default.MoP.Paladin.Unspecialized.Description", "For levels 1 to 9, and any paladin who has not chosen a specialization yet; a specialization's premade takes over as soon as you pick one. Pulls from range with Judgment, then Crusader Strike and Judgment, with Hammer of Justice when you are solo and below half health and Word of Glory below 40%. Reminders: Seal of Command (Seal of Truth from 24) when you are not in it, Blessing of Kings, Rebuke, and Flash of Light out of combat when you are hurt." },
+-- d70604e8
+[2441] = { "Default.MoP.Priest.Discipline.Name", "Recommended" },
+-- 360a55ef
+[2442] = { "Default.MoP.Priest.Discipline.Description", "Discipline healing from level 10 to 90, chosen in the Discipline specialization. Target a friend to heal them: Power Word: Shield when they are low, before the pull and about every 12 seconds for Rapture; Flash Heal on Surge of Light; Penance; Flash Heal when they are very low; Binding Heal when you are both hurt; Prayer of Mending; Prayer of Healing and your tier-6 talent when three allies are hurt; Greater Heal; Renew while moving; Heal to top up. Under Spirit Shell it suggests Prayer of Healing or Greater Heal. Target an enemy to heal through Atonement: Penance, Power Word: Solace or Holy Fire, your tier-6 talent on packs, Shadow Word: Pain when solo, Smite. Reminders: Inner Fire, Fortitude, Archangel at five Evangelism, Inner Focus, Pain Suppression on a dying target, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, Spirit Shell timing (a reminder you can switch on), Power Word: Barrier, Void Shift and Grace stacks on the tank." },
+-- d70604e8
+[2443] = { "Default.MoP.Priest.Holy.Name", "Recommended" },
+-- 1d7fb6cd
+[2444] = { "Default.MoP.Priest.Holy.Description", "Holy healing from level 10 to 90, chosen in the Holy specialization. Target a friend to heal them: Holy Word: Serenity in Chakra: Serenity; Power Word: Shield only when they are about to die; Flash Heal on Surge of Light; Prayer of Mending; Flash Heal when very low; Binding Heal when you are both hurt; in a group with three allies hurt, Circle of Healing, Holy Word: Sanctuary in Chakra: Sanctuary, your tier-6 talent and Prayer of Healing; Renew; Greater Heal when low or at two Serendipity; Heal. Target an enemy to deal damage: Holy Word: Chastise, Power Word: Solace or Holy Fire, Shadow Word: Pain when solo, your tier-6 talent on packs, Smite. An empty chakra is filled for you (Sanctuary in a raid, Serenity in a party, Chastise solo) and never swapped. Reminders: Inner Fire, Fortitude, Guardian Spirit on a dying target, Divine Hymn when five allies are badly hurt, Shadowfiend or Mindbender for mana, Power Infusion, Desperate Prayer. Left to you: whom to heal, placing Holy Word: Sanctuary, Lightwell and Void Shift." },
+-- 87cd5cd8
+[2445] = { "Default.MoP.Priest.Holy.IcyVeins.Name", "Emergency heals last (Icy Veins)" },
+-- 007307b5
+[2446] = { "Default.MoP.Priest.Holy.IcyVeins.Description", "Off by default. Icy Veins' Holy order, picked by your chakra. In Chakra: Sanctuary: Holy Word: Sanctuary when three allies are hurt, Renew, Circle of Healing, Prayer of Mending, Prayer of Healing, then Binding Heal and Flash Heal only in emergencies. Otherwise: Renew, Holy Word: Serenity, Prayer of Mending, Greater Heal, Heal, Binding Heal, Flash Heal, Power Word: Shield last, and Flash Heal as the filler before you learn Heal. Same switch, reminders and damage list as the recommended Holy premade; enable it and disable that one to use it." },
+-- d70604e8
+[2447] = { "Default.MoP.Priest.Shadow.Name", "Recommended" },
+-- 6c0c75e0
+[2448] = { "Default.MoP.Priest.Shadow.Description", "Shadow damage from level 10 to 90, chosen in the Shadow specialization. Opens with Mind Spike, Mind Blast or your DoTs. Devouring Plague at three Shadow Orbs (when Mind Blast is ready or still six seconds away), Mind Blast, Shadow Word: Death below 20% health, Mind Flay while your Devouring Plague is up if you took Solace and Insanity, Shadow Word: Pain and Vampiric Touch refreshed near the end on a target that will live, Mind Spike on Surge of Darkness, Halo, Cascade or Divine Star at their best range, then Mind Flay. A Mind Flay is cut short for Mind Blast or Shadow Word: Death, or after its second tick; other channels are never interrupted. While moving it suggests instants only. On five or more enemies: your tier-6 talent, DoTs on your target and Mind Sear. Reminders: Shadowform, Inner Fire, Fortitude, Silence on interruptible casts, Shadowfiend or Mindbender and Power Infusion on long fights, Vampiric Embrace, Desperate Prayer and Dispersion when low. Left to you: DoTs on other targets and where Mind Sear lands." },
+-- 298fc327
+[2449] = { "Default.MoP.Priest.Shadow.WarcraftTavern.Name", "No Insanity priority (Warcraft Tavern)" },
+-- 0e01e728
+[2450] = { "Default.MoP.Priest.Shadow.WarcraftTavern.Description", "Off by default. Warcraft Tavern's Shadow order: Devouring Plague at three Shadow Orbs, Shadow Word: Death below 20%, Mind Blast, Vampiric Touch, Shadow Word: Pain, Mind Spike on Surge of Darkness, your tier-6 talent, Mind Flay. Unlike the recommended Shadow premade it never raises Mind Flay under Devouring Plague and does not hold Devouring Plague for Mind Blast. Same opener, movement, pack and reminder steps; enable it and disable the recommended one to use it." },
+-- 442034ab
+[2451] = { "Default.MoP.Priest.Unspecialized.Name", "Unspecialized" },
+-- 31c78194
+[2452] = { "Default.MoP.Priest.Unspecialized.Description", "For levels 1 to 9, or any priest who has not chosen a specialization yet. On an enemy: Shadow Word: Pain when it will live long enough, then Smite. On a friend: Flash Heal when they are low, otherwise Power Word: Shield. Reminders: Inner Fire, and a shield on yourself when you are solo and hurt. Choosing a specialization at 10 switches to its own premade." },
+-- d70604e8
+[2453] = { "Default.MoP.Rogue.Assassination.Name", "Recommended" },
+-- be1774f6
+[2454] = { "Default.MoP.Rogue.Assassination.Description", "Recommended for Assassination, from level 10 to 90 (wowsims and Wowhead for Phase 5, with Icy Veins' leveling steps). Opens from Stealth with Cheap Shot when solo, otherwise Mutilate (Dispatch on Blindside, with a dagger). Keeps Slice and Dice up (Envenom refreshes it from level 60) and Rupture on the target, spends five points on Envenom while Rupture lasts and four points to keep the Envenom buff rolling when you do not have Anticipation, then Marked for Death, Dispatch below 35% or on Blindside (it needs a dagger in the main hand), and Mutilate. Against four or more enemies fighting you: Slice and Dice, Crimson Tempest at seven, Rupture, Envenom and Fan of Knives; tabbing Rupture onto other targets is up to you. Solo it adds Recuperate and a Kidney Shot when you are low. Reminders: poisons, Kick, Vendetta on long fights, Shadow Blades with Vendetta, Vanish and Preparation inside Vendetta, Shadowstep from range, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint, Sprint and positioning." },
+-- 446abf99
+[2455] = { "Default.MoP.Rogue.Assassination.IcyVeins.Name", "Envenom at five (Icy Veins)" },
+-- 584543ab
+[2456] = { "Default.MoP.Rogue.Assassination.IcyVeins.Description", "Off by default. The Icy Veins and Method order: Vanish on cooldown for a stealthed Mutilate, Vendetta on cooldown when the fight is long enough, Envenom only at five points, Rupture kept up, Dispatch below 35% or on Blindside, Mutilate. Four to eight enemies: Fan of Knives with Rupture at three points or more; nine or more: Fan of Knives and Envenom only. The recommended Assassination premade follows the newer Phase 5 advice instead; to use this one, enable it and disable the recommended one." },
+-- d70604e8
+[2457] = { "Default.MoP.Rogue.Combat.Name", "Recommended" },
+-- 43003559
+[2458] = { "Default.MoP.Rogue.Combat.Description", "Recommended for Combat, from level 10 to 90 (Wowhead and wowsims for Phase 5). Since the Siege of Orgrimmar patch Sinister Strike costs 50 energy, so Revealing Strike is the builder and Sinister Strike is used only under Bloodlust or Heroism with Adrenaline Rush (and before level 20). Opens with Cheap Shot solo, otherwise Ambush. Keeps Slice and Dice up from two points and Revealing Strike on the target, spends five points only while Revealing Strike is up (Slice and Dice, Rupture on a long single-target fight without Blade Flurry, Eviscerate) and waits for energy at five. Against eight or more enemies: Slice and Dice, Crimson Tempest and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Blade Flurry on against two or more enemies and off again, Adrenaline Rush at low energy with Shadow Blades, Killing Spree, Vanish and Preparation for Ambush in Deep Insight, Shadowstep, Evasion solo. Left to you: Tricks of the Trade and Expose Armor (listed but off), Feint and positioning behind the target for Ambush." },
+-- 44b84c55
+[2459] = { "Default.MoP.Rogue.Combat.IcyVeins.Name", "Sinister Strike builder (Icy Veins)" },
+-- 610b2100
+[2460] = { "Default.MoP.Rogue.Combat.IcyVeins.Description", "Off by default, and superseded for Phase 5. The Icy Veins, Warcraft Tavern, Method and wowtbc.gg order from before the Siege of Orgrimmar patch: Slice and Dice, Revealing Strike kept up, five-point Rupture on a long single-target fight and Eviscerate, with Sinister Strike as the builder. Same reminders and pack play as the recommended Combat premade. Choose it only if you follow those guides; enable it and disable the recommended one." },
+-- 972be132
+[2461] = { "Default.MoP.Rogue.Combat.Hekili.Name", "Anticipation (Hekili)" },
+-- a677df00
+[2462] = { "Default.MoP.Rogue.Combat.Hekili.Description", "Off by default. The Hekili MoP order for Combat with Anticipation: Revealing Strike is the only builder, even under Bloodlust; finishers wait for Deep Insight, four Anticipation charges or Shadow Blades coming back, then Slice and Dice, Rupture on one or two long-lived targets, Crimson Tempest at seven enemies and Eviscerate; Slice and Dice is refreshed early at 11 Bandit's Guile stacks; Fan of Knives from four enemies. It applies only with Anticipation talented. Enable it and disable the recommended Combat premade to use it." },
+-- d70604e8
+[2463] = { "Default.MoP.Rogue.Subtlety.Name", "Recommended" },
+-- 53ec1c4b
+[2464] = { "Default.MoP.Rogue.Subtlety.Description", "Recommended for Subtlety with Shadow Focus, from level 10 to 90 (wowsims and Wowhead for Phase 5). In Stealth or Shadow Dance: Premeditation, Slice and Dice before the pull, finishers at five points, Ambush, Garrote. Outside: Slice and Dice; at five points Slice and Dice and Rupture when they are about to drop, Eviscerate while both last; Marked for Death; Hemorrhage to keep its bleed; Backstab (with a dagger) when the target is not attacking you, otherwise Hemorrhage. Against three or more enemies: Slice and Dice, Crimson Tempest, Eviscerate and Fan of Knives. Solo it adds Recuperate and Kidney Shot. Reminders: poisons, Kick, Shadow Dance at 75 energy with Slice and Dice and Rupture up, Vanish when Find Weakness is ending, Preparation, Shadow Blades outside Dance and Stealth, Shadowstep, Evasion solo. Left to you: standing behind the target (RM cannot see facing), Tricks of the Trade and Expose Armor (listed but off)." },
+-- a7cbb172
+[2465] = { "Default.MoP.Rogue.Subtlety.WarcraftTavern.Name", "Subterfuge (Warcraft Tavern)" },
+-- 01394d1f
+[2466] = { "Default.MoP.Rogue.Subtlety.WarcraftTavern.Description", "Chosen automatically instead of the Shadow Focus premade when your tier-1 talent is Subterfuge (Warcraft Tavern's build). Premeditation and Slice and Dice before the pull; in Stealth, Shadow Dance or the Subterfuge linger, finishers at five points and then Ambush as often as it lands. Two or three enemies: keep Rupture up and spend five points on Crimson Tempest instead of Eviscerate; four or more add Fan of Knives. One target: Slice and Dice, Rupture, Eviscerate, Hemorrhage for its bleed, Backstab from behind with a dagger, else Hemorrhage. Shadow Dance and Vanish are reminders at 60 energy with Slice and Dice up; timing them to trinket procs, as Tavern suggests, is up to you." },
+-- 442034ab
+[2467] = { "Default.MoP.Rogue.Unspecialized.Name", "Unspecialized" },
+-- 60f6bea5
+[2468] = { "Default.MoP.Rogue.Unspecialized.Description", "For levels 1 to 9, or a rogue who has not chosen a specialization yet; each specialization's premade takes over once you pick one. Opens from Stealth with Cheap Shot when solo, Ambush or Sinister Strike; suggests Stealth out of combat; Slice and Dice from two points, Recuperate and Kidney Shot when solo and hurt, Eviscerate at four points (two when the target is about to die), Sinister Strike. Reminders: poisons once learned, Kick, Evasion solo." },
+-- d70604e8
+[2469] = { "Default.MoP.Shaman.Elemental.Name", "Recommended" },
+-- 013214a9
+[2470] = { "Default.MoP.Shaman.Elemental.Description", "Recommended for Elemental from level 10, chosen in the Elemental specialization. Wowhead's order: a Lightning Bolt to open (Lava Burst with Unleashed Fury), Unleash Elements with Unleashed Fury, Flame Shock when it is missing or about to run out on a target that will live, Lava Burst into Flame Shock (and on every Lava Surge), Elemental Blast, Earth Shock at six Lightning Shield charges while Flame Shock has 6 seconds left, Chain Lightning on two enemies, Lightning Bolt. Four or more enemies on you: Magma in melee, free Lava Bursts, Lava Beam in Ascendance, Chain Lightning. While moving it shows only instants. Reminders: Lightning Shield, Flametongue, Searing Totem, Fire Elemental on elites and bosses, Elemental Mastery, Ascendance after a Lava Burst, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Thunderstorm for mana, Shamanistic Rage and Astral Shift when low. Earthquake and Earth Elemental are listed but off. Left to you: Spiritwalker's Grace, Flame Shock on extra targets and where to stand." },
+-- d70604e8
+[2471] = { "Default.MoP.Shaman.Enhancement.Name", "Recommended" },
+-- 30126acf
+[2472] = { "Default.MoP.Shaman.Enhancement.Description", "Recommended for Enhancement from level 10, chosen in the Enhancement specialization. Wowhead's order: Unleash Elements while running in, then Unleash Elements with Unleashed Fury, Elemental Blast and Lightning Bolt at five Maelstrom Weapon (or woven at three when your next swing is over a second away), Stormblast in Ascendance, Stormstrike (Primal Strike before 26), Lava Lash, Flame Shock under Unleash Flame, Unleash Elements, Earth Shock. Two or more enemies on you: Chain Lightning instead of Lightning Bolt, Lava Lash to spread Flame Shock, Fire Nova from four, Magma from six. Reminders: Lightning Shield, Windfury on the main hand and Flametongue on the off hand, Searing Totem, Fire Elemental, Feral Spirit, Ascendance after Stormstrike, Elemental Mastery, Ancestral Swiftness, Stormlash and Bloodlust in a group, Wind Shear, Shamanistic Rage and Astral Shift when low. Earth Elemental is listed but off." },
+-- e3f2e167
+[2473] = { "Default.MoP.Shaman.Enhancement.Wowsims.Name", "Weave every stack (wowsims)" },
+-- ab469690
+[2474] = { "Default.MoP.Shaman.Enhancement.Wowsims.Description", "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. The simulator's list for players who time casts between swings: Lightning Bolt, Elemental Blast or Chain Lightning on any number of Maelstrom Weapon stacks whenever the cast finishes before your next main-hand swing, Unleash Elements also whenever Flame Shock is missing, and Earth Shock only below two stacks. Reminders as the recommended premade." },
+-- a926ad7a
+[2475] = { "Default.MoP.Shaman.Enhancement.IcyVeins.Name", "Lava Lash first (Icy Veins)" },
+-- 1509ab70
+[2476] = { "Default.MoP.Shaman.Enhancement.IcyVeins.Description", "Off by default; same switch as the recommended Enhancement premade, so enable it and disable that one to use it. Icy Veins' order: Stormstrike, then Lava Lash before spending Maelstrom Weapon, Lightning Bolt at five stacks or from three when it lands before your next swing, Unleash Elements then Flame Shock, Earth Shock. On four or more enemies it spreads Flame Shock with Lava Lash and uses Fire Nova; Chain Lightning replaces Lightning Bolt on packs. Shamanistic Rage is suggested on cooldown in combat; other reminders as the recommended premade." },
+-- d70604e8
+[2477] = { "Default.MoP.Shaman.Restoration.Name", "Recommended" },
+-- 786ac591
+[2478] = { "Default.MoP.Shaman.Restoration.Description", "Recommended for Restoration from level 10, chosen in the Restoration specialization. Heals your friendly target (Rotation Master cannot pick who to heal): Greater Healing Wave under Ancestral Swiftness, Healing Surge below 35%, Purify Spirit on Magic or Curses, Unleash Elements then Healing Rain when three allies nearby are hurt, Riptide, Chain Heal for group damage, Greater Healing Wave below 60%, Healing Wave below 90%. With an attackable target it deals damage instead (Flame Shock, Lava Burst, Elemental Blast, Lightning Bolt). Reminders: Water Shield, Earthliving, Earth Shield on your focus, Healing Stream when someone is hurt, Mana Tide, Healing Tide for heavy group damage, Elemental Mastery or Ancestral Guidance, Ancestral Swiftness on a low target, Spiritwalker's Grace while moving, Bloodlust, Wind Shear. Ascendance and Spirit Link Totem are listed but off: use them when your raid assigns them." },
+-- 98ae06d3
+[2479] = { "Default.MoP.Shaman.Restoration.Hekili.Name", "Health ladder (Hekili)" },
+-- db083550
+[2480] = { "Default.MoP.Shaman.Restoration.Hekili.Description", "Off by default; same switch as the recommended Restoration premade, so enable it and disable that one to use it. Hekili's list keeps Earth Shield and Riptide on your target and Healing Stream and Healing Rain going whenever they are down, then heals by the average health of your group within 40 yards: Chain Heal below 80%, Healing Wave on a target below 70%, Greater Healing Wave below 60%, Healing Surge below 40%, with Healing Tide, Ancestral Guidance and Mana Tide on the same ladder. An attackable target gets damage plus Earth Shock." },
+-- 442034ab
+[2481] = { "Default.MoP.Shaman.Unspecialized.Name", "Unspecialized" },
+-- 8c70a307
+[2482] = { "Default.MoP.Shaman.Unspecialized.Description", "For levels 1 to 9, and any Shaman who has not chosen a specialization yet; every specialization premade takes over once you pick one. Lightning Bolt to pull from range, Healing Surge when you are low and alone, Primal Strike, Earth Shock, and Lightning Bolt while out of melee range. Keeps Lightning Shield up." },
+-- d70604e8
+[2483] = { "Default.MoP.Warlock.Affliction.Name", "Recommended" },
+-- e15e8094
+[2484] = { "Default.MoP.Warlock.Affliction.Description", "Recommended for Affliction from level 10 to 90 (chosen in the Affliction specialization). Pre-casts Haunt or Unstable Affliction, opens a fresh elite with Soulburn and Soul Swap, keeps Agony, Corruption and Unstable Affliction up (refreshing them early while Dark Soul: Misery is up), casts Haunt whenever it runs low and you have two shards (or in Dark Soul), channels Drain Soul for a shard when Haunt is ending and you have none, Drain Soul below 20%, otherwise Malefic Grasp (Shadow Bolt before 42). Seed of Corruption on three or more enemies (with Soulburn on six). Moving: instants and Fel Flame. Reminders: your pet, Dark Intent, Curse of the Elements in a group, Dark Soul, Doomguard or Infernal, Grimoire of Service or Sacrifice, Life Tap, defensives. Left to you: spreading DoTs to other targets and Soul Swap moves between them." },
+-- e62d2301
+[2485] = { "Default.MoP.Warlock.Affliction.WarcraftTavern.Name", "Pool Haunt (Warcraft Tavern)" },
+-- fd7bdbbd
+[2486] = { "Default.MoP.Warlock.Affliction.WarcraftTavern.Description", "Off by default. Warcraft Tavern's and Method's shard policy: the same DoT upkeep as the recommended Affliction premade, but Haunt is saved for four shards or Dark Soul: Misery, and below 20% Soulburn and Soul Swap refresh every DoT whenever you have a shard. Enable it and disable the recommended Affliction premade to use it." },
+-- d70604e8
+[2487] = { "Default.MoP.Warlock.Demonology.Name", "Recommended" },
+-- daf1315b
+[2488] = { "Default.MoP.Warlock.Demonology.Description", "Recommended for Demonology from level 10 to 90 (chosen in the Demonology specialization). In caster form: Corruption, Hand of Gul'dan by charges, a second Hand of Gul'dan into Metamorphosis when a one-stack Shadowflame is about to drop, Metamorphosis with Dark Soul: Knowledge (or near full fury), Soul Fire at two Molten Core stacks or below 25%, Hellfire on four or more enemies, Shadow Bolt. In Metamorphosis: Doom, Touch of Chaos to keep Corruption up, Soul Fire on Molten Core, Immolation Aura or Void Ray on packs, Touch of Chaos, and a cue to leave it when Dark Soul is down and fury is at 300 or less. Reminders: Felguard (or Wrathguard), Dark Intent, Dark Soul, Imp Swarm, Grimoire: Felguard, Doomguard or Infernal, Life Tap, Health Funnel solo. Left to you: Felstorm (pet autocast) and Demonic Leap." },
+-- 977579d3
+[2489] = { "Default.MoP.Warlock.Demonology.Guide.Name", "Pool Molten Core (guides)" },
+-- 96ffba45
+[2490] = { "Default.MoP.Warlock.Demonology.Guide.Description", "Off by default. The guide consensus (Method, wowtbc.gg, Warcraft Tavern, Wowhead): the recommended Demonology premade, except that in caster form Metamorphosis waits for 900 fury or Dark Soul and Soul Fire is only cast at eight Molten Core stacks or below 25%, so the stacks are spent in demon form. Enable it and disable the recommended Demonology premade to use it." },
+-- d70604e8
+[2491] = { "Default.MoP.Warlock.Destruction.Name", "Recommended" },
+-- b2f67ea8
+[2492] = { "Default.MoP.Warlock.Destruction.Description", "For Destruction from level 10 to 90 (chosen in the Destruction specialization). Pre-casts Incinerate, keeps Immolate up, never sits on two Conflagrate charges, spends embers on Chaos Bolt (Shadowburn below 20%) at 3.5 embers or in Dark Soul: Instability, uses Backdraft on Incinerate, and fills with Incinerate; a dying target gets Shadowburn. On three or more enemies: Rain of Fire and Fire and Brimstone on four, then Immolate, Conflagrate and Incinerate, and a cue to switch Fire and Brimstone off when your embers run out. Moving: Shadowburn, Conflagrate, Fel Flame. Reminders: your pet or Grimoire of Sacrifice, Flames of Xoroth, Dark Intent, Dark Soul, Havoc on two or more enemies (cast it on the second target yourself), Doomguard or Infernal, Ember Tap and defensives." },
+-- 442034ab
+[2493] = { "Default.MoP.Warlock.Unspecialized.Name", "Unspecialized" },
+-- a4d9e0da
+[2494] = { "Default.MoP.Warlock.Unspecialized.Description", "For a Warlock without a specialization (levels 1 to 9, or later before you choose one). Corruption to pull and kept up, Drain Life below half health, Shadow Bolt. Reminders: the Voidwalker when solo (the Imp in a group), and a Healthstone between pulls." },
+-- d70604e8
+[2495] = { "Default.MoP.Warrior.Arms.Name", "Recommended" },
+-- 6b5ddd88
+[2496] = { "Default.MoP.Warrior.Arms.Description", "Recommended for Arms from level 10 to 90, picked in the Arms specialization. Charges to open, and again for rage when you step away. Colossus Smash whenever it is missing or about to end, Mortal Strike, Storm Bolt in the Smash window, Dragon Roar and Bladestorm outside it. Below 20% health: Execute in the window, at 100 rage or to keep Sudden Execute, Overpower on Taste for Blood. Otherwise Slam in the window, Overpower at four stacks, Slam at 100 rage, Overpower, Slam. Two or more enemies fighting you add Sweeping Strikes, Thunder Clap for Deep Wounds, Bladestorm and Dragon Roar. Victory Rush below 70% health; Battle Shout for rage. Reminders: a shout when none is up, Battle Stance, Berserker Rage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap in the window, Pummel, Die by the Sword and Enraged Regeneration when low. Shattering Throw is listed but off. Left to you: canceling Bladestorm, stance dancing and positioning." },
+-- 6b415031
+[2497] = { "Default.MoP.Warrior.Arms.IcyVeins.Name", "Pool for Colossus Smash (Icy Veins)" },
+-- 5a0547fa
+[2498] = { "Default.MoP.Warrior.Arms.IcyVeins.Description", "Off by default. The Icy Veins and Wowhead Arms order: outside the Colossus Smash window it uses Overpower and Slams only above 80 rage, banking rage for the window instead of Slamming as filler. In the window: Mortal Strike, Slam, Overpower, Heroic Throw. Below 20% health: Colossus Smash, Mortal Strike, Execute, Overpower, Dragon Roar. Sweeping Strikes on two enemies, a Thunder Clap pack list on three or more. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Arms premade. Enable it and disable that one to use it." },
+-- d70604e8
+[2499] = { "Default.MoP.Warrior.Fury.Name", "Recommended" },
+-- 32c50d3a
+[2500] = { "Default.MoP.Warrior.Fury.Description", "Recommended for Fury from level 10 to 90, picked in the Fury specialization. Charges to open and for rage. Colossus Smash once two Raging Blow charges are banked (one with Recklessness), Raging Blow as the window closes, Bloodthirst, Colossus Smash, Storm Bolt, Dragon Roar outside the window, Execute here with Single-Minded Fury (one-handers), Bladestorm while Bloodthirst cools, with Titan's Grip (two-handers) one more Raging Blow outside the window, Execute, Wild Strike on Bloodsurge, Raging Blow keeping a charge for the next window, Wild Strike, Heroic Throw, Battle Shout for rage. Two or more enemies fighting you add Bladestorm, Dragon Roar, Whirlwind for Meat Cleaver and cleaving Raging Blows. Reminders: a shout when none is up, Battle Stance, Berserker Rage for Enrage, Recklessness, Avatar and Bloodbath with Colossus Smash on long fights, Skull Banner, Heroic Strike or Cleave with spare rage, Heroic Leap, Pummel and defensives when low. Left to you: canceling Bladestorm." },
+-- 45d1a752
+[2501] = { "Default.MoP.Warrior.Fury.IcyVeins.Name", "Cooldowns in Colossus Smash (Icy Veins)" },
+-- d7f3d28a
+[2502] = { "Default.MoP.Warrior.Fury.IcyVeins.Description", "Off by default. Icy Veins' Fury order spends Bladestorm or Dragon Roar first inside the Colossus Smash window, and puts Execute ahead of Bloodthirst below 20% health. Outside the window: Colossus Smash, Bloodthirst, Raging Blow only at two charges, Wild Strike on Bloodsurge, shout, Wild Strike. Four or more enemies: Bloodthirst for Enrage, Whirlwind to three Meat Cleaver stacks, Raging Blow. Heroic Strike or Cleave only near the rage cap. Same reminders as the recommended Fury premade. Enable it and disable that one to use it." },
+-- d70604e8
+[2503] = { "Default.MoP.Warrior.Protection.Name", "Recommended" },
+-- f3fe2f00
+[2504] = { "Default.MoP.Warrior.Protection.Description", "Tanking from level 10 to 90, picked in the Protection specialization. Charge or Heroic Throw to pull. Devastate to keep three Weakened Armor on elites and bosses, Dragon Roar, Bladestorm, Shockwave on three enemies and Thunder Clap on cooldown on three or more. Then Revenge for the last rage of a Shield Block, Shield Slam, Revenge on Hold the Line, Devastate for Deep Wounds, Victory Rush below 60% health, Revenge, Thunder Clap for Weakened Blows, Execute, Storm Bolt, a shout for rage and Devastate (Sunder Armor before 26). Reminders: Defensive Stance, a shout when none is up, Shield Block whenever it is down, Shield Barrier when hurt with rage to spare, Heroic Strike or Cleave on Ultimatum, Incite or near the cap, Demoralizing Shout, Berserker Rage, Enraged Regeneration, Last Stand and Shield Wall when low, your offensive cooldowns, Pummel. Taunt and Heroic Leap are listed but off. Left to you: whom to taunt, and Block versus Barrier against magic." },
+-- 442034ab
+[2505] = { "Default.MoP.Warrior.Unspecialized.Name", "Unspecialized" },
+-- 9e4fdb28
+[2506] = { "Default.MoP.Warrior.Unspecialized.Description", "For levels 1 to 9, or until you choose a specialization. Charge to pull, Victory Rush, Execute and Heroic Strike when you have 30 rage; reminds you to be in Battle Stance if you are in no stance." },
+}
+for id, entry in pairs(S) do L[entry[1]] = T and T[id] or entry[2] end
+S = nil
+if not T then return end
+
+-- Read under their own text: [id] = English. Only a translated game reads these; the untranslated stay absent.
+local E = {
+-- 492353a5
+[1] = "/rm perf probe - Check native profiler access.",
+-- 3e47dffa
+[4] = "Capture memory (10m)",
+-- b84bcf99
+[5] = "Memory report",
+-- 07027ca8
+[6] = "Stop memory capture",
+-- 9eff4745
+[7] = "Capture runtime (10s)",
+-- ceb34b2f
+[8] = "Runtime report",
+-- b6ce788d
+[9] = "Report",
+-- a518abfe
+[10] = "Capture CPU (10s)",
+-- b7aa6f62
+[11] = "CPU report",
+-- 17eb3c01
+[12] = "disabled",
+-- fb9cf756
+[13] = "enabled",
+-- fa79d474
+[14] = "exact",
+-- 5acbfff1
+[15] = "mismatch",
+-- 4d4c7eee
+[16] = "present",
+-- 7a0d9159
+[17] = "restricted",
+-- a9283b41
+[18] = "Bypass observation cache (reload required)",
+-- 0d2db211
+[19] = "Enable observation cache (reload required)",
+-- e5c01247
+[20] = "Enable observation cache (pending)",
+-- 6139ce5b
+[21] = "Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.",
+-- a30d7f9f
+[22] = "Observation cache: %s\nNext reload: %s",
+-- 3673014e
+[23] = "cached",
+-- d15690f0
+[24] = "direct",
+-- b279b4aa
+[25] = "Cache diagnostic saved for the next reload. Active mode: %s.",
+-- 6ea030dd
+[26] = "Cache diagnostic is unavailable.",
+-- c0f60371
+[27] = "Cancel capture",
+-- c1aa81e6
+[28] = "Invalid rotation ownership data in profile %s (%s); record preserved.",
+-- 6ee818aa
+[29] = "View source",
+-- 576aa29b
+[30] = "Change source helper",
+-- 33ba28a9
+[31] = "Dependencies (%d)",
+-- d28ff2b8
+[32] = "Function dependencies",
+-- d038ddbf
+[33] = "Add dependency",
+-- ffdb8428
+[34] = "Remove dependency",
+-- 1f5ef520
+[35] = "Arcane Ring",
+-- e3dfa9b3
+[36] = "Ember Corners",
+-- ed0b6679
+[37] = "Frost Shards",
+-- 4a5ff6e0
+[38] = "Nature Vines",
+-- 67f985cc
+[39] = "Lightning Sweep",
+-- 37476fc2
+[40] = "Holy Rays",
+-- 693a2003
+[41] = "Shadow Claws",
+-- 1e58829b
+[42] = "Rune Diamond",
+-- 0dcf5b86
+[43] = "Neutral Arcane Ring",
+-- 84f6ccc1
+[44] = "Choose overlay",
+-- 084e6cf7
+[45] = "This character",
+-- 6687458b
+[46] = "Applies to",
+-- d172148e
+[47] = "Legacy character %s data conflicts with the active profile; character data preserved.",
+-- 0da554c3
+[48] = "Invalid rotation fallback configuration in profile %s; data preserved.",
+-- 86637dd3
+[49] = "Condition summary unavailable: invalid template or values.",
+-- 550f7354
+[50] = "The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}",
+-- c75e3c68
+[51] = "The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}",
+-- e3f0d54c
+[52] = "The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}",
+-- b15c6c5e
+[53] = "The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}",
+-- 2621f59a
+[54] = "The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}",
+-- a7c7de78
+[55] = "The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}",
+-- 764c7ca3
+[56] = "The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}",
+-- 3de1ad93
+[57] = "The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}",
+-- b0fc7544
+[58] = "A readable string, or a transient named phrase from Functions.presentation.phrase. Named values remain literal; typed predicates choose positive or negative wording. The legacy string format remains supported.",
+-- 3d2dbbf3
+[59] = "Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.",
+-- e6609c6c
+[60] = "Test values changed. Updating results.",
+-- ebf235ef
+[61] = "Complete the highlighted test inputs before testing.",
+-- 7a633806
+[62] = "The current source could not be compiled. Fix it before testing again.",
+-- 0e916101
+[63] = "Refresh",
+-- 5f623ee6
+[64] = "Debug output",
+-- b2439bcb
+[65] = "Output",
+-- fccce64b
+[66] = "Set values in Test before debugging this condition.",
+-- 1c22c8c6
+[67] = "Rotation Master addon instance. Public helper functions are documented in Functions.",
+-- 2f3f04fc
+[68] = "Localized Rotation Master text, indexed by its English key.",
+-- a8283ade
+[69] = "Undo",
+-- 74273989
+[70] = "Redo",
+-- 7dac8415
+[71] = "Invalid item reference for announce %s:%s; reference preserved; announcement disabled.",
+-- 048f2dd8
+[72] = "Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement.",
+-- bde1631d
+[73] = "Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled.",
+-- c3f0309d
+[74] = "Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition.",
+-- b496eb37
+[75] = "Non-finite minimap value in profile %s: %s.",
+-- 504dd0b6
+[76] = "Invalid effect ID for rotation step %s:%s:%d.",
+-- d485d6e1
+[77] = "Unknown effect type for %s:%s (%s); record preserved.",
+-- 9148825e
+[78] = "/rm help                - This text.",
+-- 1f6168ea
+[79] = "/rm config              - Open the config dialog.",
+-- 7e4ba6f8
+[80] = "/rm disable             - Disable battle rotation.",
+-- 56da139a
+[81] = "/rm enable              - Enable battle rotation.",
+-- b9976515
+[82] = "/rm toggle              - Toggle between enabled and disabled.",
+-- 9842db4d
+[83] = "/rm current             - Print out the name of the current rotation.",
+-- 4d044932
+[85] = "                          Manual choices are remembered for this character, specialization and action context.",
+-- 69f6b06e
+[86] = "/rm check               - Check the database integrity.",
+-- b4808703
+[87] = "/rm repair              - Fix any DB errors found in the data with internal validation.",
+-- 71773a7c
+[88] = "No rotation is currently active.",
+-- f5951390
+[89] = "The current rotation is |cFFFFFFFF%s|cFF7BC653",
+-- 1122c922
+[90] = "Active rotation manually switched to |cFFFFFFFF%s|cFF7BC653",
+-- b406bd3a
+[91] = "Could not find rotation named |cFFFFFFFF%s|cFFB212B7 for your current specialization.",
+-- f6b5a992
+[92] = "Invalid option |cFFFFFFFF%s|cFFB212B7",
+-- 56693a8f
+[93] = "Starting up version %s",
+-- 45d8dada
+[94] = "Active rotation automatically switched to |cFFFFFFFF%s|cFF7BC653",
+-- d4f91385
+[95] = "No rotation is active as there is none suitable to automatically switch to.",
+-- fe0d07c7
+[96] = "Battle rotation enabled",
+-- d3cca26b
+[97] = "Battle rotation disabled",
+-- 8b75ea84
+[98] = "Current Rotation",
+-- 11d80e12
+[99] = "Automatic Switching",
+-- ea046a56
+[100] = "Toggle %s |cFF00FFFF/rm toggle|r",
+-- 0ee9fb73
+[101] = "Validating database integrity",
+-- a256b212
+[102] = "[Tier: %d, Column: %d]",
+-- d634fd5e
+[103] = "Autoswitch rotation list has been updated.",
+-- 7beb4a9e
+[104] = "Button Fetch triggered.",
+-- 0578a401
+[105] = "Notified configuration to update it's status.",
+-- 2e31afd5
+[106] = "Removing all glows.",
+-- cc9f8575
+[107] = "Active rotation is incomplete and may not work correctly!",
+-- 9e4feae8
+[108] = "Cache hit rate at %.02f%%",
+-- 6a0a0288
+[109] = "Spells",
+-- fb8e7a1a
+[110] = "Items",
+-- 966dac79
+[111] = "Buffs",
+-- 49fcf2c7
+[112] = "Combat",
+-- 1405a63e
+[113] = "Character",
+-- f97e9da0
+[114] = "Other",
+-- f94a59f5
+[115] = "Spatial",
+-- 494ca78f
+[116] = "Custom",
+-- 56b9b63d
+[117] = "Bind",
+-- dca68375
+[118] = "Unbind",
+-- 67236b42
+[119] = "{unit} {stacks} {comparison} {quantity}",
+-- ebc99a61
+[120] = "is less than",
+-- 103999f5
+[121] = "is less than or equal to",
+-- 4ccdd13e
+[122] = "is greater than",
+-- 31742930
+[123] = "is greater than or equal to",
+-- cb9f4031
+[124] = "is equal to",
+-- f3bab6c4
+[125] = "is not equal to",
+-- 46fd28a6
+[126] = "is evenly divisible by",
+-- bb0347a4
+[127] = "you",
+-- ae77a704
+[128] = "your pet",
+-- 5c6909af
+[129] = "your target",
+-- c03e55b9
+[130] = "your focus target",
+-- b3cccabc
+[131] = "your mouseover target",
+-- 475bae27
+[132] = "your pet's target",
+-- 36be7c3f
+[133] = "your target's target",
+-- ad57c70e
+[134] = "your focus target's target",
+-- f445919a
+[135] = "your mouseover target's target",
+-- 4d040d3f
+[136] = "your",
+-- 0f29cbcd
+[137] = "your pet's",
+-- 86535199
+[138] = "your target's",
+-- b263b9c4
+[139] = "your focus target's",
+-- 9c1fb6c2
+[140] = "your mouseover target's",
+-- 4df38978
+[141] = "your pet's target's",
+-- 6c2c38e9
+[142] = "your target's target's",
+-- 5028affe
+[143] = "your focus target's target's",
+-- 32961613
+[144] = "your mouseover target's target's",
+-- 71f18ea0
+[145] = "healed",
+-- 4ddc4e8a
+[146] = "dodged",
+-- 6973dddd
+[147] = "blocked",
+-- 63d04dee
+[148] = "hit",
+-- 0e347254
+[149] = "critically hit",
+-- 4f0a566d
+[150] = "hit with a crushing blow",
+-- fb785161
+[151] = "hit with a glancing blow",
+-- 1c33629a
+[152] = "missed",
+-- 2fe44909
+[153] = "parried",
+-- 57ac7325
+[154] = "resisted",
+-- d9460674
+[155] = "Center",
+-- 1cb2052a
+[156] = "Top Left",
+-- dccff16f
+[157] = "Top Right",
+-- 7499760f
+[158] = "Bottom Left",
+-- 09b28cd7
+[159] = "Bottom Right",
+-- 271eac34
+[160] = "Top Center",
+-- 6818850e
+[161] = "Bottom Center",
+-- 24b15e35
+[162] = "Left Center",
+-- 8f0626ff
+[163] = "Right Center",
+-- bdbea4f8
+[164] = "Select Icon",
+-- 99a52df3
+[165] = "Key",
+-- eef729cf
+[166] = "Custom Condition",
+-- e0b9479a
+[167] = "Edit Condition",
+-- 526e0087
+[168] = "Description",
+-- d689600f
+[169] = "Post-Registration Function",
+-- 2bd03442
+[170] = "Pre-Unregistration Function",
+-- eaf0fe0a
+[171] = "Warrior",
+-- a7d973a7
+[172] = "Paladin",
+-- 680ce380
+[173] = "Hunter",
+-- 0b8cdd9e
+[174] = "Rogue",
+-- 909a4523
+[175] = "Priest",
+-- 483f6fa9
+[176] = "Death Knight",
+-- 0953e68a
+[177] = "Shaman",
+-- e181bc01
+[178] = "Mage",
+-- 6e7e607f
+[179] = "Warlock",
+-- a670c8d2
+[180] = "Monk",
+-- 274814f1
+[181] = "Druid",
+-- 66b96f76
+[182] = "Demon Hunter",
+-- 628bf77a
+[183] = "Beast",
+-- 4a70eb4d
+[184] = "Dragonkin",
+-- 83bd7784
+[185] = "Demon",
+-- 4309e83a
+[186] = "Elemental",
+-- db5bea37
+[187] = "Giant",
+-- a5bb6066
+[188] = "Undead",
+-- d2253641
+[189] = "Humanoid",
+-- 14e2f7b4
+[190] = "Critter",
+-- 39bf205e
+[191] = "Mechanical",
+-- dc12bec5
+[192] = "Not specified",
+-- 8f7ae0c0
+[193] = "Totem",
+-- 87f8c315
+[194] = "Non-combat Pet",
+-- b2098aeb
+[195] = "Gas Cloud",
+-- a703e47b
+[196] = "World Boss",
+-- 7c32325f
+[197] = "Rare Elite",
+-- 1d6953e0
+[198] = "Elite",
+-- 291d2a97
+[199] = "Rare",
+-- a7248eeb
+[200] = "Normal",
+-- 73fba898
+[201] = "Trivial",
+-- 9befa3c6
+[202] = "Minus",
+-- c0b21fb1
+[203] = "Tank",
+-- caece7f5
+[204] = "DPS",
+-- a491a33c
+[205] = "Healer",
+-- ed1a5a81
+[206] = "Magic",
+-- 7bce5b94
+[207] = "Disease",
+-- d5a78b99
+[208] = "Poison",
+-- 88b3d8ee
+[209] = "Curse",
+-- c6e5d717
+[210] = "Enrage",
+-- 77d7cd99
+[211] = "Arena",
+-- b2fb8b8a
+[212] = "Controlled by your faction",
+-- 9f22dfe6
+[213] = "Contested",
+-- bdd63a7e
+[214] = "Controlled by opposing faction",
+-- 5f18bd94
+[215] = "Sanctuary (no PVP)",
+-- 7d73fb0c
+[216] = "Combat (auto-flagged)",
+-- dacf1516
+[217] = "Outside",
+-- 40964db2
+[218] = "Battleground",
+-- 73054bd6
+[219] = "Dungeon",
+-- 7dabeb63
+[220] = "Raid",
+-- c141faa8
+[221] = "Fire",
+-- b7c9b5cc
+[222] = "Earth",
+-- 7ca7dea9
+[223] = "Water",
+-- aa42ff59
+[224] = "Air",
+-- 735beee2
+[225] = "Minimum",
+-- e17f73ea
+[226] = "lowest",
+-- 66c9ab17
+[227] = "Maximum",
+-- 4d8fa801
+[228] = "highest",
+-- b38ae2c5
+[229] = "Average",
+-- 184df936
+[230] = "average",
+-- 8fd58c92
+[231] = "no threat risk",
+-- 748beef5
+[232] = "higher threat than tank",
+-- bee526bf
+[233] = "tanking, at risk",
+-- f40da142
+[234] = "tanking, secure",
+-- 0f179dbf
+[235] = "<value>",
+-- 98bf8ca2
+[236] = "<operator>",
+-- 77300ce2
+[237] = "Enable Rotation Master",
+-- 1e28d34e
+[238] = "Polling Interval (seconds)",
+-- 96414600
+[239] = "Idle Re-check Interval (seconds)",
+-- 9e4deebb
+[240] = "Auto-Switch Re-check Interval (seconds)",
+-- 43deba51
+[241] = "Ignore Mana",
+-- 3427b677
+[242] = "Ignore Range",
+-- 4764e65b
+[243] = "Skip rotation entries or disable cooldown highlights because you don't have enough to cast them.",
+-- e6b6aad8
+[244] = "Effect Options",
+-- cfa79416
+[245] = "Magnification",
+-- 48aae415
+[246] = "Highlight Color",
+-- 6d031af1
+[247] = "Position",
+-- f4a13303
+[248] = "Specialization Names",
+-- 1cfb0bd9
+[249] = "Tooltips",
+-- 4e430b3e
+[250] = "Show Rotation Master in tooltips",
+-- 7b4fd840
+[251] = "List item sets in item tooltips",
+-- e0ebe3cd
+[252] = "List rotations in spell and item tooltips",
+-- 9c73797e
+[253] = "Include rotation conditions",
+-- c6b7619f
+[254] = "Names listed per tooltip line",
+-- 7fb301ab
+[255] = "Rotation Master item sets",
+-- 6a361b20
+[256] = "Rotation Master rotations",
+-- 9204c375
+[257] = "%s (disabled)",
+-- d5b57b61
+[258] = "(+%d more)",
+-- d440fcce
+[259] = "Debugging Options",
+-- 12fe4737
+[260] = "Log Level",
+-- c0ebb7d6
+[261] = "Quiet",
+-- 1a03bd2f
+[262] = "Debug",
+-- 2cd57109
+[263] = "Verbose",
+-- f2438f82
+[264] = "Detailed Profiling",
+-- 0ca3f824
+[265] = "Disable Auto-Switching",
+-- 9ac1f2c5
+[266] = "Minimap Icon",
+-- 7de50af6
+[267] = "Spell History Memory (seconds)",
+-- 36bb3ad3
+[268] = "Combat History Memory (seconds)",
+-- c9f798cf
+[269] = "Damage History Memory (seconds)",
+-- 67e53fcd
+[270] = "Live Status Update Frequency (seconds)",
+-- 8e8f30f5
+[271] = "Disable Bar Highlighting",
+-- 7079e1f5
+[272] = "Preview Spells",
+-- e2f5f378
+[273] = "This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled.",
+-- cbc0499e
+[274] = "Are you sure you wish to delete this rotation?",
+-- 969d4b7f
+[275] = "This item set is in use, are you sure you wish to delete it?",
+-- 30ef2bc9
+[276] = "Default effects have changed since the previous release, do you want to reset the effect list?",
+-- 6db7e56b
+[277] = "Import/Export Rotation",
+-- a66223ca
+[278] = "Import/Export Item Set",
+-- 87c5e6a6
+[279] = "Import/Export Effect",
+-- 1318e3a7
+[280] = "Import/Export Condition",
+-- a04def9c
+[281] = "Import/Export Condition Group",
+-- 6de338e2
+[282] = "Copy and paste this text share your rotation with others, or import someone else's.",
+-- e4763493
+[283] = "Copy and paste this text share your effect with others, or import someone else's.",
+-- 052025b2
+[284] = "Copy and paste this text share your item set with others, or import someone else's.",
+-- a0928dd2
+[285] = "Copy and paste this text share your custom condition with others, or import someone else's.",
+-- 277089d9
+[286] = "bytes",
+-- 5ea44c39
+[287] = "lines",
+-- d4121e17
+[288] = "Parse Error",
+-- f3bb01ec
+[289] = "Copy of %s",
+-- 64780145
+[290] = "Imported on %c",
+-- 42191ef4
+[291] = "Import/Export",
+-- 2cff9baa
+[292] = "Import",
+-- 821e6678
+[293] = "Switch Condition",
+-- acba80e5
+[294] = "No other rotations match.",
+-- a66aeacf
+[295] = "Manual switch only.",
+-- fee3779e
+[296] = "THIS CONDITION DOES NOT VALIDATE",
+-- a60ad1de
+[297] = "THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE",
+-- a857b1ff
+[298] = "Cooldowns",
+-- 57b5e2fc
+[299] = "Rotation",
+-- 39921a74
+[300] = "Switch",
+-- e061b3f5
+[301] = "Condition Options",
+-- 07724428
+[302] = "Rotations",
+-- 49c266ba
+[303] = "Search",
+-- baaddf70
+[304] = "Type",
+-- e28411a3
+[305] = "Texture",
+-- 2252d5cf
+[306] = "Effect",
+-- 5817280a
+[307] = "Pixel",
+-- 09968fe6
+[308] = "Auto Cast",
+-- f534ed97
+[309] = "Glow",
+-- 96afc081
+[310] = "Dazzle",
+-- fd4a5f3d
+[311] = "Animate",
+-- f7a403c6
+[312] = "Pulse",
+-- c3613b17
+[313] = "Rotate",
+-- 0740f4ba
+[314] = "Sequence",
+-- 4e1f49a9
+[315] = "Event",
+-- 358511c8
+[316] = "Effects",
+-- 4ea6bdd3
+[317] = "Item Sets",
+-- 7c326a4b
+[318] = "Announces",
+-- 535e52e4
+[319] = "Profiles",
+-- 3b26a542
+[320] = "Lines",
+-- 16b6668d
+[321] = "Frequency",
+-- 1de3df70
+[322] = "Steps",
+-- fae1c6f1
+[323] = "Reverse",
+-- 1968034b
+[324] = "Angle",
+-- adc95605
+[325] = "Length",
+-- 7b594414
+[326] = "Thickness",
+-- e73735cf
+[327] = "Particles",
+-- f102986b
+[328] = "Scale",
+-- 1709305c
+[329] = "Level",
+-- 75081b59
+[330] = "Disabled",
+-- 92c1cdfd
+[331] = "Enabled",
+-- b79cac92
+[332] = "Help",
+-- 8c89911a
+[333] = "Time Until Health",
+-- dd1e6bab
+[334] = "Time Until Health Percentage",
+-- 2184a4e3
+[335] = "Runner",
+-- 0a10734e
+[336] = "%s will run",
+-- 93bea368
+[337] = "Resistant",
+-- 384f6084
+[338] = "Immune",
+-- ecbc89cd
+[339] = "Started",
+-- 1a4f630a
+[340] = "Stopped",
+-- 6d9a6f97
+[341] = "Succeeded",
+-- 132d124d
+[342] = "Interrupted",
+-- 031a8f0f
+[343] = "Failed",
+-- a5c19c9f
+[344] = "Delayed",
+-- 93006d61
+[345] = "Arcane",
+-- 17636dd6
+[346] = "Frost",
+-- 56eee6a5
+[347] = "Holy",
+-- c71ce8cc
+[348] = "Nature",
+-- 4c764cb6
+[349] = "Shadow",
+-- 113ed31a
+[350] = "Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time.",
+-- 215b6920
+[351] = "Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition.",
+-- 1359626e
+[352] = "Move Up",
+-- db60f7a9
+[353] = "Move to Top",
+-- 89abfab0
+[354] = "Move to Bottom",
+-- b58330ac
+[355] = "Move Down",
+-- 45986160
+[356] = "Move To",
+-- 7e6fefff
+[357] = "Hidden",
+-- 02cdaabf
+[358] = "Duplicate",
+-- 4a787020
+[359] = "Action Type",
+-- 4e43f098
+[360] = "No Action",
+-- 63c5b771
+[361] = "Spell",
+-- c8a18067
+[362] = "Pet Spell",
+-- a4d187b1
+[363] = "Any Spell",
+-- 652bcc3a
+[364] = "Item",
+-- 97d4be89
+[365] = "Conditions",
+-- c6877c9a
+[366] = "NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field.",
+-- 464557d7
+[367] = "%s is now available!",
+-- 2ab52f92
+[368] = "Announce",
+-- f961b619
+[369] = "Audible Announce",
+-- dc937b59
+[370] = "None",
+-- 51247512
+[371] = "Raid or Party",
+-- 272e43a2
+[372] = "Party Only",
+-- be5b8dfd
+[373] = "Raid Warning",
+-- 64f3cd06
+[374] = "Say",
+-- 938af47b
+[375] = "Yell",
+-- 5027e850
+[376] = "Emote",
+-- ff3a450e
+[377] = "Local Only",
+-- 71988c4d
+[378] = "Text",
+-- b0ef44de
+[379] = "Item Set",
+-- 434702dc
+[380] = "Click the icon above to bind to your action bar",
+-- e71efd0e
+[381] = "time until %s is at %s%% health",
+-- 4104ecce
+[382] = "time until %s is at %s health",
+-- cd7e49ac
+[383] = "time until %s is at %s health defecit",
+-- 6344ed2a
+[384] = "The %s health defecit of %s members%s within %d yards of %s",
+-- b4b2caae
+[385] = "The %s health of %s members%s within %d yards of %s",
+-- 1bbec37f
+[386] = "The number %s members%s within %d yards of %s whose",
+-- 91765b2b
+[387] = "The %s health percentage of %s members%s within %d yards of %s",
+-- 13a2b471
+[388] = "The number %s members%s within %d yards of %s whose health percentage",
+-- 52cf9fe9
+[389] = "The %s mana defecit of %s members%s within %d yards of %s",
+-- 0a50ee9b
+[390] = "The %s mana of %s members%s within %d yards of %s",
+-- ed32b716
+[391] = "The %s mana percentage of %s members%s within %d yards of %s",
+-- 66dd29aa
+[392] = "The number %s members%s within %d yards of %s whose mana percentage",
+-- bd972cc4
+[393] = "AND",
+-- 829e5b28
+[394] = "OR",
+-- 8be3365c
+[395] = "NOT",
+-- f733d042
+[396] = "<INVALID CONDITION>",
+-- b2295de9
+[397] = "Please Choose ...",
+-- 9f24f04e
+[398] = "Condition Type",
+-- df00fd14
+[399] = "Edit Condition #%d",
+-- 55490a4b
+[400] = "Up",
+-- b86d11af
+[401] = "Down",
+-- 3124aba4
+[402] = "<spell>",
+-- 99cd36a3
+[403] = "Your talent is a %s role",
+-- 8436c454
+[404] = "%s is in a %s role",
+-- 71fafa0a
+[405] = "%s is a %s",
+-- f9030f9e
+[406] = "%s are a %s",
+-- 1c5be7b4
+[407] = "%s have %s",
+-- 82320b64
+[408] = "%s has %s",
+-- 3313549c
+[409] = "%s is %s",
+-- 4902371e
+[410] = "%s are %s",
+-- 2564e907
+[411] = "%s were %s",
+-- 96aacc3d
+[412] = "%s was %s",
+-- 368387c7
+[413] = "%s have %s where %s",
+-- f161aa55
+[414] = "%s has %s where %s",
+-- 38277209
+[415] = "you are talented in %s",
+-- 32da26d1
+[416] = "talent points in %s (%s)",
+-- 85d523f6
+[417] = "%s's resistance to %s",
+-- 0cad0ea7
+[418] = "%s is sometimes immune to %s",
+-- e23ffa5e
+[419] = "%s is immune to %s",
+-- 6d19eba6
+[420] = "you have %s glyph",
+-- 4e545960
+[421] = "Unit",
+-- 14736a2e
+[422] = "Role",
+-- 4f3a9bd0
+[423] = "Class",
+-- 0df08730
+[424] = "Class In Group",
+-- e23f2e34
+[425] = "Is Same As",
+-- 03d5b2de
+[426] = "Creature Type",
+-- a1cf0927
+[427] = "Unit Classification",
+-- caa2e08f
+[428] = "Talent",
+-- 1aff4871
+[429] = "Glyph",
+-- b8790e72
+[430] = "Talent Tree",
+-- 291101a0
+[431] = "Operator",
+-- b7bdf7a2
+[432] = "Distance",
+-- 7a347089
+[433] = "Distance Count",
+-- 47da413b
+[434] = "yards",
+-- 55898449
+[435] = "Health",
+-- 3c01b3e3
+[436] = "%s health defecit",
+-- 59f92800
+[437] = "Health Percentage",
+-- 066ffe4a
+[438] = "Mana",
+-- ba32a92b
+[439] = "%s mana defecit",
+-- 42dccab0
+[440] = "Mana Percentage",
+-- 848e9656
+[441] = "Power",
+-- 0e4dfe83
+[442] = "%s power defecit",
+-- 6a612b86
+[443] = "Power Percentage",
+-- 77deabe2
+[444] = "Points",
+-- 8208acbf
+[445] = "%s points",
+-- 49e3a963
+[446] = "%s point defecit",
+-- 5af0278b
+[447] = "Runes",
+-- d62be657
+[448] = "Rune Cooldown",
+-- 9ba5f80d
+[449] = "%s runes available",
+-- 61084a6e
+[450] = "cooldown on %s rune",
+-- 8a7961ab
+[451] = "Blood",
+-- 4de5fe95
+[452] = "Unholy",
+-- fcd6fea7
+[453] = "Death",
+-- 8a166eb0
+[454] = "Character Stat",
+-- 0a79e909
+[455] = "Extended Character Stat",
+-- 9cd14132
+[456] = "Extended Character Stat Percentage",
+-- d2923546
+[457] = "Spell Available",
+-- b1557241
+[458] = "Pet Spell Available",
+-- d24390ed
+[459] = "%s is available",
+-- b2561670
+[460] = "Spell In Range",
+-- 67ef960b
+[461] = "Pet Spell In Range",
+-- 12692f41
+[462] = "%s is in range",
+-- 8baec846
+[463] = "Spell Cooldown",
+-- f7254914
+[464] = "Pet Spell Cooldown",
+-- 9e4f8469
+[465] = "Boss Mod Encounter",
+-- fd1f1e3c
+[466] = "Boss Mod Encounter Stage",
+-- c07ffee7
+[467] = "Boss Mod Timer",
+-- 140bedbf
+[468] = "none",
+-- f73bf30c
+[469] = "Spell Active or Pending",
+-- c8ada1d7
+[470] = "Pet Spell Active or Pending",
+-- 85f5aca6
+[471] = "%s is active or pending",
+-- fdb533df
+[472] = "Spell Time Remaining",
+-- 3422640c
+[473] = "Pet Spell Time Remaining",
+-- 369bb5dd
+[474] = "remaining time on %s",
+-- 0ce37091
+[475] = "Spell Charges",
+-- b9dd94ce
+[476] = "Pet Spell Charges",
+-- bd7612e8
+[477] = "Spell Cast History Time",
+-- e16b6508
+[478] = "Spell Cast History",
+-- 26483687
+[479] = "Pet Spell Cast History Time",
+-- 6f884dd0
+[480] = "Pet Spell Cast History",
+-- 193bb945
+[481] = "%s was cast",
+-- 0d112e0c
+[482] = "Combat Action History Time",
+-- ec517441
+[483] = "Combat Action History",
+-- 9c434f34
+[484] = "fewer than %s casts ago",
+-- 5966470f
+[485] = "at most %s casts ago",
+-- c1a41894
+[486] = "more than %s casts ago",
+-- fd9a7c72
+[487] = "at least %s casts ago",
+-- c53b5aea
+[488] = "exactly %s casts ago",
+-- 770b3b3e
+[489] = "other than %s casts ago",
+-- 75504648
+[490] = "a multiple of %s casts ago",
+-- 3619f661
+[491] = "fewer than %s actions ago",
+-- 90c5ca9f
+[492] = "at most %s actions ago",
+-- 03dcab2c
+[493] = "more than %s actions ago",
+-- 7688d933
+[494] = "at least %s actions ago",
+-- 506a71d6
+[495] = "exactly %s actions ago",
+-- 1a4b6a11
+[496] = "other than %s actions ago",
+-- a5094423
+[497] = "a multiple of %s actions ago",
+-- 27db12a6
+[498] = "less than %s seconds ago",
+-- 4e0556a9
+[499] = "at most %s seconds ago",
+-- 9644de21
+[500] = "more than %s seconds ago",
+-- 75c46f7d
+[501] = "at least %s seconds ago",
+-- a431b13b
+[502] = "exactly %s seconds ago",
+-- 4ac319b9
+[503] = "other than %s seconds ago",
+-- 2b2e3c59
+[504] = "a multiple of %s seconds ago",
+-- ae4f356c
+[505] = "Any Spell Available",
+-- 11a84a9d
+[506] = "Any Spell In Range",
+-- 6a50cd59
+[507] = "Any Spell Cooldown",
+-- 56ef0943
+[508] = "Any Spell Time Remaining",
+-- a8212106
+[509] = "Any Spell Charges",
+-- ae1e1aed
+[510] = "Buff Present",
+-- 8fb4de97
+[511] = "Buff Time Remaining",
+-- 666e85fc
+[512] = "Buff Stacks",
+-- 16ace6d6
+[513] = "stacks of %s",
+-- b4f4e6c4
+[514] = "stacks",
+-- 78fcf705
+[515] = "Has Stealable Buff",
+-- 7588c154
+[516] = "%s has a stealable buff",
+-- c057197d
+[517] = "Debuff Present",
+-- e12d628f
+[518] = "Debuff Time Remaining",
+-- 68627f3e
+[519] = "Debuff Stacks",
+-- fe1e836d
+[520] = "Debuff Type Present",
+-- 23f8a0cb
+[521] = "%s have a %s debuff",
+-- 7ab4967e
+[522] = "%s has a %s debuff",
+-- a7b891f5
+[523] = "Totem Present",
+-- 0c3d3d7f
+[524] = "%s totem is active",
+-- e885c330
+[525] = "%s is active",
+-- 66da3d47
+[526] = "Specific Totem Present",
+-- 5bf50471
+[527] = "Totem Time Remaining",
+-- 7543785b
+[528] = "Specific Totem Time Remaining",
+-- 68fb02a4
+[529] = "you have a %s totem active with %s",
+-- a25252ca
+[530] = "%s is active with %s",
+-- 2fa842db
+[531] = "Have Item Equipped",
+-- 5554bebd
+[532] = "you have %s equipped",
+-- 8e3be399
+[533] = "Have Item In Bags",
+-- ef20a8e9
+[534] = "the number of %s you are carrying",
+-- 86a036a1
+[535] = "Item Available",
+-- e01cd9e7
+[536] = "Item In Range",
+-- 64d7247f
+[537] = "Item Cooldown",
+-- 1b0ab573
+[538] = "In Combat",
+-- 630eade3
+[539] = "%s are in combat",
+-- 89608711
+[540] = "%s is in combat",
+-- a9bae210
+[541] = "Have Pet",
+-- 924d4ef6
+[542] = "you have a pet",
+-- 02734b33
+[543] = "Have Named Pet",
+-- 0c21cff5
+[544] = "you have a pet named %s",
+-- 526a40a4
+[545] = "Stealth",
+-- daac7bb8
+[546] = "you are stealthed",
+-- d9237cea
+[547] = "In Control",
+-- 7eea2830
+[548] = "you are in control of your character",
+-- 379e2bbc
+[549] = "Loss Of Control Type",
+-- 7843bc0f
+[550] = "Loss Of Control Blocked",
+-- 8dac743c
+[551] = "Moving",
+-- 09284586
+[552] = "you are moving",
+-- 56aa198a
+[553] = "Threat",
+-- ffa83e17
+[554] = "Threat Count",
+-- c74406db
+[555] = "you are at least %s on %s",
+-- 99157067
+[556] = "Shapeshift Form",
+-- 89016283
+[557] = "Attackable",
+-- b3478c03
+[558] = "Hostile",
+-- 46e36b4f
+[559] = "Allies Within Range",
+-- afdfa696
+[560] = "Health Within Range",
+-- a4d0252f
+[561] = "Health Count Within Range",
+-- ea179db7
+[562] = "Health Percentage Within Range",
+-- 324a4bd3
+[563] = "Health Percentage Count Within Range",
+-- 8b7e70d8
+[564] = "Mana Within Range",
+-- 94049799
+[565] = "Mana Count Within Range",
+-- 1a1470db
+[566] = "Mana Percentage Within Range",
+-- 953ff9c3
+[567] = "Mana Percentage Count Within Range",
+-- d709e95d
+[568] = "%s is an enemy",
+-- 7024062a
+[569] = "%s is attackable",
+-- cd29bb25
+[570] = "number of %s members%s within %d yards",
+-- bb1fa7ca
+[571] = "number of %s members%s within %s yards",
+-- ffc1e6b0
+[572] = "number of enemies you are at least %s",
+-- 1fc58dea
+[573] = "you {{!are|are not}} on %s threat table",
+-- dbcea100
+[574] = "you {{!have|do not have}} at least as much threat on %s as its tank",
+-- 1a38484b
+[575] = "you {{!are|are not}} tanking %s",
+-- f893e9b8
+[576] = "you {{!are|are not}} securely tanking %s",
+-- 050bc6fc
+[577] = "the number of enemies whose threat table you are on",
+-- 2ab46e82
+[578] = "the number of enemies on which you have at least as much threat as their tank",
+-- acb41544
+[579] = "the number of enemies you are tanking",
+-- 39546907
+[580] = "the number of enemies you are securely tanking",
+-- d173b87e
+[581] = "you are in %s form",
+-- 38ffcb03
+[582] = "Channeling",
+-- a423f878
+[583] = "Specific Spell Channeling",
+-- c5db67ca
+[584] = "%s are currently channeling",
+-- f58eece7
+[585] = "%s is currently channeling",
+-- 6960967b
+[586] = "%s are currently channeling %s",
+-- 53ed0bfb
+[587] = "%s is currently channeling %s",
+-- 4c2aeef1
+[588] = "Channel Time Remaining",
+-- e38783fe
+[589] = "time remaining on spell channel",
+-- 39c51722
+[590] = "Channel Interruptable",
+-- 09453a79
+[591] = "Channel Interruptible",
+-- 2a35e090
+[592] = "%s's channeled spell is interruptable",
+-- 0c9e7b06
+[593] = "Casting",
+-- bc401bef
+[594] = "Specific Spell Casting",
+-- 53cc77b2
+[595] = "%s are currently casting",
+-- f8e91c91
+[596] = "%s is currently casting",
+-- 9ec6cde4
+[597] = "%s are currently casting %s",
+-- 79bdf263
+[598] = "%s is currently casting %s",
+-- 8f9d9bf5
+[599] = "Cast Time Remaining",
+-- 24812186
+[600] = "time remaining on spell cast",
+-- e2513da8
+[601] = "Cast Interruptable",
+-- d5c12268
+[602] = "Cast Interruptible",
+-- 8b182833
+[603] = "%s's spell is interruptable",
+-- 0d2970f9
+[604] = "PVP Flagged",
+-- d27e8fdc
+[605] = "%s are PVP flagged",
+-- c67f02e4
+[606] = "%s is PVP flagged",
+-- 0489205b
+[607] = "Zone PVP",
+-- d09a2928
+[608] = "zone is a %s zone",
+-- 425f2336
+[609] = "Instance",
+-- e96c4ff4
+[610] = "you are in a %s instance",
+-- 6480caf6
+[611] = "in %s",
+-- a8a06e4a
+[612] = "Zone",
+-- 782fc4e1
+[613] = "In Group",
+-- b097d347
+[614] = "you are in a group",
+-- c299367b
+[615] = "In Raid",
+-- 8985f5e8
+[616] = "you are in a raid",
+-- 8bf8ef16
+[617] = "Outdoors",
+-- 2fcb5d37
+[618] = "Scenario",
+-- 0229c086
+[619] = "you are in a outdoors",
+-- 4340b353
+[620] = "Weapon Enchant Present",
+-- 61ab108b
+[621] = "Different season or game rules",
+-- 6abe675a
+[622] = "Action Context",
+-- 615c9003
+[623] = "Advice is suspended: no rotation applies while you are using another action bar.",
+-- e9860cd7
+[624] = "Item Set Pieces Equipped",
+-- e0317f0c
+[625] = "Weapon Enchant Type",
+-- 32eedbe8
+[626] = "a pet battle",
+-- a688c1ab
+[627] = "a possessed unit",
+-- 7e4e79e6
+[628] = "a vehicle",
+-- 1f7bee61
+[629] = "an override action bar",
+-- a89f883b
+[630] = "your own action bar",
+-- 6d49f98c
+[631] = "Weapon Enchant Time Remaining",
+-- 872198ac
+[632] = "Weapon Enchant Stacks",
+-- 9a08c36b
+[633] = "Your %s weapon buff has %s",
+-- 5aebbe0c
+[634] = "Your %s weapon is enchanted",
+-- bfd173c2
+[635] = "Off Hand",
+-- f0fa1c9c
+[636] = "Weapon Swing Time",
+-- 8439ecbd
+[637] = "Weapon Swing Time Remaining",
+-- a258b30f
+[638] = "Global",
+-- 601196cf
+[639] = "Damage and Heals",
+-- 9d0e8a5a
+[640] = "Damage Only",
+-- 26316d67
+[641] = "Heals Only",
+-- 64cff131
+[642] = "Action",
+-- cd70c6b9
+[643] = "Time Since Combat Start",
+-- d49f3af6
+[644] = "Time in combat is %s %s seconds",
+-- ffedb1c8
+[645] = "Copy report",
+-- 7d9eb7ac
+[646] = "Close",
+-- 67f981b6
+[647] = "/rm errors              - View and copy Rotation Master errors.",
+-- 496d05e2
+[648] = "Spell Known",
+-- 034f8d39
+[649] = "You know %s",
+-- 5a072a25
+[650] = "Your pet knows %s",
+-- 41c1fdac
+[651] = "%s (spell ID %s)",
+-- 02ac5ded
+[652] = "Spell ID",
+-- 1be30861
+[653] = "Pet spell",
+-- 33579e22
+[654] = "Unavailable conditions or unsupported data",
+-- 6289fcfd
+[655] = "%s is not available on this client (%s).",
+-- d0e9a0bb
+[656] = "the combat log is not available to addons on this client",
+-- ae48d232
+[657] = "health is secret on this client",
+-- 32d80509
+[658] = "this power is secret on this client",
+-- 38e49184
+[659] = "Active rotation: %s",
+-- 95ebda6b
+[660] = "a fallback saved for this character takes precedence",
+-- 53e0ff34
+[661] = "automatic",
+-- 81600971
+[662] = "Cooldown %d",
+-- 55899740
+[663] = "%d Built In rotations are disabled.",
+-- 6fbad292
+[664] = "%d other Built In rotations are disabled (for another specialization, level or edition).",
+-- 856a3f22
+[665] = "%s: disabled by you (turn it back on in Rotations, in its Built In view).",
+-- ceaa0803
+[666] = "%s: ships disabled, an alternative to the recommended one (turn it on in Rotations, in its Built In view).",
+-- 4fd646c3
+[667] = "then the fallback (%s)",
+-- 1e1885f9
+[668] = "Automatic switching tries: %s. Higher numbers are tried first; equal priorities go by name.",
+-- 724799e1
+[669] = "Automatic switching would choose: %s",
+-- 07d344c2
+[670] = "%d Built In disabled: %s",
+-- fd523668
+[671] = "Read-Only",
+-- 75920f9f
+[672] = "Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.",
+-- 33cd603a
+[673] = "Import preview: this is the incoming rotation, read-only. Nothing is saved until you click Import.",
+-- 7772b5b6
+[674] = "Import preview: the metadata is shown as imported and cannot be edited here.",
+-- b5444cba
+[675] = "level %d+",
+-- 7ae623fd
+[676] = "Season of Mastery",
+-- 20bc4e56
+[677] = "Season of Discovery",
+-- e913447f
+[678] = "Hardcore",
+-- 61123c4d
+[679] = "Anniversary",
+-- 935f9eea
+[680] = "Anniversary Hardcore",
+-- 20170cbb
+[681] = "Self-Found",
+-- db93324d
+[682] = "Standard realms",
+-- b82c4d13
+[683] = "Season %s",
+-- 889ec415
+[684] = "Game mode %s",
+-- f06a6bb8
+[685] = "Automatic switching tries nothing else, then the fallback (%s): no enabled rotation here can be selected now.",
+-- e87b125e
+[686] = "Revision %s",
+-- da0fa84c
+[687] = "you switched it off (turn it back on in Rotations)",
+-- 20c39307
+[688] = "it ships disabled, an alternative to the recommended one (turn it on in Rotations)",
+-- 27a5b813
+[689] = "Identifier: %s (/rm set %s)",
+-- 70f29af6
+[690] = "The fallback is always /rm set default.",
+-- 0ba95391
+[691] = "A Built In's identifier is fixed. Use it with /rm set.",
+-- 2d355596
+[692] = "Use it with /rm set. Letters, digits, _ or -, starting with a letter; not case sensitive.",
+-- ffc28873
+[693] = "Made from the name until you change it. Use it with /rm set.",
+-- 763698c5
+[694] = "has an invalid identifier",
+-- 24adb964
+[695] = "%s is reserved for /rm set.",
+-- a33e5083
+[696] = "An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters.",
+-- a15a0c4c
+[697] = "%s already uses the identifier %s.",
+-- 2f1b1b88
+[698] = "Rotations for %s (use /rm set <id>):",
+-- 01e5a59a
+[699] = "disabled by you",
+-- 3f88443b
+[700] = "ships disabled",
+-- 4ac2f70c
+[701] = "not for this character now",
+-- e8fe279c
+[702] = "cannot be selected: %s",
+-- 96879611
+[703] = "active",
+-- b24d6d33
+[704] = "ready",
+-- 5c7ee207
+[705] = "fallback",
+-- 5eb2da9c
+[706] = "yours",
+-- 7079adcd
+[707] = "The rotation list opened in a window you can copy from.",
+-- e9131331
+[708] = "Rotations and their identifiers",
+-- 855192f1
+[709] = "More than one rotation uses the identifier %s. Give one of them another identifier in Rotations.",
+-- 674aaa2c
+[710] = "Identifiers you can use now: %s (or auto). /rm list shows every rotation.",
+-- 3843971d
+[711] = "ID",
+-- d60dbba0
+[712] = "Priority",
+-- bc5b45ae
+[713] = "Reset to default",
+-- 4273cc49
+[714] = "Use the Built In as it ships: its own Enabled setting and priority.",
+-- c6ea26d1
+[715] = "Your setting for this profile. The Built In ships %s.",
+-- 7f5ac649
+[716] = "As the Built In ships. Click to change it for this profile.",
+-- c3b9f3c3
+[717] = "Your priority for this profile; the Built In ships with %d.",
+-- 5a1f096a
+[718] = "Turn on",
+-- 6d128898
+[719] = "Turn this Built In back on for this profile.",
+-- 2125e5d4
+[720] = "Disabled by you: automatic switching skips it. Select it and click Disabled to turn it back on.",
+-- aec06a34
+[721] = "Ships disabled (an alternative to the recommended Built In): automatic switching skips it until you turn it on.",
+-- 67bd22a0
+[722] = "Disabled: automatic switching skips it.",
+-- 72e45f33
+[723] = "Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.",
+-- 73074f60
+[724] = "Same priority as %s: both can be selected at once, and the tie is decided by name.",
+-- 6f39ad0a
+[725] = "Can be selected together with %s: only priority decides which is chosen.",
+-- 382c83c2
+[726] = "expansions %s–%s",
+-- 5042b611
+[727] = "Loads only for: %s. Its specializations and switch condition decide the rest.",
+-- eedcafc1
+[728] = "Built In rotations turned back on (they had been switched off without your choice): %s",
+-- ebed0a8c
+[729] = "Disabled Built In rotations",
+-- dd2bac9e
+[730] = "Open Rotations, select the Built In and turn it back on to make it selectable.",
+-- f79331ec
+[731] = "Fallback (%s)",
+-- 372d7008
+[732] = "has an action type this version does not understand (%s)",
+-- d566274f
+[733] = "has an invalid setting (%s)",
+-- 8cccea3a
+[734] = "has an invalid switch priority",
+-- d17ef091
+[735] = "has a problem (%s)",
+-- 5fd06eb7
+[736] = "has a setting this version does not understand (%s)",
+-- d80aa866
+[737] = "has no items",
+-- 60b19b4c
+[738] = "is missing a required setting (%s)",
+-- 85bfd4b6
+[739] = "it has incomplete or unsupported data",
+-- f8b96220
+[740] = "It has incomplete or unsupported data",
+-- d7edee09
+[741] = "it is disabled",
+-- bc0bcb96
+[742] = "it is for another class",
+-- 4a6abae5
+[743] = "it is for another expansion",
+-- f5b298ce
+[744] = "it is for another game build",
+-- 5a11eb0a
+[745] = "it is for another season or game rules",
+-- 780f6563
+[746] = "it is for another specialization",
+-- 7d8492c5
+[747] = "it is for another WoW edition",
+-- f66da926
+[748] = "it is unavailable (%s)",
+-- 3539504f
+[749] = "it needs context Rotation Master cannot read yet",
+-- 6c8b3a05
+[750] = "it uses a condition, item set or function that is disabled",
+-- 36bde66f
+[751] = "manual",
+-- 561c4c93
+[752] = "No %d",
+-- 61097c5a
+[753] = "no fallback rotation is saved for %s",
+-- 994142c1
+[754] = "No rotation can run until your specialization is available.",
+-- 2e4e47d8
+[755] = "Reason: %s. Type /rm why to check every rotation.",
+-- 21b77ae0
+[756] = "/rm why                 - Explain why each rotation can or cannot be selected.",
+-- dc42f8f7
+[757] = "Rotation eligibility opened in a window you can copy from.",
+-- e3857ada
+[758] = "/rm debug glow [seconds] - Explain why a recommendation does or does not light a button.",
+-- 02b60727
+[759] = "/rm debug editor        - Copy native Lua input diagnostics.",
+-- 16254d19
+[760] = "/rm debug talents [views] - Report why the Retail and Forever talent lists are short or empty.",
+-- 79eeac12
+[761] = "rotations cannot be read (%s)",
+-- 6a8fd6ba
+[762] = "Rotation %s cannot be selected.",
+-- 9e742006
+[763] = "Rotation settings",
+-- c8da2839
+[764] = "Rotation step %d",
+-- 707d01e5
+[765] = "%s (Built In)",
+-- 19f8d44d
+[766] = "%s: cannot be selected, %s.",
+-- d707c233
+[767] = "Specialization: %s (%s), level %s",
+-- 861decdd
+[768] = "Spell %d",
+-- 1ed10cef
+[769] = "%s: ready",
+-- 9cb0ddf3
+[770] = "the game build is unavailable",
+-- 32258c52
+[771] = "(there is one for %s)",
+-- 1ac2e769
+[772] = "This rotation cannot be selected. %s.",
+-- bd35de7b
+[773] = "uses a condition that is disabled in Settings (%s)",
+-- e766db43
+[774] = "uses a condition this client does not have (%s)",
+-- 7ee51c30
+[775] = "uses a custom condition whose function is unavailable (%s)",
+-- 9c4983d1
+[776] = "uses a highlight effect that no longer exists",
+-- fb02fcbf
+[777] = "uses an item set that no longer exists",
+-- 78a58cb3
+[778] = "uses Blizzard's suggestion, which only works in the rotation list",
+-- 0f312508
+[779] = "Why rotations are or are not selected",
+-- 0887c156
+[780] = "Yes %d",
+-- 2d0f9721
+[781] = "you are using another action bar",
+-- cfa7eb44
+[782] = "your level is outside its level range",
+-- 7432f91e
+[783] = "your level is unavailable",
+-- 795c5030
+[784] = "your specialization is not available yet",
+-- 7139bb28
+[785] = "No specialization",
+-- 49271412
+[786] = "Primary talents",
+-- 1793e848
+[787] = "Secondary talents",
+-- 87a671ab
+[788] = "Talent group %d",
+-- 7ff78404
+[789] = "%s (%s)",
+-- 108db4c4
+[790] = "Unknown specialization",
+-- a9e9b05e
+[791] = "Any specialization",
+-- e4db2902
+[792] = "All specializations",
+-- ca573462
+[793] = "no specialization yet",
+-- 254dcb81
+[794] = "it is for %s",
+-- 82612d65
+[795] = "has an invalid specialization list",
+-- 0344f8e2
+[796] = "This is not your current specialization.",
+-- d81f37e0
+[797] = "Show the rotations for this specialization (and those for any specialization).",
+-- 008ab39e
+[798] = "The specializations this rotation is for. It is listed, and can be chosen, only while you play one of them; Any means every specialization.",
+-- 3e93e3f4
+[799] = "You are playing %s; this fallback is for %s, so it is not used now.",
+-- 70ef639a
+[800] = "You are playing %s; this rotation is for %s, so it is not selectable now.",
+-- 10eeff18
+[801] = "you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer",
+-- d2039939
+[802] = "You have not chosen a specialization yet, so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization.",
+-- 97aa7322
+[803] = "this client has no ranged slot",
+-- 93322c6f
+[804] = "this client has no specializations for your class",
+-- ab24130e
+[805] = "combat data is restricted on this client",
+-- 54ad6f4d
+[806] = "the game API it needs is missing",
+-- c155d094
+[807] = "this client is not supported",
+-- 2d8da66b
+[808] = "this client uses a different talent system",
+-- 46ddb2f3
+[809] = "glyphs are not supported on this client build",
+-- 2e996f7c
+[810] = "this edition has no point resource",
+-- 364e833a
+[811] = "Different WoW edition",
+-- fbb263cb
+[812] = "Different class",
+-- 178bde4c
+[813] = "Different specialization",
+-- b7964470
+[814] = "Different action context",
+-- 46d39e12
+[815] = "Character level is unavailable",
+-- e42df82f
+[816] = "Outside its level range",
+-- d34ab535
+[817] = "Game build is unavailable",
+-- 139114dc
+[818] = "Different game build",
+-- a55c1483
+[819] = "Required context is not supported yet",
+-- e8fc4568
+[820] = "Reference only on this client",
+-- a4408d1f
+[821] = "The Built In rotation is unavailable.",
+-- ca12b41f
+[822] = "Built In · read-only",
+-- d11d9681
+[823] = "Level range: %s–%s; revision %s",
+-- a0b53ded
+[824] = "Available for this character",
+-- a77cc377
+[825] = "Not available for this character: %s",
+-- 91f1e71a
+[826] = "Enable Built In",
+-- 763de8e1
+[827] = "Could not update this Built In rotation: %s",
+-- ba6d03f9
+[828] = "Clone to edit",
+-- e1ad50fb
+[829] = "Could not duplicate this Built In rotation: %s",
+-- ac89ec89
+[830] = "%d. %s",
+-- 36021c12
+[831] = "Condition preview unavailable",
+-- caf85b08
+[832] = "Sources",
+-- ca184496
+[833] = "Unavailable",
+-- b177f0bb
+[846] = "Could not duplicate this rotation: %s",
+-- efaafe62
+[847] = "Could not duplicate this step: %s",
+-- 5ad38304
+[848] = "absent",
+-- 4303eed3
+[849] = "This comparison could not be completed.",
+-- 15826b1f
+[850] = "This comparison is incomplete; some changes are omitted.",
+-- 70277515
+[851] = "No differences.",
+-- 783ee9d8
+[852] = "Added %s: %s",
+-- cbd1cc0c
+[853] = "Removed %s: %s",
+-- 9ffda67b
+[854] = "Moved %s: priority %s → %s",
+-- 496c1fce
+[855] = "Changed %s: %s → %s",
+-- 222fd90b
+[856] = "Read-only comparison. Priority moves are listed; rotations are not merged.",
+-- e47cb3ad
+[857] = "Changes in the Built In rotation since cloning",
+-- a679d4c3
+[858] = "Your changes since cloning",
+-- e4e1807d
+[859] = "Differences from the current Built In rotation",
+-- f44ec53e
+[860] = "Overlapping field edits",
+-- d1d87a47
+[861] = "No overlapping field edits detected. Priority order still needs review.",
+-- b4bf24a9
+[862] = "Selected rotation → your rotation",
+-- c72b77cf
+[863] = "Some display text was truncated. Rotation data has not been changed.",
+-- 184940bb
+[864] = "Compare rotations",
+-- ad26c965
+[865] = "Your rotation: %s",
+-- d30f9619
+[866] = "Compare against",
+-- 5cbf27df
+[867] = "Copy comparison",
+-- 7f25ffda
+[868] = "Review the differences, then select Copy and press Ctrl+C.",
+-- 9078f91f
+[869] = "Comparison unavailable: %s",
+-- 73484f4d
+[870] = "Unknown spell (%s)",
+-- e328ada9
+[871] = "Beyond Melee Range",
+-- 2652c653
+[872] = "%s is beyond melee range",
+-- 4aaede20
+[873] = "Switch conditions",
+-- 4e9a0f45
+[874] = "Optional highlight",
+-- 6ba1c0c2
+[875] = "Priority %s",
+-- 38728cc5
+[876] = "Stop the sequence here",
+-- b1fb02b4
+[877] = "Item or item set: %s",
+-- 0bbc45af
+[878] = "Use this exact spell rank",
+-- 59291ee2
+[879] = "No steps in this section.",
+-- 6f32b2f4
+[880] = "Optional highlights",
+-- 6f79a2fd
+[881] = "These reminders highlight independently whenever their conditions are met.",
+-- 681ceb51
+[882] = "Sequential priority",
+-- 89166303
+[883] = "The first eligible step is recommended. Later steps provide alternatives.",
+-- 2624dd07
+[884] = "View full rotation",
+-- d1843213
+[885] = "Built In rotation reference",
+-- 922b9ee8
+[886] = "Read-only comparison. Rotations are not merged.",
+-- a77963c6
+[887] = "Additional settings changed. Copy diagnostic details to inspect all fields.",
+-- 8597bf22
+[888] = "At cloning",
+-- 9cc733fc
+[889] = "Selected rotation",
+-- c9e13168
+[890] = "Your rotation",
+-- dd2e2975
+[891] = "No corresponding step",
+-- 6b02e0d3
+[892] = "Added",
+-- 4118fb4f
+[893] = "Removed",
+-- 2a6141e4
+[894] = "Changed",
+-- b11c9047
+[895] = "Moved",
+-- 88b6f742
+[896] = "Unchanged",
+-- f5f36595
+[897] = "Comparison diagnostic details",
+-- 61d7fa13
+[898] = "Press Ctrl+C to copy the selected diagnostic details.",
+-- bb35fd44
+[899] = "Comparison view",
+-- c489054c
+[900] = "Copy diagnostic details",
+-- 383100d5
+[901] = "Built In updates since cloning",
+-- 6c3bd099
+[902] = "Your edits since cloning",
+-- b3ec34b2
+[903] = "Current Built In rotation",
+-- e6b8f377
+[904] = "Unknown item",
+-- 36f3765b
+[905] = "Item %s",
+-- 710f81fe
+[906] = "Item set: %s",
+-- 3ec02e0c
+[907] = "Unknown action type",
+-- b3fee308
+[908] = "Player spell",
+-- aebfceb4
+[909] = "Player or pet spell",
+-- c910d474
+[910] = "General",
+-- 839ffbca
+[911] = "Copy this export, or paste a rotation and preview it. Import creates a new editable copy.",
+-- 2c7dec65
+[912] = "Rotation text",
+-- 9d89d908
+[913] = "Name for imported copy",
+-- 05ca5c89
+[914] = "Imported rotation",
+-- a0d7b2fa
+[915] = "Copy export",
+-- ab5c8e55
+[916] = "Preview import",
+-- ebc64351
+[917] = "Compare import",
+-- ed144b77
+[918] = "Import preview",
+-- 53fb6864
+[919] = "Import as new rotation",
+-- 89411b23
+[920] = "Export unavailable: %s",
+-- 4ea0b645
+[921] = "Preview a pasted rotation before importing it.",
+-- 6e52d457
+[922] = "Text changed. Preview again before importing.",
+-- a3396230
+[923] = "Text changed. Compare again before importing.",
+-- 815a23ae
+[924] = "This import cannot be shown in full (%s). Use Check import for details.",
+-- c409c01f
+[925] = "Import preview unavailable: %s",
+-- 7fa00152
+[926] = "Ready to import as a new copy.",
+-- 8bc94920
+[927] = "This import cannot be applied: %s",
+-- d1e71918
+[928] = "Legacy export: WoW edition and class scope were not supplied.",
+-- 898a9c6d
+[929] = "Could not import this rotation: %s",
+-- 29b67037
+[930] = "Incoming rotation",
+-- de9f057a
+[931] = "Always",
+-- d51cec9c
+[932] = "Condition reference (code is not run).",
+-- 40afa4aa
+[933] = "Check import",
+-- 817bfd7b
+[934] = "This import window is out of date. Close it and open it again.",
+-- e301820a
+[935] = "Incoming",
+-- a7b182f8
+[936] = "Problems",
+-- 8a7525b1
+[937] = "Notes",
+-- 2191a0b7
+[938] = "No problems found.",
+-- 460c60bd
+[939] = "This import can be applied.",
+-- 03f266f9
+[940] = "Fields shown: %d",
+-- 77810b90
+[941] = "Field order",
+-- bbd21338
+[942] = "Required fields",
+-- e68b36b1
+[943] = "Parameters",
+-- ea33a267
+[944] = "Code: %s",
+-- bd795f03
+[945] = "%d more settings are not shown.",
+-- 1a5d255a
+[946] = "... %d more characters not shown.",
+-- 0ee9b450
+[947] = "This is a dependency bundle. Import opens the bundle review.",
+-- 2a6f7cb8
+[948] = "Export Built In",
+-- 57152733
+[949] = "Comparison",
+-- c849416a
+[950] = "A condition could not be validated. Use /rm errors for details.",
+-- dba2cedf
+[951] = "A custom validator changed the condition while checking it. Fix the validator before applying.",
+-- 60a0d835
+[953] = "Add condition",
+-- da431313
+[954] = "All (AND)",
+-- fca19d27
+[955] = "Any (OR)",
+-- 31e392d1
+[956] = "Apply",
+-- d9c7876b
+[957] = "Apply or cancel the open condition before editing another.",
+-- 19766ed6
+[958] = "Cancel",
+-- 838e8c5b
+[959] = "Changes not applied.",
+-- 270bc3e1
+[960] = "Choose a condition",
+-- 03557ba7
+[961] = "Complete the selected condition's fields before applying.",
+-- 5399c49c
+[962] = "Disable condition",
+-- ebae65ff
+[963] = "Enable condition",
+-- 2015044c
+[964] = "Find condition type",
+-- 65d9d4e3
+[965] = "Group with %s",
+-- e3de7bbd
+[966] = "Invalid disabled flag",
+-- a1ed1d35
+[967] = "Not (NOT)",
+-- cf440966
+[968] = "Only the first 200 conditions are shown. Other conditions are preserved.",
+-- 5ac0b06f
+[969] = "Remove condition",
+-- f2f59bcc
+[970] = "Select a child on the left to edit its fields. Use Add condition to extend this group.",
+-- c2c0ca8c
+[971] = "Some condition fields have invalid values. Check them before applying.",
+-- b5fb4926
+[972] = "That change could not be applied. Check the selected condition.",
+-- 9088e6de
+[973] = "The condition editor could not display these fields. Use /rm errors for details.",
+-- 9287b789
+[974] = "This condition changed in another editor. Cancel and reopen it before applying.",
+-- 8a66c68f
+[975] = "This condition has no adjacent sibling in that direction.",
+-- a84958b2
+[976] = "This draft contains conditions or fields that this version cannot apply.",
+-- 79bdd6f5
+[977] = "This draft refers to missing data. Resolve those references before applying.",
+-- b57ef478
+[978] = "Ungroup",
+-- e70375d8
+[979] = "Ungroup requires a group with at most one child.",
+-- 608c89a1
+[980] = "Unknown condition: %s",
+-- e77e940c
+[981] = "Always (no condition)",
+-- 422835ec
+[982] = "An empty AND group always matches. Add a condition to restrict it.",
+-- 535f9794
+[983] = "An empty OR group never matches. Add a condition that can match.",
+-- 9478e594
+[984] = "An empty condition always matches. Choose a type to restrict it.",
+-- 877196c3
+[985] = "The original rotation or step was removed or replaced. Cancel this draft and reopen the current one.",
+-- 7412ffde
+[986] = "Show unchanged steps",
+-- 4b23882b
+[987] = "%s unchanged steps hidden.",
+-- 128afc72
+[988] = "No other rotations to compare.",
+-- 4e170ba0
+[989] = "Spell Recharge Time",
+-- d0db4227
+[990] = "Pet Spell Recharge Time",
+-- 6852f826
+[991] = "Any Spell Recharge Time",
+-- 62d868ef
+[992] = "Rotation names",
+-- a0e34049
+[993] = "Custom step name",
+-- f5945a5c
+[994] = "Automatic step name",
+-- 3b913c3a
+[995] = "Spell search data is unavailable.",
+-- 58caf758
+[996] = "No matching spells.",
+-- f5533dea
+[997] = "More matches available. Keep typing to narrow the search.",
+-- 60613f0f
+[998] = "Spells from this spellbook. Click a result or press Enter.",
+-- 473d3033
+[999] = "Known and referenced spells. Enter a spell ID or link to find another spell.",
+-- e04de746
+[1000] = "Search rotations",
+-- a52ace42
+[1001] = "All",
+-- 019a32de
+[1002] = "Built In",
+-- 5ca6606f
+[1003] = "No rotations match this search.",
+-- 68f12a84
+[1004] = "New rotation",
+-- 325e8493
+[1005] = "Fallback",
+-- 71e6453b
+[1006] = "%d of %d rotations",
+-- cae7d57b
+[1007] = "Stop",
+-- 05a85640
+[1008] = "Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions.",
+-- a4f32e85
+[1009] = "When no priority action is ready, auto-attack (Attack or Shoot) is the implicit final fallback against a living hostile target in combat: Attack in melee range; beyond it, Auto Shot or wand Shoot while the target is in range and that button is on your action bars. Nothing is recommended while that auto-attack is already running. It uses the normal rotation highlight and never presses a button.",
+-- 5c68c9c6
+[1010] = "Implicit final fallback",
+-- d56153b6
+[1011] = "Also suppress auto-attack (Attack or Shoot)",
+-- 79dbc7b6
+[1012] = "Implicit auto-attack (Attack or Shoot) is suppressed by this Stop.",
+-- 2c950c8c
+[1013] = "Implicit auto-attack (Attack or Shoot) may still be recommended after this Stop.",
+-- 762ebb70
+[1014] = "Group name",
+-- 9d5097a8
+[1015] = "All categories",
+-- 848b0fa0
+[1016] = "Choose or search condition type",
+-- 0f8a2a34
+[1017] = "Incomplete: %s is required",
+-- f9575aeb
+[1018] = "Invalid or unsupported condition fields",
+-- 010b483d
+[1019] = "%d conditions",
+-- c417805d
+[1020] = "Expand to edit fields",
+-- a063783d
+[1021] = "Negate each",
+-- a9ee2142
+[1022] = "Version: %s  ·  Author: %s",
+-- e2311633
+[1023] = "Configure rotations, conditions and highlights in the Rotation Master window.",
+-- 23010764
+[1024] = "Open Options",
+-- b764cdc0
+[1025] = "Unknown",
+-- a9080cb3
+[1026] = "Scale: %d%%",
+-- 17a87f02
+[1027] = "Right-click the title bar to close.",
+-- 7e8ccc3f
+[1028] = "Choose a tab to configure Rotation Master. Rotations contains the library and editors. Changes in the condition editor remain a draft until Apply; Cancel abandons them.",
+-- 4930aa43
+[1029] = "Drag the title bar to move this window; right-click it to close. Resize from the lower-right corner and adjust Scale in the footer.",
+-- f4326302
+[1030] = "Click to add group name",
+-- f2b59370
+[1031] = "Negate condition",
+-- 56693400
+[1032] = "Enable or disable condition",
+-- 7a2fb682
+[1033] = "Switch All / Any",
+-- ca7981b4
+[1034] = "Off",
+-- 13001175
+[1035] = "On",
+-- a8566033
+[1036] = "Negated",
+-- bc47dc21
+[1037] = "New condition",
+-- f66edce3
+[1038] = "New All group",
+-- fb19b6a9
+[1039] = "New Any group",
+-- 36a53913
+[1040] = "Drag into the tree to insert",
+-- 25f7b372
+[1041] = "Collapse all",
+-- a3e586be
+[1042] = "Expand all",
+-- d4d773af
+[1043] = "Group as All",
+-- e658538c
+[1044] = "Group as Any",
+-- 27e78c35
+[1045] = "Move %d conditions",
+-- 8fa50cbc
+[1046] = "Insert condition",
+-- f54d0e38
+[1047] = "Duplicate condition",
+-- e21f935f
+[1048] = "Copy",
+-- 2b505597
+[1049] = "Any",
+-- 3fe9bd3a
+[1050] = "Resolve the wrapper's name or unsupported fields before removing its negation.",
+-- e49e9c8f
+[1051] = "Not evaluated: an enclosing group is disabled",
+-- 754e2703
+[1052] = "%d selected",
+-- 4e3bbfa6
+[1053] = "Conditional branch",
+-- 9c46a836
+[1054] = "Evaluate condition",
+-- 049e212e
+[1055] = "Always true",
+-- 4d15e741
+[1056] = "Always false",
+-- 0f8c87a3
+[1057] = "Unknown branch mode",
+-- 3cbc87c7
+[1058] = "True",
+-- 60a33e6c
+[1059] = "False",
+-- 06f1af3a
+[1060] = "Rotation tree cannot be displayed.",
+-- 1e3abf61
+[1061] = "If",
+-- b89c64be
+[1062] = "Unless",
+-- ea2dca67
+[1063] = "If matches this condition; Unless negates it.",
+-- b798104c
+[1064] = "Condition description unavailable: invalid data.",
+-- 8898675a
+[1065] = "Condition description truncated; the draft is unchanged.",
+-- df796c65
+[1066] = "New group",
+-- 17c23d28
+[1067] = "Drag card headers to move; drag New into a gap.",
+-- 8bac6be3
+[1068] = "Incomplete condition group: choose its conditions.",
+-- d87c3fb8
+[1069] = "Always (empty All group)",
+-- 06160145
+[1070] = "Never (empty Any group)",
+-- 7ac5cdd3
+[1071] = "Browse, view and edit rotations.",
+-- 36e2aa86
+[1072] = "Configure recommendations and display.",
+-- 92448a57
+[1073] = "Organize condition types and custom conditions.",
+-- 94217692
+[1074] = "Configure highlight effects.",
+-- 73c16731
+[1075] = "Manage interchangeable items and consumables.",
+-- e0c7ff4a
+[1076] = "Configure optional announcements.",
+-- 1877c9b2
+[1077] = "Manage saved configuration profiles.",
+-- 777f6a10
+[1078] = "Rotation Master information and credits.",
+-- 72a43eab
+[1079] = "TBC",
+-- d63015c7
+[1080] = "Classic Era",
+-- 7d4352ca
+[1081] = "Classic Progression",
+-- cdb38c8d
+[1082] = "Retail",
+-- 55f980cf
+[1083] = "Forever",
+-- 21b6a798
+[1084] = "Development",
+-- 57a9e910
+[1085] = "Right-click to close",
+-- 5e2f1cfb
+[1086] = "Drag to resize the list. Double-click to reset.",
+-- 22270ce0
+[1087] = "Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.",
+-- ba118bf7
+[1088] = "English",
+-- b5a229ac
+[1089] = "Website",
+-- 8149bb52
+[1090] = "English is the installed translation; other languages use English until translated.",
+-- 029560ce
+[1091] = "Drag the title bar to move. Adjust Scale at the top left; right-click the content to close.",
+-- 8c4b42bc
+[1092] = "Optional addon settings.",
+-- fe166e78
+[1093] = "Read-only condition",
+-- e2d0a549
+[1094] = "Delete",
+-- 9d85c78b
+[1095] = "Only the first 200 rotation cards are shown. Other cards are preserved.",
+-- 61aed01b
+[1096] = "Branches select one arm, then rejoin the following priority. Forced modes skip condition evaluation.",
+-- 79b92f59
+[1097] = "New action",
+-- 7f445154
+[1098] = "New branch",
+-- 6f0d96c6
+[1099] = "New optional",
+-- 1abcf34a
+[1100] = "Drag into a gap, or click to append.",
+-- eb1a70e3
+[1101] = "Discard",
+-- cd272c87
+[1102] = "Changes applied.",
+-- c7f93783
+[1103] = "Choose",
+-- d8dba008
+[1104] = "Items: separate item IDs or names with commas",
+-- dfd0e008
+[1105] = "Use profile effect",
+-- eea6c6fc
+[1106] = "Color: red, green, blue, alpha (0–1); blank inherits",
+-- 31b888e2
+[1107] = "Use profile position",
+-- a581aec9
+[1108] = "Horizontal offset",
+-- 923e59df
+[1109] = "Vertical offset",
+-- fda1b8a0
+[1110] = "Created by %s",
+-- 64464db9
+[1111] = "Unsaved rotation changes",
+-- 4c8f5e18
+[1112] = "Apply this draft, discard its changes, or keep editing.",
+-- f1a25223
+[1113] = "The draft could not be applied. Complete the marked fields or Cancel to keep editing.",
+-- dd7a42d2
+[1114] = "Drag to place",
+-- a7b99a64
+[1115] = "Copy full condition",
+-- 81a5118e
+[1116] = "Full condition text",
+-- 21b111cb
+[1117] = "Default",
+-- c9a3dbb0
+[1118] = "Click to add branch name",
+-- ab0a9cf9
+[1119] = "Switch condition",
+-- 18f3acc3
+[1120] = "No switch condition: this rotation can be selected automatically whenever its specialization and level apply.",
+-- 464c4ffd
+[1121] = "Edit",
+-- 7515ddaa
+[1122] = "Delete rotation",
+-- bc48b710
+[1123] = "Discard this new rotation",
+-- 6390ba9c
+[1124] = "Add action",
+-- 1947a735
+[1125] = "Add branch",
+-- 48dfa1a9
+[1126] = "Add cooldown",
+-- cfb5635b
+[1127] = "Delete this custom rotation and its unsaved draft? This cannot be undone.",
+-- d1afca1a
+[1128] = "Rotation details",
+-- 2f839a00
+[1129] = "Complete the highlighted input fields before applying.",
+-- 6d81521d
+[1130] = "Drop in a highlighted gap.",
+-- dcd1d522
+[1131] = "Name",
+-- bb82fca1
+[1132] = "Incomplete input: %s",
+-- 0a392308
+[1133] = "Click condition text on any card to view or edit its conditions.",
+-- 286353b7
+[1134] = "View condition",
+-- 61514750
+[1135] = "Edit condition",
+-- 19a05c66
+[1136] = "Cycle between summary, fields and name only. Drag the name to move the card.",
+-- 9eddf573
+[1137] = "Metadata",
+-- 8fe26115
+[1138] = "This rotation cannot run until its incomplete or unavailable data is resolved.",
+-- 40a9941b
+[1139] = "Rotation validation",
+-- 5677f1c7
+[1140] = "Preview effect",
+-- 44e4c2fb
+[1141] = "Show or hide branch paths",
+-- 5735b9a9
+[1142] = "Expand or collapse the card. Click action or condition text for details.",
+-- 2478da41
+[1143] = "Click to expand",
+-- 94901258
+[1144] = "Add group",
+-- ad19b82b
+[1145] = "Click to append; drag into a gap to insert.",
+-- 36e5aa8a
+[1146] = "Preview highlight",
+-- 5e4de8d1
+[1147] = "This previews the glow used on action buttons. Click the preview icon again to close.",
+-- 1094644b
+[1148] = "Choose a highlight effect in the action details or General settings.",
+-- e3cb6179
+[1149] = "Rotation metadata",
+-- d95082a2
+[1150] = "Author",
+-- 2919fe85
+[1151] = "Realm",
+-- 969ccbd3
+[1152] = "Email",
+-- dd167905
+[1153] = "Version",
+-- b8bece73
+[1154] = "Use changes",
+-- b02bc1bc
+[1155] = "Use changes updates the draft. Apply the rotation to save it.",
+-- 38274b15
+[1156] = "Built In rotation: duplicate it to edit its metadata.",
+-- 0e570ca6
+[1157] = "Source",
+-- 9d7de300
+[1158] = "Saved metadata is invalid (%s). Editing these fields replaces it.",
+-- 6b73191a
+[1159] = "Color",
+-- 2e51d20c
+[1160] = "Choose an effect",
+-- d1a44f24
+[1161] = "Use profile color",
+-- b840b1dd
+[1162] = "Center the highlight",
+-- 6dc46510
+[1163] = "Move highlight; hold Shift for ten pixels",
+-- 294bb35f
+[1164] = "Preview sound",
+-- fa39a479
+[1165] = "Sound preview is unavailable.",
+-- ac2276b9
+[1166] = "Choose an available sound to preview.",
+-- d6807b3f
+[1167] = "Use color",
+-- 8807635f
+[1168] = "Offsets",
+-- de5a6f78
+[1169] = "V",
+-- 44bd7ae6
+[1170] = "H",
+-- 36c4ddbf
+[1171] = "RGBA channels accept decimal values from 0 to 1.",
+-- a5163f27
+[1172] = "%s: %s",
+-- 76b2629a
+[1173] = "Rotation Master",
+-- 39b36d38
+[1174] = "Condition",
+-- 0924a671
+[1175] = "Cooldown",
+-- d85693fc
+[1176] = "All of",
+-- f44e288e
+[1177] = "Any of",
+-- 0ec5ba4e
+[1178] = "Action bar binding",
+-- 380684a5
+[1179] = "Add announcement",
+-- 1005d35c
+[1180] = "Add custom condition",
+-- 8fce42d6
+[1181] = "Add effect",
+-- d1a0b329
+[1182] = "Add item",
+-- da10655e
+[1183] = "Add item set",
+-- 839bd5e0
+[1184] = "Add step",
+-- 96f2ac95
+[1185] = "An item from this set must be available before binding.",
+-- 2a5562d3
+[1186] = "Bind item set",
+-- 292c06f0
+[1187] = "Category",
+-- 8adaa206
+[1188] = "Choose an action first.",
+-- eb58aed0
+[1189] = "Choose an item first.",
+-- b269dc4e
+[1190] = "Commands",
+-- eebdd24a
+[1191] = "Confirm",
+-- 29bbf82e
+[1192] = "Copy and reset",
+-- 2da43a1c
+[1193] = "Copy from profile",
+-- 47cc49a7
+[1194] = "Copy this text to export. Import replaces the selected settings.",
+-- 61d30d99
+[1195] = "Create profile",
+-- 70aede1c
+[1196] = "Current profile",
+-- 47311af4
+[1197] = "Delete profile",
+-- 526f44a0
+[1198] = "Delete profile %s? This cannot be undone.",
+-- 0a1b391c
+[1199] = "Delete this custom condition? Existing rotations using it will become unavailable.",
+-- 1342742e
+[1200] = "Delete this effect? Rotations using it will need another effect.",
+-- bfb176a2
+[1201] = "Delete this item set and its binding? Rotations referencing it will need another item set.",
+-- 5342e09f
+[1202] = "Enable",
+-- eccca39d
+[1203] = "Enter a name first.",
+-- 27bf030d
+[1204] = "Enter a profile name first.",
+-- dab97264
+[1205] = "History and preview",
+-- 9b10587f
+[1206] = "Identifier",
+-- c6af6542
+[1207] = "Invalid effect.",
+-- dfa8b82c
+[1208] = "Invalid import.",
+-- 6987106d
+[1209] = "Invalid item list.",
+-- c8edea5f
+[1210] = "Item %d",
+-- 08bc6729
+[1211] = "Items in priority order",
+-- 9024c197
+[1212] = "Links",
+-- dba20004
+[1213] = "New profile name",
+-- a6a2aa10
+[1214] = "Not bound",
+-- 14908ce9
+[1215] = "Profile changes apply immediately. Rotations and settings belong to the active profile.",
+-- 0738ee00
+[1216] = "Recommendations",
+-- e8781b01
+[1217] = "Remove binding",
+-- e89af9bb
+[1218] = "Replace the current profile with %s?",
+-- daee7606
+[1219] = "Reset",
+-- 15d5cb3f
+[1220] = "Reset current profile",
+-- 4ddce508
+[1221] = "Reset preview position",
+-- 7986b163
+[1222] = "Reset this profile to its defaults? Custom rotations and settings in it will be replaced.",
+-- 2a78025d
+[1223] = "Select",
+-- 10151a40
+[1224] = "Step %d",
+-- b1912f1a
+[1225] = "This name is already in use.",
+-- 52656e81
+[1226] = "Branch",
+-- b8e156bb
+[1227] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To changes its category; order arrows arrange category entries. Custom conditions can be edited, duplicated or deleted.",
+-- 95e310bf
+[1228] = "Choose a current profile or enter a new profile name and create it. Copy replaces the current profile’s settings; Reset restores defaults. Delete removes another saved profile. Copy, Reset and Delete ask for confirmation.",
+-- 07c1af16
+[1229] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; Remove binding unlinks it. Reset restores a packaged set. Import replaces its item list.",
+-- 584f475e
+[1230] = "Condition editor",
+-- dae8a15b
+[1231] = "Description and attribution",
+-- 0bff7d0e
+[1232] = "Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.",
+-- b2fe791b
+[1233] = "Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+-- 0305e247
+[1234] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. Add announcement creates a new entry after an action is selected.",
+-- 2c02392e
+[1235] = "Groups and toggles",
+-- 3d69858e
+[1236] = "Help and saving",
+-- 99855946
+[1237] = "Move, copy and remove",
+-- 9497b4fc
+[1238] = "Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation.",
+-- 95b23356
+[1239] = "These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
+-- 00a767bc
+[1240] = "Unknown spell",
+-- 52ffc6a8
+[1241] = "Item data loading",
+-- d6572bd2
+[1242] = "No matches.",
+-- 18fdd549
+[1243] = "New",
+-- 7f406b7e
+[1244] = "No matching items.",
+-- f9ad9fda
+[1245] = "Click a result or enter an item name, ID or link.",
+-- a4ae750b
+[1246] = "Anchor",
+-- 1edc56cd
+[1247] = "Return the preview window to the center of the screen.",
+-- 30d109c4
+[1248] = "The icon shows your selected profile effect, color, size, anchor and offsets.",
+-- 64287345
+[1249] = "Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets.",
+-- c3cf199e
+[1250] = "Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets.",
+-- 49cf9ec6
+[1251] = "Manage categories",
+-- eda2efcd
+[1252] = "Back to conditions",
+-- 8137101b
+[1253] = "Built-in category",
+-- d7c828bc
+[1254] = "Delete this category? Its conditions will remain available under Other.",
+-- 6d0b390a
+[1255] = "Filter the condition list by All, Switch, Custom, Other or a named category. Search narrows the visible conditions without changing their category.",
+-- f04872fd
+[1256] = "Open Manage categories below the list for category maintenance. Back to conditions returns to individual condition settings.",
+-- aeff12ba
+[1257] = "In Manage categories, copy or replace a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.",
+-- fa913070
+[1258] = "The condition ordering controls in condition settings move the selected condition to the top, up, down or to the bottom within its current category. These are separate from the Up and Down controls for category order.",
+-- f2bafb3c
+[1259] = "Move the selected condition to a named category or Other. Use Switch Condition separately for automatic-switch availability.",
+-- 85a39ab3
+[1260] = "Yes",
+-- 1ea442a1
+[1261] = "No",
+-- f8bfdb1e
+[1262] = "Show unchanged",
+-- 8307fb6b
+[1263] = "Changed fields: %d",
+-- e888155d
+[1264] = "Compare",
+-- 72bb9089
+[1265] = "Read-only",
+-- e21330cf
+[1266] = "Imported item set",
+-- ef86a0ed
+[1267] = "Drag to reorder",
+-- 9b6766d2
+[1268] = "Item ID: %s",
+-- fe76866f
+[1269] = "Item reference: %s",
+-- 1f439481
+[1270] = "Built-in",
+-- 36619693
+[1271] = "Built-in condition",
+-- 1a63dcb7
+[1272] = "Custom condition",
+-- c3b0c07b
+[1273] = "Game icon",
+-- b33708ba
+[1274] = "Game icons",
+-- a35abcd6
+[1275] = "Icon",
+-- 41ca9dad
+[1276] = "Item icons",
+-- 059e5b06
+[1277] = "Known spells",
+-- bb50071a
+[1278] = "Manage conditions",
+-- 1ff57a29
+[1279] = "Next",
+-- e71ca826
+[1280] = "Page %d of %d",
+-- a57b08a4
+[1281] = "Previous",
+-- fe3f2a5d
+[1282] = "Activate profile",
+-- 5608b89a
+[1283] = "Active profile",
+-- 1946c44c
+[1284] = "Apply pending changes before leaving? Use Cancel on the page to discard them.",
+-- 92b4440b
+[1285] = "Audible",
+-- b8b1d894
+[1286] = "Categories",
+-- ddd736ba
+[1287] = "Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.",
+-- 40ac9c5e
+[1288] = "Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.",
+-- bd245266
+[1289] = "Clone sources",
+-- 72e094ed
+[1290] = "Comparison history",
+-- 61062ba2
+[1291] = "Complete the effect settings before applying.",
+-- 2a6b24ad
+[1292] = "Credits",
+-- b91bfdbb
+[1293] = "Built In preferences",
+-- a1ceb156
+[1294] = "Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.",
+-- 66cf8407
+[1295] = "Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; where the client has spell ranks, Use this exact spell rank limits matching to the rank you chose. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.",
+-- 6d5af309
+[1296] = "Ignore mana",
+-- 96bb8a4a
+[1297] = "Ignore range",
+-- 7df60b64
+[1298] = "Imports",
+-- fa4ba363
+[1299] = "Invalid announcement.",
+-- f3d92c2d
+[1300] = "Invalid profile.",
+-- 0d1e6a1d
+[1301] = "Leave combat before applying these settings.",
+-- 0fabe810
+[1302] = "Leave combat before changing action bar bindings.",
+-- c011d609
+[1303] = "License",
+-- e7fdbd0c
+[1304] = "Localizations",
+-- aac6c842
+[1305] = "No rotations in this profile.",
+-- 15ba8148
+[1306] = "Preview position",
+-- 08f04b51
+[1307] = "Rotation library",
+-- 7bde8757
+[1308] = "Search or drag a spell here",
+-- 21c38898
+[1309] = "Move %d selected cards",
+-- 6c0b9d10
+[1310] = "Duplicate selected cards",
+-- 30a9f853
+[1311] = "Enable selected cards",
+-- d3b30c10
+[1312] = "Disable selected cards",
+-- 48d65c02
+[1313] = "Delete selected cards",
+-- cea4d2e0
+[1314] = "Clear selection",
+-- c58ed264
+[1315] = "Target casting: %s",
+-- ffaf018a
+[1316] = "Focus casting: %s",
+-- 0b303a00
+[1317] = "Target channeling: %s",
+-- 2a66fe87
+[1318] = "Focus channeling: %s",
+-- f6b58a2a
+[1319] = "Recently cast: %s",
+-- db04a504
+[1320] = "Trinket 1: %s",
+-- 93b4d929
+[1321] = "Trinket 2: %s",
+-- b31f1cc4
+[1322] = "No equipped trinket to insert.",
+-- 799ed3e6
+[1323] = "Nothing to insert: no target or focus cast and no recent casts.",
+-- def2f5ca
+[1324] = "Click to insert. Right-click the field again to close.",
+-- 4a0eab4f
+[1325] = "Right-click to insert an equipped trinket.",
+-- d0cd6f0d
+[1326] = "Right-click to insert your target's cast or a recent cast.",
+-- 2702ffe0
+[1327] = "Search or drag an item here",
+-- d27b40b5
+[1328] = "Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement.",
+-- b0413d32
+[1329] = "Settings changed elsewhere. Cancel to reload them before applying.",
+-- 1973cc09
+[1330] = "Slots %s · Unbind",
+-- 46124e02
+[1331] = "Sound",
+-- 410cc927
+[1332] = "Structured settings",
+-- 1ed6b5ea
+[1333] = "Unnamed rotation",
+-- 62704b0c
+[1334] = "Use arrows or drag rows in the condition sidebar to reorder within the selected category. In Manage categories, the same controls order the categories themselves.",
+-- 8e37953d
+[1335] = "Value",
+-- 2d11fd64
+[1336] = "Choose an action and complete the announcement before applying.",
+-- d45ed343
+[1337] = "Apply changes before leaving this page?",
+-- 588d9e12
+[1338] = "Apply or discard current settings before opening the custom code editor.",
+-- de28dd82
+[1339] = "Apply item-set changes before binding it to an action bar.",
+-- c0f78e20
+[1340] = "Choose a new named copy or replace the selected editable entry. Review the destination before importing.",
+-- 83b12c22
+[1341] = "Clear",
+-- e25a9c83
+[1342] = "Confirm the Lua import, then review it before saving.",
+-- 8aaf46c6
+[1343] = "IMPORTED_CONDITION",
+-- 8237a9a5
+[1344] = "Import comparison",
+-- 9d886886
+[1345] = "Imported announcement",
+-- 456358c4
+[1346] = "Imported category",
+-- a77b0984
+[1347] = "Imported effect",
+-- 2f91d1e1
+[1348] = "Imported profile",
+-- ec38d3c0
+[1349] = "Invalid custom condition.",
+-- a265e30c
+[1350] = "Name not supplied",
+-- fb66a1af
+[1351] = "Original name",
+-- 327093d7
+[1352] = "Ready to import. Choose replacement or a named copy.",
+-- 0d9a1fb4
+[1353] = "Replace selected entry",
+-- a84aab9e
+[1354] = "That condition identifier already exists.",
+-- e50b1bee
+[1355] = "The selected profile changed. Reopen the import window.",
+-- 1609b3f3
+[1356] = "This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.",
+-- ae820bc2
+[1357] = "Use letters, numbers and underscores for the condition identifier.",
+-- 24c87ffc
+[1358] = "Check %s: %s",
+-- 8e09cadd
+[1359] = "Check syntax",
+-- 1ae4fec7
+[1360] = "Choose icon",
+-- 18156f45
+[1361] = "Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.",
+-- a53c11ee
+[1362] = "Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua.",
+-- 9813fafb
+[1363] = "Definition",
+-- 9b8e27c6
+[1364] = "Editing code",
+-- 966591fe
+[1365] = "Evaluate",
+-- 7b08f80e
+[1366] = "Field schema",
+-- 1aab5f2f
+[1367] = "Fields UI",
+-- 43dab9e3
+[1368] = "Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs.",
+-- 6a696870
+[1369] = "On register",
+-- 06f9af14
+[1370] = "On unregister",
+-- 8e76a94a
+[1371] = "Summary",
+-- d9f668a3
+[1372] = "Syntax checked. No custom code was executed.",
+-- 39286cd6
+[1373] = "The custom condition changed elsewhere. Reopen it before saving.",
+-- 6e33a7dd
+[1374] = "Trusted code",
+-- 40611abb
+[1375] = "Validate",
+-- 7c39c16d
+[1376] = "All tags",
+-- 08c83906
+[1377] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+-- 73f5fe1e
+[1378] = "Invalid tags. Use up to 64 tags of 64 characters, separated by commas.",
+-- 36b7b9b3
+[1379] = "Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.",
+-- 1331275b
+[1380] = "Tags",
+-- 1dd4ab9e
+[1381] = "Switch priority",
+-- 1e51f6c3
+[1382] = "Priority %d",
+-- defa7982
+[1383] = "Invalid priority",
+-- 1501b340
+[1384] = "Switch priority must be a whole number between -100000 and 100000.",
+-- f3967731
+[1385] = "Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+-- a37462ad
+[1386] = "Higher numbers are tried first; your rotations and Built Ins compete on priority alone. The fallback is used only when no other rotation matches. Equal priorities use name, then identity. Blank means zero.",
+-- 2040fdbd
+[1387] = "Invalid switch priority for %s:%s; explicit repair resets it to zero.",
+-- babdd022
+[1388] = "%s (any rank)",
+-- a80c618c
+[1389] = "Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.",
+-- 264ad9c0
+[1390] = "Cast Progress",
+-- 02ad1e66
+[1391] = "Channel Progress",
+-- b19c05d2
+[1392] = "Talent Tree Points",
+-- ef4ebbe8
+[1393] = "points spent in %s",
+-- 4fd19fe4
+[1394] = "Primary Talent Tree",
+-- cffd0628
+[1395] = "your primary talent tree is %s",
+-- 31e9be18
+[1430] = "Diagram view",
+-- 5d8c3e1b
+[1431] = "List view",
+-- 0dca2dc5
+[1432] = "Switch between the diagram and compact tree list. This changes only the view.",
+-- bc7b631a
+[1433] = "Zoom out",
+-- 0e47f09a
+[1434] = "Zoom in",
+-- ed28d6c9
+[1435] = "Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged.",
+-- a7f6faca
+[1436] = "Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved.",
+-- b1fd3756
+[1437] = "Custom emote",
+-- 6dd86cd7
+[1438] = "Use spell recipient ({{target}})",
+-- 3cb40b84
+[1439] = "Automatic Say and Yell are unavailable. Choose another announcement destination.",
+-- 38f252ac
+[1440] = "Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.",
+-- c546b857
+[1441] = "Default rotation view",
+-- d11b9246
+[1442] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid.",
+-- 769b3ebc
+[1443] = "Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan.",
+-- a3dd333a
+[1444] = "Move this and following entries",
+-- ffcd3171
+[1445] = "Drag one entry; Ctrl-drag moves it and all following siblings.",
+-- 773001f9
+[1446] = "%d cards",
+-- 454b5fb4
+[1447] = " (%d hidden)",
+-- 9db3d1ae
+[1448] = "Click to fold or unfold this branch arm. Other cards and conditions are unchanged.",
+-- a7c224a3
+[1449] = "%s {{!are|are not}} PVP flagged",
+-- a2e6fde9
+[1450] = "%s {{!are|are not}} a %s",
+-- a9c26592
+[1451] = "%s {{!are|are not}} currently casting %s",
+-- c0e4c355
+[1452] = "%s {{!are|are not}} currently channeling %s",
+-- df4ccc9d
+[1453] = "%s {{!are|are not}} in combat",
+-- afbc6f6d
+[1454] = "%s {{!has|does not have}} %s",
+-- 450074be
+[1455] = "%s {{!has|does not have}} a %s debuff",
+-- e7bdefdc
+[1456] = "%s {{!have|do not have}} %s",
+-- 4d5d691c
+[1457] = "%s {{!have|do not have}} %s where %s",
+-- abf6cfd4
+[1458] = "%s {{!have|do not have}} a %s debuff",
+-- 79e495d3
+[1459] = "%s {{!is|is not}} PVP flagged",
+-- 491c7ee4
+[1460] = "%s {{!is|is not}} a %s",
+-- 09b32050
+[1461] = "%s {{!is|is not}} active with %s",
+-- c58e76ae
+[1462] = "%s {{!is|is not}} an enemy",
+-- 2c1ba7dc
+[1463] = "%s {{!is|is not}} attackable",
+-- 742f7cb6
+[1464] = "%s {{!is|is not}} currently casting %s",
+-- ae551afe
+[1465] = "%s {{!is|is not}} in a %s role",
+-- f6ca7ce9
+[1466] = "%s {{!is|is not}} in combat",
+-- 0af84407
+[1467] = "%s's channeled spell {{!is|is not}} interruptable",
+-- 7240fa38
+[1468] = "%s's spell {{!is|is not}} interruptable",
+-- 8c1704ad
+[1469] = "Your talent {{!is|is not}} a %s role",
+-- c66f7ad7
+[1470] = "is not evenly divisible by",
+-- 3a09b8a8
+[1471] = "is not greater than",
+-- ff751fea
+[1472] = "is not greater than or equal to",
+-- 5937cd49
+[1473] = "is not less than",
+-- 92bbf51d
+[1474] = "is not less than or equal to",
+-- 970de09b
+[1475] = "not (%s)",
+-- d4c2a5ad
+[1476] = "you {{!are|are not}} in %s form",
+-- 330c2126
+[1477] = "you {{!are|are not}} in a %s instance",
+-- 0f79bc56
+[1478] = "you {{!are|are not}} in a outdoors",
+-- 25ce1dd9
+[1479] = "you {{!have|do not have}} %s equipped",
+-- f5b5e754
+[1480] = "you {{!have|do not have}} %s glyph",
+-- 7c1be9a0
+[1481] = "you {{!have|do not have}} a %s totem active with %s",
+-- 6691324c
+[1482] = "you {{!have|do not have}} a pet named %s",
+-- 8fbf9338
+[1483] = "zone {{!is|is not}} a %s zone",
+-- 07e00292
+[1484] = "{{!in|not in}} %s",
+-- f9337f4a
+[1485] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.",
+-- 085df392
+[1486] = "Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.",
+-- 90f64b52
+[1487] = "Decrease priority",
+-- c31a4a7d
+[1488] = "Increase priority",
+-- 0abba441
+[1489] = "Horizontal",
+-- 727cd3a6
+[1490] = "Vertical",
+-- 6e9ad9af
+[1491] = "Lock preview position and size",
+-- fc3dbf19
+[1492] = "Preview window opacity",
+-- a625f9d4
+[1493] = "Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio.",
+-- 54b44fb7
+[1494] = "Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row.",
+-- 026621d4
+[1495] = "Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved.",
+-- 10d580ca
+[1496] = "Lock position and size",
+-- 0e556ee1
+[1497] = "Open General settings",
+-- f65ed2ec
+[1498] = "View Changes",
+-- b5c120b3
+[1499] = "Saved",
+-- 6250d572
+[1500] = "Unsaved",
+-- bc6e0973
+[1501] = "Pending input",
+-- 4b96e273
+[1502] = "Not inspected",
+-- 12be1b12
+[1503] = "Custom widget has pending input.",
+-- 70e5c0fd
+[1504] = "Selected entry",
+-- f6cf1462
+[1505] = "Compared entry",
+-- 002a5d77
+[1506] = "Use step name",
+-- 6dd777d2
+[1507] = "Preview icon size",
+-- 9710bd5e
+[1508] = "Add or search tags",
+-- 93bc41f4
+[1509] = "Search tags",
+-- bdb18f62
+[1510] = "Click to remove this tag. Right-click to choose its color.",
+-- 9f9619c7
+[1511] = "Apply updates the draft. Apply the rotation to save it.",
+-- 6054cb39
+[1512] = "Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.",
+-- 616f48c1
+[1513] = "Fields",
+-- 7f553822
+[1514] = "Search...",
+-- 9fd728c6
+[1515] = "Add",
+-- b5a66eb6
+[1516] = "Comparison limit",
+-- 2dc363a7
+[1517] = "Showing the first 512 conditions per side.",
+-- 1710782c
+[1518] = "Weapon",
+-- 15b61974
+[1519] = "Location",
+-- 909cb811
+[1520] = "Book",
+-- 289aff12
+[1521] = "Question",
+-- 5919dcd4
+[1522] = "Swords",
+-- 480d4be7
+[1523] = "Shield",
+-- 44bc3799
+[1524] = "Healing",
+-- 41e68f2c
+[1525] = "Lightning",
+-- b5e0cd8a
+[1526] = "Potions",
+-- e4eb1806
+[1527] = "Food",
+-- a592855d
+[1528] = "Armor",
+-- 39bbb719
+[1529] = "Groups",
+-- 34ca0e76
+[1530] = "Group",
+-- d461a493
+[1531] = "Automatic",
+-- b8715031
+[1532] = "Built In syntax highlighting",
+-- cf416625
+[1533] = "Plain text",
+-- 090512d9
+[1534] = "Integrations",
+-- 90c92d4c
+[1535] = "Lua editor",
+-- d8cfde4d
+[1536] = "Choose optional addon integrations.",
+-- 67af476d
+[1537] = "Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.",
+-- 9fe3f474
+[1538] = "Loaded; editor integration not connected.",
+-- a79eae91
+[1539] = "Not loaded.",
+-- 87b30347
+[1540] = "These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.",
+-- f1fa67bf
+[1541] = "Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
+-- dfab6835
+[1542] = "Invalid condition: %s",
+-- a3d021a9
+[1543] = "Unavailable condition: %s",
+-- ffb313cc
+[1544] = "This condition definition is disabled. Rotations using it are unavailable.",
+-- 12f67f85
+[1545] = "Availability",
+-- ef8f927d
+[1546] = "Edit fields",
+-- 9f088dbe
+[1547] = "Advanced",
+-- bd82cf16
+[1548] = "Number",
+-- a066ff92
+[1549] = "Boolean",
+-- 5f3107cf
+[1550] = "Condition list",
+-- c5025e68
+[1551] = "Record / map",
+-- 58e1de5e
+[1552] = "Allowed types / list alternatives",
+-- a9b310ef
+[1553] = "Invalid field schema: %s",
+-- 76900f1b
+[1554] = "Back",
+-- 02dbfe6e
+[1555] = "Named fields. Choose a type, then edit its children for nested data.",
+-- 8eba81e3
+[1556] = "Allowed types. A nested record or type list describes each item in a list.",
+-- 130a1408
+[1557] = "Showing the first 200 fields. Use Advanced schema for larger definitions.",
+-- 5f42d901
+[1558] = "Add field",
+-- cb4190b5
+[1559] = "Tag color",
+-- 08b91fc6
+[1560] = "Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.",
+-- cbf6490e
+[1561] = "Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.",
+-- 45fa2eb3
+[1562] = "Click to remove this tag. Use the search results to change tag colors.",
+-- 84cfb5be
+[1563] = "Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.",
+-- 047aff36
+[1564] = "No native Lua editor has been opened this session.",
+-- 5472dd28
+[1565] = "Lua input diagnostics",
+-- 5c126363
+[1566] = "Native input test",
+-- 6043d2ec
+[1567] = "Input test",
+-- 5a832570
+[1568] = "Stock font",
+-- d92ba9ef
+[1569] = "RM font",
+-- c7b373e3
+[1570] = "Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.",
+-- 90364218
+[1571] = "Arrow test",
+-- 19a006ce
+[1572] = "Arrows: on",
+-- 423c677c
+[1573] = "Arrows",
+-- 170322a3
+[1574] = "Info",
+-- 9ee41d20
+[1575] = "Show input diagnostics for this open Lua editor.",
+-- 6ecc3df6
+[1576] = "Move",
+-- 9e3bd238
+[1577] = "Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.",
+-- 5ed7c1f2
+[1578] = "Decide whether this condition currently matches.",
+-- cbb89125
+[1579] = "The stored values for this condition.",
+-- d02f326b
+[1580] = "Shared data for this evaluation cycle.",
+-- 5e32b652
+[1581] = "Evaluation start time, in seconds from GetTime().",
+-- dbb95241
+[1582] = "True matches; false or nil does not match.",
+-- 33035e0c
+[1583] = "Check whether the stored condition values are complete and valid.",
+-- bc51adc0
+[1584] = "Rotation specialization scope.",
+-- 0cb1ce78
+[1585] = "True when the condition can be evaluated.",
+-- 18eb8e30
+[1586] = "Describe the condition in readable words.",
+-- 4e9300c4
+[1587] = "The human-readable condition summary.",
+-- 7ea336df
+[1588] = "Build the controls used to edit this condition.",
+-- 2010cda9
+[1589] = "The condition field container supplied by the UI adapter.",
+-- 2209776b
+[1590] = "Add controls to the supplied container.",
+-- ca5a0eaf
+[1591] = "Build the help content for this condition.",
+-- a2731a25
+[1592] = "The help container supplied by the UI adapter.",
+-- 96bf1d1e
+[1593] = "Add help content to the supplied container.",
+-- 6738aee6
+[1594] = "Initialize resources when the condition is registered.",
+-- 49e57f5b
+[1595] = "The condition identifier.",
+-- 46569f1f
+[1596] = "No return value is used.",
+-- 95a1b634
+[1597] = "Release resources when the condition is removed or replaced.",
+-- 7f816072
+[1598] = "Arguments",
+-- 16dcaa92
+[1599] = "Returns",
+-- b92993e1
+[1600] = "Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.",
+-- 5f81b556
+[1601] = "A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.",
+-- d24ed6ad
+[1602] = "The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.",
+-- 521fc51f
+[1603] = "Packaged helper from %s.",
+-- 75e942e5
+[1604] = "Functions",
+-- 786697a7
+[1605] = "Browse packaged helpers and edit reusable custom Lua functions.",
+-- fc6e1f0d
+[1606] = "Function unavailable: %s",
+-- 2abb9d73
+[1607] = "Argument name",
+-- 6956b2bc
+[1608] = "Add argument",
+-- b38d87b4
+[1609] = "Add return",
+-- 355cc18a
+[1610] = "Built-in function",
+-- 0d1f23b5
+[1611] = "Custom function",
+-- 4dcab896
+[1612] = "Delete this function? Existing dependents will become unavailable.",
+-- 3ac00ae7
+[1613] = "Deletion staged. Apply to remove this function.",
+-- f2dc99c6
+[1614] = "Function bindings",
+-- b19e02e9
+[1615] = "Alias",
+-- e64bbf11
+[1616] = "This alias is already in use.",
+-- c8037103
+[1617] = "Function",
+-- a94fd0ee
+[1618] = "Add binding",
+-- 327c4c8c
+[1619] = "Packaged source is read-only. Duplicate it to create an editable custom function.",
+-- 8299c5ac
+[1620] = "Arguments become Lua parameters. Bindings expose selected helpers under explicit local aliases. Editing an alias does not rewrite your Lua body.",
+-- 47b843fc
+[1621] = "New function",
+-- edb574e3
+[1622] = "Describe what this function does.",
+-- 0d646ec9
+[1623] = "Add a function or duplicate a packaged helper to edit its source.",
+-- aebc00b0
+[1624] = "LuaWorkbench supplies editing, completion, API knowledge and debugging. Debug runs this buffer explicitly using the test arguments. It does not replace the saved rotation or live callback.",
+-- ac6ddfe4
+[1625] = "Connected: embedded editing, completion, API knowledge and debugging.",
+-- e3b56b53
+[1626] = "Review the dependency bundle before applying it.",
+-- e0ad4daf
+[1627] = "Function bindings (%d)",
+-- 1f10215d
+[1628] = "Aliases are local names in your Lua body. Changing an alias does not rewrite the body.",
+-- f81e71de
+[1629] = "Reuse existing",
+-- c72a3c56
+[1630] = "Replace existing",
+-- 548fcd9a
+[1631] = "Import with new identifier",
+-- 4759498a
+[1632] = "Create",
+-- 41d342bd
+[1633] = "Review source",
+-- 195aae02
+[1634] = "Original identifier",
+-- 8bec02bf
+[1635] = "Destination identifier",
+-- 32e8d276
+[1636] = "Callback",
+-- 222b67d3
+[1637] = "Include custom function dependencies",
+-- df750ab9
+[1638] = "Review import",
+-- 454d876b
+[1639] = "Apply import",
+-- b7143073
+[1640] = "Function dependency bundle",
+-- 44fc47f3
+[1641] = "Review the complete bundle before applying an import. Imported Lua can execute when registered; only apply code you trust.",
+-- b5ca2246
+[1642] = "Review each original name, destination and dependency below. Apply import saves the complete reviewed bundle.",
+-- 0f2dd42f
+[1643] = "Conflict action",
+-- 4e81098c
+[1644] = "Imported name",
+-- 8e818b1f
+[1645] = "Existing dependents",
+-- 75c417a1
+[1646] = "This imported definition is disabled. Its dependents remain unavailable.",
+-- 2643e762
+[1647] = "Required functions",
+-- 103c8bbb
+[1648] = "Paste a bundle above, then review its original names, destinations and required functions.",
+-- 7f12e5bc
+[1649] = "Filter Built In or Custom helpers and search their names, identifiers or descriptions. Packaged helpers show read-only source and typed documentation. Duplicate creates an editable copy with a new stable identifier. Argument and return rows document the Lua signature.",
+-- 812ccde3
+[1650] = "Expand Function bindings to add explicit helper aliases and choose their targets. Changing an alias does not rewrite your Lua body. Missing, disabled or invalid dependencies keep their dependents unavailable until repaired.",
+-- 9d60841e
+[1651] = "Check",
+-- b64ac05f
+[1652] = "Live",
+-- 324b134f
+[1653] = "Preview",
+-- a31ec5d7
+[1654] = "The preview failed. Use /rm errors for details.",
+-- 1c103e84
+[1655] = "Test values were not saved because they are not bounded plain data.",
+-- c1ab4306
+[1656] = "Condition check",
+-- 0fa00491
+[1657] = "Fields UI preview",
+-- 367bba74
+[1658] = "Help preview",
+-- 59e490f3
+[1659] = "Edit detached test values below. Check validates them before evaluating. Live is opt-in; test values are saved separately from the condition source.",
+-- 8b1c0e1c
+[1660] = "Preview runs only this callback with detached sample values. It does not save or register the condition.",
+-- 75d9602c
+[1661] = "Complete the source fields before checking.",
+-- 00454de7
+[1662] = "Check could not compile the current source. Fix the source before checking again.",
+-- 6a255986
+[1663] = "Skipped: invalid test values",
+-- 4607aa3d
+[1664] = "Validation: %s",
+-- 436fe71b
+[1665] = "Passed",
+-- 4c852a7e
+[1666] = "Evaluation: %s",
+-- 55a7b6a1
+[1667] = "Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback.",
+-- 106d8f1b
+[1668] = "Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live.",
+-- 5d331ffe
+[1669] = "Functions reference",
+-- 64334745
+[1670] = "The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.",
+-- 8f344bfe
+[1671] = "The imported definition type does not match this editor.",
+-- 91fe2974
+[1672] = "Test values changed. Check again to refresh the result.",
+-- 4087dcf1
+[1673] = "Complete the highlighted test inputs before checking.",
+-- 532eaabd
+[1674] = "Test",
+-- e031e0df
+[1675] = "Run test",
+-- 312acdf1
+[1676] = "Test condition",
+-- 34fb96f5
+[1677] = "Debugger output",
+-- e376955f
+[1678] = "Set test values in Test before debugging Evaluate.",
+-- 427ea36c
+[1679] = "Debugger output uses a detached sample and the normal field or help container.",
+-- af624aba
+[1680] = "Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.",
+-- fba588f1
+[1681] = "Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.",
+-- deba1c35
+[1682] = "Nullable",
+-- fbf338e4
+[1683] = "Add return value",
+-- c75ed23e
+[1684] = "Lua returns multiple values in order. Each row documents one result.",
+-- f968686c
+[1685] = "Expand code editor",
+-- cc81db61
+[1686] = "Restore code editor",
+-- cb050073
+[1687] = "Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name.",
+-- cfaec007
+[1688] = "Local name in code",
+-- d076565e
+[1689] = "Source helper",
+-- b49f05b5
+[1690] = "Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.",
+-- b545dd16
+[1691] = "This cannot be undone.",
+-- f07f87d9
+[1692] = "Delete this announcement?",
+-- da985348
+[1693] = "Type: %s",
+-- 78a0b485
+[1694] = "Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client.",
+-- b2a921f3
+[1695] = "Supported unit-token to localized possessive unit-name lookup, such as your target.",
+-- 7e1dc663
+[1696] = "Rotation Master client compatibility adapter. Its methods return ordinary readable results or nil with a reason when an observation is unavailable. Use a colon call, or pass addon.Platform explicitly as self with a dot reference.",
+-- bbc0cdbf
+[1697] = "Rotation Master spell catalog for resolving client-specific spell IDs, ranks, names, icons and links.",
+-- 18123a69
+[1698] = "Utility functions explicitly bound to this condition or function. Choose a completion to bind an available custom function before inserting its reference.",
+-- 16356339
+[1699] = "Rotation Master custom function",
+-- 902c5c44
+[1700] = "Rotation Master built-in function",
+-- 0443c4a6
+[1701] = "Rotation Master value",
+-- 1a845fe0
+[1702] = "Global function (documentation unavailable on this client)",
+-- 6912e131
+[1703] = "This client does not provide signature documentation for this function. No arguments or return types have been inferred.",
+-- 90092e5f
+[1704] = "Invoke",
+-- cb214676
+[1705] = "Functions are shared across profiles after Apply. Call custom utilities as functions.name(...); accepting completion adds the dependency binding. Typed calls need a binding under Function bindings. Built In examples show dot or colon explicitly.",
+-- d03262ba
+[1706] = "Show line numbers",
+-- f12fff00
+[1707] = "Line-number visibility applies to every condition and function code editor.",
+-- 596578e6
+[1708] = "Call a saved custom utility as functions.name(...). Accepting a completion attaches its stable dependency binding; for a typed call, choose its helper under Function bindings. Existing direct aliases still work. The Invoke example shows required addon dot or colon syntax for Built In functions. Renaming an alias does not rewrite source. Missing, disabled or invalid dependencies keep consumers unavailable.",
+-- 38416c88
+[1709] = "Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability.",
+-- 50c3cb6e
+[1710] = "All namespaces",
+-- 5605815a
+[1711] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self: the Invoke example includes a method receiver explicitly, and Existing API preserves its original dot or colon spelling. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
+-- 66506282
+[1712] = "Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.",
+-- 5226404c
+[1713] = "Existing API",
+-- e572edc2
+[1714] = "Name in code",
+-- c4e4e7ab
+[1715] = "Namespace",
+-- c6d86222
+[1716] = "Namespaces group functions; they do not supply a receiver. Accept a completion to bind the shown dotted call. For a typed call, add the same qualified name under Function bindings. Method examples include the required receiver explicitly. Functions are shared across profiles after Apply.",
+-- 76209725
+[1717] = "Private utility-function namespace. It contains only explicit bindings for this callback.",
+-- 481da3a7
+[1718] = "Argument",
+-- e0836fce
+[1719] = "Bindings (%d)",
+-- 6ecb5a70
+[1720] = "Call a utility as namespace.name(...). Built In namespaces follow source files; custom functions choose their Namespace. Accepting a completion attaches its stable dependency binding; for a typed call, add its qualified name under Function bindings. Namespaces do not supply self. Pass a method receiver explicitly in a namespaced dot call; object:method(x) is Lua shorthand for object.method(object, x). Existing addon APIs remain compatible with saved definitions. Existing aliases still work. Renaming a function or namespace does not rewrite existing code or bindings. Missing, disabled or invalid dependencies keep consumers unavailable.",
+-- d35a9985
+[1721] = "Changing argument or return order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?",
+-- 2199cecc
+[1722] = "Click an Arguments or Returns heading to collapse or expand it. + Argument and + Return append when clicked, or insert at a highlighted gap when dragged. Drag a row or use Up / Down to reorder; Ctrl-drag carries following rows. The trash can removes a row. Type and Nullable document accepted values; Description explains each input or result. Lua can return several ordered results. Reordering a saved function warns because positional callers may need changes; RM does not rewrite call sites.",
+-- 6b0143d0
+[1723] = "Return",
+-- 2584fdfb
+[1724] = "Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?",
+-- 79fbb27b
+[1725] = "Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?",
+-- 2266dd0b
+[1726] = "Card controls",
+-- 1f03f52f
+[1727] = "Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.",
+-- 9513dcfb
+[1728] = "Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.",
+-- 33f24b5d
+[1729] = "Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.",
+-- 74057930
+[1730] = "Rendered output appears here when the callback runs or steps through widget creation.",
+-- 47b50257
+[1731] = "Set values in Test before running or debugging this condition.",
+-- 96aa8cc3
+[1732] = "The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.",
+-- 438e9a47
+[1733] = "Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.",
+-- 42e8bcf1
+[1734] = "Debuffs",
+-- e89b30aa
+[1735] = "Resources",
+-- 8f0d1b30
+[1736] = "Pet",
+-- 7c400199
+[1737] = "Logic",
+-- 9e471951
+[1738] = "Environment",
+-- 33b93476
+[1739] = "Time",
+-- 66f9cfa2
+[1740] = "Spell Auto-Repeat Active",
+-- a97bc1c7
+[1791] = "Apply changes to this selected item list. Other settings keep their own Apply action.",
+-- 4cec1d75
+[1792] = "Choose an item list before editing.",
+-- 550c388b
+[1793] = "The item list changed elsewhere. Close and reopen it before applying.",
+-- 67559dc7
+[1794] = "Native settings page unavailable: %s",
+-- 0f6314b0
+[1795] = "The native rotation editor is unavailable.",
+-- 4850b174
+[1796] = "Required",
+-- 9bcec068
+[1797] = "Required field references need review. Apply keeps the displayed root requirements.",
+-- c463dfb4
+[1798] = "Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.",
+-- 8b8cd45b
+[1799] = "Copy condition description",
+-- b5739be0
+[1800] = "This condition exceeds the supported editor limits.",
+-- df58aeb6
+[1801] = "Proc Glow",
+-- dce1c179
+[1802] = "Loop duration",
+-- a4f0db33
+[1803] = "Start burst",
+-- b89fd7fd
+[1804] = "Proc Glow is unavailable on this client; Pixel glow will be used.",
+-- 34ae0a26
+[1805] = "Rotation data requires recovery: %s",
+-- 8b4e37b9
+[1806] = "Copies belong to your Class unless This character is selected. Replacement keeps its original owner.",
+-- 0faa3bd8
+[1807] = "Archive report truncated; saved data is unchanged.",
+-- 414c7fd3
+[1808] = "Recover unassigned rotations",
+-- 291f821c
+[1809] = "Ownership required",
+-- cd16196a
+[1810] = "These records have no assigned owner. Choose Class or This character explicitly. No ownership is inferred from names, spells or profile history.",
+-- ce112847
+[1811] = "Recovery unavailable: %s",
+-- af7356f1
+[1812] = "Unassigned rotation archive",
+-- d17af82d
+[1813] = "Character archive",
+-- 8ce8b3ed
+[1814] = "Profile archive",
+-- 4064b908
+[1815] = "No unassigned rotations.",
+-- 46bb2f53
+[1816] = "Archive: %s; specialization: %s; identifier: %s",
+-- a7232fd4
+[1817] = "Export archive",
+-- b650b12a
+[1818] = "Adopt rotation",
+-- 2b1bc965
+[1819] = "Could not adopt this record: %s",
+-- 041c7071
+[1820] = "More than one rotation is named %s. Select its Class or This character entry in the rotation browser.",
+-- 71ddae9f
+[1821] = "The fallback rotation is unavailable. Open Rotations to complete or recover it.",
+-- 0729dbe6
+[1822] = "Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.",
+-- d90071b9
+[1823] = "Unsupported condition editor frame.",
+-- 5cb9c94c
+[1824] = "The native condition editor is unavailable.",
+-- f47f68cf
+[1825] = "Native custom condition editor required.",
+-- d5cade7e
+[1826] = "Stock",
+-- 9286002a
+[1827] = "Questie",
+-- 6dff3b3c
+[1828] = "Waiting for Questie.",
+-- 80cd466c
+[1829] = "Questie API incompatible.",
+-- a11121bf
+[1830] = "Questie callback connection available.",
+-- a6769caf
+[1831] = "Questie values are restricted by this client.",
+-- 22ec51b9
+[1832] = "Questie integration unavailable after an adapter error.",
+-- a414f778
+[1833] = "Questie adapter unavailable.",
+-- a0b302b0
+[1834] = "Questie version: %s (%s)",
+-- 97b7e2db
+[1835] = "unverified",
+-- 0d6aeafd
+[1836] = "Client family: %s (%s)",
+-- ff3a37e2
+[1837] = "declared; unverified",
+-- 60945d49
+[1838] = "unsupported",
+-- b0fa65e4
+[1839] = "Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection.",
+-- 0dfbd5e8
+[1840] = "Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used.",
+-- f0486ac1
+[1841] = "Refresh Questie status",
+-- ee7e05e5
+[1842] = "Supported addons",
+-- 2fc99337
+[1843] = "Loaded; integration not connected.",
+-- 5b205b7f
+[1844] = "%s (version %s)",
+-- bad4af6a
+[1845] = "Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available.",
+-- 11b28c68
+[1846] = "ExtendedCharacterStats",
+-- cbc21d63
+[1847] = "LuaWorkbench",
+-- 696b160a
+[1848] = "ElvUI",
+-- fc95169b
+[1849] = "Bartender4",
+-- 73198132
+[1850] = "ButtonForge",
+-- 42fa5fc0
+[1851] = "LUI",
+-- efc3965e
+[1852] = "Dominos",
+-- 14548eff
+[1853] = "AzeriteUI",
+-- 7c811de6
+[1854] = "FarmingBar",
+-- e866b4e8
+[1855] = "TotemTimers",
+-- 06c879f3
+[1856] = "AzeriteUI6",
+-- 5bd55adb
+[1857] = "BigWigs",
+-- 1c91d8be
+[1858] = "Boss mods",
+-- c5eddceb
+[1859] = "Top panels",
+-- 22965568
+[1860] = "Connected",
+-- 8777e3a9
+[1861] = "Incompatible",
+-- 56178c4b
+[1862] = "Loaded; connection not confirmed.",
+-- 3c586673
+[1863] = "Capture casts (30s)",
+-- b90c2cce
+[1864] = "Cast report",
+-- 548d9c5c
+[1865] = "Stop CPU capture",
+-- 5ba35474
+[1866] = "Stop runtime capture",
+-- 0f122dcf
+[1867] = "Stop cast capture",
+-- ba691ba0
+[1868] = "unavailable",
+-- a43f31c1
+[1869] = "Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it.",
+-- edc2be9d
+[1870] = "Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor).",
+-- 8c620adc
+[1871] = "Baseline plain editor; always available.",
+-- 78a6a8fe
+[1872] = "Built in",
+-- f85577f0
+[1873] = "Description / status",
+-- d9494bd4
+[1874] = "Editor options",
+-- b9c3bfb3
+[1875] = "Enable / Select",
+-- 1ce31af1
+[1876] = "Lua editors",
+-- 4207e3fc
+[1877] = "None (plain editor)",
+-- c935b9fd
+[1878] = "Shared editor settings.",
+-- bea3f386
+[1879] = "Editor settings",
+-- 332b0b0a
+[1880] = "Enable built-in syntax highlighting",
+-- a1aa075c
+[1881] = "Syntax highlighting",
+-- dc3bae06
+[1882] = "Addon release pages",
+-- 365765f4
+[1883] = "Publisher listings describe release availability; integration behavior on this client may be unverified.",
+-- 839b59a4
+[1884] = "Copy %s",
+-- 6377056a
+[1885] = "Release links checked: 2026-10-20.",
+-- 06a1145d
+[1886] = "CurseForge — LUI Classic",
+-- 26330782
+[1887] = "Copy link %d",
+-- 382bc741
+[1888] = "Preview appearance",
+-- 71e7edd7
+[1889] = "Skin preview buttons with Masque",
+-- 0e769600
+[1890] = "History",
+-- 46811e29
+[1891] = "Bypass observation cache",
+-- c51d2cd3
+[1892] = "Bypass observation cache (requires restart)",
+-- 6b6e2380
+[1893] = "Bypass observation cache (pending)",
+-- 1fc91201
+[1894] = "Skin",
+-- f24d3294
+[1895] = "Blizzard Classic",
+-- a41fff13
+[1896] = "Preview skin is unavailable.",
+-- 8f31d7c7
+[1897] = "Sample icon",
+-- a87bca24
+[1898] = "Saved manual choice is unavailable in the current context.",
+-- f51aa35f
+[1899] = "Edit announcement conditions",
+-- 90b95311
+[1900] = "Announcement conditions",
+-- b291861f
+[1901] = "Spell recipient",
+-- 6edf74a9
+[1902] = "{unit} {{!is|is not}} in a raid",
+-- 60f5f5ce
+[1903] = "Announcement target",
+-- fe664929
+[1904] = "Is Dead or Ghost",
+-- b2bdc8d6
+[1905] = "Is Friendly",
+-- 12062b75
+[1906] = "{unit} {{!is dead or a ghost|is alive}}",
+-- c1454135
+[1907] = "Workbench Help",
+-- 3db65f8c
+[1908] = "Navigation",
+-- 293d404a
+[1909] = "Destination",
+-- e5f16b07
+[1910] = "Via Macro",
+-- 79c3596b
+[1911] = "Via Script/Macro",
+-- 73210659
+[1912] = "Use a unique Via Script/Macro identifier.",
+-- 41714d2c
+[1913] = "Whisper",
+-- 02e363ed
+[1914] = "Use supplied macro target ({{target}})",
+-- 6ce2aa2e
+[1915] = "Macro call: %s",
+-- 5a435552
+[1916] = "Announcement Condition",
+-- 028cd1c8
+[1917] = "Announcement",
+-- d763075f
+[1918] = "Show this condition in the announcement condition editor.",
+-- e7ce9976
+[1919] = "Outputs",
+-- 1a3f4334
+[1920] = "Output %d",
+-- cafb5358
+[1921] = "Output state",
+-- 1674ce8b
+[1922] = "Add output",
+-- ce4683e7
+[1923] = "Channel",
+-- 32c16791
+[1924] = "Complete this output or choose a destination available for this action type.",
+-- 8e918b7f
+[1925] = "{unit} {{!is friendly|is not friendly}}",
+-- 81f887aa
+[1926] = "{unit} {{!are friendly|are not friendly}}",
+-- 19489a96
+[1927] = "{unit} {{!are dead or a ghost|are alive}}",
+-- bb52ff6b
+[1928] = "%s {{!are|are not}} an enemy",
+-- 5a04bf0d
+[1929] = "%s {{!are|are not}} attackable",
+-- a551fec4
+[1930] = "{unit} {{!are|are not}} in a raid",
+-- 89e1e228
+[1931] = "{unit} {{!is|is not}} in a party or raid",
+-- 06f016f4
+[1932] = "{unit} {{!are|are not}} in a party or raid",
+-- 8d5eac2b
+[1933] = "Choose a unit for this condition.",
+-- 64f6064c
+[1934] = "Group membership option is invalid.",
+-- e18851d3
+[1935] = "For %s",
+-- 610c1d8d
+[1936] = "Saved settings",
+-- ddbcf067
+[2507] = "Silent",
+-- 35eb2a7f
+[2508] = "Set Pieces",
+-- 64cd5df4
+[2509] = "Weapon Imbue",
+-- 754e76f8
+[2510] = "Assisted Combat Suggestion",
+-- 3fa562a1
+[2511] = "Blizzard's suggestion",
+-- 90dc6c00
+[2512] = "Recommends the spell Blizzard's Assisted Combat suggests",
+-- 423a9284
+[2513] = "Assisted Combat Rotation Spell",
+-- 70a4e33d
+[2514] = "Assisted Combat Available",
+-- 4de7b468
+[2515] = "Blizzard's suggestion highlight",
+-- 019a5647
+[2516] = "Rotation Master's glow",
+-- e24abd9f
+[2517] = "Blizzard's Assisted Highlight",
+-- b6c1d862
+[2518] = "Both",
+-- cd3a1b13
+[2519] = "Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off.",
+-- 9aab05d6
+[2520] = "Engraved Rune",
+-- ea43639d
+[2521] = "ranks in %s",
+-- 1dd73b64
+[2522] = "Show talent tree",
+-- 3e590ed8
+[2523] = "Hero Talents",
+-- 8107299a
+[2524] = "The talent tree cannot be shown during combat.",
+-- 9ac000a4
+[2525] = "Finish or discard the changes in your own talent window first.",
+-- da703663
+[2526] = "The talent tree cannot be shown right now. Use the Talent list instead.",
+-- 80ea0eae
+[2527] = "Click a talent to choose it for this condition.",
+-- 6f1df5fc
+[2528] = "Selected: %s",
+-- 7a5e089f
+[2529] = "Ranks: %d",
+-- 26722619
+[2530] = "Choose one of the talents on this node.",
+-- d9f6a964
+[2531] = "Click to choose this talent.",
+-- ccb6e92e
+[2532] = "Click to clear this talent.",
+-- 8a667e66
+[2533] = "Close the build shown in your own talent window first.",
+-- f831a06b
+[2534] = "Arms",
+-- 8d6b26d9
+[2535] = "Fury",
+-- 0e97ad02
+[2536] = "Protection",
+-- 1d79fa22
+[2537] = "Retribution",
+-- 5d6f7884
+[2538] = "Beast Mastery",
+-- 03f000fc
+[2539] = "Marksmanship",
+-- 8302496d
+[2540] = "Survival",
+-- 727eeac8
+[2541] = "Assassination",
+-- fca36d62
+[2542] = "Subtlety",
+-- a1b14db9
+[2543] = "Discipline",
+-- b12b36cf
+[2544] = "Enhancement",
+-- 6a3c6c77
+[2545] = "Restoration",
+-- ed64274f
+[2546] = "Affliction",
+-- c0e4afa6
+[2547] = "Demonology",
+-- e848f2c5
+[2548] = "Destruction",
+-- d05e07b7
+[2549] = "Balance",
+-- 1f397413
+[2550] = "Initial",
+-- 7214aeb1
+[2551] = "Specialization",
+-- 20356d41
+[2552] = "specialization %d",
+-- d22bb30c
+[2553] = "Weapon Type",
+-- ed3897f1
+[2554] = "Main Hand",
+-- 3f0b51a2
+[2555] = "Ranged",
+-- 9e9c1c72
+[2556] = "Nothing equipped",
+-- d1c5d83c
+[2557] = "Any weapon",
+-- 723e86de
+[2558] = "One-handed weapon",
+-- 432f6b17
+[2559] = "Two-handed weapon",
+-- e55ba453
+[2560] = "Ranged weapon",
+-- ef734bb6
+[2561] = "Held in off hand",
+-- 2d7b1802
+[2562] = "Not on your action bars, so it can't be highlighted. It is skipped.",
+-- 47e97838
+[2563] = "1 of the spells Blizzard can suggest isn't on your action bars, so the card skips it.",
+-- cc735c50
+[2564] = "%d of the spells Blizzard can suggest aren't on your action bars, so the card skips them.",
+-- 29258402
+[2565] = "%s, and %d more",
+-- f657f763
+[2566] = "Not on your action bars: %s.",
+-- d60bbc94
+[2567] = "Rotation Master highlights a step by lighting the action button that holds it. No action bar button holds this action right now, so this step is skipped and the next step is used instead. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail).",
+-- 982f6c69
+[2568] = "Rotation Master highlights a cooldown by lighting the action button that holds it. No action bar button holds this action right now, so this cooldown is never shown or announced. Put it on an action bar to use it. Spells inside macros count only where the game lets addons read macros (not on Retail).",
+-- 9ec46751
+[2569] = "Rotation Master highlights an action by lighting the button that holds it, so it can't highlight these. The card still works for every suggestion that is on your bars: it skips one only when it is suggested, and the next step is used instead. Put these on an action bar to use them.",
+-- c6fa3ead
+[2570] = "Skipped, not on your action bars (they cannot be highlighted): %s.",
+-- 435eac3e
+[2571] = "step %s",
+-- 09182dd8
+[2572] = "cooldown",
+-- c9e1a473
+[2573] = "Currently Matches",
+-- 6fafaf30
+[2574] = "Does Not Currently Match",
+-- f70be4d8
+[2575] = "Unavailable: %s",
+-- a463bcd3
+[2576] = "unreadable right now",
+-- 8a0dcf23
+[2577] = "the condition could not be evaluated",
+-- 01e62ea3
+[2578] = "Checked %d seconds ago.",
+-- 37822fb8
+[2579] = "Rotation Master is advising this step now.",
+-- 053a39d7
+[2580] = "This cooldown is showing now.",
+-- 42ee3bdd
+[2581] = "This rotation is advising now.",
+-- 81f39eb5
+[2582] = "Mounted",
+-- 54230802
+[2583] = "Swimming",
+-- 6192f184
+[2584] = "Falling",
+-- 75a4c2fe
+[2585] = "Flying",
+-- 4ae9e2a1
+[2586] = "In a Rested Area",
+-- 5cc337a5
+[2587] = "Boss Encounter",
+-- 87a6b205
+[2588] = "Instance Difficulty",
+-- fce1b615
+[2589] = "Mythic+ Keystone Level",
+-- 26566745
+[2590] = "Hero Talent Tree",
+-- 6115798c
+[2591] = "Spell Proc Glow",
+-- c563bae9
+[2592] = "Trinket 1",
+-- 4595f2ac
+[2593] = "Trinket 2",
+-- a91c3e5e
+[2594] = "Pet Happiness",
+-- 37108f8a
+[2595] = "Unhappy",
+-- 47bd2907
+[2596] = "Content",
+-- 725accb5
+[2597] = "Happy",
+-- b575a12f
+[2598] = "Stagger",
+-- fbfcff79
+[2599] = "Eclipse Direction",
+-- cc23ba6c
+[2600] = "a Solar Eclipse",
+-- 1dc3e526
+[2601] = "a Lunar Eclipse",
+-- f2fcd3f7
+[2602] = "Energy",
+-- d8877585
+[2603] = "only Retail has this",
+-- 5f1196be
+[2604] = "this edition has no pet happiness",
+-- 1ca6128e
+[2605] = "this edition has no Stagger",
+-- 70b12e8e
+[2606] = "this edition has no Eclipse",
+-- 864ee126
+[2607] = "this client has no assigned group roles",
+-- 1eb43a88
+[2608] = "/rm debug timeline [seconds] - Report what the Retail and Forever encounter timeline offers to addons.",
+-- aca68a8a
+[2609] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them. Open Rotation Master, choose Rotations, then Recover unassigned rotations.",
+-- a64b8edb
+[2610] = "%d rotations from before version 2 are waiting in an archive and do not run until you adopt them.",
+-- 48845bff
+[2611] = "Dismiss",
+-- e11a6591
+[2612] = "Adopt all %d for %s",
+-- c727dc7d
+[2613] = "Adopt all %d from specialization %d for %s",
+-- dcf0a82d
+[2614] = "Adopt %d unassigned rotations for %s? Each keeps its identifier. A rotation that cannot be adopted stays in the archive.",
+-- bf328c9e
+[2615] = "Adopted %d of %d. These stay in the archive: %s",
+-- 23bfc44f
+[2616] = "Player State",
+-- 68a2f69b
+[2617] = "Group Count",
+-- de24e677
+[2618] = "Eclipse",
+-- 5baf9a05
+[2619] = "your group's main tank",
+-- 94585dba
+[2620] = "your group's main tank's",
+-- 90092817
+[2621] = "your group's main assist",
+-- 67d03081
+[2622] = "your group's main assist's",
+-- 800a1841
+[2623] = "your group's assigned tank",
+-- c27b7dbd
+[2624] = "your group's assigned tank's",
+-- 0a817df6
+[2625] = "your group's assigned healer",
+-- 1f321239
+[2626] = "your group's assigned healer's",
+-- 343dc906
+[2627] = "your group's leader",
+-- 1d3180fa
+[2628] = "your group's leader's",
+-- fad43537
+[2629] = "Absolute health target (negative means deficit) or percentage fraction.",
+-- 29a55788
+[2630] = "All original results, preserving nil positions and return count.",
+-- c7e69e75
+[2631] = "Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator.",
+-- 69eb2e21
+[2632] = "Arguments forwarded unchanged to the observed function.",
+-- 1d513028
+[2633] = "Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries.",
+-- 3e8d2702
+[2634] = "Availability or query-validation reason for a nil level observation.",
+-- e2ffe9af
+[2635] = "Availability or query-validation reason for a nil level.",
+-- 66134514
+[2636] = "Availability or query-validation reason when no current state can be read.",
+-- 77b92c6d
+[2637] = "Availability or query-validation reason when the whole observation is unavailable.",
+-- 11483c22
+[2638] = "Availability or validation reason for a nil result.",
+-- bd62d347
+[2639] = "Availability or validation reason when the record is nil.",
+-- cab01ca9
+[2640] = "Availability or validation reason when the result is nil.",
+-- 37cddc45
+[2641] = "Availability reason for a nil result.",
+-- eced4849
+[2642] = "Availability reason when resolution fails; nil on success.",
+-- 09403547
+[2643] = "Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached.",
+-- ec80f70e
+[2644] = "Calculate a checked health-history rate using an explicit finite window and clock. Preserve ordered weighting, per-row live canonical rounding, skipped streams, array holes, fractional keys and final visited ages. A fixed 4096-unit budget covers visited rows and accumulation bins across both streams; excess or invalid consumed arithmetic returns unavailable, never a partial estimate or clamp. This new API has its own source identity; historical trend functions remain unchanged.",
+-- e3a904cc
+[2645] = "Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly.",
+-- cb8a709c
+[2646] = "Callback invoked after changing the selected unit.",
+-- f4755bc2
+[2647] = "Callback receiving the committed spell value.",
+-- 8473e032
+[2648] = "Caller-owned evaluation observation cache; nil queries afresh.",
+-- d07ec966
+[2649] = "Capability or clock observation availability reason.",
+-- aca2f51b
+[2650] = "Capability or observation availability reason for a nil class.",
+-- fb8dd5ac
+[2651] = "Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime().",
+-- 1081f5fc
+[2652] = "Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values.",
+-- 3f1a5911
+[2653] = "Checkbox widget with boolean value and callback methods.",
+-- 8373609b
+[2654] = "Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved.",
+-- 68e9defe
+[2655] = "Classification, validation or availability reason for a nil result.",
+-- 7fc7159a
+[2656] = "Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping.",
+-- 355b4c25
+[2657] = "Client-family, query-validation or required-observation availability reason for a nil result.",
+-- 56d0a810
+[2658] = "Client-policy, capability, call or observation availability reason for a nil form.",
+-- fffddfca
+[2659] = "Client-policy, capability, call or observation availability reason for a nil record.",
+-- 7a0f627b
+[2660] = "Client-policy, native-call or required membership availability reason for a nil record.",
+-- 0a8d99a6
+[2661] = "Closed kind: runner, resist or immune.",
+-- 6999f76c
+[2662] = "Closed scalar kind: current or maximum.",
+-- a7224c57
+[2663] = "Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order.",
+-- 508c105b
+[2664] = "Combat-policy, capability, observation or scan-budget reason for a nil count.",
+-- 14b9d8a2
+[2665] = "Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior.",
+-- ee842735
+[2666] = "Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added.",
+-- 098e89f6
+[2667] = "Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added.",
+-- f92fafbd
+[2668] = "Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation.",
+-- 4d1da429
+[2669] = "Comparison operator key, such as EQUALS or LESSTHAN.",
+-- 8d6dc0da
+[2670] = "Comparison result, or nil for an unknown operator.",
+-- 45e7a5a6
+[2671] = "Comparison text retaining named Boolean alternative markup.",
+-- beb1fd9a
+[2672] = "Complete matching class count, including zero, or nil when unavailable.",
+-- 3abb0dce
+[2673] = "Complete nonnegative observed count including zero, or nil when unavailable.",
+-- a3cbc46a
+[2674] = "Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout.",
+-- 1edda05a
+[2675] = "Condition value record containing spell, ranked and disabled fields; updated in place.",
+-- bd948209
+[2676] = "Condition value record updated when a unit is chosen.",
+-- 49082497
+[2677] = "Configured unit selector; add it with parent:AddChild(widget).",
+-- 93e87554
+[2678] = "Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order.",
+-- dcd01801
+[2679] = "Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero.",
+-- 7ee6eac7
+[2680] = "Count matching class tokens in the current fixed roster. Read group membership first; when requested, raid membership selects raid1 through raid40 without a separate player fact. Solo and party paths read player first, then party1 through party4 when grouped. A complete known roster returns a count, including zero; any required unavailable fact returns nil with a reason. Complete observations share the evaluation-pass cache; no player class persists across passes. Archived raw callbacks retain their original load-time class separately.",
+-- ddfd3a7c
+[2681] = "Count only GUID-keyed units already in the observed membership snapshot. Verify current token identity before using the published threat observer; known absent or reused tokens are excluded without adding replacements. Complete identity and threat observations share only the supplied evaluation cache, while membership is traversed fresh. Known nonenemy or optional nil threat is not counted; required unreadable, malformed or failed facts make the entire result unavailable. This does not enumerate a complete roster, apply a range filter or modify tracked records.",
+-- 02e149c6
+[2682] = "Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent.",
+-- 24b26357
+[2683] = "Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent.",
+-- 704feebd
+[2684] = "Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget).",
+-- d67fc3b8
+[2685] = "Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the callback parent with parent:AddChild(widget).",
+-- d4341110
+[2686] = "Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget).",
+-- e149229e
+[2687] = "Create a native image control using the condition widget lifecycle. SetImage and SetImageSize choose the texture; SetText optionally adds a caption. OnClick, OnEnter and OnLeave use the shared callback contract. Add the control to the callback parent with parent:AddChild(widget).",
+-- b943d164
+[2688] = "Create a native numeric condition input with a slider and typed numeric field. Configure SetSliderValues, SetValue, SetIsPercent and SetCallback; OnValueChanged reports committed values. Add it with parent:AddChild(widget).",
+-- a67c621c
+[2689] = "Create a native position pad using the shared directional controls. OnOffsetChanged reports horizontal and vertical direction, whether Center was pressed, and the increment (one, or ten with Shift). SetDisabled controls interaction; add the pad to the callback parent with parent:AddChild(widget).",
+-- 25defe9e
+[2690] = "Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget).",
+-- edff3bd0
+[2691] = "Create a shallow filtered copy despite the historical deepcopy name. Nested values retain their original identities and the source metatable is not copied. By default exclude keys listed among except values; invert true includes only listed keys. Nil input returns nil.",
+-- ccc11c66
+[2692] = "Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent.",
+-- 4736bce4
+[2693] = "Create a transient named condition summary. Use {name} for scalar values and {{positive|negative}} for predicate alternatives; prefix a primary alternative with !. Escape literal double braces as {{{{ and }}}}. Values are inserted literally without parsing their percent signs, links, colors or braces. Typed predicate values participate in primary selection. Templates, values and rendered text are bounded; malformed input renders a localized unavailable summary. This changes presentation only and runs no condition observations.",
+-- 7735b638
+[2694] = "Create a typed comparison predicate for a named condition phrase. Positive wording uses the original captured operator map and negative wording uses the current negated operator map. A primary predicate takes precedence over qualifiers; only the first eligible predicate negates. Unknown operators use the existing operator placeholder. This formats wording without comparing values or evaluating a condition.",
+-- ddea308b
+[2695] = "Create an iterator over a sorted snapshot of table keys. Default ordering compares keys; a custom order callback receives the original table and two keys. Values are read from the original table when each key is yielded. The legacy iterator ends when the next captured key is nil or false.",
+-- 629b2567
+[2696] = "Create native wrapping text that measures its height from its width and font. SetText, SetFont or SetFontObject configure its contents. Add it to the callback parent with parent:AddChild(widget) so layout can track its measured height.",
+-- c58c9a9a
+[2697] = "Create native wrapping text with optional leading image and pointer callbacks. SetImage and SetImageSize configure the image; OnEnter, OnLeave and OnClick use the condition callback contract. Add it to the callback parent with parent:AddChild(widget); callbacks expire when its lease is released.",
+-- fa988d31
+[2698] = "Current evaluation time in seconds from GetTime(), normally evalStart.",
+-- c7fd7453
+[2699] = "Current positive visibility distance in yards; nil when unavailable.",
+-- 574eed72
+[2700] = "Current unit token whose distance from the player should be observed.",
+-- 83a1023e
+[2701] = "Damage/heals arrays of time/value rows; only selected streams are consumed.",
+-- 38e0b44b
+[2702] = "Decimal places, default zero; negative values round to tens or larger powers of ten.",
+-- c1094708
+[2703] = "Dense array of keys sorted by associated value.",
+-- 7de55bf4
+[2704] = "Dense array of nonempty text fields.",
+-- ba17b32f
+[2705] = "Destination array modified in place.",
+-- 9d65688a
+[2706] = "Display lookup table.",
+-- 763bf095
+[2707] = "Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results.",
+-- c95e98a7
+[2708] = "Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate.",
+-- 52a17c6c
+[2709] = "Evaluation cache, or nil to bypass caching.",
+-- 79697e3a
+[2710] = "Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot.",
+-- bd88f3f9
+[2711] = "Evaluation-pass cache, or nil for fresh observations.",
+-- d022fab6
+[2712] = "Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation.",
+-- 0900784b
+[2713] = "Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live.",
+-- 383aa43c
+[2714] = "Evaluation-pass native observation cache; nil queries afresh.",
+-- bf9ecd5c
+[2715] = "Evaluation-pass presence cache only; name, level and provider history remain fresh.",
+-- 2dbf0453
+[2716] = "Exact helper-owned player, party1..party4 or raid1..raid40 token.",
+-- 27bda267
+[2717] = "Exact integral native rune slot from 1 through 6.",
+-- 4fc2d3d1
+[2718] = "Exact nonempty unit token to observe.",
+-- c590f11f
+[2719] = "Exact nonempty unit token, passed unchanged.",
+-- fd8065c0
+[2720] = "Exact readable recipient name recorded for this cast.",
+-- b05cf3b2
+[2721] = "Exact selected unit token; only the literal player token may select the TBC combo transport.",
+-- 19306e82
+[2722] = "Exact selected unit token; player class alone may use the successful longterm cache.",
+-- af7eabaa
+[2723] = "Exact selected unit token; the attacker remains player.",
+-- c08ce58e
+[2724] = "Exact unit token checked for existence and passed to the selected metadata API.",
+-- eb750dcd
+[2725] = "Exact unit token passed unchanged to UnitExists and, when required, UnitClass.",
+-- 3641c328
+[2726] = "Exact unit token used for existence and as the recipient of player hostility and threat queries.",
+-- 616ee642
+[2727] = "Exact unit token whose resource should be observed; this does not redirect player or vehicle units.",
+-- f89b30c5
+[2728] = "Exact unit token whose selected flag should be observed.",
+-- bb716e79
+[2729] = "Exact unit token whose selected resource quantity is requested.",
+-- d07d5f8c
+[2730] = "Exactly current for UnitPower or maximum for UnitPowerMax.",
+-- 3234a7b8
+[2731] = "Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added.",
+-- ce5b4817
+[2732] = "Exactly current for the player/target combo query or maximum for the player capacity query.",
+-- 01112dbd
+[2733] = "Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).",
+-- 572b3dd2
+[2734] = "Exactly type or school; selects the required subject field without requiring the other.",
+-- 618e2637
+[2735] = "Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD.",
+-- 93af5992
+[2736] = "Explicit finite clock snapshot; signed and fractional values remain valid.",
+-- b6d72a06
+[2737] = "Explicit finite weighting window; no profile fallback or clamp.",
+-- 8775b9a4
+[2738] = "Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable.",
+-- 593273d6
+[2739] = "Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable.",
+-- 18dcc116
+[2740] = "Explicit readable finite nonnegative integer power selector, including zero.",
+-- 4cb2bf6f
+[2741] = "Explicit readable finite nonnegative integer power selector.",
+-- cdbf6c56
+[2742] = "Finite ETA including zero, false for known absence/no estimate, or nil when unavailable.",
+-- a4382b09
+[2743] = "Finite final stream age, or nil when unavailable.",
+-- 84e16e8d
+[2744] = "Finite minimum native threat status, preserving signed and fractional thresholds.",
+-- 7e3a2158
+[2745] = "Finite native creature ID, false for known unit absence, or nil when required observations are unavailable.",
+-- 3dd70e07
+[2746] = "Finite native resource quantity, retaining its sign and fractional part; nil when unavailable.",
+-- 3931aa80
+[2747] = "Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations.",
+-- 9cb9f6d2
+[2748] = "Finite nonnegative native health scalar, or nil when unavailable.",
+-- aa23a412
+[2749] = "Finite quantity in whole units with its fractional part; nil when unavailable.",
+-- 29e4a6a2
+[2750] = "Finite signed combined rate, or nil for unavailable calculation.",
+-- 94c010ef
+[2751] = "First exact unit token, checked for existence before comparison.",
+-- 46ec876e
+[2752] = "First table to compare.",
+-- 13e6df72
+[2753] = "Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs.",
+-- b0edcb9b
+[2754] = "Fresh finite native clock value, or nil when unavailable.",
+-- b3a296d8
+[2755] = "Fresh readable class filename, or nil when unavailable.",
+-- 16428e88
+[2756] = "Fresh readable finite clock, or nil when unavailable.",
+-- 2078f2c6
+[2757] = "Fresh readable record with active, then name or nameReason, remainingSeconds, durationSeconds, interruptible and spellID. Remaining time and duration are in seconds; remaining time is clamped to zero. An unavailable optional field has its own reason; it does not invalidate an active record.",
+-- 47a58974
+[2758] = "Fresh readable record with exists and, when present, a positive integer level.",
+-- a25abeed
+[2759] = "Fresh readable record with exists and, when present, current health. Maximum health is included only when requested.",
+-- 21290700
+[2760] = "Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed.",
+-- 681f8ad6
+[2761] = "Fresh readable record with finite nonnegative speed, or nil when unavailable.",
+-- abf7477d
+[2762] = "Function or global function name to call.",
+-- 9d253f49
+[2763] = "History record with newest-first damage and heals arrays of time/value entries. Falsy history returns only zero without reading the clock.",
+-- 8deb9947
+[2764] = "Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created.",
+-- b1c195d7
+[2765] = "Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index.",
+-- db2baa62
+[2766] = "Integral RM statistic selector 1..5, or 6 for effective armor.",
+-- c406e603
+[2767] = "Iterator yielding a captured key and its current table value, or no values when exhausted.",
+-- ce63ac6d
+[2768] = "Key to look up.",
+-- 3638b5da
+[2769] = "Known active count from zero through the RM scan budget, or nil when unavailable.",
+-- 101d17c0
+[2770] = "Known nonempty role string, false for known absent unit, or nil when unavailable.",
+-- 5194c38b
+[2771] = "Known nonempty role string, or nil when unavailable.",
+-- 74c5fd96
+[2772] = "Known unit presence or absence; nil when the required observation is unavailable.",
+-- 337a2aa3
+[2773] = "Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy.",
+-- 289c0861
+[2774] = "Left operand; use numbers for ordering and divisibility.",
+-- c6b39836
+[2775] = "Literal prefix, including an empty prefix.",
+-- 8bc05b19
+[2776] = "Literal suffix, including an empty suffix.",
+-- 696821ba
+[2777] = "Live selected talent-group argument, forwarded unchanged as one argument after readability checking.",
+-- 55c2262c
+[2778] = "Localized complete sentence with named slots and optional explicit predicate alternatives.",
+-- ebab9399
+[2779] = "Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text.",
+-- d27c5ef2
+[2780] = "Lookup key.",
+-- d746509f
+[2781] = "Lua pattern character-class separator, default %s for whitespace.",
+-- 3aeb0664
+[2782] = "Mark the positive wording as the primary named alternative.",
+-- 44dec6d3
+[2783] = "Matching key, including a false key, or nil when no match exists.",
+-- 75ef3e00
+[2784] = "Missing-value display text; omitted uses the localized value placeholder.",
+-- 15f81670
+[2785] = "Native button with label, disabled state and lease-protected callbacks.",
+-- 8eb10f5d
+[2786] = "Native directional pad with center reset and lease-protected callbacks.",
+-- bb0ac63a
+[2787] = "Native image control with label, texture, disabled state and callbacks.",
+-- 43cf01e1
+[2788] = "Native interactive text and image control with measured height and disabled state.",
+-- 990a6544
+[2789] = "Native one-based integral active-row index within the 256-row RM scan budget.",
+-- 7e3aed01
+[2790] = "Native wrapping text control with font, color and alignment methods.",
+-- d76c2067
+[2791] = "New shallow filtered table, or nil for nil input.",
+-- 50f7bd28
+[2792] = "New table with stringified keys and unchanged values.",
+-- f1052f11
+[2793] = "Newest-first health snapshots containing time, value and max. Falsy input returns only zero without reading the clock.",
+-- 7276d3c4
+[2794] = "No return values. The destination array is modified in place.",
+-- 69c24773
+[2795] = "No return values. The supplied table is modified in place.",
+-- da87cc23
+[2796] = "Nonempty class filename token to count; no class-token whitelist is applied.",
+-- 3694f9ed
+[2797] = "Nonempty historical school key for resist/immune; unused for runner.",
+-- 7ee44b6f
+[2798] = "Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable.",
+-- 93ec5fb4
+[2799] = "Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable.",
+-- 7663ebe1
+[2800] = "Number of entries visited.",
+-- 7f36a397
+[2801] = "Number or string to inspect; other types do not match.",
+-- 4e6ddf17
+[2802] = "Numeric widget supporting slider bounds, percent display and pending-edit validation.",
+-- c8144d6f
+[2803] = "Observation kind: cast or channel. These use different native interruptibility tuple positions.",
+-- 02905e55
+[2804] = "Observation, history, work-limit or arithmetic availability reason.",
+-- 966b23c3
+[2805] = "Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used.",
+-- 9d79dc0d
+[2806] = "Observe a point resource that the client reports in fragments (Mists of Pandaria Burning Embers). Current uses exactly UnitPower(unit,powerType,true) and maximum UnitPowerMax(unit,powerType,true); the result is divided by Blizzard MAX_POWER_PER_EMBER (10), so 35 fragments are 3.5. Probe policy only. Missing, failed, restricted or malformed data remains unavailable; it never falls back to the whole-unit query. No cache is added.",
+-- eb0c20b2
+[2807] = "Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels.",
+-- bc5313d0
+[2808] = "Observe a selected unit role on probe- and restricted-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact.",
+-- 3668cf1e
+[2809] = "Observe a unit casting or channeling on probe- and restricted-policy clients. A known absent unit or a readable inactive result returns active=false. Active records contain name, or nameReason when the name is secret (the unit is still casting), and independently available remainingSeconds, durationSeconds, interruptible and spellID fields, with remainingReason, durationReason, interruptibleReason or spellReason when an optional field is unavailable. Missing, failed or restricted presence observations return nil with a reason.",
+-- 740dd187
+[2810] = "Observe creature identity from native UnitCreatureType return two on probe- and restricted-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added.",
+-- 075b71e7
+[2811] = "Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe- and restricted-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.",
+-- 87176204
+[2812] = "Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state.",
+-- 2280ad22
+[2813] = "Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity.",
+-- 9b79981c
+[2814] = "Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum.",
+-- 278a17a4
+[2815] = "Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity.",
+-- 24ad932a
+[2816] = "Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added.",
+-- 641cce1a
+[2817] = "Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states.",
+-- abc3ec81
+[2818] = "Observe one exact native rune slot using GetRuneType with its single index argument. Require a readable finite positive integral type; known future numeric types remain distinct from the selected type, and Death is an exact type rather than a wildcard. Missing, failed, restricted or malformed observations remain unavailable. No class, unit, count or inferred base-rune query is added.",
+-- 87dc4eea
+[2819] = "Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added.",
+-- 46d51f29
+[2820] = "Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added.",
+-- 5671d2c8
+[2821] = "Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added.",
+-- 545656e0
+[2822] = "Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value.",
+-- 254b0aeb
+[2823] = "Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added.",
+-- 1de1b681
+[2824] = "Observe the effective statistic from native return two only. On probe- and restricted-policy clients, query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit.",
+-- 2cf23a04
+[2825] = "Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache.",
+-- 95b7963d
+[2826] = "Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe- and restricted-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact.",
+-- 79e9c144
+[2827] = "Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure.",
+-- 9570ca02
+[2828] = "Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason.",
+-- 6b0f7980
+[2829] = "Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added.",
+-- a754c7d3
+[2830] = "Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership.",
+-- d4d5ab66
+[2831] = "Observed class filename string, false for a known absent unit, or nil when unavailable.",
+-- 6b236c0f
+[2832] = "Observed membership, or nil when unavailable.",
+-- 7c413887
+[2833] = "On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport.",
+-- 4b90146b
+[2834] = "On probe- and restricted-policy clients, observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added.",
+-- 7980af82
+[2835] = "One of class, creature or classification; other metadata kinds are unsupported.",
+-- f4dbfa56
+[2836] = "One of combat, enemy or pvp; other flag kinds are not supported.",
+-- 6a9d3fdc
+[2837] = "One of stealthed, control or outdoors; no other predicate is invoked.",
+-- e7332ebe
+[2838] = "One rounded numeric result from the original formula.",
+-- ffb1aba4
+[2839] = "Optional collection of key values selecting entries; its own keys are ignored.",
+-- a4bd9302
+[2840] = "Optional ordering callback called as order(t, leftKey, rightKey).",
+-- 3a0cafbd
+[2841] = "Optional positive class ID; nil queries the current player class under protection.",
+-- d8e2dd81
+[2842] = "Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query.",
+-- 8311cae8
+[2843] = "Original non-nil lookup result, or a colored placeholder string.",
+-- 32680ed5
+[2844] = "Original non-nil value, or a colored placeholder string.",
+-- 80842131
+[2845] = "Original rounded-age bucket count, omitted when the result is the lone zero.",
+-- 169b03f3
+[2846] = "Packaged helper from Conditions/spatial.lua.",
+-- 18a2dc4d
+[2847] = "Packaged helper from utils.lua.",
+-- dd1476f6
+[2848] = "Partial current/maximum record, empty when provider absent, or nil when unavailable.",
+-- 52076b9c
+[2849] = "Partial record containing ready or readyReason, start or startReason, and duration or durationReason; nil only when the query itself is unavailable.",
+-- 7001225d
+[2850] = "Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable.",
+-- f4bb093a
+[2851] = "Policy or availability reason for a nil movement observation.",
+-- 7f7f12b8
+[2852] = "Policy, capability or clock observation availability reason for a nil time.",
+-- 43794680
+[2853] = "Policy, capability or required-observation availability reason.",
+-- d35012ad
+[2854] = "Policy, query, capability or required row/subject availability reason for a nil record.",
+-- 59cf373b
+[2855] = "Policy, query-validation or availability reason for a nil metadata observation.",
+-- 5f9416e7
+[2856] = "Policy, query-validation or availability reason for a nil pet observation.",
+-- 046d5773
+[2857] = "Policy, query-validation or availability reason for a nil player flag.",
+-- a9338066
+[2858] = "Policy, query-validation or availability reason for a nil quantity.",
+-- bde90d0c
+[2859] = "Policy, query-validation or availability reason for a nil resource observation.",
+-- cd1d6bc4
+[2860] = "Policy, query-validation or availability reason for a nil threat observation.",
+-- b963fb2b
+[2861] = "Policy, query-validation or availability reason for a nil unit flag.",
+-- de3eca9c
+[2862] = "Policy, query-validation or availability reason for nil attackability.",
+-- e1be06fc
+[2863] = "Policy, query-validation or identity/selector availability reason for a nil selector.",
+-- a82bb017
+[2864] = "Policy, query-validation or required observation availability reason for a nil quantity.",
+-- 3422d50e
+[2865] = "Policy, query-validation or required observation availability reason for a nil record.",
+-- 6d8971dd
+[2866] = "Policy, query-validation or required-observation availability reason for a nil ID.",
+-- abb38505
+[2867] = "Policy, query-validation or required-observation availability reason for a nil match.",
+-- 4be03f57
+[2868] = "Policy, slot-validation or required observation availability reason for a nil type.",
+-- 07a2f2a4
+[2869] = "Policy, slot-validation, capability or native-call availability reason for a nil record.",
+-- 57d4e2a6
+[2870] = "Policy, snapshot, identity or threat observation availability reason.",
+-- 88172c69
+[2871] = "Policy, token-validation or availability reason for a nil identity result.",
+-- 41f7dc66
+[2872] = "Policy, validation or availability reason for a nil health observation.",
+-- cc67968e
+[2873] = "Policy, validation or availability reason for a nil snapshot.",
+-- 84bacc88
+[2874] = "Policy, validation or observation availability reason.",
+-- 702b5d1d
+[2875] = "Policy, validation or required observation availability reason.",
+-- e3a0a3ce
+[2876] = "Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references.",
+-- c7e5f035
+[2877] = "Positive integer level, false for a known absent unit, or nil when unavailable.",
+-- 2ce665d6
+[2878] = "Positive integer spell ID, not a spell-book slot.",
+-- 37be242f
+[2879] = "Positive item ID or native-recognized item name/link to classify.",
+-- eac23024
+[2880] = "Predicate that validates the proposed spell value.",
+-- b7acadb2
+[2881] = "Present GUID, false for known absence, or nil when unavailable.",
+-- 5825055c
+[2882] = "Provider, validation or observation availability reason.",
+-- e78c7309
+[2883] = "Query, policy or observation availability reason.",
+-- b79b336b
+[2884] = "RM comparison operator identifier; missing labels use the operator placeholder.",
+-- 505c9dde
+[2885] = "RM operator identifier.",
+-- a3bcccb3
+[2886] = "Range record with applicable and, when applicable, inRange; nil when unavailable.",
+-- a18d0c99
+[2887] = "Read a fresh protected UnitClass player observation for rotation ownership. Consume only the readable nonempty class filename from return two. No existence, level, vehicle, family or combat-policy read is added, and no result persists across calls. Core ownership still validates the class token and character key separately; overridden context providers retain their complete original path.",
+-- 97b3a051
+[2888] = "Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied.",
+-- 3b2652a8
+[2889] = "Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe- and restricted-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added.",
+-- cd858e26
+[2890] = "Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason.",
+-- 3ba4fbdf
+[2891] = "Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification.",
+-- 3db7feb7
+[2892] = "Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read.",
+-- 4ae0aa42
+[2893] = "Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID, plus equipLoc, the non-localized INVTYPE_* equip location token, when it is readable and nonempty; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason.",
+-- 5286a3fe
+[2894] = "Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used.",
+-- 5a423c22
+[2895] = "Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily.",
+-- 9f37d74c
+[2896] = "Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates.",
+-- 0ab0e9af
+[2897] = "Read optional MobInfo2 historical observations on probe- and restricted-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records.",
+-- a27fc0e3
+[2898] = "Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used.",
+-- 0a7395cc
+[2899] = "Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason.",
+-- 4a264ad3
+[2900] = "Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason.",
+-- 1f3c0a57
+[2901] = "Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason.",
+-- d3d07abb
+[2902] = "Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason.",
+-- f4bc8da4
+[2903] = "Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable.",
+-- 597a72b9
+[2904] = "Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell.",
+-- 89759fd9
+[2905] = "Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason.",
+-- 41e0213a
+[2906] = "Readability authority for consumed values.",
+-- 7f7e5283
+[2907] = "Readable canonical item classification record (itemID, classID, subClassID and optional equipLoc), or nil when unavailable.",
+-- 708f11a6
+[2908] = "Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata.",
+-- b7b27422
+[2909] = "Readable charge record, or nil when unavailable.",
+-- 5274b7b7
+[2910] = "Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable.",
+-- 041c7f05
+[2911] = "Readable cooldown record, or nil when unavailable.",
+-- c171ab16
+[2912] = "Readable current state, or nil when unavailable.",
+-- ea709ff8
+[2913] = "Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable.",
+-- 5fe2cef3
+[2914] = "Readable finite positive integral rune type, or nil when unavailable.",
+-- 243ee644
+[2915] = "Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable.",
+-- 7c9763dd
+[2916] = "Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries.",
+-- 2ce03ebb
+[2917] = "Readable nonempty unit token or native-recognized name, passed unchanged.",
+-- 30a14f21
+[2918] = "Readable nonempty unit token to match, unchanged in the native observation.",
+-- 4421ce67
+[2919] = "Readable nonempty unit token, passed unchanged as the single native argument.",
+-- 831ff884
+[2920] = "Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable.",
+-- e5d5a0bd
+[2921] = "Readable selected flag or nil when required data is unavailable.",
+-- ae99174e
+[2922] = "Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable.",
+-- 15d71981
+[2923] = "Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable.",
+-- c72ce8bc
+[2924] = "Record with exists=false, or exists=true and finite value; nil when unavailable.",
+-- bbdbf34c
+[2925] = "Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable.",
+-- d2443dc7
+[2926] = "Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable.",
+-- b2c4007b
+[2927] = "Reference input kind, such as Spec_EditBox, used for spell suggestions.",
+-- 27542d97
+[2928] = "Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing.",
+-- e6ab096c
+[2929] = "Remove leading and trailing Lua-pattern whitespace from a string.",
+-- a3fc9f6e
+[2930] = "Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh.",
+-- 1be3efe7
+[2931] = "Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts.",
+-- bf87a408
+[2932] = "Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here.",
+-- b9173e02
+[2933] = "Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity.",
+-- 718644e5
+[2934] = "Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed.",
+-- 1d0d55d1
+[2935] = "Resolved spell ID, or nil when unavailable.",
+-- 6ffafa71
+[2936] = "Resolver mapping a typed spell name to its ID.",
+-- 09cbb92e
+[2937] = "Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback.",
+-- d42a9ff5
+[2938] = "Return the first key whose value equals the supplied value during pairs traversal. Nil or false input tables and absent values return nil. Multiple matching keys have no guaranteed selection order.",
+-- 3f5f3e62
+[2939] = "Right operand; DIVISIBLE requires a nonzero divisor.",
+-- 6734885b
+[2940] = "Rotation Master addon instance (implicit with colon calls).",
+-- 46daa133
+[2941] = "Rotation Master platform adapter (implicit with colon calls).",
+-- f0f9c415
+[2942] = "Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly.",
+-- 3f1284ef
+[2943] = "Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added.",
+-- 885bcca4
+[2944] = "Run the historical health-snapshot trend formula using the live profile history window, clock and legacy rounding service. Preserve its maximum-health transitions, early stop at full or zero health, weighting, errors and return counts. An empty array, or snapshots that record no weighted change, return only zero rather than a 0/0 result; this is the legacy algorithm rather than a validated forecast.",
+-- 472af904
+[2945] = "Second exact unit token, passed unchanged to UnitIsUnit.",
+-- 89bc8587
+[2946] = "Second table to compare.",
+-- 181d7eb2
+[2947] = "Selected nonempty unit token, unchanged in native calls.",
+-- ad96e1f2
+[2948] = "Selected nonempty unit token, unchanged in native/provider calls.",
+-- 0fe63d0e
+[2949] = "Selected nonempty unit token.",
+-- 2228fc20
+[2950] = "Selected nonempty unit token; this call alone does not establish presence.",
+-- f67a8632
+[2951] = "Selected nonempty unit token; unchanged native argument.",
+-- 9aeb1b04
+[2952] = "Selected unit token forwarded as the only provider argument.",
+-- 91d2e43e
+[2953] = "Selected unit token, unchanged in observations.",
+-- 169d575d
+[2954] = "Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks.",
+-- c4649a76
+[2955] = "Shared evaluation cache; nil observes directly without a per-pass cache.",
+-- 32b53cb5
+[2956] = "Source array whose ipairs prefix is inserted without copying nested values.",
+-- f292d1c8
+[2957] = "Specialization scope used to resolve spell suggestions.",
+-- 78f0e3c1
+[2958] = "Spell ID or client-recognized spell name whose charges should be read.",
+-- 3b34f727
+[2959] = "Spell ID or client-recognized spell name whose cooldown should be checked.",
+-- 2d3ce2ab
+[2960] = "Spell ID or client-recognized spell name whose cooldown should be read.",
+-- 55538bf5
+[2961] = "Spell ID whose range should be checked.",
+-- b7614a02
+[2962] = "Spell field group containing an action icon, reference input and optional rank control.",
+-- 31f8edf3
+[2963] = "Spell-book scope: spell, pet or any.",
+-- 05372e4c
+[2964] = "Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted.",
+-- db7ca748
+[2965] = "Stored spell ID to resolve.",
+-- 9379f3fe
+[2966] = "Successful observation record with pvpType string or nil; nil record means unavailable.",
+-- e41b12b3
+[2967] = "Table to copy shallowly, or nil.",
+-- 07e8d4d0
+[2968] = "Table to count, or nil for zero.",
+-- 58e2d717
+[2969] = "Table to inspect.",
+-- 90809a03
+[2970] = "Table to modify, or nil to do nothing.",
+-- ff2b1485
+[2971] = "Table to search; nil or false returns nil.",
+-- 259ede57
+[2972] = "Table to traverse; keys must be mutually comparable when no custom ordering is supplied.",
+-- f4e4becf
+[2973] = "Table whose keys should be converted to strings.",
+-- a59c785e
+[2974] = "Table whose values must be mutually comparable.",
+-- 2074ad97
+[2975] = "Target line width, default 72 characters.",
+-- f3db5e09
+[2976] = "Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved.",
+-- 1f02a40c
+[2977] = "Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved.",
+-- e2c64484
+[2978] = "Text or number shown after the comparison wording.",
+-- 026b376c
+[2979] = "Text or number shown before the comparison wording.",
+-- b84e9fc7
+[2980] = "Text to inspect.",
+-- 95d67c5a
+[2981] = "Text to split.",
+-- a672408d
+[2982] = "Text to trim.",
+-- 332756da
+[2983] = "Text to wrap.",
+-- 33010633
+[2984] = "Text widget supporting label, text, pending-edit and callback methods.",
+-- f6be6e89
+[2985] = "Text with line breaks inserted at word boundaries.",
+-- 6f85c46a
+[2986] = "The selected value, including false or nil.",
+-- 6af26a9c
+[2987] = "Transient trusted phrase recognized by condition summary rendering; do not persist it as condition data.",
+-- 2bae0b3f
+[2988] = "Transient typed predicate used as a named phrase value; do not persist it as condition data.",
+-- 4cf99d8d
+[2989] = "Trimmed text.",
+-- e0249036
+[2990] = "True also observes maximum health; false or nil reads current health only.",
+-- 9ba98a90
+[2991] = "True also observes the selected resource maximum; false or nil reads current quantity only.",
+-- 19d0b8a3
+[2992] = "True also requires the present unit class filename; false reads existence only.",
+-- ac4e613c
+[2993] = "True checks raid membership only; false or nil checks party or raid.",
+-- 9cf4986d
+[2994] = "True checks raid membership only; false or nil checks party then raid.",
+-- 4bf4841d
+[2995] = "True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable.",
+-- 72d71c8f
+[2996] = "True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable.",
+-- 3286d546
+[2997] = "True includes only listed entries; false or nil excludes listed entries.",
+-- b3108208
+[2998] = "True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists.",
+-- 00d420e2
+[2999] = "True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster.",
+-- 9865f6c6
+[3000] = "True removes listed entries; false or nil preserves only listed entries.",
+-- 9e3983eb
+[3001] = "True requests raid membership; false or nil requests any group membership.",
+-- d660860e
+[3002] = "True requests the formatted pet name; false or omitted reads presence only.",
+-- d60dacff
+[3003] = "True selects percentage target and optional fresh provider facts.",
+-- 755a2020
+[3004] = "True skips all access to the damage stream.",
+-- 0ff2c956
+[3005] = "True skips all access to the healing stream.",
+-- e23b6035
+[3006] = "True to require this exact rank; false or nil follows the available rank.",
+-- bd4e75af
+[3007] = "True when array[value] is non-nil.",
+-- af070544
+[3008] = "True when every visited entry compares equal in both directions.",
+-- 38e1fab8
+[3009] = "True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result.",
+-- 11ccb8e3
+[3010] = "True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable.",
+-- 1b4d0696
+[3011] = "Truthy skips the damage stream without reading its array.",
+-- 09c7ad07
+[3012] = "Truthy skips the heals stream without reading its array.",
+-- 1a26aa88
+[3013] = "Unit key-to-display-name map shown in the selector.",
+-- 72d92ef1
+[3014] = "Unit token to compare with the literal player token.",
+-- a3b5e12b
+[3015] = "Unit token whose current cast or channel should be observed.",
+-- 8978c94b
+[3016] = "Unit token whose current health should be observed.",
+-- 16f17c11
+[3017] = "Unit token whose raw level should be observed.",
+-- bb787bde
+[3018] = "Unit token whose raw level should be resolved.",
+-- 4b2caef5
+[3019] = "Unit token, such as target; nil uses target.",
+-- 8b73a7bd
+[3020] = "Validation or availability reason for a nil result.",
+-- 193551e6
+[3021] = "Validation, policy or availability reason for a nil result.",
+-- 2b8bf1ec
+[3022] = "Validation, policy or required-fact availability reason for a nil count.",
+-- f4896f62
+[3023] = "Value compared with each table value using Lua equality.",
+-- 682b55a9
+[3024] = "Value passed to the original arithmetic formula.",
+-- 53d931f9
+[3025] = "Value record field to edit; defaults to unit.",
+-- 48c786d6
+[3026] = "Value returned for every other unit.",
+-- 35f7fff6
+[3027] = "Value returned when unit is player.",
+-- 59731a4c
+[3028] = "Value to display; false is preserved.",
+-- d488fb09
+[3029] = "Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively.",
+-- b4707a12
+[3030] = "Weighted health-snapshot change from the original total/count formula; zero for falsy input or when no weighted change was recorded.",
+-- c3ba802c
+[3031] = "Weighting window in seconds; nil or false uses the current profile damage_history setting.",
+-- c6cfccd1
+[3032] = "Whether the original floor-equality or exact numeric-spelling predicate matches.",
+-- 8c0b7ad7
+[3033] = "Whether the text begins with the exact prefix.",
+-- 37054b01
+[3034] = "Whether the text ends with the exact suffix.",
+-- 2ae8305f
+[3035] = "With restricted-value only: isActive, true while a cooldown (its own or the global one) is running.",
+-- 08c56f26
+[3036] = "With restricted-value only: isEnabled, false while the cooldown is on hold.",
+-- 11f0d805
+[3037] = "With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil.",
+-- 303e2b6b
+[3038] = "Work-limit, data or arithmetic availability reason for nil rate/age.",
+-- 01efc08d
+[3039] = "Wrap text at whitespace boundaries near a target column count. Long words are retained intact.",
+-- 07e1e312
+[3040] = "mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero.",
+-- c383f3b4
+[3041] = "noheals selects damage only; nodmg selects healing only; other readable values select both.",
+-- 02586670
+[4043] = "Translation (%s): %s",
+}
+for id, text in pairs(E) do
+    local translation = T[id]
+    if translation then L[text] = translation end
+end

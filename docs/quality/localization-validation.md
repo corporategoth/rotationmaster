@@ -1,9 +1,17 @@
 # Localization validation
 
-The default `python3 tools/catalog_check.py` retains the existing literal English-reference check. Optional `--locales` checks the locale files listed by locales.xml and reports literal coverage, explicit English reuse, missing/fallback entries and computed assignments that need review. It does not infer a universal client locale list or execute locale source. Actual AceLocale fallback behavior is checked separately in both Lua runtimes.
+`python3 tools/catalog_check.py` checks that every literal `L["..."]` the addon reads is a key of one of the English catalogs
+(`Locales/enUS.lua` and each text bundle's `enUS.lua`, which are generated in the stable-ID layout by `tools/locales.py`) and
+that no key is defined in two catalogs.
 
-`--locale-report PATH` writes the optional report. `--require-complete` fails incomplete literal coverage, unattested English reuse and an installation with no non-English target locales. Intentional unchanged English terms can be attested using `--allow-english PATH`, a JSON locale-to-key-list policy. A stable identifier accidentally displayed by `L[key]=true` is not an English-label translation. Static completeness does not certify linguistic quality, runtime-computed keys, fonts or native layout.
+`python3 tools/locales.py check` validates the locale files themselves: IDs unique across catalogs, never retired, each
+hash matching its text, every translation's placeholders (`%s`/`%d` order, `{{name}}`, color codes, line breaks) matching
+the English, the generated headers and translator tables matching `tools/locale_translators.json`, the context/notes
+comments matching `tools/locale_registry.json`, and the registration order (translations first, English last).
+`--complete` also fails on untranslated or stale IDs; `--require-notes` and `--require-context` fail for strings that still
+lack their notes or context. `python3 tools/translation_status.py` reports coverage per language. Actual AceLocale
+fallback behavior is checked separately in both Lua runtimes (`tests/locale_fallback.lua`, `tests/client_locale.lua`,
+`tests/text_bundles.lua`).
 
-Only whole literal first arguments to string.format are inferred as printf contracts. Other contracts are supplied with `--contracts PATH`, a JSON key-to-kind-list map. Kinds are printf, summary, announcement and markup. The checks protect supported Lua 5.1 directives, named placeholders, primary-negation predicate position, escaped syntax and WoW color/texture/link payloads. Human hyperlink captions and predicate wording can be translated. Code examples and arbitrary punctuation are not automatically treated as formatting contracts.
-
-Only English is currently installed. Translation and native CJK/font/layout acceptance remain pending; passing the default English check does not establish translated coverage.
+Static completeness does not certify linguistic quality, fonts or native layout. The existing translations were produced
+by an AI and have not been reviewed by a native speaker; each file's header says so.
