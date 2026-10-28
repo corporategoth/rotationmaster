@@ -8,7 +8,13 @@
 local addon_name, addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Converts hue, saturation and value (each 0 to 1) to red, green and blue (each 0 to 1).
+-- Converts hue, saturation and value to red, green and blue.
+-- @param h number  The hue, 0 to 1.
+-- @param s number  The saturation, 0 to 1.
+-- @param v number  The value (brightness), 0 to 1.
+-- @return number  The red channel, 0 to 1.
+-- @return number  The green channel, 0 to 1.
+-- @return number  The blue channel, 0 to 1.
 local function hsv(h, s, v)
     local sector = h * 6
     local i = math.floor(sector)
@@ -31,7 +37,13 @@ local function hsv(h, s, v)
     end
 end
 
--- Inverse of hsv: converts red, green and blue (each 0 to 1) to hue, saturation and value. Hue is 0 for a gray.
+-- Inverse of hsv: converts red, green and blue to hue, saturation and value. Hue is 0 for a gray.
+-- @param r number  The red channel, 0 to 1.
+-- @param g number  The green channel, 0 to 1.
+-- @param b number  The blue channel, 0 to 1.
+-- @return number  The hue, 0 to 1.
+-- @return number  The saturation, 0 to 1.
+-- @return number  The value (brightness), 0 to 1.
 local function rgb(r, g, b)
     local hi, lo = math.max(r, g, b), math.min(r, g, b)
     local d = hi - lo
@@ -52,9 +64,14 @@ local function rgb(r, g, b)
     return h, hi == 0 and 0 or d / hi, hi
 end
 
--- Builds a hidden picker popup centered on `parent` and returns it. The caller keeps one picker per owner and drives
--- it with picker:Open(color, change, valid, anchor); `change(r, g, b, a, final)` is called live, and `valid()` must
--- return false once the owner's drawing is gone so a late event cannot write into a stale control.
+-- Builds a hidden picker popup centered on `parent`. The caller keeps one picker per owner and drives it with
+-- picker:Open(color, change, valid, anchor).
+-- @param parent Frame  The frame the popup is first centered on.
+-- @return table  The picker { frame, Open(color, change, valid, anchor), Close(acceptChanges), Choose(h, s, v, a),
+--   FlushNumbers() }.
+--
+-- `change(r, g, b, a, final)` is called live, and `valid()` must return false once the owner's drawing is gone so a
+-- late event cannot write into a stale control.
 function addon:CreateWorkbenchColorPicker(parent)
     local picker = { frame = CreateFrame('Frame', nil, UIParent), h = 0, s = 0, v = 1, a = 1 }
     local frame = picker.frame
@@ -91,8 +108,15 @@ function addon:CreateWorkbenchColorPicker(parent)
     title:SetText(L['Color'])
     picker.numeric = {}
 
-    -- Builds the numeric entry box paired with a slider. Typing only marks the box dirty; the value is parsed and
-    -- applied when Enter or the accept button runs FlushNumbers, so a half-typed number never moves the color.
+    -- Builds the numeric entry box paired with a slider.
+    -- @param slider Slider  The slider this box mirrors; FlushNumbers writes the parsed value to it.
+    -- @param key string  The picker field the box edits: 'h' (hue) or 'a' (alpha).
+    -- @param prefix string  The short caption drawn inside the box.
+    -- @param y number  The vertical offset below the top of the picker.
+    -- @return EditBox  The new entry box.
+    --
+    -- Typing only marks the box dirty; the value is parsed and applied when Enter or the accept button runs
+    -- FlushNumbers, so a half-typed number never moves the color.
     local function rawSlider(slider, key, prefix, y)
         local c = addon:CreateWorkbenchEditBox(frame)
         c:SetPoint('TOPLEFT', 210, -y)
@@ -138,8 +162,9 @@ function addon:CreateWorkbenchColorPicker(parent)
     local cancel = addon:CreateWorkbenchIconButton(frame, 'undo', L['Cancel'])
     cancel:SetPoint('TOPRIGHT', -6, -30)
 
-    -- Applies every dirty entry box. Returns false (and reddens the box) when a value is not a number from 0 to 1,
-    -- or when the picker is no longer valid; true when there was nothing wrong, including nothing to apply.
+    -- Applies every dirty entry box.
+    -- @return boolean  False (and the box is reddened) when a value is not a number from 0 to 1, or when the picker is
+    --   no longer valid; true when there was nothing wrong, including nothing to apply.
     function picker:FlushNumbers()
         if not self.valid or not self.valid() then
             return false
@@ -176,8 +201,14 @@ function addon:CreateWorkbenchColorPicker(parent)
         return true
     end
 
-    -- Sets the color from hue, saturation, value and alpha (clamped to 0 to 1), refreshes the square, marker and entry
-    -- boxes, and reports the result as RGB through the owner's change callback.
+    -- Sets the color from hue, saturation, value and alpha, refreshes the square, marker and entry boxes, and reports
+    -- the result as RGB through the owner's change callback.
+    -- @param h number  The hue; clamped to 0 to 1.
+    -- @param s number  The saturation; clamped to 0 to 1.
+    -- @param v number  The value (brightness); clamped to 0 to 1.
+    -- @param a number  The alpha; clamped to 0 to 1.
+    --
+    -- Does nothing when the picker is no longer valid.
     function picker:Choose(h, s, v, a)
         if not self.valid or not self.valid() then
             return
@@ -262,6 +293,7 @@ function addon:CreateWorkbenchColorPicker(parent)
     end)
 
     -- Hides the picker. Only an accepted close keeps the color; the OnHide handler restores the original otherwise.
+    -- @param acceptChanges boolean|nil  True to keep the chosen color.
     function picker:Close(acceptChanges)
         self.accepted = acceptChanges == true
         frame:Hide()
@@ -293,9 +325,13 @@ function addon:CreateWorkbenchColorPicker(parent)
         picker.change = nil
     end)
 
-    -- Shows the picker centered on `anchor` (default: the screen) for `color` (a table with r, g, b and a fields).
-    -- `change` receives live updates and the restore on cancel; `valid` gates both. The previous owner's callbacks are
-    -- replaced.
+    -- Shows the picker centered on `anchor` for `color`. The previous owner's callbacks are replaced.
+    -- @param color table{r=number,g=number,b=number,a=number}  The starting color; it is also what cancel restores.
+    -- @param change function  Receives live updates (r, g, b, a) and the restore on cancel (with a final flag); gated
+    --   by `valid`.
+    -- @param valid function  Returns true while the owner's drawing is current; returns false once a late event must be
+    --   ignored.
+    -- @param anchor Frame|nil  The frame to center on; nil means the screen.
     function picker:Open(color, change, valid, anchor)
         frame:ClearAllPoints()
         frame:SetPoint("CENTER", anchor or UIParent, "CENTER", 0, 0)

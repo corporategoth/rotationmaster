@@ -8,11 +8,16 @@
 local _, addon = ...
 
 -- Fallback font object for labels and buttons; the global may be absent in a headless client, so the name is returned.
+-- @return table|string  GameFontHighlightSmall when it exists, otherwise its name.
 local function defaultFont() return GameFontHighlightSmall or 'GameFontHighlightSmall' end
 
--- Constructor for the pooled label (interactive false) or link (interactive true). A link adds a left image, click and
--- hover events, and a disabled state. Text measurement is re-entrancy guarded and notifies the parent layout only when
--- the measured height actually changed.
+-- Constructor for the pooled label (interactive false) or link (interactive true).
+-- @param interactive boolean|nil  True builds the link variant: a left image, click and hover events and a disabled
+--   state.
+-- @return RMConditionLabel  The new widget, registered with the widget registry.
+--
+-- Text measurement is re-entrancy guarded and notifies the parent layout only when the measured height actually
+-- changed. A recorded Built In helper, so its body is frozen.
 ---@class RMConditionLabel: RMConditionWidget
 ---@field label FontString
 ---@field text string
@@ -89,6 +94,9 @@ end
 
 -- Constructor for the pooled button: a workbench button whose label can size itself to its text (SetAutoWidth) and
 -- whose events only fire while the widget's lease is still the active one.
+-- @return RMConditionButton  The new widget, registered with the widget registry.
+--
+-- A recorded Built In helper, so its body is frozen.
 ---@class RMConditionButton: RMConditionWidget
 ---@field label FontString
 ---@field text string
@@ -129,13 +137,16 @@ local function buttonConstructor()
 end
 
 -- Acquires a label from the pool. The caller owns it until the container releases it.
+-- @return RMConditionLabel  The pooled label widget.
 ---@return RMConditionLabel
 function addon:CreateConditionLabel() return self:AcquireConditionWidget('RM-ConditionLabel',labelConstructor) end
 -- Acquires a button from the pool.
+-- @return RMConditionButton  The pooled button widget.
 ---@return RMConditionButton
 function addon:CreateConditionButton() return self:AcquireConditionWidget('RM-ConditionButton',buttonConstructor) end
 
 -- Acquires a link (a clickable label with an optional image) from the pool; it shares its constructor with the label.
+-- @return RMConditionLink  The pooled link widget.
 ---@class RMConditionLink: RMConditionLabel
 ---@field image Texture
 ---@field SetImage fun(self: RMConditionLink, path: any, ...: number)

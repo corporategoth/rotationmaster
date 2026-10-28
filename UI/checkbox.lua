@@ -8,7 +8,11 @@
 local _, addon = ...
 
 -- Builds one pooled check box widget the first time the pool is empty; registered with the widget registry so release,
--- reuse and leak tracking work. Callers never call this directly: they go through addon:CreateConditionCheckBox.
+-- reuse and leak tracking work.
+-- @return RMConditionCheckBox  The new widget, already registered with the widget registry.
+--
+-- Callers never call this directly: they go through addon:CreateConditionCheckBox. A recorded Built In helper, so its
+-- body is frozen.
 ---@class RMConditionCheckBox: RMConditionWidget
 ---@field button Button
 ---@field SetLabel fun(self: RMConditionCheckBox, text: string)
@@ -35,6 +39,7 @@ local function constructor()
 end
 
 -- Returns a check box acquired from the widget pool (OnAcquire has reset it to unchecked, enabled, 180x24).
+-- @return RMConditionCheckBox  The pooled check box widget.
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
     local widget=addon:AcquireConditionWidget('RM-CheckBox',constructor)

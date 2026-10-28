@@ -16,6 +16,7 @@ end
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Forgets the half-created "new condition" state on the pane.
+-- @param p table  The settings pane.
 local function clearNew(p)
     p.creatingCondition = nil
     p.newConditionKey = nil
@@ -24,7 +25,10 @@ end
 
 -- Wraps the pane's Layout, Draw, RequestLeave and Release (once per pane) so the embedded editor follows the pane's
 -- size, survives a redraw with its unsaved draft, asks before the pane is left with unapplied edits, and is dropped on
--- release. The originals are captured and called, never replaced outright.
+-- release.
+-- @param p table  The settings pane to wrap; a second call on the same pane does nothing.
+--
+-- The originals are captured and called, never replaced outright.
 function addon:InstallInlineConditionNavigation(p)
     if p.inlineNavigation then
         return
@@ -45,6 +49,7 @@ function addon:InstallInlineConditionNavigation(p)
 
     -- Captures the open editor's unsaved draft before the pane redraws, but only when the redraw is for the same
     -- condition (or the same new source), so the editor resumes where it was instead of reloading from the registry.
+    -- @return any  Whatever the pane's original Draw returns.
     function p:Draw()
         local editor = self.inlineCondition
         self.inlineResume = nil
@@ -63,9 +68,13 @@ function addon:InstallInlineConditionNavigation(p)
         return draw(self)
     end
 
-    -- Runs `callback` once it is safe to leave. With unapplied edits it asks first: Apply then proceeds only if the
-    -- pane is still the same drawing (same profile and global tables) and the apply succeeds; Discard drops the draft.
-    -- Returns false when it deferred to the confirmation.
+    -- Runs `callback` once it is safe to leave.
+    -- @param callback function  Called when the pane may be left.
+    -- @return boolean|any  False when it deferred to the confirmation; otherwise what the pane's original RequestLeave
+    --   returns.
+    --
+    -- With unapplied edits it asks first: Apply then proceeds only if the pane is still the same drawing (same profile
+    -- and global tables) and the apply succeeds; Discard drops the draft.
     function p:RequestLeave(callback)
         local editor = self.inlineCondition
 
@@ -103,8 +112,11 @@ function addon:InstallInlineConditionNavigation(p)
     end
 end
 
--- Starts a new custom condition on the pane `p` under `key` (nil lets the editor assign one), seeded with a copy of
--- `source` or the empty template. Leaving the current selection may first ask about unapplied edits.
+-- Starts a new custom condition on the pane `p`, seeded with a copy of `source` or the empty template. Leaving the
+-- current selection may first ask about unapplied edits.
+-- @param p table  The settings pane.
+-- @param key string|nil  The key for the new condition; nil lets the editor assign one.
+-- @param source table|nil  The condition source to copy; nil uses the empty template.
 function addon:OpenInlineCustomCondition(p, key, source)
     self:InstallInlineConditionNavigation(p)
 
@@ -123,11 +135,13 @@ function addon:OpenInlineCustomCondition(p, key, source)
     end)
 end
 
--- Starts a new custom condition that is a copy of the pane's selected condition (custom or Built In), with a fresh
--- key and a "Copy of" description. Does nothing when the selection has no source.
+-- Starts a new custom condition that is a copy of the pane's selected condition (custom or Built In), with a fresh key
+-- and a "Copy of" description. Does nothing when the selection has no source.
+-- @param p table  The settings pane.
 function addon:DuplicateInlineCustomCondition(p)
     self:InstallInlineConditionNavigation(p)
 
+    -- Runs once it is safe to leave: seeds the pane with the copied source under a fresh key and redraws.
     p:RequestLeave(function()
         if not p.active then
             return
@@ -153,9 +167,13 @@ function addon:DuplicateInlineCustomCondition(p)
     end)
 end
 
--- Builds the embedded editor for condition `key` with `source` on pane `p` and returns it. `readOnly` shows a Built
--- In condition that can be inspected and duplicated but not changed. The options table defines the editor's extra
--- fields (the Hidden, Switch and Announcement flags and the category), how it is saved and how it is discarded.
+-- Builds the embedded editor for condition `key` with `source` on pane `p`. The options table defines the editor's
+-- extra fields (the Hidden, Switch and Announcement flags and the category), how it is saved and how it is discarded.
+-- @param p table  The settings pane.
+-- @param key string|nil  The condition key; ignored (treated as nil) while a new condition is being created.
+-- @param source table  The condition source to edit.
+-- @param readOnly boolean|nil  True shows a Built In condition that can be inspected and duplicated but not changed.
+-- @return table  The embedded editor (also stored as p.inlineCondition).
 function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     self:InstallInlineConditionNavigation(p)
     local token = p.generation
@@ -183,6 +201,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     -- True while the pane is still showing the drawing this editor was built for; every callback checks it.
+    -- @return boolean  True when the pane drawing is current.
     local function valid()
         return p:Valid(token)
     end
@@ -203,6 +222,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     p.inlineResume = nil
 
     -- Seeds the editor model with the new condition's key and the context (flags and category) baseline.
+    -- @param model table  The editor model.
     options.initialize = function(model)
         if isNew and p.newConditionKey then
             model.key = p.newConditionKey
@@ -215,7 +235,8 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     -- Closing the editor's owner: hides the settings window when this pane is its current pane, otherwise leaves and
-    -- releases the pane. `mouse` records that a right click caused it so the shell does not reopen on that click.
+    -- releases the pane.
+    -- @param mouse boolean|nil  True when a right click caused it, so the shell does not reopen on that click.
     options.closeOwner = function(mouse)
         local shell = addon.configWindow
 
@@ -234,6 +255,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
     options.dirty = function() return p:IsSettingsDraftDirty() end
 
+    -- Discards the settings draft and redraws the pane, if the drawing is still current.
     options.discard = function()
         if valid() then
             p:DiscardSettingsDraft()
@@ -243,6 +265,8 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     -- Adds the three membership flags (Hidden, Switch, Announcement) and, for a saved editable condition, Delete.
+    -- @param form table  The editor's form.
+    -- @param d table  The editor (d.model holds the context).
     options.fields = function(form, d)
         local context = d.model.context
         local y = form.y
@@ -306,6 +330,8 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
 
     -- Adds the category row: a button that opens the category manager and a chooser to move the condition to another
     -- category.
+    -- @param form table  The editor's form.
+    -- @param d table  The editor (d.model holds the context and baseline).
     options.category = function(form, d)
         local context = d.model.context
         local savedCategory = d.model.baseline.context.category
@@ -395,6 +421,7 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     -- Marks each context field that differs from its saved baseline as unsaved.
+    -- @param d table  The editor.
     options.updateActions = function(d)
         for _, field in ipairs({ 'hidden', 'switch', 'announcement' }) do
             self:SetWorkbenchUnsaved(d.form.fields[field], d.model.context[field] ~= d.model.baseline.context[field])
@@ -404,8 +431,15 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
     end
 
     -- Applies the editor: re-checks that nothing changed elsewhere, installs the condition, applies the context flags
-    -- and category to the settings draft, and saves the draft. Returns true, or false and a reason table. If the
-    -- draft save fails after the condition was installed, the previous definition and source are put back so a
+    -- and category to the settings draft, and saves the draft.
+    -- @param identifier string  The key of the condition being saved.
+    -- @param value table  The edited condition source.
+    -- @param expected table|nil  The condition definition that was registered when editing began.
+    -- @param expectedSource table|nil  The saved source that existed when editing began.
+    -- @return boolean  True on success.
+    -- @return table|nil  On failure, a { reason = string } table naming why.
+    --
+    -- If the draft save fails after the condition was installed, the previous definition and source are put back so a
     -- half-applied save is never left behind.
     options.save = function(identifier, value, expected, expectedSource)
         if not valid() then
@@ -456,6 +490,8 @@ function addon:BuildInlineCustomCondition(p, key, source, readOnly)
         local draft = p.draft.profile
 
         -- Makes `identifier` a member of `list` exactly when `enabled`.
+        -- @param list table  The membership list in the settings draft.
+        -- @param enabled boolean|nil  True to include the condition, otherwise exclude it.
         local function membership(list, enabled)
             if self:SettingsContains(list, identifier) ~= enabled then
                 self:SettingsFlag(list, identifier, enabled)
