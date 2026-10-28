@@ -1,7 +1,12 @@
 -- Exact diagnostic additions only; restored predecessors are whole-module pinned.
-local records={
- ['Diagnostics/cpu.lua']={length=55109,hash='785d8fa6',oldLength=46911,oldHash='92d4503a',blocks={
-[====[-- BEGIN RUNTIME WORK VIEWS
+local records = {
+    ['Diagnostics/cpu.lua'] = {
+        length = 55109,
+        hash = '785d8fa6',
+        oldLength = 46911,
+        oldHash = '92d4503a',
+        blocks = {
+            [====[-- BEGIN RUNTIME WORK VIEWS
 -- Fixed pointers only. Readers are source-local literal returns, not helpers.
 local workGroups,workClosed,workCount,workCapture={},false,0,nil
 local workEqual=rawequal
@@ -127,77 +132,129 @@ local function appendWorkViews(report,run,sampleEnd)
 end
 -- END RUNTIME WORK VIEWS
 ]====],
-[====[ -- BEGIN RUNTIME WORK END TOKEN
+            [====[ -- BEGIN RUNTIME WORK END TOKEN
  workEnding(run,status)
  -- END RUNTIME WORK END TOKEN
 ]====],
-[====[   -- BEGIN RUNTIME WORK APPENDIX
+            [====[   -- BEGIN RUNTIME WORK APPENDIX
    local workState=run.runtimeWork
    local workEntered=workState and workState.current()
    appendWorkViews(report,run,finishSample)
    if workEntered and not workState.current() then workClear(run);return end
    -- END RUNTIME WORK APPENDIX
 ]====],
-[====[ -- BEGIN RUNTIME WORK CLEANUP
+            [====[ -- BEGIN RUNTIME WORK CLEANUP
  workClear(run)
  -- END RUNTIME WORK CLEANUP
 ]====],
-[====[ -- BEGIN RUNTIME WORK RETIRE
+            [====[ -- BEGIN RUNTIME WORK RETIRE
  workRetire()
  -- END RUNTIME WORK RETIRE
 ]====],
-[====[ -- BEGIN RUNTIME WORK START
+            [====[ -- BEGIN RUNTIME WORK START
  local workEntered=active==run
  workStart(run)
  if workEntered and active~=run then workClear(run);return true end
  -- END RUNTIME WORK START
 ]====],
-[====[ -- BEGIN RUNTIME WORK TIMER FAILURE
+            [====[ -- BEGIN RUNTIME WORK TIMER FAILURE
  if not ok or not timer then workClear(run) end
  -- END RUNTIME WORK TIMER FAILURE
 ]====],
- }},
- ['Data/rotation_store.lua']={length=36964,hash='64c496e7',oldLength=36718,oldHash='09dd5761',blocks={
-[====[-- BEGIN CPU RUNTIME WORK HANDOFF
+        },
+    },
+    ['Data/rotation_store.lua'] = {
+        length = 36964,
+        hash = '64c496e7',
+        oldLength = 36718,
+        oldHash = '09dd5761',
+        blocks = {
+            [====[-- BEGIN CPU RUNTIME WORK HANDOFF
 do
  local bind=addon.BindCPURuntimeWorkDiagnostic
  if type(bind)=='function' then bind(addon,'store',data.NewRotationStore,function() return plain,fields,validAddress end) end
 end
 -- END CPU RUNTIME WORK HANDOFF
 ]====],
- }},
- ['main.lua']={length=77591,hash='7780dabb',oldLength=77346,oldHash='a564d651',blocks={
-[====[-- BEGIN CPU RUNTIME WORK HANDOFF
+        },
+    },
+    ['main.lua'] = {
+        length = 77591,
+        hash = '7780dabb',
+        oldLength = 77346,
+        oldHash = 'a564d651',
+        blocks = {
+            [====[-- BEGIN CPU RUNTIME WORK HANDOFF
 do
  local bind=addon.BindCPURuntimeWorkDiagnostic
  if type(bind)=='function' then bind(addon,'main',addon.EvaluateNextActionInternal,function() return UpdateUnitInfo end) end
 end
 -- END CPU RUNTIME WORK HANDOFF
 ]====],
- }},
+        },
+    },
 }
-local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
-return function(text,path)
- if path=='main.lua'and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF',1,true)then text=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text,path)end
- if path=='Data/rotation_store.lua' and text:find("-- Preserve public-reader admission",1,true) then text=dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text,path) end
- -- Callers may already have removed the accepted publication/event changes.
- -- Admit only these exact current or normalized whole modules, never an arbitrary skip.
- local accepted={['Data/rotation_store.lua']={41494,'8a0fe0d0',36975,'1801f0e3'},['main.lua']={86781,'5c9d4420',84322,'7185fab1'}}
- local input=accepted[path]
- if input then
-  if #text==input[1] and hash(text)==input[2] then text=dofile('tests/fixtures/restore_runtime_event_context.lua')(text,path)
-  else assert(#text==input[3] and hash(text)==input[4],'unexpected current or normalized runtime work source: '..path) end
- end
- if path=='Data/rotation_store.lua' then text=dofile('tests/fixtures/restore_rotation_store_schema_maps.lua')(text) end
- if path=='Diagnostics/cpu.lua' then text=dofile('tests/fixtures/restore_analytics_disable.lua')(text,path) end
- if path=='main.lua' then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end
- if path=='main.lua' then text=dofile('tests/fixtures/restore_nameplate_lifecycle.lua')(text,path) end
- local r=assert(records[path],'unknown runtime work inverse path')
- assert(#text==r.length and hash(text)==r.hash,'unrelated runtime work module change: '..path)
- for _,block in ipairs(r.blocks)do
-  local first,last=assert(text:find(block,1,true));assert(not text:find(block,last+1,true),'duplicate runtime work addition')
-  text=text:sub(1,first-1)..text:sub(last+1)
- end
- assert(#text==r.oldLength and hash(text)==r.oldHash,'runtime work predecessor mismatch: '..path)
- return text
+
+local function hash(s)
+    local h = 0
+
+    for i = 1, #s do
+        h = (h * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', h)
+end
+
+return function(text, path)
+    if path == 'main.lua' and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF', 1, true) then
+        text = dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text, path)
+    end
+    if path == 'Data/rotation_store.lua' and text:find("-- Preserve public-reader admission", 1, true) then
+        text = dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text, path)
+    end
+
+    -- Callers may already have removed the accepted publication/event changes.
+    -- Admit only these exact current or normalized whole modules, never an arbitrary skip.
+    local accepted = {
+        ['Data/rotation_store.lua'] = { 41494, '8a0fe0d0', 36975, '1801f0e3' },
+        ['main.lua'] = { 86781, '5c9d4420', 84322, '7185fab1' },
+    }
+
+    local input = accepted[path]
+
+    if input then
+        if #text == input[1] and hash(text) == input[2] then
+            text = dofile('tests/fixtures/restore_runtime_event_context.lua')(text, path)
+        else
+            assert(
+                #text == input[3] and hash(text) == input[4],
+                'unexpected current or normalized runtime work source: ' .. path
+            )
+        end
+    end
+
+    if path == 'Data/rotation_store.lua' then
+        text = dofile('tests/fixtures/restore_rotation_store_schema_maps.lua')(text)
+    end
+    if path == 'Diagnostics/cpu.lua' then
+        text = dofile('tests/fixtures/restore_analytics_disable.lua')(text, path)
+    end
+    if path == 'main.lua' then
+        text = dofile('tests/fixtures/restore_questie_wiring.lua')(text, path)
+    end
+    if path == 'main.lua' then
+        text = dofile('tests/fixtures/restore_nameplate_lifecycle.lua')(text, path)
+    end
+
+    local r = assert(records[path], 'unknown runtime work inverse path')
+    assert(#text == r.length and hash(text) == r.hash, 'unrelated runtime work module change: ' .. path)
+
+    for _, block in ipairs(r.blocks) do
+        local first, last = assert(text:find(block, 1, true))
+        assert(not text:find(block, last + 1, true), 'duplicate runtime work addition')
+        text = text:sub(1, first - 1) .. text:sub(last + 1)
+    end
+
+    assert(#text == r.oldLength and hash(text) == r.oldHash, 'runtime work predecessor mismatch: ' .. path)
+    return text
 end

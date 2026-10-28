@@ -8,7 +8,10 @@ local _, addon = ...
 -- Shows or hides a red border on `control` and records the validation message. Safe on nil; textures are created the
 -- first time a control is marked invalid.
 function addon:SetWorkbenchInvalid(control, invalid, message)
-    if not control then return end
+    if not control then
+        return
+    end
+
     control.rmInvalid = invalid == true
     control.rmValidationMessage = invalid and message or nil
 
@@ -48,7 +51,10 @@ end
 -- A separate amber rail preserves the meaning of validation/negation borders.
 -- Shows or hides the amber unsaved rail on `control` (safe on nil); the texture is created on first use.
 function addon:SetWorkbenchUnsaved(control, changed)
-    if not control then return end
+    if not control then
+        return
+    end
+
     control.rmUnsaved = changed == true
 
     if not control.unsavedMark then
@@ -75,7 +81,10 @@ function addon:InstallRotationUnsaved(pane)
     -- priority, identifier, info button, changed cards and the metadata dialog's fields. Read-only rotations are never
     -- marked. A no-op when the pane is inactive or has no workspace.
     function pane:RefreshUnsaved()
-        if not self.active or not self.workspace then return end
+        if not self.active or not self.workspace then
+            return
+        end
+
         local baseline = self.workspace.session:Baseline()
         local current = self.workspace:Snapshot()
         local state = addon:RotationUnsavedState(baseline, current)
@@ -90,12 +99,23 @@ function addon:InstallRotationUnsaved(pane)
         addon:SetWorkbenchUnsaved(self.switch, writable and state.switch)
         local description = self.descriptionDirty and self.description:GetText() or current.description or ''
         local metadata = self.metadataDirty and self.metadataDraft or current.metadata
-        if baseline.metadata == nil and type(metadata) == 'table' and next(metadata) == nil then metadata = nil end
+
+        if baseline.metadata == nil and type(metadata) == 'table' and next(metadata) == nil then
+            metadata = nil
+        end
+
         local tags = self:EffectiveTags(current)
-        if self.tagsDirty then tags = addon.RotationData.ParseRotationTags(self.tags:GetText()) end
+
+        if self.tagsDirty then
+            tags = addon.RotationData.ParseRotationTags(self.tags:GetText())
+        end
+
         local raw = self.priority:GetText()
         local priority = current.priority or 0
-        if self.priorityDirty then priority = raw == '' and 0 or tonumber(raw) end
+
+        if self.priorityDirty then
+            priority = raw == '' and 0 or tonumber(raw)
+        end
 
         local details = description ~= (baseline.description or '')
             or not addon:UnsavedDataEqual(metadata, baseline.metadata)
@@ -133,7 +153,9 @@ function addon:InstallRotationUnsaved(pane)
                             end
                         end
 
-                        if ancestor then pendingCards[row.step.id] = true end
+                        if ancestor then
+                            pendingCards[row.step.id] = true
+                        end
                     end
                 end
             end
@@ -150,7 +172,11 @@ function addon:InstallRotationUnsaved(pane)
 
         if dialog and dialog:Valid() then
             local metadata = self.metadataDirty and self.metadataDraft or current.metadata or {}
-            if type(metadata) ~= 'table' then metadata = {} end
+
+            if type(metadata) ~= 'table' then
+                metadata = {}
+            end
+
             local original = type(baseline.metadata) == 'table' and baseline.metadata or {}
 
             for key, input in pairs(dialog.fields) do

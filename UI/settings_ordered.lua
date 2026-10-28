@@ -49,8 +49,13 @@ function addon:InstallSettingsOrdered(p)
 
         -- True while the pane is still the one that built this list and the page has not revoked it (options.current).
         local function valid()
-            if not p:Valid(token) then return false end
-            if options.current and options.current() ~= true then return false end
+            if not p:Valid(token) then
+                return false
+            end
+            if options.current and options.current() ~= true then
+                return false
+            end
+
             return p:Valid(token)
         end
 
@@ -64,7 +69,11 @@ function addon:InstallSettingsOrdered(p)
 
             if self.ghost.rmCollectionDragOwner == self or self.ghost.rmCollectionDragOwner == nil then
                 self.ghost.rmCollectionDragOwner = nil
-                if options.endPreview then options.endPreview(self.ghost) end
+
+                if options.endPreview then
+                    options.endPreview(self.ghost)
+                end
+
                 self.ghost:Hide()
                 addon:SetUIScript(self.ghost, 'OnUpdate', nil)
 
@@ -78,8 +87,9 @@ function addon:InstallSettingsOrdered(p)
         -- Whether dropping at gap would change the list: always for an insert in range, otherwise only where a reorder
         -- of the carried range would actually move it.
         function view:CanDrop(gap)
-            if not valid() or options.readOnly then return false end
-
+            if not valid() or options.readOnly then
+                return false
+            end
             if self.insertFactory or self.insertAction then
                 return type(gap) == 'number' and gap % 1 == 0 and gap >= 1 and gap <= #items + 1
             end
@@ -94,7 +104,10 @@ function addon:InstallSettingsOrdered(p)
             local from, tail, factory, action = self.drag, self.tail, self.insertFactory, self.insertAction
             local allowed = self:CanDrop(gap)
             self:CancelDrag()
-            if not allowed or not p:FlushEdits() or not valid() then return false end
+
+            if not allowed or not p:FlushEdits() or not valid() then
+                return false
+            end
 
             -- A dropped add action inserts through the page's own add path, so
             -- a drop at the end leaves exactly what a click on Add leaves.
@@ -121,10 +134,14 @@ function addon:InstallSettingsOrdered(p)
 
             -- Performs the confirmed change, but only if the list is still exactly what it was when the drop started.
             local function apply()
-                if not valid() or #items ~= #original then return false end
+                if not valid() or #items ~= #original then
+                    return false
+                end
 
                 for i, value in ipairs(original) do
-                    if items[i] ~= value then return false end
+                    if items[i] ~= value then
+                        return false
+                    end
                 end
 
                 p:WithSettingsHistory(function()
@@ -191,9 +208,16 @@ function addon:InstallSettingsOrdered(p)
         -- legal drop zones and polls the pointer until the button is released. Does nothing for a read-only list or
         -- unflushable edits.
         function view:BeginDrag(index)
-            if self.drag == index then return end
+            if self.drag == index then
+                return
+            end
+
             self:CancelDrag()
-            if not valid() or options.readOnly or not p:FlushEdits() or not valid() then return end
+
+            if not valid() or options.readOnly or not p:FlushEdits() or not valid() then
+                return
+            end
+
             self.drag = index
             self.tail = IsControlKeyDown and IsControlKeyDown() or false
             self.ghost.rmCollectionDragOwner = self
@@ -237,7 +261,10 @@ function addon:InstallSettingsOrdered(p)
             end
 
             self.ghost:PresentCards(entries, parent)
-            self.ghost:CaptureCancel(function() self:CancelDrag() end)
+
+            self.ghost:CaptureCancel(function()
+                self:CancelDrag()
+            end)
 
             -- Gaps right before and after the carried card would not move it.
             for gap, zone in ipairs(self.zones) do
@@ -256,7 +283,10 @@ function addon:InstallSettingsOrdered(p)
 
                 self.ghost:FollowPointer()
                 self:Hover()
-                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+
+                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                    self:EndDrag()
+                end
             end)
         end
 
@@ -286,8 +316,14 @@ function addon:InstallSettingsOrdered(p)
             self.ghost.label:ClearAllPoints()
             self.ghost.label:SetPoint('TOPLEFT', 10, -8)
             self.ghost.label:SetWidth(320)
-            if self.ghost.texture then self.ghost.texture:Hide() end
-            self.ghost:CaptureCancel(function() self:CancelDrag() end)
+
+            if self.ghost.texture then
+                self.ghost.texture:Hide()
+            end
+
+            self.ghost:CaptureCancel(function()
+                self:CancelDrag()
+            end)
 
             for _, zone in ipairs(self.zones) do
                 zone:Show()
@@ -301,7 +337,10 @@ function addon:InstallSettingsOrdered(p)
 
                 self.ghost:FollowPointer()
                 self:Hover()
-                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+
+                if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                    self:EndDrag()
+                end
             end)
 
             return true
@@ -338,7 +377,11 @@ function addon:InstallSettingsOrdered(p)
                 button:SetPoint('TOPLEFT', width - addWidth, -y)
                 button:SetSize(addWidth, 22)
                 addon:AlignWorkbenchTextLeft(button, 24)
-                if add.key then self.fields[add.key] = button end
+
+                if add.key then
+                    self.fields[add.key] = button
+                end
+
                 view.add = button
                 local blocked = options.readOnly or add.enabled == false
 
@@ -349,8 +392,12 @@ function addon:InstallSettingsOrdered(p)
                 end
 
                 addon:SetUIScript(button, 'OnClick', self:Guard(function()
-                    if blocked then return end
-                    if add.click then return add.click() end
+                    if blocked then
+                        return
+                    end
+                    if add.click then
+                        return add.click()
+                    end
 
                     if self:FlushEdits() and valid() then
                         add.insert(add.appendGap and add.appendGap() or #items + 1)
@@ -360,18 +407,28 @@ function addon:InstallSettingsOrdered(p)
                 addon:BindWorkbenchDragSource(
                     button,
                     function()
-                        if blocked or not valid() then return end
-                        if add.beginDrag then return add.beginDrag(view) end
+                        if blocked or not valid() then
+                            return
+                        end
+                        if add.beginDrag then
+                            return add.beginDrag(view)
+                        end
+
                         view:BeginInsert(add.factory, add.label or add.text, add.insert)
                     end,
                     function()
-                        if valid() then view:EndDrag() end
+                        if valid() then
+                            view:EndDrag()
+                        end
                     end
                 )
             end
 
             local left = 0
-            if add and add.leading then left = add.leading(self, y, math.max(1, width - addWidth - 8)) or 0 end
+
+            if add and add.leading then
+                left = add.leading(self, y, math.max(1, width - addWidth - 8)) or 0
+            end
 
             if heading then
                 local titleWidth = math.max(1, width - addWidth - (addWidth > 0 and 8 or 0) - left)
@@ -392,10 +449,15 @@ function addon:InstallSettingsOrdered(p)
                     c:Enable()
 
                     addon:SetUIScript(c, 'OnClick', self:Guard(function()
-                        if valid() then heading.toggle() end
+                        if valid() then
+                            heading.toggle()
+                        end
                     end))
 
-                    if heading.key then self.fields[heading.key] = c end
+                    if heading.key then
+                        self.fields[heading.key] = c
+                    end
+
                     view.heading = c
                 else
                     local t = self:Acquire('orderedHeadings', function()
@@ -411,7 +473,11 @@ function addon:InstallSettingsOrdered(p)
                     t:SetSize(titleWidth, 22)
                     t:SetText(heading.text)
                     addon:StyleWorkbenchHeader(t)
-                    if heading.key then self.fields[heading.key] = t end
+
+                    if heading.key then
+                        self.fields[heading.key] = t
+                    end
+
                     view.heading = t
                 end
             end
@@ -420,7 +486,11 @@ function addon:InstallSettingsOrdered(p)
 
             if heading and heading.collapsed then
                 view.collapsed = true
-                self.cleanups[#self.cleanups + 1] = function() view:CancelDrag() end
+
+                self.cleanups[#self.cleanups + 1] = function()
+                    view:CancelDrag()
+                end
+
                 return view
             end
         end
@@ -460,7 +530,11 @@ function addon:InstallSettingsOrdered(p)
             row:SetPoint('TOPLEFT', 0, -y)
             row:SetWidth(width)
             row.header:Hide()
-            if row.header.grip then row.header.grip:Hide() end
+
+            if row.header.grip then
+                row.header.grip:Hide()
+            end
+
             row.up:ClearAllPoints()
             row.down:ClearAllPoints()
             row.remove:ClearAllPoints()
@@ -512,7 +586,9 @@ function addon:InstallSettingsOrdered(p)
 
                 if type(options.help) == 'function' then
                     addon:SetUIScript(row.help, 'OnClick', self:Guard(function()
-                        if valid() then options.help(i, items[i], row) end
+                        if valid() then
+                            options.help(i, items[i], row)
+                        end
                     end))
                 end
             elseif row.help then
@@ -532,7 +608,9 @@ function addon:InstallSettingsOrdered(p)
 
                 if type(options.duplicate) == 'function' then
                     addon:SetUIScript(row.duplicate, 'OnClick', self:Guard(function()
-                        if allowed and valid() then options.duplicate(i, items[i], row) end
+                        if allowed and valid() then
+                            options.duplicate(i, items[i], row)
+                        end
                     end))
                 end
             elseif row.duplicate then
@@ -585,7 +663,9 @@ function addon:InstallSettingsOrdered(p)
                     end
 
                     addon:SetUIScript(row.enabled, 'OnClick', self:Guard(function()
-                        if not options.readOnly and valid() then spec.toggle(i, items[i], row) end
+                        if not options.readOnly and valid() then
+                            spec.toggle(i, items[i], row)
+                        end
                     end))
                 end
 
@@ -605,7 +685,9 @@ function addon:InstallSettingsOrdered(p)
 
             -- Mouse up or drag stop drops the carried row.
             local function stopDrag()
-                if valid() then view:EndDrag() end
+                if valid() then
+                    view:EndDrag()
+                end
             end
 
             row:EnableMouse(true)
@@ -613,11 +695,15 @@ function addon:InstallSettingsOrdered(p)
 
             for _, surface in ipairs({ row, row.body }) do
                 addon:SetUIScript(surface, 'OnMouseDown', self:Guard(function(_, button)
-                    if button == 'LeftButton' then startDrag() end
+                    if button == 'LeftButton' then
+                        startDrag()
+                    end
                 end))
 
                 addon:SetUIScript(surface, 'OnMouseUp', self:Guard(function(_, button)
-                    if button == 'LeftButton' then stopDrag() end
+                    if button == 'LeftButton' then
+                        stopDrag()
+                    end
                 end))
 
                 addon:BindWorkbenchDragSource(surface, startDrag, stopDrag)
@@ -629,10 +715,21 @@ function addon:InstallSettingsOrdered(p)
             self.surface = row.body
             self.width = row.body:GetWidth()
             self.y = options.compact and 2 or 4
-            if self.BeginLabelScope then self:BeginLabelScope() end
+
+            if self.BeginLabelScope then
+                self:BeginLabelScope()
+            end
+
             build(self, i, items[i], row)
-            if self.EndLabelScope then self:EndLabelScope() end
-            if options.current and not valid() then return view end
+
+            if self.EndLabelScope then
+                self:EndLabelScope()
+            end
+
+            if options.current and not valid() then
+                return view
+            end
+
             local height = math.max(options.compact and 30 or math.max(44, 3 + rail * 22 + 2), self.y + 8)
             row:SetHeight(height)
             row.body:SetHeight(height)
@@ -664,7 +761,10 @@ function addon:InstallSettingsOrdered(p)
             view.zones[i] = zone
         end
 
-        self.cleanups[#self.cleanups + 1] = function() view:CancelDrag() end
+        self.cleanups[#self.cleanups + 1] = function()
+            view:CancelDrag()
+        end
+
         return view
     end
 end

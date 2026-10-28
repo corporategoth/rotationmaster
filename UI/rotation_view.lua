@@ -89,9 +89,16 @@ function addon:InstallRotationView(pane)
     -- Switches to the 'rotation' or 'cooldowns' section. Pending name and field edits are flushed first so they are
     -- not lost on the rerender; returns true on success, or nil (and a reason when a flush fails).
     function pane:SelectContent(section)
-        if not self.active or (section ~= 'rotation' and section ~= 'cooldowns') then return nil end
-        if self:ContentSection() == section then return true end
-        if not self:FlushName() then return nil end
+        if not self.active or (section ~= 'rotation' and section ~= 'cooldowns') then
+            return nil
+        end
+        if self:ContentSection() == section then
+            return true
+        end
+        if not self:FlushName() then
+            return nil
+        end
+
         local ok, why = self:FlushFieldEdits()
 
         if not ok then
@@ -194,12 +201,17 @@ function addon:InstallRotationView(pane)
     function pane:BindViewControls(alive)
         for section, button in pairs(self.contentTabs) do
             addon:SetUIScript(button, 'OnClick', function()
-                if alive() then self:SelectContent(section) end
+                if alive() then
+                    self:SelectContent(section)
+                end
             end)
         end
 
         addon:SetUIScript(self.viewMode, 'OnClick', function()
-            if not alive() or self:ContentSection() ~= 'rotation' or not self:FlushName() then return end
+            if not alive() or self:ContentSection() ~= 'rotation' or not self:FlushName() then
+                return
+            end
+
             local ok, why = self:FlushFieldEdits()
 
             if not ok then
@@ -227,7 +239,9 @@ function addon:InstallRotationView(pane)
                 local mode = entry[2]
 
                 addon:SetUIScript(entry[1], 'OnClick', function()
-                    if not alive() or self:ContentSection() ~= section then return end
+                    if not alive() or self:ContentSection() ~= section then
+                        return
+                    end
 
                     for _, row in ipairs(data.IndexRotationSteps(self.workspace:Snapshot()).rows) do
                         if row.section == section then
@@ -235,7 +249,10 @@ function addon:InstallRotationView(pane)
 
                             if mode == 'normal' then
                                 self.view.hiddenChildren[row.step.id] = nil
-                                if self.view.hiddenArms then self.view.hiddenArms[row.step.id] = nil end
+
+                                if self.view.hiddenArms then
+                                    self.view.hiddenArms[row.step.id] = nil
+                                end
                             end
                         end
                     end
@@ -253,7 +270,10 @@ function addon:InstallRotationView(pane)
             end
 
             addon:SetUIScript(control, 'OnClick', function()
-                if not alive() or self.workspace.readOnly or control.section ~= self:ContentSection() then return end
+                if not alive() or self.workspace.readOnly or control.section ~= self:ContentSection() then
+                    return
+                end
+
                 local list = self.workspace:Snapshot()[control.section]
                 self:Command('Insert', { path = { control.section }, index = #list + 1 }, control.node)
             end)
@@ -266,7 +286,9 @@ function addon:InstallRotationView(pane)
                     end
                 end,
                 function()
-                    if alive() then self.canvas:EndDrag() end
+                    if alive() then
+                        self.canvas:EndDrag()
+                    end
                 end
             )
         end

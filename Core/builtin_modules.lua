@@ -63,7 +63,10 @@ end
 -- Gives a module's private namespace the two registration methods packs call. Returns true when the namespace was
 -- bound, false for a non-table or for this addon's own namespace (which already has them).
 local function bind(namespace)
-    if type(namespace) ~= "table" or namespace == addon then return false end
+    if type(namespace) ~= "table" or namespace == addon then
+        return false
+    end
+
     namespace.RegisterDefaultBlock = function(_, block) return addon:RegisterDefaultBlock(block) end
     namespace.RegisterDefaultRotation = function(_, envelope) return addon:RegisterDefaultRotation(envelope) end
     return true
@@ -87,7 +90,10 @@ local attempted, outcome, outcomeReason
 -- DISABLED, ...). A module that cannot load leaves Rotation Master working
 -- with no Built Ins and says so once.
 function addon:LoadBuiltInModule()
-    if attempted then return outcome, outcomeReason end
+    if attempted then
+        return outcome, outcomeReason
+    end
+
     attempted = true
     local platform = self.Platform
     local family = platform and type(platform.GetClientFamily) == "function" and platform:GetClientFamily()
@@ -110,7 +116,10 @@ function addon:LoadBuiltInModule()
 
     if type(UnitClass) == "function" then
         local ok, _, value = pcall(UnitClass, "player")
-        if ok and readable(platform, value) and type(value) == "string" then token = value end
+
+        if ok and readable(platform, value) and type(value) == "string" then
+            token = value
+        end
     end
 
     local name = self:GetBuiltInModuleName(token)

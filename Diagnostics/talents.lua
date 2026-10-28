@@ -29,17 +29,29 @@ end
 
 -- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
-    if not readable(value) then return 'secret' end
-    if value == nil then return 'nil' end
-    if type(value) == 'number' and value % 1 ~= 0 then return string.format('%.3f', value) end
+    if not readable(value) then
+        return 'secret'
+    end
+    if value == nil then
+        return 'nil'
+    end
+    if type(value) == 'number' and value % 1 ~= 0 then
+        return string.format('%.3f', value)
+    end
+
     return tostring(value)
 end
 
 -- A short, flat description of a value: scalars as is, a list by its first
 -- members, a record by its first fields (sorted), never deeper than that.
 local function describe(value, keys)
-    if not readable(value) then return 'secret' end
-    if type(value) ~= 'table' then return show(value) end
+    if not readable(value) then
+        return 'secret'
+    end
+    if type(value) ~= 'table' then
+        return show(value)
+    end
+
     local parts = {}
 
     if keys then
@@ -88,7 +100,11 @@ local function describe(value, keys)
     for index = 1, math.min(#names, 16) do
         local key = names[index]
         local field = value[key]
-        if field == nil then field = value[tonumber(key)] end
+
+        if field == nil then
+            field = value[tonumber(key)]
+        end
+
         parts[#parts + 1] = key .. '=' .. (type(field) == 'table' and '<table>' or show(field))
     end
 
@@ -99,14 +115,21 @@ end
 ---@return boolean ok
 ---@return any ...
 local function call(fn, ...)
-    if type(fn) ~= 'function' then return false, 'missing' end
+    if type(fn) ~= 'function' then
+        return false, 'missing'
+    end
+
     return pcall(fn, ...)
 end
 
 -- Returns "present" when namespace.name (or the global name when namespace is nil) is a function, else "missing".
 local function presence(namespace, name)
     local space = namespace and rawget(_G, namespace)
-    if namespace then return type(space) == 'table' and type(space[name]) == 'function' and 'present' or 'missing' end
+
+    if namespace then
+        return type(space) == 'table' and type(space[name]) == 'function' and 'present' or 'missing'
+    end
+
     return type(rawget(_G, name)) == 'function' and 'present' or 'missing'
 end
 
@@ -114,7 +137,11 @@ end
 -- variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
-    if type(saved) ~= 'table' then return nil end
+
+    if type(saved) ~= 'table' then
+        return nil
+    end
+
     local diagnostics = rawget(saved, 'diagnostics')
 
     if type(diagnostics) ~= 'table' then
@@ -144,7 +171,10 @@ local function newReport()
 
     return lines, function(text, ...)
         if #lines >= MAX_LINES then
-            if #lines == MAX_LINES then lines[#lines + 1] = '... (report capped at ' .. MAX_LINES .. ' lines)' end
+            if #lines == MAX_LINES then
+                lines[#lines + 1] = '... (report capped at ' .. MAX_LINES .. ' lines)'
+            end
+
             return
         end
 
@@ -292,7 +322,10 @@ function addon:BuildTalentDiagnostic(options)
     if type(classTalents) == 'table' then
         local ok, value = call(classTalents.GetActiveConfigID)
         add('C_ClassTalents.GetActiveConfigID() -> %s %s', ok and 'ok' or 'ERROR', ok and describe(value) or value)
-        if ok and type(value) == 'number' then config = value end
+
+        if ok and type(value) == 'number' then
+            config = value
+        end
     end
 
     if config and type(traits) == 'table' then
@@ -345,13 +378,16 @@ function addon:BuildTalentDiagnostic(options)
                         visible = visible + 1
                         local kind = readable(info.type) and tostring(info.type) or 'secret'
                         types[kind] = (types[kind] or 0) + 1
-                        if readable(info.subTreeID) and info.subTreeID then sub = sub + 1 end
 
+                        if readable(info.subTreeID) and info.subTreeID then
+                            sub = sub + 1
+                        end
                         if #samples < 3 and not (readable(info.subTreeID) and info.subTreeID) and info.type ~= 3 then
                             samples[#samples + 1] = info
                         end
-
-                        if info.type == 3 and #heroSelection < 2 then heroSelection[#heroSelection + 1] = info end
+                        if info.type == 3 and #heroSelection < 2 then
+                            heroSelection[#heroSelection + 1] = info
+                        end
                     end
                 end
             end
@@ -365,7 +401,10 @@ function addon:BuildTalentDiagnostic(options)
                 sub
             )
 
-            if firstError then add('first node failure: %s', firstError) end
+            if firstError then
+                add('first node failure: %s', firstError)
+            end
+
             local typeRow = {}
 
             for kind, count in pairs(types) do
@@ -530,6 +569,9 @@ function addon:RunTalentDiagnostic(argument)
         self:print(L['Talent diagnostic saved.'])
     end
 
-    if self.ShowConditionText then self:ShowConditionText(table.concat(lines, '\n'), L['Talent diagnostic']) end
+    if self.ShowConditionText then
+        self:ShowConditionText(table.concat(lines, '\n'), L['Talent diagnostic'])
+    end
+
     return lines
 end

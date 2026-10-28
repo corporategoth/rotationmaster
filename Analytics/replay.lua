@@ -94,10 +94,15 @@ end
 -- nondecreasing time inside the duration, and the per-type field schema. Returns the record count and byte charge, or
 -- nil and a reason code. Nothing is partially accepted, so the reducer can trust every field it reads.
 local function validate(trace)
-    if not plain(trace) then return nil, 'unsafe-table' end
-    local bytes, why = keys(trace, headerKeys)
-    if not bytes then return nil, why end
+    if not plain(trace) then
+        return nil, 'unsafe-table'
+    end
 
+    local bytes, why = keys(trace, headerKeys)
+
+    if not bytes then
+        return nil, why
+    end
     if
         trace.format ~= 1
         or trace.model ~= 1
@@ -111,40 +116,73 @@ local function validate(trace)
     end
 
     local rows = trace.records
-    if not plain(rows) then return nil, 'unsafe-table' end
+
+    if not plain(rows) then
+        return nil, 'unsafe-table'
+    end
+
     local count, largest = 0, 0
 
     for k in pairs(rows) do
-        if not integer(k, 1) then return nil, 'dense-records-required' end
+        if not integer(k, 1) then
+            return nil, 'dense-records-required'
+        end
+
         count = count + 1
         largest = max(largest, k)
-        if count > LIMIT_RECORDS then return nil, 'record-limit' end
+
+        if count > LIMIT_RECORDS then
+            return nil, 'record-limit'
+        end
     end
 
-    if count ~= largest then return nil, 'dense-records-required' end
+    if count ~= largest then
+        return nil, 'dense-records-required'
+    end
+
     local sequence, time = 0, 0
 
     for i = 1, count do
         local r = rawget(rows, i)
-        if not plain(r) then return nil, 'unsafe-table' end
-        local allowed = type(r.type) == 'string' and fields[r.type]
-        if not allowed then return nil, 'invalid-record' end
-        local extra, issue = keys(r, allowed, true)
-        if not extra then return nil, issue end
-        bytes = bytes + 8 + extra
-        if bytes > LIMIT_BYTES then return nil, 'payload-limit' end
 
-        if not integer(r.seq, 1) or not finite(r.time) or r.time < 0 or r.time > trace.duration then
+        if not plain(r) then
+            return nil, 'unsafe-table'
+        end
+
+        local allowed = type(r.type) == 'string' and fields[r.type]
+
+        if not allowed then
             return nil, 'invalid-record'
         end
 
-        if r.seq <= sequence then return nil, 'duplicate-or-decreasing-sequence' end
-        if r.time < time then return nil, 'decreasing-time' end
+        local extra, issue = keys(r, allowed, true)
+
+        if not extra then
+            return nil, issue
+        end
+
+        bytes = bytes + 8 + extra
+
+        if bytes > LIMIT_BYTES then
+            return nil, 'payload-limit'
+        end
+        if not integer(r.seq, 1) or not finite(r.time) or r.time < 0 or r.time > trace.duration then
+            return nil, 'invalid-record'
+        end
+        if r.seq <= sequence then
+            return nil, 'duplicate-or-decreasing-sequence'
+        end
+        if r.time < time then
+            return nil, 'decreasing-time'
+        end
+
         sequence, time = r.seq, r.time
         local kind = r.type
 
         if kind == 'advice' then
-            if not integer(r.epoch, 1) or not member(r.action, actions) then return nil, 'invalid-record' end
+            if not integer(r.epoch, 1) or not member(r.action, actions) then
+                return nil, 'invalid-record'
+            end
 
             if r.action == 'spell' then
                 if
@@ -159,9 +197,13 @@ local function validate(trace)
                 return nil, 'invalid-record'
             end
         elseif kind == 'presentation' then
-            if not integer(r.adviceSeq, 1) or not member(r.state, states) then return nil, 'invalid-record' end
+            if not integer(r.adviceSeq, 1) or not member(r.state, states) then
+                return nil, 'invalid-record'
+            end
         elseif kind == 'retire' then
-            if not member(r.reason, retires) then return nil, 'invalid-record' end
+            if not member(r.reason, retires) then
+                return nil, 'invalid-record'
+            end
         elseif kind == 'attempt' or kind == 'result' then
             if
                 not integer(r.cast, 0)
@@ -274,7 +316,11 @@ addon.Analytics = addon.Analytics or {}
 -- case; an invalid or over-limit trace yields the unavailable report from refused(). Pure: no events, no APIs.
 function addon.Analytics.Replay(trace)
     local count, bytes = validate(trace)
-    if not count then return refused(bytes) end
+
+    if not count then
+        return refused(bytes)
+    end
+
     local report = blank()
     report.bytes = bytes
     report.records = count
@@ -315,7 +361,11 @@ function addon.Analytics.Replay(trace)
 
         if not c then
             totals.distinctCasts = totals.distinctCasts + 1
-            if totals.distinctCasts > LIMIT_CASTS then return nil end
+
+            if totals.distinctCasts > LIMIT_CASTS then
+                return nil
+            end
+
             c = { actor = row.actor, kind = row.castKind, spell = row.spell }
             casts[row.cast] = c
         end
@@ -335,14 +385,21 @@ function addon.Analytics.Replay(trace)
 
         if kind == 'advice' then
             covered.adviceRows = covered.adviceRows + 1
-            if epoch ~= nil and epoch ~= r.epoch then finishPending('segment-retired') end
+
+            if epoch ~= nil and epoch ~= r.epoch then
+                finishPending('segment-retired')
+            end
+
             epoch = r.epoch
             latest = r
             acknowledged = false
         elseif kind == 'presentation' then
             if latest and r.adviceSeq == latest.seq and latest.seq < r.seq then
                 acknowledged = r.state == 'visible'
-                if acknowledged then covered.visibleAcknowledgements = covered.visibleAcknowledgements + 1 end
+
+                if acknowledged then
+                    covered.visibleAcknowledgements = covered.visibleAcknowledgements + 1
+                end
             else
                 covered.unqualifiedAcknowledgements = covered.unqualifiedAcknowledgements + 1
             end
@@ -361,13 +418,22 @@ function addon.Analytics.Replay(trace)
                 end
             else
                 local c = remember(r)
-                if not c then return refused('cast-limit') end
-                if not identity(c, r) then c.conflict = true end
+
+                if not c then
+                    return refused('cast-limit')
+                end
+
+                if not identity(c, r) then
+                    c.conflict = true
+                end
 
                 if kind == 'attempt' then
                     if c.started or c.resultSeen then
                         totals.duplicateAttempts = totals.duplicateAttempts + 1
-                        if c.started and c.epoch ~= r.epoch then c.conflict = true end
+
+                        if c.started and c.epoch ~= r.epoch then
+                            c.conflict = true
+                        end
                     else
                         c.started = true
                         c.epoch = r.epoch
@@ -375,7 +441,10 @@ function addon.Analytics.Replay(trace)
                         c.pending = true
                         pending = pending + 1
                         totals.attempts = totals.attempts + 1
-                        if pending > LIMIT_PENDING then return refused('pending-limit') end
+
+                        if pending > LIMIT_PENDING then
+                            return refused('pending-limit')
+                        end
 
                         if r.actor ~= 'player' or r.castKind ~= 'ordinary' then
                             c.excluded = true
@@ -396,11 +465,16 @@ function addon.Analytics.Replay(trace)
                         end
                     end
                 else
-                    if c[r.status] then totals.duplicateResults = totals.duplicateResults + 1 end
+                    if c[r.status] then
+                        totals.duplicateResults = totals.duplicateResults + 1
+                    end
+
                     c.resultSeen = true
 
                     if r.status == 'success' then
-                        if r.actor == 'player' and r.castKind == 'ordinary' then c.ordinarySuccess = true end
+                        if r.actor == 'player' and r.castKind == 'ordinary' then
+                            c.ordinarySuccess = true
+                        end
 
                         if not c.success then
                             c.success = true
@@ -427,12 +501,19 @@ function addon.Analytics.Replay(trace)
                         end
                     end
 
-                    if not c.started and not c.reason then c.reason = 'missing-attempt' end
-                    if r.actor ~= 'player' or r.castKind ~= 'ordinary' then c.excluded = true end
+                    if not c.started and not c.reason then
+                        c.reason = 'missing-attempt'
+                    end
+                    if r.actor ~= 'player' or r.castKind ~= 'ordinary' then
+                        c.excluded = true
+                    end
                 end
             end
         elseif kind == 'damageCoverage' then
-            if damageState == 'available' then outcome.coveredSeconds = outcome.coveredSeconds + r.time - damageTime end
+            if damageState == 'available' then
+                outcome.coveredSeconds = outcome.coveredSeconds + r.time - damageTime
+            end
+
             damageTime = r.time
             damageState = r.state
         elseif kind == 'damage' then
@@ -474,7 +555,9 @@ function addon.Analytics.Replay(trace)
     totals.pending = pending
 
     for _, c in pairs(casts) do
-        if c.excluded then totals.excludedCasts = totals.excludedCasts + 1 end
+        if c.excluded then
+            totals.excludedCasts = totals.excludedCasts + 1
+        end
 
         if c.success and (c.ordinarySuccess or c.conflict and c.actor == 'player' and c.kind == 'ordinary') then
             local reason = c.conflict and 'cast-identity-conflict'
@@ -482,7 +565,9 @@ function addon.Analytics.Replay(trace)
                 or c.interrupted and 'interrupted-cast'
                 or c.reason
 
-            if not reason and not c.selectedSpell then reason = 'missing-attempt' end
+            if not reason and not c.selectedSpell then
+                reason = 'missing-attempt'
+            end
 
             if reason then
                 agreement.unobservable = agreement.unobservable + 1
@@ -502,7 +587,9 @@ function addon.Analytics.Replay(trace)
         agreement.percentage = 100 * agreement.matched / agreement.scorable
     end
 
-    if damageState == 'available' then outcome.coveredSeconds = outcome.coveredSeconds + trace.duration - damageTime end
+    if damageState == 'available' then
+        outcome.coveredSeconds = outcome.coveredSeconds + trace.duration - damageTime
+    end
 
     local partial = outcome.coveredSeconds < trace.duration
         or outcome.unknownRows > 0

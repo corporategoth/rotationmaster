@@ -59,8 +59,13 @@ function addon:GetOrderedAutoSwitchRotations(spec, rotations)
     end
 
     table.sort(candidates, function(left, right)
-        if left.priority ~= right.priority then return left.priority > right.priority end
-        if left.name ~= right.name then return left.name < right.name end
+        if left.priority ~= right.priority then
+            return left.priority > right.priority
+        end
+        if left.name ~= right.name then
+            return left.name < right.name
+        end
+
         return left.tie < right.tie
     end)
 
@@ -136,11 +141,17 @@ local SEPARATOR = ' \226\128\186 '
 local function tokens(path)
     local list = {}
     local rest = type(path) == 'string' and path:match('^%$%.body(.*)$')
-    if not rest then return nil end
+
+    if not rest then
+        return nil
+    end
 
     for name, index in rest:gmatch('%.?([%a_][%w_]*)%[?(%d*)%]?') do
         list[#list + 1] = name
-        if index ~= '' then list[#list + 1] = tonumber(index) end
+
+        if index ~= '' then
+            list[#list + 1] = tonumber(index)
+        end
     end
 
     return list
@@ -149,8 +160,12 @@ end
 -- Returns a display name for a step: its own name, else one by step type (a spell step reads as the spell name or
 -- "Spell <id>"); nil when the step has no usable name.
 local function stepName(step)
-    if type(step) ~= 'table' then return nil end
-    if type(step.name) == 'string' and step.name:find('%S') then return step.name end
+    if type(step) ~= 'table' then
+        return nil
+    end
+    if type(step.name) == 'string' and step.name:find('%S') then
+        return step.name
+    end
 
     if step.type == 'branch' then
         return L['Branch']
@@ -164,7 +179,11 @@ local function stepName(step)
 
     if (step.type == 'spell' or step.type == 'pet' or step.type == 'any') and type(step.action) == 'number' then
         local info = addon.Platform and addon.Platform.GetSpellInfo and addon.Platform:GetSpellInfo(step.action)
-        if type(info) == 'table' and type(info.name) == 'string' then return info.name end
+
+        if type(info) == 'table' and type(info.name) == 'string' then
+            return info.name
+        end
+
         return string.format(L['Spell %d'], step.action)
     end
 end
@@ -173,10 +192,16 @@ end
 -- "Rotation step 1 > Yes 2 (Stop)" (parts joined by SEPARATOR), "Switch condition". body is optional.
 function addon:DescribeRotationIssueLocation(path, body)
     local list = tokens(path)
-    if not list then return L['Rotation'] end
-    local section = list[1]
-    if section == 'switch' then return L['Switch condition'] end
 
+    if not list then
+        return L['Rotation']
+    end
+
+    local section = list[1]
+
+    if section == 'switch' then
+        return L['Switch condition']
+    end
     if (section ~= 'rotation' and section ~= 'cooldowns') or type(list[2]) ~= 'number' then
         return L['Rotation settings']
     end
@@ -204,11 +229,18 @@ end
 -- Returns the node of `body` that a validation path points at, or nil.
 local function valueAt(body, path)
     local list = tokens(path)
-    if not list then return nil end
+
+    if not list then
+        return nil
+    end
+
     local node = body
 
     for _, key in ipairs(list) do
-        if type(node) ~= 'table' then return nil end
+        if type(node) ~= 'table' then
+            return nil
+        end
+
         node = node[key]
     end
 
@@ -218,7 +250,10 @@ end
 -- One diagnostic in plain words; body (optional) names the step. Returns nil for a non-table. The text is "where: what"
 -- with the trailing period dropped so callers can add their own.
 function addon:DescribeRotationIssue(problem, body)
-    if type(problem) ~= 'table' then return nil end
+    if type(problem) ~= 'table' then
+        return nil
+    end
+
     local where = self:DescribeRotationIssueLocation(problem.path, body)
     local what = self.DescribeUnsupportedCondition and self:DescribeUnsupportedCondition(problem)
 
@@ -266,7 +301,10 @@ function addon:FirstRotationIssue(body, validation)
         and validation.diagnostics[1]
         or nil
 
-    if not problem then return nil end
+    if not problem then
+        return nil
+    end
+
     return problem, self:DescribeRotationIssue(problem, body)
 end
 
@@ -279,14 +317,23 @@ end
 -- Platform/specializations.lua GetRotationSpecKind classifies the client.
 function addon:GetRotationSpecKind()
     local platform = self.Platform
-    if type(platform) ~= 'table' or type(platform.GetRotationSpecKind) ~= 'function' then return nil end
+
+    if type(platform) ~= 'table' or type(platform.GetRotationSpecKind) ~= 'function' then
+        return nil
+    end
+
     return (platform:GetRotationSpecKind())
 end
 
 -- The character's current value; nil when unknown (or no specialization concept).
 function addon:GetCurrentRotationSpecValue()
-    if not self:GetRotationSpecKind() then return nil end
-    if type(self.GetRotationSpecValue) == 'function' then return (self:GetRotationSpecValue()) end
+    if not self:GetRotationSpecKind() then
+        return nil
+    end
+    if type(self.GetRotationSpecValue) == 'function' then
+        return (self:GetRotationSpecValue())
+    end
+
     return (self.Platform:GetRotationSpecValue())
 end
 
@@ -296,7 +343,11 @@ local function slotName(owner, slot)
     -- Your own name for it (General > Specialization Names) wins.
     local char = owner.db and owner.db.char
     local own = type(char) == 'table' and type(char.specs) == 'table' and char.specs[slot]
-    if type(own) == 'string' and own:find('%S') then return own end
+
+    if type(own) == 'string' and own:find('%S') then
+        return own
+    end
+
     local base
 
     if slot == 1 then
@@ -328,18 +379,27 @@ local function slotName(owner, slot)
         tree = info and info.name or index and owner.TalentTrees and owner.TalentTrees.Name(index)
     end
 
-    if type(tree) == 'string' and tree ~= '' then return string.format(L['%s (%s)'], base, tree) end
+    if type(tree) == 'string' and tree ~= '' then
+        return string.format(L['%s (%s)'], base, tree)
+    end
+
     return base
 end
 
 -- The values this character can restrict a rotation to, each {id,name}.
 function addon:GetRotationSpecEntries()
-    if not self:GetRotationSpecKind() then return {} end
+    if not self:GetRotationSpecKind() then
+        return {}
+    end
+
     local classID
 
     if type(UnitClass) == 'function' then
         local ok, _, _, id = pcall(UnitClass, 'player')
-        if ok then classID = id end
+
+        if ok then
+            classID = id
+        end
     end
 
     local choices = self.Platform:GetRotationSpecChoices(classID) or {}
@@ -383,15 +443,20 @@ function addon:GetFallbackSpecName(spec)
     end
 
     for _, entry in ipairs(self:GetRotationSpecEntries()) do
-        if entry.id == spec then return entry.name end
+        if entry.id == spec then
+            return entry.name
+        end
     end
 end
 
 -- Names one specialization value (an ID, a talent group or the initial no-specialization state) for display.
 function addon:DescribeRotationSpecValue(value)
-    if type(value) ~= 'number' then return L['Unknown specialization'] end
-    if self:GetRotationSpecKind() == 'slot' then return slotName(self, value) end
-
+    if type(value) ~= 'number' then
+        return L['Unknown specialization']
+    end
+    if self:GetRotationSpecKind() == 'slot' then
+        return slotName(self, value)
+    end
     if self.Platform and self.Platform.IsInitialSpecialization and self.Platform:IsInitialSpecialization(value) then
         return L['No specialization']
     end
@@ -400,14 +465,20 @@ function addon:DescribeRotationSpecValue(value)
         value
     )
 
-    if type(display) == 'table' and type(display.name) == 'string' then return display.name end
+    if type(display) == 'table' and type(display.name) == 'string' then
+        return display.name
+    end
+
     local name = self.GetSpecializationName and self:GetSpecializationName(value)
     return name or string.format(L['specialization %d'], value)
 end
 
 -- "Any specialization", or the names joined.
 function addon:DescribeRotationSpecs(specs)
-    if type(specs) ~= 'table' or #specs == 0 or not self:GetRotationSpecKind() then return L['Any specialization'] end
+    if type(specs) ~= 'table' or #specs == 0 or not self:GetRotationSpecKind() then
+        return L['Any specialization']
+    end
+
     local names = {}
 
     for i, value in ipairs(specs) do
@@ -420,10 +491,19 @@ end
 -- What a new rotation is for: the specialization the Rotations list shows
 -- (any when it shows all of them), else the one you are playing.
 function addon:DefaultNewRotationSpecs()
-    if not self:GetRotationSpecKind() then return nil end
+    if not self:GetRotationSpecKind() then
+        return nil
+    end
+
     local filter = self.rotationListSpec
-    if filter == 'all' then return nil end
-    if type(filter) == 'number' then return { filter } end
+
+    if filter == 'all' then
+        return nil
+    end
+    if type(filter) == 'number' then
+        return { filter }
+    end
+
     local value = self:GetCurrentRotationSpecValue()
     return value ~= nil and { value } or nil
 end
@@ -435,7 +515,9 @@ function addon:DescribeRotationSpec(spec)
 
         if ok and type(entries) == 'table' then
             for _, entry in ipairs(entries) do
-                if entry.id == spec and type(entry.name) == 'string' then return entry.name end
+                if entry.id == spec and type(entry.name) == 'string' then
+                    return entry.name
+                end
             end
         end
     end
@@ -448,8 +530,13 @@ function addon:DescribeRotationSpec(spec)
         spec
     )
 
-    if type(display) == 'table' and type(display.name) == 'string' then return display.name end
-    if spec == 0 then return L['Rotations'] end
+    if type(display) == 'table' and type(display.name) == 'string' then
+        return display.name
+    end
+    if spec == 0 then
+        return L['Rotations']
+    end
+
     return tostring(spec)
 end
 
@@ -460,12 +547,21 @@ end
 -- specialization". This names any other unoffered namespace.
 function addon:GetUnofferedRotationSpec()
     local spec = self.currentSpec
-    if spec == nil or type(self.GetRotationEditorSpecs) ~= 'function' then return nil end
+
+    if spec == nil or type(self.GetRotationEditorSpecs) ~= 'function' then
+        return nil
+    end
+
     local ok, entries = pcall(self.GetRotationEditorSpecs, self)
-    if not ok or type(entries) ~= 'table' then return nil end
+
+    if not ok or type(entries) ~= 'table' then
+        return nil
+    end
 
     for _, entry in ipairs(entries) do
-        if entry.id == spec then return nil end
+        if entry.id == spec then
+            return nil
+        end
     end
 
     local names = {}
@@ -490,7 +586,10 @@ local function otherFallbacks(self, spec)
     end
 
     local ok, entries = pcall(self.GetRotationEditorSpecs, self)
-    if not ok or type(entries) ~= 'table' then return names end
+
+    if not ok or type(entries) ~= 'table' then
+        return names
+    end
 
     for _, entry in ipairs(entries) do
         if entry.id ~= spec and self:ResolveRotationReference(entry.id, DEFAULT) then
@@ -505,13 +604,20 @@ end
 -- `spec`; otherwise a sentence saying why, and the refusal code.
 -- Reads through a runtime pass when the scoped coordinator exists, so it reports what selection itself would see.
 function addon:ExplainRotationRefusal(spec, value)
-    if spec == nil then return L['your specialization is not available yet'], 'specialization-unavailable' end
+    if spec == nil then
+        return L['your specialization is not available yet'], 'specialization-unavailable'
+    end
+
     local coordinator = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     local body, code
 
     if coordinator then
         local pass, why = self:AcquireRotationRuntimePass(spec)
-        if not pass then return string.format(L['rotations cannot be read (%s)'], tostring(why)), why end
+
+        if not pass then
+            return string.format(L['rotations cannot be read (%s)'], tostring(why)), why
+        end
+
         body, code = pass:Get(value)
     elseif type(self.GetRuntimeRotation) == 'function' then
         body = self:GetRuntimeRotation(spec, value)
@@ -521,7 +627,9 @@ function addon:ExplainRotationRefusal(spec, value)
             'rotation-store-unavailable'
     end
 
-    if body then return nil end
+    if body then
+        return nil
+    end
 
     if code == 'unknown-rotation' and value == DEFAULT then
         local text = string.format(L['no fallback rotation is saved for %s'], self:DescribeRotationSpec(spec))
@@ -530,7 +638,6 @@ function addon:ExplainRotationRefusal(spec, value)
         if #others > 0 then
             text = text .. ' ' .. string.format(L['(there is one for %s)'], table.concat(others, ', '))
         end
-
         if spec == self.currentSpec and self:GetUnofferedRotationSpec() then
             text = text .. '; ' .. string.format(
                 L['you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer'],
@@ -543,9 +650,17 @@ function addon:ExplainRotationRefusal(spec, value)
 
     if code == 'invalid-fallback' or code == 'rotation-unavailable' or code == 'invalid-or-unsupported' then
         local record, _, validation = nil, nil, nil
-        if self.GetRotationRecordSnapshot then record, _, validation = self:GetRotationRecordSnapshot(spec, value) end
+
+        if self.GetRotationRecordSnapshot then
+            record, _, validation = self:GetRotationRecordSnapshot(spec, value)
+        end
+
         local _, text = self:FirstRotationIssue(record and record.body, validation)
-        if text then return text, code end
+
+        if text then
+            return text, code
+        end
+
         return L['it has incomplete or unsupported data'], code
     end
 
@@ -558,8 +673,9 @@ function addon:ExplainRotationRefusal(spec, value)
             state = found
         end
 
-        if state == 'user-disabled' then return L['you switched it off (turn it back on in Rotations)'], code end
-
+        if state == 'user-disabled' then
+            return L['you switched it off (turn it back on in Rotations)'], code
+        end
         if state == 'shipped-disabled' then
             return L['it ships disabled, an alternative to the recommended one (turn it on in Rotations)'], code
         end
@@ -570,10 +686,17 @@ end
 
 -- A rotation's priority as automatic switching ranks it (nil when unknown).
 function addon:GetRotationEffectivePriority(spec, key)
-    if key == DEFAULT then return nil end
+    if key == DEFAULT then
+        return nil
+    end
+
     local pass = self.AcquireRotationRuntimePass and self:AcquireRotationRuntimePass(spec)
     local body = pass and pass:Get(key)
-    if not body and self.GetRuntimeRotation and not pass then body = self:GetRuntimeRotation(spec, key) end
+
+    if not body and self.GetRuntimeRotation and not pass then
+        body = self:GetRuntimeRotation(spec, key)
+    end
+
     return type(body) == 'table' and data.GetRotationPriority(body.priority) or nil
 end
 
@@ -582,7 +705,10 @@ end
 -- the player switched off, and, when no Built In for `spec` is on at all, the
 -- alternatives that ship off. Menus and commands only.
 function addon:GetDisabledApplicableBuiltins(spec)
-    if spec == nil or type(self.GetBuiltinStates) ~= 'function' then return {} end
+    if spec == nil or type(self.GetBuiltinStates) ~= 'function' then
+        return {}
+    end
+
     local rows = self:GetBuiltinStates(spec)
     local user, shipped, anyOn = {}, {}, false
 
@@ -616,11 +742,17 @@ end
 -- The specialization you are playing, as rotations see it (body.specs): its
 -- name and value; the saved namespace on clients without specializations.
 local function currentSpecText(self, spec)
-    if spec == nil then return L['None'], 'nil' end
+    if spec == nil then
+        return L['None'], 'nil'
+    end
 
     if self:GetRotationSpecKind() then
         local value = self:GetCurrentRotationSpecValue()
-        if value == nil then return L['None'], 'nil' end
+
+        if value == nil then
+            return L['None'], 'nil'
+        end
+
         return self:DescribeRotationSpecValue(value), tostring(value)
     end
 
@@ -687,7 +819,10 @@ function addon:GetRotationEligibilityReport()
         if why and code == 'specialization-mismatch' then
             local body = self.GetRotationRecordSnapshot and self:GetRotationRecordSnapshot(spec, value)
             local specs = type(body) == 'table' and type(body.body) == 'table' and body.body.specs
-            if type(specs) == 'table' then why = string.format(L['it is for %s'], self:DescribeRotationSpecs(specs)) end
+
+            if type(specs) == 'table' then
+                why = string.format(L['it is for %s'], self:DescribeRotationSpecs(specs))
+            end
         end
 
         lines[#lines + 1] = why and string.format(L['%s: cannot be selected, %s.'], name, why) or string.format(
@@ -698,7 +833,11 @@ function addon:GetRotationEligibilityReport()
 
     verdict(string.format(L['Fallback (%s)'], DEFAULT), DEFAULT)
     local headers = self.ListRotationHeaders and self:ListRotationHeaders(spec)
-    if type(headers) ~= 'table' then return lines end
+
+    if type(headers) ~= 'table' then
+        return lines
+    end
+
     local identifiers = {}
 
     if self.ListRotationIdentifiers then
@@ -850,7 +989,10 @@ end
 
 -- Returns a deterministic text form of a value (table keys sorted), so equal conditions get equal keys.
 local function canonical(value)
-    if type(value) ~= 'table' then return type(value) .. ':' .. tostring(value) end
+    if type(value) ~= 'table' then
+        return type(value) .. ':' .. tostring(value)
+    end
+
     local keys = {}
 
     for key in pairs(value) do
@@ -887,7 +1029,9 @@ local function narrowSpecs(region, list)
     local set = {}
 
     for _, spec in ipairs(list) do
-        if not region.specs or region.specs[spec] then set[spec] = true end
+        if not region.specs or region.specs[spec] then
+            set[spec] = true
+        end
     end
 
     region.specs = set
@@ -896,7 +1040,9 @@ end
 -- Folds a switch condition into the region: AND groups are walked, player LEVEL comparisons narrow the level range, a
 -- SPECIALIZATION narrows the specializations where those are IDs, and anything else is kept as an atom.
 local function addCondition(region, condition)
-    if type(condition) ~= 'table' or condition.type == nil then return end
+    if type(condition) ~= 'table' or condition.type == nil then
+        return
+    end
 
     if condition.type == 'AND' and type(condition.value) == 'table' then
         for _, child in ipairs(condition.value) do
@@ -943,7 +1089,9 @@ end
 
 -- True when the two regions can both hold at once: their level ranges, specializations and rulesets intersect.
 local function meets(a, b)
-    if math.max(a.lo, b.lo) > math.min(a.hi, b.hi) then return false end
+    if math.max(a.lo, b.lo) > math.min(a.hi, b.hi) then
+        return false
+    end
 
     if a.specs and b.specs then
         local any = false
@@ -955,7 +1103,9 @@ local function meets(a, b)
             end
         end
 
-        if not any then return false end
+        if not any then
+            return false
+        end
     end
 
     -- Packs for different season or realm rules never load together.
@@ -969,7 +1119,9 @@ local function meets(a, b)
             end
         end
 
-        if not any then return false end
+        if not any then
+            return false
+        end
     end
 
     return true
@@ -977,10 +1129,14 @@ end
 
 -- True when every other condition of `a` is also in `b`, so b matches whenever a does apart from the ranges.
 local function subset(a, b)
-    if a.count > b.count then return false end
+    if a.count > b.count then
+        return false
+    end
 
     for key in pairs(a.atoms) do
-        if not b.atoms[key] then return false end
+        if not b.atoms[key] then
+            return false
+        end
     end
 
     return true
@@ -988,15 +1144,23 @@ end
 
 -- True when both regions limit specializations to the same set (or neither limits them).
 local function sameSpecs(a, b)
-    if (a.specs == nil) ~= (b.specs == nil) then return false end
-    if not a.specs then return true end
+    if (a.specs == nil) ~= (b.specs == nil) then
+        return false
+    end
+    if not a.specs then
+        return true
+    end
 
     for spec in pairs(a.specs) do
-        if not b.specs[spec] then return false end
+        if not b.specs[spec] then
+            return false
+        end
     end
 
     for spec in pairs(b.specs) do
-        if not a.specs[spec] then return false end
+        if not a.specs[spec] then
+            return false
+        end
     end
 
     return true
@@ -1012,12 +1176,21 @@ function addon:GetSwitchRegion(switch, applicability, specs)
         and type(platform.GetRotationSpecKind) == 'function'
         and platform:GetRotationSpecKind() == 'portable'
 
-    if type(specs) == 'table' and #specs > 0 then narrowSpecs(region, specs) end
+    if type(specs) == 'table' and #specs > 0 then
+        narrowSpecs(region, specs)
+    end
 
     if type(applicability) == 'table' then
-        if type(applicability.specs) == 'table' then narrowSpecs(region, applicability.specs) end
-        if type(applicability.minLevel) == 'number' then region.lo = math.max(region.lo, applicability.minLevel) end
-        if type(applicability.maxLevel) == 'number' then region.hi = math.min(region.hi, applicability.maxLevel) end
+        if type(applicability.specs) == 'table' then
+            narrowSpecs(region, applicability.specs)
+        end
+
+        if type(applicability.minLevel) == 'number' then
+            region.lo = math.max(region.lo, applicability.minLevel)
+        end
+        if type(applicability.maxLevel) == 'number' then
+            region.hi = math.min(region.hi, applicability.maxLevel)
+        end
 
         if type(applicability.rulesets) == 'table' then
             region.rulesets = {}
@@ -1034,13 +1207,19 @@ end
 
 -- True when the inner level range and specialization set lie inside the outer ones.
 local function within(inner, outer)
-    if inner.lo < outer.lo or inner.hi > outer.hi then return false end
+    if inner.lo < outer.lo or inner.hi > outer.hi then
+        return false
+    end
 
     if outer.specs then
-        if not inner.specs then return false end
+        if not inner.specs then
+            return false
+        end
 
         for spec in pairs(inner.specs) do
-            if not outer.specs[spec] then return false end
+            if not outer.specs[spec] then
+                return false
+            end
         end
     end
 
@@ -1051,12 +1230,25 @@ end
 -- 'subsumes' (a matches whenever b does); 'subsumed' (the reverse);
 -- 'overlaps' (they share some of their range); nil when no overlap is proved.
 function addon:CompareSwitchRegions(a, b)
-    if not meets(a, b) then return nil end
+    if not meets(a, b) then
+        return nil
+    end
+
     local ab, ba = subset(a, b), subset(b, a)
-    if not ab and not ba then return nil end
-    if ab and ba and a.lo == b.lo and a.hi == b.hi and sameSpecs(a, b) then return 'identical' end
-    if ab and within(b, a) then return 'subsumes' end
-    if ba and within(a, b) then return 'subsumed' end
+
+    if not ab and not ba then
+        return nil
+    end
+    if ab and ba and a.lo == b.lo and a.hi == b.hi and sameSpecs(a, b) then
+        return 'identical'
+    end
+    if ab and within(b, a) then
+        return 'subsumes'
+    end
+    if ba and within(a, b) then
+        return 'subsumed'
+    end
+
     return 'overlaps'
 end
 
@@ -1070,8 +1262,10 @@ local overlapCache = {}
 function addon:GetSwitchOverlaps(spec)
     spec = spec or self.currentSpec
     local order = self.autoswitchRotation
-    if spec == nil or spec ~= self.currentSpec or type(order) ~= 'table' then return {} end
 
+    if spec == nil or spec ~= self.currentSpec or type(order) ~= 'table' then
+        return {}
+    end
     if
         overlapCache.order == order
         and overlapCache.spec == spec
@@ -1144,7 +1338,10 @@ end
 -- One line naming what a rotation overlaps with, for a tooltip or note; nil when nothing.
 -- Returns the text and whether any overlap is an exact priority tie.
 function addon:DescribeSwitchOverlap(list)
-    if type(list) ~= 'table' or #list == 0 then return nil end
+    if type(list) ~= 'table' or #list == 0 then
+        return nil
+    end
+
     local ties, others = {}, {}
 
     for _, entry in ipairs(list) do
@@ -1169,7 +1366,6 @@ function addon:DescribeSwitchOverlap(list)
             table.concat(ties, ', ')
         )
     end
-
     if #others > 0 then
         lines[#lines + 1] = string.format(
             L['Can be selected together with %s: only priority decides which is chosen.'],
@@ -1207,12 +1403,20 @@ local function rulesetName(token)
 
     if season then
         local id = tonumber(season) or SEASON_NAMES[season]
-        if id and SEASONS[id] then return L[SEASONS[id]] end
+
+        if id and SEASONS[id] then
+            return L[SEASONS[id]]
+        end
+
         return string.format(L['Season %s'], season)
     end
 
     local mode = type(token) == 'string' and token:match('^mode:(%d+)$')
-    if mode then return string.format(L['Game mode %s'], mode) end
+
+    if mode then
+        return string.format(L['Game mode %s'], mode)
+    end
+
     return tostring(token)
 end
 
@@ -1220,7 +1424,10 @@ end
 -- Specializations are never listed (you can respec) and only a minimum level
 -- is (you only level up); rulesets read as names.
 function addon:DescribeApplicability(scope)
-    if type(scope) ~= 'table' then return nil end
+    if type(scope) ~= 'table' then
+        return nil
+    end
+
     local parts = {}
 
     local editions = {
@@ -1245,11 +1452,9 @@ function addon:DescribeApplicability(scope)
         parts[#parts + 1] = (LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[scope.class])
             or scope.class:sub(1, 1) .. scope.class:sub(2):lower()
     end
-
     if type(scope.minLevel) == 'number' and scope.minLevel > 1 then
         parts[#parts + 1] = string.format(L['level %d+'], scope.minLevel)
     end
-
     if scope.minExpansion or scope.maxExpansion then
         parts[#parts + 1] = string.format(L['expansions %s–%s'], tostring(scope.minExpansion or '?'), tostring(
             scope.maxExpansion or '?'
@@ -1266,7 +1471,9 @@ function addon:DescribeApplicability(scope)
         parts[#parts + 1] = table.concat(names, ', ')
     end
 
-    if #parts == 0 then return nil end
+    if #parts == 0 then
+        return nil
+    end
 
     return string.format(
         L['Loads only for: %s. Its specializations and switch condition decide the rest.'],
@@ -1290,7 +1497,10 @@ end
 -- Sorts rows in place by name, then canonical id, so derived identifiers are always handed out in the same order.
 local function sortedUnstored(list)
     table.sort(list, function(a, b)
-        if a.name ~= b.name then return a.name < b.name end
+        if a.name ~= b.name then
+            return a.name < b.name
+        end
+
         return tostring(a.canonicalId) < tostring(b.canonicalId)
     end)
 end
@@ -1322,7 +1532,10 @@ function addon:ListRotationIdentifiers(spec, headers)
         end
 
         if entry.identifier then
-            if used[entry.identifier] and not row.fallback then entry.duplicateOf = used[entry.identifier] end
+            if used[entry.identifier] and not row.fallback then
+                entry.duplicateOf = used[entry.identifier]
+            end
+
             used[entry.identifier] = used[entry.identifier] or entry
         elseif not row.fallback then
             pending[#pending + 1] = entry
@@ -1352,11 +1565,16 @@ end
 
 -- Returns the identifier of a rotation key ("default" for the fallback) and its row, or nil when the key is unknown.
 function addon:GetRotationIdentifier(spec, key)
-    if key == DEFAULT then return 'default' end
+    if key == DEFAULT then
+        return 'default'
+    end
+
     local rows = self:ListRotationIdentifiers(spec)
 
     for _, entry in ipairs(rows) do
-        if entry.key == key then return entry.identifier, entry end
+        if entry.key == key then
+            return entry.identifier, entry
+        end
     end
 end
 
@@ -1380,7 +1598,10 @@ function addon:CheckRotationIdentifier(spec, key, text)
     local identifier, why = data.NormalizeRotationIdentifier(text)
 
     if not identifier then
-        if why == 'reserved-identifier' then return string.format(L['%s is reserved for /rm set.'], tostring(text)) end
+        if why == 'reserved-identifier' then
+            return string.format(L['%s is reserved for /rm set.'], tostring(text))
+        end
+
         return L['An identifier starts with a letter, then letters, digits, _ or -, up to 32 characters.']
     end
 
@@ -1399,19 +1620,30 @@ end
 -- row, or nil, nil, the sorted valid identifiers and whether several rotations matched.
 function addon:ResolveRotationIdentifier(spec, text, selectable)
     local wanted = type(text) == 'string' and text:lower():match('^%s*(.-)%s*$')
-    if not wanted or wanted == '' then return nil end
+
+    if not wanted or wanted == '' then
+        return nil
+    end
+
     local rows = self:ListRotationIdentifiers(spec)
     local found, valid = {}, {}
 
     for _, entry in ipairs(rows) do
         if not selectable or entry.fallback or selectable[entry.key] then
             valid[#valid + 1] = entry.identifier
-            if entry.identifier == wanted then found[#found + 1] = entry end
+
+            if entry.identifier == wanted then
+                found[#found + 1] = entry
+            end
         end
     end
 
     table.sort(valid)
-    if #found == 1 then return found[1].fallback and DEFAULT or found[1].key, found[1] end
+
+    if #found == 1 then
+        return found[1].fallback and DEFAULT or found[1].key, found[1]
+    end
+
     return nil, nil, valid, #found > 1
 end
 
@@ -1420,7 +1652,9 @@ function addon:ListSelectableIdentifiers(spec, selectable)
     local list = {}
 
     for _, entry in ipairs(self:ListRotationIdentifiers(spec)) do
-        if entry.fallback and selectable[DEFAULT] or selectable[entry.key] then list[#list + 1] = entry.identifier end
+        if entry.fallback and selectable[DEFAULT] or selectable[entry.key] then
+            list[#list + 1] = entry.identifier
+        end
     end
 
     table.sort(list)
@@ -1429,7 +1663,10 @@ end
 
 -- "Name [identifier]" for chat and menus.
 function addon:FormatRotationLabel(name, key, spec)
-    if type(name) ~= 'string' then return name end
+    if type(name) ~= 'string' then
+        return name
+    end
+
     local identifier = key ~= DEFAULT and self:GetRotationIdentifier(spec or self.currentSpec, key) or nil
     return identifier and string.format('%s [%s]', name, identifier) or name
 end
@@ -1437,7 +1674,11 @@ end
 -- "Name [identifier]" for a rotation key, or nil when the key has no name.
 function addon:GetRotationLabel(key, spec)
     local name = key == DEFAULT and DEFAULT or self:GetRotationName(key)
-    if not name then return nil end
+
+    if not name then
+        return nil
+    end
+
     return self:FormatRotationLabel(name, key, spec)
 end
 
@@ -1445,7 +1686,11 @@ end
 function addon:GetRotationIdentifierReport()
     local spec = self.currentSpec
     local lines = {}
-    if spec == nil then return { L['No rotation can run until your specialization is available.'] } end
+
+    if spec == nil then
+        return { L['No rotation can run until your specialization is available.'] }
+    end
+
     lines[1] = string.format(L['Rotations for %s (use /rm set <id>):'], (currentSpecText(self, spec)))
     local states = {}
 

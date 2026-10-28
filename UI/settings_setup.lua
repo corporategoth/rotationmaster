@@ -17,11 +17,17 @@ end
 function addon:GetRotationEditorSpecs(classID)
     if classID == nil and type(UnitClass) == "function" then
         local ok, _, _, id = pcall(UnitClass, "player")
-        if ok then classID = id end
+
+        if ok then
+            classID = id
+        end
     end
 
     local entries = self.Platform:GetRotationSpecializations(classID)
-    if not entries then return { { id = 0, name = L["Rotations"] } } end
+
+    if not entries then
+        return { { id = 0, name = L["Rotations"] } }
+    end
 
     for _, entry in ipairs(entries) do
         if entry.id == 0 then

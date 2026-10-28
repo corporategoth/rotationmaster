@@ -102,10 +102,14 @@ function addon:GetAnnouncementOutputHelp(kind, mode)
         included[kind == 'macro' and 'macro.emote_target' or 'emote_target'] = true
     end
 
-    if mode == 'audible' then included.sound = true end
+    if mode == 'audible' then
+        included.sound = true
+    end
 
     for _, entry in ipairs(self:GetDocument_layout_announce_options_help()) do
-        if included[entry.id] then sections[#sections + 1] = entry end
+        if included[entry.id] then
+            sections[#sections + 1] = entry
+        end
     end
 
     return sections

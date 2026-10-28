@@ -32,11 +32,16 @@ local function keys(left, right)
     end
 
     for key in pairs(right) do
-        if not seen[key] then result[#result + 1] = key end
+        if not seen[key] then
+            result[#result + 1] = key
+        end
     end
 
     table.sort(result, function(a, b)
-        if type(a) == type(b) then return a < b end
+        if type(a) == type(b) then
+            return a < b
+        end
+
         return type(a) == "number"
     end)
 
@@ -52,17 +57,31 @@ end
 -- Indexes one step list by canonical id (origins maps a clone's regenerated ids to the source ids). Returns
 -- { ordered, byId }, or nil, a reason code and the failing path for a non-dense list, a bad id or a duplicate id.
 local function index(list, origins, path)
-    if list == nil then list = {} end
-    if type(list) ~= "table" then return nil, "invalid-priority-list", path end
-    if origins ~= nil and type(origins) ~= "table" then return nil, "invalid-origin-map", path end
+    if list == nil then
+        list = {}
+    end
+
+    if type(list) ~= "table" then
+        return nil, "invalid-priority-list", path
+    end
+    if origins ~= nil and type(origins) ~= "table" then
+        return nil, "invalid-origin-map", path
+    end
+
     local count, maximum = 0, 0
 
     for key in pairs(list) do
-        if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then return nil, "invalid-priority-list", path end
+        if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then
+            return nil, "invalid-priority-list", path
+        end
+
         count, maximum = count + 1, math.max(maximum, key)
     end
 
-    if maximum ~= count then return nil, "invalid-priority-list", path end
+    if maximum ~= count then
+        return nil, "invalid-priority-list", path
+    end
+
     local result = { ordered = {}, byId = {} }
 
     for i, step in ipairs(list) do
@@ -93,7 +112,10 @@ local function stationary(left, right)
 
     for _, entry in ipairs(right.ordered) do
         local original = left.byId[entry.id]
-        if original then sequence[#sequence + 1] = { id = entry.id, position = original.index } end
+
+        if original then
+            sequence[#sequence + 1] = { id = entry.id, position = original.index }
+        end
     end
 
     local tails, tailIndices, previous = {}, {}, {}
@@ -141,17 +163,26 @@ end
 
 -- Renders one key as a display path suffix: [n] for numbers, .name for identifiers, ["quoted"] otherwise.
 local function fieldSuffix(key)
-    if type(key) == "number" then return "[" .. key .. "]" end
-    if key:match("^[%a_][%w_]*$") then return "." .. key end
+    if type(key) == "number" then
+        return "[" .. key .. "]"
+    end
+    if key:match("^[%a_][%w_]*$") then
+        return "." .. key
+    end
+
     return "[" .. string.format("%q", key) .. "]"
 end
 
 -- Returns true when segment list a is a strict prefix of b (a change to a contains a change to b).
 local function ancestor(a, b)
-    if #a >= #b then return false end
+    if #a >= #b then
+        return false
+    end
 
     for i, segment in ipairs(a) do
-        if segment.kind ~= b[i].kind or segment.key ~= b[i].key then return false end
+        if segment.kind ~= b[i].kind or segment.key ~= b[i].key then
+            return false
+        end
     end
 
     return true
@@ -170,11 +201,19 @@ function data.DiffRotations(left, right, options)
 
     for _, value in ipairs({ left, right }) do
         local ok, why = data.CheckPortable(value)
-        if not ok then return failure(why.code, why.path) end
-        if type(value) ~= "table" then return failure("expected-rotation-object") end
+
+        if not ok then
+            return failure(why.code, why.path)
+        end
+        if type(value) ~= "table" then
+            return failure("expected-rotation-object")
+        end
     end
 
-    if left == nil or right == nil then return failure("expected-rotation-object") end
+    if left == nil or right == nil then
+        return failure("expected-rotation-object")
+    end
+
     local lists = { left = {}, right = {} }
     local empty = index(nil, nil, "$")
 
@@ -191,14 +230,21 @@ function data.DiffRotations(left, right, options)
         -- Keep the established diagnostics for malformed flat priority lists.
         for _, kind in ipairs({ "rotation", "cooldowns" }) do
             local indexed, code, path = index(body[kind], origins, "$.body." .. kind)
-            if not indexed then return failure(code, path) end
+
+            if not indexed then
+                return failure(code, path)
+            end
         end
 
         local tree, problem = data.IndexRotationSteps(body)
 
         if not tree then
             local code = problem.code
-            if code == "duplicate-step-id" or code == "invalid-step-id" then code = "ambiguous-step-identity" end
+
+            if code == "duplicate-step-id" or code == "invalid-step-id" then
+                code = "ambiguous-step-identity"
+            end
+
             return failure(code, problem.path)
         end
 
@@ -206,10 +252,16 @@ function data.DiffRotations(left, right, options)
 
         for _, list in ipairs(tree.lists) do
             local indexed, code, path = index(list.list, origins, "$.body")
-            if not indexed then return failure(code, path) end
+
+            if not indexed then
+                return failure(code, path)
+            end
 
             for _, entry in ipairs(indexed.ordered) do
-                if used[entry.id] then return failure("ambiguous-step-identity", "$.body") end
+                if used[entry.id] then
+                    return failure("ambiguous-step-identity", "$.body")
+                end
+
                 used[entry.id] = true
             end
 
@@ -244,8 +296,13 @@ function data.DiffRotations(left, right, options)
         end
 
         local change = { kind = kind, path = path, segments = data.CopyData(segments) }
-        if before ~= nil then change.before = data.CopyData(before) end
-        if after ~= nil then change.after = data.CopyData(after) end
+
+        if before ~= nil then
+            change.before = data.CopyData(before)
+        end
+        if after ~= nil then
+            change.after = data.CopyData(after)
+        end
 
         for key, value in pairs(extra or {}) do
             change[key] = value
@@ -300,7 +357,9 @@ function data.DiffRotations(left, right, options)
             return
         end
 
-        if a == b then return end
+        if a == b then
+            return
+        end
 
         if
             #segments == 2
@@ -344,11 +403,17 @@ end
 
 -- Deep structural equality over plain data (tables compare by content, using the stable key union).
 local function equal(a, b)
-    if a == b then return true end
-    if type(a) ~= "table" or type(b) ~= "table" then return false end
+    if a == b then
+        return true
+    end
+    if type(a) ~= "table" or type(b) ~= "table" then
+        return false
+    end
 
     for _, key in ipairs(keys(a, b)) do
-        if not equal(a[key], b[key]) then return false end
+        if not equal(a[key], b[key]) then
+            return false
+        end
     end
 
     return true
@@ -369,8 +434,13 @@ function data.CompareClone(clone, source)
 
     for _, view in ipairs({ clone, source }) do
         local ok, why = data.CheckPortable(view.envelope)
-        if not ok then return failure(why.code, why.path) end
-        if type(view.envelope) ~= "table" then return failure("expected-rotation-object") end
+
+        if not ok then
+            return failure(why.code, why.path)
+        end
+        if type(view.envelope) ~= "table" then
+            return failure("expected-rotation-object")
+        end
     end
 
     local lineage, problem = data.CopyData(clone.lineage)
@@ -392,7 +462,6 @@ function data.CompareClone(clone, source)
     then
         return failure("source-lineage-mismatch")
     end
-
     if lineage.baseline.id ~= lineage.sourceId or lineage.baseline.revision ~= lineage.sourceRevision then
         return failure("invalid-lineage")
     end

@@ -67,15 +67,25 @@ end
 
 -- Formats a value for the report: "secret" for an unreadable one, "nil", numbers to three decimals, else tostring.
 local function show(value)
-    if not readable(value) then return 'secret' end
-    if value == nil then return 'nil' end
-    if type(value) == 'number' and value % 1 ~= 0 then return string.format('%.3f', value) end
+    if not readable(value) then
+        return 'secret'
+    end
+    if value == nil then
+        return 'nil'
+    end
+    if type(value) == 'number' and value % 1 ~= 0 then
+        return string.format('%.3f', value)
+    end
+
     return tostring(value)
 end
 
 -- pcall that tolerates a missing function: returns false and "missing" when fn is not callable.
 local function protect(fn, ...)
-    if type(fn) ~= 'function' then return false, 'missing' end
+    if type(fn) ~= 'function' then
+        return false, 'missing'
+    end
+
     return pcall(fn, ...)
 end
 
@@ -89,7 +99,11 @@ end
 -- saved variables are not loaded.
 local function store()
     local saved = rawget(_G, addon.savedVariableName or 'RotationMasterDB')
-    if type(saved) ~= 'table' then return nil end
+
+    if type(saved) ~= 'table' then
+        return nil
+    end
+
     local diagnostics = rawget(saved, 'diagnostics')
 
     if type(diagnostics) ~= 'table' then
@@ -111,7 +125,11 @@ end
 -- entry, or nil when nothing can be stored. The lines table is kept by reference, so the watch can keep appending.
 local function save(lines)
     local reports = store()
-    if not reports then return nil end
+
+    if not reports then
+        return nil
+    end
+
     local entry = { at = type(date) == 'function' and date('%Y-%m-%d %H:%M:%S') or nil, lines = lines }
     reports[#reports + 1] = entry
 
@@ -128,8 +146,13 @@ end
 
 -- One event's fields: readable ones with their value, secret ones as such.
 local function describeInfo(info)
-    if not readable(info) then return 'record is secret' end
-    if type(info) ~= 'table' then return 'record=' .. show(info) end
+    if not readable(info) then
+        return 'record is secret'
+    end
+    if type(info) ~= 'table' then
+        return 'record=' .. show(info)
+    end
+
     local parts = {}
 
     for _, field in ipairs(INFO_FIELDS) do
@@ -181,7 +204,9 @@ local function snapshot(add)
     local missing = {}
 
     for _, name in ipairs(FUNCTIONS) do
-        if type(timeline(name)) ~= 'function' then missing[#missing + 1] = name end
+        if type(timeline(name)) ~= 'function' then
+            missing[#missing + 1] = name
+        end
     end
 
     add('functions missing: %s', #missing > 0 and table.concat(missing, ', ') or 'none')
@@ -248,8 +273,13 @@ local watcher
 -- Ends the running watch: cancels its timer, unregisters its events and prints where to read the result. A no-op when
 -- no watch is running.
 local function finish(self)
-    if not watcher then return end
-    if watcher.timer then self:CancelTimer(watcher.timer) end
+    if not watcher then
+        return
+    end
+
+    if watcher.timer then
+        self:CancelTimer(watcher.timer)
+    end
 
     if watcher.frame then
         watcher.frame:UnregisterAllEvents()
@@ -267,12 +297,19 @@ function addon:BuildTimelineDiagnostic()
 
     -- Appends one formatted line, ignoring everything past MAX_LINES.
     local function add(text, ...)
-        if #lines >= MAX_LINES then return end
+        if #lines >= MAX_LINES then
+            return
+        end
+
         lines[#lines + 1] = select('#', ...) > 0 and string.format(text, ...) or text
     end
 
     local ok, problem = pcall(snapshot, add)
-    if not ok then add('probe error: %s', tostring(problem)) end
+
+    if not ok then
+        add('probe error: %s', tostring(problem))
+    end
+
     return lines
 end
 
@@ -281,7 +318,10 @@ end
 -- as it arrives, then finishes by itself. Returns the report lines.
 function addon:RunTimelineDiagnostic(argument)
     argument = (argument or ''):match('^%s*(.-)%s*$')
-    if argument == 'show' then return self:ShowTimelineDiagnostic() end
+
+    if argument == 'show' then
+        return self:ShowTimelineDiagnostic()
+    end
 
     if argument == 'stop' then
         if watcher then
@@ -311,7 +351,11 @@ function addon:RunTimelineDiagnostic(argument)
         and type(CreateFrame) == 'function'
     then
         seconds = math.min(math.floor(seconds), MAX_WATCH)
-        if watcher then finish(self) end
+
+        if watcher then
+            finish(self)
+        end
+
         lines[#lines + 1] = ''
         lines[#lines + 1] = '== Watch for ' .. seconds .. 's: one line per second, and each event as it arrives'
         local remaining = seconds
@@ -324,7 +368,10 @@ function addon:RunTimelineDiagnostic(argument)
         end
 
         frame:SetScript('OnEvent', function(_, event, ...)
-            if #lines >= MAX_LINES then return end
+            if #lines >= MAX_LINES then
+                return
+            end
+
             local first = ...
             local payload = first ~= nil and (type(first) == 'table' and describeInfo(first) or show(first)) or ''
             lines[#lines + 1] = stamp() .. ' ' .. event .. ' ' .. payload
@@ -373,13 +420,18 @@ function addon:RunTimelineDiagnostic(argument)
                     .. ']'
             end
 
-            if remaining <= 0 then finish(self) end
+            if remaining <= 0 then
+                finish(self)
+            end
         end, 1)
 
         self:print(L['Timeline diagnostic saved. Watching for %d seconds.'], seconds)
     else
         self:print(L['Timeline diagnostic saved.'])
-        if self.ShowConditionText then self:ShowConditionText(table.concat(lines, '\n'), L['Timeline diagnostic']) end
+
+        if self.ShowConditionText then
+            self:ShowConditionText(table.concat(lines, '\n'), L['Timeline diagnostic'])
+        end
     end
 
     return lines
@@ -395,5 +447,7 @@ function addon:ShowTimelineDiagnostic()
         return
     end
 
-    if self.ShowConditionText then self:ShowConditionText(table.concat(entry.lines, '\n'), L['Timeline diagnostic']) end
+    if self.ShowConditionText then
+        self:ShowConditionText(table.concat(entry.lines, '\n'), L['Timeline diagnostic'])
+    end
 end

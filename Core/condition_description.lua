@@ -23,12 +23,18 @@ local function denseSize(list)
     local size, maximum = 0, 0
 
     for key in pairs(list) do
-        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 then return nil end
+        if type(key) ~= 'number' or key < 1 or key % 1 ~= 0 then
+            return nil
+        end
+
         size = size + 1
         maximum = math.max(maximum, key)
     end
 
-    if size ~= maximum then return nil end
+    if size ~= maximum then
+        return nil
+    end
+
     return size
 end
 
@@ -41,29 +47,48 @@ local function needsDataOnly(value, definitions)
     -- Returns true as soon as this node or any descendant forces the data-only path.
     local function inspect(node, depth)
         count = count + 1
-        if count > 4096 or depth > 32 then return true end
-        if type(node) ~= "table" then return false end
-        if node.unit == 'announcementtarget' then return true end
-        if node.disabled then return true end
-        if node.type == "NOT" and (type(node.value) ~= "table" or node.value.type == nil) then return true end
+
+        if count > 4096 or depth > 32 then
+            return true
+        end
+        if type(node) ~= "table" then
+            return false
+        end
+        if node.unit == 'announcementtarget' then
+            return true
+        end
+        if node.disabled then
+            return true
+        end
+        if node.type == "NOT" and (type(node.value) ~= "table" or node.value.type == nil) then
+            return true
+        end
 
         if node.type == "AND" or node.type == "OR" then
-            if type(node.value) ~= "table" or next(node.value) == nil or not denseSize(node.value) then return true end
+            if type(node.value) ~= "table" or next(node.value) == nil or not denseSize(node.value) then
+                return true
+            end
 
             for _, operand in pairs(node.value) do
-                if type(operand) ~= "table" or operand.type == nil then return true end
+                if type(operand) ~= "table" or operand.type == nil then
+                    return true
+                end
             end
         end
 
         local definition = definitionFor(node, definitions)
-        if definition and (getmetatable(definition) ~= nil or rawget(definition, "customCode")) then return true end
 
+        if definition and (getmetatable(definition) ~= nil or rawget(definition, "customCode")) then
+            return true
+        end
         if node.type and node.type ~= "AND" and node.type ~= "OR" and node.type ~= "NOT" and not definition then
             return true
         end
 
         for _, child in pairs(node) do
-            if inspect(child, depth + 1) then return true end
+            if inspect(child, depth + 1) then
+                return true
+            end
         end
 
         return false
@@ -113,45 +138,77 @@ local function describeData(value, definitions, units)
 
     -- Returns the display name for a unit token, or nil when it has none (the caller then asks for a unit).
     local function label(unit)
-        if unit == 'announcementtarget' then return L['Announcement target'] end
-        if unit == 'spellrecipient' then return L['Spell recipient'] end
+        if unit == 'announcementtarget' then
+            return L['Announcement target']
+        end
+        if unit == 'spellrecipient' then
+            return L['Spell recipient']
+        end
+
         local text = type(unit) == 'string' and type(units) == 'table' and rawget(units, unit)
-        if type(text) == 'string' and text ~= '' then return text:sub(1, 512) end
+
+        if type(text) == 'string' and text ~= '' then
+            return text:sub(1, 512)
+        end
     end
 
     -- Expands a translated template for the positive or negated reading with the unit label filled in. Returns nil
     -- when the translation is oversized or still holds an unresolved alternative marker.
     local function phrase(key, unit, negated)
         local text = L[key]
-        if type(text) ~= 'string' or #text > 2000 then return nil end
+
+        if type(text) ~= 'string' or #text > 2000 then
+            return nil
+        end
 
         -- Resolve only the authored template before inserting literal labels.
         text = text:gsub('{{!?([^|{}]*)|([^|{}]*)}}', function(positive, negative)
             return negated and negative or positive
         end)
 
-        if text:find('{{', 1, true) then return nil end
-        if text:find('{unit}', 1, true) then return (text:gsub('{unit}', function() return unit end)) end
+        if text:find('{{', 1, true) then
+            return nil
+        end
+        if text:find('{unit}', 1, true) then
+            return (text:gsub('{unit}', function() return unit end))
+        end
+
         local ok, result = pcall(string.format, text, unit)
-        if ok then return result end
+
+        if ok then
+            return result
+        end
     end
 
     -- Describes the few simple unit conditions (friendly, dead, combat, enemy, PVP, attackable, group) from their
     -- data, but only when the definition is a plain, non-custom table whose description matches the built in text.
     -- Returns nil for everything else.
     local function projected(node, definition, negated)
-        if not definition or getmetatable(definition) ~= nil or rawget(definition, 'customCode') then return nil end
-        local fields = rawget(definition, 'fields')
-        if type(fields) ~= 'table' or rawget(fields, 'unit') ~= 'string' then return nil end
-        local tag = node.type
-        if not templates[tag] and tag ~= 'GROUP' then return nil end
+        if not definition or getmetatable(definition) ~= nil or rawget(definition, 'customCode') then
+            return nil
+        end
 
+        local fields = rawget(definition, 'fields')
+
+        if type(fields) ~= 'table' or rawget(fields, 'unit') ~= 'string' then
+            return nil
+        end
+
+        local tag = node.type
+
+        if not templates[tag] and tag ~= 'GROUP' then
+            return nil
+        end
         if rawget(definition, 'description') ~= L[tag == 'GROUP' and 'In Group' or templates[tag][3]] then
             return nil
         end
 
         local unit = node.unit
-        if tag == 'GROUP' and unit == nil then unit = 'player' end
+
+        if tag == 'GROUP' and unit == nil then
+            unit = 'player'
+        end
+
         local subject = label(unit)
 
         if not subject then
@@ -185,11 +242,16 @@ local function describeData(value, definitions, units)
         local result = {}
 
         for key in pairs(node) do
-            if not skip or not skip[key] then result[#result + 1] = key end
+            if not skip or not skip[key] then
+                result[#result + 1] = key
+            end
         end
 
         table.sort(result, function(a, b)
-            if type(a) == type(b) then return a < b end
+            if type(a) == type(b) then
+                return a < b
+            end
+
             return type(a) == 'number'
         end)
 
@@ -208,13 +270,23 @@ local function describeData(value, definitions, units)
         local kind = type(item)
 
         if kind == 'string' then
-            if #item > 160 then truncated = true end
+            if #item > 160 then
+                truncated = true
+            end
+
             return item:sub(1, 160)
         end
 
-        if kind == 'boolean' then return item and L['Yes'] or L['No'] end
-        if kind == 'number' then return tostring(item) end
-        if kind ~= 'table' then return L['Not specified'] end
+        if kind == 'boolean' then
+            return item and L['Yes'] or L['No']
+        end
+        if kind == 'number' then
+            return tostring(item)
+        end
+        if kind ~= 'table' then
+            return L['Not specified']
+        end
+
         local parts = {}
 
         for _, key in ipairs(keys(item)) do
@@ -254,7 +326,10 @@ local function describeData(value, definitions, units)
         if node.type == 'NOT' then
             if type(node.value) ~= 'table' then
                 text = L['NOT'] .. ' (' .. L['Incomplete condition group: choose its conditions.'] .. ')'
-                if negated then text = L['NOT'] .. ' (' .. text .. ')' end
+
+                if negated then
+                    text = L['NOT'] .. ' (' .. text .. ')'
+                end
             else
                 text, groupType = render(node.value, depth + 1, not negated)
             end
@@ -275,7 +350,11 @@ local function describeData(value, definitions, units)
 
                     local child = node.value[index]
                     local part, childType = render(child, depth + 1, false)
-                    if childType and childType ~= node.type then part = '(' .. part .. ')' end
+
+                    if childType and childType ~= node.type then
+                        part = '(' .. part .. ')'
+                    end
+
                     parts[#parts + 1] = part
                 end
 
@@ -286,8 +365,12 @@ local function describeData(value, definitions, units)
                 end
             end
 
-            if negated then text = L['NOT'] .. ' (' .. text .. ')' end
-            if not negated then groupType = node.type end
+            if negated then
+                text = L['NOT'] .. ' (' .. text .. ')'
+            end
+            if not negated then
+                groupType = node.type
+            end
         else
             local definition = definitionFor(node, definitions)
             text = projected(node, definition, negated)
@@ -306,7 +389,11 @@ local function describeData(value, definitions, units)
 
                 text = title:sub(1, 512)
                 local subject = label(node.unit)
-                if subject then text = text .. ' — ' .. string.format(L['For %s'], subject) end
+
+                if subject then
+                    text = text .. ' — ' .. string.format(L['For %s'], subject)
+                end
+
                 local values = {}
 
                 for _, key in ipairs(keys(node, {
@@ -327,8 +414,9 @@ local function describeData(value, definitions, units)
                 if #values > 0 then
                     text = text .. ' — ' .. L['Saved settings'] .. ': ' .. table.concat(values, '; ')
                 end
-
-                if negated then text = L['NOT'] .. ' (' .. text .. ')' end
+                if negated then
+                    text = L['NOT'] .. ' (' .. text .. ')'
+                end
             end
 
             if definition and (rawget(definition, 'disabled') or rawget(definition, 'functionUnavailable')) then
@@ -336,8 +424,13 @@ local function describeData(value, definitions, units)
             end
         end
 
-        if type(node.name) == 'string' and node.name ~= '' then text = node.name:sub(1, 512) .. ': ' .. text end
-        if node.disabled then text = L['Disabled'] .. ': ' .. text end
+        if type(node.name) == 'string' and node.name ~= '' then
+            text = node.name:sub(1, 512) .. ': ' .. text
+        end
+        if node.disabled then
+            text = L['Disabled'] .. ': ' .. text
+        end
+
         return bounded(text), groupType
     end
 
@@ -355,21 +448,29 @@ function addon:DescribeCondition(condition, spec)
     if self.RotationData and not self.RotationData.CheckPortable(condition) then
         return L["Condition description unavailable: invalid data."]
     end
+    if type(condition) == "table" and next(condition) == nil then
+        return L["Always"]
+    end
 
-    if type(condition) == "table" and next(condition) == nil then return L["Always"] end
     local definitions = self.conditionDefinitions or self.definitions or {}
     local text, truncated
 
     if not needsDataOnly(condition, definitions) then
         local value = self.RotationData and self.RotationData.CopyData(condition) or condition
         local ok, result = pcall(self.printCondition, self, value, spec)
-        if ok and type(result) == "string" and result ~= "" then text = result end
+
+        if ok and type(result) == "string" and result ~= "" then
+            text = result
+        end
     end
 
     if not text then
         local reference
         text, truncated, reference = describeData(condition, definitions, self.units)
-        if reference then text = L["Condition reference (code is not run)."] .. " " .. text end
+
+        if reference then
+            text = L["Condition reference (code is not run)."] .. " " .. text
+        end
     end
 
     if #text > 64000 then
@@ -377,19 +478,28 @@ function addon:DescribeCondition(condition, spec)
         truncated = true
     end
 
-    if truncated then text = text .. "\n" .. L["Condition description truncated; the draft is unchanged."] end
+    if truncated then
+        text = text .. "\n" .. L["Condition description truncated; the draft is unchanged."]
+    end
+
     return text
 end
 
 -- Disabled is a visual state on cards. Remove only flags on semantic condition
 -- nodes in a detached copy; opaque custom payloads remain intact and data-only.
 function addon:DescribeCardCondition(condition, spec)
-    if not self.RotationData.CheckPortable(condition) then return self:DescribeCondition(condition, spec) end
+    if not self.RotationData.CheckPortable(condition) then
+        return self:DescribeCondition(condition, spec)
+    end
+
     local value = self.RotationData.CopyData(condition)
 
     -- Clears the disabled flag on every AND/OR/NOT node of the copy, down to 32 levels.
     local function strip(node, depth)
-        if type(node) ~= "table" or depth > 32 then return end
+        if type(node) ~= "table" or depth > 32 then
+            return
+        end
+
         node.disabled = nil
 
         if node.type == "AND" or node.type == "OR" then

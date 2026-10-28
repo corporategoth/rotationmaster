@@ -23,9 +23,16 @@ function addon:InstallRotationChangeReview(pane)
     function pane:ReviewSnapshot(metadataOnly)
         local snapshot = self.workspace:Snapshot()
         local pending = {}
-        if not metadataOnly and self.nameDirty then snapshot.name = self.name:GetText() end
-        if self.descriptionDirty then snapshot.description = self.description:GetText() end
-        if self.metadataDirty then snapshot.metadata = addon.RotationData.CopyData(self.metadataDraft) end
+
+        if not metadataOnly and self.nameDirty then
+            snapshot.name = self.name:GetText()
+        end
+        if self.descriptionDirty then
+            snapshot.description = self.description:GetText()
+        end
+        if self.metadataDirty then
+            snapshot.metadata = addon.RotationData.CopyData(self.metadataDraft)
+        end
 
         if self.tagsDirty then
             local tags = addon.RotationData.ParseRotationTags(self.tags:GetText())
@@ -77,12 +84,18 @@ function addon:InstallRotationChangeReview(pane)
             }
         end
 
-        if not metadataOnly then self:ReviewPendingFields(snapshot, pending) end
+        if not metadataOnly then
+            self:ReviewPendingFields(snapshot, pending)
+        end
+
         return snapshot, pending
     end
 
     pane.viewChanges = addon:CreateViewChangesButton(pane.frame, pane.apply, function()
-        if not pane.active or pane.workspace.readOnly then return end
+        if not pane.active or pane.workspace.readOnly then
+            return
+        end
+
         local workspace, generation = pane.workspace, pane.generation
         local after, pending = pane:ReviewSnapshot()
 
@@ -113,7 +126,10 @@ function addon:InstallRotationChangeReview(pane)
     local dialog = pane.metadataWindow
 
     dialog.viewChanges = addon:CreateViewChangesButton(dialog.frame, dialog.apply, function()
-        if not dialog:Valid() or pane.workspace.readOnly then return end
+        if not dialog:Valid() or pane.workspace.readOnly then
+            return
+        end
+
         local workspace, generation = pane.workspace, pane.generation
         local after, pending = pane:ReviewSnapshot(true)
         local before = workspace.session:Baseline()
@@ -153,11 +169,17 @@ end
 function addon:InstallConditionChangeReview(shell)
     shell.viewChanges = addon:CreateViewChangesButton(shell.frame, shell.apply, function()
         local active = shell.active
-        if not active or active.readOnly then return end
+
+        if not active or active.readOnly then
+            return
+        end
+
         local pending = {}
 
         for _, card in ipairs(shell.canvas.cards) do
-            if card.pane then addon:PendingWidgetChanges(card.pane, pending) end
+            if card.pane then
+                addon:PendingWidgetChanges(card.pane, pending)
+            end
         end
 
         addon:ShowWorkbenchDraftChanges(
@@ -183,7 +205,9 @@ function addon:InstallConditionChangeReview(shell)
 
         if active then
             for _, card in ipairs(self.canvas.cards) do
-                if card.pane and #addon:PendingWidgetChanges(card.pane) > 0 then dirty = true end
+                if card.pane and #addon:PendingWidgetChanges(card.pane) > 0 then
+                    dirty = true
+                end
             end
         end
 
@@ -266,15 +290,19 @@ function addon:InstallSettingsChangeReview(p)
         button:ClearAllPoints()
         button:SetPoint('RIGHT', self.fields.apply, 'LEFT', -6, 0)
         self.fields.viewChanges = button
-        addon:SetUIScript(button, 'OnClick', self:Guard(function() self:ReviewSettingsChanges() end))
+
+        addon:SetUIScript(button, 'OnClick', self:Guard(function()
+            self:ReviewSettingsChanges()
+        end))
     end
 
     local refresh = p.RefreshUnsaved
 
     -- Chains the pane's unsaved refresh so the button is enabled while a creation or settings draft is dirty.
     function p:RefreshUnsaved()
-        if refresh then refresh(self) end
-
+        if refresh then
+            refresh(self)
+        end
         if self.fields.viewChanges then
             enable(self.fields.viewChanges, self:IsCreationDirty() or self:IsSettingsDraftDirty())
         end
@@ -288,7 +316,10 @@ function addon:InstallCustomChangeReview(dialog)
     dialog.viewChanges = dialog.viewChanges or addon:CreateViewChangesButton(dialog.frame, dialog.apply, function() end)
 
     addon:SetUIScript(dialog.viewChanges, 'OnClick', function()
-        if not dialog.OwnerValid or not dialog.OwnerValid() then return end
+        if not dialog.OwnerValid or not dialog.OwnerValid() then
+            return
+        end
+
         local before = addon:CopySettingsData(dialog.model.baseline)
         local after = dialog.model:Snapshot()
         after.value = dialog:PendingSource()

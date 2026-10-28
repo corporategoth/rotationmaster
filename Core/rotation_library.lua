@@ -27,7 +27,9 @@ end
 -- Advances the execution generation so the lean evaluation plan and the other generation-keyed caches see that library
 -- data changed. Does nothing until the generation has been bound.
 local function invalidateExecution()
-    if advanceExecutionGeneration then advanceExecutionGeneration() end
+    if advanceExecutionGeneration then
+        advanceExecutionGeneration()
+    end
 end
 
 -- Entry points of earlier files captured at load: the choice-context invalidator, the rotation data module, and the
@@ -55,9 +57,15 @@ local BUILTIN_NAME_KEY = "^Default%.[%w%.]+%.Name$"
 -- Returns the translated text for a Built In locale key, or nil when the value is not such a key or the locale has no
 -- text for it.
 local function registeredBuiltinName(key)
-    if type(key) ~= "string" or not key:find(BUILTIN_NAME_KEY) then return nil end
+    if type(key) ~= "string" or not key:find(BUILTIN_NAME_KEY) then
+        return nil
+    end
+
     local text = rawget(L, key)
-    if type(text) == "string" and text ~= "" and text ~= key then return text end
+
+    if type(text) == "string" and text ~= "" and text ~= key then
+        return text
+    end
 end
 
 -- "Default.Era.Druid.Feral.WarcraftTavern.Name" with no translation (a Built In from another version): the
@@ -88,14 +96,30 @@ end
 ---@param rotation string|table|nil
 ---@return string|nil
 function addon:RotationDisplayName(rotation)
-    if type(rotation) == "string" then return registeredBuiltinName(rotation) or rotation end
-    if type(rotation) ~= "table" then return nil end
+    if type(rotation) == "string" then
+        return registeredBuiltinName(rotation) or rotation
+    end
+    if type(rotation) ~= "table" then
+        return nil
+    end
+
     local body = type(rotation.body) == "table" and rotation.body or rotation
     local name = body.name
-    if type(name) == "string" and name ~= "" then return registeredBuiltinName(name) or name end
+
+    if type(name) == "string" and name ~= "" then
+        return registeredBuiltinName(name) or name
+    end
+
     local key = rotation.nameKey
-    if type(key) ~= "string" or key == "" then key = rotation.name end
-    if type(key) ~= "string" or key == "" then return nil end
+
+    if type(key) ~= "string" or key == "" then
+        key = rotation.name
+    end
+
+    if type(key) ~= "string" or key == "" then
+        return nil
+    end
+
     return registeredBuiltinName(key) or key:find(BUILTIN_NAME_KEY) and readableBuiltinKey(key) or key
 end
 
@@ -140,7 +164,9 @@ end
 -- True when the list holds the value; a nil list holds nothing.
 local function contains(list, value)
     for _, entry in ipairs(list or {}) do
-        if entry == value then return true end
+        if entry == value then
+            return true
+        end
     end
 
     return false
@@ -161,13 +187,28 @@ end
 -- context's namespace (Platform/specializations.lua GetRotationSpecKind).
 local function specValue(context)
     local platform = addon.Platform
-    if type(platform) ~= 'table' or type(platform.GetRotationSpecKind) ~= 'function' then return nil, false end
-    if not platform:GetRotationSpecKind() then return nil, false end
-    if context.specValue ~= nil then return context.specValue, true end
+
+    if type(platform) ~= 'table' or type(platform.GetRotationSpecKind) ~= 'function' then
+        return nil, false
+    end
+    if not platform:GetRotationSpecKind() then
+        return nil, false
+    end
+    if context.specValue ~= nil then
+        return context.specValue, true
+    end
+
     local spec = context.spec
-    if spec ~= nil and platform:RotationKeyIsSpecValue() then return spec, true end
+
+    if spec ~= nil and platform:RotationKeyIsSpecValue() then
+        return spec, true
+    end
+
     -- Another namespace than the one being played has no known value here.
-    if spec == nil or addon.currentSpec ~= nil and spec ~= addon.currentSpec then return nil, true end
+    if spec == nil or addon.currentSpec ~= nil and spec ~= addon.currentSpec then
+        return nil, true
+    end
+
     local value
 
     if type(addon.GetRotationSpecValue) == 'function' then
@@ -184,15 +225,26 @@ end
 local function bodySpecs(view)
     local envelope = view.envelope
     local body = type(envelope) == "table" and envelope.body
-    if type(body) == "table" then return body.specs end
+
+    if type(body) == "table" then
+        return body.specs
+    end
+
     return view.specs
 end
 
 -- Exposed for the runtime pass (custom bodies) and the editor list.
 function addon:RotationSpecsApply(specs, spec)
-    if type(specs) ~= "table" or #specs == 0 then return true end
+    if type(specs) ~= "table" or #specs == 0 then
+        return true
+    end
+
     local value, known = specValue({ spec = spec })
-    if not known then return true end
+
+    if not known then
+        return true
+    end
+
     return data.RotationSpecsMatch(specs, value)
 end
 
@@ -206,28 +258,46 @@ local function eligible(view, context, candidates)
     if not view.validation.valid or not view.validation.supported or not view.validation.resolved then
         return false, "invalid-or-unsupported"
     end
+    if not view.enabled then
+        return false, "disabled"
+    end
+    if not matchesClass(view, context) then
+        return false, "class-mismatch"
+    end
+    if candidates then
+        return true
+    end
 
-    if not view.enabled then return false, "disabled" end
-    if not matchesClass(view, context) then return false, "class-mismatch" end
-    if candidates then return true end
     local scope = view.applicability
-    if not scope or not contains(scope.families, context.family) then return false, "edition-mismatch" end
-    if scope.specs and not contains(scope.specs, context.spec) then return false, "specialization-mismatch" end
+
+    if not scope or not contains(scope.families, context.family) then
+        return false, "edition-mismatch"
+    end
+    if scope.specs and not contains(scope.specs, context.spec) then
+        return false, "specialization-mismatch"
+    end
+
     local specs = bodySpecs(view)
 
     if type(specs) == "table" and #specs > 0 then
         local value, known = specValue(context)
-        if known and not data.RotationSpecsMatch(specs, value) then return false, "specialization-mismatch" end
+
+        if known and not data.RotationSpecsMatch(specs, value) then
+            return false, "specialization-mismatch"
+        end
     end
 
-    if scope.actionContext ~= context.actionContext then return false, "action-context-mismatch" end
+    if scope.actionContext ~= context.actionContext then
+        return false, "action-context-mismatch"
+    end
 
     for _, range in ipairs({ { "minLevel", "maxLevel", "level" }, { "minBuild", "maxBuild", "build" } }) do
         local value = context[range[3]]
 
         if scope[range[1]] or scope[range[2]] then
-            if type(value) ~= "number" then return false, "missing-" .. range[3] end
-
+            if type(value) ~= "number" then
+                return false, "missing-" .. range[3]
+            end
             if scope[range[1]] and value < scope[range[1]] or scope[range[2]] and value > scope[range[2]] then
                 return false, range[3] .. "-mismatch"
             end
@@ -240,8 +310,10 @@ local function eligible(view, context, candidates)
 
     if minExpansion or maxExpansion then
         local value = context.expansion
-        if type(value) ~= "number" then return false, "missing-expansion" end
 
+        if type(value) ~= "number" then
+            return false, "missing-expansion"
+        end
         if minExpansion and value < minExpansion or maxExpansion and value > maxExpansion then
             return false, "expansion-mismatch"
         end
@@ -249,14 +321,20 @@ local function eligible(view, context, candidates)
 
     -- These selectors need dedicated context providers before execution is safe.
     -- Keep their definitions visible for reference rather than assuming a match.
-    if scope.intent or scope.roles then return false, "unsupported-context-selector" end
+    if scope.intent or scope.roles then
+        return false, "unsupported-context-selector"
+    end
 
     -- Rulesets (season, hardcore, self-found, standard) come from the cached
     -- build context; any listed ruleset that is active matches.
     if scope.rulesets then
         local provider = addon.GetBuildRulesets
         local active = type(provider) == "function" and provider(addon) or nil
-        if type(active) ~= "table" then return false, "unsupported-context-selector" end
+
+        if type(active) ~= "table" then
+            return false, "unsupported-context-selector"
+        end
+
         local matched = false
 
         for _, ruleset in ipairs(scope.rulesets) do
@@ -266,7 +344,9 @@ local function eligible(view, context, candidates)
             end
         end
 
-        if not matched then return false, "ruleset-mismatch" end
+        if not matched then
+            return false, "ruleset-mismatch"
+        end
     end
 
     -- Restricted clients (Retail, Forever) run complete rotations like any
@@ -307,7 +387,10 @@ end
 
 -- True for a plain gap-free array.
 local function denseList(value)
-    if not plainTable(value) then return false end
+    if not plainTable(value) then
+        return false
+    end
+
     local count = 0
 
     for _ in pairs(value) do
@@ -320,7 +403,10 @@ end
 -- Turns a gap-free list of distinct names (or of distinct non-negative whole numbers when integers is set) into a set,
 -- or returns nil when it is empty, malformed or has a repeat.
 local function stringSet(value, integers)
-    if not denseList(value) or #value == 0 then return nil end
+    if not denseList(value) or #value == 0 then
+        return nil
+    end
+
     local set = {}
 
     for _, entry in ipairs(value) do
@@ -341,12 +427,19 @@ end
 -- 'all' when every consumer value is selected, 'none' when none is, else
 -- 'some'. A nil consumer list means every value (e.g. no declared specs).
 local function coverage(consumer, selector)
-    if selector == nil then return "all" end
-    if consumer == nil then return "some" end
+    if selector == nil then
+        return "all"
+    end
+    if consumer == nil then
+        return "some"
+    end
+
     local hits = 0
 
     for _, value in ipairs(consumer) do
-        if selector[value] then hits = hits + 1 end
+        if selector[value] then
+            hits = hits + 1
+        end
     end
 
     return hits == #consumer and "all" or hits == 0 and "none" or "some"
@@ -363,13 +456,23 @@ end
 
 -- Block-local IDs are unique per variant; references keep only their fields.
 local function checkBlockSteps(list, path, ids)
-    if not denseList(list) then return { code = "invalid-block-steps", path = path } end
+    if not denseList(list) then
+        return { code = "invalid-block-steps", path = path }
+    end
 
     for index, step in ipairs(list) do
         local at = path .. "[" .. index .. "]"
-        if not plainTable(step) then return { code = "invalid-block-step", path = at } end
-        if not blockName(step.id) then return { code = "invalid-block-step-id", path = at .. ".id" } end
-        if ids[step.id] then return { code = "duplicate-block-step-id", path = at .. ".id", detail = step.id } end
+
+        if not plainTable(step) then
+            return { code = "invalid-block-step", path = at }
+        end
+        if not blockName(step.id) then
+            return { code = "invalid-block-step-id", path = at .. ".id" }
+        end
+        if ids[step.id] then
+            return { code = "duplicate-block-step-id", path = at .. ".id", detail = step.id }
+        end
+
         ids[step.id] = true
 
         if step.type == "block" then
@@ -386,7 +489,10 @@ local function checkBlockSteps(list, path, ids)
             for _, arm in ipairs({ "onTrue", "onFalse" }) do
                 if step[arm] ~= nil then
                     local problem = checkBlockSteps(step[arm], at .. "." .. arm, ids)
-                    if problem then return problem end
+
+                    if problem then
+                        return problem
+                    end
                 end
             end
         end
@@ -402,7 +508,10 @@ end
 -- readable client expansion outside the declared range filters; anything
 -- unprovable registers, and eligibility refuses it later.
 local function notForThisCharacter(families, class, minExpansion, maxExpansion)
-    if addon.loadAllDefaults then return false end
+    if addon.loadAllDefaults then
+        return false
+    end
+
     local platform = addon.Platform
     local family = platform and type(platform.GetClientFamily) == "function" and platform:GetClientFamily()
 
@@ -416,7 +525,9 @@ local function notForThisCharacter(families, class, minExpansion, maxExpansion)
             end
         end
 
-        if not listed then return true end
+        if not listed then
+            return true
+        end
     end
 
     if
@@ -460,8 +571,12 @@ end
 -- one-line problem. A block for another character's edition or class is accepted and dropped (true, "other-character").
 -- The block is validated field by field, copied, and rejected when its id is already registered.
 function addon:RegisterDefaultBlock(block)
-    if not plainTable(block) then return false, "invalid-block" end
-    if notForThisCharacter(block.families, block.class) then return true, "other-character" end
+    if not plainTable(block) then
+        return false, "invalid-block"
+    end
+    if notForThisCharacter(block.families, block.class) then
+        return true, "other-character"
+    end
 
     for key in pairs(block) do
         if not blockFields[key] then
@@ -472,7 +587,10 @@ function addon:RegisterDefaultBlock(block)
         end
     end
 
-    if not blockName(block.id) then return false, message({ code = "invalid-block-id", path = "$.id" }) end
+    if not blockName(block.id) then
+        return false, message({ code = "invalid-block-id", path = "$.id" })
+    end
+
     local where = block.id
 
     if not (type(block.revision) == "number" and block.revision >= 1 and block.revision % 1 == 0) then
@@ -480,14 +598,19 @@ function addon:RegisterDefaultBlock(block)
     end
 
     local families = stringSet(block.families)
-    if not families then return false, message({ code = "invalid-block-families", path = where .. ".families" }) end
 
+    if not families then
+        return false, message({ code = "invalid-block-families", path = where .. ".families" })
+    end
     if block.class ~= nil and not data.IsRotationClassToken(block.class) then
         return false, message({ code = "invalid-block-class", path = where .. ".class" })
     end
 
     local problem = checkBlockSteps(block.steps, where .. ".steps", {})
-    if not problem and #block.steps == 0 then problem = { code = "empty-block", path = where .. ".steps" } end
+
+    if not problem and #block.steps == 0 then
+        problem = { code = "empty-block", path = where .. ".steps" }
+    end
 
     if not problem and block.overrides ~= nil then
         if not denseList(block.overrides) then
@@ -508,7 +631,10 @@ function addon:RegisterDefaultBlock(block)
                 end
             end
 
-            if problem then break end
+            if problem then
+                break
+            end
+
             local scoped = override.families ~= nil and stringSet(override.families)
 
             if
@@ -527,17 +653,35 @@ function addon:RegisterDefaultBlock(block)
                 end
             end
 
-            if problem then break end
+            if problem then
+                break
+            end
+
             problem = checkBlockSteps(override.steps, at .. ".steps", {})
-            if not problem and #override.steps == 0 then problem = { code = "empty-block", path = at .. ".steps" } end
-            if problem then break end
+
+            if not problem and #override.steps == 0 then
+                problem = { code = "empty-block", path = at .. ".steps" }
+            end
+
+            if problem then
+                break
+            end
         end
     end
 
-    if problem then return false, message(problem) end
-    if blocks[block.id] then return false, message({ code = "duplicate-block-id", path = where }) end
+    if problem then
+        return false, message(problem)
+    end
+    if blocks[block.id] then
+        return false, message({ code = "duplicate-block-id", path = where })
+    end
+
     local copy, why = data.CopyData(block)
-    if not copy then return false, why.code end
+
+    if not copy then
+        return false, why.code
+    end
+
     blocks[copy.id] = copy
     return true
 end
@@ -549,7 +693,10 @@ end
 -- ID, prefixes compounding through nested references: stable across reloads
 -- and distinct for every inclusion. Each inclusion is a fresh copy.
 local function expandDefinition(envelope)
-    if not plainTable(envelope) then return envelope end
+    if not plainTable(envelope) then
+        return envelope
+    end
+
     local body, declared = envelope.body, envelope.blocks
 
     if declared == nil then
@@ -559,7 +706,10 @@ local function expandDefinition(envelope)
         -- Looks for a block reference in a definition that declares no blocks and returns a problem record for the
         -- first one, so a reference can never reach validation unresolved.
         local function stray(list, path)
-            if not plainTable(list) or seen[list] then return end
+            if not plainTable(list) or seen[list] then
+                return
+            end
+
             seen[list] = true
 
             for index, step in ipairs(list) do
@@ -571,7 +721,10 @@ local function expandDefinition(envelope)
                     end
 
                     local problem = stray(step.onTrue, at .. ".onTrue") or stray(step.onFalse, at .. ".onFalse")
-                    if problem then return problem end
+
+                    if problem then
+                        return problem
+                    end
                 end
             end
         end
@@ -579,7 +732,10 @@ local function expandDefinition(envelope)
         local problem = plainTable(body)
             and (stray(body.rotation, "$.body.rotation") or stray(body.cooldowns, "$.body.cooldowns"))
 
-        if problem then return nil, nil, message(problem) end
+        if problem then
+            return nil, nil, message(problem)
+        end
+
         return envelope
     end
 
@@ -681,7 +837,6 @@ local function expandDefinition(envelope)
             if not block then
                 return fail({ code = "missing-block", path = at .. ".block", via = via, detail = tostring(step.block) })
             end
-
             if active[block.id] then
                 return fail({
                     code = "block-cycle",
@@ -690,13 +845,12 @@ local function expandDefinition(envelope)
                     detail = table.concat(active, ' > ') .. " > " .. block.id,
                 })
             end
-
-            if depth >= 16 then return fail({ code = "block-depth-limit", path = at, via = via }) end
-
+            if depth >= 16 then
+                return fail({ code = "block-depth-limit", path = at, via = via })
+            end
             if pins[block.id] == nil then
                 return fail({ code = "undeclared-block-dependency", path = at, via = via, detail = block.id })
             end
-
             if pins[block.id] ~= block.revision then
                 return fail({
                     code = "stale-block-revision",
@@ -706,7 +860,11 @@ local function expandDefinition(envelope)
             end
 
             local steps, where = variant(block, at, via)
-            if not steps then return nil end
+
+            if not steps then
+                return nil
+            end
+
             used[block.id] = true
             active[block.id] = true
             active[#active + 1] = block.id
@@ -726,7 +884,10 @@ local function expandDefinition(envelope)
         end
 
         local copy, why = data.CopyData(step)
-        if not copy then return fail({ code = why.code, path = at, via = via }) end
+
+        if not copy then
+            return fail({ code = why.code, path = at, via = via })
+        end
 
         if prefix ~= "" then
             copy.id = type(step.id) == "string" and prefix .. step.id or nil
@@ -744,7 +905,10 @@ local function expandDefinition(envelope)
         for _, arm in ipairs({ "onTrue", "onFalse" }) do
             if step.type == "branch" and step[arm] ~= nil then
                 copy[arm] = {}
-                if not expandList(step[arm], at .. "." .. arm, prefix, copy[arm], via, depth) then return nil end
+
+                if not expandList(step[arm], at .. "." .. arm, prefix, copy[arm], via, depth) then
+                    return nil
+                end
             end
         end
 
@@ -754,17 +918,25 @@ local function expandDefinition(envelope)
 
     -- Expands every step of a list in order into out; returns true, or nil when any step failed.
     expandList = function(list, at, prefix, out, via, depth)
-        if not denseList(list) then return fail({ code = "invalid-priority-list", path = at, via = via }) end
+        if not denseList(list) then
+            return fail({ code = "invalid-priority-list", path = at, via = via })
+        end
 
         for index, step in ipairs(list) do
-            if not expandStep(step, at .. "[" .. index .. "]", prefix, out, via, depth) then return nil end
+            if not expandStep(step, at .. "[" .. index .. "]", prefix, out, via, depth) then
+                return nil
+            end
         end
 
         return true
     end
 
     local expanded, why = data.CopyData(envelope)
-    if not expanded then return nil, nil, why.code end
+
+    if not expanded then
+        return nil, nil, why.code
+    end
+
     expanded.blocks = nil
 
     if plainTable(body) then
@@ -807,7 +979,10 @@ local function expandDefinition(envelope)
                 for _, arm in ipairs({ "onTrue", "onFalse" }) do
                     if denseList(step[arm]) then
                         local found = unique(step[arm], where .. "." .. arm)
-                        if found then return found end
+
+                        if found then
+                            return found
+                        end
                     end
                 end
             end
@@ -819,14 +994,19 @@ local function expandDefinition(envelope)
 
         for _, section in ipairs({ "rotation", "cooldowns" }) do
             local found = plainTable(tree) and denseList(tree[section]) and unique(tree[section], "$.body." .. section)
-            if found then return nil, nil, message(found) end
+
+            if found then
+                return nil, nil, message(found)
+            end
         end
 
         if pass == 1 then
             references = {}
 
             for key, kind in pairs(ids) do
-                if kind == "reference" then references[key] = true end
+                if kind == "reference" then
+                    references[key] = true
+                end
             end
         end
     end
@@ -841,8 +1021,15 @@ end
 -- Offline tools and corpus checks read the exact tree registration consumes.
 function addon:ExpandDefaultRotation(envelope)
     local expanded, composition, problem = expandDefinition(envelope)
-    if not expanded then return nil, problem end
-    if expanded == envelope then expanded = data.CopyData(envelope) end
+
+    if not expanded then
+        return nil, problem
+    end
+
+    if expanded == envelope then
+        expanded = data.CopyData(envelope)
+    end
+
     return expanded, composition and data.CopyData(composition)
 end
 
@@ -869,19 +1056,26 @@ function addon:RegisterDefaultRotation(envelope)
     end
 
     local expanded, composition, problem = expandDefinition(envelope)
-    if not expanded then return false, problem end
-    local copy, why = data.CopyData(expanded)
-    if not copy then return false, why.code end
 
+    if not expanded then
+        return false, problem
+    end
+
+    local copy, why = data.CopyData(expanded)
+
+    if not copy then
+        return false, why.code
+    end
     if copy.format ~= "RotationMaster" or copy.schemaVersion ~= 1 or not data.ValidateEnvelope(copy).valid then
         return false, "invalid-envelope"
     end
-
     if not copy.applicability.class and copy.applicability.universal ~= true then
         return false, "missing-class-scope"
     end
+    if definitions[copy.id] then
+        return false, "duplicate-default-id"
+    end
 
-    if definitions[copy.id] then return false, "duplicate-default-id" end
     invalidateExecution()
     definitions[copy.id] = copy
     compositions[copy.id] = composition
@@ -901,7 +1095,10 @@ end
 -- applies again), and one chat line names them. Packs that ship disabled, and
 -- every enabled=true, are left alone.
 local function repairBuiltinPreferences(self, profile, state)
-    if type(UnitClass) ~= "function" then return end
+    if type(UnitClass) ~= "function" then
+        return
+    end
+
     local ok, _, class = pcall(UnitClass, "player")
 
     if
@@ -914,10 +1111,20 @@ local function repairBuiltinPreferences(self, profile, state)
     end
 
     local repairs = profile.builtinPreferenceRepairs
-    if repairs ~= nil and not plainTable(repairs) then return end
-    if repairs and repairs[class] then return end
+
+    if repairs ~= nil and not plainTable(repairs) then
+        return
+    end
+    if repairs and repairs[class] then
+        return
+    end
+
     local preferences = state.preferences
-    if preferences ~= nil and not plainTable(preferences) then return end
+
+    if preferences ~= nil and not plainTable(preferences) then
+        return
+    end
+
     local restored = {}
 
     for id, definition in pairs(definitions) do
@@ -931,7 +1138,11 @@ local function repairBuiltinPreferences(self, profile, state)
             and (not plainTable(scope) or scope.class == nil or scope.class == class)
         then
             preference.enabled = nil
-            if next(preference) == nil then preferences[id] = nil end
+
+            if next(preference) == nil then
+                preferences[id] = nil
+            end
+
             restored[#restored + 1] = L[definition.nameKey or id]
         end
     end
@@ -984,7 +1195,9 @@ function addon:InitializeRotationLibrary()
     state.preferences, state.origins, state.comparisons, state.imports =
         state.preferences or {}, state.origins or {}, state.comparisons or {}, state.imports or {}
 
-    if next(definitions) ~= nil then repairBuiltinPreferences(self, profile, state) end
+    if next(definitions) ~= nil then
+        repairBuiltinPreferences(self, profile, state)
+    end
 
     -- Only preferences are shared with the persisted namespace. Clone construction
     -- uses a temporary catalog; the legacy editor retains the sole saved body.
@@ -1021,7 +1234,10 @@ function addon:InitializeRotationLibrary()
         -- The player's priority for this pack (profile, keyed by id, so it
         -- survives revisions) replaces the shipped one on the runtime copy.
         local override = plainTable(state.preferences[id]) and data.GetRotationPriority(state.preferences[id].priority)
-        if override and state.preferences[id].priority ~= nil then bodies[id].priority = override end
+
+        if override and state.preferences[id].priority ~= nil then
+            bodies[id].priority = override
+        end
     end
 
     invalidateExecution()
@@ -1148,22 +1364,43 @@ end
 -- their historical read order (one call each per observation).
 local function observeActionContext(read)
     local vehicle = read(UnitHasVehicleUI, "player")
-    if vehicle == nil then vehicle = read(UnitInVehicle, "player") end
-    if C_PetBattles and read(C_PetBattles.IsInBattle) then return "petbattle" end
+
+    if vehicle == nil then
+        vehicle = read(UnitInVehicle, "player")
+    end
+
+    if C_PetBattles and read(C_PetBattles.IsInBattle) then
+        return "petbattle"
+    end
+
     -- Retail 12.0 keeps these bar queries in C_ActionBar; the globals exist
     -- there only behind the loadDeprecationFallbacks CVar.
     local bars = type(C_ActionBar) == "table" and C_ActionBar or nil
-    if vehicle or read(bars and bars.HasVehicleActionBar or HasVehicleActionBar) then return "vehicle" end
-    if read(bars and bars.HasOverrideActionBar or HasOverrideActionBar) then return "override" end
-    if read(bars and bars.IsPossessBarVisible or IsPossessBarVisible) then return "possession" end
+
+    if vehicle or read(bars and bars.HasVehicleActionBar or HasVehicleActionBar) then
+        return "vehicle"
+    end
+    if read(bars and bars.HasOverrideActionBar or HasOverrideActionBar) then
+        return "override"
+    end
+    if read(bars and bars.IsPossessBarVisible or IsPossessBarVisible) then
+        return "possession"
+    end
+
     return "player"
 end
 
 -- Fresh observation for the event-driven cache in main.lua; never polled.
 local function readActionContextValue(fn, ...)
-    if type(fn) ~= "function" then return nil end
+    if type(fn) ~= "function" then
+        return nil
+    end
+
     local ok, value = pcall(fn, ...)
-    if ok and addon.Platform:CanReadValue(value) then return value end
+
+    if ok and addon.Platform:CanReadValue(value) then
+        return value
+    end
 end
 
 -- Reads the action context now (player, vehicle, override, possession or petbattle). Called by main.lua's event-driven
@@ -1179,9 +1416,15 @@ function addon:GetRotationContext(spec)
 
     -- Calls fn protected and returns its value only when the client allows reading it.
     local function read(fn, ...)
-        if type(fn) ~= "function" then return nil end
+        if type(fn) ~= "function" then
+            return nil
+        end
+
         local ok, value = pcall(fn, ...)
-        if ok and self.Platform:CanReadValue(value) then return value end
+
+        if ok and self.Platform:CanReadValue(value) then
+            return value
+        end
     end
 
     -- Returns the player's class token.
@@ -1211,7 +1454,10 @@ local contextEnvironment = type(contextGetfenv) == "function" and contextGetfenv
 local bindClient = addon.BindRotationClientReader
 
 if type(bindClient) == 'function' then
-    bindClient(addon, function(reader) clientContextReader = reader end)
+    bindClient(addon, function(reader)
+        clientContextReader = reader
+    end)
+
     addon.BindRotationClientReader = nil
 end
 
@@ -1229,9 +1475,15 @@ local function rotationContext(owner, spec)
 
     -- Calls fn protected and returns its value only when the client allows reading it.
     local function read(fn, ...)
-        if type(fn) ~= "function" then return nil end
+        if type(fn) ~= "function" then
+            return nil
+        end
+
         local ok, value = pcall(fn, ...)
-        if ok and owner.Platform:CanReadValue(value) then return value end
+
+        if ok and owner.Platform:CanReadValue(value) then
+            return value
+        end
     end
 
     -- Returns the player's class token.
@@ -1253,9 +1505,15 @@ end
 local function runtimeActionContext(owner)
     -- Calls fn protected and returns its value only when the client allows reading it.
     local function read(fn, ...)
-        if type(fn) ~= "function" then return nil end
+        if type(fn) ~= "function" then
+            return nil
+        end
+
         local ok, value = pcall(fn, ...)
-        if ok and owner.Platform:CanReadValue(value) then return value end
+
+        if ok and owner.Platform:CanReadValue(value) then
+            return value
+        end
     end
 
     return observeActionContext(read)
@@ -1280,7 +1538,10 @@ end
 -- One-time handoff to the scoped coordinator. No canonical source getter stays
 -- on the addon surface after its consumer captures this private reader.
 function addon:BindRotationLibraryReader(bind)
-    if type(bind) ~= 'function' then return nil, 'invalid-library-reader-binder' end
+    if type(bind) ~= 'function' then
+        return nil, 'invalid-library-reader-binder'
+    end
+
     local owner = self
     local reader = {}
 
@@ -1385,7 +1646,11 @@ function addon:BindRotationLibraryReader(bind)
     -- and a reason.
     local function generationMethod(self)
         local ok, why, checked, proof = ensure(owner, true)
-        if not ok then return nil, why end
+
+        if not ok then
+            return nil, why
+        end
+
         return active.generation, nil, checked, proof
     end
 
@@ -1407,12 +1672,24 @@ function addon:BindRotationLibraryReader(bind)
     -- from the view, the runtime body and the eligibility answer.
     function reader:Read(spec, id, project, candidates)
         local ok, why = ensure(owner)
-        if not ok then return nil, why end
+
+        if not ok then
+            return nil, why
+        end
+
         local view = active.views[id]
-        if not view then return nil, 'unknown-rotation' end
+
+        if not view then
+            return nil, 'unknown-rotation'
+        end
+
         local context = rotationContext(owner, spec)
         context.spec = spec
-        if not matchesClass(view, context) then return nil, 'class-mismatch' end
+
+        if not matchesClass(view, context) then
+            return nil, 'class-mismatch'
+        end
+
         local allowed, reason = eligible(view, context, candidates)
         return true, project(view, active.bodies[id], allowed, reason), active.generation
     end
@@ -1420,13 +1697,19 @@ function addon:BindRotationLibraryReader(bind)
     -- Returns one projected row per Built In of the player's class, with the generation; or nil and a reason.
     function reader:List(spec, project)
         local ok, why = ensure(owner)
-        if not ok then return nil, why end
+
+        if not ok then
+            return nil, why
+        end
+
         local context = rotationContext(owner, spec)
         context.spec = spec
         local rows = {}
 
         for id, view in pairs(active.views) do
-            if matchesClass(view, context) then rows[#rows + 1] = project(id, view, active.bodies[id]) end
+            if matchesClass(view, context) then
+                rows[#rows + 1] = project(id, view, active.bodies[id])
+            end
         end
 
         return rows, active.generation
@@ -1477,7 +1760,11 @@ end
 -- condition unavailable only because it belongs to that edition. For menus and the editor, not the poll.
 function addon:ListDefaultRotations(spec)
     local ok, why = ensure(self)
-    if not ok then return {}, why end
+
+    if not ok then
+        return {}, why
+    end
+
     local context = self:GetRotationContext(spec)
     context.spec = spec
     local custom = (self.db.profile.rotations or {})[spec] or {}
@@ -1505,7 +1792,9 @@ function addon:ListDefaultRotations(spec)
                     envelope = view.envelope,
                 }, context)
 
-                if not scoped then row.eligibilityReason = scopeReason end
+                if not scoped then
+                    row.eligibilityReason = scopeReason
+                end
             end
 
             row.name = L[row.nameKey or id]
@@ -1515,7 +1804,10 @@ function addon:ListDefaultRotations(spec)
     end
 
     table.sort(rows, function(a, b)
-        if a.name == b.name then return a.id < b.id end
+        if a.name == b.name then
+            return a.id < b.id
+        end
+
         return a.name < b.name
     end)
 
@@ -1529,7 +1821,11 @@ end
 -- Commands, menus and the editor only; never while polling.
 function addon:GetBuiltinStates(spec)
     local ok, why = ensure(self)
-    if not ok then return {}, why end
+
+    if not ok then
+        return {}, why
+    end
+
     local context = self:GetRotationContext(spec)
     context.spec = spec
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
@@ -1540,7 +1836,11 @@ function addon:GetBuiltinStates(spec)
         if matchesClass(view, context) then
             local preference = active.state.preferences[id]
             local saved = nil
-            if plainTable(preference) and type(preference.enabled) == 'boolean' then saved = preference.enabled end
+
+            if plainTable(preference) and type(preference.enabled) == 'boolean' then
+                saved = preference.enabled
+            end
+
             local definition = definitions[id]
             local shipped = plainTable(definition) and plainTable(definition.body) and definition.body.disabled == true
             local state
@@ -1589,7 +1889,10 @@ function addon:GetBuiltinStates(spec)
     end
 
     table.sort(rows, function(a, b)
-        if a.name == b.name then return a.id < b.id end
+        if a.name == b.name then
+            return a.id < b.id
+        end
+
         return a.name < b.name
     end)
 
@@ -1599,14 +1902,25 @@ end
 -- One Built In's switch: true (on), false (off) and the state name from
 -- GetBuiltinStates; nil when unknown. Live, never a cached copy.
 function addon:GetBuiltinSwitch(id)
-    if not ensure(self) then return nil end
+    if not ensure(self) then
+        return nil
+    end
+
     local view = active.views[id]
-    if not view then return nil end
+
+    if not view then
+        return nil
+    end
+
     local preference = active.state.preferences[id]
     local definition = definitions[id]
     local shipped = plainTable(definition) and plainTable(definition.body) and definition.body.disabled == true
     local saved = nil
-    if plainTable(preference) and type(preference.enabled) == 'boolean' then saved = preference.enabled end
+
+    if plainTable(preference) and type(preference.enabled) == 'boolean' then
+        saved = preference.enabled
+    end
+
     local on = view.switchedOn == true
 
     local state = not view.validation.valid and 'invalid'
@@ -1619,7 +1933,10 @@ end
 
 -- Returns the catalog view of a Built In by id, or nil.
 function addon:GetDefaultRotation(id)
-    if not ensure(self) then return nil end
+    if not ensure(self) then
+        return nil
+    end
+
     return active.catalog:Get({ kind = "builtin", id = id })
 end
 
@@ -1629,9 +1946,17 @@ end
 function addon:SetDefaultRotationEnabled(id, value)
     local change = beginActive(self)
     local ok, why = ensure(self)
-    if not ok then return false, why end
+
+    if not ok then
+        return false, why
+    end
+
     local selected = self.currentRotation and self:GetDefaultIdForRuntime(self.currentSpec, self.currentRotation) == id
-    if not activeCurrent(self, change) then return false, 'rotation-transition-superseded' end
+
+    if not activeCurrent(self, change) then
+        return false, 'rotation-transition-superseded'
+    end
+
     local saved, reason = active.catalog:SetEnabled({ kind = "builtin", id = id }, value)
 
     -- Only a choice that differs from the shipped default is kept; choosing
@@ -1646,7 +1971,10 @@ function addon:SetDefaultRotationEnabled(id, value)
 
         if plainTable(preference) and preference.enabled == shippedOn then
             preference.enabled = nil
-            if next(preference) == nil then active.state.preferences[id] = nil end
+
+            if next(preference) == nil then
+                active.state.preferences[id] = nil
+            end
         end
     end
 
@@ -1655,16 +1983,25 @@ function addon:SetDefaultRotationEnabled(id, value)
         active.views[id] = active.catalog:Get({ kind = "builtin", id = id })
         invalidateExecution()
         active.generation = {}
-        if invalidateChoiceContext then invalidateChoiceContext(self) end
+
+        if invalidateChoiceContext then
+            invalidateChoiceContext(self)
+        end
     end
 
     if saved and not value and selected and activeCurrent(self, change) then
         local disable = self.DisableRotation
-        if not activeCurrent(self, change) then return saved, reason end
+
+        if not activeCurrent(self, change) then
+            return saved, reason
+        end
 
         if type(disable) == 'function' then
             local _, nextChange, stopped = disable(self)
-            if stopped ~= false and activeCurrent(self, nextChange or change) then self.manualRotation = false end
+
+            if stopped ~= false and activeCurrent(self, nextChange or change) then
+                self.manualRotation = false
+            end
         elseif retireActive(self, change) and activeCurrent(self, change) then
             self.manualRotation = false
         end
@@ -1680,7 +2017,10 @@ end
 local identifierCache, identifierVersion
 
 local function builtinIdentifiers()
-    if identifierVersion == definitionVersion and identifierCache then return identifierCache end
+    if identifierVersion == definitionVersion and identifierCache then
+        return identifierCache
+    end
+
     local ids = {}
 
     for id in pairs(definitions) do
@@ -1746,16 +2086,25 @@ end
 -- Returns the profile's overrides of one Built In next to the shipped values and the effective ones, or nil when the id
 -- is unknown. Reads live; nothing is copied into the profile.
 function addon:GetBuiltinOverrides(id)
-    if not ensure(self) then return nil end
-    if not active.views[id] then return nil end
+    if not ensure(self) then
+        return nil
+    end
+    if not active.views[id] then
+        return nil
+    end
+
     local preference = active.state.preferences[id]
     local definition = definitions[id]
     local shippedOn = not (plainTable(definition) and plainTable(definition.body) and definition.body.disabled == true)
     local result = { shippedEnabled = shippedOn, shippedPriority = shippedPriority(id) }
 
     if plainTable(preference) then
-        if type(preference.enabled) == 'boolean' then result.enabled = preference.enabled end
-        if preference.priority ~= nil then result.priority = data.GetRotationPriority(preference.priority) end
+        if type(preference.enabled) == 'boolean' then
+            result.enabled = preference.enabled
+        end
+        if preference.priority ~= nil then
+            result.priority = data.GetRotationPriority(preference.priority)
+        end
     end
 
     result.effectiveEnabled = result.enabled == nil and shippedOn or result.enabled == true
@@ -1769,12 +2118,23 @@ end
 -- invalid-priority, invalid-preference).
 function addon:SetBuiltinPriority(id, value)
     local ok, why = ensure(self)
-    if not ok then return false, why end
-    if not active.views[id] then return false, 'unknown-rotation' end
-    if value ~= nil and not data.GetRotationPriority(value) then return false, 'invalid-priority' end
+
+    if not ok then
+        return false, why
+    end
+    if not active.views[id] then
+        return false, 'unknown-rotation'
+    end
+    if value ~= nil and not data.GetRotationPriority(value) then
+        return false, 'invalid-priority'
+    end
+
     local preferences = active.state.preferences
     local preference = preferences[id]
-    if preference ~= nil and not plainTable(preference) then return false, 'invalid-preference' end
+
+    if preference ~= nil and not plainTable(preference) then
+        return false, 'invalid-preference'
+    end
 
     if value ~= nil and value ~= shippedPriority(id) then
         if not preference then
@@ -1785,23 +2145,40 @@ function addon:SetBuiltinPriority(id, value)
         preference.priority = value
     elseif preference then
         preference.priority = nil
-        if next(preference) == nil then preferences[id] = nil end
+
+        if next(preference) == nil then
+            preferences[id] = nil
+        end
     end
 
     invalidateExecution()
     active.bodies[id].priority = value ~= nil and value or shippedPriority(id)
     active.generation = {}
-    if invalidateChoiceContext then invalidateChoiceContext(self) end
+
+    if invalidateChoiceContext then
+        invalidateChoiceContext(self)
+    end
+
     return true
 end
 
 -- Back to the shipped switch and priority: the preference entry is removed.
 function addon:ResetBuiltinOverrides(id)
     local current = self:GetBuiltinOverrides(id)
-    if not current then return false, 'unknown-rotation' end
+
+    if not current then
+        return false, 'unknown-rotation'
+    end
+
     local ok, why = self:SetBuiltinPriority(id, nil)
-    if not ok then return false, why end
-    if current.enabled ~= nil then return self:SetDefaultRotationEnabled(id, current.shippedEnabled) end
+
+    if not ok then
+        return false, why
+    end
+    if current.enabled ~= nil then
+        return self:SetDefaultRotationEnabled(id, current.shippedEnabled)
+    end
+
     return true
 end
 
@@ -1809,7 +2186,11 @@ end
 -- otherwise it reads the profile table.
 function addon:GetEditableRotation(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:GetEditableRotation(spec, id) end
+
+    if scoped then
+        return scoped:GetEditableRotation(spec, id)
+    end
+
     local rotations = self.db.profile.rotations[spec]
     return rotations and rotations[id]
 end
@@ -1819,10 +2200,15 @@ end
 function addon:OwnsRotationCondition(spec, id, step, condition)
     local body = self:GetEditableRotation(spec, id)
     local tree = body and data.IndexRotationSteps(body, { allowMissingIds = true })
-    if not tree then return false end
+
+    if not tree then
+        return false
+    end
 
     for _, row in ipairs(tree.rows) do
-        if row.step == step and step.conditions == condition then return true end
+        if row.step == step and step.conditions == condition then
+            return true
+        end
     end
 
     return false
@@ -1841,7 +2227,11 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
 
     if scoped then
         local pass, why = scoped:RuntimePass(spec)
-        if not pass then return {}, why end
+
+        if not pass then
+            return {}, why
+        end
+
         local rows, reason = pass:Candidates(candidates == true)
 
         for key, body in pairs(rows) do
@@ -1858,7 +2248,11 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
     end
 
     local rotations = {}
-    if spec == nil then return rotations end
+
+    if spec == nil then
+        return rotations
+    end
+
     local ready = ensure(self)
     local context = self:GetRotationContext(spec)
     context.spec = spec
@@ -1870,7 +2264,10 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
     for id, body in pairs(self.db.profile.rotations[spec] or {}) do
         local scoped = scopes and scopes[id]
         local imported, importError
-        if self.GetImportedRotationView then imported, importError = self:GetImportedRotationView(spec, id) end
+
+        if self.GetImportedRotationView then
+            imported, importError = self:GetImportedRotationView(spec, id)
+        end
 
         if scoped then
             -- The legacy editor mutates the saved body directly. Inspect its
@@ -1902,7 +2299,9 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
         end
     end
 
-    if not ready then return rotations end
+    if not ready then
+        return rotations
+    end
 
     for id, view in pairs(active.views) do
         if eligible(view, context, candidates) then
@@ -1923,11 +2322,23 @@ function addon:GetRuntimeRotation(spec, id)
 
     if scoped then
         local pass, why = scoped:RuntimePass(spec)
-        if not pass then return nil, why end
+
+        if not pass then
+            return nil, why
+        end
+
         local body, bodyReason = pass:Get(id)
-        if not body then return nil, bodyReason end
+
+        if not body then
+            return nil, bodyReason
+        end
+
         local reference = scoped:Resolve(spec, id)
-        if reference.kind == 'custom' then return scoped:GetEditableRotation(spec, reference) end
+
+        if reference.kind == 'custom' then
+            return scoped:GetEditableRotation(spec, reference)
+        end
+
         return data.CopyData(body)
     end
 
@@ -1944,13 +2355,25 @@ end
 -- rotation-changed-externally...).
 function addon:CloneDefaultRotation(spec, id, name, options)
     local coordinator = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if coordinator then return coordinator:Copy(spec, { kind = 'builtin', id = id }, name, options) end
+
+    if coordinator then
+        return coordinator:Copy(spec, { kind = 'builtin', id = id }, name, options)
+    end
+
     local ok, why = ensure(self)
-    if not ok then return nil, why end
+
+    if not ok then
+        return nil, why
+    end
+
     local profile = self.db.profile
     local roots, library = profile.rotations, profile.rotationLibrary
     local source = active.catalog:Get({ kind = "builtin", id = id })
-    if not source then return nil, "unknown-rotation" end
+
+    if not source then
+        return nil, "unknown-rotation"
+    end
+
     local context = self:GetRotationContext(spec)
 
     if not data.IsRotationClassToken(context.class) or not matchesClass(source, context) then
@@ -1961,14 +2384,20 @@ function addon:CloneDefaultRotation(spec, id, name, options)
     local temporary = data.NewCatalog({ state = state, newId = self.uuid })
     assert(temporary:RegisterBuiltin(source.envelope))
     local generated, reason = temporary:Clone({ kind = "builtin", id = id }, name)
-    if not generated then return nil, reason end
 
+    if not generated then
+        return nil, reason
+    end
     if self.db.profile ~= profile or profile.rotations ~= roots or profile.rotationLibrary ~= library then
         return nil, 'rotation-changed-externally'
     end
 
     local rotations = self.db.profile.rotations[spec] or {}
-    if rotations[generated] ~= nil then return nil, "id-collision" end
+
+    if rotations[generated] ~= nil then
+        return nil, "id-collision"
+    end
+
     local view = temporary:Get({ kind = "custom", id = generated })
     local manifest = view.envelope
     local body = manifest.body
@@ -1980,9 +2409,17 @@ function addon:CloneDefaultRotation(spec, id, name, options)
     end
 
     local origins = active.state.origins[spec]
-    if origins ~= nil and not plainTable(origins) then return nil, "invalid-origin-state" end
+
+    if origins ~= nil and not plainTable(origins) then
+        return nil, "invalid-origin-state"
+    end
+
     origins = origins or {}
-    if origins[generated] ~= nil then return nil, "id-collision" end
+
+    if origins[generated] ~= nil then
+        return nil, "id-collision"
+    end
+
     self.db.profile.rotations[spec] = rotations
     rotations[generated] = body
     active.state.origins[spec] = origins
@@ -1999,13 +2436,29 @@ end
 -- when it was never a clone, invalid-origin-state when the retained record is damaged).
 function addon:GetSourcedRotationView(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:SourceView(spec, id, false) end
+
+    if scoped then
+        return scoped:SourceView(spec, id, false)
+    end
+
     local ok, why = ensure(self)
-    if not ok then return nil, why end
+
+    if not ok then
+        return nil, why
+    end
+
     local origins = active.state.origins[spec]
-    if origins == nil then return nil, "no-source-baseline" end
-    if not plainTable(origins) then return nil, "invalid-origin-state" end
-    if origins[id] == nil then return nil, "no-source-baseline" end
+
+    if origins == nil then
+        return nil, "no-source-baseline"
+    end
+    if not plainTable(origins) then
+        return nil, "invalid-origin-state"
+    end
+    if origins[id] == nil then
+        return nil, "no-source-baseline"
+    end
+
     local origin, problem = data.CopyData(origins[id])
 
     if problem or not plainTable(origin) or not plainTable(origin.manifest) or origin.manifest.id ~= id then
@@ -2013,28 +2466,52 @@ function addon:GetSourcedRotationView(spec, id)
     end
 
     local body = self:GetEditableRotation(spec, id)
-    if not body then return nil, "unknown-rotation" end
+
+    if not body then
+        return nil, "unknown-rotation"
+    end
+
     local envelope = data.CopyData(origin.manifest)
     envelope.body = data.CopyData(body)
-    if not envelope.body then return nil, "invalid-custom-body" end
+
+    if not envelope.body then
+        return nil, "invalid-custom-body"
+    end
+
     -- Catalog validates both current structure and retained historical lineage.
     local state = { custom = { [id] = envelope }, lineage = { [id] = origin.lineage } }
     local catalog, reason = data.NewCatalog({ state = state })
-    if not catalog then return nil, reason end
+
+    if not catalog then
+        return nil, reason
+    end
+
     local view = catalog:Get({ kind = "custom", id = id })
-    if view.lineageError then return nil, "invalid-origin-state" end
+
+    if view.lineageError then
+        return nil, "invalid-origin-state"
+    end
+
     return view
 end
 
 -- True when the runtime key belongs to a Built In.
 function addon:IsDefaultRuntimeRotation(spec, key)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return self:GetDefaultIdForRuntime(spec, key) ~= nil end
-    if not ensure(self) then return false end
+
+    if scoped then
+        return self:GetDefaultIdForRuntime(spec, key) ~= nil
+    end
+    if not ensure(self) then
+        return false
+    end
+
     local custom = (self.db.profile.rotations or {})[spec] or {}
 
     for id in pairs(active.views) do
-        if runtimeKey(id, custom) == key then return true end
+        if runtimeKey(id, custom) == key then
+            return true
+        end
     end
 
     return false
@@ -2049,11 +2526,16 @@ function addon:GetDefaultIdForRuntime(spec, key)
         return ref and ref.kind == 'builtin' and ref.id or nil
     end
 
-    if not ensure(self) then return nil end
+    if not ensure(self) then
+        return nil
+    end
+
     local custom = (self.db.profile.rotations or {})[spec] or {}
 
     for id in pairs(active.views) do
-        if runtimeKey(id, custom) == key then return id end
+        if runtimeKey(id, custom) == key then
+            return id
+        end
     end
 end
 
@@ -2068,14 +2550,26 @@ end
 -- Built In runtime body.
 function addon:GetRotationForCleanup(spec, key)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:Cleanup(spec, key) end
+
+    if scoped then
+        return scoped:Cleanup(spec, key)
+    end
+
     local custom = self:GetEditableRotation(spec, key)
-    if custom then return custom end
-    if not ensure(self) then return nil end
+
+    if custom then
+        return custom
+    end
+    if not ensure(self) then
+        return nil
+    end
+
     local saved = self.db.profile.rotations[spec] or {}
 
     for id, body in pairs(active.bodies) do
-        if runtimeKey(id, saved) == key then return body end
+        if runtimeKey(id, saved) == key then
+            return body
+        end
     end
 end
 
@@ -2083,10 +2577,20 @@ end
 -- pretend an incomplete legacy body is a validated historical envelope.
 function addon:GetRotationComparisonIdentity(spec, id)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:ComparisonIdentity(spec, id) end
-    if not ensure(self) then return nil, "invalid-library-state" end
+
+    if scoped then
+        return scoped:ComparisonIdentity(spec, id)
+    end
+    if not ensure(self) then
+        return nil, "invalid-library-state"
+    end
+
     local rows = active.state.comparisons[spec]
-    if rows ~= nil and not plainTable(rows) then return nil, "invalid-comparison-origin" end
+
+    if rows ~= nil and not plainTable(rows) then
+        return nil, "invalid-comparison-origin"
+    end
+
     local identity
 
     if rows and rows[id] ~= nil then
@@ -2105,7 +2609,10 @@ function addon:GetRotationComparisonIdentity(spec, id)
     end
 
     local view, viewError = self:GetSourcedRotationView(spec, id)
-    if not view and viewError ~= "no-source-baseline" then return nil, viewError end
+
+    if not view and viewError ~= "no-source-baseline" then
+        return nil, viewError
+    end
 
     if view then
         if identity and (identity.kind ~= view.lineage.sourceKind or identity.id ~= view.lineage.sourceId) then
@@ -2138,7 +2645,11 @@ end
 -- a real data copy, fresh step identities, and explicitly retain source lineage.
 function addon:DuplicateCustomRotation(spec, id, name, options)
     local scoped = self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
-    if scoped then return scoped:Copy(spec, id, name, options) end
+
+    if scoped then
+        return scoped:Copy(spec, id, name, options)
+    end
+
     local profile = self.db.profile
     local roots, library = profile.rotations, profile.rotationLibrary
 
@@ -2155,7 +2666,11 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
             }
 
             local revision, problem = data.GetRotationContentRevision(prepared.body)
-            if not revision then return nil, problem end
+
+            if not revision then
+                return nil, problem
+            end
+
             prepared.manifest.body = nil
             prepared.body.revision = 1
 
@@ -2171,32 +2686,62 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
 
     local source = self:GetEditableRotation(spec, id)
     local body, problem = data.CopyData(source)
-    if problem or type(body) ~= "table" then return nil, "invalid-custom-body" end
-    local revision, revisionError = data.GetRotationContentRevision(body)
-    if not revision then return nil, revisionError end
-    if type(name) ~= "string" or name == "" then return nil, "invalid-name" end
 
+    if problem or type(body) ~= "table" then
+        return nil, "invalid-custom-body"
+    end
+
+    local revision, revisionError = data.GetRotationContentRevision(body)
+
+    if not revision then
+        return nil, revisionError
+    end
+    if type(name) ~= "string" or name == "" then
+        return nil, "invalid-name"
+    end
     if self.db.profile ~= profile or profile.rotations ~= roots or profile.rotationLibrary ~= library then
         return nil, 'rotation-changed-externally'
     end
 
     local ok, why = ensure(self)
-    if not ok then return nil, why end
-    if library == nil then library = profile.rotationLibrary end
+
+    if not ok then
+        return nil, why
+    end
+
+    if library == nil then
+        library = profile.rotationLibrary
+    end
+
     local origins = active.state.origins[spec]
-    if origins ~= nil and not plainTable(origins) then return nil, "invalid-origin-state" end
+
+    if origins ~= nil and not plainTable(origins) then
+        return nil, "invalid-origin-state"
+    end
+
     local sourceView
 
     if origins and origins[id] ~= nil then
         sourceView, why = self:GetSourcedRotationView(spec, id)
-        if not sourceView then return nil, why end
+
+        if not sourceView then
+            return nil, why
+        end
     end
 
     local identity, identityError = self:GetRotationComparisonIdentity(spec, id)
-    if not identity then return nil, identityError end
+
+    if not identity then
+        return nil, identityError
+    end
+
     local correspondence = { kind = identity.kind, id = identity.id, origins = {} }
     local comparisonRows = active.state.comparisons[spec]
-    if comparisonRows ~= nil and not plainTable(comparisonRows) then return nil, "invalid-comparison-origin" end
+
+    if comparisonRows ~= nil and not plainTable(comparisonRows) then
+        return nil, "invalid-comparison-origin"
+    end
+
     local used = {}
 
     for _, rotations in pairs(self.db.profile.rotations) do
@@ -2210,7 +2755,9 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
 
     -- Marks a string as a taken identity.
     local function reserve(value)
-        if type(value) == "string" then used[value] = true end
+        if type(value) == "string" then
+            used[value] = true
+        end
     end
 
     -- Marks an envelope's own id and every identity inside it as taken.
@@ -2233,7 +2780,10 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
                 if type(retained) == "table" then
                     reserve(retained.sourceId)
                     reserve(retained.clonedFrom)
-                    if type(retained.baseline) == "table" then reserveEnvelope(retained.baseline) end
+
+                    if type(retained.baseline) == "table" then
+                        reserveEnvelope(retained.baseline)
+                    end
 
                     if type(retained.stepOrigins) == "table" then
                         for step, origin in pairs(retained.stepOrigins) do
@@ -2274,14 +2824,20 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
         if not generatedOk or type(value) ~= "string" or #value > 128 or not value:match("^[%w][%w._:%-]*$") then
             return nil, "invalid-id-provider"
         end
+        if used[value] or definitions[value] then
+            return nil, "id-collision"
+        end
 
-        if used[value] or definitions[value] then return nil, "id-collision" end
         used[value] = true
         return value
     end
 
     local generated, reason = fresh()
-    if not generated then return nil, reason end
+
+    if not generated then
+        return nil, reason
+    end
+
     local lineage = sourceView and data.CopyData(sourceView.lineage)
     local previousOrigins = lineage and lineage.stepOrigins
 
@@ -2291,13 +2847,23 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
     end
 
     local indexed, indexError = data.IndexRotationSteps(body, { allowMissingIds = true })
-    if not indexed then return nil, indexError.code end
+
+    if not indexed then
+        return nil, indexError.code
+    end
 
     for _, row in ipairs(indexed.rows) do
         local entry = row.step
         local stepId, errorCode = fresh()
-        if not stepId then return nil, errorCode end
-        if lineage then lineage.stepOrigins[stepId] = previousOrigins[entry.id] end
+
+        if not stepId then
+            return nil, errorCode
+        end
+
+        if lineage then
+            lineage.stepOrigins[stepId] = previousOrigins[entry.id]
+        end
+
         correspondence.origins[stepId] = identity.origins and identity.origins[entry.id] or entry.id
         entry.id = stepId
     end
@@ -2318,13 +2884,16 @@ function addon:DuplicateCustomRotation(spec, id, name, options)
     if origins and origins[generated] ~= nil or comparisonRows and comparisonRows[generated] ~= nil then
         return nil, "id-collision"
     end
-
     if self.db.profile ~= profile or profile.rotations ~= roots or profile.rotationLibrary ~= library then
         return nil, 'rotation-changed-externally'
     end
 
     self.db.profile.rotations[spec][generated] = body
-    if metadata then origins[generated] = metadata end
+
+    if metadata then
+        origins[generated] = metadata
+    end
+
     comparisonRows = comparisonRows or {}
     active.state.comparisons[spec] = comparisonRows
     comparisonRows[generated] = correspondence
@@ -2341,8 +2910,14 @@ function addon:BuildRotationComparison(spec, id, target)
 
     if scoped then
         local reference, why = scoped:Resolve(spec, id)
-        if not reference then return nil, why end
-        if not target then return nil, 'missing-comparison-target' end
+
+        if not reference then
+            return nil, why
+        end
+        if not target then
+            return nil, 'missing-comparison-target'
+        end
+
         local targetReference
 
         if type(target) == 'table' and target.kind == 'custom' and not target.address then
@@ -2351,25 +2926,44 @@ function addon:BuildRotationComparison(spec, id, target)
             targetReference, why = scoped:Resolve(spec, target)
         end
 
-        if not targetReference then return nil, why end
+        if not targetReference then
+            return nil, why
+        end
 
         -- True when two rotation references name the same rotation.
         local function sameAddress(a, b)
-            if a.kind ~= b.kind then return false end
-            if a.kind == 'builtin' then return a.id == b.id end
+            if a.kind ~= b.kind then
+                return false
+            end
+            if a.kind == 'builtin' then
+                return a.id == b.id
+            end
 
             for _, key in ipairs({ 'scope', 'class', 'owner', 'spec', 'id' }) do
-                if a.address[key] ~= b.address[key] then return false end
+                if a.address[key] ~= b.address[key] then
+                    return false
+                end
             end
 
             return true
         end
 
-        if sameAddress(reference, targetReference) then return nil, 'self-comparison' end
+        if sameAddress(reference, targetReference) then
+            return nil, 'self-comparison'
+        end
+
         local current, currentReason = scoped:Snapshot(spec, reference)
-        if not current then return nil, currentReason end
+
+        if not current then
+            return nil, currentReason
+        end
+
         local other, targetReason = scoped:Snapshot(spec, targetReference)
-        if not other then return nil, targetReason end
+
+        if not other then
+            return nil, targetReason
+        end
+
         local view = scoped:SourceView(spec, reference, false)
 
         if
@@ -2409,7 +3003,11 @@ function addon:BuildRotationComparison(spec, id, target)
 
         local left, leftError = scoped:ComparisonIdentity(spec, targetReference)
         local right, rightError = scoped:ComparisonIdentity(spec, reference)
-        if not left or not right then return nil, leftError or rightError end
+
+        if not left or not right then
+            return nil, leftError or rightError
+        end
+
         local options = {}
 
         local exact = left.kind == 'builtin' or left.kind == 'import' or left.kind == 'custom'
@@ -2442,15 +3040,28 @@ function addon:BuildRotationComparison(spec, id, target)
         return result
     end
 
-    if target and target.kind == "custom" and target.id == id then return nil, "self-comparison" end
+    if target and target.kind == "custom" and target.id == id then
+        return nil, "self-comparison"
+    end
+
     local body = self:GetEditableRotation(spec, id)
-    if not body then return nil, "unknown-rotation" end
+
+    if not body then
+        return nil, "unknown-rotation"
+    end
+
     local view, viewError = self:GetSourcedRotationView(spec, id)
-    if not view and viewError ~= "no-source-baseline" then return nil, viewError end
+
+    if not view and viewError ~= "no-source-baseline" then
+        return nil, viewError
+    end
 
     if target and target.kind == "builtin" then
         local source = self:GetDefaultRotation(target.id)
-        if not source then return nil, "unknown-rotation" end
+
+        if not source then
+            return nil, "unknown-rotation"
+        end
 
         if view and view.lineage.sourceKind == "builtin" and view.lineage.sourceId == target.id then
             local result = data.CompareClone(view, source)
@@ -2489,10 +3100,18 @@ function addon:BuildRotationComparison(spec, id, target)
         return result
     elseif target and target.kind == "custom" then
         local other = self:GetEditableRotation(spec, target.id)
-        if not other then return nil, "unknown-rotation" end
+
+        if not other then
+            return nil, "unknown-rotation"
+        end
+
         local left, leftError = self:GetRotationComparisonIdentity(spec, target.id)
         local right, rightError = self:GetRotationComparisonIdentity(spec, id)
-        if not left or not right then return nil, leftError or rightError end
+
+        if not left or not right then
+            return nil, leftError or rightError
+        end
+
         local options = {}
 
         if left.kind == right.kind and left.id == right.id then
@@ -2533,13 +3152,21 @@ function addon:DeleteCustomRotation(spec, id, expected)
 
     if scoped then
         local reference, why = scoped:Resolve(spec, id)
-        if not reference then return nil, why end
-        if reference.kind == 'builtin' then return nil, 'read-only-rotation' end
+
+        if not reference then
+            return nil, why
+        end
+        if reference.kind == 'builtin' then
+            return nil, 'read-only-rotation'
+        end
 
         if not expected then
             local record
             record, expected = scoped:Snapshot(spec, reference)
-            if not record then return nil, expected end
+
+            if not record then
+                return nil, expected
+            end
         end
 
         local currentReference = self.currentRotation
@@ -2558,7 +3185,10 @@ function addon:DeleteCustomRotation(spec, id, expected)
         end
 
         local ok, problem = scoped:Delete(reference, expected)
-        if not ok then return nil, problem end
+
+        if not ok then
+            return nil, problem
+        end
 
         if deletingCurrent and activeCurrent(self, change) then
             if retireActive(self, change) and activeCurrent(self, change) then
@@ -2567,7 +3197,10 @@ function addon:DeleteCustomRotation(spec, id, expected)
 
                 if available and activeCurrent(self, change) then
                     local remove = self.RemoveAllCurrentGlows
-                    if activeCurrent(self, change) then remove(self) end
+
+                    if activeCurrent(self, change) then
+                        remove(self)
+                    end
                 end
             end
         end
@@ -2580,9 +3213,16 @@ function addon:DeleteCustomRotation(spec, id, expected)
     end
 
     local body = self:GetEditableRotation(spec, id)
-    if type(body) ~= 'table' then return nil, 'unknown-rotation' end
+
+    if type(body) ~= 'table' then
+        return nil, 'unknown-rotation'
+    end
+
     local ready, why = ensure(self)
-    if not ready then return nil, why end
+
+    if not ready then
+        return nil, why
+    end
 
     for _, key in ipairs({ 'origins', 'comparisons', 'imports' }) do
         if active.state[key][spec] ~= nil and not plainTable(active.state[key][spec]) then
@@ -2600,19 +3240,30 @@ function addon:DeleteCustomRotation(spec, id, expected)
 
             if available and activeCurrent(self, change) then
                 local remove = self.RemoveAllCurrentGlows
-                if activeCurrent(self, change) then remove(self) end
+
+                if activeCurrent(self, change) then
+                    remove(self)
+                end
             end
         end
     end
 
-    if not activeCurrent(self, change) then return nil, 'rotation-transition-superseded' end
+    if not activeCurrent(self, change) then
+        return nil, 'rotation-transition-superseded'
+    end
+
     self.db.profile.rotations[spec][id] = nil
 
     for _, key in ipairs({ 'origins', 'comparisons', 'imports' }) do
-        if active.state[key][spec] then active.state[key][spec][id] = nil end
+        if active.state[key][spec] then
+            active.state[key][spec][id] = nil
+        end
     end
 
-    if active.cloneScopes[spec] then active.cloneScopes[spec][id] = nil end
+    if active.cloneScopes[spec] then
+        active.cloneScopes[spec][id] = nil
+    end
+
     return true
 end
 

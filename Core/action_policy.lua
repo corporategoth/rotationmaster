@@ -33,10 +33,14 @@ local function buildReadiness(platform)
     -- ranged or assisted) or item can be used right now, honoring Ignore Mana and Ignore Range. Memoized per poll by
     -- id, so the platform is read at most once per id per poll; every unreadable answer reads as not ready.
     local function ready(kind, id, itemID)
-        if not validID(id) then return false end
+        if not validID(id) then
+            return false
+        end
 
         if kind == "item" then
-            if not validID(itemID) then return false end
+            if not validID(itemID) then
+                return false
+            end
 
             if itemStamps[itemID] ~= stamp then
                 local ready = platform:IsItemReady(itemID, now)
@@ -63,7 +67,10 @@ local function buildReadiness(platform)
         if kind ~= "spell" and kind ~= "pet" and kind ~= "any" and not ranged then
             -- An assisted step resolves to Blizzard's suggested player spell
             -- and is held to exactly the readiness of a spell step.
-            if kind ~= "assisted" then return false end
+            if kind ~= "assisted" then
+                return false
+            end
+
             kind = "spell"
         end
 
@@ -76,7 +83,10 @@ local function buildReadiness(platform)
 
         if stamps[id] ~= stamp then
             local known = kind ~= "pet" and platform:IsSpellKnown(id, false) == true
-            if not known and kind ~= "spell" and not ranged then known = platform:IsSpellKnown(id, true) == true end
+
+            if not known and kind ~= "spell" and not ranged then
+                known = platform:IsSpellKnown(id, true) == true
+            end
 
             -- Vehicle, override and possession abilities are in neither
             -- spellbook; while such a bar is up, the bound button decides.
@@ -113,7 +123,10 @@ local function buildReadiness(platform)
                     result = beyond ~= nil and beyond == false
                 else
                     local bar
-                    if ranged and addon.GetBoundActionRange then bar = addon:GetBoundActionRange(id) end
+
+                    if ranged and addon.GetBoundActionRange then
+                        bar = addon:GetBoundActionRange(id)
+                    end
 
                     if bar ~= nil then
                         result = bar == true
@@ -143,7 +156,9 @@ local function buildReadiness(platform)
         ignoreMana, ignoreRange =
             profile ~= nil and profile.ignore_mana == true, profile ~= nil and profile.ignore_range == true
 
-        if resetRange then resetRange() end
+        if resetRange then
+            resetRange()
+        end
     end
 
     return ready, reset
@@ -205,11 +220,17 @@ function addon:ResolveImplicitAttack(ready)
     local need, _, why = platform:IsMeleeAttackNeeded("target")
 
     if need == true then
-        if ready("spell", 6603) then return bound(self, 6603) end
+        if ready("spell", 6603) then
+            return bound(self, 6603)
+        end
+
         return nil
     end
 
-    if need ~= false or (why ~= "beyond-melee" and why ~= "attack-active") then return nil end
+    if need ~= false or (why ~= "beyond-melee" and why ~= "attack-active") then
+        return nil
+    end
+
     local beyond = why == "beyond-melee" or nil
 
     for i = 1, #RANGED_ATTACKS do
@@ -219,12 +240,21 @@ function addon:ResolveImplicitAttack(ready)
         if spell then
             -- Attack is already on: the range was not read yet. Read it only
             -- for a character with a ranged auto-attack on the bars.
-            if beyond == nil then beyond = platform:IsBeyondMeleeRange("target") == true end
-            if not beyond then return nil end
+            if beyond == nil then
+                beyond = platform:IsBeyondMeleeRange("target") == true
+            end
+
+            if not beyond then
+                return nil
+            end
 
             if id ~= 5019 or platform:IsWandEquipped() == true then
-                if platform:IsAutoRepeatActive(id) ~= false then return nil end
-                if ready("ranged", id) then return spell end
+                if platform:IsAutoRepeatActive(id) ~= false then
+                    return nil
+                end
+                if ready("ranged", id) then
+                    return spell
+                end
             end
         end
     end

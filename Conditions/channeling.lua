@@ -309,7 +309,10 @@ local combatCategory = "b3d7df2c-f257-4a2d-961e-66e49336d109"
 -- remembers it in castProgressConditionsSeeded). Tolerates a malformed profile; the first argument is unused.
 function addon:InitializeCastProgressConditions(_, db)
     local profile = db and db.profile
-    if type(profile) ~= "table" or profile.castProgressConditionsSeeded then return end
+
+    if type(profile) ~= "table" or profile.castProgressConditionsSeeded then
+        return
+    end
 
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
         if type(category) == "table" and category.id == combatCategory and type(category.conditions) == "table" then
@@ -323,7 +326,9 @@ function addon:InitializeCastProgressConditions(_, db)
                     end
                 end
 
-                if not found then category.conditions[#category.conditions + 1] = tag end
+                if not found then
+                    category.conditions[#category.conditions + 1] = tag
+                end
             end
         end
     end
@@ -336,7 +341,9 @@ local seedOwner = {}
 -- Seeds the profile now and again whenever AceDB creates, resets, switches to or copies a profile. Called from
 -- init.lua once the database exists.
 function addon:InstallCastProgressConditions(db)
-    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
+    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
+        return
+    end
 
     for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
         db.RegisterCallback(seedOwner, event, function(_, currentDB)

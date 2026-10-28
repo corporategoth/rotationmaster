@@ -17,9 +17,15 @@ local _, addon = ...
 
 -- Returns the item the cursor is carrying (id or link as the client reports it), or nil when it carries anything else.
 local function cursorItem()
-    if type(GetCursorInfo) ~= 'function' then return end
+    if type(GetCursorInfo) ~= 'function' then
+        return
+    end
+
     local kind, item = GetCursorInfo()
-    if kind == 'item' then return item end
+
+    if kind == 'item' then
+        return item
+    end
 end
 
 -- True while the client is in combat lockdown, when action slots must not be read or hooked.
@@ -34,7 +40,9 @@ function addon:RecordItemSetBinding(id, slot)
     bindings[id] = slots
 
     for _, value in ipairs(slots) do
-        if value == slot then return false end
+        if value == slot then
+            return false
+        end
     end
 
     slots[#slots + 1] = slot
@@ -45,35 +53,61 @@ end
 -- pending set; the same bookkeeping as a reported slot change.
 function addon:CompletePendingItemSetBind(slot)
     local pending = self.bindingItemSet
-    if not pending or type(slot) ~= 'number' or inCombat() or type(GetActionInfo) ~= 'function' then return false end
+
+    if not pending or type(slot) ~= 'number' or inCombat() or type(GetActionInfo) ~= 'function' then
+        return false
+    end
+
     local kind, action = GetActionInfo(slot)
-    if kind ~= 'item' or not self:FindItemInItemSet(pending, action) then return false end
+
+    if kind ~= 'item' or not self:FindItemInItemSet(pending, action) then
+        return false
+    end
+
     self.bindingItemSet = nil
     self:RecordItemSetBinding(pending, slot)
-    if self.ButtonFetch then self:ButtonFetch() end
-    if self.UpdateBoundButton then self:UpdateBoundButton(pending) end
-    if self.itemSetCallback then self.itemSetCallback(pending) end
+
+    if self.ButtonFetch then
+        self:ButtonFetch()
+    end
+    if self.UpdateBoundButton then
+        self:UpdateBoundButton(pending)
+    end
+    if self.itemSetCallback then
+        self.itemSetCallback(pending)
+    end
+
     return true
 end
 
 -- Hooks one action button (once) so dropping or clicking the pending item onto a slot that already holds it still
 -- completes the bind. `slot` is the fallback when the button cannot be resolved to a slot at event time.
 local function observe(button, slot)
-    if not button or button.rmItemSetBindHooked or type(button.HookScript) ~= 'function' then return end
+    if not button or button.rmItemSetBindHooked or type(button.HookScript) ~= 'function' then
+        return
+    end
+
     button.rmItemSetBindHooked = true
 
     -- Hook body: resolves which slot `frame` is now (falling back to the slot captured when hooked) and completes the
     -- pending bind if that slot holds a member of the set.
     local function placed(frame)
-        if not addon.bindingItemSet then return end
+        if not addon.bindingItemSet then
+            return
+        end
+
         local current = addon.ResolveActionButtonSlot and addon:ResolveActionButtonSlot(frame) or slot
         addon:CompletePendingItemSetBind(current)
     end
 
     -- Post hooks: they run after the bar's own handlers have placed (or not
     -- placed) the cursor item.
-    if not button.HasScript or button:HasScript('OnReceiveDrag') then button:HookScript('OnReceiveDrag', placed) end
-    if not button.HasScript or button:HasScript('PostClick') then button:HookScript('PostClick', placed) end
+    if not button.HasScript or button:HasScript('OnReceiveDrag') then
+        button:HookScript('OnReceiveDrag', placed)
+    end
+    if not button.HasScript or button:HasScript('PostClick') then
+        button:HookScript('PostClick', placed)
+    end
 end
 
 -- Keeps the pending bind only while its item is still on the cursor. Two
@@ -83,9 +117,18 @@ local watcher
 -- Hooks the action buttons for the pending bind (outside combat) and starts a per-frame watcher that cancels it once
 -- the item leaves the cursor; a no-op when no bind is pending. Calling it again restarts the watcher's miss counter.
 function addon:WatchItemSetBind()
-    if not self.bindingItemSet then return end
-    if self.ForEachActionButton and not inCombat() then self:ForEachActionButton(observe) end
-    if type(CreateFrame) ~= 'function' then return end
+    if not self.bindingItemSet then
+        return
+    end
+
+    if self.ForEachActionButton and not inCombat() then
+        self:ForEachActionButton(observe)
+    end
+
+    if type(CreateFrame) ~= 'function' then
+        return
+    end
+
     watcher = watcher or CreateFrame('Frame')
     local misses = 0
 
@@ -116,12 +159,22 @@ end
 -- Starts a bind for set id: same preconditions for click and drag. Returns
 -- true, or false and a reason key: 'combat', 'unavailable'.
 function addon:BeginItemSetBind(id, first)
-    if inCombat() then return false, 'combat' end
+    if inCombat() then
+        return false, 'combat'
+    end
+
     -- Retail/Forever have only C_Item.PickupItem; Classic's global is a
     -- loadDeprecationFallbacks alias of it.
     local pickup = type(C_Item) == 'table' and C_Item.PickupItem or nil
-    if type(pickup) ~= 'function' then pickup = PickupItem end
-    if not first or type(pickup) ~= 'function' then return false, 'unavailable' end
+
+    if type(pickup) ~= 'function' then
+        pickup = PickupItem
+    end
+
+    if not first or type(pickup) ~= 'function' then
+        return false, 'unavailable'
+    end
+
     self.bindingItemSet = id
     pickup(first)
     self:WatchItemSetBind()

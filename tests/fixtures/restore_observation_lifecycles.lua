@@ -1,6 +1,7 @@
 -- QA only: exact lifecycle successors to complete6e preimages; unknown bytes pass unchanged.
-local rows={
- ["main.lua"]={before=[========[local addon_name, addon = ...
+local rows = {
+    ["main.lua"] = {
+        before = [========[local addon_name, addon = ...
 -- Capture the compatibility override once. Managed rotations use the prepared
 -- executor; unsupported/custom sources retain the eager compatibility path.
 local preparedRuntimeEnabled = addon.preparedRuntimeEnabled ~= false
@@ -2347,7 +2348,8 @@ do
  if type(bind)=='function' then bind(addon,'main',addon.EvaluateNextActionInternal,function() return UpdateUnitInfo end) end
 end
 -- END CPU RUNTIME WORK HANDOFF
-]========],after=[========[local addon_name, addon = ...
+]========],
+        after = [========[local addon_name, addon = ...
 -- Capture the compatibility override once. Managed rotations use the prepared
 -- executor; unsupported/custom sources retain the eager compatibility path.
 local preparedRuntimeEnabled = addon.preparedRuntimeEnabled ~= false
@@ -4846,8 +4848,10 @@ do
  if type(bind)=='function' then bind(addon,'main',addon.EvaluateNextActionInternal,function() return UpdateUnitInfo end) end
 end
 -- END CPU RUNTIME WORK HANDOFF
-]========]},
- ["buttons.lua"]={before=[========[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+]========],
+    },
+    ["buttons.lua"] = {
+        before = [========[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -5862,7 +5866,8 @@ do
     end) end
 end
 -- END CPU ACTIVITY HANDOFF
-]========],after=[========[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+]========],
+        after = [========[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -6951,8 +6956,10 @@ do
     end) end
 end
 -- END CPU ACTIVITY HANDOFF
-]========]},
- ["Diagnostics/cpu.lua"]={before=[========[local addon_name,addon=...
+]========],
+    },
+    ["Diagnostics/cpu.lua"] = {
+        before = [========[local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
@@ -7907,7 +7914,8 @@ function addon:OnDisable()
  self:CancelCPUProfile()
  if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end
-]========],after=[========[local addon_name,addon=...
+]========],
+        after = [========[local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
@@ -8887,8 +8895,10 @@ function addon:OnDisable()
   and type(self.StopMemoryCapture)=='function' then self:StopMemoryCapture() end
  if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end
-]========]},
- ["Core/rotation_sequence.lua"]={before=[========[local _,addon=...
+]========],
+    },
+    ["Core/rotation_sequence.lua"] = {
+        before = [========[local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -9066,7 +9076,8 @@ function addon:BindRotationSequenceReader(bind)
     end
     bind(rawMethod,run,sequenceStatus,ownedSequence)
 end
-]========],after=[========[local _,addon=...
+]========],
+        after = [========[local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -9251,10 +9262,16 @@ function addon:BindRotationSequenceReader(bind)
     end
     bind(rawMethod,run,sequenceStatus,ownedSequence)
 end
-]========]},
+]========],
+    },
 }
-return function(text,path)
- local row=rows[path]
- if row and text==row.after then return row.before end
- return text
+
+return function(text, path)
+    local row = rows[path]
+
+    if row and text == row.after then
+        return row.before
+    end
+
+    return text
 end

@@ -1,5 +1,5 @@
 -- Strict new preview blocks plus exact entire frozen d5a970f CPU source.
-local old=[====[local addon_name,addon=...
+local old = [====[local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
@@ -527,8 +527,9 @@ function addon:OnDisable()
  self:CancelCPUProfile()
 end
 ]====]
-local blocks={
-[====[-- BEGIN STANDALONE PREVIEW CONTEXT
+
+local blocks = {
+    [====[-- BEGIN STANDALONE PREVIEW CONTEXT
 -- Canonical-slot observation only; this does not authenticate foreign frames.
 local previewNumbers={[0]='0','1','2','3','4','5'}
 local function standalonePreviewContext(owner)
@@ -591,22 +592,29 @@ local function appendStandalonePreviewContext(report,started,ended)
 end
 -- END STANDALONE PREVIEW CONTEXT
 ]====],
-[====[   -- BEGIN STANDALONE PREVIEW APPENDIX
+    [====[   -- BEGIN STANDALONE PREVIEW APPENDIX
    appendStandalonePreviewContext(report,run.previewContext,standalonePreviewContext(run.owner))
    -- END STANDALONE PREVIEW APPENDIX
 ]====],
-[====[ -- BEGIN STANDALONE PREVIEW START
+    [====[ -- BEGIN STANDALONE PREVIEW START
  if active==run then run.previewContext=standalonePreviewContext(self) end
  -- END STANDALONE PREVIEW START
 ]====],
 }
-return function(text,baseline)
- if baseline then assert(text==nil);return old end
- for _,block in ipairs(blocks)do
-  local first,last=text:find(block,1,true);assert(first,'exact preview context block missing')
-  assert(not text:find(block,last+1,true),'preview context block repeated')
-  text=text:sub(1,first-1)..text:sub(last+1)
- end
- assert(text==old,'CPU source differs outside exact preview context additions')
- return old
+
+return function(text, baseline)
+    if baseline then
+        assert(text == nil)
+        return old
+    end
+
+    for _, block in ipairs(blocks) do
+        local first, last = text:find(block, 1, true)
+        assert(first, 'exact preview context block missing')
+        assert(not text:find(block, last + 1, true), 'preview context block repeated')
+        text = text:sub(1, first - 1) .. text:sub(last + 1)
+    end
+
+    assert(text == old, 'CPU source differs outside exact preview context additions')
+    return old
 end

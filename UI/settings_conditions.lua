@@ -45,7 +45,11 @@ end
 -- (category, conditionSource, condition) and is corrected here when it no longer exists.
 function addon:BuildConditionSettings(p)
     local store = p:SettingsData()
-    if p.mode == 'categories' then return self:BuildConditionCategorySettings(p) end
+
+    if p.mode == 'categories' then
+        return self:BuildConditionCategorySettings(p)
+    end
+
     local profile = store.profile
     local groups = profile.condition_groups or {}
     local definitions = self:CopySettingsData(self.conditionDefinitions or {})
@@ -78,7 +82,9 @@ function addon:BuildConditionSettings(p)
             icon = self:GetConditionCategoryIcon(group),
         }
 
-        if group.id == p.category then groupIndex = i end
+        if group.id == p.category then
+            groupIndex = i
+        end
     end
 
     categories[#categories + 1] = { value = 'DEFAULT', text = L['Other'], icon = self:GetConditionCategoryIcon(nil) }
@@ -102,10 +108,14 @@ function addon:BuildConditionSettings(p)
             local exists = false
 
             for _, value in ipairs(tags) do
-                if value == tag then exists = true end
+                if value == tag then
+                    exists = true
+                end
             end
 
-            if not exists then tags[#tags + 1] = tag end
+            if not exists then
+                tags[#tags + 1] = tag
+            end
         end
     end
 
@@ -123,7 +133,9 @@ function addon:BuildConditionSettings(p)
         end
     end
 
-    if not seen[p.condition] and not p.creatingCondition then p.condition = entries[1] and entries[1].value end
+    if not seen[p.condition] and not p.creatingCondition then
+        p.condition = entries[1] and entries[1].value
+    end
 
     for _, entry in ipairs(entries) do
         entry.icon = custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value)
@@ -268,7 +280,11 @@ function addon:BuildConditionSettings(p)
                 local copy = self:CopySettingsData(custom[tag])
                 local key = tag:sub(1, 216) .. '_' .. self:uuid():gsub('-', '_')
                 custom[key] = copy
-                p:RunSettingsEffect('custom_' .. key, function() self:register_custom_condition(key, copy) end)
+
+                p:RunSettingsEffect('custom_' .. key, function()
+                    self:register_custom_condition(key, copy)
+                end)
+
                 p.condition = key
                 p.category = 'ALL'
                 p.conditionSource = 'custom'
@@ -288,7 +304,9 @@ function addon:BuildConditionSettings(p)
                 )
 
                 ---@cast dialog any
-                if dialog then dialog.transfer:Click() end
+                if dialog then
+                    dialog.transfer:Click()
+                end
             end,
         },
         {
@@ -351,7 +369,9 @@ function addon:BuildConditionSettings(p)
             self:SettingsFlag(profile.disabled_conditions, tag, value)
         end)
 
-        if special then hidden:Disable() end
+        if special then
+            hidden:Disable()
+        end
 
         local switch = p:Check(
             'switch',
@@ -363,7 +383,9 @@ function addon:BuildConditionSettings(p)
             end
         )
 
-        if special then switch:Disable() end
+        if special then
+            switch:Disable()
+        end
 
         local announcement = p:Check(
             'announcement',
@@ -376,8 +398,15 @@ function addon:BuildConditionSettings(p)
         )
 
         announcement.tooltip = L['Show this condition in the announcement condition editor.']
-        p.cleanups[#p.cleanups + 1] = function() announcement.tooltip = nil end
-        if special then announcement:Disable() end
+
+        p.cleanups[#p.cleanups + 1] = function()
+            announcement.tooltip = nil
+        end
+
+        if special then
+            announcement:Disable()
+        end
+
         -- The three flags share their row in thirds and wrap rather than clip.
         self:LayoutConditionFlags(hidden, switch, announcement, flagsY, p.width)
         p.y = flagsY + hidden.rmFlagRowsHeight + 2
@@ -386,7 +415,10 @@ function addon:BuildConditionSettings(p)
 
         for _, group in ipairs(groups) do
             destinations[#destinations + 1] = { value = group.id, text = group.name or group.id }
-            if self:SettingsContains(group.conditions, tag) then current = group.id end
+
+            if self:SettingsContains(group.conditions, tag) then
+                current = group.id
+            end
         end
 
         destinations[#destinations + 1] = { value = 'DEFAULT', text = L['Other'] }
@@ -394,7 +426,9 @@ function addon:BuildConditionSettings(p)
         local categoryName = L['Other']
 
         for _, entry in ipairs(destinations) do
-            if entry.value == assigned then categoryName = entry.text end
+            if entry.value == assigned then
+                categoryName = entry.text
+            end
         end
 
         local categoryButton = p:Button('current_category', L['Category'] .. ': ' .. categoryName, function()
@@ -406,7 +440,9 @@ function addon:BuildConditionSettings(p)
         local assignedGroup
 
         for _, group in ipairs(groups) do
-            if group.id == assigned then assignedGroup = group end
+            if group.id == assigned then
+                assignedGroup = group
+            end
         end
 
         categoryButton.categoryIcon = categoryButton.categoryIcon or categoryButton:CreateTexture(nil, 'ARTWORK')
@@ -424,16 +460,25 @@ function addon:BuildConditionSettings(p)
         end)
 
         move:SetWidth(math.max(60, p.width - 326))
-        if special then move:Disable() end
+
+        if special then
+            move:Disable()
+        end
 
         local apply = p:Button('apply_move', L['Apply'], function()
             local destination = p.pendingMove and p.pendingMove.tag == tag and p.pendingMove.destination
-            if not destination then return end
+
+            if not destination then
+                return
+            end
 
             for _, group in ipairs(groups) do
                 group.conditions = group.conditions or {}
                 self:SettingsFlag(group.conditions, tag, false)
-                if group.id == destination then group.conditions[#group.conditions + 1] = tag end
+
+                if group.id == destination then
+                    group.conditions[#group.conditions + 1] = tag
+                end
             end
 
             profile.other_conditions_order = profile.other_conditions_order or {}
@@ -448,7 +493,10 @@ function addon:BuildConditionSettings(p)
         apply:SetPoint('TOPRIGHT', 0, -y)
         apply:SetWidth(100)
         p.y = p.y - 28
-        if special or pending == current then apply:Disable() end
+
+        if special or pending == current then
+            apply:Disable()
+        end
 
         if custom[tag] then
             local source = custom[tag]
@@ -513,7 +561,9 @@ function addon:BuildConditionSettings(p)
                     key = 'edit_custom',
                     text = L['Edit'],
                     icon = 'info',
-                    action = function() self:OpenSettingsCustomCondition(p, tag, custom[tag]) end,
+                    action = function()
+                        self:OpenSettingsCustomCondition(p, tag, custom[tag])
+                    end,
                 },
             })
 
@@ -523,7 +573,11 @@ function addon:BuildConditionSettings(p)
                     L['Delete this custom condition? Existing rotations using it will become unavailable.'],
                     function()
                         local ok, why = self:DeleteSavedCustomCondition(tag)
-                        if ok then p.condition = nil end
+
+                        if ok then
+                            p.condition = nil
+                        end
+
                         return ok, why
                     end
                 )
@@ -554,7 +608,9 @@ function addon:BuildConditionCategorySettings(p)
             icon = self:GetConditionCategoryIcon(group),
         }
 
-        if group.id == p.categorySelection then index = i end
+        if group.id == p.categorySelection then
+            index = i
+        end
     end
 
     if
@@ -598,7 +654,9 @@ function addon:BuildConditionCategorySettings(p)
             icon = 'transfer',
             enabled = not p.creatingCategory and p.categorySelection ~= nil,
             action = function()
-                if p.categoryTransfer then p.categoryTransfer() end
+                if p.categoryTransfer then
+                    p.categoryTransfer()
+                end
             end,
         },
     }, true)
@@ -607,7 +665,10 @@ function addon:BuildConditionCategorySettings(p)
 
     if p.creatingCategory or not p.categorySelection then
         p.newGroupName = p.newGroupName or ''
-        p:Edit('new_group_name', L['Name'], p.newGroupName, nil, function(text) p.newGroupName = text end)
+
+        p:Edit('new_group_name', L['Name'], p.newGroupName, nil, function(text)
+            p.newGroupName = text
+        end)
 
         p:CreationActions(function()
             if not self:SettingsNonempty(p.newGroupName) then
@@ -651,7 +712,9 @@ function addon:BuildConditionCategorySettings(p)
                 group.name = text
 
                 for _, entry in ipairs(p.roster.entries) do
-                    if entry.value == group.id then entry.text = text end
+                    if entry.value == group.id then
+                        entry.text = text
+                    end
                 end
 
                 p:RefreshRoster()
@@ -674,7 +737,10 @@ function addon:BuildConditionCategorySettings(p)
         p.fields.category_icon = icon
 
         self:SetUIScript(icon, 'OnClick', p:Guard(function()
-            if not p:FlushEdits() then return end
+            if not p:FlushEdits() then
+                return
+            end
+
             local token = p.generation
 
             local picker = self:ShowWorkbenchIconPicker(
@@ -691,7 +757,9 @@ function addon:BuildConditionCategorySettings(p)
             local serial = picker.serial
 
             p.cleanups[#p.cleanups + 1] = function()
-                if picker.serial == serial then picker.frame:Hide() end
+                if picker.serial == serial then
+                    picker.frame:Hide()
+                end
             end
         end))
     else
@@ -701,7 +769,9 @@ function addon:BuildConditionCategorySettings(p)
     local tags = {}
 
     for _, tag in ipairs(self:listConditions(category, true, store)) do
-        if tag ~= 'DELETE' then tags[#tags + 1] = tag end
+        if tag ~= 'DELETE' then
+            tags[#tags + 1] = tag
+        end
     end
 
     local cols = math.max(1, math.floor(p.width / 240))
@@ -764,7 +834,11 @@ function addon:BuildConditionCategorySettings(p)
             exported,
             function(text, settings)
                 local parsed, errorText = self:ParseConditionCategoryImport(text, codec)
-                if not parsed then return false, errorText end
+
+                if not parsed then
+                    return false, errorText
+                end
+
                 local candidate = parsed.conditions
                 local destination = category
                 local target = group
@@ -802,7 +876,10 @@ function addon:BuildConditionCategorySettings(p)
                     end
 
                     target.conditions = candidate
-                    if parsed.metadata then target.icon = parsed.icon end
+
+                    if parsed.metadata then
+                        target.icon = parsed.icon
+                    end
                 end
 
                 return true
@@ -819,7 +896,11 @@ function addon:BuildConditionCategorySettings(p)
                     kind = 'category',
                     parse = function(input)
                         local parsed, why = self:ParseConditionCategoryImport(input, codec)
-                        if not parsed then return nil, why end
+
+                        if not parsed then
+                            return nil, why
+                        end
+
                         return { name = parsed.name, icon = parsed.icon, conditions = parsed.conditions }
                     end,
                     current = function()
@@ -843,7 +924,11 @@ function addon:BuildConditionCategorySettings(p)
                     for i, current in ipairs(self.db.profile.condition_groups or {}) do
                         if current.id == category then
                             table.remove(self.db.profile.condition_groups, i)
-                            if p.category == category then p.category = 'DEFAULT' end
+
+                            if p.category == category then
+                                p.category = 'DEFAULT'
+                            end
+
                             p.categorySelection = nil
                             return true
                         end
@@ -888,6 +973,11 @@ function addon:OpenSettingsCustomCondition(p, key, condition)
         function() return p:Valid(token) end
     )
 
-    if dialog then p.cleanups[#p.cleanups + 1] = function() addon:CloseCustomConditionEditor(dialog, owner) end end
+    if dialog then
+        p.cleanups[#p.cleanups + 1] = function()
+            addon:CloseCustomConditionEditor(dialog, owner)
+        end
+    end
+
     return dialog, owner
 end

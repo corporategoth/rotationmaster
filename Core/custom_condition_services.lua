@@ -124,7 +124,10 @@ end
 -- is stripped from each callback (user comments are kept) and the code is normalized for the editor.
 function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
     local result = self:CopySettingsData(source)
-    if preserveFormatting then return result end
+
+    if preserveFormatting then
+        return result
+    end
 
     for name, prefix in pairs(templateHeaders) do
         if prefix ~= '' and type(result[name]) == 'string' and result[name]:sub(1, #prefix) == prefix then
@@ -133,7 +136,9 @@ function addon:PrepareCustomConditionEditorSource(source, preserveFormatting)
     end
 
     for name in pairs(self.CustomConditionCallbacks) do
-        if type(result[name]) == 'string' then result[name] = self:NormalizeLuaSourceForEditor(result[name]) end
+        if type(result[name]) == 'string' then
+            result[name] = self:NormalizeLuaSourceForEditor(result[name])
+        end
     end
 
     return result
@@ -178,9 +183,16 @@ end
 
 -- Deep copy of a field schema table, cycle-safe through `seen`.
 local function copy_fields(value, seen)
-    if type(value) ~= "table" then return value end
+    if type(value) ~= "table" then
+        return value
+    end
+
     seen = seen or {}
-    if seen[value] then return seen[value] end
+
+    if seen[value] then
+        return seen[value]
+    end
+
     local copy = {}
     seen[value] = copy
 
@@ -196,7 +208,11 @@ end
 function addon:register_custom_condition(key, condition)
     if self.CompileCustomCondition then
         local compiled = self:CompileCustomCondition(key, condition, true)
-        if not compiled then return false end
+
+        if not compiled then
+            return false
+        end
+
         self:RegisterCondition(key, compiled)
         return true
     end

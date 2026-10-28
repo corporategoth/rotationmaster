@@ -19,16 +19,26 @@ local deliveryRequest = 0
 -- Structural equality for plain data: same types, same keys, same leaves, and false for any table that has a
 -- metatable. Used to prove a configuration has not been edited since it was copied.
 local function same(left, right)
-    if type(left) ~= type(right) then return false end
-    if type(left) ~= 'table' then return left == right end
-    if getmetatable(left) ~= nil or getmetatable(right) ~= nil then return false end
+    if type(left) ~= type(right) then
+        return false
+    end
+    if type(left) ~= 'table' then
+        return left == right
+    end
+    if getmetatable(left) ~= nil or getmetatable(right) ~= nil then
+        return false
+    end
 
     for key, value in pairs(left) do
-        if not same(value, rawget(right, key)) then return false end
+        if not same(value, rawget(right, key)) then
+            return false
+        end
     end
 
     for key in pairs(right) do
-        if rawget(left, key) == nil then return false end
+        if rawget(left, key) == nil then
+            return false
+        end
     end
 
     return true
@@ -43,9 +53,17 @@ function addon:PrepareAnnouncementDelivery(config, owner)
     deliveryRequest = deliveryRequest + 1
     local request = deliveryRequest
     local data = self.RotationData
-    if type(config) ~= 'table' or type(owner) ~= 'function' or not data then return nil end
+
+    if type(config) ~= 'table' or type(owner) ~= 'function' or not data then
+        return nil
+    end
+
     local portable, copy = data.CheckPortable, data.CopyData
-    if not portable(config) then return nil end
+
+    if not portable(config) then
+        return nil
+    end
+
     local witness = copy(config)
     local entry = copy(witness)
 
@@ -58,7 +76,10 @@ function addon:PrepareAnnouncementDelivery(config, owner)
     local expected = copy(entry)
 
     local function current()
-        if request ~= deliveryRequest then return false end
+        if request ~= deliveryRequest then
+            return false
+        end
+
         local ok, valid = pcall(owner)
         return ok and valid == true and request == deliveryRequest and same(witness, config) and same(expected, entry)
     end
@@ -79,12 +100,17 @@ end
 function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit, format, deliver)
     local result = { chat = false, sound = false, outputs = {} }
     local cards = parent.outputs
-    if type(cards) ~= 'table' or getmetatable(cards) ~= nil or #cards > 64 or not current() then return result end
+
+    if type(cards) ~= 'table' or getmetatable(cards) ~= nil or #cards > 64 or not current() then
+        return result
+    end
+
     local count, seen = 0, {}
 
     for key, card in pairs(cards) do
-        if not current() then return result end
-
+        if not current() then
+            return result
+        end
         if
             type(key) ~= 'number'
             or key % 1 ~= 0
@@ -95,13 +121,17 @@ function addon:DispatchAnnouncementSeries(parent, recipient, current, targetUnit
         then
             return result
         end
+        if not current() then
+            return result
+        end
 
-        if not current() then return result end
         count = count + 1
         seen[card.id] = true
     end
 
-    if count ~= #cards or not current() then return result end
+    if count ~= #cards or not current() then
+        return result
+    end
 
     for _, card in ipairs(cards) do
         if not current() then
@@ -196,32 +226,62 @@ local function automaticTarget(recipient, owned)
     end
 
     local exists, guid = UnitExists, UnitGUID
-    if type(exists) ~= 'function' or type(guid) ~= 'function' then return end
+
+    if type(exists) ~= 'function' or type(guid) ~= 'function' then
+        return
+    end
 
     -- The unit APIs are captured above; a replaced global ends the lease so the proof cannot be redirected.
     local function live()
-        if not owned() then return false end
+        if not owned() then
+            return false
+        end
+
         return exists == UnitExists and guid == UnitGUID
     end
 
     local function observe()
-        if not live() then return end
+        if not live() then
+            return
+        end
+
         local ok, present = pcall(exists, recipient)
-        if not ok or not readable(present) or present ~= true or not live() then return end
+
+        if not ok or not readable(present) or present ~= true or not live() then
+            return
+        end
+
         local identified, id = pcall(guid, recipient)
-        if not identified or not readable(id) then return end
-        if canaccessvalue and not canaccessvalue(id) then return end
-        if type(id) ~= 'string' or id == '' or #id > 256 or not live() then return end
+
+        if not identified or not readable(id) then
+            return
+        end
+        if canaccessvalue and not canaccessvalue(id) then
+            return
+        end
+        if type(id) ~= 'string' or id == '' or #id > 256 or not live() then
+            return
+        end
+
         return id
     end
 
     local identity = observe()
-    if not identity then return end
+
+    if not identity then
+        return
+    end
 
     return recipient, function()
         local now = observe()
-        if canaccessvalue and not canaccessvalue(now) then return false end
-        if canaccessvalue and not canaccessvalue(identity) then return false end
+
+        if canaccessvalue and not canaccessvalue(now) then
+            return false
+        end
+        if canaccessvalue and not canaccessvalue(identity) then
+            return false
+        end
+
         return live() and now == identity
     end
 end
@@ -235,7 +295,9 @@ function addon:AnnouncementConditionMatches(config, recipient, current, targetUn
     local request = conditionRequest
 
     local function owned()
-        if request ~= conditionRequest then return false end
+        if request ~= conditionRequest then
+            return false
+        end
 
         if current then
             local ok, valid = pcall(current)
@@ -245,14 +307,22 @@ function addon:AnnouncementConditionMatches(config, recipient, current, targetUn
         return true
     end
 
-    if not owned() then return false end
-    if config.conditions == nil then return true end
+    if not owned() then
+        return false
+    end
+    if config.conditions == nil then
+        return true
+    end
+
     local resolve
 
     if config.type ~= 'macro' and targetUnit == nil then
         resolve = function(tag)
             local unit, current = automaticTarget(recipient, owned)
-            if unit then return tag == 'GROUP' and 'spellrecipient' or unit, current end
+
+            if unit then
+                return tag == 'GROUP' and 'spellrecipient' or unit, current
+            end
         end
     end
 
@@ -294,7 +364,10 @@ end
 -- Copies the adapter's emote detail through a whitelist of keys and values, so the report can never hold game data
 -- or free text. Returns the safe copy, or nil when the detail is hidden or not a table.
 local function emoteDetailCopy(detail)
-    if not platform:CanReadValue(detail) or type(detail) ~= 'table' then return nil end
+    if not platform:CanReadValue(detail) or type(detail) ~= 'table' then
+        return nil
+    end
+
     local copy = {}
 
     for _, key in ipairs({ 'backend', 'call', 'returns', 'firstType', 'firstBoolean' }) do
@@ -336,12 +409,19 @@ local function finishEmote(kind, serial, target, reason, detail)
     local copied, closed = pcall(emoteDetailCopy, detail)
 
     local checked, safeReason = pcall(function()
-        if reason == nil then return 'native-call-completed' end
-        if platform:CanReadValue(reason) and type(reason) == 'string' and emoteReasons[reason] then return reason end
+        if reason == nil then
+            return 'native-call-completed'
+        end
+        if platform:CanReadValue(reason) and type(reason) == 'string' and emoteReasons[reason] then
+            return reason
+        end
+
         return 'unavailable'
     end)
 
-    if serial ~= emoteSerial[kind] then return end
+    if serial ~= emoteSerial[kind] then
+        return
+    end
 
     emoteObservation[kind] = {
         target = target,
@@ -358,21 +438,41 @@ end
 -- sent: say and yell need a hardware event and are never sent from here; 'none' and 'audible' send no text. Group modes
 -- read the group from the platform and fall back to PARTY or LOCAL when the player is not in a raid.
 local function destination(mode)
-    if not platform:CanReadValue(mode) or type(mode) ~= 'string' then return nil, 'invalid-destination' end
-    if mode == 'say' or mode == 'yell' then return nil, 'hardware-event-required' end
-    if direct[mode] then return direct[mode] end
-    if mode == 'none' or mode == 'audible' then return nil, 'not-requested' end
-    if mode ~= 'partyraid' and mode ~= 'party' and mode ~= 'raidwarn' then return nil, 'invalid-destination' end
+    if not platform:CanReadValue(mode) or type(mode) ~= 'string' then
+        return nil, 'invalid-destination'
+    end
+    if mode == 'say' or mode == 'yell' then
+        return nil, 'hardware-event-required'
+    end
+    if direct[mode] then
+        return direct[mode]
+    end
+    if mode == 'none' or mode == 'audible' then
+        return nil, 'not-requested'
+    end
+    if mode ~= 'partyraid' and mode ~= 'party' and mode ~= 'raidwarn' then
+        return nil, 'invalid-destination'
+    end
+
     local group, why = platform:GetAnnouncementGroup()
-    if not group then return nil, why end
+
+    if not group then
+        return nil, why
+    end
 
     if mode == 'party' then
-        if group.inGroup then return 'PARTY' end
+        if group.inGroup then
+            return 'PARTY'
+        end
+
         return nil, 'not-grouped'
     end
 
     if group.inRaid then
-        if mode == 'raidwarn' and (group.isLeader == true or group.isAssistant == true) then return 'RAID_WARNING' end
+        if mode == 'raidwarn' and (group.isLeader == true or group.isAssistant == true) then
+            return 'RAID_WARNING'
+        end
+
         return 'RAID'
     end
 
@@ -381,7 +481,10 @@ end
 
 -- True when the optional lease check `current` is absent or reports true; an error in it counts as retired.
 local function active(current)
-    if not current then return true end
+    if not current then
+        return true
+    end
+
     local ok, valid = pcall(current)
     return ok and valid == true
 end
@@ -389,28 +492,59 @@ end
 -- Plays the LibSharedMedia sound `key` on the Master channel. Returns true, or false and a reason code. The lease is
 -- re-checked after each call that can yield to other code, so a retired announcement stays silent.
 local function sound(key, current)
-    if not active(current) then return false, 'announcement-retired' end
-    if not platform:CanReadValue(key) then return false, 'restricted-value' end
-    if key == nil or key == '' then return false, 'not-requested' end
-    if type(key) ~= 'string' then return false, 'invalid-sound' end
-    local play = PlaySoundFile
-    if type(play) ~= 'function' then return false, 'missing-api' end
-    local ok, media = pcall(LibStub, 'LibSharedMedia-3.0', true)
-    if not active(current) then return false, 'announcement-retired' end
-    if not ok or type(media) ~= 'table' or type(media.Fetch) ~= 'function' then return false, 'missing-media' end
-    local fetched, path = pcall(media.Fetch, media, 'sound', key, true)
-    if not fetched then return false, 'media-error' end
-    if not platform:CanReadValue(path) then return false, 'restricted-value' end
+    if not active(current) then
+        return false, 'announcement-retired'
+    end
+    if not platform:CanReadValue(key) then
+        return false, 'restricted-value'
+    end
+    if key == nil or key == '' then
+        return false, 'not-requested'
+    end
+    if type(key) ~= 'string' then
+        return false, 'invalid-sound'
+    end
 
+    local play = PlaySoundFile
+
+    if type(play) ~= 'function' then
+        return false, 'missing-api'
+    end
+
+    local ok, media = pcall(LibStub, 'LibSharedMedia-3.0', true)
+
+    if not active(current) then
+        return false, 'announcement-retired'
+    end
+    if not ok or type(media) ~= 'table' or type(media.Fetch) ~= 'function' then
+        return false, 'missing-media'
+    end
+
+    local fetched, path = pcall(media.Fetch, media, 'sound', key, true)
+
+    if not fetched then
+        return false, 'media-error'
+    end
+    if not platform:CanReadValue(path) then
+        return false, 'restricted-value'
+    end
     if not (type(path) == 'string' and path ~= ''
         or type(path) == 'number' and path > 0 and path < math.huge and path % 1 == 0) then
         return false, 'sound-unavailable'
     end
+    if not active(current) then
+        return false, 'announcement-retired'
+    end
 
-    if not active(current) then return false, 'announcement-retired' end
     local played, willPlay = pcall(play, path, 'Master')
-    if not played then return false, 'api-error' end
-    if not platform:CanReadValue(willPlay) or willPlay == false then return false, 'sound-unavailable' end
+
+    if not played then
+        return false, 'api-error'
+    end
+    if not platform:CanReadValue(willPlay) or willPlay == false then
+        return false, 'sound-unavailable'
+    end
+
     return true
 end
 
@@ -422,7 +556,10 @@ end
 -- the lease check.
 function addon:DispatchAnnouncement(config, text, castRecipient, current)
     local result = { chat = false, sound = false }
-    if not platform:CanReadValue(config) or type(config) ~= 'table' then return result end
+
+    if not platform:CanReadValue(config) or type(config) ~= 'table' then
+        return result
+    end
 
     if not active(current) then
         result.chatReason = 'announcement-retired'
@@ -463,7 +600,10 @@ function addon:DispatchAnnouncement(config, text, castRecipient, current)
 
             if type(announce) == 'function' and active(current) then
                 result.chat = pcall(announce, self, text)
-                if not result.chat then result.chatReason = 'api-error' end
+
+                if not result.chat then
+                    result.chatReason = 'api-error'
+                end
             else
                 result.chatReason = 'missing-api'
             end
@@ -540,6 +680,9 @@ local runtimeDispatchEnvironment = getfenv(1)
 -- Hands the active runtime plan the original DispatchAnnouncement and its environment so it can later prove neither was
 -- replaced. Works only for the addon itself.
 function addon:ConsumeAnnouncementRuntimeSource()
-    if self ~= addon then return end
+    if self ~= addon then
+        return
+    end
+
     return runtimeDispatch, runtimeDispatchEnvironment
 end

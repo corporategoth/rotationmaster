@@ -27,14 +27,20 @@ local function readable(value)
 
     if type(secret) == 'function' then
         local ok, v = pcall(secret, value)
-        if not ok or v ~= false then return false end
+
+        if not ok or v ~= false then
+            return false
+        end
     end
 
     local access = rawget(_G, 'canaccessvalue')
 
     if type(access) == 'function' then
         local ok, v = pcall(access, value)
-        if not ok or v ~= true then return false end
+
+        if not ok or v ~= true then
+            return false
+        end
     end
 
     return true
@@ -47,26 +53,38 @@ end
 
 -- Returns t[k] without invoking metamethods, or nil when t is unreadable or not a table.
 local function field(t, k)
-    if readable(t) and type(t) == 'table' then return rawget(t, k) end
+    if readable(t) and type(t) == 'table' then
+        return rawget(t, k)
+    end
 end
 
 -- Returns a byte counter as a whole non-negative number up to 2^53 - 1 (a string of at most 16 digits is converted),
 -- or nil when it is anything else.
 local function bytes(v)
-    if not readable(v) then return end
+    if not readable(v) then
+        return
+    end
 
     if type(v) == 'string' then
-        if #v == 0 or #v > 16 or not v:match('^%d+$') then return end
+        if #v == 0 or #v > 16 or not v:match('^%d+$') then
+            return
+        end
+
         v = tonumber(v)
     end
 
-    if finite(v) and v >= 0 and v <= SAFE and v % 1 == 0 then return v end
+    if finite(v) and v >= 0 and v <= SAFE and v % 1 == 0 then
+        return v
+    end
 end
 
 -- Reads the run's clock under pcall; returns a finite number or nil.
 local function now(run)
     local ok, v = pcall(run.clock)
-    if ok and finite(v) then return v end
+
+    if ok and finite(v) then
+        return v
+    end
 end
 
 -- True while C_AddOnProfiler and the two functions captured at start are still the very same objects.
@@ -91,7 +109,10 @@ local decisionSetter, decisionBound, decisionOwner
 -- One-shot handoff from main.lua of the function that installs or clears the evaluator's decision counter sink.
 -- Returns true on the first valid call; later calls do nothing.
 function addon:BindCPURuntimeDecisionCounts(setter)
-    if self ~= addon or decisionBound or type(setter) ~= 'function' then return end
+    if self ~= addon or decisionBound or type(setter) ~= 'function' then
+        return
+    end
+
     decisionBound = true
     decisionSetter = setter
     return true
@@ -124,11 +145,17 @@ local function decisionPrepare(run)
     run.decisionScratch = { {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0} }
 
     run.decisionSink = function(scope, event)
-        if not current(run) or not run.callbackInside or not run.decisionSampleOK then return end
+        if not current(run) or not run.callbackInside or not run.decisionSampleOK then
+            return
+        end
+
         local row = scope == 'rotation' and 1 or scope == 'cooldowns' and 2
         local index = run.decisionIndex[event]
         local scratch = run.decisionScratch
-        if row and index and scratch then scratch[row][index] = scratch[row][index] + 1 end
+
+        if row and index and scratch then
+            scratch[row][index] = scratch[row][index] + 1
+        end
     end
 end
 
@@ -150,7 +177,10 @@ end
 
 -- Adds one dispatch's scratch counts to the totals, only when the whole dispatch was counted cleanly.
 local function decisionAccumulate(run)
-    if not run.decisionSampleOK or not run.decisionScratch or decisionOwner ~= run then return end
+    if not run.decisionSampleOK or not run.decisionScratch or decisionOwner ~= run then
+        return
+    end
+
     run.decisionComplete = run.decisionComplete + 1
 
     for row = 1, 2 do
@@ -236,7 +266,11 @@ local function phasePrepare(run)
     local root = field(addon, 'evaluationProfile')
     local child = field(root, 'child')
     local marker = field(run.provider, 'AddMeasuredCallEvent')
-    if type(root) ~= 'table' or type(child) ~= 'function' or type(marker) ~= 'function' then return end
+
+    if type(root) ~= 'table' or type(child) ~= 'function' or type(marker) ~= 'function' then
+        return
+    end
+
     run.phaseRoot, run.childOriginal, run.marker = root, child, marker
 
     run.childWrapper = function(self, ...)
@@ -249,7 +283,10 @@ local function phasePrepare(run)
                 run.samplePhaseOK = false
             else
                 local ok = pcall(marker, eventNames[run.phasePosition])
-                if not ok or not current(run) or not phaseCurrent(run) then run.samplePhaseOK = false end
+
+                if not ok or not current(run) or not phaseCurrent(run) then
+                    run.samplePhaseOK = false
+                end
             end
         end
 
@@ -285,21 +322,40 @@ end
 -- them to the run. A dispatch whose markers are missing, out of order or not monotonic is dropped whole, so phase rows
 -- only ever hold complete samples.
 local function phaseAccumulate(run, metrics, elapsed, allocated, deallocated)
-    if not run.samplePhaseOK or run.phasePosition ~= 6 or not phaseCurrent(run) then return end
+    if not run.samplePhaseOK or run.phasePosition ~= 6 or not phaseCurrent(run) then
+        return
+    end
+
     local events = field(metrics, 'events')
-    if not readable(events) or type(events) ~= 'table' or #events ~= 6 then return end
+
+    if not readable(events) or type(events) ~= 'table' or #events ~= 6 then
+        return
+    end
+
     local times, allocations, deallocations = { 0 }, { 0 }, { 0 }
     local allocOK, freeOK = allocated ~= nil, deallocated ~= nil
 
     for i = 1, 6 do
         local event = field(events, i)
         local name = field(event, 'name')
-        if not readable(name) or name ~= eventNames[i] then return end
+
+        if not readable(name) or name ~= eventNames[i] then
+            return
+        end
+
         local t = field(event, 'elapsedMilliseconds')
-        if not finite(t) or t < times[i] or t > elapsed then return end
+
+        if not finite(t) or t < times[i] or t > elapsed then
+            return
+        end
+
         times[i + 1] = t
         local rawA, rawD = field(event, 'allocatedBytes'), field(event, 'deallocatedBytes')
-        if invalidSnapshotCounter(rawA) or invalidSnapshotCounter(rawD) then return end
+
+        if invalidSnapshotCounter(rawA) or invalidSnapshotCounter(rawD) then
+            return
+        end
+
         local a, d = bytes(rawA), bytes(rawD)
 
         if a == nil then
@@ -318,7 +374,11 @@ local function phaseAccumulate(run, metrics, elapsed, allocated, deallocated)
     end
 
     times[8], allocations[8], deallocations[8] = elapsed, allocated, deallocated
-    if not current(run) or not phaseCurrent(run) then return end
+
+    if not current(run) or not phaseCurrent(run) then
+        return
+    end
+
     run.phaseComplete = run.phaseComplete + 1
 
     for i, row in ipairs(run.phaseRows) do
@@ -326,12 +386,18 @@ local function phaseAccumulate(run, metrics, elapsed, allocated, deallocated)
 
         if row.allocated ~= nil then
             row.allocated = allocOK and row.allocated + (allocations[i + 1] - allocations[i]) or nil
-            if row.allocated and row.allocated > SAFE then row.allocated = nil end
+
+            if row.allocated and row.allocated > SAFE then
+                row.allocated = nil
+            end
         end
 
         if row.deallocated ~= nil then
             row.deallocated = freeOK and row.deallocated + (deallocations[i + 1] - deallocations[i]) or nil
-            if row.deallocated and row.deallocated > SAFE then row.deallocated = nil end
+
+            if row.deallocated and row.deallocated > SAFE then
+                row.deallocated = nil
+            end
         end
     end
 end
@@ -375,11 +441,23 @@ local selectionSub = string.sub
 -- Returns "none", "scoped", "raw" or "unavailable" for the current rotation selection, without exposing the identifier.
 local function selectedKey()
     local value = rawget(addon, 'currentRotation')
-    if not readable(value) or not rawequal(rawget(addon, 'currentRotation'), value) then return 'unavailable' end
-    if value == nil then return 'none' end
-    if type(value) ~= 'string' then return 'unavailable' end
+
+    if not readable(value) or not rawequal(rawget(addon, 'currentRotation'), value) then
+        return 'unavailable'
+    end
+    if value == nil then
+        return 'none'
+    end
+    if type(value) ~= 'string' then
+        return 'unavailable'
+    end
+
     local ok, prefix = pcall(selectionSub, value, 1, 13)
-    if not ok then return 'unavailable' end
+
+    if not ok then
+        return 'unavailable'
+    end
+
     return prefix == '\1rm:rotation:' and 'scoped' or 'raw'
 end
 
@@ -421,8 +499,10 @@ local function observationMode(provider)
     if not ok or not readable(value) or not rawequal(rawget(addon, 'GetCacheDiagnosticMode'), provider) then
         return 'unavailable'
     end
+    if value == 'cached' or value == 'direct' then
+        return value
+    end
 
-    if value == 'cached' or value == 'direct' then return value end
     return 'unavailable'
 end
 
@@ -430,9 +510,17 @@ end
 -- the provider is missing, throws or was replaced during the call.
 local function diagnosticSnapshot(spec, provider)
     local snapshot = { state = 'unavailable' }
-    if type(provider) ~= 'function' or not rawequal(rawget(addon, spec.method), provider) then return snapshot end
+
+    if type(provider) ~= 'function' or not rawequal(rawget(addon, spec.method), provider) then
+        return snapshot
+    end
+
     local ok, result = pcall(provider, addon)
-    if not ok or not rawequal(rawget(addon, spec.method), provider) then return snapshot end
+
+    if not ok or not rawequal(rawget(addon, spec.method), provider) then
+        return snapshot
+    end
+
     local state = field(result, spec.state)
 
     if readable(state) then
@@ -447,7 +535,10 @@ local function diagnosticSnapshot(spec, provider)
         snapshot[name] = bytes(field(result, name))
     end
 
-    if not rawequal(rawget(addon, spec.method), provider) then return { state = 'unavailable' } end
+    if not rawequal(rawget(addon, spec.method), provider) then
+        return { state = 'unavailable' }
+    end
+
     return snapshot
 end
 
@@ -469,7 +560,10 @@ local function diagnosticEnd(run)
 
     for i, spec in ipairs(diagnosticSpecs) do
         local record = run.diagnostics and run.diagnostics[i]
-        if record then record.last = diagnosticSnapshot(spec, record.provider) end
+
+        if record then
+            record.last = diagnosticSnapshot(spec, record.provider)
+        end
     end
 end
 
@@ -529,7 +623,10 @@ local function report(run, status, reason)
 
             local engine = rawget(addon, 'GetEvaluationEngine')
             local ok, name = false, nil
-            if type(engine) == 'function' then ok, name = pcall(engine, addon) end
+
+            if type(engine) == 'function' then
+                ok, name = pcall(engine, addon)
+            end
 
             return 'Engine: '
                 .. (ok and type(name) == 'string' and name or 'unavailable')
@@ -605,7 +702,10 @@ end
 -- decision sink, cancels the timer, stores the report and calls the optional OnCPURuntimeCaptureFinished hook. The
 -- original dispatch function is restored only if the wrapper is still the installed one.
 local function finish(run, status, reason)
-    if active ~= run or run.phase == 'finishing' then return end
+    if active ~= run or run.phase == 'finishing' then
+        return
+    end
+
     run.phase = 'finishing'
     local ended = now(run)
 
@@ -619,19 +719,33 @@ local function finish(run, status, reason)
     active = nil
     run.phase = 'retired'
     decisionRestore(run)
-    if rawequal(rawget(addon, 'EvaluateNextAction'), run.wrapper) then addon.EvaluateNextAction = run.original end
+
+    if rawequal(rawget(addon, 'EvaluateNextAction'), run.wrapper) then
+        addon.EvaluateNextAction = run.original
+    end
+
     phaseRestore(run)
     local timer = run.timer
     run.timer = nil
-    if timer then pcall(run.cancel, addon, timer) end
+
+    if timer then
+        pcall(run.cancel, addon, timer)
+    end
+
     lastReport = report(run, status, reason)
     local callback = rawget(addon, 'OnCPURuntimeCaptureFinished')
-    if type(callback) == 'function' then pcall(callback, addon, lastReport, status) end
+
+    if type(callback) == 'function' then
+        pcall(callback, addon, lastReport, status)
+    end
 end
 
 -- Returns the original function's results from a packed pcall, rethrowing its error with the original error value.
 local function originalResult(result)
-    if not result[1] then error(result[2], 0) end
+    if not result[1] then
+        error(result[2], 0)
+    end
+
     return unpack(result, 2, result.n)
 end
 
@@ -640,7 +754,9 @@ end
 -- counted. Any surprise (a replaced API, an unusable clock, a callback that did not run once with the same arguments)
 -- ends the capture as invalid and falls through to the original, so evaluation is never altered or lost.
 local function dispatch(run, self, ...)
-    if not rawequal(self, addon) or not current(run) then return run.original(self, ...) end
+    if not rawequal(self, addon) or not current(run) then
+        return run.original(self, ...)
+    end
 
     if run.inside then
         run.nested = run.nested + 1
@@ -677,9 +793,16 @@ local function dispatch(run, self, ...)
 
     -- The callback the native profiler measures: runs the original once, and only with the arguments it was given.
     local function once(...)
-        if not open then return end
+        if not open then
+            return
+        end
+
         entries = entries + 1
-        if entries ~= 1 or not current(run) then return end
+
+        if entries ~= 1 or not current(run) then
+            return
+        end
+
         local given = tuple(...)
 
         if given.n ~= arguments.n then
@@ -726,7 +849,9 @@ local function dispatch(run, self, ...)
         return originalResult(result)
     end
 
-    if not current(run) then return originalResult(result) end
+    if not current(run) then
+        return originalResult(result)
+    end
 
     local valid = native[1]
         and entries == 1
@@ -736,7 +861,10 @@ local function dispatch(run, self, ...)
         and native[3] == 'RM:runtime'
 
     local elapsed = valid and field(native[2], 'elapsedMilliseconds')
-    if not finite(elapsed) or elapsed < 0 or not finite(run.elapsed + elapsed) then valid = false end
+
+    if not finite(elapsed) or elapsed < 0 or not finite(run.elapsed + elapsed) then
+        valid = false
+    end
 
     if not valid then
         finish(run, 'invalid', 'native-result-unavailable')
@@ -757,15 +885,24 @@ local function dispatch(run, self, ...)
 
     if run.allocated ~= nil then
         run.allocated = allocated and run.allocated + allocated or nil
-        if run.allocated and run.allocated > SAFE then run.allocated = nil end
+
+        if run.allocated and run.allocated > SAFE then
+            run.allocated = nil
+        end
     end
 
     if run.deallocated ~= nil then
         run.deallocated = deallocated and run.deallocated + deallocated or nil
-        if run.deallocated and run.deallocated > SAFE then run.deallocated = nil end
+
+        if run.deallocated and run.deallocated > SAFE then
+            run.deallocated = nil
+        end
     end
 
-    if current(run) and run.measured >= LIMIT then finish(run, 'complete', 'dispatch-limit') end
+    if current(run) and run.measured >= LIMIT then
+        finish(run, 'complete', 'dispatch-limit')
+    end
+
     return originalResult(result)
 end
 
@@ -777,10 +914,21 @@ end
 -- "already-running", "cumulative-capture-running" or "native-profiler-unavailable"). Refuses to run beside the
 -- cumulative CPU profile.
 function addon:StartCPURuntimeCapture(duration)
-    if not rawequal(self, addon) then return false, 'invalid-owner' end
-    if active then return false, 'already-running' end
-    if duration == nil then duration = 10 end
-    if not finite(duration) or duration < 1 or duration > 60 then return false, 'invalid-duration' end
+    if not rawequal(self, addon) then
+        return false, 'invalid-owner'
+    end
+    if active then
+        return false, 'already-running'
+    end
+
+    if duration == nil then
+        duration = 10
+    end
+
+    if not finite(duration) or duration < 1 or duration > 60 then
+        return false, 'invalid-duration'
+    end
+
     local original = rawget(addon, 'EvaluateNextAction')
     local cumulative = rawget(addon, 'IsCPUProfileRunning')
     local schedule, cancel = rawget(addon, 'ScheduleTimer'), rawget(addon, 'CancelTimer')
@@ -824,8 +972,14 @@ function addon:StartCPURuntimeCapture(duration)
     end
 
     local ok, running = pcall(cumulative, addon)
-    if active ~= run then return false, 'capture-retired' end
-    if not ok or not readable(running) or running ~= false then return reject('cumulative-capture-running') end
+
+    if active ~= run then
+        return false, 'capture-retired'
+    end
+    if not ok or not readable(running) or running ~= false then
+        return reject('cumulative-capture-running')
+    end
+
     run.provider = rawget(_G, 'C_AddOnProfiler')
     run.enabled = field(run.provider, 'IsEnabled')
     run.measure = field(run.provider, 'MeasureCall')
@@ -835,8 +989,10 @@ function addon:StartCPURuntimeCapture(duration)
     end
 
     local good, enabled = pcall(run.enabled)
-    if active ~= run then return false, 'capture-retired' end
 
+    if active ~= run then
+        return false, 'capture-retired'
+    end
     if not good or not readable(enabled) or enabled ~= true or not providerCurrent(run) then
         return reject('native-profiler-unavailable')
     end
@@ -846,10 +1002,16 @@ function addon:StartCPURuntimeCapture(duration)
     run.idleStart = idleGate()
     run.selectionStart = selectedKey()
     diagnosticStart(run)
-    if active ~= run then return false, 'capture-retired' end
-    phasePrepare(run)
-    if active ~= run then return false, 'capture-retired' end
 
+    if active ~= run then
+        return false, 'capture-retired'
+    end
+
+    phasePrepare(run)
+
+    if active ~= run then
+        return false, 'capture-retired'
+    end
     if
         not run.started
         or not providerCurrent(run)
@@ -860,14 +1022,28 @@ function addon:StartCPURuntimeCapture(duration)
     end
 
     run.wrapper = function(...) return dispatch(run, ...) end
-    local accepted, timer = pcall(schedule, addon, function() finish(run, 'complete') end, duration)
+
+    local accepted, timer = pcall(
+        schedule,
+        addon,
+        function()
+            finish(run, 'complete')
+        end,
+        duration
+    )
 
     if active ~= run then
-        if accepted and timer then pcall(cancel, addon, timer) end
+        if accepted and timer then
+            pcall(cancel, addon, timer)
+        end
+
         return false, 'capture-retired'
     end
 
-    if not accepted or not timer then return reject('timer-error') end
+    if not accepted or not timer then
+        return reject('timer-error')
+    end
+
     run.timer = timer
 
     if
@@ -889,8 +1065,13 @@ end
 
 -- Ends the running capture as "stopped", keeping its report. Returns true, or false and a reason code.
 function addon:StopCPURuntimeCapture()
-    if not rawequal(self, addon) then return false, 'invalid-owner' end
-    if not active then return false, 'not-running' end
+    if not rawequal(self, addon) then
+        return false, 'invalid-owner'
+    end
+    if not active then
+        return false, 'not-running'
+    end
+
     finish(active, 'stopped')
     return true
 end
@@ -898,8 +1079,13 @@ end
 -- Ends the running capture as "cancelled" (the report says so). Returns true, or false and a reason code. Called by
 -- addon:OnDisable (Diagnostics/cpu.lua) and by the cancel action of the performance window.
 function addon:CancelCPURuntimeCapture()
-    if not rawequal(self, addon) then return false, 'invalid-owner' end
-    if not active then return false, 'not-running' end
+    if not rawequal(self, addon) then
+        return false, 'invalid-owner'
+    end
+    if not active then
+        return false, 'not-running'
+    end
+
     finish(active, 'cancelled')
     return true
 end
@@ -917,7 +1103,9 @@ function addon:GetCPURuntimeCaptureReport()
             active.requested
         )
     end
+    if lastReport then
+        return lastReport
+    end
 
-    if lastReport then return lastReport end
     return nil, 'not-captured'
 end

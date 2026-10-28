@@ -18,18 +18,28 @@ end
 -- Deep equality of two portable data trees (no cycles, no functions). Returns false when either side is not portable
 -- data, so a draft holding a stray function or cycle never compares equal to anything.
 local function equal(left, right)
-    if not data.CheckPortable(left) or not data.CheckPortable(right) then return false end
+    if not data.CheckPortable(left) or not data.CheckPortable(right) then
+        return false
+    end
 
     local function compare(a, b)
-        if type(a) ~= type(b) then return false end
-        if type(a) ~= 'table' then return a == b end
+        if type(a) ~= type(b) then
+            return false
+        end
+        if type(a) ~= 'table' then
+            return a == b
+        end
 
         for key, value in pairs(a) do
-            if not compare(value, b[key]) then return false end
+            if not compare(value, b[key]) then
+                return false
+            end
         end
 
         for key in pairs(b) do
-            if a[key] == nil then return false end
+            if a[key] == nil then
+                return false
+            end
         end
 
         return true
@@ -40,8 +50,13 @@ end
 
 -- Rough memory cost in bytes of a value, used only to bound the undo history; it is a budget, not an exact size.
 local function weight(value)
-    if type(value) == 'string' then return 32 + #value end
-    if type(value) ~= 'table' then return 16 end
+    if type(value) == 'string' then
+        return 32 + #value
+    end
+    if type(value) ~= 'table' then
+        return 16
+    end
+
     local total = 64
 
     for key, child in pairs(value) do
@@ -73,13 +88,23 @@ function addon:NewRotationEditSession(spec, original, options)
 
     local newId = options.newId or self.uuid
     local draft, why = data.NewRotationDraft(original, newId, options.reserved)
-    if not draft then return nil, why end
+
+    if not draft then
+        return nil, why
+    end
+
     local baseline = data.CopyData(original)
     -- Absent empty priority lists are an old storage shape, not a user edit.
     -- Keep the exact original separately for concurrent-change detection.
     local dirtyBaseline = data.CopyData(original)
-    if dirtyBaseline.rotation == nil then dirtyBaseline.rotation = {} end
-    if dirtyBaseline.cooldowns == nil then dirtyBaseline.cooldowns = {} end
+
+    if dirtyBaseline.rotation == nil then
+        dirtyBaseline.rotation = {}
+    end
+    if dirtyBaseline.cooldowns == nil then
+        dirtyBaseline.cooldowns = {}
+    end
+
     local ownership, originalOwnership = options.ownership, options.ownership
     local readOnly = options.readOnly == true
     local targetValid = options.targetValid
@@ -96,7 +121,11 @@ function addon:NewRotationEditSession(spec, original, options)
     -- Removes and returns a frame (the top one unless `at` is given) and releases its weight.
     local function pop(stack, at)
         local entry = table.remove(stack, at or #stack)
-        if entry then bytes = bytes - entry.bytes end
+
+        if entry then
+            bytes = bytes - entry.bytes
+        end
+
         return entry
     end
 
@@ -115,15 +144,25 @@ function addon:NewRotationEditSession(spec, original, options)
 
     -- Returns true when a change may be made now, else nil and why (closed, busy or read-only).
     local function writable()
-        if closed then return nil, 'rotation-editor-closed' end
-        if busy then return nil, 'rotation-editor-busy' end
-        if readOnly then return nil, 'readonly-rotation' end
+        if closed then
+            return nil, 'rotation-editor-closed'
+        end
+        if busy then
+            return nil, 'rotation-editor-busy'
+        end
+        if readOnly then
+            return nil, 'readonly-rotation'
+        end
+
         return true
     end
 
     -- True while the record this session edits still exists. A throwing targetValid counts as gone.
     local function owner()
-        if not targetValid then return true end
+        if not targetValid then
+            return true
+        end
+
         local ok, valid = pcall(targetValid)
         return ok and valid == true
     end
@@ -175,7 +214,11 @@ function addon:NewRotationEditSession(spec, original, options)
     -- nil and a reason. A command that changed something is recorded for undo and clears the redo stack.
     function session:Command(name, ...)
         local ok, reason = writable()
-        if not ok then return nil, reason end
+
+        if not ok then
+            return nil, reason
+        end
+
         local before = { body = draft:Snapshot(), ownership = ownership }
         local changed, result
 
@@ -207,12 +250,22 @@ function addon:NewRotationEditSession(spec, original, options)
     -- Moves one history frame from `source` to `destination`, restoring the draft to it. Returns true, or nil and why.
     local function travel(source, destination)
         local ok, reason = writable()
-        if not ok then return nil, reason end
-        if #source == 0 then return nil, 'rotation-history-empty' end
+
+        if not ok then
+            return nil, reason
+        end
+        if #source == 0 then
+            return nil, 'rotation-history-empty'
+        end
+
         local previous = { body = draft:Snapshot(), ownership = ownership }
         local frame = source[#source].value
         local restored, problem = draft:Restore(frame.body)
-        if not restored then return nil, problem end
+
+        if not restored then
+            return nil, problem
+        end
+
         ownership = frame.ownership
         pop(source)
         push(destination, previous)
@@ -232,7 +285,10 @@ function addon:NewRotationEditSession(spec, original, options)
 
     -- Discards the session without touching the original. Refused while an Apply is running.
     function session:Cancel()
-        if busy then return nil, 'rotation-editor-busy' end
+        if busy then
+            return nil, 'rotation-editor-busy'
+        end
+
         close()
         return true
     end
@@ -242,7 +298,11 @@ function addon:NewRotationEditSession(spec, original, options)
     -- afterwards, and a validator that mutated the candidate is rejected rather than saved.
     function session:Apply()
         local writableOk, reason = writable()
-        if not writableOk then return nil, reason end
+
+        if not writableOk then
+            return nil, reason
+        end
+
         busy = true
 
         -- Clears the busy flag on every exit path and passes the result through.
@@ -251,13 +311,26 @@ function addon:NewRotationEditSession(spec, original, options)
             return ok, problem, details
         end
 
-        if not owner() then return finish(nil, 'rotation-target-missing') end
-        if not equal(baseline, original) then return finish(nil, 'rotation-changed-externally') end
+        if not owner() then
+            return finish(nil, 'rotation-target-missing')
+        end
+        if not equal(baseline, original) then
+            return finish(nil, 'rotation-changed-externally')
+        end
+
         local snapshot = draft:Snapshot()
         local validation = data.ValidateBody(snapshot, addon:GetImportValidationOptions())
-        if not validation.valid then return finish(nil, 'invalid-rotation-data', validation) end
-        if not validation.supported then return finish(nil, 'unsupported-rotation-data', validation) end
-        if not validation.resolved then return finish(nil, 'unresolved-rotation-data', validation) end
+
+        if not validation.valid then
+            return finish(nil, 'invalid-rotation-data', validation)
+        end
+        if not validation.supported then
+            return finish(nil, 'unsupported-rotation-data', validation)
+        end
+        if not validation.resolved then
+            return finish(nil, 'unresolved-rotation-data', validation)
+        end
+
         local candidate = data.CopyData(snapshot)
         local tree = data.IndexRotationSteps(candidate)
 
@@ -267,7 +340,9 @@ function addon:NewRotationEditSession(spec, original, options)
 
             for _, row in ipairs(tree.rows) do
                 -- Validate both arms, including forced/unreachable branches.
-                if not addon:validateCondition(row.step.conditions or {}, spec) then valid = false end
+                if not addon:validateCondition(row.step.conditions or {}, spec) then
+                    valid = false
+                end
             end
 
             return valid
@@ -285,16 +360,32 @@ function addon:NewRotationEditSession(spec, original, options)
             ok, valid = pcall(validate)
         end
 
-        if not ok then return finish(nil, 'rotation-validation-error') end
-        if not equal(snapshot, candidate) then return finish(nil, 'validation-mutated-rotation') end
-        if not valid then return finish(nil, 'invalid-condition-fields') end
-        if not owner() then return finish(nil, 'rotation-target-missing') end
-        if not equal(baseline, original) then return finish(nil, 'rotation-changed-externally') end
+        if not ok then
+            return finish(nil, 'rotation-validation-error')
+        end
+        if not equal(snapshot, candidate) then
+            return finish(nil, 'validation-mutated-rotation')
+        end
+        if not valid then
+            return finish(nil, 'invalid-condition-fields')
+        end
+        if not owner() then
+            return finish(nil, 'rotation-target-missing')
+        end
+        if not equal(baseline, original) then
+            return finish(nil, 'rotation-changed-externally')
+        end
 
         if options.commit then
             local success, committed, problem, details = pcall(options.commit, snapshot, ownership)
-            if not success then return finish(nil, 'rotation-commit-error') end
-            if not committed then return finish(nil, problem, details) end
+
+            if not success then
+                return finish(nil, 'rotation-commit-error')
+            end
+            if not committed then
+                return finish(nil, problem, details)
+            end
+
             close()
             return finish(true, nil, problem)
         end
@@ -303,9 +394,17 @@ function addon:NewRotationEditSession(spec, original, options)
 
         if not options.newRecord then
             previous = data.CopyData(original)
-            if not previous then return finish(nil, 'invalid-rotation-data') end
-            if previous.rotation == nil then previous.rotation = {} end
-            if previous.cooldowns == nil then previous.cooldowns = {} end
+
+            if not previous then
+                return finish(nil, 'invalid-rotation-data')
+            end
+
+            if previous.rotation == nil then
+                previous.rotation = {}
+            end
+            if previous.cooldowns == nil then
+                previous.cooldowns = {}
+            end
         end
 
         local saved, problem = data.PrepareRotationContentRevision(
@@ -315,10 +414,18 @@ function addon:NewRotationEditSession(spec, original, options)
             ownership ~= originalOwnership
         )
 
-        if not saved then return finish(nil, problem) end
+        if not saved then
+            return finish(nil, problem)
+        end
+
         local publication = prepareActivePublication and prepareActivePublication(spec, nil, nil, nil, saved, original)
-        if not owner() then return finish(nil, 'rotation-target-missing') end
-        if not equal(baseline, original) then return finish(nil, 'rotation-changed-externally') end
+
+        if not owner() then
+            return finish(nil, 'rotation-target-missing')
+        end
+        if not equal(baseline, original) then
+            return finish(nil, 'rotation-changed-externally')
+        end
 
         -- Publish in place, after the last check and with no callout between, so the record is never seen half-written.
         for key in pairs(original) do
@@ -329,7 +436,10 @@ function addon:NewRotationEditSession(spec, original, options)
             original[key] = value
         end
 
-        if finishActivePublication then finishActivePublication(publication) end
+        if finishActivePublication then
+            finishActivePublication(publication)
+        end
+
         close()
         return finish(true)
     end

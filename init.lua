@@ -10,7 +10,10 @@ local addon_name, addon = ...
 -- Captured at load (Core/dependency_revisions.lua loads earlier); nil when that module is absent, and every use below
 -- tests for nil first.
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -20,7 +23,10 @@ local multiinsert, deepcopy = addon.Functions.collections.multiinsert, addon.Fun
 -- so a table built from it still shares its nested tables with the source; use this where the copy is saved data that
 -- the player will edit and the source must stay the shipped default.
 local function copyTree(value)
-    if type(value) ~= 'table' then return value end
+    if type(value) ~= 'table' then
+        return value
+    end
+
     local copy = {}
 
     for key, entry in pairs(value) do
@@ -318,7 +324,9 @@ local default_disabled_conditions = {
 local function eachSavedBody(visit)
     -- A rotation map is spec key -> (rotation id -> body); anything that is not a table is skipped, not an error.
     local function bodies(map)
-        if type(map) ~= "table" then return end
+        if type(map) ~= "table" then
+            return
+        end
 
         for _, rows in pairs(map) do
             if type(rows) == "table" then
@@ -335,11 +343,20 @@ local function eachSavedBody(visit)
     -- A profile that has no rotationStore still holds its rotations in the old root; one that has it keeps only the
     -- archive (rotationStore.legacy.rotations) in the old format.
     local function profile(p)
-        if type(p) ~= "table" or seen[p] then return end
+        if type(p) ~= "table" or seen[p] then
+            return
+        end
+
         seen[p] = true
         local store = p.rotationStore
-        if type(store) ~= "table" then return bodies(p.rotations) end
-        if type(store.legacy) == "table" then bodies(store.legacy.rotations) end
+
+        if type(store) ~= "table" then
+            return bodies(p.rotations)
+        end
+
+        if type(store.legacy) == "table" then
+            bodies(store.legacy.rotations)
+        end
     end
 
     for _, p in pairs(sv and sv.profiles or {}) do
@@ -349,7 +366,9 @@ local function eachSavedBody(visit)
     profile(addon.db.profile)
 
     for _, char in pairs(sv and sv.char or {}) do
-        if type(char) == "table" then bodies(char.rotations) end
+        if type(char) == "table" then
+            bodies(char.rotations)
+        end
     end
 end
 
@@ -357,7 +376,10 @@ end
 -- values are ignored, and the depth cap (64) stops a cyclic or absurdly deep saved tree from recursing forever.
 local function updateConditionData(cond, func, depth)
     depth = depth or 0
-    if type(cond) ~= "table" or depth > 64 then return end
+
+    if type(cond) ~= "table" or depth > 64 then
+        return
+    end
 
     if cond.type == "NOT" and type(cond.value) == "table" then
         updateConditionData(cond.value, func, depth + 1)
@@ -383,8 +405,12 @@ local function upgradeBody(rotation, passes)
             local step = row.step
 
             for _, pass in ipairs(passes) do
-                if pass[1] and step.type ~= "branch" then pass[1](step, row.section == "cooldowns") end
-                if pass[2] and step.conditions then updateConditionData(step.conditions, pass[2]) end
+                if pass[1] and step.type ~= "branch" then
+                    pass[1](step, row.section == "cooldowns")
+                end
+                if pass[2] and step.conditions then
+                    updateConditionData(step.conditions, pass[2])
+                end
             end
         end
     end
@@ -415,7 +441,10 @@ local function updateRotationData(rot_func, cond_func, opts)
     end
 
     if scoped then
-        if opts and opts.activeOnly then return end
+        if opts and opts.activeOnly then
+            return
+        end
+
         pendingPasses[#pendingPasses + 1] = { rot_func, cond_func }
         return
     end
@@ -436,12 +465,27 @@ end
 local function upgradeSavedBodies()
     local passes = pendingPasses
     pendingPasses = {}
-    if #passes == 0 then return end
+
+    if #passes == 0 then
+        return
+    end
+
     local count = 0
-    eachSavedBody(function() count = count + 1 end)
+
+    eachSavedBody(function()
+        count = count + 1
+    end)
+
     local mark = LEGACY_BODY_UPGRADE .. ":" .. count
-    if addon.db.global.legacyBodyUpgrade == mark then return end
-    eachSavedBody(function(body) upgradeBody(body, passes) end)
+
+    if addon.db.global.legacyBodyUpgrade == mark then
+        return
+    end
+
+    eachSavedBody(function(body)
+        upgradeBody(body, passes)
+    end)
+
     addon.db.global.legacyBodyUpgrade = mark
 end
 
@@ -468,7 +512,9 @@ end
 -- set sits at index 0 (the TBC layout) is moved to index 1. Skipped on Retail and under the scoped store, where
 -- rotation ownership is handled by Core/rotation_migration.lua.
 local function upgradeGlobalRotationstoPlayer()
-    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then return end
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore ~= nil then
+        return
+    end
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         -- Upgrade from TBC -> Wrath
@@ -597,7 +643,9 @@ end
 -- more, and the validator would report the key in each profile that still carries it.
 local function dropRetiredTransferFormat()
     for _, profile in pairs(addon.db.sv and addon.db.sv.profiles or {}) do
-        if type(profile) == 'table' then profile.transfer_format = nil end
+        if type(profile) == 'table' then
+            profile.transfer_format = nil
+        end
     end
 
     addon.db.profile.transfer_format = nil
@@ -657,7 +705,10 @@ local function upgradeEffectsToGUID()
             button2 = NO,
             OnAccept = function()
                 addon.db.global.effects = copyTree(default_effects)
-                if invalidateDependencies then invalidateDependencies(addon, 'effect', nil) end
+
+                if invalidateDependencies then
+                    invalidateDependencies(addon, 'effect', nil)
+                end
             end,
             showAlert = 1,
             timeout = 0,
@@ -809,11 +860,9 @@ local function moveProfileItems()
         if rotations and next(rotations) ~= nil then
             addon.db.profile.rotations = rotations
         end
-
         if itemsets and next(itemsets) ~= nil then
             addon.db.profile.itemsets = itemsets
         end
-
         if announces and next(announces) ~= nil then
             addon.db.profile.announces = announces
         end
@@ -851,7 +900,9 @@ function addon:InitializeTalentTreeConditions(_, db)
 
     local function append(list)
         for _, tag in ipairs({ 'TALENT_TREE_POINTS', 'PRIMARY_TALENT_TREE' }) do
-            if not addon.Functions.values.isin(list, tag) then list[#list + 1] = tag end
+            if not addon.Functions.values.isin(list, tag) then
+                list[#list + 1] = tag
+            end
         end
     end
 
@@ -895,7 +946,10 @@ end
 -- Called from addon:init once the database exists.
 function addon:InstallAnnouncementConditionPreferences()
     local db = self.db
-    if not db then return end
+
+    if not db then
+        return
+    end
 
     if announcementPreferenceOwner.db ~= db then
         announcementPreferenceOwner.db = db
@@ -933,10 +987,20 @@ function addon:init()
     self.db.RegisterCallback(self, 'OnNewProfile', 'InitializeTalentTreeConditions')
     self.db.RegisterCallback(self, 'OnProfileReset', 'InitializeTalentTreeConditions')
     self:InstallUnitStateConditions(self.db)
-    if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
-    if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
-    if self.InstallWorldConditions then self:InstallWorldConditions(self.db) end
-    if self.InstallCastProgressConditions then self:InstallCastProgressConditions(self.db) end
+
+    if self.InstallBossModConditions then
+        self:InstallBossModConditions(self.db)
+    end
+    if self.InstallLoadoutConditions then
+        self:InstallLoadoutConditions(self.db)
+    end
+    if self.InstallWorldConditions then
+        self:InstallWorldConditions(self.db)
+    end
+    if self.InstallCastProgressConditions then
+        self:InstallCastProgressConditions(self.db)
+    end
+
     self:InstallAnnouncementConditionPreferences()
     moveProfileItems()
 
@@ -977,5 +1041,8 @@ function addon:init()
     end
 
     addon.db.global.version = GLOBAL_VERSION
-    if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+
+    if invalidateDependencies then
+        invalidateDependencies(addon, 'all', nil)
+    end
 end

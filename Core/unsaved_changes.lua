@@ -8,18 +8,31 @@ local _, addon = ...
 -- Deep structural equality for saved-data tables (cycle-safe through `seen`); true when both sides hold the same keys
 -- and values. Used by the editors to decide whether a working copy differs from its baseline.
 function addon:UnsavedDataEqual(a, b, seen)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
+
     seen = seen or {}
-    if seen[a] == b then return true end
+
+    if seen[a] == b then
+        return true
+    end
+
     seen[a] = b
 
     for key, value in pairs(a) do
-        if not self:UnsavedDataEqual(value, b[key], seen) then return false end
+        if not self:UnsavedDataEqual(value, b[key], seen) then
+            return false
+        end
     end
 
     for key in pairs(b) do
-        if a[key] == nil then return false end
+        if a[key] == nil then
+            return false
+        end
     end
 
     return true

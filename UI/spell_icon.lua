@@ -36,7 +36,9 @@ local function actionIcon(kind, initialSpell, accept)
 
     -- Hides the game tooltip if this icon owns it.
     local function hideTooltip()
-        if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end
+        if GameTooltip and GameTooltip:IsOwned(frame) then
+            GameTooltip:Hide()
+        end
     end
 
     widget.SetText = function(self, value)
@@ -56,7 +58,10 @@ local function actionIcon(kind, initialSpell, accept)
             id = addon.Platform:GetItemID(value)
         end
 
-        if not spellID(id) then id = nil end
+        if not spellID(id) then
+            id = nil
+        end
+
         self:SetUserData(key, id)
         local info
 
@@ -88,9 +93,16 @@ local function actionIcon(kind, initialSpell, accept)
     -- id and passes `accept`; clears the cursor and fires OnEnterPressed with the id. Ignored once the widget is
     -- released.
     local function drop()
-        if not alive or widget.disabled or widget:IsReleasing() or type(GetCursorInfo) ~= "function" then return end
+        if not alive or widget.disabled or widget:IsReleasing() or type(GetCursorInfo) ~= "function" then
+            return
+        end
+
         local cursor = { pcall(GetCursorInfo) }
-        if not cursor[1] or not addon.Platform:CanReadValue(cursor[2]) then return end
+
+        if not cursor[1] or not addon.Platform:CanReadValue(cursor[2]) then
+            return
+        end
+
         local action = cursor[2]
 
         if
@@ -101,18 +113,31 @@ local function actionIcon(kind, initialSpell, accept)
         end
 
         local id = (item or action == "petaction") and cursor[3] or cursor[5]
-        if not addon.Platform:CanReadValue(id) or not spellID(id) then return end
-        if not item and not addon.Platform:GetSpellInfo(id) then return end
-        if accept and not accept(id) then return end
+
+        if not addon.Platform:CanReadValue(id) or not spellID(id) then
+            return
+        end
+        if not item and not addon.Platform:GetSpellInfo(id) then
+            return
+        end
+        if accept and not accept(id) then
+            return
+        end
+
         -- The cursor has been validated before any data callback can rebuild
         -- this field. Never touch a newly acquired owner after that callback.
-        if type(ClearCursor) == "function" then ClearCursor() end
+        if type(ClearCursor) == "function" then
+            ClearCursor()
+        end
+
         widget:Fire("OnEnterPressed", tostring(id))
     end
 
     -- Right click clears the id; left click is a drop attempt.
     local function click(_, button)
-        if not alive or widget.disabled or widget:IsReleasing() then return end
+        if not alive or widget.disabled or widget:IsReleasing() then
+            return
+        end
 
         if button == "RightButton" then
             widget:Fire("OnEnterPressed", "")
@@ -123,9 +148,15 @@ local function actionIcon(kind, initialSpell, accept)
 
     -- OnHide wrapper: hides the tooltip, then runs the original script while the widget is still live.
     local function hide(self, ...)
-        if not alive then return end
+        if not alive then
+            return
+        end
+
         hideTooltip()
-        if originalHide then return originalHide(self, ...) end
+
+        if originalHide then
+            return originalHide(self, ...)
+        end
     end
 
     frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -140,16 +171,27 @@ local function actionIcon(kind, initialSpell, accept)
         alive = false
         hideTooltip()
         self[activeKey] = nil
-        if frame:GetScript("OnClick") == installedClick then frame:SetScript("OnClick", originalClick) end
-        if frame:GetScript("OnReceiveDrag") == installedDrop then frame:SetScript("OnReceiveDrag", originalDrag) end
-        if frame:GetScript("OnHide") == installedHide then frame:SetScript("OnHide", originalHide) end
+
+        if frame:GetScript("OnClick") == installedClick then
+            frame:SetScript("OnClick", originalClick)
+        end
+        if frame:GetScript("OnReceiveDrag") == installedDrop then
+            frame:SetScript("OnReceiveDrag", originalDrag)
+        end
+        if frame:GetScript("OnHide") == installedHide then
+            frame:SetScript("OnHide", originalHide)
+        end
+
         frame:RegisterForClicks("LeftButtonUp")
         frame.rmOwnsRightClick = nil
         self.SetText, self.OnRelease = originalText, originalRelease
         self:SetUserData(key, nil)
         self:SetUserData(key .. "Metadata", nil)
         self.rmActionIconRevision = nil
-        if originalRelease then return originalRelease(self, ...) end
+
+        if originalRelease then
+            return originalRelease(self, ...)
+        end
     end
 
     widget:SetText(initialSpell)

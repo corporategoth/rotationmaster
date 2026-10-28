@@ -1,9 +1,23 @@
 -- Strict additive START-witness inverse; every original whole-source proof stays unchanged.
-local rows={['Platform/analytics_casts.lua']={bytes=21326,hash='1c0b1021',oldBytes=18603,oldHash='58d88fbc',changes={{at=3742,current=[====[
+local rows = {
+    ['Platform/analytics_casts.lua'] = {
+        bytes = 21326,
+        hash = '1c0b1021',
+        oldBytes = 18603,
+        oldHash = '58d88fbc',
+        changes = {
+            {
+                at = 3742,
+                current = [====[
 
   -- BEGIN ANALYTICS START WITNESS SNAPSHOT
   startWitness=status=='complete'and copy(s.startWitness)or nil,
-  -- END ANALYTICS START WITNESS SNAPSHOT]====],previous=[====[]====]},{at=11746,current=[====[-- BEGIN ANALYTICS START WITNESS
+  -- END ANALYTICS START WITNESS SNAPSHOT]====],
+                previous = [====[]====],
+            },
+            {
+                at = 11746,
+                current = [====[-- BEGIN ANALYTICS START WITNESS
 -- Optional event-local diagnostics, never a cast-kind authority. No raw tuple
 -- or identity is retained; two bounded cast reads straddle the repeat query.
 local function startWitness(s,key,spell)
@@ -44,22 +58,49 @@ local function startWitness(s,key,spell)
  return ok and result or 'unknown'
 end
 -- END ANALYTICS START WITNESS
-]====],previous=[====[]====]},{at=14396,current=[====[PT
+]====],
+                previous = [====[]====],
+            },
+            {
+                at = 14396,
+                current = [====[PT
   -- BEGIN ANALYTICS START WITNESS RECEIPT
   local witness
   if event=='UNIT_SPELLCAST_START'then witness=startWitness(s,key,spell)end
-  -- END ANALYTICS START WITNESS RECEI]====],previous=[====[]====]},{at=15335,current=[====[
+  -- END ANALYTICS START WITNESS RECEI]====],
+                previous = [====[]====],
+            },
+            {
+                at = 15335,
+                current = [====[
 
   -- BEGIN ANALYTICS START WITNESS COUNT
   if witness then
    local counts=s.startWitness;counts.observed=counts.observed+1;counts[witness]=counts[witness]+1
   end
-  -- END ANALYTICS START WITNESS COUNT]====],previous=[====[]====]},{at=16378,current=[====[
+  -- END ANALYTICS START WITNESS COUNT]====],
+                previous = [====[]====],
+            },
+            {
+                at = 16378,
+                current = [====[
 
  -- BEGIN ANALYTICS START WITNESS SESSION
  s.startWitness={observed=0,matched=0,mismatch=0,excluded=0,unknown=0}
- -- END ANALYTICS START WITNESS SESSION]====],previous=[====[]====]}}},
-['UI/analytics_capture.lua']={bytes=10418,hash='0427940d',oldBytes=9682,oldHash='605a47d3',changes={{at=7929,current=[====[-- BEGIN ANALYTICS START WITNESS REPORT
+ -- END ANALYTICS START WITNESS SESSION]====],
+                previous = [====[]====],
+            },
+        },
+    },
+    ['UI/analytics_capture.lua'] = {
+        bytes = 10418,
+        hash = '0427940d',
+        oldBytes = 9682,
+        oldHash = '605a47d3',
+        changes = {
+            {
+                at = 7929,
+                current = [====[-- BEGIN ANALYTICS START WITNESS REPORT
  if type(snapshot.startWitness)=='table'then
   local counts=snapshot.startWitness
   local function count(value)
@@ -69,13 +110,39 @@ end
   lines[#lines+1]=L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.']
  end
  -- END ANALYTICS START WITNESS REPORT
- ]====],previous=[====[]====]}}}}
-local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-return function(text,path)
- text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
- local r=rows[path];if not r or not text:find('-- BEGIN ANALYTICS START WITNESS',1,true)then return text end
- assert(#text==r.bytes and hash(text)==r.hash,'unrelated START-witness source: '..path)
- for i=#r.changes,1,-1 do local c=r.changes[i];assert(text:sub(c.at,c.at+#c.current-1)==c.current,'START-witness inverse mismatch');text=text:sub(1,c.at-1)..c.previous..text:sub(c.at+#c.current)end
- assert(#text==r.oldBytes and hash(text)==r.oldHash,'START-witness predecessor mismatch')
- return text
+ ]====],
+                previous = [====[]====],
+            },
+        },
+    },
+}
+
+local function hash(s)
+    local n = 0
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_workbench_resize.lua')(text, path)
+    local r = rows[path]
+
+    if not r or not text:find('-- BEGIN ANALYTICS START WITNESS', 1, true) then
+        return text
+    end
+
+    assert(#text == r.bytes and hash(text) == r.hash, 'unrelated START-witness source: ' .. path)
+
+    for i = #r.changes, 1, -1 do
+        local c = r.changes[i]
+        assert(text:sub(c.at, c.at + #c.current - 1) == c.current, 'START-witness inverse mismatch')
+        text = text:sub(1, c.at - 1) .. c.previous .. text:sub(c.at + #c.current)
+    end
+
+    assert(#text == r.oldBytes and hash(text) == r.oldHash, 'START-witness predecessor mismatch')
+    return text
 end

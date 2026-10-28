@@ -35,10 +35,16 @@ local sequences = {
 -- Returns pasted text with all whitespace and invisible formatting characters removed, ready for decoding; anything
 -- that is not a string gives "". Text already made of only the encoding alphabet is returned without a copy.
 function addon:NormalizeImportText(text)
-    if type(text) ~= "string" then return "" end
+    if type(text) ~= "string" then
+        return ""
+    end
+
     -- Text that is already nothing but the alphabet (an unwrapped export) costs
     -- one scan and no copy of a string that can be megabytes.
-    if not text:find("[^A-Za-z0-9%+/=:]") then return text end
+    if not text:find("[^A-Za-z0-9%+/=:]") then
+        return text
+    end
+
     text = text:gsub("[ \t\n\v\f\r]+", "")
 
     if text:find("[\194\225\226\227\239]") then
@@ -53,13 +59,24 @@ end
 -- Returns the encoded text cut into lines of width characters (76 when width is missing or below 1) joined by
 -- newlines, with no trailing newline. Existing line breaks are dropped first, so formatting twice gives the same text.
 function addon:FormatExportText(text, width)
-    if type(text) ~= "string" then return "" end
+    if type(text) ~= "string" then
+        return ""
+    end
+
     -- Only line breaks are touched, so wrapping twice is stable and any other
     -- character of the text is left exactly as it was.
     text = text:gsub("[\r\n]+", "")
-    if type(width) ~= "number" or width < 1 then width = EXPORT_WIDTH end
+
+    if type(width) ~= "number" or width < 1 then
+        width = EXPORT_WIDTH
+    end
+
     width = math.floor(width)
-    if #text <= width then return text end
+
+    if #text <= width then
+        return text
+    end
+
     local lines = {}
 
     for position = 1, #text, width do

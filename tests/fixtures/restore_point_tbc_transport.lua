@@ -1,6 +1,8 @@
 -- Strict inverse of the three authorized TBC POINT transport deltas only.
-local changes={
- ['Core/point_conditions.lua']={old=[====[]====],new=[====[-- Optional trusted-load capability for the explicitly versioned TBC policy.
+local changes = {
+    ['Core/point_conditions.lua'] = {
+        old = [====[]====],
+        new = [====[-- Optional trusted-load capability for the explicitly versioned TBC policy.
 -- An inherited or subsequently replaced enum remains on the original transport.
 local pointComboTypes,pointComboValue
 do
@@ -65,8 +67,13 @@ function addon:GetConditionPointResourceV2(unit,cache)
     return selected,nil,transport
 end
 
-]====],length=3967,hash='43679b49'},
- ['Platform/points.lua']={old=[====[]====],new=[====[-- Explicit player/target combo transport. Other units/resources use the observer above.
+]====],
+        length = 3967,
+        hash = '43679b49',
+    },
+    ['Platform/points.lua'] = {
+        old = [====[]====],
+        new = [====[-- Explicit player/target combo transport. Other units/resources use the observer above.
 function platform:GetPlayerComboPointObservation(powerType,kind)
     local info=self:GetClientInfo()
     if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end
@@ -91,8 +98,12 @@ function platform:GetPlayerComboPointObservation(powerType,kind)
     return result
 end
 
-]====],length=3637,hash='926baaf3'},
- ['Conditions/stats.lua']={old=[====[    evaluate = function(value, cache)
+]====],
+        length = 3637,
+        hash = '926baaf3',
+    },
+    ['Conditions/stats.lua'] = {
+        old = [====[    evaluate = function(value, cache)
         local point,reason=addon:GetConditionPointResource(value.unit,cache)
         if point==nil then return nil,reason end
         if point==false then return false end
@@ -107,7 +118,8 @@ end
         else
             return Functions.values.compare(value.operator, cur, value.value)
         end
-    end,]====],new=[====[    evaluate = function(value, cache)
+    end,]====],
+        new = [====[    evaluate = function(value, cache)
         local point,reason,transport=addon:GetConditionPointResourceV2(value.unit,cache)
         if point==nil then return nil,reason end
         if point==false then return false end
@@ -132,35 +144,75 @@ end
         else
             return Functions.values.compare(value.operator, cur, value.value)
         end
-    end,]====],length=38965,hash='d72c6f4e'},
+    end,]====],
+        length = 38965,
+        hash = 'd72c6f4e',
+    },
 }
-local function replace(text,old,new)
- local first,last=text:find(old,1,true);assert(first and not text:find(old,last+1,true),'unexpected TBC POINT bytes/count')
- return text:sub(1,first-1)..new..text:sub(last+1)
+
+local function replace(text, old, new)
+    local first, last = text:find(old, 1, true)
+    assert(first and not text:find(old, last + 1, true), 'unexpected TBC POINT bytes/count')
+    return text:sub(1, first - 1) .. new .. text:sub(last + 1)
 end
+
 local function hash(text)
- local h=2166136261
- for i=1,#text do
-  local byte=text:byte(i);local low=h%256;local xor=0;local bit=1
-  for _=1,8 do if low%2~=byte%2 then xor=xor+bit end;low=math.floor(low/2);byte=math.floor(byte/2);bit=bit*2 end
-  h=h-h%256+xor;h=(h*403+(h%256)*16777216)%4294967296
- end
- return string.format('%08x',h)
+    local h = 2166136261
+
+    for i = 1, #text do
+        local byte = text:byte(i)
+        local low = h % 256
+        local xor = 0
+        local bit = 1
+
+        for _ = 1, 8 do
+            if low % 2 ~= byte % 2 then
+                xor = xor + bit
+            end
+
+            low = math.floor(low / 2)
+            byte = math.floor(byte / 2)
+            bit = bit * 2
+        end
+
+        h = h - h % 256 + xor
+        h = (h * 403 + (h % 256) * 16777216) % 4294967296
+    end
+
+    return string.format('%08x', h)
 end
-local oldBody=assert(changes['Conditions/stats.lua'].old:match('^    evaluate = function%b()(.*)end,$'))
-local newBody=assert(changes['Conditions/stats.lua'].new:match('^    evaluate = function%b()(.*)end,$'))
-local getters={
- ['Core/point_conditions.lua']={
-  '        if name=="GetConditionPointResourceV2" then return addon.GetConditionPointResourceV2 end\n',
-  '        if name=="pointComboTypes" then return pointComboTypes end\n',
-  '        if name=="pointComboValue" then return pointComboValue end\n',
- },
- ['Platform/points.lua']={'        if name=="Platform_GetPlayerComboPointObservation" then return addon.Platform.GetPlayerComboPointObservation end\n'},
+
+local oldBody = assert(changes['Conditions/stats.lua'].old:match('^    evaluate = function%b()(.*)end,$'))
+local newBody = assert(changes['Conditions/stats.lua'].new:match('^    evaluate = function%b()(.*)end,$'))
+
+local getters = {
+    ['Core/point_conditions.lua'] = {
+        '        if name=="GetConditionPointResourceV2" then return addon.GetConditionPointResourceV2 end\n',
+        '        if name=="pointComboTypes" then return pointComboTypes end\n',
+        '        if name=="pointComboValue" then return pointComboValue end\n',
+    },
+    ['Platform/points.lua'] = {
+        '        if name=="Platform_GetPlayerComboPointObservation" then return addon.Platform.GetPlayerComboPointObservation end\n',
+    },
 }
-return function(text,path,body)
- if body then assert(path=='POINT'and text==newBody,'unexpected POINT callback bytes');return oldBody end
- local row=assert(changes[path],'unexpected TBC POINT module');text=replace(text,row.new,row.old)
- for _,line in ipairs(getters[path]or{})do if text:find(line,1,true)then text=replace(text,line,'')end end
- assert(#text==row.length and hash(text)==row.hash,'unexpected unrelated TBC POINT module bytes: '..path)
- return text
-end,oldBody,newBody
+
+return function(text, path, body)
+    if body then
+        assert(path == 'POINT' and text == newBody, 'unexpected POINT callback bytes')
+        return oldBody
+    end
+
+    local row = assert(changes[path], 'unexpected TBC POINT module')
+    text = replace(text, row.new, row.old)
+
+    for _, line in ipairs(getters[path] or {}) do
+        if text:find(line, 1, true) then
+            text = replace(text, line, '')
+        end
+    end
+
+    assert(#text == row.length and hash(text) == row.hash, 'unexpected unrelated TBC POINT module bytes: ' .. path)
+    return text
+end,
+    oldBody,
+    newBody

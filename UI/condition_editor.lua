@@ -33,7 +33,10 @@ local function at(root, path)
     local node = root
 
     for _, part in ipairs(path) do
-        if type(node) ~= "table" then return nil end
+        if type(node) ~= "table" then
+            return nil
+        end
+
         node = node[part]
     end
 
@@ -43,7 +46,11 @@ end
 -- Path of the group that holds the node at `path`: drops a trailing child index and then the key it hangs from.
 local function parentPath(path)
     local result = copyPath(path)
-    if type(result[#result]) == "number" then table.remove(result) end
+
+    if type(result[#result]) == "number" then
+        table.remove(result)
+    end
+
     table.remove(result)
     return result
 end
@@ -52,15 +59,22 @@ end
 -- true, or nil as soon as a field refuses (its text is invalid); without it, returns true if any field is pending.
 local function pendingFields(widget, commit)
     if commit then
-        if widget.CommitPending and not widget:CommitPending() then return nil end
+        if widget.CommitPending and not widget:CommitPending() then
+            return nil
+        end
     elseif widget.IsPending and widget:IsPending() then
         return true
     end
 
     for _, child in ipairs(widget.children or {}) do
         local result = pendingFields(child, commit)
-        if commit and not result then return nil end
-        if not commit and result then return true end
+
+        if commit and not result then
+            return nil
+        end
+        if not commit and result then
+            return true
+        end
     end
 
     return commit == true
@@ -69,10 +83,19 @@ end
 -- Card title for a condition node: the group operator, "Always", or the condition's description, with the spell name
 -- appended when the node has a spell. An unregistered type reads as "Unknown condition".
 local function caption(node)
-    if node.type == "AND" then return L["All (AND)"] end
-    if node.type == "OR" then return L["Any (OR)"] end
-    if node.type == "NOT" then return L["Not (NOT)"] end
-    if not node.type then return L["Always (no condition)"] end
+    if node.type == "AND" then
+        return L["All (AND)"]
+    end
+    if node.type == "OR" then
+        return L["Any (OR)"]
+    end
+    if node.type == "NOT" then
+        return L["Not (NOT)"]
+    end
+    if not node.type then
+        return L["Always (no condition)"]
+    end
+
     local definition = addon.conditionDefinitions[node.type]
 
     local text = definition and type(definition.description) == "string" and definition.description or string.format(
@@ -85,7 +108,10 @@ local function caption(node)
 
         if info then
             text = text .. ": " .. info.name
-            if info.subtext and info.subtext ~= "" then text = text .. " (" .. info.subtext .. ")" end
+
+            if info.subtext and info.subtext ~= "" then
+                text = text .. " (" .. info.subtext .. ")"
+            end
         end
     end
 
@@ -122,7 +148,11 @@ local function createShell()
     window:SetMovable(true)
     window:SetResizable(true)
     window:EnableMouse(true)
-    if window.SetResizeBounds then window:SetResizeBounds(660, 460) end
+
+    if window.SetResizeBounds then
+        window:SetResizeBounds(660, 460)
+    end
+
     local shell = { frame = window, tools = {}, userdata = {} }
     shell.title = window:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     shell.title:SetPoint("TOPLEFT", 16, -10)
@@ -138,8 +168,14 @@ local function createShell()
     drag:SetHeight(28)
     drag:EnableMouse(true)
     drag:RegisterForDrag("LeftButton")
-    addon:SetUIScript(drag, "OnDragStart", function() window:StartMoving() end)
-    addon:SetUIScript(drag, "OnDragStop", function() window:StopMovingOrSizing() end)
+
+    addon:SetUIScript(drag, "OnDragStart", function()
+        window:StartMoving()
+    end)
+
+    addon:SetUIScript(drag, "OnDragStop", function()
+        window:StopMovingOrSizing()
+    end)
 
     -- Shows the status text for a reason code from the core.
     function shell:Message(reason)
@@ -148,7 +184,9 @@ local function createShell()
 
     -- Shows the window only while an edit is open.
     function shell:Show()
-        if self.active then window:Show() end
+        if self.active then
+            window:Show()
+        end
     end
 
     -- Hides the window; the OnHide handler ends the edit.
@@ -158,7 +196,9 @@ local function createShell()
 
     -- Accepts the one event this shell supports: OnClose installs an override that replaces the default close.
     function shell:SetCallback(event, callback)
-        if event == "OnClose" then self.closeOverride = callback end
+        if event == "OnClose" then
+            self.closeOverride = callback
+        end
     end
 
     -- Per-shell flags set by the opener (for example announcementTarget).
@@ -170,9 +210,15 @@ local function createShell()
     -- shell about the tree they live in.
     function shell:GetUserData(key)
         if self.active then
-            if key == "root" then return self.active.working end
-            if key == "spec" then return self.active.spec end
-            if key == "index" then return self.active.index end
+            if key == "root" then
+                return self.active.working
+            end
+            if key == "spec" then
+                return self.active.spec
+            end
+            if key == "index" then
+                return self.active.index
+            end
         end
 
         return self.userdata[key]
@@ -181,8 +227,12 @@ local function createShell()
     -- Commits every card's pending input into the session. Returns true on success, or nil after showing why (a field
     -- refused its text, or the core rejected the whole-tree replace). A read-only edit has nothing to sync.
     function shell:SyncWorking()
-        if not self.active then return nil end
-        if self.active.readOnly then return true end
+        if not self.active then
+            return nil
+        end
+        if self.active.readOnly then
+            return true
+        end
 
         for _, card in ipairs(self.canvas.cards) do
             if card.pane and not pendingFields(card.pane, true) then
@@ -192,13 +242,19 @@ local function createShell()
         end
 
         local ok, why = self.active.session:Command("Replace", {}, self.active.working)
-        if not ok then self:Message(why) end
+
+        if not ok then
+            self:Message(why)
+        end
+
         return ok
     end
 
     -- After any edit: syncs the pending input and, if that worked, clears the status line and reflows the canvas.
     function shell:SetStatusText()
-        if self.loading or not self.active then return end
+        if self.loading or not self.active then
+            return
+        end
 
         if self:SyncWorking() then
             self.status:SetText("")
@@ -209,7 +265,10 @@ local function createShell()
     -- Marks changed cards as unsaved and enables Undo, Redo and Apply from the session's history and dirty state.
     -- Pending typed input counts as a change (it enables Undo and Apply) but blocks Redo.
     function shell:UpdateHistoryButtons()
-        if not self.active or not self.undo then return end
+        if not self.active or not self.undo then
+            return
+        end
+
         local state = self.active.session:HistoryState()
         local baseline = self.active.session:Baseline()
 
@@ -260,11 +319,19 @@ local function createShell()
     -- the ones the card was drawn for (`current`); a stale card closes its help instead of showing the wrong text.
     function shell:ShowSubjectHelp(model, cardAlive)
         local active = self.active
-        if not active or not cardAlive() then return end
+
+        if not active or not cardAlive() then
+            return
+        end
+
         local working = active.working
         local path = copyPath(model.fieldPath or model.path)
         local node = at(working, path)
-        if type(node) ~= 'table' then return end
+
+        if type(node) ~= 'table' then
+            return
+        end
+
         local tag = node.type
         local definitions = addon.conditionDefinitions
         local revision = addon.conditionRegistryVersion
@@ -290,11 +357,16 @@ local function createShell()
         -- `owned` plus the opener's own target check (the rotation or step still exists); the target check runs under
         -- pcall and may itself change state, so ownership is verified again afterwards.
         local function ownerValid()
-            if not owned() then return false end
+            if not owned() then
+                return false
+            end
 
             if active.targetValid then
                 local ok, value = pcall(active.targetValid)
-                if not ok or value ~= true then return false end
+
+                if not ok or value ~= true then
+                    return false
+                end
             end
 
             return owned()
@@ -306,7 +378,9 @@ local function createShell()
         -- True while the help should stay open: the owner is valid and, once rendered, the condition is still
         -- available and its help function is unchanged.
         local function current()
-            if not ownerValid() then return false end
+            if not ownerValid() then
+                return false
+            end
 
             if initialized and not group then
                 local now = definition
@@ -314,7 +388,10 @@ local function createShell()
                     and not definition.functionUnavailable
                     and not definition.functionSuspended
 
-                if now ~= available then return false end
+                if now ~= available then
+                    return false
+                end
+
                 local same = not available or definition.help == help
                 return same and ownerValid()
             end
@@ -325,7 +402,9 @@ local function createShell()
         local request = { heading = L['Condition'], valid = current }
 
         request.sections = function()
-            if not ownerValid() then return {} end
+            if not ownerValid() then
+                return {}
+            end
 
             available = definition
                 and not definition.disabled
@@ -338,7 +417,10 @@ local function createShell()
             request.heading = addon:PlainWorkbenchName(type(heading) == 'string' and heading or L['Condition'])
             request.owner = self.chrome.author:GetText()
             request.renderContext = { customCode = definition and definition.customCode == true, conditionTag = tag }
-            if not current() then return {} end
+
+            if not current() then
+                return {}
+            end
 
             if group then
                 request.render = nil
@@ -368,9 +450,15 @@ local function createShell()
 
             -- Releases the help group, but only if it is still the lease this mount created.
             function mount:Release()
-                if self.released then return end
+                if self.released then
+                    return
+                end
+
                 self.released = true
-                if pane and pane.rmActive and pane.rmLease == lease then addon:ReleaseConditionWidget(pane) end
+
+                if pane and pane.rmActive and pane.rmLease == lease then
+                    addon:ReleaseConditionWidget(pane)
+                end
             end
 
             -- True while the group, if created, is still the one this mount owns.
@@ -381,23 +469,40 @@ local function createShell()
             -- True while this render is still wanted; checked between every step because the help function is custom
             -- code that can take a while or change the world.
             local function live()
-                if mount.released or not paneCurrent() or not current() or not requestCurrent() then return false end
+                if mount.released or not paneCurrent() or not current() or not requestCurrent() then
+                    return false
+                end
+
                 return not mount.released and paneCurrent()
             end
 
             local ok, why = pcall(function()
-                if not live() then return end
+                if not live() then
+                    return
+                end
+
                 pane = addon:CreateConditionGroup()
                 lease = pane.rmLease
-                if not live() then return end
+
+                if not live() then
+                    return
+                end
+
                 pane.frame:SetParent(parent)
                 pane.frame:ClearAllPoints()
                 pane.frame:SetPoint('TOPLEFT', 0, -y)
                 pane:SetWidth(width)
                 pane:SetLayout('List')
-                if not live() then return end
+
+                if not live() then
+                    return
+                end
+
                 help(pane)
-                if not live() then return end
+
+                if not live() then
+                    return
+                end
 
                 -- Wraps every callback the help function registered so it fires only while this render is live and
                 -- the widget is still on its original lease.
@@ -426,16 +531,27 @@ local function createShell()
 
                 guardCallbacks(pane)
                 pane:DoLayout()
-                if live() then mount.height = pane.frame:GetHeight() end
+
+                if live() then
+                    mount.height = pane.frame:GetHeight()
+                end
             end)
 
-            if not ok or not live() then mount:Release() end
-            if not ok then error(why, 0) end
+            if not ok or not live() then
+                mount:Release()
+            end
+            if not ok then
+                error(why, 0)
+            end
+
             return mount
         end
 
         local open = rawget(addon, 'OpenWorkbenchHelp')
-        if type(open) == 'function' then return open(addon, request) end
+
+        if type(open) == 'function' then
+            return open(addon, request)
+        end
     end
 
     -- Builds the card scene for the working tree and flags each card that changed from the baseline or that the
@@ -511,7 +627,10 @@ local function createShell()
 
             for cursor = 1, #diagnostic.path do
                 local ch = diagnostic.path:sub(cursor, cursor)
-                if ch == '.' or ch == '[' then flag(diagnostic.path:sub(1, cursor - 1)) end
+
+                if ch == '.' or ch == '[' then
+                    flag(diagnostic.path:sub(1, cursor - 1))
+                end
             end
         end
 
@@ -543,19 +662,30 @@ local function createShell()
 
         -- `owned` plus the opener's target check, with ownership verified again after it.
         local function current()
-            if not owned() then return false end
+            if not owned() then
+                return false
+            end
 
             if active.targetValid then
                 local ok, valid = pcall(active.targetValid)
-                if not ok or valid ~= true then return false end
+
+                if not ok or valid ~= true then
+                    return false
+                end
             end
 
             return owned()
         end
 
-        if not current() then return false end
+        if not current() then
+            return false
+        end
+
         local scene = self:Scene(true)
-        if not scene or not current() then return false end
+
+        if not scene or not current() then
+            return false
+        end
 
         for _, card in ipairs(scene.cards) do
             local selected = false
@@ -609,7 +739,10 @@ local function createShell()
                             ok, valid = pcall(validate)
                         end
 
-                        if not current() then return false end
+                        if not current() then
+                            return false
+                        end
+
                         invalid = not ok or not valid or not addon:UnsavedDataEqual(before, candidate)
                     end
                 end
@@ -619,12 +752,18 @@ local function createShell()
                     local path = {}
 
                     for index = 0, #card.path do
-                        if index > 0 then path[index] = card.path[index] end
+                        if index > 0 then
+                            path[index] = card.path[index]
+                        end
+
                         local key = pathKey(path)
                         view.hiddenChildren[key] = nil
                         view.collapsed[key] = nil
                         local parent = scene.cardsByKey[key]
-                        if parent then view.cardStates[key] = 'expanded' end
+
+                        if parent then
+                            view.cardStates[key] = 'expanded'
+                        end
                     end
                 end
             end
@@ -644,7 +783,9 @@ local function createShell()
     -- otherwise the condition read as prose.
     function shell:Summary(model)
         if model.invalid then
-            if model.problemText then return model.problemText end
+            if model.problemText then
+                return model.problemText
+            end
 
             return model.problem == "missing-field" and string.format(
                 L["Incomplete: %s is required"],
@@ -656,7 +797,6 @@ local function createShell()
         if model.type == "AND" and model.childCount == 0 then
             return L["An empty AND group always matches. Add a condition to restrict it."]
         end
-
         if model.type == "OR" and model.childCount == 0 then
             return L["An empty OR group never matches. Add a condition that can match."]
         end
@@ -668,8 +808,14 @@ local function createShell()
     -- Opens the condition type picker on a card to add (a missing operand) or replace its condition; a choice goes
     -- through the session as an Add or Replace command. Syncs pending input first and releases any picker still open.
     function shell:OpenTypePicker(card, model, alive)
-        if not alive() or self.active.readOnly or not self:SyncWorking() then return end
-        if self.openPicker then self.openPicker:Release() end
+        if not alive() or self.active.readOnly or not self:SyncWorking() then
+            return
+        end
+
+        if self.openPicker then
+            self.openPicker:Release()
+        end
+
         local active = self.active
         local node = at(active.working, model.fieldPath)
 
@@ -678,9 +824,15 @@ local function createShell()
             self.userdata.announcement and "ANNOUNCEMENT" or active.index and active.index > 0 and "ALL" or "SWITCH",
             node and node.type,
             function(tag)
-                if not alive() then return end
+                if not alive() then
+                    return
+                end
+
                 local current = at(active.working, model.fieldPath)
-                if not model.missingOperand and current and current.type == tag then return end
+
+                if not model.missingOperand and current and current.type == tag then
+                    return
+                end
 
                 self:Command(
                     model.missingOperand and "Add" or "Replace",
@@ -740,7 +892,9 @@ local function createShell()
                     addon:SetUIScript(control, 'OnClick', nil)
                 end
 
-                if card.helpText then card.helpText:Hide() end
+                if card.helpText then
+                    card.helpText:Hide()
+                end
             end
 
             return
@@ -757,7 +911,10 @@ local function createShell()
 
         -- Deep copy of plain data.
         local function clone(value)
-            if type(value) ~= "table" then return value end
+            if type(value) ~= "table" then
+                return value
+            end
+
             local result = {}
 
             for key, child in pairs(value) do
@@ -770,7 +927,10 @@ local function createShell()
         -- Three-way merge: applies what the user changed between `before` and `edited` onto `current`, so changes made
         -- to the same node elsewhere in the meantime (an undo, another card) are kept.
         local function merge(current, before, edited)
-            if type(before) ~= "table" or type(edited) ~= "table" then return clone(edited) end
+            if type(before) ~= "table" or type(edited) ~= "table" then
+                return clone(edited)
+            end
+
             local result = type(current) == "table" and clone(current) or {}
 
             for key, value in pairs(edited) do
@@ -782,7 +942,9 @@ local function createShell()
             end
 
             for key in pairs(before) do
-                if edited[key] == nil then result[key] = nil end
+                if edited[key] == nil then
+                    result[key] = nil
+                end
             end
 
             return result
@@ -791,10 +953,19 @@ local function createShell()
         -- Pushes the pane's edits into the session as one Add or Replace command. Returns true when there was nothing
         -- to push or the command succeeded; nil after showing why (not portable, or rejected by the core).
         local function syncField()
-            if not alive() then return end
-            if active.readOnly then return end
-            if model.missingOperand and next(node) == nil then return true end
-            if addon:UnsavedDataEqual(node, fieldBaseline) then return true end
+            if not alive() then
+                return
+            end
+            if active.readOnly then
+                return
+            end
+            if model.missingOperand and next(node) == nil then
+                return true
+            end
+            if addon:UnsavedDataEqual(node, fieldBaseline) then
+                return true
+            end
+
             local portable = addon.RotationData.CheckPortable(node)
 
             if not portable then
@@ -833,12 +1004,17 @@ local function createShell()
         local resumeAllowed = false
 
         function proxy:GetUserData(key)
-            if key == "root" then return fieldRoot end
+            if key == "root" then
+                return fieldRoot
+            end
+
             return shell:GetUserData(key)
         end
 
         function proxy:SetUserData(key, value)
-            if alive() then shell:SetUserData(key, value) end
+            if alive() then
+                shell:SetUserData(key, value)
+            end
         end
 
         function proxy:SetStatusText()
@@ -846,11 +1022,15 @@ local function createShell()
         end
 
         function proxy:SetCallback(event, callback)
-            if alive() then shell:SetCallback(event, callback) end
+            if alive() then
+                shell:SetCallback(event, callback)
+            end
         end
 
         function proxy:Hide()
-            if alive() then shell:Hide() end
+            if alive() then
+                shell:Hide()
+            end
         end
 
         function proxy:Show()
@@ -869,7 +1049,10 @@ local function createShell()
 
             if active.targetValid then
                 local ok, current = pcall(active.targetValid)
-                if not ok or current ~= true then return false end
+
+                if not ok or current ~= true then
+                    return false
+                end
             end
 
             shell.closeOverride = nil
@@ -901,14 +1084,19 @@ local function createShell()
         local oldLayout = pane.LayoutFinished
 
         pane.LayoutFinished = function(widget, width, height)
-            if oldLayout then oldLayout(widget, width, height) end
+            if oldLayout then
+                oldLayout(widget, width, height)
+            end
 
             if alive() and type(height) == "number" and height >= 0 then
                 local measured = math.min(5000, height + 12)
 
                 if self.view.detailsHeights[model.key] ~= measured then
                     self.view.detailsHeights[model.key] = measured
-                    if not self.canvas.building then self.canvas:Reflow() end
+
+                    if not self.canvas.building then
+                        self.canvas:Reflow()
+                    end
                 end
             end
         end
@@ -939,14 +1127,18 @@ local function createShell()
                     for event, callback in pairs(callbacks) do
                         if type(callback) == 'function' then
                             widget:SetCallback(event, function(...)
-                                if alive() then return callback(...) end
+                                if alive() then
+                                    return callback(...)
+                                end
                             end)
                         end
                     end
 
                     if widget.CommitPending then
                         widget:SetCallback('OnPendingChanged', function()
-                            if alive() then shell:UpdateHistoryButtons() end
+                            if alive() then
+                                shell:UpdateHistoryButtons()
+                            end
                         end)
                     end
 
@@ -960,7 +1152,9 @@ local function createShell()
                 if active.readOnly then
                     -- Disables a widget and all its children.
                     local function disable(widget)
-                        if widget.SetDisabled then widget:SetDisabled(true) end
+                        if widget.SetDisabled then
+                            widget:SetDisabled(true)
+                        end
 
                         for _, child in ipairs(widget.children or {}) do
                             disable(child)
@@ -1002,7 +1196,10 @@ local function createShell()
     -- syncing pending input, then reselects the affected paths, expands new cards that fail validation and lays out
     -- again. Returns true on success; on failure shows the reason and leaves the tree as it was.
     function shell:Command(name, path, value)
-        if not self.active or not self:SyncWorking() then return end
+        if not self.active or not self:SyncWorking() then
+            return
+        end
+
         local ok, result = self.active.session:Command(name, path, value)
 
         if not ok then
@@ -1026,11 +1223,17 @@ local function createShell()
         end
 
         local scene = self:Scene()
-        if not scene then return end
+
+        if not scene then
+            return
+        end
 
         for index, selected in ipairs(paths) do
             local projected = scene.commandPathsByKey[pathKey(selected)]
-            if projected then paths[index] = copyPath(projected) end
+
+            if projected then
+                paths[index] = copyPath(projected)
+            end
         end
 
         self.view.selection = {}
@@ -1059,7 +1262,9 @@ local function createShell()
                 end
             end
 
-            if not self:ExpandInvalid(added) then return end
+            if not self:ExpandInvalid(added) then
+                return
+            end
         end
 
         self.active.selected = paths[1] or {}
@@ -1071,7 +1276,11 @@ local function createShell()
     -- Runs a command on the currently selected cards; does nothing with an empty selection.
     function shell:SelectedCommand(name, value)
         local paths = self.canvas:Selection()
-        if #paths == 0 then return end
+
+        if #paths == 0 then
+            return
+        end
+
         return self:Command(name, paths, value)
     end
 
@@ -1080,7 +1289,11 @@ local function createShell()
     -- the current one, so a late close cannot write into a different rotation.
     function shell:Finish(applied)
         local active = self.active
-        if not active then return end
+
+        if not active then
+            return
+        end
+
         self.active = nil
         self.closeOverride = nil
         self.canvas:Release()
@@ -1092,7 +1305,9 @@ local function createShell()
             self.openPicker = nil
         end
 
-        if not applied then active.session:Cancel() end
+        if not applied then
+            active.session:Cancel()
+        end
 
         -- After an apply, re-evaluates auto-switching (a switch condition may have changed), then tells the opener.
         local function notify()
@@ -1135,14 +1350,21 @@ local function createShell()
             or addon:CreateWorkbenchButton(window, label, width)
 
         addon:SetUIScript(control, "OnClick", callback)
-        if not footer then shell.tools[#shell.tools + 1] = control end
+
+        if not footer then
+            shell.tools[#shell.tools + 1] = control
+        end
+
         return control
     end
 
     -- Undo or Redo (the session method named by `direction`) after syncing pending input, then reselects the root and
     -- lays out again.
     local function history(direction)
-        if not shell.active or not shell:SyncWorking() then return end
+        if not shell.active or not shell:SyncWorking() then
+            return
+        end
+
         local ok, why = shell.active.session[direction](shell.active.session)
 
         if not ok then
@@ -1158,10 +1380,18 @@ local function createShell()
     end
 
     shell.undo = addon:CreateWorkbenchHistoryButton(window, "undo", L["Undo"])
-    addon:SetUIScript(shell.undo, "OnClick", function() history("Undo") end)
+
+    addon:SetUIScript(shell.undo, "OnClick", function()
+        history("Undo")
+    end)
+
     shell.tools[#shell.tools + 1] = shell.undo
     shell.redo = addon:CreateWorkbenchHistoryButton(window, "redo", L["Redo"])
-    addon:SetUIScript(shell.redo, "OnClick", function() history("Redo") end)
+
+    addon:SetUIScript(shell.redo, "OnClick", function()
+        history("Redo")
+    end)
+
     shell.tools[#shell.tools + 1] = shell.redo
     shell.palette = {}
 
@@ -1195,19 +1425,31 @@ local function createShell()
             end
         end)
 
-        addon:BindWorkbenchDragSource(control, function() shell.canvas:StartInsert(node, control) end, function()
-            shell.canvas:EndDrag()
-        end)
+        addon:BindWorkbenchDragSource(
+            control,
+            function()
+                shell.canvas:StartInsert(node, control)
+            end,
+            function()
+                shell.canvas:EndDrag()
+            end
+        )
     end
 
     -- Expand all or Collapse all: resets the fold state of every card. Expanding also reveals hidden children.
     local function expandAll(expanded)
-        if not shell.active or not shell:SyncWorking() then return end
+        if not shell.active or not shell:SyncWorking() then
+            return
+        end
+
         shell.view.collapsed = {}
         shell.view.expanded = {}
         shell.view.cardStates = {}
         shell.view.help = {}
-        if expanded then shell.view.hiddenChildren = {} end
+
+        if expanded then
+            shell.view.hiddenChildren = {}
+        end
 
         for _, row in ipairs(shell.active.session:Rows(4096)) do
             local key = pathKey(row.path)
@@ -1218,8 +1460,14 @@ local function createShell()
         shell:Render()
     end
 
-    shell.collapseAll = button(L["Collapse all"], 94, function() expandAll(false) end)
-    shell.expandAll = button(L["Expand all"], 94, function() expandAll(true) end)
+    shell.collapseAll = button(L["Collapse all"], 94, function()
+        expandAll(false)
+    end)
+
+    shell.expandAll = button(L["Expand all"], 94, function()
+        expandAll(true)
+    end)
+
     local separator = CreateFrame("Frame", nil, window)
     separator:SetSize(10, 20)
     local divider = separator:CreateTexture(nil, "ARTWORK")
@@ -1240,7 +1488,9 @@ local function createShell()
         L["Copy condition description"],
         140,
         function()
-            if addon.ShowConditionText then addon:ShowConditionText(shell.fullDescription) end
+            if addon.ShowConditionText then
+                addon:ShowConditionText(shell.fullDescription)
+            end
         end,
         true
     )
@@ -1251,7 +1501,9 @@ local function createShell()
 
     -- Sizes the canvas to what is left of the window under the toolbar and above the description footer.
     function shell:LayoutBody()
-        if not self.bodyTop then return end
+        if not self.bodyTop then
+            return
+        end
 
         self.canvas.frame:SetSize(math.max(1, window:GetWidth() - 52), math.max(
             40,
@@ -1265,9 +1517,16 @@ local function createShell()
     -- window is cut to fit and the Copy button appears so the full text can still be read; the status line and the
     -- canvas move to make room.
     function shell:UpdateDescription()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self.fullDescription = addon:DescribeCondition(self.active.working, self.active.spec)
-        if self.description.SetMaxLines then self.description:SetMaxLines(0) end
+
+        if self.description.SetMaxLines then
+            self.description:SetMaxLines(0)
+        end
+
         self.description:SetText(self.fullDescription)
         self.description:SetWidth(math.max(1, window:GetWidth() - 376))
         local natural = self.description.GetStringHeight and self.description:GetStringHeight() or 28
@@ -1277,7 +1536,10 @@ local function createShell()
         local extra = 0
 
         if natural > maximum then
-            if self.description.SetMaxLines then self.description:SetMaxLines(math.max(1, math.floor(height / 14))) end
+            if self.description.SetMaxLines then
+                self.description:SetMaxLines(math.max(1, math.floor(height / 14)))
+            end
+
             self.copyExpression:ClearAllPoints()
             self.copyExpression:SetPoint("BOTTOMLEFT", 16, height + 38)
             self.copyExpression:Show()
@@ -1292,8 +1554,24 @@ local function createShell()
         self:LayoutBody()
     end
 
-    shell.groupAll = button(L["Group as All"], 100, function() shell:SelectedCommand("GroupSelection", "AND") end, true)
-    shell.groupAny = button(L["Group as Any"], 100, function() shell:SelectedCommand("GroupSelection", "OR") end, true)
+    shell.groupAll = button(
+        L["Group as All"],
+        100,
+        function()
+            shell:SelectedCommand("GroupSelection", "AND")
+        end,
+        true
+    )
+
+    shell.groupAny = button(
+        L["Group as Any"],
+        100,
+        function()
+            shell:SelectedCommand("GroupSelection", "OR")
+        end,
+        true
+    )
+
     shell.selectionLabel = window:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     -- The same selection-wide actions as the rotation editor, one undo step each.
     shell.selectionActions = {}
@@ -1303,29 +1581,47 @@ local function createShell()
             "duplicate",
             "copy",
             L["Duplicate selected cards"],
-            function() shell:SelectedCommand("DuplicateSelection") end,
+            function()
+                shell:SelectedCommand("DuplicateSelection")
+            end,
         },
         {
             "enable",
             "check",
             L["Enable selected cards"],
-            function() shell:SelectedCommand("SetSelectionDisabled", false) end,
+            function()
+                shell:SelectedCommand("SetSelectionDisabled", false)
+            end,
         },
         {
             "disable",
             "minus",
             L["Disable selected cards"],
-            function() shell:SelectedCommand("SetSelectionDisabled", true) end,
+            function()
+                shell:SelectedCommand("SetSelectionDisabled", true)
+            end,
         },
-        { "remove", "trash", L["Delete selected cards"], function() shell:SelectedCommand("RemoveSelection") end },
+        {
+            "remove",
+            "trash",
+            L["Delete selected cards"],
+            function()
+                shell:SelectedCommand("RemoveSelection")
+            end,
+        },
     }) do
         local control = addon:CreateWorkbenchIconButton(window, entry[2], entry[3])
         control:SetSize(20, 20)
         control:Hide()
-        if entry[1] == "remove" then control.icon:SetVertexColor(1, .3, .3, 1) end
+
+        if entry[1] == "remove" then
+            control.icon:SetVertexColor(1, .3, .3, 1)
+        end
 
         addon:SetUIScript(control, "OnClick", function()
-            if shell.active then entry[4]() end
+            if shell.active then
+                entry[4]()
+            end
         end)
 
         shell.selectionActions[#shell.selectionActions + 1] = control
@@ -1336,7 +1632,10 @@ local function createShell()
         L["Apply"],
         100,
         function()
-            if not shell.active or not shell:SyncWorking() then return end
+            if not shell.active or not shell:SyncWorking() then
+                return
+            end
+
             local ok, why = shell.active.session:Apply()
 
             if not ok then
@@ -1367,7 +1666,11 @@ local function createShell()
     local close = addon:CreateWorkbenchIconButton(window, "close", L["Close"])
     shell.close = close
     close:SetPoint("TOPRIGHT", -5, -5)
-    addon:SetUIScript(close, "OnClick", function() shell.cancel:Click() end)
+
+    addon:SetUIScript(close, "OnClick", function()
+        shell.cancel:Click()
+    end)
+
     shell.help = addon:CreateWorkbenchHelpButton(window, L["Help"])
     shell.help:SetPoint("TOPRIGHT", -31, -5)
     shell.help:SetSize(20, 20)
@@ -1384,7 +1687,9 @@ local function createShell()
     end)
 
     addon:SetUIScript(window, "OnMouseUp", function(_, button)
-        if button == "RightButton" then shell.cancel:Click() end
+        if button == "RightButton" then
+            shell.cancel:Click()
+        end
     end)
 
     local grip = CreateFrame("Button", nil, window)
@@ -1395,10 +1700,14 @@ local function createShell()
     texture:SetTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 
     addon:SetUIScript(grip, "OnMouseDown", function(_, key)
-        if key == "LeftButton" then window:StartSizing("BOTTOMRIGHT") end
+        if key == "LeftButton" then
+            window:StartSizing("BOTTOMRIGHT")
+        end
     end)
 
-    addon:SetUIScript(grip, "OnMouseUp", function() window:StopMovingOrSizing() end)
+    addon:SetUIScript(grip, "OnMouseUp", function()
+        window:StopMovingOrSizing()
+    end)
 
     -- Places the toolbar (wrapping to new rows when narrow), the Add palette, the multi-selection strip and the canvas,
     -- then redraws the cards and the description when an edit is open. Runs on every resize.
@@ -1485,7 +1794,9 @@ local function createShell()
         end
     end
 
-    addon:SetUIScript(window, "OnSizeChanged", function() shell:Layout() end)
+    addon:SetUIScript(window, "OnSizeChanged", function()
+        shell:Layout()
+    end)
 
     -- Any hide ends the edit: a nested editor's close override runs instead when one is installed, otherwise the
     -- edit is cancelled. Apply and Cancel call Finish themselves first, which makes this a no-op for them.
@@ -1528,7 +1839,10 @@ function addon:ShowConditionEditor(index, spec, value, callback, targetValid, op
     end
 
     local session, why = self:NewConditionEditSession(spec, value, targetValid, options)
-    if not session then return nil, why end
+
+    if not session then
+        return nil, why
+    end
 
     if not shell then
         shell = createShell()
@@ -1601,8 +1915,15 @@ function addon:ShowConditionEditor(index, spec, value, callback, targetValid, op
     end
 
     shell.cancel:SetText(shell.active.readOnly and L["Close"] or L["Cancel"])
-    if shell.active.readOnly then shell.status:SetText(L["Read-only condition"]) end
-    if not shell:ExpandInvalid({ {} }) then return shell end
+
+    if shell.active.readOnly then
+        shell.status:SetText(L["Read-only condition"])
+    end
+
+    if not shell:ExpandInvalid({ {} }) then
+        return shell
+    end
+
     shell:Show()
     addon:OpenPopup(shell, addon.configWindow)
     shell:Layout()

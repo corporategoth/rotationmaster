@@ -6,12 +6,18 @@
 -- the UI/ block of RotationMaster.toc after UI/settings_integrations.lua. Saved data: addon.db (AceDB profiles).
 local addon_name, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Returns the text when it has a visible character and at most 50 characters, else nil (a usable profile name).
 local function nonempty(text)
-    if text:find('%S') and #text <= 50 then return text end
+    if text:find('%S') and #text <= 50 then
+        return text
+    end
 end
 
 -- ============================================================================
@@ -33,7 +39,9 @@ function addon:BuildProfileSettings(p)
         values[name] = name == current and db.profile or db.profiles and db.profiles[name] or {}
     end
 
-    if not values[p.selection] and not p.creating then p.selection = current end
+    if not values[p.selection] and not p.creating then
+        p.selection = current
+    end
 
     -- Copies an imported profile over `destination` field by field; the color, minimap and preview_window tables merge
     -- into the existing tables so defaults the import lacks survive, every other key is replaced by a copy.
@@ -63,17 +71,26 @@ function addon:BuildProfileSettings(p)
     -- fails, so the engine never keeps state from the old profile. `after` runs inside the protected call. Returns
     -- true after redrawing, or false with the error shown as a message.
     local function change(operation, name, after)
-        if self.DisableRotation then self:DisableRotation() end
+        if self.DisableRotation then
+            self:DisableRotation()
+        end
+
         local depth = self.rotationProfileChangeDepth or 0
         self.rotationProfileChangeDepth = depth + 1
 
         local ok, why = pcall(function()
             db[operation](db, name)
-            if after then after() end
+
+            if after then
+                after()
+            end
         end)
 
         self.rotationProfileChangeDepth = depth
-        if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+
+        if invalidateDependencies then
+            invalidateDependencies(addon, 'all', nil)
+        end
 
         if self.RotationProfileChanged then
             self:RotationProfileChanged()
@@ -90,7 +107,11 @@ function addon:BuildProfileSettings(p)
         p.selection = p.selectAfterProfileChange or db:GetCurrentProfile()
         p.selectAfterProfileChange = nil
         p:Draw()
-        if self.RefreshConfiguration then self:RefreshConfiguration() end
+
+        if self.RefreshConfiguration then
+            self:RefreshConfiguration()
+        end
+
         return true
     end
 
@@ -199,7 +220,10 @@ function addon:BuildProfileSettings(p)
                             candidate.rotationFallbackID or DEFAULT
                         )
 
-                        if not plan then return false, migrationError end
+                        if not plan then
+                            return false, migrationError
+                        end
+
                         local migrated, why = self:ApplyRotationProfileMigration(plan)
 
                         if not migrated or not self:ValidateProfileTransfer(candidate) then
@@ -216,9 +240,10 @@ function addon:BuildProfileSettings(p)
                             then
                                 return false, L['The selected profile changed. Reopen the import window.']
                             end
-
                             if selectedName == db:GetCurrentProfile() then
-                                return change('ResetProfile', nil, function() overlay(db.profile, candidate) end)
+                                return change('ResetProfile', nil, function()
+                                    overlay(db.profile, candidate)
+                                end)
                             end
 
                             db.profiles[selectedName] = self:CopySettingsData(candidate)
@@ -227,7 +252,9 @@ function addon:BuildProfileSettings(p)
                         end
 
                         for _, name in ipairs(db:GetProfiles()) do
-                            if name == settings.name then return false, L['This name is already in use.'] end
+                            if name == settings.name then
+                                return false, L['This name is already in use.']
+                            end
                         end
 
                         p.importProfile = candidate
@@ -247,7 +274,9 @@ function addon:BuildProfileSettings(p)
                             brief = L['Help.Transfers.profile_brief'],
                             briefs = self:TransferHelpBriefs(),
                             valid = function()
-                                if not selected then return true end
+                                if not selected then
+                                    return true
+                                end
 
                                 local target = selectedName == db:GetCurrentProfile() and db.profile
                                     or db.profiles[selectedName]
@@ -396,7 +425,9 @@ function addon:BuildProfileSettings(p)
                 p.profileSource = nil
             end)
 
-            if ok then p.newProfileName = nil end
+            if ok then
+                p.newProfileName = nil
+            end
         end, function()
             p.creating = false
             p.selection = p.previousSelection or current
@@ -416,10 +447,15 @@ function addon:BuildProfileSettings(p)
         local active = p:Button(
             'activate',
             selectedName == current and L['Active profile'] or L['Activate profile'],
-            function() change('SetProfile', selectedName) end
+            function()
+                change('SetProfile', selectedName)
+            end
         )
 
-        if selectedName == current then active:Disable() end
+        if selectedName == current then
+            active:Disable()
+        end
+
         local rows, recovery = self:GetProfileRotationHeaders(selected)
         local summary = {}
 
@@ -438,7 +474,9 @@ function addon:BuildProfileSettings(p)
         local others = {}
 
         for _, entry in ipairs(entries) do
-            if entry.value ~= current then others[#others + 1] = entry end
+            if entry.value ~= current then
+                others[#others + 1] = entry
+            end
         end
 
         -- Keep explicit copying into the active profile available, with its
@@ -449,16 +487,22 @@ function addon:BuildProfileSettings(p)
             end)
         end)
 
-        if #others == 0 then copy:Disable() end
+        if #others == 0 then
+            copy:Disable()
+        end
 
         local reset = p:Button('reset', L['Reset current profile'], function()
             p:Confirm(
                 L['Reset this profile to its defaults? Custom rotations and settings in it will be replaced.'],
-                function() change('ResetProfile') end
+                function()
+                    change('ResetProfile')
+                end
             )
         end)
 
-        if selectedName ~= current then reset:Disable() end
+        if selectedName ~= current then
+            reset:Disable()
+        end
 
         local trash = self:SettingsTopDelete(p, function()
             p:Confirm(string.format(L['Delete profile %s? This cannot be undone.'], selectedName), function()
@@ -468,7 +512,10 @@ function addon:BuildProfileSettings(p)
             end)
         end)
 
-        if selectedName == current or selectedName == 'Default' then trash:Disable() end
+        if selectedName == current or selectedName == 'Default' then
+            trash:Disable()
+        end
+
         -- Compatibility for existing direct current-profile callers; sidebar
         -- selection is inspection, activation is always explicit.
         p.fields.current = p.fields.activate
@@ -488,7 +535,10 @@ function addon:BuildAboutSettings(p)
     local function meta(key)
         if type(getter) == 'function' then
             local ok, value = pcall(getter, addon_name, key)
-            if ok and type(value) == 'string' and value ~= '' then return value end
+
+            if ok and type(value) == 'string' and value ~= '' then
+                return value
+            end
         end
     end
 
@@ -505,7 +555,10 @@ function addon:BuildAboutSettings(p)
         local value = meta(entry[1])
 
         if value then
-            if value:find('@', 1, true) then value = L['Development'] end
+            if value:find('@', 1, true) then
+                value = L['Development']
+            end
+
             p:Text(L[entry[2]] .. ': ' .. value)
         end
     end
@@ -524,7 +577,9 @@ function addon:BuildAboutSettings(p)
             end))
 
             addon:SetUIScript(c, 'OnTextChanged', p:Guard(function(_, user)
-                if user then c:SetText(value) end
+                if user then
+                    c:SetText(value)
+                end
             end))
         end
     end

@@ -45,7 +45,10 @@ local listIndent, gridGap, gridCardMaximum = 24, 24, 600
 -- layouts (the diagram is left alone) and updates scene.width. Mutates and returns `scene`; an invalid scene or
 -- viewport is returned unchanged.
 function addon:FitRotationSceneWidth(scene, viewport)
-    if type(scene) ~= 'table' or not finite(viewport) then return scene end
+    if type(scene) ~= 'table' or not finite(viewport) then
+        return scene
+    end
+
     local right = math.max(0, viewport - 4)
     local widest = 0
 
@@ -80,7 +83,10 @@ function addon:FitRotationSceneWidth(scene, viewport)
             columns = math.max(columns, math.floor(card.x / pitch + .5) + 1)
         end
 
-        if columns == 0 then return scene end
+        if columns == 0 then
+            return scene
+        end
+
         local each = math.max(design, math.min(gridCardMaximum, (right - (columns - 1) * gridGap) / columns))
 
         -- Moves an item to its column at the stretched card width.
@@ -91,7 +97,9 @@ function addon:FitRotationSceneWidth(scene, viewport)
         end
 
         for _, card in ipairs(scene.cards) do
-            if card.width == design then place(card) end
+            if card.width == design then
+                place(card)
+            end
         end
 
         for _, target in ipairs(scene.dropTargets or {}) do
@@ -164,7 +172,11 @@ function addon:CreateRotationCanvas(parent, owner)
         self.drag = nil
         self.pan = nil
         self.box = nil
-        if self.boxFrame then self.boxFrame:Hide() end
+
+        if self.boxFrame then
+            self.boxFrame:Hide()
+        end
+
         self.ghost:Hide()
         addon:SetUIScript(self.frame, 'OnUpdate', nil)
 
@@ -204,7 +216,11 @@ function addon:CreateRotationCanvas(parent, owner)
     -- switching tabs or layouts and back returns to the same spot.
     function canvas:RememberViewport()
         local view = self.viewportView
-        if not view or not self.modeKey then return end
+
+        if not view or not self.modeKey then
+            return
+        end
+
         view.viewports = view.viewports or {}
 
         view.viewports[self.modeKey] = {
@@ -216,7 +232,10 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Sets the diagram zoom (clamped), keeping the viewport center fixed, and reflows. Returns true, or nil when the
     -- editor is closed, the canvas is not the diagram or the value is not finite.
     function canvas:SetZoom(value)
-        if not owner.active or not self:IsDiagram() or not finite(value) then return nil end
+        if not owner.active or not self:IsDiagram() or not finite(value) then
+            return nil
+        end
+
         local previous = self:GetZoom()
         local nextZoom = zoom(value)
 
@@ -242,7 +261,10 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Runs the stock scroll update, then hides the vertical bar in diagram mode where scrolling is the camera.
     function canvas.frame:UpdateWorkbenchScroll()
         updateScroll(self)
-        if canvas:IsDiagram() then self.workbenchBar:Hide() end
+
+        if canvas:IsDiagram() then
+            self.workbenchBar:Hide()
+        end
     end
 
     -- ============================================================================
@@ -273,13 +295,23 @@ function addon:CreateRotationCanvas(parent, owner)
     function canvas:SelectedIds(topLevel)
         local selection = self:SelectionSet()
         local result = {}
-        if next(selection) == nil then return result end
+
+        if next(selection) == nil then
+            return result
+        end
+
         local index = addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot())
-        if not index then return result end
+
+        if not index then
+            return result
+        end
+
         local chosen = {}
 
         for _, row in ipairs(index.rows) do
-            if selection[row.step.id] then chosen[#chosen + 1] = row end
+            if selection[row.step.id] then
+                chosen[#chosen + 1] = row
+            end
         end
 
         for _, row in ipairs(chosen) do
@@ -305,7 +337,9 @@ function addon:CreateRotationCanvas(parent, owner)
                 end
             end
 
-            if not nested then result[#result + 1] = row.step.id end
+            if not nested then
+                result[#result + 1] = row.step.id
+            end
         end
 
         return result
@@ -321,12 +355,17 @@ function addon:CreateRotationCanvas(parent, owner)
             end
         end
 
-        if owner.SelectionChanged then owner:SelectionChanged() end
+        if owner.SelectionChanged then
+            owner:SelectionChanged()
+        end
     end
 
     -- Empties the selection and the range anchor.
     function canvas:ClearSelection()
-        if next(self:SelectionSet()) == nil then return end
+        if next(self:SelectionSet()) == nil then
+            return
+        end
+
         owner.view.selection = {}
         self.anchor = nil
         self:PaintSelection()
@@ -335,7 +374,10 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Applies a click on card `id`: `toggle` (Ctrl) adds or removes it, `range` (Shift) selects the siblings between
     -- the anchor card and it, neither selects only it. A range only works between siblings of the same parent.
     function canvas:Select(id, toggle, range)
-        if not self:CanSelect() or not self.scene then return end
+        if not self:CanSelect() or not self.scene then
+            return
+        end
+
         local selection = self:SelectionSet()
         local byId = {}
 
@@ -344,7 +386,11 @@ function addon:CreateRotationCanvas(parent, owner)
         end
 
         local model = byId[id]
-        if not model then return end
+
+        if not model then
+            return
+        end
+
         local anchor = self.anchor and byId[self.anchor]
 
         if
@@ -354,7 +400,10 @@ function addon:CreateRotationCanvas(parent, owner)
             and #anchor.path == #model.path
             and anchor.path[1] == model.path[1]
         then
-            if not toggle then selection = {} end
+            if not toggle then
+                selection = {}
+            end
+
             local depth = #model.path
 
             local low, high = math.min(anchor.path[depth], model.path[depth]), math.max(
@@ -380,13 +429,20 @@ function addon:CreateRotationCanvas(parent, owner)
         end
 
         owner.view.selection = selection
-        if not range then self.anchor = id end
+
+        if not range then
+            self.anchor = id
+        end
+
         self:PaintSelection()
     end
 
     -- Selects the cards touching a box given in canvas (child) coordinates.
     function canvas:SelectBox(left, top, right, bottom, additive)
-        if not self:CanSelect() or not self.scene then return end
+        if not self:CanSelect() or not self.scene then
+            return
+        end
+
         local selection = additive and self:SelectionSet() or {}
 
         for _, model in ipairs(self.scene.cards) do
@@ -412,9 +468,16 @@ function addon:CreateRotationCanvas(parent, owner)
     -- ends the gesture on mouse release, on a render (generation change) or when the editor closes. Returns false
     -- when selection is unavailable or the pointer is not over the canvas.
     function canvas:BeginBoxSelect()
-        if not self:CanSelect() or self.drag then return false end
+        if not self:CanSelect() or self.drag then
+            return false
+        end
+
         local x, y = addon:WorkbenchPointerIn(self.child)
-        if not x then return false end
+
+        if not x then
+            return false
+        end
+
         self:CancelDrag()
 
         local box = {
@@ -429,7 +492,9 @@ function addon:CreateRotationCanvas(parent, owner)
         self.boxFrame:Place(x, y, x, y)
 
         addon:SetUIScript(self.frame, 'OnUpdate', function()
-            if self.box ~= box then return end
+            if self.box ~= box then
+                return
+            end
 
             if not owner.active or box.generation ~= self.generation then
                 self:CancelDrag()
@@ -443,7 +508,9 @@ function addon:CreateRotationCanvas(parent, owner)
                 self.boxFrame:Place(box.x, box.y, cx, cy)
             end
 
-            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndBoxSelect() end
+            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                self:EndBoxSelect()
+            end
         end)
 
         return true
@@ -452,7 +519,11 @@ function addon:CreateRotationCanvas(parent, owner)
     -- Finishes the rubber band: removes it and selects the cards inside the final box.
     function canvas:EndBoxSelect()
         local box = self.box
-        if not box then return end
+
+        if not box then
+            return
+        end
+
         local cx, cy = box.cx or box.x, box.cy or box.y
         self:CancelDrag()
         self:SelectBox(math.min(box.x, cx), math.min(box.y, cy), math.max(box.x, cx), math.max(box.y, cy), box.additive)
@@ -465,7 +536,6 @@ function addon:CreateRotationCanvas(parent, owner)
         if not owner.active or not self:IsDiagram() or self.drag or type(GetCursorPosition) ~= 'function' then
             return false
         end
-
         if owner.zoomBar and owner.zoomBar:IsShown() and addon:IsWorkbenchDropZoneUnderPointer(
             owner.zoomBar,
             self.frame
@@ -481,7 +551,11 @@ function addon:CreateRotationCanvas(parent, owner)
 
         local ok, x, y = pcall(GetCursorPosition)
         local scale = self.frame:GetEffectiveScale()
-        if not ok or not finite(x) or not finite(y) or not finite(scale) or scale <= 0 then return false end
+
+        if not ok or not finite(x) or not finite(y) or not finite(scale) or scale <= 0 then
+            return false
+        end
+
         self:CancelDrag()
 
         local request = {
@@ -496,7 +570,9 @@ function addon:CreateRotationCanvas(parent, owner)
         self.pan = request
 
         addon:SetUIScript(self.frame, 'OnUpdate', function()
-            if self.pan ~= request then return end
+            if self.pan ~= request then
+                return
+            end
 
             if
                 not owner.active
@@ -514,7 +590,10 @@ function addon:CreateRotationCanvas(parent, owner)
                 return
             end
 
-            if math.abs(cx - request.x) + math.abs(cy - request.y) > 3 then request.moved = true end
+            if math.abs(cx - request.x) + math.abs(cy - request.y) > 3 then
+                request.moved = true
+            end
+
             self.horizontal:SetValue(request.scrollX - (cx - request.x) / request.scale)
             self.frame.workbenchBar:SetValue(request.scrollY + (cy - request.y) / request.scale)
         end)
@@ -530,7 +609,9 @@ function addon:CreateRotationCanvas(parent, owner)
         control:EnableMouseWheel(true)
 
         addon:SetUIScript(control, 'OnMouseWheel', function(_, delta)
-            if not owner.active or alive and not alive() then return end
+            if not owner.active or alive and not alive() then
+                return
+            end
 
             if self:IsDiagram() then
                 self:SetZoom(math.floor(self:GetZoom() * 100 + .5) / 100 + delta * .1)
@@ -540,7 +621,9 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(control, 'OnMouseUp', function(_, button)
-            if not owner.active or alive and not alive() then return end
+            if not owner.active or alive and not alive() then
+                return
+            end
 
             if button == 'MiddleButton' then
                 self:SetZoom(1)
@@ -551,10 +634,15 @@ function addon:CreateRotationCanvas(parent, owner)
                 -- canvas it clears the selection.
                 local request = self.pan
                 local moved = request and request.moved
-                if request then self:CancelDrag() end
+
+                if request then
+                    self:CancelDrag()
+                end
 
                 if click then
-                    if not control.rmDragged then click() end
+                    if not control.rmDragged then
+                        click()
+                    end
                 elseif pan and not moved then
                     self:ClearSelection()
                 end
@@ -574,11 +662,15 @@ function addon:CreateRotationCanvas(parent, owner)
             end
 
             addon:SetUIScript(control, 'OnMouseDown', function(_, button)
-                if button == 'LeftButton' then begin() end
+                if button == 'LeftButton' then
+                    begin()
+                end
             end)
 
             addon:SetUIScript(control, 'OnDragStart', function()
-                if not self.box and not self.pan then begin() end
+                if not self.box and not self.pan then
+                    begin()
+                end
             end)
 
             addon:SetUIScript(control, 'OnDragStop', function()
@@ -593,7 +685,10 @@ function addon:CreateRotationCanvas(parent, owner)
 
     for _, surface in ipairs({ canvas.frame, canvas.child, canvas.cameraHost, canvas.surface }) do
         canvas:BindViewportInput(surface, true)
-        addon:SetUIScript(surface, 'OnHide', function() canvas:CancelDrag() end)
+
+        addon:SetUIScript(surface, 'OnHide', function()
+            canvas:CancelDrag()
+        end)
     end
 
     -- ============================================================================
@@ -617,7 +712,11 @@ function addon:CreateRotationCanvas(parent, owner)
 
         local d = target.destination
         local key = location(d.path) .. ':' .. d.index .. ':' .. (d.parentId or '')
-        if drag.valid[key] ~= nil then return drag.valid[key] end
+
+        if drag.valid[key] ~= nil then
+            return drag.valid[key]
+        end
+
         local draft = addon.RotationData.NewRotationDraft(owner.workspace:Snapshot(), addon.uuid)
         local command = dragCommand(drag)
         local ok = draft and draft:Command(command, drag.insert and d or drag.ids or drag.id, drag.insert or d)
@@ -639,7 +738,10 @@ function addon:CreateRotationCanvas(parent, owner)
         elseif ok and not drag.insert then
             local before = addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[drag.id]
             local after = addon.RotationData.IndexRotationSteps(draft:Snapshot()).byId[drag.id]
-            if before and after and location(before.path) == location(after.path) then ok = false end
+
+            if before and after and location(before.path) == location(after.path) then
+                ok = false
+            end
         end
 
         drag.valid[key] = ok == true
@@ -675,7 +777,10 @@ function addon:CreateRotationCanvas(parent, owner)
         local drag = self.drag
         local valid = self:CanDrop(target)
         self:CancelDrag()
-        if not valid or not drag or drag.generation ~= self.generation then return end
+
+        if not valid or not drag or drag.generation ~= self.generation then
+            return
+        end
 
         return owner:Command(
             dragCommand(drag),
@@ -686,9 +791,16 @@ function addon:CreateRotationCanvas(parent, owner)
 
     -- Mouse released: drop on the hovered gap if there is one, else cancel.
     function canvas:EndDrag()
-        if not self.drag then return end
+        if not self.drag then
+            return
+        end
+
         local zone = self:HoverTarget()
-        if zone then return self:Drop(zone.target) end
+
+        if zone then
+            return self:Drop(zone.target)
+        end
+
         self:CancelDrag()
     end
 
@@ -698,7 +810,10 @@ function addon:CreateRotationCanvas(parent, owner)
     -- release. Does nothing for a read-only rotation.
     function canvas:BeginDrag(id, insert, insertSource)
         self:CancelDrag()
-        if not owner.active or owner.workspace.readOnly then return end
+
+        if not owner.active or owner.workspace.readOnly then
+            return
+        end
 
         self.drag = {
             id = id,
@@ -716,7 +831,10 @@ function addon:CreateRotationCanvas(parent, owner)
                 or step.type == 'assisted' and L["Blizzard's suggestion"]
                 or addon:SpellLabel(step.action))
 
-        if self.drag.tail then title = L['Move this and following entries'] .. ': ' .. title end
+        if self.drag.tail then
+            title = L['Move this and following entries'] .. ': ' .. title
+        end
+
         local count = 1
         local selected = {}
         -- Dragging a selected card carries the whole selection.
@@ -833,11 +951,15 @@ function addon:CreateRotationCanvas(parent, owner)
             end
 
             for _, edge in ipairs(self.scene.connectors) do
-                if owns(edge) then edges[#edges + 1] = edge end
+                if owns(edge) then
+                    edges[#edges + 1] = edge
+                end
             end
 
             for _, line in ipairs(self.lines) do
-                if line:IsShown() and owns(line.edge) then lines[#lines + 1] = line end
+                if line:IsShown() and owns(line.edge) then
+                    lines[#lines + 1] = line
+                end
             end
 
             self.ghost:PresentCards(entries, self.child, edges, lines)
@@ -845,7 +967,9 @@ function addon:CreateRotationCanvas(parent, owner)
             self.ghost:PresentSource(insertSource)
         end
 
-        self.ghost:CaptureCancel(function() self:CancelDrag() end)
+        self.ghost:CaptureCancel(function()
+            self:CancelDrag()
+        end)
 
         for _, zone in ipairs(self.zones) do
             zone:Show()
@@ -859,7 +983,10 @@ function addon:CreateRotationCanvas(parent, owner)
 
             self.ghost:FollowPointer()
             self:HoverTarget()
-            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+
+            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then
+                self:EndDrag()
+            end
         end)
     end
 
@@ -879,10 +1006,17 @@ function addon:CreateRotationCanvas(parent, owner)
     -- re-placed. Restores the remembered viewport for the mode, then refreshes which cards exist. Frames and textures
     -- are pooled and reused. A failure inside is re-raised after the reflowing flag is cleared.
     function canvas:Reflow()
-        if not owner.active then return end
+        if not owner.active then
+            return
+        end
+
         local scene = owner:BuildScene()
         self.scene = scene
-        if not scene then return end
+
+        if not scene then
+            return
+        end
+
         -- The viewport this layout was made for (see the editor's resize).
         self.reflowedWidth, self.reflowedHeight = self.frame:GetWidth(), self.frame:GetHeight()
         self.reflowing = true
@@ -957,10 +1091,15 @@ function addon:CreateRotationCanvas(parent, owner)
             local selection = self:SelectionSet()
 
             for selected in pairs(selection) do
-                if not byId[selected] then selection[selected] = nil end
+                if not byId[selected] then
+                    selection[selected] = nil
+                end
             end
 
-            if owner.SelectionChanged then owner:SelectionChanged() end
+            if owner.SelectionChanged then
+                owner:SelectionChanged()
+            end
+
             local n = 0
 
             for _, edge in ipairs(scene.connectors) do
@@ -1040,7 +1179,10 @@ function addon:CreateRotationCanvas(parent, owner)
                 button.tooltip = L['Click to fold or unfold this branch arm. Other cards and conditions are unchanged.']
 
                 addon:SetUIScript(button, 'OnClick', function()
-                    if not owner.active or self.generation ~= token then return end
+                    if not owner.active or self.generation ~= token then
+                        return
+                    end
+
                     owner.view.hiddenArms = owner.view.hiddenArms or {}
                     local state = owner.view.hiddenArms[arm.parentId] or {}
                     owner.view.hiddenArms[arm.parentId] = state
@@ -1093,11 +1235,18 @@ function addon:CreateRotationCanvas(parent, owner)
             self.frame:UpdateScrollChildRect()
             self.frame:UpdateWorkbenchScroll()
             owner:UpdateHistory()
-            if owner.UpdateCanvasNavigation then owner:UpdateCanvasNavigation() end
+
+            if owner.UpdateCanvasNavigation then
+                owner:UpdateCanvasNavigation()
+            end
         end)
 
         self.reflowing = nil
-        if not ok then error(problem, 0) end
+
+        if not ok then
+            error(problem, 0)
+        end
+
         self:RefreshVisibleCards()
     end
 
@@ -1129,11 +1278,18 @@ function addon:CreateRotationCanvas(parent, owner)
         card:Place(model, owner.workspace.readOnly)
         owner.view.summaryHeights = owner.view.summaryHeights or {}
         local summary = card.condition:GetFontString()
-        if summary.GetStringHeight then owner.view.summaryHeights[model.id] = summary:GetStringHeight() + 4 end
+
+        if summary.GetStringHeight then
+            owner.view.summaryHeights[model.id] = summary:GetStringHeight() + 4
+        end
+
         local step = model.step
 
         addon:SetUIScript(card.expand, 'OnClick', function()
-            if not alive() then return end
+            if not alive() then
+                return
+            end
+
             owner.view.cardStates = owner.view.cardStates or {}
             owner.view.cardStates[model.id] = model.compact and 'normal' or model.expanded and 'normal' or 'compact'
             self:Render()
@@ -1159,7 +1315,11 @@ function addon:CreateRotationCanvas(parent, owner)
                 card.name:Hide()
                 card.title:Show()
                 local name = owner:FieldText(model.id, 'name', step.name or '')
-                if name == '' then name = card.defaultTitle end
+
+                if name == '' then
+                    name = card.defaultTitle
+                end
+
                 card.title:SetText(addon:PlainWorkbenchName(name))
             end
         end)
@@ -1171,7 +1331,10 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.name, 'OnEnterPressed', function(input)
-            if not writable() then return end
+            if not writable() then
+                return
+            end
+
             owner:StageField(model.id, 'name', input:GetText(), step.name or '', L['Name'])
             local ok, why = owner:FlushFieldEdits()
 
@@ -1183,7 +1346,10 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         local pendingName = owner:FieldText(model.id, 'name', step.name or '')
-        if pendingName ~= '' then card.title:SetText(addon:PlainWorkbenchName(pendingName)) end
+
+        if pendingName ~= '' then
+            card.title:SetText(addon:PlainWorkbenchName(pendingName))
+        end
 
         addon:SetUIScript(card.name, 'OnEscapePressed', function()
             card.name:ClearFocus()
@@ -1192,22 +1358,35 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.title, 'OnDragStart', function()
-            if writable() then self:BeginDrag(model.id) end
+            if writable() then
+                self:BeginDrag(model.id)
+            end
         end)
 
         addon:SetUIScript(card.title, 'OnDragStop', function()
-            if alive() then self:EndDrag() end
+            if alive() then
+                self:EndDrag()
+            end
         end)
 
         -- The spell hyperlink for a spell, pet or any step, or nil (items and other kinds have none).
         local function actionLink()
-            if step.type ~= 'spell' and step.type ~= 'pet' and step.type ~= 'any' then return end
+            if step.type ~= 'spell' and step.type ~= 'pet' and step.type ~= 'any' then
+                return
+            end
+
             local info = addon.Platform and addon.Platform:GetSpellInfo(step.action)
-            if info and info.spellID then return 'spell:' .. info.spellID end
+
+            if info and info.spellID then
+                return 'spell:' .. info.spellID
+            end
         end
 
         addon:SetUIScript(card.action, 'OnEnter', function(control)
-            if not alive() then return end
+            if not alive() then
+                return
+            end
+
             local link = actionLink()
 
             if link and GameTooltip then
@@ -1217,11 +1396,16 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.action, 'OnLeave', function()
-            if GameTooltip then GameTooltip:Hide() end
+            if GameTooltip then
+                GameTooltip:Hide()
+            end
         end)
 
         addon:SetUIScript(card.action, 'OnClick', function(_, button)
-            if not alive() then return end
+            if not alive() then
+                return
+            end
+
             local link = actionLink()
 
             if IsShiftKeyDown and IsShiftKeyDown() and link and type(SetItemRef) == 'function' then
@@ -1233,7 +1417,9 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.condition, 'OnClick', function()
-            if alive() then owner:EditCondition(model.id) end
+            if alive() then
+                owner:EditCondition(model.id)
+            end
         end)
 
         addon:SetUIScript(card.condition, 'OnEnter', function(control)
@@ -1243,19 +1429,27 @@ function addon:CreateRotationCanvas(parent, owner)
         end)
 
         addon:SetUIScript(card.condition, 'OnLeave', function(control)
-            if alive() and GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+            if alive() and GameTooltip and GameTooltip:IsOwned(control) then
+                GameTooltip:Hide()
+            end
         end)
 
         addon:SetUIScript(card.controls.remove, 'OnClick', function()
-            if writable() then owner:Command('Remove', model.id) end
+            if writable() then
+                owner:Command('Remove', model.id)
+            end
         end)
 
         addon:SetUIScript(card.controls.duplicate, 'OnClick', function()
-            if writable() then owner:Command('Duplicate', model.id) end
+            if writable() then
+                owner:Command('Duplicate', model.id)
+            end
         end)
 
         addon:SetUIScript(card.controls.enable, 'OnClick', function()
-            if not writable() then return end
+            if not writable() then
+                return
+            end
 
             if step.type == 'branch' then
                 owner:Command('UpdateStep', model.id, {
@@ -1272,7 +1466,10 @@ function addon:CreateRotationCanvas(parent, owner)
             local delta = direction[2]
 
             addon:SetUIScript(card.controls[direction[1]], 'OnClick', function()
-                if not writable() then return end
+                if not writable() then
+                    return
+                end
+
                 local path = {}
 
                 for j = 1, #model.path - 1 do
@@ -1285,7 +1482,9 @@ function addon:CreateRotationCanvas(parent, owner)
         end
 
         addon:SetUIScript(card.controls.help, 'OnClick', function()
-            if alive() then owner:ShowCardHelp(model) end
+            if alive() then
+                owner:ShowCardHelp(model)
+            end
         end)
 
         addon:SetUIScript(card.armToggle, 'OnClick', function()
@@ -1302,7 +1501,10 @@ function addon:CreateRotationCanvas(parent, owner)
 
         -- A plain click on the card's body selects it (with Ctrl or Shift for toggle and range).
         local function clickBody()
-            if not alive() then return end
+            if not alive() then
+                return
+            end
+
             local ctrl, shift = modifiers()
             self:Select(model.id, ctrl, shift)
         end
@@ -1313,10 +1515,14 @@ function addon:CreateRotationCanvas(parent, owner)
             addon:BindWorkbenchDragSource(
                 source,
                 function()
-                    if writable() then self:BeginDrag(model.id) end
+                    if writable() then
+                        self:BeginDrag(model.id)
+                    end
                 end,
                 function()
-                    if alive() then self:EndDrag() end
+                    if alive() then
+                        self:EndDrag()
+                    end
                 end
             )
         end
@@ -1331,17 +1537,26 @@ function addon:CreateRotationCanvas(parent, owner)
                 local ctrl, shift = modifiers()
 
                 if alive() and (ctrl or shift and source ~= card.action) then
-                    if not source.rmDragged then self:Select(model.id, ctrl, shift) end
+                    if not source.rmDragged then
+                        self:Select(model.id, ctrl, shift)
+                    end
+
                     source.rmDragged = false
                     return
                 end
 
-                if original then return original(...) end
+                if original then
+                    return original(...)
+                end
             end)
         end
 
-        if card.SetSelected then card:SetSelected(self:SelectionSet()[model.id] == true) end
-        if model.expanded and owner.BuildFields then owner:BuildFields(card, model, alive) end
+        if card.SetSelected then
+            card:SetSelected(self:SelectionSet()[model.id] == true)
+        end
+        if model.expanded and owner.BuildFields then
+            owner:BuildFields(card, model, alive)
+        end
 
         return math.abs(priorSummary - math.max(0, (owner.view.summaryHeights[model.id] or 0) - 28)) > .5
             or priorDetails ~= (owner.view.detailsHeights or {})[model.id]
@@ -1350,10 +1565,14 @@ function addon:CreateRotationCanvas(parent, owner)
     -- True when the card's name box or one of its field inputs has keyboard focus; such a card is never released,
     -- so typing is not interrupted by a refresh.
     local function focused(card)
-        if card.name:HasFocus() then return true end
+        if card.name:HasFocus() then
+            return true
+        end
 
         for _, input in ipairs(card.fieldPool and card.fieldPool.inputs or {}) do
-            if input.HasFocus and input:HasFocus() then return true end
+            if input.HasFocus and input:HasFocus() then
+                return true
+            end
         end
 
         return false
@@ -1382,7 +1601,10 @@ function addon:CreateRotationCanvas(parent, owner)
     -- cards bind them all. If binding changed a measured height the scene reflows (deferred while a drag runs); a
     -- failure while binding releases the half-bound card before the error is re-raised.
     function canvas:RefreshVisibleCards()
-        if not owner.active or not self.scene or self.refreshing then return end
+        if not owner.active or not self.scene or self.refreshing then
+            return
+        end
+
         self.refreshing = true
         local measured, created = false, false
         local constructing
@@ -1480,9 +1702,16 @@ function addon:CreateRotationCanvas(parent, owner)
             card.model = nil
         end
 
-        if not owner.active then return end
+        if not owner.active then
+            return
+        end
+
         self.scene = owner:BuildScene()
-        if not self.scene then return end
+
+        if not self.scene then
+            return
+        end
+
         self.renderedWidth = self.frame:GetWidth()
         self:Reflow()
     end
@@ -1503,7 +1732,9 @@ function addon:CreateRotationCanvas(parent, owner)
 
     for _, bar in ipairs({ canvas.horizontal, canvas.frame.workbenchBar }) do
         bar:HookScript('OnValueChanged', function()
-            if canvas.reflowing then return end
+            if canvas.reflowing then
+                return
+            end
 
             if addon.Diagnostics then
                 addon.Diagnostics:Call({

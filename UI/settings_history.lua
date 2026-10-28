@@ -10,15 +10,23 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Deep structural equality of two plain data values (no metatables, no cycles); decides whether an edit changed
 -- anything.
 local function equal(a, b)
-    if type(a) ~= type(b) then return false end
-    if type(a) ~= 'table' then return a == b end
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
 
     for key, value in pairs(a) do
-        if not equal(value, b[key]) then return false end
+        if not equal(value, b[key]) then
+            return false
+        end
     end
 
     for key in pairs(b) do
-        if a[key] == nil then return false end
+        if a[key] == nil then
+            return false
+        end
     end
 
     return true
@@ -26,8 +34,13 @@ end
 
 -- Rough byte cost of a value (strings by length, tables recursively), used only to cap the undo stack's memory.
 local function size(value)
-    if type(value) == 'string' then return #value + 32 end
-    if type(value) ~= 'table' then return 16 end
+    if type(value) == 'string' then
+        return #value + 32
+    end
+    if type(value) ~= 'table' then
+        return 16
+    end
+
     local n = 64
 
     for key, child in pairs(value) do
@@ -49,7 +62,9 @@ function addon:InstallSettingsHistory(p)
 
     -- Returns a deep copy of the undoable state (item-set drafts, effects, selection), or nil when history is off.
     function p:HistorySnapshot()
-        if not self.historyEnabled or not self.draft then return end
+        if not self.historyEnabled or not self.draft then
+            return
+        end
 
         return addon:CopySettingsData({
             profile = self.draft.profile.itemsets,
@@ -83,13 +98,20 @@ function addon:InstallSettingsHistory(p)
     -- replaced or cleared) discards the snapshot instead of recording it. Errors are rethrown after the depth flag
     -- clears.
     function p:WithSettingsHistory(callback, ...)
-        if not self.historyEnabled or self.historyDepth then return callback(...) end
+        if not self.historyEnabled or self.historyDepth then
+            return callback(...)
+        end
+
         local before = self:HistorySnapshot()
         local epoch = self.historyEpoch
         self.historyDepth = true
         local ok, result = pcall(callback, ...)
         self.historyDepth = nil
-        if not ok then error(result, 0) end
+
+        if not ok then
+            error(result, 0)
+        end
+
         local after = self:HistorySnapshot()
 
         if before and after and epoch == self.historyEpoch and not equal(before, after) then
@@ -116,10 +138,17 @@ function addon:InstallSettingsHistory(p)
     -- Moves one step back (or forward when `redo`): pushes the current state on the opposite stack, restores the
     -- popped snapshot into the draft and redraws. Pending field edits are flushed first; does nothing if that fails.
     function p:TravelSettingsHistory(redo)
-        if not self:FlushEdits() then return end
+        if not self:FlushEdits() then
+            return
+        end
+
         local from = redo and self.historyRedo or self.historyUndo
         local to = redo and self.historyUndo or self.historyRedo
-        if not from or #from == 0 then return end
+
+        if not from or #from == 0 then
+            return
+        end
+
         to[#to + 1] = self:HistorySnapshot()
         local value = table.remove(from)
         self.draft.profile.itemsets = addon:CopySettingsData(value.profile)

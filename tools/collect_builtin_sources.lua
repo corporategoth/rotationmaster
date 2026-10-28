@@ -90,7 +90,9 @@ end
 local standard = {}
 
 for name, value in pairs(_G) do
-    if type(value) == 'function' then standard[name] = value end
+    if type(value) == 'function' then
+        standard[name] = value
+    end
 end
 
 local function descriptor(fn)
@@ -121,16 +123,22 @@ local function sameCallbacks(left, right)
         end
 
         for alias, id in pairs(callback.bindings) do
-            if other.bindings[alias] ~= id then return false end
+            if other.bindings[alias] ~= id then
+                return false
+            end
         end
 
         for alias, id in pairs(other.bindings) do
-            if callback.bindings[alias] ~= id then return false end
+            if callback.bindings[alias] ~= id then
+                return false
+            end
         end
     end
 
     for name in pairs(right) do
-        if not left[name] then return false end
+        if not left[name] then
+            return false
+        end
     end
 
     return true
@@ -173,10 +181,15 @@ local function qualifiedBindings(module, root, value)
     local declared = {}
 
     for alias, id in pairs(callbackBindings[module.file] or {}) do
-        if alias:match('^([^.]+)%.') == root then declared[alias] = id end
+        if alias:match('^([^.]+)%.') == root then
+            declared[alias] = id
+        end
     end
 
-    if not next(declared) then return nil end
+    if not next(declared) then
+        return nil
+    end
+
     local result, seen = {}, {}
 
     local function visit(current, path, depth)
@@ -225,7 +238,10 @@ local function seedRetainedValue()
 
     for index = 1, 200 do
         local name, captured = debug.getupvalue(getter, index)
-        if not name then break end
+
+        if not name then
+            break
+        end
 
         if name == declaration.alias then
             found = found + 1
@@ -317,7 +333,10 @@ capture = function(module, fn, captureBindings, ownedCapture)
 
     for index = 1, 200 do
         local name, value = debug.getupvalue(fn, index)
-        if not name then break end
+
+        if not name then
+            break
+        end
 
         if name ~= 'addon' and name ~= 'L' and not (type(value) == 'function' and standard[name] == value) then
             if module.file == retainedDeclaration.module and name == retainedDeclaration.alias then
@@ -329,7 +348,10 @@ capture = function(module, fn, captureBindings, ownedCapture)
                     'retained value capture identity mismatch'
                 )
 
-                if reference then captured[name] = true end
+                if reference then
+                    captured[name] = true
+                end
+
                 info.bindings[name] = retainedDeclaration.bindingID
             else
                 local owned = module.file == cacheOwnership.module and cacheOwnership.bindings[name]
@@ -450,7 +472,10 @@ for _, case in ipairs(inventory.branches) do
     f.load('Platform/zone_pvp.lua')
     f.load('Platform/loss_of_control.lua')
     f.load('Platform/announcement_recipient.lua')
-    if case[3] then f.env.MI2_GetMobData = function() end end
+
+    if case[3] then
+        f.env.MI2_GetMobData = function() end
+    end
 
     for path in io.lines('RotationMaster.toc') do
         if path:match('^Conditions/') then

@@ -16,8 +16,10 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
     end
 
     local owner = parent.rmConditionOwner
-    if not owner then return end
 
+    if not owner then
+        return
+    end
     if parent.nativeCustomEditor and self.ShowConditionFunctionBundleTransfer and condition.bindings and next(
         condition.bindings
     ) then
@@ -33,7 +35,10 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
         condition = condition,
     })
 
-    if not text then return nil, why end
+    if not text then
+        return nil, why
+    end
+
     local p = parent.rmCustomTransferForm
 
     if p then
@@ -117,8 +122,12 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
                 dialog.rmConditionOwner = nil
             end
 
-            if p.active then p:Release() end
-            if valid() then parent:Show() end
+            if p.active then
+                p:Release()
+            end
+            if valid() then
+                parent:Show()
+            end
         end,
     }
 
@@ -148,7 +157,6 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
             if not self:IsCustomConditionIdentifier(destination, settings.mode == 'replace') then
                 return false, L['Use letters, numbers and underscores for the condition identifier.']
             end
-
             if settings.mode == 'new' and self:describeCondition(destination) ~= nil then
                 return false, L['That condition identifier already exists.']
             end
@@ -158,7 +166,10 @@ function addon:ShowCustomConditionTransfer(parent, update, key, condition)
             p:Confirm(
                 L['This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.'],
                 function()
-                    if not valid() or dialog.serial ~= serial or dialog.input:GetText() ~= input then return end
+                    if not valid() or dialog.serial ~= serial or dialog.input:GetText() ~= input then
+                        return
+                    end
+
                     self:LayoutCustomConditionEditor(parent, update, destination, parsed.condition)
                     dialog.frame:Hide()
                 end

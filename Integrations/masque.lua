@@ -35,13 +35,23 @@ end
 -- User action only: the documented /masque entrypoint toggles its own panel.
 -- Success means dispatch completed, not that a settings window became visible.
 function addon:ToggleMasqueSettings()
-    if not rawequal(self, addon) then return false end
+    if not rawequal(self, addon) then
+        return false
+    end
 
     local ok, dispatched = pcall(function()
         local commands = SlashCmdList
-        if type(commands) ~= 'table' then return false end
+
+        if type(commands) ~= 'table' then
+            return false
+        end
+
         local toggle = commands.MASQUE
-        if type(toggle) ~= 'function' then return false end
+
+        if type(toggle) ~= 'function' then
+            return false
+        end
+
         toggle('')
         return true
     end)
@@ -62,7 +72,10 @@ end
 
 -- Shows the icon's own texture again and hides its Masque surface (the unskinned look).
 local function baseline(icon)
-    if icon.masqueSurface then icon.masqueSurface:Hide() end
+    if icon.masqueSurface then
+        icon.masqueSurface:Hide()
+    end
+
     icon.texture:Show()
 end
 
@@ -76,7 +89,11 @@ local function remove(icon)
         -- Clear ownership before crossing the provider boundary. A failed detach is
         -- terminal for this surface: never allocate more frames or hand it elsewhere.
         local ok = pcall(owner.remove, owner.group, icon.masqueSurface)
-        if not ok then icon.masqueQuarantined = true end
+
+        if not ok then
+            icon.masqueQuarantined = true
+        end
+
         baseline(icon)
     end
 end
@@ -131,7 +148,10 @@ local function nativeVersion()
 
     if type(get) == 'function' then
         local value = get('Masque', 'Version')
-        if type(value) == 'string' then return value:sub(1, 64) end
+
+        if type(value) == 'string' then
+            return value:sub(1, 64)
+        end
     end
 end
 
@@ -162,13 +182,18 @@ function addon:ConfigureMasquePreview(window)
 
     -- Releases the window and publishes the failure, unless the call was already superseded.
     local function fail(state, reason)
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         self:ReleaseMasquePreview(window)
         publish(window, state, reason)
     end
 
     local ok = pcall(function()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
 
         if window.profile.preview_masque ~= true then
             fail('disabled', 'disabled')
@@ -176,10 +201,17 @@ function addon:ConfigureMasquePreview(window)
         end
 
         local provider, minor = LibStub('Masque', true)
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
+
         window.masqueVersion = nativeVersion()
         window.masqueMinor = type(minor) == 'number' and minor or nil
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
 
         if provider == nil then
             fail('missing', 'missing')
@@ -192,7 +224,10 @@ function addon:ConfigureMasquePreview(window)
         end
 
         local groupFn = provider.Group
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
 
         if type(groupFn) ~= 'function' then
             fail('incompatible', 'group-api')
@@ -204,9 +239,16 @@ function addon:ConfigureMasquePreview(window)
         if not rawequal(provider, window.masqueProvider) then
             self:ReleaseMasquePreview(window)
             epoch = epoch + 1
-            if not valid() then return end
+
+            if not valid() then
+                return
+            end
+
             group = groupFn(provider, 'Rotation Master', 'RecommendationPreview')
-            if not valid() then return end
+
+            if not valid() then
+                return
+            end
         end
 
         if type(group) ~= 'table' then
@@ -215,11 +257,22 @@ function addon:ConfigureMasquePreview(window)
         end
 
         local add = group.AddButton
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
+
         local detach = group.RemoveButton
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
+
         local reskin = group.ReSkin
-        if not valid() then return end
+
+        if not valid() then
+            return
+        end
 
         if type(add) ~= 'function' or type(detach) ~= 'function' or type(reskin) ~= 'function' then
             fail('incompatible', 'button-api')
@@ -278,7 +331,11 @@ function addon:ConfigureMasquePreview(window)
                     -- that late completion, without touching a newly acquired baseline.
                     icon.masqueOwner = nil
                     baseline(icon)
-                    if not pcall(owner.remove, group, child) then icon.masqueQuarantined = true end
+
+                    if not pcall(owner.remove, group, child) then
+                        icon.masqueQuarantined = true
+                    end
+
                     baseline(icon)
                     return
                 end
@@ -293,12 +350,21 @@ function addon:ConfigureMasquePreview(window)
             icon.masqueSurface:Show()
         end
 
-        if bindSkinCallback then bindSkinCallback(provider, group, window) end
-        if not valid() then return end
+        if bindSkinCallback then
+            bindSkinCallback(provider, group, window)
+        end
+
+        if not valid() then
+            return
+        end
+
         publish(window, 'connected', 'attached')
     end)
 
-    if not ok then fail('error', 'provider-error') end
+    if not ok then
+        fail('error', 'provider-error')
+    end
+
     window.masqueBusy = false
 end
 
@@ -307,15 +373,21 @@ end
 function addon:ResizeMasquePreviewIcon(window, icon)
     local owner = icon.masqueOwner
     local child = icon.masqueSurface
-    if not owner or not child then return end
 
+    if not owner or not child then
+        return
+    end
     if math.abs(child:GetWidth() - window.iconSize) <= .1 and math.abs(child:GetHeight() - window.iconSize) <= .1 then
         return
     end
 
     local epoch = window.masqueEpoch
     child:SetSize(window.iconSize, window.iconSize)
-    if not window:Valid() or epoch ~= window.masqueEpoch then return end
+
+    if not window:Valid() or epoch ~= window.masqueEpoch then
+        return
+    end
+
     window.masqueBusy = true
     local ok = pcall(owner.reskin, owner.group, child)
     window.masqueBusy = false
@@ -339,7 +411,10 @@ local skinLinks = setmetatable({}, { __mode = 'k' })
 local function notifySkin()
     pcall(function()
         local notify = addon.previewSkinChanged
-        if type(notify) == 'function' then notify() end
+
+        if type(notify) == 'function' then
+            notify()
+        end
     end)
 end
 
@@ -347,7 +422,10 @@ end
 -- Notify only the separately installed provider's existing registry, on a user
 -- skin action. No GUI library is bundled or loaded by this optional refresh.
 local function notifyMasqueOptions()
-    if configNotifyBusy then return end
+    if configNotifyBusy then
+        return
+    end
+
     configNotifyBusy = true
 
     pcall(function()
@@ -375,8 +453,10 @@ local function refreshSkin(provider, group, disabled)
     then
         return true
     end
+    if window.masqueBusy then
+        return false
+    end
 
-    if window.masqueBusy then return false end
     local epoch, generation = window.masqueEpoch, window.generation
 
     -- True while the window is the same one, in the same epoch and generation, as when the refresh started.
@@ -397,7 +477,11 @@ local function refreshSkin(provider, group, disabled)
                     local child = icon.masqueSurface
                     child.texture:SetTexture(icon.texture:GetTexture())
                     owner.reskin(group, child)
-                    if not valid() then return end
+
+                    if not valid() then
+                        return
+                    end
+
                     -- Parent visibility belongs to recommendations/samples, including empties.
                     child.texture:Show()
                     child:Show()
@@ -408,7 +492,10 @@ local function refreshSkin(provider, group, disabled)
     end)
 
     window.masqueBusy = false
-    if not valid() then return false end
+
+    if not valid() then
+        return false
+    end
 
     if not ok then
         addon:ReleaseMasquePreview(window)
@@ -434,7 +521,6 @@ bindSkinCallback = function(provider, group, window, disabled)
         if addon.db.profile ~= profile or profile.preview_masque ~= true or addon.nextWindow ~= currentWindow then
             return false
         end
-
         if
             currentWindow and (currentWindow.generation ~= currentGeneration or currentWindow.active ~= currentActive)
         then
@@ -448,9 +534,16 @@ bindSkinCallback = function(provider, group, window, disabled)
             and rawequal(window.masqueGroup, group)
     end
 
-    if not valid() then return false end
+    if not valid() then
+        return false
+    end
+
     local register = group.RegisterCallback
-    if not valid() or type(register) ~= 'function' then return false end
+
+    if not valid() or type(register) ~= 'function' then
+        return false
+    end
+
     local link = skinLinks[group]
 
     if not link then
@@ -488,53 +581,96 @@ bindSkinCallback = function(provider, group, window, disabled)
                     return
                 end
 
-                if option == 'Disabled' then link.disabled = value == true end
+                if option == 'Disabled' then
+                    link.disabled = value == true
+                end
+
                 link.refreshing = true
                 local refreshed = refreshSkin(provider, group, link.disabled)
                 link.refreshing = false
-                if refreshed then notifySkin() end
+
+                if refreshed then
+                    notifySkin()
+                end
             end,
             'SkinID',
             'Reset',
             'Disabled'
         )
 
-        if not valid() then return false end
+        if not valid() then
+            return false
+        end
+
         link.failed = not ok
-        if not ok then return false end
+
+        if not ok then
+            return false
+        end
     end
 
-    if link.failed or link.register ~= register or not rawequal(link.provider, provider) then return false end
+    if link.failed or link.register ~= register or not rawequal(link.provider, provider) then
+        return false
+    end
 
     if disabled == nil then
         local optionsFn = group.GetOptions
-        if not valid() then return false end
+
+        if not valid() then
+            return false
+        end
 
         if type(optionsFn) == 'function' then
             local ok, value = pcall(function()
                 local options = optionsFn(group)
-                if not valid() then return end
+
+                if not valid() then
+                    return
+                end
+
                 local option = options.args.Disable
                 local get = option.get
-                if not valid() then return end
+
+                if not valid() then
+                    return
+                end
+
                 local value = get({ 'Disable', arg = option.arg })
-                if not valid() then return end
+
+                if not valid() then
+                    return
+                end
+
                 return value
             end)
 
-            if not valid() then return false end
-            if ok and type(value) == 'boolean' then disabled = value end
+            if not valid() then
+                return false
+            end
+
+            if ok and type(value) == 'boolean' then
+                disabled = value
+            end
         end
     end
 
-    if disabled == nil then disabled = link.disabled end
-    if not valid() then return false end
+    if disabled == nil then
+        disabled = link.disabled
+    end
+
+    if not valid() then
+        return false
+    end
+
     link.disabled = disabled == true
     link.window = window
     link.profile = profile
     link.epoch = epoch
     link.generation = generation
-    if window then window.masqueSkinLink = link end
+
+    if window then
+        window.masqueSkinLink = link
+    end
 
     if window and link.disabled then
         for _, icon in ipairs(window.icons) do
@@ -550,7 +686,11 @@ end
 -- shape. valid() reports whether the context is still current; every caller must check it after each provider call.
 local function skinContext()
     local profile = addon.db and addon.db.profile
-    if type(profile) ~= 'table' or profile.preview_masque ~= true then return end
+
+    if type(profile) ~= 'table' or profile.preview_masque ~= true then
+        return
+    end
+
     local window = addon.nextWindow
     local generation = window and window.generation
     local epoch = window and window.masqueEpoch
@@ -563,7 +703,10 @@ local function skinContext()
             and (not window or window:Valid() and window.generation == generation and window.masqueEpoch == epoch)
     end
 
-    if not valid() then return end
+    if not valid() then
+        return
+    end
+
     local provider = LibStub('Masque', true)
 
     if
@@ -576,9 +719,17 @@ local function skinContext()
     end
 
     local group = provider:Group('Rotation Master', 'RecommendationPreview')
-    if not valid() or type(group) ~= 'table' or type(group.GetOptions) ~= 'function' then return end
+
+    if not valid() or type(group) ~= 'table' or type(group.GetOptions) ~= 'function' then
+        return
+    end
+
     local options = group:GetOptions()
-    if not valid() then return end
+
+    if not valid() then
+        return
+    end
+
     local option = type(options) == 'table' and type(options.args) == 'table' and options.args.SkinID
 
     if
@@ -591,11 +742,22 @@ local function skinContext()
     end
 
     local disable = options.args.Disable
-    if type(disable) ~= 'table' or type(disable.get) ~= 'function' then return end
+
+    if type(disable) ~= 'table' or type(disable.get) ~= 'function' then
+        return
+    end
+
     local disabled = disable.get({ 'Disable', arg = disable.arg })
-    if not valid() or type(disabled) ~= 'boolean' then return end
+
+    if not valid() or type(disabled) ~= 'boolean' then
+        return
+    end
+
     local skins = provider:GetSkins()
-    if not valid() or type(skins) ~= 'table' then return end
+
+    if not valid() or type(skins) ~= 'table' then
+        return
+    end
 
     local attached = window
         and rawequal(window.masqueProvider, provider)
@@ -603,7 +765,9 @@ local function skinContext()
         and window
         or nil
 
-    if not bindSkinCallback(provider, group, attached, disabled) or not valid() then return end
+    if not bindSkinCallback(provider, group, attached, disabled) or not valid() then
+        return
+    end
 
     return {
         disabled = disabled,
@@ -630,12 +794,20 @@ end
 -- false when Masque is unavailable, disabled for the group or busy. Escapes "|" and control characters in the text.
 function addon:GetPreviewSkinChoices()
     local fallback = { { value = defaultSkin, text = defaultSkin } }
-    if not rawequal(self, addon) or skinBusy then return fallback, false end
+
+    if not rawequal(self, addon) or skinBusy then
+        return fallback, false
+    end
+
     skinBusy = true
 
     local ok, rows = pcall(function()
         local context = skinContext()
-        if not context or context.disabled then return end
+
+        if not context or context.disabled then
+            return
+        end
+
         local result = {}
 
         for id in pairs(context.option.values) do
@@ -643,10 +815,14 @@ function addon:GetPreviewSkinChoices()
                 result[#result + 1] = { value = id, text = id:gsub('|', '||'):gsub('[%z\1-\31\127]', '?') }
             end
 
-            if #result > 512 then return end
+            if #result > 512 then
+                return
+            end
         end
 
-        if not context.valid() or #result == 0 then return end
+        if not context.valid() or #result == 0 then
+            return
+        end
 
         table.sort(result, function(a, b)
             if a.value == defaultSkin then
@@ -662,20 +838,34 @@ function addon:GetPreviewSkinChoices()
     end)
 
     skinBusy = false
-    if ok and rows then return rows, true end
+
+    if ok and rows then
+        return rows, true
+    end
+
     return fallback, false
 end
 
 -- Returns the skin Masque has selected for the preview group, or the default skin when it cannot be read.
 function addon:GetPreviewSkin()
-    if not rawequal(self, addon) or skinBusy then return defaultSkin end
+    if not rawequal(self, addon) or skinBusy then
+        return defaultSkin
+    end
+
     skinBusy = true
 
     local ok, id = pcall(function()
         local context = skinContext()
-        if not context or context.disabled then return end
+
+        if not context or context.disabled then
+            return
+        end
+
         local value = context.option.get(context.info)
-        if context.valid() and validSkin(context, value) then return value end
+
+        if context.valid() and validSkin(context, value) then
+            return value
+        end
     end)
 
     skinBusy = false
@@ -685,21 +875,35 @@ end
 -- Selects a skin through Masque's own option setter, verifies it by reading it back, then reskins the preview and
 -- notifies Masque's options registry. Returns true only when the new skin is confirmed in effect.
 function addon:SetPreviewSkin(id)
-    if not rawequal(self, addon) or skinBusy or configNotifyBusy then return false end
+    if not rawequal(self, addon) or skinBusy or configNotifyBusy then
+        return false
+    end
+
     skinBusy = true
     local context
 
     local ok, changed = pcall(function()
         context = skinContext()
-        if not context or context.disabled or not validSkin(context, id) then return false end
+
+        if not context or context.disabled or not validSkin(context, id) then
+            return false
+        end
+
         context.option.set(context.info, id)
-        if not context.valid() then return false end
+
+        if not context.valid() then
+            return false
+        end
+
         local selected = context.option.get(context.info)
         return context.valid() and selected == id
     end)
 
     skinBusy = false
-    if not ok or changed ~= true then return false end
+
+    if not ok or changed ~= true then
+        return false
+    end
 
     if
         context.window
@@ -717,9 +921,16 @@ function addon:SetPreviewSkin(id)
         end
     end
 
-    if not refreshSkin(context.provider, context.group) or not context.valid() then return false end
+    if not refreshSkin(context.provider, context.group) or not context.valid() then
+        return false
+    end
+
     notifyMasqueOptions()
-    if not context.valid() then return false end
+
+    if not context.valid() then
+        return false
+    end
+
     notifySkin()
     return true
 end

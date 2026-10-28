@@ -12,7 +12,10 @@ local data = addon.RotationData
 -- independently of mutable literal-string method dispatch.
 local parserString = string
 local parserMatch = type(parserString) == "table" and rawget(parserString, "match") or nil
-if type(parserMatch) ~= "function" then parserMatch = nil end
+
+if type(parserMatch) ~= "function" then
+    parserMatch = nil
+end
 
 -- ============================================================================
 -- Path and shape helpers
@@ -55,11 +58,17 @@ end
 
 -- True when value is a table whose keys are exactly 1..n with no holes (an empty table counts).
 local function dense(value)
-    if type(value) ~= "table" then return false end
+    if type(value) ~= "table" then
+        return false
+    end
+
     local count, maximum = 0, 0
 
     for key in pairs(value) do
-        if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then return false end
+        if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then
+            return false
+        end
+
         count = count + 1
         maximum = math.max(maximum, key)
     end
@@ -112,14 +121,22 @@ local incompatibleBranchFields = {
 -- options.allowUnknownBranchFields tolerates unknown, non-action fields on a Branch.
 function data.IndexRotationSteps(body, options)
     local portable, why = data.CheckPortable(body)
-    if not portable then return nil, why end
-    if type(body) ~= "table" then return failure("expected-rotation-object", {}) end
+
+    if not portable then
+        return nil, why
+    end
+    if type(body) ~= "table" then
+        return failure("expected-rotation-object", {})
+    end
+
     options = options or {}
     local result = { rows = {}, byId = {}, lists = {} }
     local walk
 
     walk = function(list, path, section, depth, parentId, arm, unreachable)
-        if not dense(list) then return failure("invalid-priority-list", path) end
+        if not dense(list) then
+            return failure("invalid-priority-list", path)
+        end
 
         result.lists[#result.lists + 1] = {
             list = list,
@@ -133,14 +150,19 @@ function data.IndexRotationSteps(body, options)
 
         for index, step in ipairs(list) do
             local at = child(path, index)
-            if #result.rows >= 2000 then return failure("rotation-node-limit", at) end
-            if type(step) ~= "table" then return failure("expected-step-object", at) end
 
+            if #result.rows >= 2000 then
+                return failure("rotation-node-limit", at)
+            end
+            if type(step) ~= "table" then
+                return failure("expected-step-object", at)
+            end
             if not identifier(step.id) and not (step.id == nil and options.allowMissingIds == true) then
                 return failure("invalid-step-id", child(at, "id"))
             end
-
-            if step.id and result.byId[step.id] then return failure("duplicate-step-id", child(at, "id")) end
+            if step.id and result.byId[step.id] then
+                return failure("duplicate-step-id", child(at, "id"))
+            end
 
             local row = {
                 step = step,
@@ -155,13 +177,24 @@ function data.IndexRotationSteps(body, options)
             }
 
             result.rows[#result.rows + 1] = row
-            if step.id then result.byId[step.id] = row end
+
+            if step.id then
+                result.byId[step.id] = row
+            end
 
             if step.type == "branch" then
-                if section ~= "rotation" then return failure("branch-in-optional-list", at) end
-                if depth >= 16 then return failure("rotation-depth-limit", at) end
+                if section ~= "rotation" then
+                    return failure("branch-in-optional-list", at)
+                end
+                if depth >= 16 then
+                    return failure("rotation-depth-limit", at)
+                end
+
                 local mode = step.mode
-                if mode == nil then mode = "evaluate" end
+
+                if mode == nil then
+                    mode = "evaluate"
+                end
 
                 if mode ~= "evaluate" and mode ~= "true" and mode ~= "false" then
                     return failure("invalid-branch-mode", child(at, "mode"))
@@ -174,7 +207,10 @@ function data.IndexRotationSteps(body, options)
                 end
 
                 table.sort(keys, function(a, b)
-                    if type(a) == type(b) then return a < b end
+                    if type(a) == type(b) then
+                        return a < b
+                    end
+
                     return type(a) == "number"
                 end)
 
@@ -191,7 +227,9 @@ function data.IndexRotationSteps(body, options)
                     { field = "onTrue", arm = "true", excluded = mode == "false" },
                     { field = "onFalse", arm = "false", excluded = mode == "true" },
                 }) do
-                    if step[choice.field] == nil then return failure("missing-branch-arm", child(at, choice.field)) end
+                    if step[choice.field] == nil then
+                        return failure("missing-branch-arm", child(at, choice.field))
+                    end
 
                     local ok, problem = walk(
                         step[choice.field],
@@ -203,7 +241,9 @@ function data.IndexRotationSteps(body, options)
                         unreachable or choice.excluded
                     )
 
-                    if not ok then return nil, problem end
+                    if not ok then
+                        return nil, problem
+                    end
                 end
             end
         end
@@ -213,9 +253,16 @@ function data.IndexRotationSteps(body, options)
 
     for _, section in ipairs({ "rotation", "cooldowns" }) do
         local list = body[section]
-        if list == nil then list = {} end
+
+        if list == nil then
+            list = {}
+        end
+
         local ok, problem = walk(list, { section }, section, 0, nil, nil, false)
-        if not ok then return nil, problem end
+
+        if not ok then
+            return nil, problem
+        end
     end
 
     return result
@@ -232,7 +279,10 @@ end
 -- CheckPortable diagnostic when value is not portable. Mutates only `used`.
 function data.ReserveRotationIdentities(value, used)
     local portable, why = data.CheckPortable(value)
-    if not portable then return nil, why end
+
+    if not portable then
+        return nil, why
+    end
 
     local function reserve(current)
         if type(current) == "string" then
@@ -270,7 +320,10 @@ local bindPortable = addon.BindRotationPortableReader
 
 if indexType(bindPortable) == "function" then
     ---@cast bindPortable function
-    bindPortable(addon, function(reader, status) portableOwned, portableStatus = reader, status end)
+    bindPortable(addon, function(reader, status)
+        portableOwned, portableStatus = reader, status
+    end)
+
     addon.BindRotationPortableReader = nil
 end
 
@@ -311,7 +364,9 @@ local function indexStatus(namespace)
     local result = { reason = "ready", raw = {} }
 
     local function check(reason, ok)
-        if result.reason == "ready" and not ok then result.reason = reason end
+        if result.reason == "ready" and not ok then
+            result.reason = reason
+        end
     end
 
     local environment = indexType(indexEnvironment) == "table"
@@ -369,7 +424,10 @@ local function witness(body)
     local records, seen = {}, {}
 
     local function visit(value)
-        if indexType(value) ~= "table" or seen[value] then return end
+        if indexType(value) ~= "table" or seen[value] then
+            return
+        end
+
         seen[value] = true
         local row = { object = value, values = {}, count = 0 }
         records[#records + 1] = row
@@ -390,15 +448,24 @@ local function unchanged(records)
     for i = 1, #records do
         local row = records[i]
         local object = row.object
-        if indexGetmetatable(object) ~= nil then return false end
+
+        if indexGetmetatable(object) ~= nil then
+            return false
+        end
+
         local count = 0
 
         for key, value in indexNext, object do
-            if not indexEqual(value, indexRawget(row.values, key)) then return false end
+            if not indexEqual(value, indexRawget(row.values, key)) then
+                return false
+            end
+
             count = count + 1
         end
 
-        if count ~= row.count then return false end
+        if count ~= row.count then
+            return false
+        end
     end
 
     return true
@@ -442,7 +509,10 @@ end
 -- the same objects and the body is unchanged, or true, nil and a diagnostic when the body cannot be indexed. retire()
 -- drops the cache. Does nothing for any caller other than the addon.
 function addon:BindRotationExecutionIndexReader(bind)
-    if self ~= addon or indexType(bind) ~= "function" then return end
+    if self ~= addon or indexType(bind) ~= "function" then
+        return
+    end
+
     local entry, attempt
 
     -- Drops the cached index and starts a new attempt token, which also stops a read in progress from caching its
@@ -471,7 +541,11 @@ function addon:BindRotationExecutionIndexReader(bind)
         retire()
         local token = attempt
         local index, why = ownedIndex(body, { allowMissingIds = true })
-        if not index then return true, nil, why end
+
+        if not index then
+            return true, nil, why
+        end
+
         local graph = witness(body)
 
         if indexEqual(attempt, token) and indexOwned() then

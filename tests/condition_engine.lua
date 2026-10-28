@@ -1,177 +1,389 @@
 -- Real headless engine; asking for AceGUI fails immediately.
-local F=dofile('tests/fixtures/addon.lua')
-local test,finish=F.suite()
-local addon={currentSpec=0,db={profile={}}}
-local env=setmetatable({GetTime=function() return 100 end, DELETE='Delete'}, {__index=_G})
-env.LibStub=function(name)
-    assert(name=='AceLocale-3.0','Headless engine requested '..name)
-    return {GetLocale=function() return setmetatable({}, {__index=function(_,key) return key end}) end}
+local F = dofile('tests/fixtures/addon.lua')
+local test, finish = F.suite()
+local addon = { currentSpec = 0, db = { profile = {} } }
+local env = setmetatable({ GetTime = function() return 100 end, DELETE = 'Delete' }, { __index = _G })
+
+env.LibStub = function(name)
+    assert(name == 'AceLocale-3.0', 'Headless engine requested ' .. name)
+    return { GetLocale = function() return setmetatable({}, { __index = function(_, key) return key end }) end }
 end
-local artwork=assert(loadfile('Data/artwork.lua'));setfenv(artwork,env);artwork('rotationmaster',addon)
-local core=assert(loadfile('Core/conditions.lua'));setfenv(core,env);core('rotationmaster',addon)
+
+local artwork = assert(loadfile('Data/artwork.lua'))
+setfenv(artwork, env)
+artwork('rotationmaster', addon)
+local core = assert(loadfile('Core/conditions.lua'))
+setfenv(core, env)
+core('rotationmaster', addon)
+
 local function definition(result)
-    return {valid=function() return true end,evaluate=function() return result end,
-            print=function() return result and 'yes' or 'no' end,fields={},description='Fixture'}
+    return {
+        valid = function() return true end,
+        evaluate = function() return result end,
+        print = function() return result and 'yes' or 'no' end,
+        fields = {},
+        description = 'Fixture',
+    }
 end
-test('registry revision tracks replacements including same-object schemas and removal',function()
-    local before=addon.conditionRegistryVersion or 0;local schema=definition(true)
-    addon:RegisterCondition('VERSION',schema);assert(addon.conditionRegistryVersion==before+1)
-    addon:RegisterCondition('VERSION',schema);assert(addon.conditionRegistryVersion==before+2)
-    addon:UnregisterCondition('VERSION');assert(addon.conditionRegistryVersion==before+3)
+
+test('registry revision tracks replacements including same-object schemas and removal', function()
+    local before = addon.conditionRegistryVersion or 0
+    local schema = definition(true)
+    addon:RegisterCondition('VERSION', schema)
+    assert(addon.conditionRegistryVersion == before + 1)
+    addon:RegisterCondition('VERSION', schema)
+    assert(addon.conditionRegistryVersion == before + 2)
+    addon:UnregisterCondition('VERSION')
+    assert(addon.conditionRegistryVersion == before + 3)
 end)
-addon:RegisterCondition('YES',definition(true));addon:RegisterCondition('NO',definition(false))
-test('nested Boolean evaluation preserves priority-condition truth tables',function()
-    assert(addon:evaluateCondition({type='AND',value={{type='YES'},{type='NOT',value={type='NO'}}}}))
-    assert(not addon:evaluateCondition({type='AND',value={{type='YES'},{type='NO'}}}))
-    assert(addon:evaluateCondition({type='OR',value={{type='NO'},{type='YES'}}}))
-    assert(not addon:evaluateCondition({type='OR',value={{type='NO'}}}))
-    assert(addon:evaluateCondition({type='AND',value={}}))
-    assert(not addon:evaluateCondition({type='OR',value={}}))
+
+addon:RegisterCondition('YES', definition(true))
+addon:RegisterCondition('NO', definition(false))
+
+test('nested Boolean evaluation preserves priority-condition truth tables', function()
+    assert(addon:evaluateCondition({
+        type = 'AND',
+        value = { { type = 'YES' }, { type = 'NOT', value = { type = 'NO' } } },
+    }))
+
+    assert(not addon:evaluateCondition({ type = 'AND', value = { { type = 'YES' }, { type = 'NO' } } }))
+    assert(addon:evaluateCondition({ type = 'OR', value = { { type = 'NO' }, { type = 'YES' } } }))
+    assert(not addon:evaluateCondition({ type = 'OR', value = { { type = 'NO' } } }))
+    assert(addon:evaluateCondition({ type = 'AND', value = {} }))
+    assert(not addon:evaluateCondition({ type = 'OR', value = {} }))
     assert(addon:evaluateCondition(nil))
-    assert(addon:evaluateCondition({type='NO',disabled=true}))
+    assert(addon:evaluateCondition({ type = 'NO', disabled = true }))
 end)
-test('condition evaluation shares one cache and timestamp within a tree',function()
-    local caches,times={},{}
-    addon:RegisterCondition('RECORD',{valid=function() return true end,evaluate=function(_,cache,start)
-        caches[#caches+1]=cache;times[#times+1]=start;return true
-    end})
-    assert(addon:evaluateCondition({type='AND',value={{type='RECORD'},{type='RECORD'}}}))
-    assert(#caches==2 and caches[1]==caches[2] and times[1]==100 and times[2]==100)
+
+test('condition evaluation shares one cache and timestamp within a tree', function()
+    local caches, times = {}, {}
+
+    addon:RegisterCondition('RECORD', {
+        valid = function() return true end,
+        evaluate = function(_, cache, start)
+            caches[#caches + 1] = cache
+            times[#times + 1] = start
+            return true
+        end,
+    })
+
+    assert(addon:evaluateCondition({ type = 'AND', value = { { type = 'RECORD' }, { type = 'RECORD' } } }))
+    assert(#caches == 2 and caches[1] == caches[2] and times[1] == 100 and times[2] == 100)
 end)
-test('headless registry replacement and removal affect the same engine',function()
-    addon:RegisterCondition('SWAP',definition(true));assert(addon:evaluateCondition({type='SWAP'}))
-    addon:RegisterCondition('SWAP',definition(false));assert(not addon:evaluateCondition({type='SWAP'}))
-    addon:UnregisterCondition('SWAP');assert(not addon:validateCondition({type='SWAP'},0))
+
+test('headless registry replacement and removal affect the same engine', function()
+    addon:RegisterCondition('SWAP', definition(true))
+    assert(addon:evaluateCondition({ type = 'SWAP' }))
+    addon:RegisterCondition('SWAP', definition(false))
+    assert(not addon:evaluateCondition({ type = 'SWAP' }))
+    addon:UnregisterCondition('SWAP')
+    assert(not addon:validateCondition({ type = 'SWAP' }, 0))
     assert(addon.conditionDefinitions.YES)
 end)
-test('print validation and usefulness work without options rendering',function()
-    assert(addon:printCondition({type='NOT',value={type='NO'}},0)=='not (no)')
-    assert(addon:validateCondition({type='AND',value={{type='YES'}}},0))
-    assert(not addon:validateCondition({type='UNKNOWN'},0))
-    assert(addon:usefulCondition({type='YES'}))
-    assert(not addon:usefulCondition({type='OR',value={}}))
+
+test('print validation and usefulness work without options rendering', function()
+    assert(addon:printCondition({ type = 'NOT', value = { type = 'NO' } }, 0) == 'not (no)')
+    assert(addon:validateCondition({ type = 'AND', value = { { type = 'YES' } } }, 0))
+    assert(not addon:validateCondition({ type = 'UNKNOWN' }, 0))
+    assert(addon:usefulCondition({ type = 'YES' }))
+    assert(not addon:usefulCondition({ type = 'OR', value = {} }))
 end)
-test('unknown invalid and unreadable conditions stay unavailable under NOT',function()
-    addon:RegisterCondition('INVALID',{valid=function() return false end,evaluate=function() error('must not run') end})
-    addon:RegisterCondition('UNREADABLE',{valid=function() return true end,evaluate=function() return nil,'restricted-aura' end})
-    for _,tag in ipairs({'UNKNOWN','INVALID','UNREADABLE'}) do
-        local tree={type='NOT',value={type=tag}}
-        local result=addon:evaluateConditionResult(tree)
-        assert(result.status=='unavailable',tag)
-        assert(not addon:evaluateCondition(tree),tag)
-        assert(type(result.reason)=='string')
+
+test('unknown invalid and unreadable conditions stay unavailable under NOT', function()
+    addon:RegisterCondition('INVALID', {
+        valid = function() return false end,
+        evaluate = function()
+            error('must not run')
+        end,
+    })
+
+    addon:RegisterCondition('UNREADABLE', {
+        valid = function() return true end,
+        evaluate = function() return nil, 'restricted-aura' end,
+    })
+
+    for _, tag in ipairs({ 'UNKNOWN', 'INVALID', 'UNREADABLE' }) do
+        local tree = { type = 'NOT', value = { type = tag } }
+        local result = addon:evaluateConditionResult(tree)
+        assert(result.status == 'unavailable', tag)
+        assert(not addon:evaluateCondition(tree), tag)
+        assert(type(result.reason) == 'string')
     end
 end)
-test('unavailable propagates when reached while decisive prefixes skip later unknowns',function()
-    for _,row in ipairs({{'AND','YES','UNKNOWN','unavailable'},{'AND','UNKNOWN','NO','unavailable'},
-        {'AND','NO','UNKNOWN','no-match'},{'OR','NO','UNKNOWN','unavailable'},
-        {'OR','UNKNOWN','YES','unavailable'},{'OR','YES','UNKNOWN','match'}}) do
-        local result=addon:evaluateConditionResult({type=row[1],value={{type=row[2]},{type=row[3]}}})
-        assert(result.status==row[4]);if result.status=='unavailable' then assert(result.reason=='unknown-condition') end
-    end
-end)
-test('malformed cyclic and overdeep trees fail closed without throwing',function()
-    local cycle={type='NOT'};cycle.value=cycle
-    local deep={type='YES'}
-    for _=1,70 do deep={type='NOT',value=deep} end
-    local sparse={[1]={type='YES'},[3]={type='YES'}}
-    for _,tree in ipairs({42,'bad',{type='AND',value=1},{type='AND',value=sparse},
-                         {type='AND',value={wrong={type='YES'}}}, {type='NOT'},cycle,deep}) do
-        assert(addon:evaluateConditionResult(tree).status=='unavailable')
-        assert(not addon:evaluateCondition(tree))
-    end
-end)
-test('false child lists and non-Boolean disabled flags cannot enable advice',function()
-    for _,tree in ipairs({{type='AND',value=false}, {type='OR',value=false},
-                         {type='UNKNOWN',disabled='false'}, {type='YES',disabled=1}}) do
-        assert(addon:evaluateConditionResult(tree).status=='unavailable')
-        assert(not addon:evaluateCondition(tree))
-        assert(not addon:evaluateCondition({type='NOT',value=tree}))
-    end
-end)
-test('wide child lists are bounded before inspecting every entry',function()
-    local children={}
-    for i=1,100000 do children[i]={type='YES'} end
-    debug.sethook(function() error('instruction budget exhausted') end,'',500000)
-    local ok,result=pcall(function() return addon:evaluateConditionResult({type='AND',value=children}) end)
-    debug.sethook()
-    assert(ok,result)
-    assert(result.status=='unavailable' and result.reason=='condition-limit')
-end)
-test('failing callbacks become unavailable and quarantine until replaced',function()
-    local forwarded={}
-    env.geterrorhandler=function() return function(err) forwarded[#forwarded+1]=err end end
-    local diag=assert(loadfile('Diagnostics/errors.lua'));setfenv(diag,env);diag('rotationmaster',addon)
-    local calls=0
-    addon:RegisterCondition('BROKEN',{valid=function() return true end,evaluate=function()
-        calls=calls+1;error('broken evaluator')
-    end})
-    for _=1,3 do
-        local result=addon:evaluateConditionResult({type='NOT',value={type='BROKEN'}})
-        assert(result.status=='unavailable')
-    end
-    assert(calls==1 and #forwarded==1)
-    assert(addon.Diagnostics:FormatReport():find('condition.value',1,true))
-    addon:RegisterCondition('BROKEN',definition(true))
-    assert(addon:evaluateCondition({type='BROKEN'}))
-    addon:RegisterCondition('BAD_VALID',{valid=function() error('bad fields') end,evaluate=function() error('must not run') end})
-    assert(not addon:evaluateCondition({type='NOT',value={type='BAD_VALID'}}))
-    assert(#forwarded==2)
-end)
-test('legacy nil predicates remain false without an unavailable reason',function()
-    addon:RegisterCondition('LEGACY_NIL',definition(nil))
-    assert(addon:evaluateConditionResult({type='LEGACY_NIL'}).status=='no-match')
-    assert(addon:evaluateConditionResult({type='NOT',value={type='LEGACY_NIL'}}).status=='match')
-end)
-test('lifecycle callbacks receive only the documented tag on replacement and removal',function()
-    local calls={}
-    local function hook(label)
-        return function(...)
-            assert(select('#',...)==1 and (...)=='LIFECYCLE','lifecycle callback expected one tag argument')
-            calls[#calls+1]=label
+
+test('unavailable propagates when reached while decisive prefixes skip later unknowns', function()
+    for _, row in ipairs({
+        { 'AND', 'YES', 'UNKNOWN', 'unavailable' },
+        { 'AND', 'UNKNOWN', 'NO', 'unavailable' },
+        { 'AND', 'NO', 'UNKNOWN', 'no-match' },
+        { 'OR', 'NO', 'UNKNOWN', 'unavailable' },
+        { 'OR', 'UNKNOWN', 'YES', 'unavailable' },
+        { 'OR', 'YES', 'UNKNOWN', 'match' },
+    }) do
+        local result = addon:evaluateConditionResult({
+            type = row[1],
+            value = { { type = row[2] }, { type = row[3] } },
+        })
+
+        assert(result.status == row[4])
+
+        if result.status == 'unavailable' then
+            assert(result.reason == 'unknown-condition')
         end
     end
-    addon:RegisterCondition('LIFECYCLE',{on_register=hook('register-old'),on_unregister=hook('unregister-old')})
-    addon:RegisterCondition('LIFECYCLE',{on_register=hook('register-new'),on_unregister=hook('unregister-new')})
+end)
+
+test('malformed cyclic and overdeep trees fail closed without throwing', function()
+    local cycle = { type = 'NOT' }
+    cycle.value = cycle
+    local deep = { type = 'YES' }
+
+    for _ = 1, 70 do
+        deep = { type = 'NOT', value = deep }
+    end
+
+    local sparse = { [1] = { type = 'YES' }, [3] = { type = 'YES' } }
+
+    for _, tree in ipairs({
+        42,
+        'bad',
+        { type = 'AND', value = 1 },
+        { type = 'AND', value = sparse },
+        { type = 'AND', value = { wrong = { type = 'YES' } } },
+        { type = 'NOT' },
+        cycle,
+        deep,
+    }) do
+        assert(addon:evaluateConditionResult(tree).status == 'unavailable')
+        assert(not addon:evaluateCondition(tree))
+    end
+end)
+
+test('false child lists and non-Boolean disabled flags cannot enable advice', function()
+    for _, tree in ipairs({
+        { type = 'AND', value = false },
+        { type = 'OR', value = false },
+        { type = 'UNKNOWN', disabled = 'false' },
+        { type = 'YES', disabled = 1 },
+    }) do
+        assert(addon:evaluateConditionResult(tree).status == 'unavailable')
+        assert(not addon:evaluateCondition(tree))
+        assert(not addon:evaluateCondition({ type = 'NOT', value = tree }))
+    end
+end)
+
+test('wide child lists are bounded before inspecting every entry', function()
+    local children = {}
+
+    for i = 1, 100000 do
+        children[i] = { type = 'YES' }
+    end
+
+    debug.sethook(function()
+        error('instruction budget exhausted')
+    end, '', 500000)
+
+    local ok, result = pcall(function() return addon:evaluateConditionResult({ type = 'AND', value = children }) end)
+    debug.sethook()
+    assert(ok, result)
+    assert(result.status == 'unavailable' and result.reason == 'condition-limit')
+end)
+
+test('failing callbacks become unavailable and quarantine until replaced', function()
+    local forwarded = {}
+
+    env.geterrorhandler = function()
+        return function(err)
+            forwarded[#forwarded + 1] = err
+        end
+    end
+
+    local diag = assert(loadfile('Diagnostics/errors.lua'))
+    setfenv(diag, env)
+    diag('rotationmaster', addon)
+    local calls = 0
+
+    addon:RegisterCondition('BROKEN', {
+        valid = function() return true end,
+        evaluate = function()
+            calls = calls + 1
+            error('broken evaluator')
+        end,
+    })
+
+    for _ = 1, 3 do
+        local result = addon:evaluateConditionResult({ type = 'NOT', value = { type = 'BROKEN' } })
+        assert(result.status == 'unavailable')
+    end
+
+    assert(calls == 1 and #forwarded == 1)
+    assert(addon.Diagnostics:FormatReport():find('condition.value', 1, true))
+    addon:RegisterCondition('BROKEN', definition(true))
+    assert(addon:evaluateCondition({ type = 'BROKEN' }))
+
+    addon:RegisterCondition('BAD_VALID', {
+        valid = function()
+            error('bad fields')
+        end,
+        evaluate = function()
+            error('must not run')
+        end,
+    })
+
+    assert(not addon:evaluateCondition({ type = 'NOT', value = { type = 'BAD_VALID' } }))
+    assert(#forwarded == 2)
+end)
+
+test('legacy nil predicates remain false without an unavailable reason', function()
+    addon:RegisterCondition('LEGACY_NIL', definition(nil))
+    assert(addon:evaluateConditionResult({ type = 'LEGACY_NIL' }).status == 'no-match')
+    assert(addon:evaluateConditionResult({ type = 'NOT', value = { type = 'LEGACY_NIL' } }).status == 'match')
+end)
+
+test('lifecycle callbacks receive only the documented tag on replacement and removal', function()
+    local calls = {}
+
+    local function hook(label)
+        return function(...)
+            assert(select('#', ...) == 1 and (...) == 'LIFECYCLE', 'lifecycle callback expected one tag argument')
+            calls[#calls + 1] = label
+        end
+    end
+
+    addon:RegisterCondition('LIFECYCLE', { on_register = hook('register-old'), on_unregister = hook('unregister-old') })
+    addon:RegisterCondition('LIFECYCLE', { on_register = hook('register-new'), on_unregister = hook('unregister-new') })
     addon:UnregisterCondition('LIFECYCLE')
-    assert(table.concat(calls,',')=='register-old,unregister-old,register-new,unregister-new')
+    assert(table.concat(calls, ',') == 'register-old,unregister-old,register-new,unregister-new')
 end)
-test('localized phrase markers negate the main leaf predicate and keep qualifiers positive',function()
-    addon:RegisterCondition('PHRASE',{print=function() return 'your target {{is|is not}} ready while its shield {{is|is not}} active' end})
-    assert(addon.conditionDefinitions.PHRASE.print(0,{type='PHRASE'})=='your target is ready while its shield is active')
-    assert(addon:printCondition({type='NOT',value={type='PHRASE'}},0)=='your target is not ready while its shield is active')
-    assert(addon:printCondition({type='NOT',value={type='NOT',value={type='PHRASE'}}},0)=='your target is ready while its shield is active')
+
+test('localized phrase markers negate the main leaf predicate and keep qualifiers positive', function()
+    addon:RegisterCondition('PHRASE', {
+        print = function() return 'your target {{is|is not}} ready while its shield {{is|is not}} active' end,
+    })
+
+    assert(
+        addon.conditionDefinitions.PHRASE.print(0, { type = 'PHRASE' })
+            == 'your target is ready while its shield is active'
+    )
+
+    assert(
+        addon:printCondition({ type = 'NOT', value = { type = 'PHRASE' } }, 0)
+            == 'your target is not ready while its shield is active'
+    )
+
+    assert(
+        addon:printCondition({ type = 'NOT', value = { type = 'NOT', value = { type = 'PHRASE' } } }, 0)
+            == 'your target is ready while its shield is active'
+    )
 end)
-test('description parentheses are removed only when they enclose the complete expression',function()
-    local value={type='AND',value={{type='YES'},{type='OR',value={{type='NO'},{type='YES'}}}}}
-    assert(addon:printCondition(value,0)=='yes AND (no OR yes)')
-    addon:RegisterCondition('PARENS',{print=function() return '(one) OR (two)' end})
-    assert(addon:printCondition({type='PARENS'},0)=='(one) OR (two)')
-    assert(addon:printCondition({type='NOT',value=value},0)=='NOT (yes AND (no OR yes))')
+
+test('description parentheses are removed only when they enclose the complete expression', function()
+    local value = {
+        type = 'AND',
+        value = { { type = 'YES' }, { type = 'OR', value = { { type = 'NO' }, { type = 'YES' } } } },
+    }
+
+    assert(addon:printCondition(value, 0) == 'yes AND (no OR yes)')
+    addon:RegisterCondition('PARENS', { print = function() return '(one) OR (two)' end })
+    assert(addon:printCondition({ type = 'PARENS' }, 0) == '(one) OR (two)')
+    assert(addon:printCondition({ type = 'NOT', value = value }, 0) == 'NOT (yes AND (no OR yes))')
 end)
-test('explicit primary markers preserve predicate scope after translated qualifier reordering',function()
-    addon:RegisterCondition('REORDERED',{print=function() return 'time {{is|is not}} short: shield {{!is|is not}} active' end})
-    assert(addon:printCondition({type='NOT',value={type='REORDERED'}},0)=='time is short: shield is not active')
-    local definition=addon.conditionDefinitions.REORDERED;addon:RegisterCondition('REORDERED',definition)
-    assert(addon:printCondition({type='NOT',value={type='REORDERED'}},0)=='time is short: shield is not active','registration wrapped a printer twice')
+
+test('explicit primary markers preserve predicate scope after translated qualifier reordering', function()
+    addon:RegisterCondition('REORDERED', {
+        print = function() return 'time {{is|is not}} short: shield {{!is|is not}} active' end,
+    })
+
+    assert(
+        addon:printCondition({ type = 'NOT', value = { type = 'REORDERED' } }, 0)
+            == 'time is short: shield is not active'
+    )
+
+    local definition = addon.conditionDefinitions.REORDERED
+    addon:RegisterCondition('REORDERED', definition)
+
+    assert(
+        addon:printCondition({ type = 'NOT', value = { type = 'REORDERED' } }, 0)
+            == 'time is short: shield is not active',
+        'registration wrapped a printer twice'
+    )
 end)
-test('disabled definition is unavailable through NOT and Boolean groups without running hooks or callbacks',function()
-    local d=definition(true);d.disabled=true;d.valid=function() error('disabled valid called') end;d.evaluate=function() error('disabled evaluate called') end;d.on_register=function() error('disabled register called') end;d.on_unregister=function() error('disabled unregister called') end
-    addon:RegisterCondition('OFF',d)
-    for _,value in ipairs({{type='OFF'},{type='NOT',value={type='OFF'}},{type='OR',value={{type='NO'},{type='OFF'}}}}) do local result=addon:evaluateConditionResult(value);assert(result.status=='unavailable' and result.reason=='disabled-condition');assert(not addon:validateCondition(value,0)) end
-    local skipped={type='OR',value={{type='YES'},{type='OFF'}}}
-    assert(addon:evaluateConditionResult(skipped).status=='match');assert(not addon:validateCondition(skipped,0),'short-circuiting must not make saved schema validation accept disabled definitions')
+
+test('disabled definition is unavailable through NOT and Boolean groups without running hooks or callbacks', function()
+    local d = definition(true)
+    d.disabled = true
+
+    d.valid = function()
+        error('disabled valid called')
+    end
+
+    d.evaluate = function()
+        error('disabled evaluate called')
+    end
+
+    d.on_register = function()
+        error('disabled register called')
+    end
+
+    d.on_unregister = function()
+        error('disabled unregister called')
+    end
+
+    addon:RegisterCondition('OFF', d)
+
+    for _, value in ipairs({
+        { type = 'OFF' },
+        { type = 'NOT', value = { type = 'OFF' } },
+        { type = 'OR', value = { { type = 'NO' }, { type = 'OFF' } } },
+    }) do
+        local result = addon:evaluateConditionResult(value)
+        assert(result.status == 'unavailable' and result.reason == 'disabled-condition')
+        assert(not addon:validateCondition(value, 0))
+    end
+
+    local skipped = { type = 'OR', value = { { type = 'YES' }, { type = 'OFF' } } }
+    assert(addon:evaluateConditionResult(skipped).status == 'match')
+
+    assert(
+        not addon:validateCondition(skipped, 0),
+        'short-circuiting must not make saved schema validation accept disabled definitions'
+    )
+
     addon:UnregisterCondition('OFF')
 end)
-test('definition changes refresh initialized switching and immediately stop unavailable manual rotations',function()
-    local calls={};addon.autoswitchRotation={};addon.currentRotation='manual';addon.manualRotation=true
-    addon.UpdateAutoSwitch=function() calls[#calls+1]='update' end
-    addon.GetRuntimeRotation=function() return nil end
-    addon.DisableRotation=function(self) calls[#calls+1]='disable';self.currentRotation=nil end
-    addon.SwitchRotation=function() calls[#calls+1]='switch' end
-    local disabled=definition(true);disabled.disabled=true;addon:RegisterCondition('REFRESH',disabled)
-    assert(table.concat(calls,',')=='update,disable,switch')
-    calls={};addon:UnregisterCondition('REFRESH');assert(table.concat(calls,',')=='update,switch')
-    addon.autoswitchRotation=nil;calls={};addon:RegisterCondition('REFRESH',definition(true));assert(#calls==0,'startup refresh ran too early')
+
+test('definition changes refresh initialized switching and immediately stop unavailable manual rotations', function()
+    local calls = {}
+    addon.autoswitchRotation = {}
+    addon.currentRotation = 'manual'
+    addon.manualRotation = true
+
+    addon.UpdateAutoSwitch = function()
+        calls[#calls + 1] = 'update'
+    end
+
+    addon.GetRuntimeRotation = function() return nil end
+
+    addon.DisableRotation = function(self)
+        calls[#calls + 1] = 'disable'
+        self.currentRotation = nil
+    end
+
+    addon.SwitchRotation = function()
+        calls[#calls + 1] = 'switch'
+    end
+
+    local disabled = definition(true)
+    disabled.disabled = true
+    addon:RegisterCondition('REFRESH', disabled)
+    assert(table.concat(calls, ',') == 'update,disable,switch')
+    calls = {}
+    addon:UnregisterCondition('REFRESH')
+    assert(table.concat(calls, ',') == 'update,switch')
+    addon.autoswitchRotation = nil
+    calls = {}
+    addon:RegisterCondition('REFRESH', definition(true))
+    assert(#calls == 0, 'startup refresh ran too early')
 end)
+
 finish()

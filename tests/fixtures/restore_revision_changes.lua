@@ -1,7 +1,9 @@
-local outer=dofile('tests/fixtures/restore_final_composition.lua')
+local outer = dofile('tests/fixtures/restore_final_composition.lua')
+
 -- Exact integration stages for two independently reviewed revision slices.
-local overlaps={
- ['tests/fixtures/addon.lua']={current=[=[-- Explicit external boundaries; production constants/utilities/help stay real.
+local overlaps = {
+    ['tests/fixtures/addon.lua'] = {
+        current = [=[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -81,7 +83,8 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]=],persistent=[=[-- Explicit external boundaries; production constants/utilities/help stay real.
+]=],
+        persistent = [=[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -161,7 +164,8 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]=],dependency=[=[-- Explicit external boundaries; production constants/utilities/help stay real.
+]=],
+        dependency = [=[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -239,7 +243,8 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]=],baseline=[=[-- Explicit external boundaries; production constants/utilities/help stay real.
+]=],
+        baseline = [=[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -317,8 +322,10 @@ function F.suite()
     end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
 end
 return F
-]=]},
- ['validate.lua']={current=[=[local addon_name, addon = ...
+]=],
+    },
+    ['validate.lua'] = {
+        current = [=[local addon_name, addon = ...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
@@ -1129,7 +1136,8 @@ function addon:validate(template, fix)
     end
     if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
 end
-]=],persistent=[=[local addon_name, addon = ...
+]=],
+        persistent = [=[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -1931,7 +1939,8 @@ function addon:validate(template, fix)
         end
     end
 end
-]=],dependency=[=[local addon_name, addon = ...
+]=],
+        dependency = [=[local addon_name, addon = ...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
@@ -2741,7 +2750,8 @@ function addon:validate(template, fix)
     end
     if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
 end
-]=],baseline=[=[local addon_name, addon = ...
+]=],
+        baseline = [=[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -3542,26 +3552,88 @@ function addon:validate(template, fix)
         end
     end
 end
-]=]},
+]=],
+    },
 }
-local persistent={['Data/validation.lua']=true,['Data/diff.lua']=true,['Data/catalog.lua']=true,['Core/rotation_scope.lua']=true,['Core/rotation_library.lua']=true,['Core/rotation_workspace.lua']=true,['Core/rotation_editor.lua']=true,['Core/imports.lua']=true,['validate.lua']=true}
-local dependency={['Core/rotation_references.lua']=true,['Core/conditions.lua']=true,['Core/functions.lua']=true,['Core/custom_authoring.lua']=true,['Core/function_data.lua']=true,['UI/condition_source_pane.lua']=true,['UI/settings_collections.lua']=true,['UI/settings_draft.lua']=true,['UI/settings_effects.lua']=true,['UI/settings_items.lua']=true,['Core/rotation_lifecycle.lua']=true,['UI/settings_profiles.lua']=true,['init.lua']=true,['validate.lua']=true,['tests/fixtures/addon.lua']=true}
-local activePaths={['Core/rotation_scope.lua']=true,['Core/rotation_library.lua']=true,['Core/rotation_lifecycle.lua']=true,['Core/rotation_editor.lua']=true,['Core/imports.lua']=true,['tests/fixtures/addon.lua']=true}
-return function(text,path,keep)
- text=outer(text,path,'six')
- if path=='init.lua' then text=dofile('tests/fixtures/restore_unit_states.lua')(text,path) end
- if path=='Core/rotation_scope.lua' or path=='Core/rotation_library.lua' then text=dofile('tests/fixtures/restore_runtime_context_projection.lua')(text,path) end
- if path=='Core/conditions.lua' then text=dofile('tests/fixtures/restore_condition_outcomes.lua')(text,path) end
- if activePaths[path] then text=dofile('tests/fixtures/restore_active_rotation_transition.lua')(text,path) end
- assert(keep==nil or keep=='persistent' or keep=='dependency','unknown revision integration stage')
- local row=overlaps[path]
- if row then
-  assert(text==row.current,'unrelated combined revision source delta: '..path)
-  return row[keep or 'baseline']
- end
- assert(persistent[path] or dependency[path],'unknown revision source path: '..tostring(path))
- if keep=='persistent' then assert(persistent[path]);return text end
- if keep=='dependency' then assert(dependency[path]);return text end
- if persistent[path] then return dofile('tests/fixtures/restore_rotation_content_revision.lua')(text,path) end
- return dofile('tests/fixtures/restore_dependency_revisions.lua')(text,path)
+
+local persistent = {
+    ['Data/validation.lua'] = true,
+    ['Data/diff.lua'] = true,
+    ['Data/catalog.lua'] = true,
+    ['Core/rotation_scope.lua'] = true,
+    ['Core/rotation_library.lua'] = true,
+    ['Core/rotation_workspace.lua'] = true,
+    ['Core/rotation_editor.lua'] = true,
+    ['Core/imports.lua'] = true,
+    ['validate.lua'] = true,
+}
+
+local dependency = {
+    ['Core/rotation_references.lua'] = true,
+    ['Core/conditions.lua'] = true,
+    ['Core/functions.lua'] = true,
+    ['Core/custom_authoring.lua'] = true,
+    ['Core/function_data.lua'] = true,
+    ['UI/condition_source_pane.lua'] = true,
+    ['UI/settings_collections.lua'] = true,
+    ['UI/settings_draft.lua'] = true,
+    ['UI/settings_effects.lua'] = true,
+    ['UI/settings_items.lua'] = true,
+    ['Core/rotation_lifecycle.lua'] = true,
+    ['UI/settings_profiles.lua'] = true,
+    ['init.lua'] = true,
+    ['validate.lua'] = true,
+    ['tests/fixtures/addon.lua'] = true,
+}
+
+local activePaths = {
+    ['Core/rotation_scope.lua'] = true,
+    ['Core/rotation_library.lua'] = true,
+    ['Core/rotation_lifecycle.lua'] = true,
+    ['Core/rotation_editor.lua'] = true,
+    ['Core/imports.lua'] = true,
+    ['tests/fixtures/addon.lua'] = true,
+}
+
+return function(text, path, keep)
+    text = outer(text, path, 'six')
+
+    if path == 'init.lua' then
+        text = dofile('tests/fixtures/restore_unit_states.lua')(text, path)
+    end
+    if path == 'Core/rotation_scope.lua' or path == 'Core/rotation_library.lua' then
+        text = dofile('tests/fixtures/restore_runtime_context_projection.lua')(text, path)
+    end
+    if path == 'Core/conditions.lua' then
+        text = dofile('tests/fixtures/restore_condition_outcomes.lua')(text, path)
+    end
+    if activePaths[path] then
+        text = dofile('tests/fixtures/restore_active_rotation_transition.lua')(text, path)
+    end
+
+    assert(keep == nil or keep == 'persistent' or keep == 'dependency', 'unknown revision integration stage')
+    local row = overlaps[path]
+
+    if row then
+        assert(text == row.current, 'unrelated combined revision source delta: ' .. path)
+        return row[keep or 'baseline']
+    end
+
+    assert(persistent[path] or dependency[path], 'unknown revision source path: ' .. tostring(path))
+
+    if keep == 'persistent' then
+        assert(persistent[path])
+        return text
+    end
+
+    if keep == 'dependency' then
+        assert(dependency[path])
+        return text
+    end
+
+    if persistent[path] then
+        return dofile('tests/fixtures/restore_rotation_content_revision.lua')(text, path)
+    end
+
+    return dofile('tests/fixtures/restore_dependency_revisions.lua')(text, path)
 end

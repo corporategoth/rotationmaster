@@ -8,7 +8,11 @@
 
 local _, addon = ...
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local MAX_ENTRIES, MAX_BYTES, MAX_DEPTH = 128, 1048576, 64
 
 -- ============================================================================
@@ -23,7 +27,11 @@ local function portable(value)
     -- data.
     local function visit(v, depth)
         nodes = nodes + 1
-        if nodes > 50000 or depth > MAX_DEPTH then return false end
+
+        if nodes > 50000 or depth > MAX_DEPTH then
+            return false
+        end
+
         local kind = type(v)
 
         if kind == 'string' then
@@ -54,12 +62,18 @@ end
 
 -- True for a sequence table with no holes and at most MAX_ENTRIES entries.
 local function dense(value)
-    if type(value) ~= 'table' or #value > MAX_ENTRIES then return false end
+    if type(value) ~= 'table' or #value > MAX_ENTRIES then
+        return false
+    end
+
     local n = 0
 
     for k in pairs(value) do
         n = n + 1
-        if type(k) ~= 'number' or k % 1 ~= 0 or k < 1 or k > #value then return false end
+
+        if type(k) ~= 'number' or k % 1 ~= 0 or k < 1 or k > #value then
+            return false
+        end
     end
 
     return n == #value
@@ -67,10 +81,14 @@ end
 
 -- True when `value` is a table whose keys are all in `allowed`.
 local function fields(value, allowed)
-    if type(value) ~= 'table' then return false end
+    if type(value) ~= 'table' then
+        return false
+    end
 
     for k in pairs(value) do
-        if not allowed[k] then return false end
+        if not allowed[k] then
+            return false
+        end
     end
 
     return true
@@ -106,7 +124,10 @@ end
 
 -- Deterministic string form of a value (sorted keys, length-prefixed parts) that the source hash is computed over.
 local function canonical(value)
-    if type(value) ~= 'table' then return type(value) .. ':' .. tostring(value) end
+    if type(value) ~= 'table' then
+        return type(value) .. ':' .. tostring(value)
+    end
+
     local ordered = {}
 
     for k in pairs(value) do
@@ -114,7 +135,10 @@ local function canonical(value)
     end
 
     table.sort(ordered, function(a, b)
-        if type(a) == type(b) then return a < b end
+        if type(a) == type(b) then
+            return a < b
+        end
+
         return type(a) < type(b)
     end)
 
@@ -137,7 +161,10 @@ end
 -- Returns an 8-digit hex hash of a function or condition source, or nil when it is not portable data. The same hash is
 -- stored in a bundle's requirements and compared on import.
 function addon:FunctionSourceHash(source)
-    if not portable(source) then return nil end
+    if not portable(source) then
+        return nil
+    end
+
     local hash = 5381
     local text = canonical(source)
 
@@ -206,7 +233,11 @@ local function manualReference(code)
                 i = i + #word
             else
                 local ch = code:sub(i, i)
-                if not ch:match('%s') then tokens[#tokens + 1] = ch end
+
+                if not ch:match('%s') then
+                    tokens[#tokens + 1] = ch
+                end
+
                 i = i + 1
             end
         end
@@ -215,7 +246,9 @@ local function manualReference(code)
     local receivers = { addon = true }
 
     for index, token in ipairs(tokens) do
-        if tokens[index + 1] == '=' and receivers[tokens[index + 2]] then receivers[token] = true end
+        if tokens[index + 1] == '=' and receivers[tokens[index + 2]] then
+            receivers[token] = true
+        end
 
         -- Computed access on the RM namespace cannot provide a stable helper
         -- identity. Diagnose it instead of guessing what the Lua will resolve.
@@ -233,7 +266,9 @@ end
 -- Validates one bundled source for its kind with the normal custom-source validators, and rejects code that reaches a
 -- helper by a hand-written binding call. Returns the validated source or nil and a reason.
 local function checkSource(self, kind, id, source)
-    if type(source) ~= 'table' then return nil, 'invalid-bundle-source' end
+    if type(source) ~= 'table' then
+        return nil, 'invalid-bundle-source'
+    end
 
     if kind == 'function' then
         if type(source.code) == 'string' and #source.code <= 65536 and manualReference(source.code) then
@@ -243,7 +278,9 @@ local function checkSource(self, kind, id, source)
         return self:ValidateCustomFunctionSource(builtin(id) and 'IMPORTED_BUILTIN' or id, source)
     end
 
-    if kind ~= 'condition' then return nil, 'invalid-bundle-kind' end
+    if kind ~= 'condition' then
+        return nil, 'invalid-bundle-kind'
+    end
 
     for callback in pairs(self.CustomConditionCallbacks or {}) do
         if type(source[callback]) == 'string' and manualReference(source[callback]) then
@@ -264,8 +301,13 @@ end
 -- form only by a declared namespace move or by the old display-name shape; code, arguments, bindings and docs stay
 -- hashed.
 local function requirementHashMatches(self, requirement, current, isBuiltin)
-    if self:FunctionSourceHash(current) == requirement.hash then return true end
-    if not isBuiltin then return false end
+    if self:FunctionSourceHash(current) == requirement.hash then
+        return true
+    end
+    if not isBuiltin then
+        return false
+    end
+
     -- A declared ownership move may change only its source namespace. Keep
     -- executable bodies, arguments, bindings and documentation in the hash.
     local builtinRecord = self.builtinFunctions and self.builtinFunctions[requirement.id]
@@ -273,14 +315,21 @@ local function requirementHashMatches(self, requirement, current, isBuiltin)
     for _, namespace in ipairs(builtinRecord and builtinRecord.compatibilityNamespaces or {}) do
         local previous = self:CopySettingsData(current)
         previous.namespace = namespace
-        if self:FunctionSourceHash(previous) == requirement.hash then return true end
+
+        if self:FunctionSourceHash(previous) == requirement.hash then
+            return true
+        end
     end
 
     -- Older packaged catalogs used the captured local alias as the display
     -- name and had no namespace metadata. Reconstruct only that exact shape;
     -- executable code, arguments, bindings and documentation remain hashed.
     local alias = requirement.id:match('^builtin:.*:([^:]+)$') or requirement.id:match('^builtin:([^:]+)$')
-    if not alias then return false end
+
+    if not alias then
+        return false
+    end
+
     local legacy = self:CopySettingsData(current)
     legacy.namespace = nil
     legacy.name = alias
@@ -295,11 +344,21 @@ end
 -- `bundle, nil` or `nil, reason`. Custom helpers travel inside the bundle unless `includeDependencies` is false; Built
 -- In helpers travel only as an id and source hash. Fails on cycles, missing helpers and size limits.
 function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
-    if kind ~= 'function' and kind ~= 'condition' or not identity(id) then return nil, 'invalid-bundle-root' end
+    if kind ~= 'function' and kind ~= 'condition' or not identity(id) then
+        return nil, 'invalid-bundle-root'
+    end
+
     source = source or (kind == 'function' and lookup(self, id) or (self.db.global.custom_conditions or {})[id])
-    if not portable(source) then return nil, 'bundle-data-limit' end
+
+    if not portable(source) then
+        return nil, 'bundle-data-limit'
+    end
+
     local checked, why = checkSource(self, kind, id, source)
-    if not checked then return nil, why end
+
+    if not checked then
+        return nil, why
+    end
 
     local bundle = {
         format = 'RM-FunctionBundle',
@@ -312,24 +371,47 @@ function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
     local origins = self.db.global.function_import_origins or {}
     bundle.root.provenance = self:CopySettingsData(origins[kind .. ':' .. id])
     local active, seen, count = {}, {}, 0
-    if kind == 'function' then active[id] = true end
+
+    if kind == 'function' then
+        active[id] = true
+    end
 
     -- Adds one helper and, for custom helpers, its own bindings to the bundle; fails on cycles, missing helpers and
     -- limits.
     local function visit(dependency, depth)
-        if depth > MAX_DEPTH then return nil, 'function-depth' end
-        if active[dependency] then return nil, 'function-cycle' end
-        if seen[dependency] then return true end
+        if depth > MAX_DEPTH then
+            return nil, 'function-depth'
+        end
+        if active[dependency] then
+            return nil, 'function-cycle'
+        end
+        if seen[dependency] then
+            return true
+        end
+
         count = count + 1
-        if count > MAX_ENTRIES then return nil, 'bundle-entry-limit' end
+
+        if count > MAX_ENTRIES then
+            return nil, 'bundle-entry-limit'
+        end
+
         local dependencySource, isBuiltin = lookup(self, dependency)
-        if not dependencySource then return nil, 'missing-function:' .. dependency end
-        if not portable(dependencySource) then return nil, 'bundle-data-limit' end
+
+        if not dependencySource then
+            return nil, 'missing-function:' .. dependency
+        end
+        if not portable(dependencySource) then
+            return nil, 'bundle-data-limit'
+        end
+
         active[dependency] = true
 
         if not isBuiltin then
             local valid, errorText = checkSource(self, 'function', dependency, dependencySource)
-            if not valid then return nil, errorText end
+
+            if not valid then
+                return nil, errorText
+            end
         end
 
         -- Built In closures own their internal dependencies; only their stable
@@ -337,7 +419,10 @@ function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
         if not isBuiltin then
             for _, alias in ipairs(keys(dependencySource.bindings)) do
                 local ok, errorText = visit(dependencySource.bindings[alias], depth + 1)
-                if not ok then return nil, errorText end
+
+                if not ok then
+                    return nil, errorText
+                end
             end
         end
 
@@ -365,10 +450,16 @@ function addon:BuildFunctionBundle(kind, id, source, includeDependencies)
 
     for _, alias in ipairs(keys(source.bindings)) do
         local ok, errorText = visit(source.bindings[alias], 1)
-        if not ok then return nil, errorText end
+
+        if not ok then
+            return nil, errorText
+        end
     end
 
-    if not portable(bundle) then return nil, 'bundle-data-limit' end
+    if not portable(bundle) then
+        return nil, 'bundle-data-limit'
+    end
+
     return bundle
 end
 
@@ -379,7 +470,9 @@ end
 -- Validates and normalizes a pasted value into a version-1 bundle copy or `nil, reason`: exact field sets, hash format,
 -- declared dependencies that match their recorded hashes, no cycles, no missing or unrelated entries.
 local function normalize(self, value)
-    if not portable(value) or type(value) ~= 'table' then return nil, 'bundle-data-limit' end
+    if not portable(value) or type(value) ~= 'table' then
+        return nil, 'bundle-data-limit'
+    end
 
     if value.format == 'RM-CustomCondition' and value.version == 1 then
         value = {
@@ -419,9 +512,16 @@ local function normalize(self, value)
 
     local root = value.root
     local checked, why = checkSource(self, root.kind, root.id, root.source)
-    if not checked then return nil, why end
+
+    if not checked then
+        return nil, why
+    end
+
     local included, required = {}, {}
-    if root.kind == 'function' then included[root.id] = root end
+
+    if root.kind == 'function' then
+        included[root.id] = root
+    end
 
     for _, record in ipairs(value.dependencies) do
         if
@@ -435,7 +535,11 @@ local function normalize(self, value)
         end
 
         local valid, errorText = checkSource(self, 'function', record.id, record.source)
-        if not valid then return nil, errorText end
+
+        if not valid then
+            return nil, errorText
+        end
+
         included[record.id] = record
     end
 
@@ -453,7 +557,6 @@ local function normalize(self, value)
         then
             return nil, 'invalid-bundle-requirement'
         end
-
         if included[record.id] and self:FunctionSourceHash(included[record.id].source) ~= record.hash then
             return nil, 'bundle-hash-mismatch'
         end
@@ -462,22 +565,37 @@ local function normalize(self, value)
     end
 
     local active, seen = {}, {}
-    if root.kind == 'function' then active[root.id] = true end
+
+    if root.kind == 'function' then
+        active[root.id] = true
+    end
 
     -- Confirms that a bound helper is either carried in the bundle or listed in its requirements, following carried
     -- helpers' own bindings and rejecting cycles.
     local function visit(id, depth)
-        if depth > MAX_DEPTH then return nil, 'function-depth' end
-        if active[id] then return nil, 'function-cycle' end
-        if seen[id] then return true end
-        if not included[id] and not required[id] then return nil, 'missing-bundle-requirement:' .. tostring(id) end
+        if depth > MAX_DEPTH then
+            return nil, 'function-depth'
+        end
+        if active[id] then
+            return nil, 'function-cycle'
+        end
+        if seen[id] then
+            return true
+        end
+        if not included[id] and not required[id] then
+            return nil, 'missing-bundle-requirement:' .. tostring(id)
+        end
+
         active[id] = true
         local record = included[id]
 
         if record then
             for _, dependency in pairs(record.source.bindings or {}) do
                 local ok, errorText = visit(dependency, depth + 1)
-                if not ok then return nil, errorText end
+
+                if not ok then
+                    return nil, errorText
+                end
             end
         end
 
@@ -488,11 +606,16 @@ local function normalize(self, value)
 
     for _, id in pairs(root.source.bindings or {}) do
         local ok, errorText = visit(id, 1)
-        if not ok then return nil, errorText end
+
+        if not ok then
+            return nil, errorText
+        end
     end
 
     for _, record in ipairs(value.dependencies) do
-        if not seen[record.id] then return nil, 'unrelated-bundle-dependency' end
+        if not seen[record.id] then
+            return nil, 'unrelated-bundle-dependency'
+        end
     end
 
     return self:CopySettingsData(value)
@@ -501,7 +624,11 @@ end
 -- Decodes pasted text with `codec` and normalizes it; returns the bundle or nil and a reason.
 function addon:ParseFunctionBundleImport(text, codec)
     local decoded, why = codec:Decode(text)
-    if not decoded then return nil, why end
+
+    if not decoded then
+        return nil, why
+    end
+
     return normalize(self, decoded.value)
 end
 
@@ -539,7 +666,9 @@ local function effects(self, id)
     local result = {}
 
     for key in pairs(affected) do
-        if key ~= id then result[#result + 1] = 'function:' .. key end
+        if key ~= id then
+            result[#result + 1] = 'function:' .. key
+        end
     end
 
     for key, source in pairs(conditions) do
@@ -563,9 +692,16 @@ end
 -- can detect changes. Returns the plan, or nil and a reason for malformed input.
 function addon:PlanFunctionBundleImport(value, choices)
     local bundle, why = normalize(self, value)
-    if not bundle then return nil, why end
+
+    if not bundle then
+        return nil, why
+    end
+
     choices = choices or {}
-    if type(choices) ~= 'table' or not portable(choices) then return nil, 'invalid-import-choices' end
+
+    if type(choices) ~= 'table' or not portable(choices) then
+        return nil, 'invalid-import-choices'
+    end
 
     for id, choice in pairs(choices) do
         if
@@ -621,7 +757,11 @@ function addon:PlanFunctionBundleImport(value, choices)
         end
 
         local targetKey = kind .. ':' .. target
-        if targets[targetKey] then return nil, 'duplicate-import-destination' end
+
+        if targets[targetKey] then
+            return nil, 'duplicate-import-destination'
+        end
+
         targets[targetKey] = true
         local existing
 
@@ -634,10 +774,15 @@ function addon:PlanFunctionBundleImport(value, choices)
         local protected = kind == 'function' and self.builtinFunctions and self.builtinFunctions[target]
             or kind == 'condition' and registry[target] and not existing
 
-        if protected then return nil, 'builtin-import-destination' end
-        local action = choice.action
-        if needsClone then action = 'conflict' end
+        if protected then
+            return nil, 'builtin-import-destination'
+        end
 
+        local action = choice.action
+
+        if needsClone then
+            action = 'conflict'
+        end
         if action == nil then
             action = existing and (self:SettingsDataEqual(existing, record.source) and 'reuse' or 'conflict')
                 or 'create'
@@ -652,7 +797,6 @@ function addon:PlanFunctionBundleImport(value, choices)
         then
             return nil, 'invalid-import-action'
         end
-
         if
             action == 'rename' and target == record.id
             or (action == 'rename' or action == 'create') and existing
@@ -661,7 +805,9 @@ function addon:PlanFunctionBundleImport(value, choices)
             return nil, 'invalid-import-action'
         end
 
-        if action == 'conflict' then problem(record.id, 'dependency-conflict') end
+        if action == 'conflict' then
+            problem(record.id, 'dependency-conflict')
+        end
 
         local entry = {
             kind = kind,
@@ -677,10 +823,16 @@ function addon:PlanFunctionBundleImport(value, choices)
             effects = kind == 'function' and effects(self, target) or {},
         }
 
-        if choice.name and kind == 'function' then entry.source.name = choice.name end
+        if choice.name and kind == 'function' then
+            entry.source.name = choice.name
+        end
+
         entry.destinationName = entry.source.name or target
         plan.rows[#plan.rows + 1] = entry
-        if kind == 'function' then plan.remap[record.id] = target end
+
+        if kind == 'function' then
+            plan.remap[record.id] = target
+        end
 
         baselines[targetKey] = {
             kind = kind,
@@ -694,14 +846,22 @@ function addon:PlanFunctionBundleImport(value, choices)
 
     for _, record in ipairs(bundle.dependencies) do
         local ok, errorText = row(record, 'function')
-        if not ok then return nil, errorText end
+
+        if not ok then
+            return nil, errorText
+        end
     end
 
     local ok, errorText = row(bundle.root, bundle.root.kind)
-    if not ok then return nil, errorText end
+
+    if not ok then
+        return nil, errorText
+    end
 
     for id in pairs(choices) do
-        if not chosenIDs[id] then return nil, 'unknown-import-choice' end
+        if not chosenIDs[id] then
+            return nil, 'unknown-import-choice'
+        end
     end
 
     local included = {}
@@ -729,7 +889,9 @@ function addon:PlanFunctionBundleImport(value, choices)
                 status = 'available'
             end
 
-            if status ~= 'available' then problem(requirement.id, status) end
+            if status ~= 'available' then
+                problem(requirement.id, status)
+            end
 
             baselines['requirement:' .. requirement.id] = {
                 kind = 'requirement',
@@ -757,7 +919,11 @@ function addon:PlanFunctionBundleImport(value, choices)
     end
 
     local staged, compileError = self:BuildFunctionRegistry(sources)
-    if not staged then return nil, compileError end
+
+    if not staged then
+        return nil, compileError
+    end
+
     -- Availability stops at disabled records; structural validation must still
     -- follow their declarations to reject cycles created by reuse/remapping.
     local graphSeen, graphCount = {}, 0
@@ -767,7 +933,11 @@ function addon:PlanFunctionBundleImport(value, choices)
         if not graphSeen[id] then
             graphSeen[id] = true
             graphCount = graphCount + 1
-            if graphCount > MAX_ENTRIES + 1 then return nil, 'bundle-entry-limit' end
+
+            if graphCount > MAX_ENTRIES + 1 then
+                return nil, 'bundle-entry-limit'
+            end
+
             local current, isBuiltin = lookup(self, id)
 
             baselines['graph:' .. id] = {
@@ -778,18 +948,36 @@ function addon:PlanFunctionBundleImport(value, choices)
             }
         end
 
-        if self.builtinFunctions and self.builtinFunctions[id] then return true end
-        if depth > MAX_DEPTH then return nil, 'function-depth' end
-        if active[id] then return nil, 'function-cycle' end
-        if seen[id] then return true end
+        if self.builtinFunctions and self.builtinFunctions[id] then
+            return true
+        end
+        if depth > MAX_DEPTH then
+            return nil, 'function-depth'
+        end
+        if active[id] then
+            return nil, 'function-cycle'
+        end
+        if seen[id] then
+            return true
+        end
+
         local record = staged[id]
-        if not record then return nil, 'missing-function' end
-        if record.problem then return nil, record.problem end
+
+        if not record then
+            return nil, 'missing-function'
+        end
+        if record.problem then
+            return nil, record.problem
+        end
+
         active[id] = true
 
         for _, dependency in pairs(record.bindings) do
             local valid, reason = structural(dependency, active, depth + 1, seen)
-            if not valid then return nil, reason end
+
+            if not valid then
+                return nil, reason
+            end
         end
 
         active[id] = nil
@@ -803,12 +991,18 @@ function addon:PlanFunctionBundleImport(value, choices)
 
         for _, id in pairs(references) do
             local valid, reason = structural(id, {}, 1, {})
-            if not valid then problem(entry.originalID, reason) end
+
+            if not valid then
+                problem(entry.originalID, reason)
+            end
         end
 
         if entry.action ~= 'reuse' and entry.action ~= 'conflict' then
             local valid, sourceError = checkSource(self, entry.kind, entry.destinationID, entry.source)
-            if not valid then return nil, sourceError end
+
+            if not valid then
+                return nil, sourceError
+            end
         end
 
         local available, reason
@@ -846,8 +1040,10 @@ function addon:ApplyFunctionBundleImport(plan)
     if not saved or saved.owner ~= self or not self:SettingsDataEqual(plan, saved.snapshot) then
         return nil, 'import-plan-changed'
     end
+    if not plan.valid then
+        return nil, 'import-plan-unresolved'
+    end
 
-    if not plan.valid then return nil, 'import-plan-unresolved' end
     local registry = self.conditionDefinitions or self.definitions or {}
 
     for _, baseline in pairs(saved.baselines) do
@@ -855,10 +1051,16 @@ function addon:ApplyFunctionBundleImport(plan)
 
         if baseline.kind == 'condition' then
             current = (self.db.global.custom_conditions or {})[baseline.id]
-            if registry[baseline.id] ~= baseline.definition then return nil, 'import-destination-changed' end
+
+            if registry[baseline.id] ~= baseline.definition then
+                return nil, 'import-destination-changed'
+            end
         elseif baseline.kind == 'requirement' then
             current, isBuiltin = lookup(self, baseline.id)
-            if isBuiltin ~= baseline.builtin then return nil, 'import-destination-changed' end
+
+            if isBuiltin ~= baseline.builtin then
+                return nil, 'import-destination-changed'
+            end
         else
             current = (self.db.global.custom_functions or {})[baseline.id]
 
@@ -867,7 +1069,9 @@ function addon:ApplyFunctionBundleImport(plan)
             end
         end
 
-        if not self:SettingsDataEqual(current, baseline.source) then return nil, 'import-destination-changed' end
+        if not self:SettingsDataEqual(current, baseline.source) then
+            return nil, 'import-destination-changed'
+        end
     end
 
     -- Replan from immutable input against the complete current graph so unrelated
@@ -883,7 +1087,11 @@ function addon:ApplyFunctionBundleImport(plan)
     end
 
     local fresh, why = self:PlanFunctionBundleImport(plan.bundle, choices)
-    if not fresh or not fresh.valid then return nil, why or 'import-graph-changed' end
+
+    if not fresh or not fresh.valid then
+        return nil, why or 'import-graph-changed'
+    end
+
     local sources = self:CopySettingsData(self.db.global.custom_functions or {})
 
     for _, entry in ipairs(fresh.rows) do
@@ -893,13 +1101,21 @@ function addon:ApplyFunctionBundleImport(plan)
     end
 
     local staged, errorText = self:BuildFunctionRegistry(sources)
-    if not staged then return nil, errorText end
+
+    if not staged then
+        return nil, errorText
+    end
+
     local conditions = {}
 
     for _, entry in ipairs(fresh.rows) do
         if entry.kind == 'condition' and entry.action ~= 'reuse' then
             local definition, reason = self:CompileCustomCondition(entry.destinationID, entry.source, false)
-            if not definition then return nil, reason end
+
+            if not definition then
+                return nil, reason
+            end
+
             conditions[#conditions + 1] = { entry = entry, definition = definition }
         end
     end
@@ -937,8 +1153,10 @@ function addon:ApplyFunctionBundleImport(plan)
 
             definition.functionSuspended = record.suspended
             definition.functionUnavailable = record.unavailable
-            if changed and invalidateDependencies then invalidateDependencies(addon, 'condition', id) end
 
+            if changed and invalidateDependencies then
+                invalidateDependencies(addon, 'condition', id)
+            end
             if resume and definition.on_register and not definition.disabled and not record.unavailable then
                 pcall(definition.on_register, id)
             end
@@ -946,7 +1164,10 @@ function addon:ApplyFunctionBundleImport(plan)
     end
 
     local prepared, prepareError = self:PrepareFunctionConsumerTransition(staged)
-    if not prepared then return nil, prepareError end
+
+    if not prepared then
+        return nil, prepareError
+    end
 
     -- A replaced condition's cleanup belongs to the former helper graph, even
     -- when both versions of that graph are available. Suppress duplicate cleanup
@@ -958,7 +1179,10 @@ function addon:ApplyFunctionBundleImport(plan)
             previous and not previous.disabled and not previous.functionUnavailable and not previous.functionSuspended
         then
             previous.functionSuspended = true
-            if invalidateDependencies then invalidateDependencies(addon, 'condition', id) end
+
+            if invalidateDependencies then
+                invalidateDependencies(addon, 'condition', id)
+            end
 
             if previous.on_unregister and not pcall(previous.on_unregister, id) then
                 restoreConsumers()
@@ -969,7 +1193,11 @@ function addon:ApplyFunctionBundleImport(plan)
 
     self.db.global.custom_functions = sources
     self.functionRegistry = staged
-    if invalidateDependencies then invalidateDependencies(addon, 'function', nil) end
+
+    if invalidateDependencies then
+        invalidateDependencies(addon, 'function', nil)
+    end
+
     -- Isolate saved tables too: a failing trusted hook may write to these maps.
     self.db.global.custom_conditions = self:CopySettingsData(oldConditions or {})
     self.db.global.function_import_origins = self:CopySettingsData(oldOrigins or {})
@@ -980,7 +1208,11 @@ function addon:ApplyFunctionBundleImport(plan)
         for _, record in ipairs(conditions) do
             local entry = record.entry
             local definition, reason = self:CompileCustomCondition(entry.destinationID, entry.source, false)
-            if not definition then error(type(reason) == 'table' and reason.reason or reason, 0) end
+
+            if not definition then
+                error(type(reason) == 'table' and reason.reason or reason, 0)
+            end
+
             self:RegisterCondition(entry.destinationID, definition)
         end
 
@@ -1000,7 +1232,10 @@ function addon:ApplyFunctionBundleImport(plan)
         -- still exist, then restore the old graph before resuming old consumers.
         for index = #resumedConsumers, 1, -1 do
             local resumed = resumedConsumers[index]
-            if resumed.definition.on_unregister then pcall(resumed.definition.on_unregister, resumed.id) end
+
+            if resumed.definition.on_unregister then
+                pcall(resumed.definition.on_unregister, resumed.id)
+            end
         end
 
         for _, record in ipairs(conditions) do
@@ -1018,7 +1253,10 @@ function addon:ApplyFunctionBundleImport(plan)
             end
 
             registry[key] = oldDefinitions[key] and oldDefinitions[key].definition
-            if invalidateDependencies then invalidateDependencies(addon, 'condition', key) end
+
+            if invalidateDependencies then
+                invalidateDependencies(addon, 'condition', key)
+            end
         end
 
         self.db.global.custom_functions = oldSources
@@ -1027,7 +1265,11 @@ function addon:ApplyFunctionBundleImport(plan)
         self.db.global.custom_conditions = oldConditions
         self.db.global.function_import_origins = oldOrigins
         self.conditionRegistryVersion = oldConditionVersion
-        if invalidateDependencies then invalidateDependencies(addon, 'all', nil) end
+
+        if invalidateDependencies then
+            invalidateDependencies(addon, 'all', nil)
+        end
+
         restoreConsumers()
         return nil, failureReason
     end
@@ -1054,7 +1296,11 @@ function addon:ApplyFunctionBundleImport(plan)
     self.db.global.custom_conditions = conditionSources
     self.db.global.function_import_origins = origins
     self.functionRegistryVersion = (oldVersion or 0) + 1
-    if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
+
+    if self.RefreshConditionConsumers then
+        self:RefreshConditionConsumers()
+    end
+
     pending[plan] = nil
     return true
 end

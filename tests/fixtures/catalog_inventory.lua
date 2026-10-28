@@ -1,6 +1,6 @@
 -- Reviewed registration inventory, not a statement of usable APIs on each
 -- client. Change deliberately when adding/removing a condition or a guard.
-local common=[[
+local common = [[
 PRIMARY_TALENT_TREE TALENT_TREE_POINTS SPECIALIZATION WEAPON_TYPE
 ACTION_CONTEXT SET_PIECES ASSISTED_SUGGESTION ASSISTED_ROTATION_SPELL ASSISTED_AVAILABLE RUNE_ENGRAVED
 ANYSPELL_AVAIL ANYSPELL_CHARGES ANYSPELL_COOLDOWN ANYSPELL_RANGE ANYSPELL_REMAIN
@@ -20,15 +20,20 @@ TIME_IN_COMBAT TT_HEALTH TT_HEALTHPCT ZONE ZONEPVP
 PLAYER_STATE ENCOUNTER KEYSTONE_LEVEL GROUP_COUNT HERO_TALENT SPELL_GLOW
 PET_HAPPINESS STAGGER ECLIPSE
 ]]
-local totems='TOTEM TOTEM_REMAIN TOTEM_SPELL TOTEM_SPELL_REMAIN'
-local weapon='WEAPON WEAPON_REMAIN WEAPON_STACKS WEAPON_IMBUE'
-return {common=common,branches={
-    {{1,12,'SHAMAN'},'GLYPH ROLE '..totems..' '..weapon},
-    {{2,0,'SHAMAN'},totems..' '..weapon},
-    {{5,1,'SHAMAN'},totems..' '..weapon},
-    {{5,2,'SHAMAN'},'GLYPH ROLE '..totems..' '..weapon},
-    {{5,2,'DEATHKNIGHT'},'GLYPH ROLE RUNE RUNE_COOLDOWN '..weapon},
-    {{19,4,'SHAMAN'},'GLYPH ROLE '..totems..' '..weapon},
-    {{18,12,'SHAMAN'},'GLYPH ROLE '..totems..' '..weapon},
-    {{2,0,'SHAMAN'},totems..' '..weapon..' RUNNER RESIST IMMUNE',true},
-}}
+
+local totems = 'TOTEM TOTEM_REMAIN TOTEM_SPELL TOTEM_SPELL_REMAIN'
+local weapon = 'WEAPON WEAPON_REMAIN WEAPON_STACKS WEAPON_IMBUE'
+
+return {
+    common = common,
+    branches = {
+        { { 1, 12, 'SHAMAN' }, 'GLYPH ROLE ' .. totems .. ' ' .. weapon },
+        { { 2, 0, 'SHAMAN' }, totems .. ' ' .. weapon },
+        { { 5, 1, 'SHAMAN' }, totems .. ' ' .. weapon },
+        { { 5, 2, 'SHAMAN' }, 'GLYPH ROLE ' .. totems .. ' ' .. weapon },
+        { { 5, 2, 'DEATHKNIGHT' }, 'GLYPH ROLE RUNE RUNE_COOLDOWN ' .. weapon },
+        { { 19, 4, 'SHAMAN' }, 'GLYPH ROLE ' .. totems .. ' ' .. weapon },
+        { { 18, 12, 'SHAMAN' }, 'GLYPH ROLE ' .. totems .. ' ' .. weapon },
+        { { 2, 0, 'SHAMAN' }, totems .. ' ' .. weapon .. ' RUNNER RESIST IMMUNE', true },
+    },
+}

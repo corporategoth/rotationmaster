@@ -13,7 +13,10 @@ function addon:RegisterBuiltinSourceModule(path, getter)
     self.builtinSourceModules = self.builtinSourceModules or {}
     self.builtinSourceModules[path] = getter
     local module = self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.modules[path]
-    if not module then return end
+
+    if not module then
+        return
+    end
 
     for alias, entry in pairs(module.bindings) do
         local args = {}
@@ -72,11 +75,17 @@ end
 function addon:GetBuiltinConditionSource(id)
     local record = self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.conditions[id]
     local definition = (self.conditionDefinitions or self.definitions or {})[id]
-    if not record or not definition then return nil, 'builtin-source-unavailable' end
+
+    if not record or not definition then
+        return nil, 'builtin-source-unavailable'
+    end
 
     if record.variants then
         record = record.variants[definition.builtinSourceVariant]
-        if not record then return nil, 'builtin-source-variant-unavailable' end
+
+        if not record then
+            return nil, 'builtin-source-variant-unavailable'
+        end
     elseif definition.builtinSourceVariant ~= nil then
         return nil, 'builtin-source-variant-unavailable'
     end
@@ -89,7 +98,9 @@ function addon:GetBuiltinConditionSource(id)
         parameters = {},
     }
 
-    if definition.requiredFields then source.requiredFields = self:CopySettingsData(definition.requiredFields) end
+    if definition.requiredFields then
+        source.requiredFields = self:CopySettingsData(definition.requiredFields)
+    end
 
     for name in pairs(self.CustomConditionCallbacks) do
         local callback = record.callbacks[name]
@@ -151,7 +162,9 @@ function addon:FormatLuaSourceDisplay(source)
 
     if prefix and #prefix > 0 then
         for i, line in ipairs(lines) do
-            if line:sub(1, #prefix) == prefix then lines[i] = line:sub(#prefix + 1) end
+            if line:sub(1, #prefix) == prefix then
+                lines[i] = line:sub(#prefix + 1)
+            end
         end
     end
 

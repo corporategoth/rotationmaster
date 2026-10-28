@@ -246,7 +246,10 @@ end
 
 -- Help note for the exact-rank option of aura conditions; adds nothing on clients without spell ranks.
 function addon.layout_condition_aurarank_help(frame)
-    if not addon:ClientHasSpellRanks() then return end
+    if not addon:ClientHasSpellRanks() then
+        return
+    end
+
     frame:AddChild(Gap())
 
     frame:AddChild(CreateText(

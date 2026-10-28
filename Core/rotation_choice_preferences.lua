@@ -51,10 +51,14 @@ end
 
 -- True when `v` is a plain table whose keys are all in the `fields` set.
 local function closed(v, fields)
-    if not plain(v) then return false end
+    if not plain(v) then
+        return false
+    end
 
     for k in step, v do
-        if not fields[k] then return false end
+        if not fields[k] then
+            return false
+        end
     end
 
     return true
@@ -62,16 +66,26 @@ end
 
 -- Structural equality for plain data with raw reads; false for any table with a metatable.
 local function same(a, b)
-    if kind(a) ~= kind(b) then return false end
-    if kind(a) ~= 'table' then return a == b end
-    if not plain(a) or not plain(b) then return false end
+    if kind(a) ~= kind(b) then
+        return false
+    end
+    if kind(a) ~= 'table' then
+        return a == b
+    end
+    if not plain(a) or not plain(b) then
+        return false
+    end
 
     for k, v in step, a do
-        if not same(v, get(b, k)) then return false end
+        if not same(v, get(b, k)) then
+            return false
+        end
     end
 
     for k in step, b do
-        if get(a, k) == nil then return false end
+        if get(a, k) == nil then
+            return false
+        end
     end
 
     return true
@@ -79,7 +93,10 @@ end
 
 -- Deep copy of plain, already validated data.
 local function copy(v)
-    if kind(v) ~= 'table' then return v end
+    if kind(v) ~= 'table' then
+        return v
+    end
+
     local r = {}
 
     for k, x in step, v do
@@ -92,9 +109,12 @@ end
 -- True when `v` is a valid rotation reference for `row`'s class, specialization and character: { kind = 'builtin', id }
 -- or { kind = 'custom', address } where the address scope is class or character and its owner matches the row.
 local function reference(v, row)
-    if not plain(v) then return false end
-    if v.kind == 'builtin' then return closed(v, { kind = true, id = true }) and text(v.id, 128) end
-
+    if not plain(v) then
+        return false
+    end
+    if v.kind == 'builtin' then
+        return closed(v, { kind = true, id = true }) and text(v.id, 128)
+    end
     if
         v.kind ~= 'custom'
         or not closed(v, { kind = true, address = true })
@@ -151,7 +171,6 @@ local function validate(value)
         then
             return false
         end
-
         if
             not families[row.family]
             or not contexts[row.actionContext]
@@ -170,16 +189,24 @@ local function validate(value)
 
         seen[row] = true
         seen[row.reference] = true
-        if row.reference.address then seen[row.reference.address] = true end
+
+        if row.reference.address then
+            seen[row.reference.address] = true
+        end
 
         for j = 1, k - 1 do
             local prior = get(value.entries, j)
-            if prior and domain(row, prior) then return false end
+
+            if prior and domain(row, prior) then
+                return false
+            end
         end
     end
 
     for i = 1, n do
-        if get(value.entries, i) == nil then return false end
+        if get(value.entries, i) == nil then
+            return false
+        end
     end
 
     return true
@@ -213,9 +240,17 @@ end
 -- invalid. A ticket is only good while nothing it captured has changed (see current).
 local function capture()
     local p = profile()
-    if not plain(p) then return nil end
+
+    if not plain(p) then
+        return nil
+    end
+
     local r = root(p)
-    if r ~= nil and not validate(r) then return nil end
+
+    if r ~= nil and not validate(r) then
+        return nil
+    end
+
     return { profile = p, root = r, snapshot = r and copy(r), generation = generation }
 end
 
@@ -231,7 +266,10 @@ end
 -- Writes `value` into the profile if the ticket is still current, dropping the table when it has no rows, and marks the
 -- cache dirty. Returns true when written.
 local function publish(ticket, value)
-    if not current(ticket) then return false end
+    if not current(ticket) then
+        return false
+    end
+
     set(ticket.profile, 'rotationChoicePreferences', #value.entries > 0 and value or nil)
     generation = {}
     dirty = true
@@ -248,7 +286,10 @@ end
 -- True when the cached observation no longer matches the profile, preference table, specialization, character or
 -- GetRotationContext method, or has been marked dirty.
 local function needsRefresh(owner)
-    if owner ~= addon then return false end
+    if owner ~= addon then
+        return false
+    end
+
     local p = profile()
 
     return dirty
@@ -267,13 +308,21 @@ local function observe(owner, needDomain)
     local p = profile()
     local number = get(owner, 'currentSpec')
     local r = root(p)
-    if not needsRefresh(owner) then return cache, false end
+
+    if not needsRefresh(owner) then
+        return cache, false
+    end
+
     -- Only cold profile/spec/context/publication invalidations reach observation.
     local character, method = characterKey(), get(owner, 'GetRotationContext')
     dirty = false
     cache = { profile = p, root = r, spec = number, character = character, contextMethod = method }
     local ticket = capture()
-    if not ticket or not spec(number) or r == nil and not needDomain then return nil, true end
+
+    if not ticket or not spec(number) or r == nil and not needDomain then
+        return nil, true
+    end
+
     local c = owner:GetRotationContext(number)
 
     if
@@ -320,7 +369,10 @@ end
 
 -- Marks the cached context stale; call after anything that changes family, class, specialization or action context.
 function addon:InvalidateRotationChoiceContext()
-    if self ~= addon then return false end
+    if self ~= addon then
+        return false
+    end
+
     dirty = true
     return true
 end
@@ -333,18 +385,33 @@ end
 -- `referenceValue`, or removing it when that is nil. Returns a ticket, or nil when the context, the reference or the
 -- 256-row limit forbid it. Nothing is written until finishSelection.
 local function prepareSelection(owner, referenceValue)
-    if owner ~= addon then return nil end
+    if owner ~= addon then
+        return nil
+    end
+
     dirty = true
     local state = observe(owner, true)
-    if not state then return nil end
-    if referenceValue ~= nil and not reference(referenceValue, state.domain) then return nil end
+
+    if not state then
+        return nil
+    end
+    if referenceValue ~= nil and not reference(referenceValue, state.domain) then
+        return nil
+    end
+
     local ticket = capture()
-    if not ticket then return nil end
+
+    if not ticket then
+        return nil
+    end
+
     local value = ticket.snapshot or { version = 1, entries = {} }
     local entries = {}
 
     for i = 1, #value.entries do
-        if not domain(value.entries[i], state.domain) then entries[#entries + 1] = value.entries[i] end
+        if not domain(value.entries[i], state.domain) then
+            entries[#entries + 1] = value.entries[i]
+        end
     end
 
     if referenceValue then
@@ -353,7 +420,10 @@ local function prepareSelection(owner, referenceValue)
         entries[#entries + 1] = row
     end
 
-    if #entries > 256 then return nil end
+    if #entries > 256 then
+        return nil
+    end
+
     ticket.value = { version = 1, entries = entries }
     return ticket
 end
@@ -365,7 +435,10 @@ end
 
 -- Returns a copy of the stored reference for the current context (or nil) and whether the state was recomputed.
 local function readDesired(owner)
-    if owner ~= addon then return nil, false end
+    if owner ~= addon then
+        return nil, false
+    end
+
     local state, changed = observe(owner)
     return changed and state and state.reference and copy(state.reference) or nil, changed
 end
@@ -377,7 +450,10 @@ local selectionBound, publicationBound = false, false
 -- One-time handoff to main.lua: returns prepareSelection, finishSelection, readDesired and needsRefresh, then refuses
 -- any later caller.
 function addon:ConsumeRotationChoiceSelection()
-    if self ~= addon or selectionBound then return nil end
+    if self ~= addon or selectionBound then
+        return nil
+    end
+
     selectionBound = true
     return prepareSelection, finishSelection, readDesired, needsRefresh
 end
@@ -386,9 +462,16 @@ end
 -- `oldReference` now points at `nextReference` (or is removed when that is nil or invalid for the row), and a second
 -- table with those rows removed for use if the target disappears. Returns a ticket, or nil when no row is affected.
 local function preparePublication(p, oldReference, nextReference)
-    if nextReference and same(oldReference, nextReference) then return nil end
+    if nextReference and same(oldReference, nextReference) then
+        return nil
+    end
+
     local ticket = capture()
-    if not ticket or not equal(p, ticket.profile) or not ticket.snapshot then return nil end
+
+    if not ticket or not equal(p, ticket.profile) or not ticket.snapshot then
+        return nil
+    end
+
     local value = { version = 1, entries = {} }
     local removed = { version = 1, entries = {} }
     local changed = false
@@ -409,7 +492,10 @@ local function preparePublication(p, oldReference, nextReference)
         end
     end
 
-    if not changed then return nil end
+    if not changed then
+        return nil
+    end
+
     ticket.value = value
     ticket.removed = removed
     ticket.target = nextReference and copy(nextReference)
@@ -426,7 +512,11 @@ end
 -- True when the custom rotation the ticket points at still has a body in the store (a Built In target always counts).
 local function targetPresent(ticket)
     local r = ticket.target
-    if not r or r.kind ~= 'custom' then return true end
+
+    if not r or r.kind ~= 'custom' then
+        return true
+    end
+
     local a = r.address
     local state = child(ticket.profile, 'rotationStore')
     local records
@@ -462,7 +552,10 @@ end
 -- One-time handoff to Core/rotation_scope.lua: returns preparePublication and finishPublication, then refuses any later
 -- caller.
 function addon:ConsumeRotationChoicePublication()
-    if self ~= addon or publicationBound then return nil end
+    if self ~= addon or publicationBound then
+        return nil
+    end
+
     publicationBound = true
     return preparePublication, finishPublication
 end

@@ -28,16 +28,31 @@ function platform:IsFocusUnitSupported()
 
         if ok and type(valid) == 'boolean' then
             asked = true
-            if valid then return true end
+
+            if valid then
+                return true
+            end
         end
     end
 
-    if type(env.FocusUnit) == 'function' or type(env.FocusFrame) == 'table' then return true end
+    if type(env.FocusUnit) == 'function' or type(env.FocusFrame) == 'table' then
+        return true
+    end
+
     -- No sign of a focus system. A client that could answer the event question
     -- and said no has none; one that could not is judged by its family.
-    if asked then return false end
+    if asked then
+        return false
+    end
+
     local family = type(self.GetClientFamily) == 'function' and self:GetClientFamily()
-    if family == 'era' then return false end
-    if family == 'retail' or family == 'forever' or family == 'tbc' or family == 'progression' then return true end
+
+    if family == 'era' then
+        return false
+    end
+    if family == 'retail' or family == 'forever' or family == 'tbc' or family == 'progression' then
+        return true
+    end
+
     return nil
 end

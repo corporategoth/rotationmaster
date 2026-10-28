@@ -1,19 +1,319 @@
-local outer=dofile('tests/fixtures/restore_final_composition.lua')
+local outer = dofile('tests/fixtures/restore_final_composition.lua')
+
 -- Exact additive unit-state declarations before prior whole-source proofs.
-local records={["Core/profile_data.lua"]={["bytes"]=13697,["changes"]={{["at"]=19,["current"]="local scalar={unitStateSwitchSeeded='boolean',rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',preview_masque='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}\010",["previous"]="local scalar={rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',preview_masque='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}\010"}},["hash"]="29e70192",["marker"]="unitStateSwitchSeeded=",["oldBytes"]=13665,["oldHash"]="1fe1b49e"},["Locales/enUS.lua"]={["bytes"]=240270,["changes"]={{["at"]=180639,["current"]="-- Unit death and friendliness conditions.\010L[\"Is Dead or Ghost\"] = true\010L[\"Is Friendly\"] = true\010L[\"{unit} {{!is dead or a ghost|is alive}}\"] = true\010L[\"{unit} {{!is friendly to you|is not friendly to you}}\"] = true\010L[\"Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit.\"] = true\010L[\"Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable.\"] = true\010",["previous"]=""},{["at"]=182020,["current"]="L[\"Availability or query-validation reason when no current state can be read.\"] = true\010",["previous"]=""},{["at"]=195656,["current"]="L[\"Exact nonempty unit token to observe.\"] = true\010",["previous"]=""},{["at"]=196798,["current"]="L[\"Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).\"] = true\010",["previous"]=""},{["at"]=205824,["current"]="L[\"Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.\"] = true\010",["previous"]=""},{["at"]=227214,["current"]="L[\"Readable current state, or nil when unavailable.\"] = true\010",["previous"]=""}},["hash"]="99a1d382",["marker"]="-- Unit death and friendliness conditions.",["oldBytes"]=239063,["oldHash"]="9a65b09c"},["RotationMaster.toc"]={["bytes"]=8118,["changes"]={{["at"]=1402,["current"]="Platform/unit_states.lua\010",["previous"]=""},{["at"]=4081,["current"]="Core/unit_state_conditions.lua\010",["previous"]=""},{["at"]=6839,["current"]="Conditions/unit_states.lua\010",["previous"]=""}},["hash"]="3fe44311",["marker"]="Platform/unit_states.lua",["oldBytes"]=8035,["oldHash"]="ac9c3e2f"},["init.lua"]={["bytes"]=22988,["changes"]={{["at"]=21905,["current"]="    self:InstallUnitStateConditions(self.db)\010",["previous"]=""}},["hash"]="689aa24e",["marker"]="self:InstallUnitStateConditions(self.db)",["oldBytes"]=22943,["oldHash"]="9d8c2f5f"}}
-local deltas={{["after"]={["callbacks"]={["evaluate"]={["bindings"]={["Functions.cache.getCached"]="builtin:utils.lua:getCached",["Functions.values.isin"]="builtin:utils.lua:isin"},["code"]="\010        return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'dead')\010    ",["line"]=19,["parameters"]={"value","cache"}},["help"]={["bindings"]={},["code"]="\010        addon.layout_condition_unitwidget_help(frame)\010        frame:AddChild(addon.help_funcs.CreateText(L['Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit.']))\010    ",["line"]=26,["parameters"]={"frame"}},["print"]={["bindings"]={},["code"]="\010        return addon.Functions.presentation.phrase(L['{unit} {{!is dead or a ghost|is alive}}'],{unit=addon.units[value.unit] or L['<unit>']})\010    ",["line"]=22,["parameters"]={"_","value"}},["valid"]={["bindings"]={["Functions.cache.getCached"]="builtin:utils.lua:getCached",["Functions.values.isin"]="builtin:utils.lua:isin"},["code"]=" return value.unit~=nil and Functions.values.isin(addon.units,value.unit) ",["line"]=9,["parameters"]={"_","value"}},["widget"]={["bindings"]={},["code"]="\010    local top=parent:GetUserData('top')\010    parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()\010        top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec))\010    end))\010",["line"]=10,["parameters"]={"parent","spec","value"}}},["module"]="Conditions/unit_states.lua"},["beforePresent"]=false,["path"]={"conditions","DEAD"}},{["after"]={["callbacks"]={["evaluate"]={["bindings"]={["Functions.cache.getCached"]="builtin:utils.lua:getCached",["Functions.values.isin"]="builtin:utils.lua:isin"},["code"]="\010        return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'friendly')\010    ",["line"]=34,["parameters"]={"value","cache"}},["help"]={["bindings"]={},["code"]="\010        addon.layout_condition_unitwidget_help(frame)\010        frame:AddChild(addon.help_funcs.CreateText(L['Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable.']))\010    ",["line"]=41,["parameters"]={"frame"}},["print"]={["bindings"]={},["code"]="\010        return addon.Functions.presentation.phrase(L['{unit} {{!is friendly to you|is not friendly to you}}'],{unit=addon.units[value.unit] or L['<unit>']})\010    ",["line"]=37,["parameters"]={"_","value"}},["valid"]={["bindings"]={["Functions.cache.getCached"]="builtin:utils.lua:getCached",["Functions.values.isin"]="builtin:utils.lua:isin"},["code"]=" return value.unit~=nil and Functions.values.isin(addon.units,value.unit) ",["line"]=9,["parameters"]={"_","value"}},["widget"]={["bindings"]={},["code"]="\010    local top=parent:GetUserData('top')\010    parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()\010        top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec))\010    end))\010",["line"]=10,["parameters"]={"parent","spec","value"}}},["module"]="Conditions/unit_states.lua"},["beforePresent"]=false,["path"]={"conditions","FRIENDLY"}},{["after"]={["bindings"]={},["hash"]="e5dc7824a651ddc557f81ce8a0c04995f73edbb7a13b63ef0dd86e328ffe25df"},["beforePresent"]=false,["path"]={"modules","Conditions/unit_states.lua"}},{["after"]={["bindings"]={["Platform_GetUnitStateObservation"]={["args"]={{["description"]="Rotation Master platform adapter (implicit with colon calls).",["name"]="self",["type"]="RMPlatform"},{["description"]="Exact nonempty unit token to observe.",["name"]="unit",["type"]="string"},{["description"]="Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).",["name"]="kind",["type"]="string"}},["bindings"]={},["callName"]="addon.Platform:GetUnitStateObservation",["code"]="\010    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end\010    if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end\010    if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end\010    if kind~='dead' and kind~='friendly' then return nil,'invalid-unit-state-query' end\010    local existsAPI=UnitExists\010    if type(existsAPI)~='function' then return nil,'missing-api' end\010    local existsOK,exists=pcall(existsAPI,unit)\010    if not existsOK then return nil,'api-error' end\010    if not self:CanReadValue(exists) then return nil,'restricted-value' end\010    if exists==nil or exists==false then return nil,'unit-data-unavailable' end\010    if type(exists)~='boolean' then return nil,'invalid-api-result' end\010    local api\010    if kind=='dead' then api=UnitIsDeadOrGhost else api=UnitIsFriend end\010    if type(api)~='function' then return nil,'missing-api' end\010    local ok,result\010    if kind=='friendly' then ok,result=pcall(api,'player',unit)\010    else ok,result=pcall(api,unit) end\010    if not ok then return nil,'api-error' end\010    if not self:CanReadValue(result) then return nil,'restricted-value' end\010    if result==nil then return nil,'unit-state-unavailable' end\010    if type(result)~='boolean' then return nil,'invalid-api-result' end\010    return result\010",["description"]="Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.",["kind"]="function",["line"]=6,["parameters"]={"self","unit","kind"},["returns"]={{["description"]="Readable current state, or nil when unavailable.",["type"]="boolean | nil"},{["description"]="Availability or query-validation reason when no current state can be read.",["type"]="string | nil"}}}},["hash"]="4249ad6224ea49d6678d2284fbb4c13c611cd56c9ae689b4df19ca5ccba30b1a"},["beforePresent"]=false,["path"]={"modules","Platform/unit_states.lua"}}}
-local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-local function same(a,b)if type(a)~=type(b)then return false end;if type(a)~='table'then return a==b end;for k,v in pairs(a)do if not same(v,b[k])then return false end end;for k in pairs(b)do if a[k]==nil then return false end end;return true end
-local function copy(v)if type(v)~='table'then return v end;local r={};for k,x in pairs(v)do r[k]=copy(x)end;return r end
-return function(value,path,mode)
- value=outer(value,path,'unit-states',mode)
- if mode=='catalog'then
-  if value.conditions.DEAD==nil and value.conditions.FRIENDLY==nil then return value end
-  for _,d in ipairs(deltas)do local parent=value;for i=1,#d.path-1 do parent=assert(parent[d.path[i]])end;local key=d.path[#d.path];assert(same(parent[key],d.after),'unrelated unit-state catalog field');if d.beforePresent then parent[key]=copy(d.before)else parent[key]=nil end end
-  return value
- end
- local row=records[path];if not row or not value:find(row.marker,1,true)then return value end
- assert(#value==row.bytes and hash(value)==row.hash,'unrelated complete unit-state source: '..path)
- for i=#row.changes,1,-1 do local c=row.changes[i];assert(value:sub(c.at,c.at+#c.current-1)==c.current);value=value:sub(1,c.at-1)..c.previous..value:sub(c.at+#c.current)end
- assert(#value==row.oldBytes and hash(value)==row.oldHash,'unit-state predecessor mismatch: '..path);return value
+local records = {
+    ["Core/profile_data.lua"] = {
+        ["bytes"] = 13697,
+        ["changes"] = {
+            {
+                ["at"] = 19,
+                ["current"] = "local scalar={unitStateSwitchSeeded='boolean',rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',preview_masque='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}\010",
+                ["previous"] = "local scalar={rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',preview_masque='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}\010",
+            },
+        },
+        ["hash"] = "29e70192",
+        ["marker"] = "unitStateSwitchSeeded=",
+        ["oldBytes"] = 13665,
+        ["oldHash"] = "1fe1b49e",
+    },
+    ["Locales/enUS.lua"] = {
+        ["bytes"] = 240270,
+        ["changes"] = {
+            {
+                ["at"] = 180639,
+                ["current"] = "-- Unit death and friendliness conditions.\010L[\"Is Dead or Ghost\"] = true\010L[\"Is Friendly\"] = true\010L[\"{unit} {{!is dead or a ghost|is alive}}\"] = true\010L[\"{unit} {{!is friendly to you|is not friendly to you}}\"] = true\010L[\"Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit.\"] = true\010L[\"Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable.\"] = true\010",
+                ["previous"] = "",
+            },
+            {
+                ["at"] = 182020,
+                ["current"] = "L[\"Availability or query-validation reason when no current state can be read.\"] = true\010",
+                ["previous"] = "",
+            },
+            {
+                ["at"] = 195656,
+                ["current"] = "L[\"Exact nonempty unit token to observe.\"] = true\010",
+                ["previous"] = "",
+            },
+            {
+                ["at"] = 196798,
+                ["current"] = "L[\"Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).\"] = true\010",
+                ["previous"] = "",
+            },
+            {
+                ["at"] = 205824,
+                ["current"] = "L[\"Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.\"] = true\010",
+                ["previous"] = "",
+            },
+            {
+                ["at"] = 227214,
+                ["current"] = "L[\"Readable current state, or nil when unavailable.\"] = true\010",
+                ["previous"] = "",
+            },
+        },
+        ["hash"] = "99a1d382",
+        ["marker"] = "-- Unit death and friendliness conditions.",
+        ["oldBytes"] = 239063,
+        ["oldHash"] = "9a65b09c",
+    },
+    ["RotationMaster.toc"] = {
+        ["bytes"] = 8118,
+        ["changes"] = {
+            { ["at"] = 1402, ["current"] = "Platform/unit_states.lua\010", ["previous"] = "" },
+            { ["at"] = 4081, ["current"] = "Core/unit_state_conditions.lua\010", ["previous"] = "" },
+            { ["at"] = 6839, ["current"] = "Conditions/unit_states.lua\010", ["previous"] = "" },
+        },
+        ["hash"] = "3fe44311",
+        ["marker"] = "Platform/unit_states.lua",
+        ["oldBytes"] = 8035,
+        ["oldHash"] = "ac9c3e2f",
+    },
+    ["init.lua"] = {
+        ["bytes"] = 22988,
+        ["changes"] = {
+            { ["at"] = 21905, ["current"] = "    self:InstallUnitStateConditions(self.db)\010", ["previous"] = "" },
+        },
+        ["hash"] = "689aa24e",
+        ["marker"] = "self:InstallUnitStateConditions(self.db)",
+        ["oldBytes"] = 22943,
+        ["oldHash"] = "9d8c2f5f",
+    },
+}
+
+local deltas = {
+    {
+        ["after"] = {
+            ["callbacks"] = {
+                ["evaluate"] = {
+                    ["bindings"] = {
+                        ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+                        ["Functions.values.isin"] = "builtin:utils.lua:isin",
+                    },
+                    ["code"] = "\010        return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'dead')\010    ",
+                    ["line"] = 19,
+                    ["parameters"] = { "value", "cache" },
+                },
+                ["help"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010        addon.layout_condition_unitwidget_help(frame)\010        frame:AddChild(addon.help_funcs.CreateText(L['Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit.']))\010    ",
+                    ["line"] = 26,
+                    ["parameters"] = { "frame" },
+                },
+                ["print"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010        return addon.Functions.presentation.phrase(L['{unit} {{!is dead or a ghost|is alive}}'],{unit=addon.units[value.unit] or L['<unit>']})\010    ",
+                    ["line"] = 22,
+                    ["parameters"] = { "_", "value" },
+                },
+                ["valid"] = {
+                    ["bindings"] = {
+                        ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+                        ["Functions.values.isin"] = "builtin:utils.lua:isin",
+                    },
+                    ["code"] = " return value.unit~=nil and Functions.values.isin(addon.units,value.unit) ",
+                    ["line"] = 9,
+                    ["parameters"] = { "_", "value" },
+                },
+                ["widget"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010    local top=parent:GetUserData('top')\010    parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()\010        top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec))\010    end))\010",
+                    ["line"] = 10,
+                    ["parameters"] = { "parent", "spec", "value" },
+                },
+            },
+            ["module"] = "Conditions/unit_states.lua",
+        },
+        ["beforePresent"] = false,
+        ["path"] = { "conditions", "DEAD" },
+    },
+    {
+        ["after"] = {
+            ["callbacks"] = {
+                ["evaluate"] = {
+                    ["bindings"] = {
+                        ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+                        ["Functions.values.isin"] = "builtin:utils.lua:isin",
+                    },
+                    ["code"] = "\010        return Functions.cache.getCached(cache,addon.Platform.GetUnitStateObservation,addon.Platform,value.unit,'friendly')\010    ",
+                    ["line"] = 34,
+                    ["parameters"] = { "value", "cache" },
+                },
+                ["help"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010        addon.layout_condition_unitwidget_help(frame)\010        frame:AddChild(addon.help_funcs.CreateText(L['Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable.']))\010    ",
+                    ["line"] = 41,
+                    ["parameters"] = { "frame" },
+                },
+                ["print"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010        return addon.Functions.presentation.phrase(L['{unit} {{!is friendly to you|is not friendly to you}}'],{unit=addon.units[value.unit] or L['<unit>']})\010    ",
+                    ["line"] = 37,
+                    ["parameters"] = { "_", "value" },
+                },
+                ["valid"] = {
+                    ["bindings"] = {
+                        ["Functions.cache.getCached"] = "builtin:utils.lua:getCached",
+                        ["Functions.values.isin"] = "builtin:utils.lua:isin",
+                    },
+                    ["code"] = " return value.unit~=nil and Functions.values.isin(addon.units,value.unit) ",
+                    ["line"] = 9,
+                    ["parameters"] = { "_", "value" },
+                },
+                ["widget"] = {
+                    ["bindings"] = {},
+                    ["code"] = "\010    local top=parent:GetUserData('top')\010    parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()\010        top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec))\010    end))\010",
+                    ["line"] = 10,
+                    ["parameters"] = { "parent", "spec", "value" },
+                },
+            },
+            ["module"] = "Conditions/unit_states.lua",
+        },
+        ["beforePresent"] = false,
+        ["path"] = { "conditions", "FRIENDLY" },
+    },
+    {
+        ["after"] = {
+            ["bindings"] = {},
+            ["hash"] = "e5dc7824a651ddc557f81ce8a0c04995f73edbb7a13b63ef0dd86e328ffe25df",
+        },
+        ["beforePresent"] = false,
+        ["path"] = { "modules", "Conditions/unit_states.lua" },
+    },
+    {
+        ["after"] = {
+            ["bindings"] = {
+                ["Platform_GetUnitStateObservation"] = {
+                    ["args"] = {
+                        {
+                            ["description"] = "Rotation Master platform adapter (implicit with colon calls).",
+                            ["name"] = "self",
+                            ["type"] = "RMPlatform",
+                        },
+                        {
+                            ["description"] = "Exact nonempty unit token to observe.",
+                            ["name"] = "unit",
+                            ["type"] = "string",
+                        },
+                        {
+                            ["description"] = "Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit).",
+                            ["name"] = "kind",
+                            ["type"] = "string",
+                        },
+                    },
+                    ["bindings"] = {},
+                    ["callName"] = "addon.Platform:GetUnitStateObservation",
+                    ["code"] = "\010    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end\010    if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end\010    if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end\010    if kind~='dead' and kind~='friendly' then return nil,'invalid-unit-state-query' end\010    local existsAPI=UnitExists\010    if type(existsAPI)~='function' then return nil,'missing-api' end\010    local existsOK,exists=pcall(existsAPI,unit)\010    if not existsOK then return nil,'api-error' end\010    if not self:CanReadValue(exists) then return nil,'restricted-value' end\010    if exists==nil or exists==false then return nil,'unit-data-unavailable' end\010    if type(exists)~='boolean' then return nil,'invalid-api-result' end\010    local api\010    if kind=='dead' then api=UnitIsDeadOrGhost else api=UnitIsFriend end\010    if type(api)~='function' then return nil,'missing-api' end\010    local ok,result\010    if kind=='friendly' then ok,result=pcall(api,'player',unit)\010    else ok,result=pcall(api,unit) end\010    if not ok then return nil,'api-error' end\010    if not self:CanReadValue(result) then return nil,'restricted-value' end\010    if result==nil then return nil,'unit-state-unavailable' end\010    if type(result)~='boolean' then return nil,'invalid-api-result' end\010    return result\010",
+                    ["description"] = "Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained.",
+                    ["kind"] = "function",
+                    ["line"] = 6,
+                    ["parameters"] = { "self", "unit", "kind" },
+                    ["returns"] = {
+                        {
+                            ["description"] = "Readable current state, or nil when unavailable.",
+                            ["type"] = "boolean | nil",
+                        },
+                        {
+                            ["description"] = "Availability or query-validation reason when no current state can be read.",
+                            ["type"] = "string | nil",
+                        },
+                    },
+                },
+            },
+            ["hash"] = "4249ad6224ea49d6678d2284fbb4c13c611cd56c9ae689b4df19ca5ccba30b1a",
+        },
+        ["beforePresent"] = false,
+        ["path"] = { "modules", "Platform/unit_states.lua" },
+    },
+}
+
+local function hash(s)
+    local n = 0
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+local function same(a, b)
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
+
+    for k, v in pairs(a) do
+        if not same(v, b[k]) then
+            return false
+        end
+    end
+
+    for k in pairs(b) do
+        if a[k] == nil then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function copy(v)
+    if type(v) ~= 'table' then
+        return v
+    end
+
+    local r = {}
+
+    for k, x in pairs(v) do
+        r[k] = copy(x)
+    end
+
+    return r
+end
+
+return function(value, path, mode)
+    value = outer(value, path, 'unit-states', mode)
+
+    if mode == 'catalog' then
+        if value.conditions.DEAD == nil and value.conditions.FRIENDLY == nil then
+            return value
+        end
+
+        for _, d in ipairs(deltas) do
+            local parent = value
+
+            for i = 1, #d.path - 1 do
+                parent = assert(parent[d.path[i]])
+            end
+
+            local key = d.path[#d.path]
+            assert(same(parent[key], d.after), 'unrelated unit-state catalog field')
+
+            if d.beforePresent then
+                parent[key] = copy(d.before)
+            else
+                parent[key] = nil
+            end
+        end
+
+        return value
+    end
+
+    local row = records[path]
+
+    if not row or not value:find(row.marker, 1, true) then
+        return value
+    end
+
+    assert(#value == row.bytes and hash(value) == row.hash, 'unrelated complete unit-state source: ' .. path)
+
+    for i = #row.changes, 1, -1 do
+        local c = row.changes[i]
+        assert(value:sub(c.at, c.at + #c.current - 1) == c.current)
+        value = value:sub(1, c.at - 1) .. c.previous .. value:sub(c.at + #c.current)
+    end
+
+    assert(#value == row.oldBytes and hash(value) == row.oldHash, 'unit-state predecessor mismatch: ' .. path)
+    return value
 end

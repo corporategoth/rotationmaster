@@ -48,12 +48,20 @@ function addon:NormalizeCustomFieldSchema(fields, compatibility)
         end
 
         if type(value) == 'string' and not root then
-            if value == legacy then return { 'string', { 'string', 'number' } } end
-            if kinds[value] then return value end
+            if value == legacy then
+                return { 'string', { 'string', 'number' } }
+            end
+            if kinds[value] then
+                return value
+            end
+
             return nil, 'unknown-field-type'
         end
 
-        if type(value) ~= 'table' or getmetatable(value) or active[value] then return nil, 'invalid-schema' end
+        if type(value) ~= 'table' or getmetatable(value) or active[value] then
+            return nil, 'invalid-schema'
+        end
+
         active[value] = true
         local copy = {}
         local count, numeric, named, max = 0, false, false, 0
@@ -77,7 +85,11 @@ function addon:NormalizeCustomFieldSchema(fields, compatibility)
             end
 
             local result, why = visit(child, depth + 1, false)
-            if not result then return nil, why end
+
+            if not result then
+                return nil, why
+            end
+
             copy[key] = result
         end
 
@@ -98,7 +110,11 @@ end
 -- member is checked, so unknown keys and non-string code are refused.
 function addon:ParseCustomConditionImport(text, codec)
     local decoded, why = codec:Decode(text)
-    if not decoded then return nil, why end
+
+    if not decoded then
+        return nil, why
+    end
+
     local value = decoded.value
     local name
 
@@ -123,9 +139,13 @@ function addon:ParseCustomConditionImport(text, codec)
 
     for key, child in pairs(value) do
         if functions[key] then
-            if type(child) ~= 'string' then return nil, L['Invalid custom condition.'] end
+            if type(child) ~= 'string' then
+                return nil, L['Invalid custom condition.']
+            end
         elseif key == 'parameters' then
-            if not self:NormalizeCustomConditionParameters(child) then return nil, L['Invalid custom condition.'] end
+            if not self:NormalizeCustomConditionParameters(child) then
+                return nil, L['Invalid custom condition.']
+            end
         elseif key == 'requiredFields' then
             if not self:NormalizeCustomConditionRequiredFields(child, value.fields) then
                 return nil, L['Invalid custom condition.']
@@ -147,14 +167,18 @@ function addon:ParseCustomConditionImport(text, codec)
                 return nil, L['Invalid custom condition.']
             end
         elseif key == 'disabled' then
-            if type(child) ~= 'boolean' then return nil, L['Invalid custom condition.'] end
+            if type(child) ~= 'boolean' then
+                return nil, L['Invalid custom condition.']
+            end
         elseif key ~= 'description' and key ~= 'icon' and key ~= 'fields' then
             return nil, L['Invalid custom condition.']
         end
     end
 
     for key in pairs(functions) do
-        if type(value[key]) ~= 'string' then return nil, L['Invalid custom condition.'] end
+        if type(value[key]) ~= 'string' then
+            return nil, L['Invalid custom condition.']
+        end
     end
 
     return { name = name, condition = self:CopySettingsData(value) }

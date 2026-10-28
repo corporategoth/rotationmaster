@@ -1,5 +1,5 @@
 -- QA only: exact private-index successor to its deployed b55 predecessor.
-local before=[======[local _,addon=...
+local before = [======[local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -157,7 +157,8 @@ function addon:BindRotationSequenceReader(bind)
     bind(rawMethod,run,sequenceStatus,ownedSequence)
 end
 ]======]
-local after=[======[local _,addon=...
+
+local after = [======[local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -336,7 +337,11 @@ function addon:BindRotationSequenceReader(bind)
     bind(rawMethod,run,sequenceStatus,ownedSequence)
 end
 ]======]
-return function(text,path)
- if path=="Core/rotation_sequence.lua" and text==after then return before end
- return text
+
+return function(text, path)
+    if path == "Core/rotation_sequence.lua" and text == after then
+        return before
+    end
+
+    return text
 end

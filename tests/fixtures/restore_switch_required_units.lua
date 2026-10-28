@@ -1,23 +1,54 @@
 -- Exact Switch followup stage. Current deployed UI bytes and older2a bytes
 -- are qualified explicitly; all existing downstream whole-file proofs remain.
-local function digest(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return n end
-local records={}
-records[ [====[main.lua]====] ]={bytes=94453,hash=3541972621,oldBytes=93471,oldHash=3850154809,legacyBytes=93471,legacyHash=3850154809,changes={
-{at=38381,current=[====[        local matched=rotations[v] and switchConditionMatches(rotations[v].switch,switchOwnerCurrent)
+local function digest(s)
+    local n = 5381
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return n
+end
+
+local records = {}
+
+records[ [====[main.lua]====] ] = {
+    bytes = 94453,
+    hash = 3541972621,
+    oldBytes = 93471,
+    oldHash = 3850154809,
+    legacyBytes = 93471,
+    legacyHash = 3850154809,
+    changes = {
+        {
+            at = 38381,
+            current = [====[        local matched=rotations[v] and switchConditionMatches(rotations[v].switch,switchOwnerCurrent)
         if not switchOwnerCurrent()then return end
         if matched then
-]====],previous=[====[        if rotations[v] and addon:evaluateCondition(rotations[v].switch) then
-]====]},
-{at=38015,current=[====[        if not switchOwnerCurrent()then return end
-]====],previous=[====[]====]},
-{at=37272,current=[====[    -- BEGIN SWITCH OWNER LEASE
+]====],
+            previous = [====[        if rotations[v] and addon:evaluateCondition(rotations[v].switch) then
+]====],
+        },
+        {
+            at = 38015,
+            current = [====[        if not switchOwnerCurrent()then return end
+]====],
+            previous = [====[]====],
+        },
+        {
+            at = 37272,
+            current = [====[    -- BEGIN SWITCH OWNER LEASE
     local function switchOwnerCurrent()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
             and self.currentRotation==selectedRotation and not self.db.profile.disable_autoswitch and not self.manualRotation
     end
     -- END SWITCH OWNER LEASE
-]====],previous=[====[]====]},
-{at=234,current=[====[-- BEGIN SWITCH UNIT HANDOFF
+]====],
+            previous = [====[]====],
+        },
+        {
+            at = 234,
+            current = [====[-- BEGIN SWITCH UNIT HANDOFF
 local switchConditionEvaluator
 local consumeSwitch=addon.ConsumeSwitchConditionEvaluator
 if type(consumeSwitch)=='function'then
@@ -29,10 +60,23 @@ local function switchConditionMatches(value,current)
     return addon:evaluateCondition(value)
 end
 -- END SWITCH UNIT HANDOFF
-]====],previous=[====[]====]},
-}}
-records[ [====[Core/conditions.lua]====] ]={bytes=28924,hash=823196556,oldBytes=23874,oldHash=18706008,legacyBytes=21927,legacyHash=4083199220,changes={
-{at=27647,current=[====[-- BEGIN SWITCH CONDITION EVALUATOR
+]====],
+            previous = [====[]====],
+        },
+    },
+}
+
+records[ [====[Core/conditions.lua]====] ] = {
+    bytes = 28924,
+    hash = 823196556,
+    oldBytes = 23874,
+    oldHash = 18706008,
+    legacyBytes = 21927,
+    legacyHash = 4083199220,
+    changes = {
+        {
+            at = 27647,
+            current = [====[-- BEGIN SWITCH CONDITION EVALUATOR
 local ownedConditionEvaluator=addon.evaluateCondition
 local ownedConditionResult=addon.evaluateConditionResult
 local switchEnvironment=getfenv(1)
@@ -54,11 +98,19 @@ function addon:ConsumeSwitchConditionEvaluator()
 end
 -- END SWITCH CONDITION EVALUATOR
 
-]====],previous=[====[]====]},
-{at=9717,current=[====[        elseif state.switchUnits then
+]====],
+            previous = [====[]====],
+        },
+        {
+            at = 9717,
+            current = [====[        elseif state.switchUnits then
             result=evaluateSwitchLeaf(value,definition,cache,start,state,path)
-]====],previous=[====[]====]},
-{at=2198,current=[====[
+]====],
+            previous = [====[]====],
+        },
+        {
+            at = 2198,
+            current = [====[
 
 -- BEGIN SWITCH UNIT PRESENCE
 local function switchReadable(platform,value,current)
@@ -114,23 +166,74 @@ local function evaluateSwitchLeaf(value,definition,cache,start,state,path)
     return outcome(matched and "match" or "no-match")
 end
 -- END SWITCH UNIT PRESENCE
-]====],previous=[====[]====]},
-}}
-records[ [====[tools/check]====] ]={bytes=40229,hash=3807220061,oldBytes=40111,oldHash=1154464806,legacyBytes=39847,legacyHash=93498584,changes={
-{at=24816,current=[====[            ['lua5.1', 'tests/switch_required_units.lua'],
+]====],
+            previous = [====[]====],
+        },
+    },
+}
+
+records[ [====[tools/check]====] ] = {
+    bytes = 40229,
+    hash = 3807220061,
+    oldBytes = 40111,
+    oldHash = 1154464806,
+    legacyBytes = 39847,
+    legacyHash = 93498584,
+    changes = {
+        {
+            at = 24816,
+            current = [====[            ['lua5.1', 'tests/switch_required_units.lua'],
             ['luajit', 'tests/switch_required_units.lua'],
-]====],previous=[====[]====]},
-}}
-records[ [====[Web/schema/catalog.json]====] ]={bytes=32746,hash=839979888,oldBytes=32746,oldHash=3340804948,legacyBytes=32746,legacyHash=4145159731,changes={{at=31523,current=[====[0ef42ff97889bb02cb5cdb951ef203803333fe777a4ca35b9254f93d44b0e17d]====],previous=[====[5992158fa0a143839b80e7280154d1d72ac0fd7aa09779dabae25a91dad1f6fe]====]}}}
-return function(value,path)
- local row=records[path];if not row then return value end
- if #value==row.oldBytes and digest(value)==row.oldHash then return value end
- if #value==row.legacyBytes and digest(value)==row.legacyHash then return value end
- assert(#value==row.bytes and digest(value)==row.hash,'unrelated complete Switch followup source: '..path)
- for _,change in ipairs(row.changes)do
-  assert(value:sub(change.at,change.at+#change.current-1)==change.current,'Switch followup inverse hunk drift')
-  value=value:sub(1,change.at-1)..change.previous..value:sub(change.at+#change.current)
- end
- assert(#value==row.oldBytes and digest(value)==row.oldHash,'Switch followup deployed predecessor differs: '..path)
- return value
+]====],
+            previous = [====[]====],
+        },
+    },
+}
+
+records[ [====[Web/schema/catalog.json]====] ] = {
+    bytes = 32746,
+    hash = 839979888,
+    oldBytes = 32746,
+    oldHash = 3340804948,
+    legacyBytes = 32746,
+    legacyHash = 4145159731,
+    changes = {
+        {
+            at = 31523,
+            current = [====[0ef42ff97889bb02cb5cdb951ef203803333fe777a4ca35b9254f93d44b0e17d]====],
+            previous = [====[5992158fa0a143839b80e7280154d1d72ac0fd7aa09779dabae25a91dad1f6fe]====],
+        },
+    },
+}
+
+return function(value, path)
+    local row = records[path]
+
+    if not row then
+        return value
+    end
+    if #value == row.oldBytes and digest(value) == row.oldHash then
+        return value
+    end
+    if #value == row.legacyBytes and digest(value) == row.legacyHash then
+        return value
+    end
+
+    assert(#value == row.bytes and digest(value) == row.hash, 'unrelated complete Switch followup source: ' .. path)
+
+    for _, change in ipairs(row.changes) do
+        assert(
+            value:sub(change.at, change.at + #change.current - 1) == change.current,
+            'Switch followup inverse hunk drift'
+        )
+
+        value = value:sub(1, change.at - 1) .. change.previous .. value:sub(change.at + #change.current)
+    end
+
+    assert(
+        #value == row.oldBytes and digest(value) == row.oldHash,
+        'Switch followup deployed predecessor differs: ' .. path
+    )
+
+    return value
 end

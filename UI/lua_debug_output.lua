@@ -12,7 +12,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- the control has been released or is no longer valid. Per the in-game probe rule the text is selectable and the
 -- Copy button focuses and highlights it.
 function addon:ShowLuaDebugOutput(control)
-    if control.released or not control.valid() then return end
+    if control.released or not control.valid() then
+        return
+    end
+
     local d = control.outputWindow
 
     if not d then
@@ -101,11 +104,25 @@ function addon:ShowLuaDebugOutput(control)
         end)
 
         d.apply:SetText(L['Refresh'])
-        addon:SetUIScript(d.apply, 'OnClick', function() d:Refresh() end)
-        addon:SetUIScript(d.close, 'OnClick', function() d:Hide() end)
+
+        addon:SetUIScript(d.apply, 'OnClick', function()
+            d:Refresh()
+        end)
+
+        addon:SetUIScript(d.close, 'OnClick', function()
+            d:Hide()
+        end)
+
         d.cancel:Hide()
-        addon:SetUIScript(d.input, 'OnEscapePressed', function() d:Hide() end)
-        addon:SetUIScript(d.frame, 'OnHide', function() d.input:ClearFocus() end)
+
+        addon:SetUIScript(d.input, 'OnEscapePressed', function()
+            d:Hide()
+        end)
+
+        addon:SetUIScript(d.frame, 'OnHide', function()
+            d.input:ClearFocus()
+        end)
+
         d.input:EnableMouseWheel(true)
 
         addon:SetUIScript(d.input, 'OnMouseWheel', function(_, delta)

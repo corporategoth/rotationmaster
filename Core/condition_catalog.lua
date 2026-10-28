@@ -52,7 +52,10 @@ function addon:listConditions(group, nohide, store)
 
     if group == "SWITCH" or group == "ANNOUNCEMENT" then
         local selected = profile.switch_conditions
-        if group == "ANNOUNCEMENT" then selected = profile.announcement_conditions end
+
+        if group == "ANNOUNCEMENT" then
+            selected = profile.announcement_conditions
+        end
 
         for _, cond in pairs(type(selected) == "table" and selected or {}) do
             if special[cond] then
@@ -127,7 +130,9 @@ function addon:listConditions(group, nohide, store)
         local kept = {}
 
         for _, cond in ipairs(rv) do
-            if special[cond] or not addon:GetConditionSupport(cond, conditions[cond]) then kept[#kept + 1] = cond end
+            if special[cond] or not addon:GetConditionSupport(cond, conditions[cond]) then
+                kept[#kept + 1] = cond
+            end
         end
 
         rv = kept
@@ -167,7 +172,6 @@ function addon:describeCondition(type)
         if special[type] then
             return special[type].icon, special[type].desc, "", special[type].fields
         end
-
         if conditions[type] then
             return conditions[type].icon, conditions[type].description, conditions[type].help, conditions[type].fields
         end

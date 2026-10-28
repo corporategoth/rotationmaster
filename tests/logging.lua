@@ -1,12 +1,18 @@
 -- Run from repository root: lua5.1 tests/logging.lua
 -- Use actual AceDB shutdown to reproduce defaults disappearing before late events.
 local frames, messages = {}, {}
+
 CreateFrame = function()
-    local frame = {RegisterEvent = function() end}
-    function frame:SetScript(name, handler) self[name] = handler end
+    local frame = { RegisterEvent = function() end }
+
+    function frame:SetScript(name, handler)
+        self[name] = handler
+    end
+
     frames[#frames + 1] = frame
     return frame
 end
+
 UnitFactionGroup = function() return 'Horde' end
 GetLocale = function() return 'enUS' end
 UnitClass = function() return 'Mage', 'MAGE' end
@@ -22,11 +28,19 @@ dofile('Libs/LibStub/LibStub.lua')
 dofile('Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua')
 dofile('Libs/AceDB-3.0/AceDB-3.0.lua')
 local console = LibStub:NewLibrary('AceConsole-3.0', 1)
-function console:Printf(format, ...) messages[#messages + 1] = string.format(format, ...) end
+
+function console:Printf(format, ...)
+    messages[#messages + 1] = string.format(format, ...)
+end
+
 local locale = LibStub:NewLibrary('AceLocale-3.0', 1)
-function locale:GetLocale() return setmetatable({}, {__index = function(_, key) return key end}) end
+
+function locale:GetLocale()
+    return setmetatable({}, { __index = function(_, key) return key end })
+end
+
 LibStub:NewLibrary('LibCompress', 1)
-local addon = {pretty_name = 'Rotation Master'}
+local addon = { pretty_name = 'Rotation Master' }
 assert(loadfile('Functions/values.lua'))('rotationmaster', addon)
 assert(loadfile('Functions/presentation.lua'))('rotationmaster', addon)
 assert(loadfile('Functions/text.lua'))('rotationmaster', addon)
@@ -34,23 +48,28 @@ assert(loadfile('Functions/collections.lua'))('rotationmaster', addon)
 assert(loadfile('Functions/cache.lua'))('rotationmaster', addon)
 assert(loadfile('Functions/trends.lua'))('rotationmaster', addon)
 assert(loadfile('utils.lua'))('rotationmaster', addon)
+
 local function logAll()
     addon:verbose('verbose %s', 'fixture')
     addon:debug('debug %s', 'fixture')
     addon:info('info %s', 'fixture')
     addon:warn('warn %s', 'fixture')
 end
+
 for level = 0, 4 do
-    addon.db = {profile = {loglevel = level}}
-    messages = {}; logAll()
+    addon.db = { profile = { loglevel = level } }
+    messages = {}
+    logAll()
     assert(#messages == level, 'configured logging threshold was ignored')
 end
+
 print('PASS configured logging levels 0 through 4')
-addon.db = LibStub('AceDB-3.0'):New({}, {profile = {loglevel = 2}}, true)
+addon.db = LibStub('AceDB-3.0'):New({}, { profile = { loglevel = 2 } }, true)
 assert(addon.db.profile.loglevel == 2)
 LibStub('AceDB-3.0').frame:OnEvent('PLAYER_LOGOUT')
 assert(addon.db.profile.loglevel == nil, 'fixture did not remove AceDB defaults')
-messages = {}; logAll()
+messages = {}
+logAll()
 assert(#messages == 2, 'missing log level should use the normal info/warn threshold')
 assert(addon.db.profile.loglevel == nil, 'logging must not repopulate saved defaults during shutdown')
 print('PASS late-event logging after real AceDB shutdown')

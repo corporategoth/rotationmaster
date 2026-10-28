@@ -143,7 +143,9 @@ function addon:LuaContextSymbols(context)
                     local aliasArgs = {}
 
                     for index, arg in ipairs(entry.source.args or {}) do
-                        if not (receiver and index == 1) then aliasArgs[#aliasArgs + 1] = arg end
+                        if not (receiver and index == 1) then
+                            aliasArgs[#aliasArgs + 1] = arg
+                        end
                     end
 
                     add(
@@ -178,13 +180,17 @@ function addon:LuaContextSymbols(context)
 
         for alias, canonical in pairs(self:CustomConditionParameterAliases(source, context.callback or 'evaluate')) do
             for _, arg in ipairs(docs and docs.args or {}) do
-                if arg[1] == canonical then add(alias, 'parameter', arg[3], arg[2]) end
+                if arg[1] == canonical then
+                    add(alias, 'parameter', arg[3], arg[2])
+                end
             end
         end
     end
 
     for _, arg in ipairs(arguments) do
-        if arg.name ~= '...' then add(arg.name, 'parameter', arg.description, arg.type) end
+        if arg.name ~= '...' then
+            add(arg.name, 'parameter', arg.description, arg.type)
+        end
     end
 
     if symbols.value then
@@ -200,17 +206,25 @@ function addon:LuaContextSymbols(context)
 
     for _, arg in ipairs(arguments) do
         bindingArguments[#bindingArguments + 1] = arg
-        if arg.name == 'functions' then namespace = false end
+
+        if arg.name == 'functions' then
+            namespace = false
+        end
     end
 
     for _, parameters in pairs(source.parameters or {}) do
         for _, name in ipairs(parameters) do
             bindingArguments[#bindingArguments + 1] = { name = name }
-            if name == 'functions' then namespace = false end
+
+            if name == 'functions' then
+                namespace = false
+            end
         end
     end
 
-    if source.bindings and source.bindings.functions then namespace = false end
+    if source.bindings and source.bindings.functions then
+        namespace = false
+    end
 
     if namespace then
         add(
@@ -290,9 +304,15 @@ function addon:LuaContextSymbols(context)
             bindings[alias] = target
         end
 
-        if bindings[name] and bindings[name] ~= id then return end
+        if bindings[name] and bindings[name] ~= id then
+            return
+        end
+
         bindings[name] = id
-        if not self:NormalizeFunctionBindings(bindings, bindingArguments) then return end
+
+        if not self:NormalizeFunctionBindings(bindings, bindingArguments) then
+            return
+        end
 
         if candidates[name] then
             candidates[name] = false
@@ -306,7 +326,9 @@ function addon:LuaContextSymbols(context)
     end
 
     for id, entry in pairs(self.builtinFunctions or {}) do
-        if not entry.valueBinding and entry.source then candidate(id, entry.source) end
+        if not entry.valueBinding and entry.source then
+            candidate(id, entry.source)
+        end
     end
 
     for name, item in pairs(candidates) do
@@ -359,7 +381,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
                         or L['Rotation Master built-in function'])
                     or L['Rotation Master value']
 
-                if rich then heading = '|cffe6c07b' .. heading:gsub('|', '||') .. '|r' end
+                if rich then
+                    heading = '|cffe6c07b' .. heading:gsub('|', '||') .. '|r'
+                end
+
                 return text:gsub('^[^\n]*', function() return heading end, 1)
             end
 
@@ -383,8 +408,9 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
             local index, catalog = shallow(self.index), shallow(self.catalog)
 
             for name, symbol in pairs(self.rmOverlaySymbols or {}) do
-                if index[name] == symbol.info then index[name] = self.rmBaseIndex and self.rmBaseIndex[name] end
-
+                if index[name] == symbol.info then
+                    index[name] = self.rmBaseIndex and self.rmBaseIndex[name]
+                end
                 if catalog[name] and catalog[name].info == symbol.info then
                     catalog[name] = self.rmBaseCatalog and self.rmBaseCatalog[name]
                 end
@@ -409,7 +435,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
             self.rmOverlaySymbols = engine.rmSymbols
             self.source, self.paths, self.text = nil, nil, {}
             self.revision = self.revision + 1
-            if engine.KnowledgeBase then engine.KnowledgeBase.entries = nil end
+
+            if engine.KnowledgeBase then
+                engine.KnowledgeBase.entries = nil
+            end
         end
 
         local load = api.Load
@@ -418,7 +447,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
         function api:Load(...)
             local revision = self.revision
             load(self, ...)
-            if self.revision ~= revision then self:rmSyncSymbols() end
+
+            if self.revision ~= revision then
+                self:rmSyncSymbols()
+            end
         end
 
         local paths = api.Paths
@@ -427,7 +459,11 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
         -- undocumented readable global function, are marked for hover and navigation. Secret values are never indexed.
         function api:Paths(source, force)
             local result = paths(self, source, force)
-            if not force and not self:Enabled() then return result end
+
+            if not force and not self:Enabled() then
+                return result
+            end
+
             local analysis = engine.Analysis:Get(source)
             local chain, previous, declaration
             self.rmUndocumented = self.rmUndocumented or {}
@@ -435,11 +471,17 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
             -- True when the dotted `name` resolves to a readable global function; secret values and addon-private names
             -- never count.
             local function globalFunction(name)
-                if self.rmLimited or name:match('^addon[.:]') or name:match('^functions[.:]') then return false end
+                if self.rmLimited or name:match('^addon[.:]') or name:match('^functions[.:]') then
+                    return false
+                end
+
                 local value = _G
 
                 for part in name:gmatch('[%w_]+') do
-                    if type(value) ~= 'table' or issecretvalue and issecretvalue(value) then return false end
+                    if type(value) ~= 'table' or issecretvalue and issecretvalue(value) then
+                        return false
+                    end
+
                     value = rawget(value, part)
                 end
 
@@ -505,7 +547,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
 
                 for _, name in ipairs(names) do
                     local symbol = engine.rmSymbols and engine.rmSymbols[name]
-                    if not symbol or not symbol.documentationOnly then visible[#visible + 1] = name end
+
+                    if not symbol or not symbol.documentationOnly then
+                        visible[#visible + 1] = name
+                    end
                 end
 
                 for name, symbol in pairs(engine.rmSymbols or {}) do
@@ -554,9 +599,16 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
 
             if symbol and symbol.requiresBinding then
                 local ownerContext = engine.rmContext
-                if not ownerContext or type(ownerContext.bindFunction) ~= 'function' then return false end
+
+                if not ownerContext or type(ownerContext.bindFunction) ~= 'function' then
+                    return false
+                end
+
                 transaction = ownerContext.bindFunction(symbol.id, symbol.bindingName)
-                if not transaction then return false end
+
+                if not transaction then
+                    return false
+                end
             end
 
             local called, accepted = pcall(self.rmAccept, self, input)
@@ -569,7 +621,10 @@ function addon:ApplyLuaContextSymbols(engine, context, limited)
                 end
             end
 
-            if not called then error(accepted, 0) end
+            if not called then
+                error(accepted, 0)
+            end
+
             return accepted
         end
     end
@@ -599,8 +654,10 @@ function addon:NavigateLuaSymbol(engine, input, source, cursor)
 
     local name = source:sub(first + 1, last - 1)
     local symbol = engine.rmSymbols and engine.rmSymbols[name]
-    if symbol and symbol.id and self.ShowFunctionSource then return self:ShowFunctionSource(symbol.id) end
 
+    if symbol and symbol.id and self.ShowFunctionSource then
+        return self:ShowFunctionSource(symbol.id)
+    end
     if engine.Navigation and not engine.embeddingOptions.limited then
         return engine.Navigation:Go({ scriptId = engine.Workspace.current, source = source, cursor = cursor })
     end

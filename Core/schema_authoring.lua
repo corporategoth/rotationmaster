@@ -39,8 +39,13 @@ end
 -- Validates a stored field display order (a list of paths into the schema) against the schema. Returns a fresh copy, an
 -- empty list for nil, or nil and invalid-field-order when it is not a dense list of distinct, existing paths.
 function addon:NormalizeCustomFieldOrder(order, fields)
-    if order == nil then return {} end
-    if type(order) ~= 'table' or getmetatable(order) then return nil, 'invalid-field-order' end
+    if order == nil then
+        return {}
+    end
+    if type(order) ~= 'table' or getmetatable(order) then
+        return nil, 'invalid-field-order'
+    end
+
     local seen, result = {}, {}
     local entries = 0
 
@@ -78,20 +83,32 @@ function addon:NormalizeCustomFieldOrder(order, fields)
             end
         end
 
-        if parts ~= #path then return nil, 'invalid-field-order' end
+        if parts ~= #path then
+            return nil, 'invalid-field-order'
+        end
 
         for _, key in ipairs(path) do
             value = type(value) == 'table' and value[key] or nil
-            if value == nil then return nil, 'invalid-field-order' end
+
+            if value == nil then
+                return nil, 'invalid-field-order'
+            end
         end
 
         local key = pathKey(path)
-        if seen[key] then return nil, 'invalid-field-order' end
+
+        if seen[key] then
+            return nil, 'invalid-field-order'
+        end
+
         seen[key] = true
         result[index] = copy(path)
     end
 
-    if entries ~= #order then return nil, 'invalid-field-order' end
+    if entries ~= #order then
+        return nil, 'invalid-field-order'
+    end
+
     return result
 end
 
@@ -99,7 +116,10 @@ end
 -- when there is no list. Entries that no longer match a field are dropped.
 -- Reconcile only after an explicit schema edit/Apply, never while rendering.
 function addon:FilterCustomRequiredFields(required, fields)
-    if required == nil then return nil end
+    if required == nil then
+        return nil
+    end
+
     local result, seen = {}, {}
 
     if type(required) == 'table' and not getmetatable(required) then
@@ -128,9 +148,17 @@ end
 -- alternatives, including list element schemas. Lua source is never evaluated.
 function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     local normalized, why = self:NormalizeCustomFieldSchema(fields, true)
-    if not normalized then return nil, why end
+
+    if not normalized then
+        return nil, why
+    end
+
     local order, errorCode = self:NormalizeCustomFieldOrder(fieldOrder, normalized)
-    if not order then return nil, errorCode end
+
+    if not order then
+        return nil, errorCode
+    end
+
     local ranks = {}
 
     for i, path in ipairs(order) do
@@ -140,7 +168,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- Turns a normalized schema value into a draft node: a scalar kind, or a record or union with children in field
     -- order.
     local function build(value, path, name)
-        if type(value) == 'string' then return { name = name, kind = value } end
+        if type(value) == 'string' then
+            return { name = name, kind = value }
+        end
+
         local node = { name = name, kind = value[1] ~= nil and 'union' or 'record', children = {} }
         local keys = {}
 
@@ -149,13 +180,20 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end
 
         table.sort(keys, function(a, b)
-            if type(a) == 'number' then return a < b end
+            if type(a) == 'number' then
+                return a < b
+            end
+
             local pa = copy(path)
             pa[#pa + 1] = a
             local pb = copy(path)
             pb[#pb + 1] = b
             local ra, rb = ranks[pathKey(pa)] or math.huge, ranks[pathKey(pb)] or math.huge
-            if ra ~= rb then return ra < rb end
+
+            if ra ~= rb then
+                return ra < rb
+            end
+
             return a < b
         end)
 
@@ -180,7 +218,9 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end
 
         for _, node in ipairs(d.root.children) do
-            if required[node.name] then node.required = true end
+            if required[node.name] then
+                node.required = true
+            end
         end
     end
 
@@ -189,7 +229,11 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     function d:Change(fn)
         local before = copy(self.root)
         fn(self.root)
-        if addon:SettingsDataEqual(before, self.root) then return false end
+
+        if addon:SettingsDataEqual(before, self.root) then
+            return false
+        end
+
         self.revision = self.revision + 1
         self.undo[#self.undo + 1] = before
         self.redo = {}
@@ -206,7 +250,11 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     function d:Travel(redo)
         local from = redo and self.redo or self.undo
         local to = redo and self.undo or self.redo
-        if #from == 0 then return false end
+
+        if #from == 0 then
+            return false
+        end
+
         to[#to + 1] = copy(self.root)
         self.root = table.remove(from)
         self.revision = self.revision + 1
@@ -219,9 +267,15 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         local node = self.root
 
         for _, index in ipairs(path) do
-            if type(index) ~= 'number' or index % 1 ~= 0 or not node.children then return end
+            if type(index) ~= 'number' or index % 1 ~= 0 or not node.children then
+                return
+            end
+
             node = node.children[index]
-            if not node then return end
+
+            if not node then
+                return
+            end
         end
 
         return node
@@ -230,9 +284,15 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- Marks or unmarks a top-level field as required. Only top-level fields can be required; returns whether anything
     -- changed.
     function d:SetRequired(path, required)
-        if #path ~= 1 or type(required) ~= 'boolean' then return false end
+        if #path ~= 1 or type(required) ~= 'boolean' then
+            return false
+        end
+
         local node = self:Node(path)
-        if not node or (node.required == true) == required then return false end
+
+        if not node or (node.required == true) == required then
+            return false
+        end
 
         return self:Change(function(root)
             node.required = required or nil
@@ -251,11 +311,17 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- needed and avoiding the reserved top-level names.
     local function uniqueName(parent, base, except)
         base = type(base) == 'string' and base:match('^[%a_][%w_]*$') and base or 'field'
-        if parent == d.root and (base == 'type' or base == 'disabled') then base = 'field' end
+
+        if parent == d.root and (base == 'type' or base == 'disabled') then
+            base = 'field'
+        end
+
         local used = {}
 
         for _, child in ipairs(parent.children) do
-            if child ~= except then used[child.name] = true end
+            if child ~= except then
+                used[child.name] = true
+            end
         end
 
         base = base:sub(1, 64)
@@ -275,7 +341,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- changed.
     function d:Add(path, kind)
         local parent = self:Node(path)
-        if not parent or not parent.children then return false end
+
+        if not parent or not parent.children then
+            return false
+        end
 
         return self:Change(function()
             parent.children[#parent.children + 1] = {
@@ -290,7 +359,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     function d:Duplicate(path)
         local node = self:Node(path)
         local parent = self:Node(parentPath(path))
-        if #path == 0 or not node or not parent then return false end
+
+        if #path == 0 or not node or not parent then
+            return false
+        end
 
         return self:Change(function()
             local duplicate = copy(node)
@@ -305,17 +377,25 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
 
     -- Removes the node at path.
     function d:Remove(path)
-        if #path == 0 or not self:Node(path) then return false end
+        if #path == 0 or not self:Node(path) then
+            return false
+        end
+
         local parent = self:Node(parentPath(path))
-        return self:Change(function() table.remove(parent.children, path[#path]) end)
+
+        return self:Change(function()
+            table.remove(parent.children, path[#path])
+        end)
     end
 
     -- Changes a node's kind, creating a starter child when it becomes a record or union, renaming record children so
     -- they stay legal and unique, and dropping the children of a scalar kind. Rejects unknown kinds.
     function d:SetKind(path, kind)
         local node = self:Node(path)
-        if not node or #path == 0 then return false end
 
+        if not node or #path == 0 then
+            return false
+        end
         if
             kind ~= 'record'
             and kind ~= 'union'
@@ -363,7 +443,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- at slot gap: the slot must exist, the move must change something, a container may not move inside itself, and
     -- record names may not collide.
     function d:CanTransfer(path, destination, gap, tail)
-        if #path == 0 or not self:Node(path) then return false end
+        if #path == 0 or not self:Node(path) then
+            return false
+        end
+
         local parent = self:Node(parentPath(path))
         local target = self:Node(destination)
         local index = path[#path]
@@ -380,17 +463,24 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end
 
         local last = tail and #parent.children or index
-        if target == parent and gap >= index and gap <= last + 1 then return false end
+
+        if target == parent and gap >= index and gap <= last + 1 then
+            return false
+        end
 
         -- A container always carries its descendants. Never insert it inside itself.
         if #destination >= #path then
             local sameParent = true
 
             for i = 1, #path - 1 do
-                if destination[i] ~= path[i] then sameParent = false end
+                if destination[i] ~= path[i] then
+                    sameParent = false
+                end
             end
 
-            if sameParent and destination[#path] >= index and destination[#path] <= last then return false end
+            if sameParent and destination[#path] >= index and destination[#path] <= last then
+                return false
+            end
         end
 
         if target ~= parent and target.kind == 'record' then
@@ -404,7 +494,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
                 local name = parent.children[i].name
 
                 if type(name) == 'string' then
-                    if used[name] then return false end
+                    if used[name] then
+                        return false
+                    end
+
                     used[name] = true
                 end
             end
@@ -416,7 +509,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
     -- Moves the node (or, with tail, it and its later siblings) to slot gap of the destination container if CanTransfer
     -- allows it. A node moved anywhere but the top level loses its required flag.
     function d:Transfer(path, destination, gap, tail)
-        if not self:CanTransfer(path, destination, gap, tail) then return false end
+        if not self:CanTransfer(path, destination, gap, tail) then
+            return false
+        end
+
         local parent = self:Node(parentPath(path))
         local target = self:Node(destination)
         local index = path[#path]
@@ -429,11 +525,14 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
                 moved[#moved + 1] = table.remove(parent.children, index)
             end
 
-            if parent == target and gap > index then gap = gap - count end
+            if parent == target and gap > index then
+                gap = gap - count
+            end
 
             for i, node in ipairs(moved) do
-                if target ~= self.root then node.required = nil end
-
+                if target ~= self.root then
+                    node.required = nil
+                end
                 if target.kind == 'record' and type(node.name) ~= 'string' then
                     node.name = uniqueName(target, 'field')
                 end
@@ -455,8 +554,15 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         -- invalid-field-name or duplicate-field, which Snapshot catches.
         local function encode(node, path, depth)
             count = count + 1
-            if count > 512 or depth > 16 or active[node] then error('schema-limit', 0) end
-            if node.kind ~= 'record' and node.kind ~= 'union' then return node.kind end
+
+            if count > 512 or depth > 16 or active[node] then
+                error('schema-limit', 0)
+            end
+
+            if node.kind ~= 'record' and node.kind ~= 'union' then
+                return node.kind
+            end
+
             active[node] = true
             local result = {}
 
@@ -466,8 +572,10 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
                 if node.kind == 'record' and not addon:IsEditableFieldSchemaName(key, depth == 0) then
                     error('invalid-field-name', 0)
                 end
+                if result[key] ~= nil then
+                    error('duplicate-field', 0)
+                end
 
-                if result[key] ~= nil then error('duplicate-field', 0) end
                 local nextPath = copy(path)
                 nextPath[#nextPath + 1] = key
                 order[#order + 1] = nextPath
@@ -479,19 +587,31 @@ function addon:NewFieldSchemaDraft(fields, fieldOrder, requiredFields)
         end
 
         local ok, value = pcall(encode, self.root, {}, 0)
-        if not ok then return nil, value end
+
+        if not ok then
+            return nil, value
+        end
+
         local checked, problem = addon:NormalizeCustomFieldSchema(value)
-        if not checked then return nil, problem end
+
+        if not checked then
+            return nil, problem
+        end
+
         local required
 
         if self.root.requiredFieldsPresent then
             required = {}
 
             for _, node in ipairs(self.root.children) do
-                if node.required then required[#required + 1] = node.name end
+                if node.required then
+                    required[#required + 1] = node.name
+                end
             end
 
-            if #required > 128 then return nil, 'invalid-required-fields' end
+            if #required > 128 then
+                return nil, 'invalid-required-fields'
+            end
         end
 
         return checked, order, required

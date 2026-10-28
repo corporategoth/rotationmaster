@@ -1,5 +1,5 @@
 -- Only the exact nameplate span changes; adjacent BAG_UPDATE is preserved.
-local old=[====[addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
+local old = [====[addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
     local guid = UnitGUID(unit)
     if self.unitsInRange[guid] then
         self.unitsInRange[guid].unit = unit
@@ -26,7 +26,8 @@ addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
 end)
 
 ]====]
-local new=[====[-- Nameplate removal can arrive after its token stops resolving. Retire by the
+
+local new = [====[-- Nameplate removal can arrive after its token stops resolving. Retire by the
 -- stored token; preserve only a positively identified canonical replacement.
 local nameplateEvent
 local function nameplateCurrent(self,snapshot,ticket)
@@ -136,13 +137,28 @@ addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
 end)
 
 ]====]
-local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
-return function(text,path)
- assert(path=='main.lua','unknown nameplate inverse path')
- if #text==77591 and hash(text)=='7780dabb' then return text end
- assert(#text==82628 and hash(text)=='bf460225','unrelated nameplate module change')
- local first,last=assert(text:find(new,1,true));assert(not text:find(new,last+1,true),'duplicate nameplate span')
- text=text:sub(1,first-1)..old..text:sub(last+1)
- assert(#text==77591 and hash(text)=='7780dabb','nameplate predecessor mismatch')
- return text
+
+local function hash(s)
+    local h = 0
+
+    for i = 1, #s do
+        h = (h * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', h)
+end
+
+return function(text, path)
+    assert(path == 'main.lua', 'unknown nameplate inverse path')
+
+    if #text == 77591 and hash(text) == '7780dabb' then
+        return text
+    end
+
+    assert(#text == 82628 and hash(text) == 'bf460225', 'unrelated nameplate module change')
+    local first, last = assert(text:find(new, 1, true))
+    assert(not text:find(new, last + 1, true), 'duplicate nameplate span')
+    text = text:sub(1, first - 1) .. old .. text:sub(last + 1)
+    assert(#text == 77591 and hash(text) == '7780dabb', 'nameplate predecessor mismatch')
+    return text
 end

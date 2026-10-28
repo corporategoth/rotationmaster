@@ -1,13 +1,13 @@
 -- Strict test-only inverse of the private CPU appendix from fc06db4.
-local blocks={
- ['ANCHORS']=[====[
+local blocks = {
+    ['ANCHORS'] = [====[
 -- BEGIN PRIVATE CACHE ANCHORS
 local cacheSourceEqual=rawequal
 local cacheSourceModules=proofRawget(addon,'builtinSourceModules')
 local cacheSourceGetter=proofType(cacheSourceModules)=='table' and proofRawget(cacheSourceModules,'Functions/cache.lua') or nil
 -- END PRIVATE CACHE ANCHORS
 ]====],
- ['SAMPLES']=[====[
+    ['SAMPLES'] = [====[
 -- BEGIN PRIVATE CACHE SAMPLES
 local function cacheFunction(owner,alias)
  if proofType(cacheSourceModules)~='table' or proofType(cacheSourceGetter)~='function' then return nil,'source-reader-unavailable' end
@@ -72,29 +72,43 @@ local function appendPrivateCache(report,run)
 end
 -- END PRIVATE CACHE SAMPLES
 ]====],
- ['APPENDIX']=[====[
+    ['APPENDIX'] = [====[
    -- BEGIN PRIVATE CACHE APPENDIX
    appendPrivateCache(report,run)
    -- END PRIVATE CACHE APPENDIX
 ]====],
- ['START']=[====[
+    ['START'] = [====[
  -- BEGIN PRIVATE CACHE START
  run.privateCache=privateCacheSelection(self,run.rows)
  for _,sample in ipairs(run.privateCache.samples) do sample.before,sample.reason=snapshot(run,sample.fn) end
  -- END PRIVATE CACHE START
 ]====],
 }
+
 local function restore(text)
- assert(type(text)=='string','private CPU inverse needs source')
- for _,name in ipairs({'ANCHORS','SAMPLES','APPENDIX','START'}) do
-  local block=blocks[name];local a,b=text:find(block,1,true);assert(a,'private CPU block differs: '..name)
-  assert(not text:find(block,b+1,true),'duplicate private CPU block');text=text:sub(1,a-1)..text:sub(b+1)
- end
- local from='local current;if not problem then current,problem=finishSample(run,row) end'
- local to='local current;if not problem then current,problem=snapshot(run,row.fn) end'
- local a,b=assert(text:find(from,1,true));assert(not text:find(from,b+1,true));text=text:sub(1,a-1)..to..text:sub(b+1)
- local hash=0;for i=1,#text do hash=(hash*33+text:byte(i))%4294967296 end
- assert(#text==21548 and string.format('%08x',hash)=='9b53e319','unrelated private CPU source delta')
- return text
+    assert(type(text) == 'string', 'private CPU inverse needs source')
+
+    for _, name in ipairs({ 'ANCHORS', 'SAMPLES', 'APPENDIX', 'START' }) do
+        local block = blocks[name]
+        local a, b = text:find(block, 1, true)
+        assert(a, 'private CPU block differs: ' .. name)
+        assert(not text:find(block, b + 1, true), 'duplicate private CPU block')
+        text = text:sub(1, a - 1) .. text:sub(b + 1)
+    end
+
+    local from = 'local current;if not problem then current,problem=finishSample(run,row) end'
+    local to = 'local current;if not problem then current,problem=snapshot(run,row.fn) end'
+    local a, b = assert(text:find(from, 1, true))
+    assert(not text:find(from, b + 1, true))
+    text = text:sub(1, a - 1) .. to .. text:sub(b + 1)
+    local hash = 0
+
+    for i = 1, #text do
+        hash = (hash * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(#text == 21548 and string.format('%08x', hash) == '9b53e319', 'unrelated private CPU source delta')
+    return text
 end
+
 return restore

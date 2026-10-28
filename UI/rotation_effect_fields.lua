@@ -17,11 +17,17 @@ local function parseColor(text)
 
     for part in (text .. ','):gmatch('(.-),') do
         local n = tonumber(part)
-        if not n or n ~= n or n < 0 or n > 1 then return end
+
+        if not n or n ~= n or n < 0 or n > 1 then
+            return
+        end
+
         values[#values + 1] = n
     end
 
-    if #values == 4 then return { r = values[1], g = values[2], b = values[3], a = values[4] } end
+    if #values == 4 then
+        return { r = values[1], g = values[2], b = values[3], a = values[4] }
+    end
 end
 
 -- Builds the effect rows for the cooldown step model on card and returns the y position below them. owner is the
@@ -78,13 +84,18 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     -- Redraws the demo glow on the step's icon (or the card preview) from the staged field values; the pooled card may
     -- have been recycled, so it does nothing once alive() is false.
     card.RefreshHighlightPreview = function()
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         local effect = (addon.db.global.effects or {})[step.effect or profile.effect]
         local ox, oy = offsets()
         local color = currentColor()
         demo.color = color
-        if addon.HideGlow then addon:HideGlow(demo.target, 'rotation-effect-preview') end
 
+        if addon.HideGlow then
+            addon:HideGlow(demo.target, 'rotation-effect-preview')
+        end
         if effect and addon.Glow then
             addon:Glow(
                 demo.target,
@@ -158,11 +169,15 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
             mag.loading = false
         end
 
-        if card.RefreshHighlightPreview then card.RefreshHighlightPreview() end
+        if card.RefreshHighlightPreview then
+            card.RefreshHighlightPreview()
+        end
     end
 
     addon:SetUIScript(magNumber, 'OnTextChanged', function(_, user)
-        if ctx.active() and user then stageMag(magNumber:GetText()) end
+        if ctx.active() and user then
+            stageMag(magNumber:GetText())
+        end
     end)
 
     addon:SetUIScript(magNumber, 'OnEnterPressed', function()
@@ -256,7 +271,10 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     paint(c)
 
     addon:SetUIScript(swatch, 'OnEnter', function(control)
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         paint(currentColor())
 
         if GameTooltip then
@@ -266,8 +284,12 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     end)
 
     addon:SetUIScript(swatch, 'OnLeave', function(control)
-        if alive() then paint(currentColor()) end
-        if GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+        if alive() then
+            paint(currentColor())
+        end
+        if GameTooltip and GameTooltip:IsOwned(control) then
+            GameTooltip:Hide()
+        end
     end)
 
     local popupBaseline, popupInputs
@@ -275,7 +297,10 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     -- Color picker callback: stages the chosen color, mirrors it into the four channel boxes and the swatch. On cancel
     -- it restores the text the fields had when the picker opened.
     local function stageColor(r, g, b, a, canceled)
-        if not ctx.active() then return end
+        if not ctx.active() then
+            return
+        end
+
         local color = { r = r, g = g, b = b, a = a }
         local restored = canceled and popupBaseline or colorString(color)
         rawChannels = {}
@@ -284,7 +309,9 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
             rawChannels[#rawChannels + 1] = part
         end
 
-        if #rawChannels ~= 4 then rawChannels = { tostring(r), tostring(g), tostring(b), tostring(a) } end
+        if #rawChannels ~= 4 then
+            rawChannels = { tostring(r), tostring(g), tostring(b), tostring(a) }
+        end
 
         for key, input in pairs(fields) do
             local text = canceled and popupInputs and popupInputs[key] or string.format('%.3f', color[key])
@@ -302,14 +329,23 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
         local input = fields[key]
 
         addon:SetUIScript(input, 'OnTextChanged', function(_, userInput)
-            if not ctx.active() or not userInput then return end
-            if card.colorPicker and card.colorPicker.frame:IsShown() then card.colorPicker:Close(true) end
+            if not ctx.active() or not userInput then
+                return
+            end
+
+            if card.colorPicker and card.colorPicker.frame:IsShown() then
+                card.colorPicker:Close(true)
+            end
+
             rawChannels[index] = input:GetText()
             local text = table.concat(rawChannels, ',')
             local color = parseColor(text)
             owner:StageField(model.id, 'color', text, baseline, L['Color'])
             input:SetTextColor(1, color and 1 or .35, color and 1 or .35)
-            if color then paint(color) end
+
+            if color then
+                paint(color)
+            end
         end)
 
         addon:SetUIScript(input, 'OnEnterPressed', function()
@@ -343,7 +379,11 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     addon:SetUIScript(reset, 'OnClick', function()
         if ctx.active() then
             local pending = owner.view.pendingFields or {}
-            if pending[model.id] then pending[model.id].color = nil end
+
+            if pending[model.id] then
+                pending[model.id].color = nil
+            end
+
             ctx.patch(nil, { 'color' })
         end
     end)
@@ -364,7 +404,10 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     pad:SetPoint('TOPLEFT', x, -positionY)
 
     pad:Bind(function(dx, dy, center, amount)
-        if not ctx.active() then return end
+        if not ctx.active() then
+            return
+        end
+
         local ox, oy = offsets()
         local ok, why = owner:FlushFieldEdits()
 
@@ -459,14 +502,19 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
 
     if ok and media and media.HashTable then
         local success, found = pcall(media.HashTable, media, 'sound')
-        if success and type(found) == 'table' then sounds = found end
+
+        if success and type(found) == 'table' then
+            sounds = found
+        end
     end
 
     local entries = { { value = '', text = L['None'] } }
     local names = {}
 
     for name in pairs(sounds) do
-        if type(name) == 'string' then names[#names + 1] = name end
+        if type(name) == 'string' then
+            names[#names + 1] = name
+        end
     end
 
     table.sort(names)
@@ -495,12 +543,18 @@ function addon:BuildRotationEffectFields(owner, card, model, alive, ctx)
     play.tooltip = L['Preview sound']
 
     addon:SetUIScript(play, 'OnClick', function()
-        if not alive() then return end
+        if not alive() then
+            return
+        end
+
         local path = step.announce_sound and sounds[step.announce_sound]
 
         if (type(path) == 'string' or type(path) == 'number') and type(PlaySoundFile) == 'function' then
             local played = PlaySoundFile(path, 'Master')
-            if not played then owner:Message(L['Sound preview is unavailable.']) end
+
+            if not played then
+                owner:Message(L['Sound preview is unavailable.'])
+            end
         else
             owner:Message(L['Choose an available sound to preview.'])
         end

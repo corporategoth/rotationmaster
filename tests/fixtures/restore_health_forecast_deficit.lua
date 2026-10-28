@@ -1,5 +1,5 @@
 -- Exact test-only inverse for the one approved TT_HEALTH target field guard.
-local old=[=[    evaluate = function(value, cache)
+local old = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
@@ -31,7 +31,8 @@ local old=[=[    evaluate = function(value, cache)
         end
         return false
     end,]=]
-local repaired=[=[    evaluate = function(value, cache)
+
+local repaired = [=[    evaluate = function(value, cache)
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
@@ -63,14 +64,19 @@ local repaired=[=[    evaluate = function(value, cache)
         end
         return false
     end,]=]
-local oldBody=assert(old:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
-local repairedBody=assert(repaired:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
-return function(text,tag)
+
+local oldBody = assert(old:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+local repairedBody = assert(repaired:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
+
+return function(text, tag)
     if tag then
-        assert(tag=='TT_HEALTH' and text==repairedBody,'unexpected TT_HEALTH evaluator body/tag')
+        assert(tag == 'TT_HEALTH' and text == repairedBody, 'unexpected TT_HEALTH evaluator body/tag')
         return oldBody
     end
-    local first,last=text:find(repaired,1,true)
-    assert(first and not text:find(repaired,last+1,true),'unexpected TT_HEALTH evaluator count')
-    return text:sub(1,first-1)..old..text:sub(last+1)
-end,oldBody,repairedBody
+
+    local first, last = text:find(repaired, 1, true)
+    assert(first and not text:find(repaired, last + 1, true), 'unexpected TT_HEALTH evaluator count')
+    return text:sub(1, first - 1) .. old .. text:sub(last + 1)
+end,
+    oldBody,
+    repairedBody

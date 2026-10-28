@@ -53,10 +53,17 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
         view.form = self:CreateSettingsForm(view.body)
         view.close = self:CreateWorkbenchButton(view.frame, L['Close'], 104)
         view.close:SetPoint('BOTTOMRIGHT', -12, 28)
-        self:SetUIScript(view.close, 'OnClick', function() view.frame:Hide() end)
+
+        self:SetUIScript(view.close, 'OnClick', function()
+            view.frame:Hide()
+        end)
+
         view.xClose = self:CreateWorkbenchIconButton(view.frame, 'close', L['Close'])
         view.xClose:SetPoint('TOPRIGHT', -5, -5)
-        self:SetUIScript(view.xClose, 'OnClick', function() view.frame:Hide() end)
+
+        self:SetUIScript(view.xClose, 'OnClick', function()
+            view.frame:Hide()
+        end)
 
         -- Window-registry hook: hides the review window.
         function view:Hide()
@@ -129,7 +136,10 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
         end
 
         table.sort(aliases)
-        if #aliases > 0 then form:Text(table.concat(aliases, ', ')) end
+
+        if #aliases > 0 then
+            form:Text(table.concat(aliases, ', '))
+        end
 
         if view.code and view.code.Acquire then
             view.code:Acquire(function() end, valid)
@@ -178,13 +188,20 @@ function addon:ShowFunctionBundleSource(owner, row, ownerValid)
     end
 
     self:SetUIScript(view.frame, 'OnHide', function()
-        if view.code then view.code:Release() end
+        if view.code then
+            view.code:Release()
+        end
+
         view.form:Release()
     end)
 
     self:SetUIScript(view.frame, 'OnUpdate', function(...)
-        if view.chromeUpdate then view.chromeUpdate(...) end
-        if not valid() then view.frame:Hide() end
+        if view.chromeUpdate then
+            view.chromeUpdate(...)
+        end
+        if not valid() then
+            view.frame:Hide()
+        end
     end)
 
     view.frame:Show()
@@ -219,7 +236,10 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     local kind = options.kind or 'function'
     local codec = self:NewRotationCodec()
     local d = p.functionBundleTransfer
-    if d and d.frame:IsShown() then d.frame:Hide() end
+
+    if d and d.frame:IsShown() then
+        d.frame:Hide()
+    end
 
     if not d then
         d = self:CreateWorkbenchTransferShell(880, 720)
@@ -320,10 +340,18 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         self.lastRequirements = {}
         local bundle, why = addon:BuildFunctionBundle(kind, id, source, self.include)
         local text, errorText
-        if bundle then text, errorText = codec:Encode(bundle) end
+
+        if bundle then
+            text, errorText = codec:Encode(bundle)
+        end
+
         self.input:SetText(addon:FormatExportText(text))
         self:Invalidate()
-        if not text and source then status(problemText(why or errorText)) end
+
+        if not text and source then
+            status(problemText(why or errorText))
+        end
+
         self.form:Draw()
         self.scroll:UpdateWorkbenchScroll()
     end
@@ -331,7 +359,10 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     -- Parses the pasted bundle and plans the import with the current conflict choices; enables Apply import only for a
     -- valid plan of the expected kind. Choices reset when the pasted text changes. Returns whether the plan is valid.
     function d:Review()
-        if not valid() or not self.form:FlushEdits() then return false end
+        if not valid() or not self.form:FlushEdits() then
+            return false
+        end
+
         local bundle, why = addon:ParseFunctionBundleImport(self.input:GetText(), codec)
 
         if not bundle or bundle.root.kind ~= kind then
@@ -439,15 +470,17 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
                     addon:ShowWorkbenchDraftChanges(d, 'profile', row.existing, row.source, valid)
                 end)
             end
-
-            if #row.effects > 0 then form:Text(L['Existing dependents'] .. ': ' .. table.concat(row.effects, ', ')) end
-
+            if #row.effects > 0 then
+                form:Text(L['Existing dependents'] .. ': ' .. table.concat(row.effects, ', '))
+            end
             if row.source.disabled then
                 form:Text(L['This imported definition is disabled. Its dependents remain unavailable.'])
             end
         end
 
-        if #d.lastRequirements > 0 then form:Heading(L['Required functions']) end
+        if #d.lastRequirements > 0 then
+            form:Heading(L['Required functions'])
+        end
 
         for _, requirement in ipairs(d.lastRequirements) do
             local text = form:Text(
@@ -473,11 +506,16 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     end)
 
     addon:SetUIScript(d.input, 'OnTextChanged', function(_, user)
-        if user and valid() then d:Invalidate() end
+        if user and valid() then
+            d:Invalidate()
+        end
+
         d.scroll:UpdateWorkbenchScroll()
     end)
 
-    addon:SetUIScript(d.input, 'OnSizeChanged', function() d.scroll:UpdateWorkbenchScroll() end)
+    addon:SetUIScript(d.input, 'OnSizeChanged', function()
+        d.scroll:UpdateWorkbenchScroll()
+    end)
 
     addon:SetUIScript(d.input, 'OnCursorChanged', function(_, _, y, _, height)
         local top = -y
@@ -498,7 +536,9 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         bar:SetValue(bar:GetValue() - delta * 40)
     end)
 
-    addon:SetUIScript(d.review, 'OnClick', function() d:Review() end)
+    addon:SetUIScript(d.review, 'OnClick', function()
+        d:Review()
+    end)
 
     addon:SetUIScript(d.copy, 'OnClick', function()
         if valid() then
@@ -528,22 +568,39 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         self.frame:Hide()
     end
 
-    addon:SetUIScript(d.cancel, 'OnClick', function() d:Hide() end)
-    addon:SetUIScript(d.close, 'OnClick', function() d:Hide() end)
+    addon:SetUIScript(d.cancel, 'OnClick', function()
+        d:Hide()
+    end)
+
+    addon:SetUIScript(d.close, 'OnClick', function()
+        d:Hide()
+    end)
 
     addon:SetUIScript(d.frame, 'OnHide', function()
         d.input:ClearFocus()
-        if d.sourceReview then d.sourceReview:Hide() end
+
+        if d.sourceReview then
+            d.sourceReview:Hide()
+        end
+
         d.form:Release()
-        if options.onClose then options.onClose() end
+
+        if options.onClose then
+            options.onClose()
+        end
     end)
 
     addon:SetUIScript(d.apply, 'OnClick', function()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local pending = false
 
         for _, record in ipairs(d.form.edits) do
-            if record.dirty then pending = true end
+            if record.dirty then
+                pending = true
+            end
         end
 
         if pending or d.reviewedText ~= d.input:GetText() then
@@ -551,7 +608,9 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
             return
         end
 
-        if not d.plan or not d.plan.valid then return end
+        if not d.plan or not d.plan.valid then
+            return
+        end
 
         if InCombatLockdown and InCombatLockdown() then
             status(L['Leave combat before applying these settings.'])
@@ -580,7 +639,10 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
         if options.onApplied then
             options.onApplied(root)
         else
-            if p.inlineFunction then p.inlineFunction:Close() end
+            if p.inlineFunction then
+                p.inlineFunction:Close()
+            end
+
             p:DiscardSettingsDraft()
             p.newFunctionID = nil
             p.newFunctionSource = nil
@@ -591,12 +653,18 @@ function addon:ShowFunctionBundleTransfer(p, id, source, options)
     end)
 
     p.cleanups[#p.cleanups + 1] = function()
-        if d.serial == serial then d.frame:Hide() end
+        if d.serial == serial then
+            d.frame:Hide()
+        end
     end
 
     addon:SetUIScript(d.frame, 'OnUpdate', function(...)
-        if d.chromeUpdate then d.chromeUpdate(...) end
-        if d.frame:IsShown() and not valid() then d.frame:Hide() end
+        if d.chromeUpdate then
+            d.chromeUpdate(...)
+        end
+        if d.frame:IsShown() and not valid() then
+            d.frame:Hide()
+        end
     end)
 
     d.frame:Show()
@@ -641,7 +709,10 @@ end
 -- bundle dialog, or nil when the parent has no form or no owner to return to.
 function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, incomingText)
     local owner = parent.rmConditionOwner
-    if not owner or not parent.form then return end
+
+    if not owner or not parent.form then
+        return
+    end
 
     -- True while the condition dialog can still be resumed, so a closed or replaced dialog is never reopened.
     local function valid()
@@ -660,7 +731,9 @@ function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, 
                 dialog.rmConditionOwner = nil
             end
 
-            if valid() then parent:Show() end
+            if valid() then
+                parent:Show()
+            end
         end,
         onApplied = function(identifier)
             if valid() then
@@ -670,7 +743,10 @@ function addon:ShowConditionFunctionBundleTransfer(parent, update, key, source, 
         end,
     })
 
-    if not dialog then return end
+    if not dialog then
+        return
+    end
+
     dialog.rmConditionOwner = owner
     owner.widgets[dialog] = true
     parent:HideForChild()

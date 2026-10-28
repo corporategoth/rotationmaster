@@ -45,7 +45,9 @@ function addon:ConfigureFunctionNameInput(form, input)
             end
         end
 
-        if changed then changed(control, user) end
+        if changed then
+            changed(control, user)
+        end
     end))
 end
 
@@ -73,16 +75,26 @@ end
 -- or is a value binding.
 function addon:FunctionSource(id)
     local custom = (self.db.global.custom_functions or {})[id]
-    if custom then return custom, false end
+
+    if custom then
+        return custom, false
+    end
+
     local builtin = (self.builtinFunctions or {})[id]
-    if builtin and not builtin.valueBinding then return builtin.source, true end
+
+    if builtin and not builtin.valueBinding then
+        return builtin.source, true
+    end
 end
 
 -- Starts a new custom function in the pane `p` (a copy of `source`, or the blank template) under a new generated id,
 -- after any unapplied edits have been resolved.
 function addon:OpenNewFunction(p, source)
     p:RequestLeave(function()
-        if not p.active then return end
+        if not p.active then
+            return
+        end
+
         p.functionID = nil
         p.newFunctionID = 'FUNCTION_' .. self:uuid():gsub('-', '_')
         p.newFunctionSource = self:CopySettingsData(source or self:NewFunctionSource())
@@ -97,7 +109,11 @@ end
 -- approved, so a cancelled jump changes nothing.
 function addon:ShowFunctionSource(id)
     local source = self:FunctionSource(id)
-    if not source then return end
+
+    if not source then
+        return
+    end
+
     local shell = self.configWindow
     local pane = shell and shell.pane
 
@@ -121,7 +137,9 @@ function addon:FunctionNamespaces()
     local names = {}
 
     for id, record in pairs(self.builtinFunctions or {}) do
-        if not record.valueBinding then names[self:FunctionNamespace(id, record.source)] = true end
+        if not record.valueBinding then
+            names[self:FunctionNamespace(id, record.source)] = true
+        end
     end
 
     for id, value in pairs(self.db.global.custom_functions or {}) do
@@ -184,8 +202,9 @@ function addon:BuildFunctionSettings(p)
     -- Adds a roster entry for a function unless the source or namespace filter hides it; an entry whose function is
     -- unavailable is marked invalid with the reason.
     local function add(id, source, builtin)
-        if p.functionSource == 'builtin' and not builtin or p.functionSource == 'custom' and builtin then return end
-
+        if p.functionSource == 'builtin' and not builtin or p.functionSource == 'custom' and builtin then
+            return
+        end
         if p.functionNamespaceFilter ~= '*' and self:FunctionNamespace(id, source) ~= p.functionNamespaceFilter then
             return
         end
@@ -202,13 +221,17 @@ function addon:BuildFunctionSettings(p)
             validationMessage = not available and string.format(L['Function unavailable: %s'], why) or nil,
         }
 
-        if p.functionID == id then selected = true end
+        if p.functionID == id then
+            selected = true
+        end
     end
 
     p.functionSource = p.functionSource or 'all'
 
     for id, record in pairs(self.builtinFunctions or {}) do
-        if not record.valueBinding then add(id, record.source, true) end
+        if not record.valueBinding then
+            add(id, record.source, true)
+        end
     end
 
     for id, source in pairs(custom) do
@@ -216,11 +239,16 @@ function addon:BuildFunctionSettings(p)
     end
 
     table.sort(entries, function(a, b)
-        if a.text == b.text then return a.value < b.value end
+        if a.text == b.text then
+            return a.value < b.value
+        end
+
         return a.text < b.text
     end)
 
-    if not selected and not p.newFunctionSource then p.functionID = entries[1] and entries[1].value end
+    if not selected and not p.newFunctionSource then
+        p.functionID = entries[1] and entries[1].value
+    end
 
     p:UseRoster(
         entries,
@@ -235,7 +263,9 @@ function addon:BuildFunctionSettings(p)
         end,
         {
             newText = L['New'],
-            new = function() self:OpenNewFunction(p) end,
+            new = function()
+                self:OpenNewFunction(p)
+            end,
             categories = namespaces,
             category = p.functionNamespaceFilter,
             chooseCategory = function(value)
@@ -281,7 +311,10 @@ function addon:BuildFunctionSettings(p)
     end
 
     table.sort(comparisons, function(a, b)
-        if a.text == b.text then return a.value < b.value end
+        if a.text == b.text then
+            return a.value < b.value
+        end
+
         return a.text < b.text
     end)
 

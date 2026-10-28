@@ -145,7 +145,11 @@ end
 -- scope stays 'unknown' and visible. Progression clients are matched by branch (Wrath, Cataclysm, Mists).
 function addon:GetIntegrationClientSupport(id, client)
     local scope = scopes[id]
-    if not scope or scope.unknown or type(client) ~= 'table' then return 'unknown' end
+
+    if not scope or scope.unknown or type(client) ~= 'table' then
+        return 'unknown'
+    end
+
     local family = rawget(client, 'family')
 
     if not ({ retail = true, forever = true, era = true, tbc = true, progression = true })[family] then
@@ -154,13 +158,18 @@ function addon:GetIntegrationClientSupport(id, client)
 
     local function contains(list, value)
         for _, item in ipairs(list or {}) do
-            if item == value then return true end
+            if item == value then
+                return true
+            end
         end
 
         return false
     end
 
-    if not contains(scope.families, family) then return 'unsupported' end
+    if not contains(scope.families, family) then
+        return 'unsupported'
+    end
+
     local interface = rawget(client, 'interface')
 
     if
@@ -174,17 +183,29 @@ function addon:GetIntegrationClientSupport(id, client)
     end
 
     if family == 'progression' then
-        if not scope.progression or #scope.progression == 0 then return 'unknown' end
+        if not scope.progression or #scope.progression == 0 then
+            return 'unknown'
+        end
+
         local branch = interface and ({ [3] = 'wrath', [4] = 'cata', [5] = 'mists' })[math.floor(interface / 10000)]
-        if not branch then return 'unknown' end
-        if not contains(scope.progression, branch) then return 'unsupported' end
+
+        if not branch then
+            return 'unknown'
+        end
+        if not contains(scope.progression, branch) then
+            return 'unsupported'
+        end
     end
 
     local bounds = scope.interfaceRanges and scope.interfaceRanges[family]
 
     if bounds then
-        if not interface then return 'unknown' end
-        if bounds.min and interface < bounds.min or bounds.max and interface > bounds.max then return 'unsupported' end
+        if not interface then
+            return 'unknown'
+        end
+        if bounds.min and interface < bounds.min or bounds.max and interface > bounds.max then
+            return 'unsupported'
+        end
     end
 
     return 'supported'
@@ -224,7 +245,10 @@ end
 ---@param value any
 ---@param limit number
 local function text(value, limit, complete)
-    if not readable(value) or type(value) ~= 'string' then return nil end
+    if not readable(value) or type(value) ~= 'string' then
+        return nil
+    end
+
     local result, bytes, index = {}, 0, 1
 
     -- Bound output/work, retaining complete UTF-8 codepoints and doubled pipes.
@@ -281,13 +305,19 @@ local function text(value, limit, complete)
             char = value:sub(index, index + width - 1)
         end
 
-        if bytes + #char > limit then break end
+        if bytes + #char > limit then
+            break
+        end
+
         result[#result + 1] = char
         bytes = bytes + #char
         index = index + width
     end
 
-    if complete and index <= #value then return nil end
+    if complete and index <= #value then
+        return nil
+    end
+
     return table.concat(result)
 end
 
@@ -305,12 +335,22 @@ local function native(name, ...)
     local ok, value = pcall(function()
         local namespace = rawget(_G, 'C_AddOns')
         local fn = type(namespace) == 'table' and rawget(namespace, name) or nil
-        if type(fn) ~= 'function' then fn = rawget(_G, name) end
-        if type(fn) ~= 'function' then return nil end
+
+        if type(fn) ~= 'function' then
+            fn = rawget(_G, name)
+        end
+
+        if type(fn) ~= 'function' then
+            return nil
+        end
+
         return fn(unpack(args))
     end)
 
-    if not ok or not readable(value) then return nil end
+    if not ok or not readable(value) then
+        return nil
+    end
+
     return value
 end
 
@@ -337,12 +377,21 @@ local function connection(kind, id)
     elseif kind == 'masque' then
         local ok, value = pcall(function()
             local get = addon.GetMasquePreviewStatus
-            if type(get) == 'function' then return get(addon) end
+
+            if type(get) == 'function' then
+                return get(addon)
+            end
         end)
 
-        if not ok or not readable(value) or type(value) ~= 'table' then return 'unknown' end
+        if not ok or not readable(value) or type(value) ~= 'table' then
+            return 'unknown'
+        end
+
         local state = rawget(value, 'state')
-        if not readable(state) or type(state) ~= 'string' then return 'unknown' end
+
+        if not readable(state) or type(state) ~= 'string' then
+            return 'unknown'
+        end
 
         return ({
             connected = 'connected',
@@ -356,23 +405,43 @@ local function connection(kind, id)
         -- One boss mod is selected at a time; the other loaded one is merely idle.
         local ok, value = pcall(function()
             local get = addon.GetEncounterIntegrationStatus
-            if type(get) == 'function' then return get(addon) end
+
+            if type(get) == 'function' then
+                return get(addon)
+            end
         end)
 
-        if not ok or not readable(value) or type(value) ~= 'table' then return 'unknown' end
+        if not ok or not readable(value) or type(value) ~= 'table' then
+            return 'unknown'
+        end
+
         local state, provider = rawget(value, 'state'), rawget(value, 'provider')
-        if provider ~= id then return 'disabled' end
+
+        if provider ~= id then
+            return 'disabled'
+        end
+
         return questieStates[state] or 'unknown'
     elseif kind == 'questie' then
         -- This is RM's cached, detached singleton status, never provider discovery.
         local ok, value = pcall(function()
             local get = addon.GetQuestieIntegrationStatus
-            if type(get) == 'function' then return get(addon) end
+
+            if type(get) == 'function' then
+                return get(addon)
+            end
         end)
 
-        if not ok or not readable(value) or type(value) ~= 'table' then return 'unknown' end
+        if not ok or not readable(value) or type(value) ~= 'table' then
+            return 'unknown'
+        end
+
         local state = rawget(value, 'state')
-        if not readable(state) or type(state) ~= 'string' then return 'unknown' end
+
+        if not readable(state) or type(state) ~= 'string' then
+            return 'unknown'
+        end
+
         return questieStates[state] or 'unknown'
     end
 
@@ -383,18 +452,29 @@ end
 -- version is metadata and may exist for an addon that is not loaded, so the page shows it only with loaded evidence; a
 -- false loaded flag never proves the addon is not installed. The Masque row also reports the library API level.
 function addon:ListIntegrationStatus()
-    if not rawequal(self, addon) then return {} end
+    if not rawequal(self, addon) then
+        return {}
+    end
+
     local rows = {}
 
     for _, provider in ipairs(providers) do
         local loaded = native('IsAddOnLoaded', provider[1])
         local knownLoaded
-        if loaded == true or loaded == false then knownLoaded = loaded end
+
+        if loaded == true or loaded == false then
+            knownLoaded = loaded
+        end
+
         local state = loaded == true and 'loaded' or loaded == false and 'missing' or 'unknown'
         -- Metadata may exist for an installed but not loaded addon. A false loaded
         -- flag alone never establishes that the addon is not installed.
         local version = text(native('GetAddOnMetadata', provider[1], 'Version'), 4096, true)
-        if loaded == true then state = connection(provider[4], provider[1]) end
+
+        if loaded == true then
+            state = connection(provider[4], provider[1])
+        end
+
         local detail = display(provider[3], 320)
 
         if provider[4] == 'masque' then

@@ -8,7 +8,11 @@
 local addon_name, addon = ...
 -- Captured at load (and discarded if absent) so a later replacement of the public name cannot redirect it.
 local invalidateDependencies = addon.InvalidateRotationDependencies
-if type(invalidateDependencies) ~= 'function' then invalidateDependencies = nil end
+
+if type(invalidateDependencies) ~= 'function' then
+    invalidateDependencies = nil
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- ============================================================================
@@ -57,7 +61,10 @@ local schemas = {
 local function defaults(effect)
     for _, entry in ipairs(schemas[effect.type] or {}) do
         local v = effect[entry[1]]
-        if type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5] then effect[entry[1]] = entry[3] end
+
+        if type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5] then
+            effect[entry[1]] = entry[3]
+        end
     end
 
     if effect.type == 'dazzle' or effect.type == 'animate' or effect.type == 'pulse' or effect.type == 'custom' then
@@ -68,37 +75,55 @@ end
 -- True when `effect` is a well-formed definition: named, of a known type, numeric settings in range, and a sequence of
 -- at most 256 entries in the shape its type needs. Used for new, imported and loaded effects, so it must stay strict.
 local function validEffect(effect)
-    if type(effect) ~= 'table' or type(effect.name) ~= 'string' or not effect.name:find('%S') then return false end
+    if type(effect) ~= 'table' or type(effect.name) ~= 'string' or not effect.name:find('%S') then
+        return false
+    end
+
     local known = false
 
     for _, entry in ipairs(types) do
         known = known or entry.value == effect.type
     end
 
-    if not known then return false end
+    if not known then
+        return false
+    end
 
     for _, entry in ipairs(schemas[effect.type] or {}) do
         local v = effect[entry[1]]
-        if v ~= nil and (type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5]) then return false end
+
+        if v ~= nil and (type(v) ~= 'number' or v ~= v or v < entry[4] or v > entry[5]) then
+            return false
+        end
     end
 
-    if effect.type == 'proc' and effect.startAnim ~= nil and type(effect.startAnim) ~= 'boolean' then return false end
-
+    if effect.type == 'proc' and effect.startAnim ~= nil and type(effect.startAnim) ~= 'boolean' then
+        return false
+    end
     if effect.texture ~= nil and type(effect.texture) ~= 'string' and type(effect.texture) ~= 'number' then
         return false
     end
 
     if effect.sequence ~= nil then
-        if type(effect.sequence) ~= 'table' or #effect.sequence > 256 then return false end
+        if type(effect.sequence) ~= 'table' or #effect.sequence > 256 then
+            return false
+        end
 
         for _, entry in ipairs(effect.sequence) do
             if effect.type == 'pulse' then
-                if type(entry) ~= 'number' or entry ~= entry or entry < .1 or entry > 2 then return false end
+                if type(entry) ~= 'number' or entry ~= entry or entry < .1 or entry > 2 then
+                    return false
+                end
             elseif effect.type == 'animate' then
-                if type(entry) ~= 'string' and type(entry) ~= 'number' then return false end
+                if type(entry) ~= 'string' and type(entry) ~= 'number' then
+                    return false
+                end
             elseif effect.type == 'dazzle' or effect.type == 'custom' then
                 local color = effect.type == 'custom' and type(entry) == 'table' and entry.color or entry
-                if type(color) ~= 'table' then return false end
+
+                if type(color) ~= 'table' then
+                    return false
+                end
 
                 for _, key in ipairs({ 'r', 'g', 'b', 'a' }) do
                     if type(color[key]) ~= 'number' or color[key] ~= color[key] or color[key] < 0 or color[key] > 1 then
@@ -148,7 +173,9 @@ function addon:BuildEffectSettings(p)
         entry.search = effect.type
     end
 
-    if not effects[p.selection] and not p.creating then p.selection = entries[1] and entries[1].value end
+    if not effects[p.selection] and not p.creating then
+        p.selection = entries[1] and entries[1].value
+    end
 
     p:UseRoster(
         entries,
@@ -172,7 +199,11 @@ function addon:BuildEffectSettings(p)
     )
 
     local isNew = p.creating or not effects[p.selection] and p:CanAutoCreateCollection('global', 'effects')
-    if isNew then p.newEffect = p.newEffect or { name = '', type = 'pixel' } end
+
+    if isNew then
+        p.newEffect = p.newEffect or { name = '', type = 'pixel' }
+    end
+
     local effect = isNew and p.newEffect or effects[p.selection]
 
     if effect then
@@ -180,9 +211,12 @@ function addon:BuildEffectSettings(p)
 
         -- Re-shows the preview glow from the edited effect, so every change is visible at once.
         local function refresh()
-            if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
-            if p.preview and self.HideGlow then self:HideGlow(p.preview, 'settings-effect') end
-
+            if self.RemoveAllCurrentGlows then
+                self:RemoveAllCurrentGlows()
+            end
+            if p.preview and self.HideGlow then
+                self:HideGlow(p.preview, 'settings-effect')
+            end
             if p.preview and self.Glow then
                 self:Glow(p.preview, 'settings-effect', effect, { r = 1, g = 1, b = 1, a = 1 }, 1, 'CENTER', 0, 0)
             end
@@ -190,7 +224,10 @@ function addon:BuildEffectSettings(p)
 
         -- The live preview sits in the caption column beside Name and Type,
         -- so this page keeps the full-width caption column.
-        if p.labelScope then p.labelScope.custom = true end
+        if p.labelScope then
+            p.labelScope.custom = true
+        end
+
         local y = p.y
         local preview = p:Acquire('effectPreview', function() return CreateFrame('Frame', nil, p.child) end)
         preview:ClearAllPoints()
@@ -199,7 +236,9 @@ function addon:BuildEffectSettings(p)
         p.preview = preview
 
         p.cleanups[#p.cleanups + 1] = function()
-            if self.HideGlow then self:HideGlow(preview, 'settings-effect') end
+            if self.HideGlow then
+                self:HideGlow(preview, 'settings-effect')
+            end
         end
 
         p:Edit('name', L['Name'], effect.name or '', nil, function(text)
@@ -213,7 +252,10 @@ function addon:BuildEffectSettings(p)
         end)
 
         p:Choice('type', L['Type'], effect.type, types, function(value)
-            if value == effect.type then return end
+            if value == effect.type then
+                return
+            end
+
             local candidate = self:CopySettingsData(effect)
             candidate.type = value
             candidate.sequence = nil
@@ -305,7 +347,9 @@ function addon:BuildEffectSettings(p)
                         local label
 
                         for _, t in ipairs(types) do
-                            if t.value == effect.type then label = t.text end
+                            if t.value == effect.type then
+                                label = t.text
+                            end
                         end
 
                         return label or L['Effect']
@@ -377,7 +421,10 @@ function addon:BuildEffectSettings(p)
                             ghost.effectPreview:SetPoint('TOPLEFT', 8, -8)
                             ghost.effectPreview:SetSize(28, 28)
                             ghost.effectPreview:Show()
-                            if self.HideGlow then self:HideGlow(ghost.effectPreview, 'settings-drag') end
+
+                            if self.HideGlow then
+                                self:HideGlow(ghost.effectPreview, 'settings-drag')
+                            end
 
                             if self.Glow then
                                 local selected = self:CopySettingsData(effect)
@@ -525,9 +572,16 @@ function addon:BuildEffectSettings(p)
                         p,
                         L['Delete this effect? Rotations using it will need another effect.'],
                         function()
-                            if not (self.db.global.effects or {})[id] then return false, 'effect-changed' end
+                            if not (self.db.global.effects or {})[id] then
+                                return false, 'effect-changed'
+                            end
+
                             self.db.global.effects[id] = nil
-                            if invalidateDependencies then invalidateDependencies(addon, 'effect', id) end
+
+                            if invalidateDependencies then
+                                invalidateDependencies(addon, 'effect', id)
+                            end
+
                             return true
                         end
                     )
@@ -537,7 +591,11 @@ function addon:BuildEffectSettings(p)
 
         actionEntries[1].enabled = not isNew
         self:CollectionFooter(p, 'effect', effects, isNew and nil or id, actionEntries[1], actionEntries[2])
-        if not isNew then self:SettingsTopDelete(p, actionEntries[3].action) end
+
+        if not isNew then
+            self:SettingsTopDelete(p, actionEntries[3].action)
+        end
+
         refresh()
     end
 

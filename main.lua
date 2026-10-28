@@ -32,7 +32,9 @@ local readExecutionGeneration
 local bindExecutionGeneration = addon.BindRotationExecutionGeneration
 
 if type(bindExecutionGeneration) == 'function' then
-    bindExecutionGeneration(addon, function(read) readExecutionGeneration = read end)
+    bindExecutionGeneration(addon, function(read)
+        readExecutionGeneration = read
+    end)
 end
 
 addon.BindRotationExecutionGeneration = nil
@@ -40,7 +42,9 @@ addon.BindRotationExecutionGeneration = nil
 local adviceCapture
 
 if addon.BindAnalyticsAdviceCapture then
-    addon:BindAnalyticsAdviceCapture(function(sink) adviceCapture = sink end)
+    addon:BindAnalyticsAdviceCapture(function(sink)
+        adviceCapture = sink
+    end)
 end
 
 -- END ANALYTICS ADVICE HANDOFF
@@ -59,8 +63,9 @@ local function switchConditionMatches(value, current)
     -- No switch condition (none, an empty one, or a tree with nothing in it)
     -- matches; a broken one (an unknown condition) is not "none" and falls
     -- through to evaluation, which refuses it.
-    if value == nil then return true end
-
+    if value == nil then
+        return true
+    end
     if
         type(value) == 'table'
         and addon.usefulCondition
@@ -69,8 +74,10 @@ local function switchConditionMatches(value, current)
     then
         return true
     end
+    if switchConditionEvaluator then
+        return switchConditionEvaluator(addon, value, current)
+    end
 
-    if switchConditionEvaluator then return switchConditionEvaluator(addon, value, current) end
     return addon:evaluateCondition(value)
 end
 
@@ -118,9 +125,16 @@ end
 -- Calls self[name](self, ...) for the transition `token`, proving the token before and after the method lookup. Returns
 -- whether the transition is still current afterwards, so callers write `if not activeCall(...) then return end`.
 local function activeCall(self, token, name, ...)
-    if not activeChangeCurrent(self, token) then return false end
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local method = self[name]
-    if not activeChangeCurrent(self, token) then return false end
+
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     method(self, ...)
     return activeChangeCurrent(self, token)
 end
@@ -128,34 +142,58 @@ end
 -- Like activeCall but also returns the method's first result: `current, value`. The value is only meaningful when
 -- `current` is true.
 local function activeValue(self, token, name, ...)
-    if not activeChangeCurrent(self, token) then return false end
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local method = self[name]
-    if not activeChangeCurrent(self, token) then return false end
+
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local value = method(self, ...)
     return activeChangeCurrent(self, token), value
 end
 
 -- activeCall for a method of another object (AceEvent, the preview window, a coordinator): object[name](object, ...).
 local function activeObjectCall(self, token, object, name, ...)
-    if not activeChangeCurrent(self, token) then return false end
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local method = object[name]
-    if not activeChangeCurrent(self, token) then return false end
+
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     method(object, ...)
     return activeChangeCurrent(self, token)
 end
 
 -- activeValue for a method of another object; returns `current, value`.
 local function activeObjectValue(self, token, object, name, ...)
-    if not activeChangeCurrent(self, token) then return false end
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local method = object[name]
-    if not activeChangeCurrent(self, token) then return false end
+
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     local value = method(object, ...)
     return activeChangeCurrent(self, token), value
 end
 
 -- Sets the data broker's text for the transition `token`; returns whether the transition is still current.
 local function activeBroker(self, token, broker, text)
-    if not activeChangeCurrent(self, token) then return false end
+    if not activeChangeCurrent(self, token) then
+        return false
+    end
+
     broker.text = text
     return activeChangeCurrent(self, token)
 end
@@ -182,7 +220,9 @@ local bindRuntimeDecisions = addon.BindCPURuntimeDecisionCounts
 addon.BindCPURuntimeDecisionCounts = nil
 
 if type(bindRuntimeDecisions) == 'function' then
-    bindRuntimeDecisions(addon, function(sink) runtimeDecisionSink = sink end)
+    bindRuntimeDecisions(addon, function(sink)
+        runtimeDecisionSink = sink
+    end)
 end
 
 local consumeActiveRuntimePlan = addon.ConsumeActiveRuntimePlan
@@ -236,8 +276,13 @@ local function evaluateSequence(owner, body, evaluate, visit, guard)
         method = owner.EvaluateRotationSequence
     end
 
-    if sequenceRun then return sequenceRun(owner, before, method, body, evaluate, visit, guard) end
-    if guard then return { status = 'unavailable', suppressAttack = true } end
+    if sequenceRun then
+        return sequenceRun(owner, before, method, body, evaluate, visit, guard)
+    end
+    if guard then
+        return { status = 'unavailable', suppressAttack = true }
+    end
+
     return method(owner, body, evaluate, visit)
 end
 
@@ -292,7 +337,10 @@ addon.delayed_condition = {}
 -- The engine borrows its own validated pass; legacy public getters retain
 -- their historical mutable-body contract without becoming the polling path.
 local function mainSelectionPass(owner, spec)
-    if acquireMainSelectionPass then return acquireMainSelectionPass(owner, spec) end
+    if acquireMainSelectionPass then
+        return acquireMainSelectionPass(owner, spec)
+    end
+
     return owner:AcquireRotationRuntimePass(spec)
 end
 
@@ -301,7 +349,11 @@ end
 local function runtimeRows(owner, spec, candidates)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
         local pass, why = mainSelectionPass(owner, spec)
-        if not pass then return {}, why end
+
+        if not pass then
+            return {}, why
+        end
+
         return pass:Candidates(candidates == true)
     end
 
@@ -312,7 +364,11 @@ end
 local function runtimeOne(owner, spec, value)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
         local pass, why = mainSelectionPass(owner, spec)
-        if not pass then return nil, why end
+
+        if not pass then
+            return nil, why
+        end
+
         return pass:Get(value)
     end
 
@@ -518,9 +574,17 @@ local classic_events = {}
 -- rotation is refused or the transition was superseded.
 local function chooseManualRotation(self, id, change, remember)
     change = change or beginActive(self)
-    if not activeChangeCurrent(self, change) then return nil end
+
+    if not activeChangeCurrent(self, change) then
+        return nil
+    end
+
     local body = id and runtimeOne(self, self.currentSpec, id)
-    if not activeChangeCurrent(self, change) or id and not body then return nil end
+
+    if not activeChangeCurrent(self, change) or id and not body then
+        return nil
+    end
+
     local ticket
 
     if remember and prepareChoiceSelection then
@@ -528,44 +592,71 @@ local function chooseManualRotation(self, id, change, remember)
 
         if id then
             local available = self.GetScopedRotationCoordinator
-            if not activeChangeCurrent(self, change) then return nil end
+
+            if not activeChangeCurrent(self, change) then
+                return nil
+            end
+
             local checked, coordinator
 
             if available then
                 checked, coordinator = activeValue(self, change, 'GetScopedRotationCoordinator')
-                if not checked then return nil end
+
+                if not checked then
+                    return nil
+                end
             end
 
             if coordinator then
                 checked, reference = activeObjectValue(self, change, coordinator, 'Resolve', self.currentSpec, id)
-                if not checked then return nil end
+
+                if not checked then
+                    return nil
+                end
             end
         end
 
-        if not id or reference then ticket = prepareChoiceSelection(self, reference) end
-        if not activeChangeCurrent(self, change) then return nil end
+        if not id or reference then
+            ticket = prepareChoiceSelection(self, reference)
+        end
+
+        if not activeChangeCurrent(self, change) then
+            return nil
+        end
     end
 
     if ticket and invalidateChoiceDependencies then
         invalidateChoiceDependencies(self, 'selection', nil)
-        if not activeChangeCurrent(self, change) then return nil end
+
+        if not activeChangeCurrent(self, change) then
+            return nil
+        end
     end
 
     self.rotationChoiceSuspended = nil
 
     if id == nil then
-        if ticket then finishChoiceSelection(ticket) end
+        if ticket then
+            finishChoiceSelection(ticket)
+        end
+
         self.manualRotation = false
         return self:SwitchRotation()
     end
 
     local selected = self.currentRotation
-    if not activeChangeCurrent(self, change) then return nil end
+
+    if not activeChangeCurrent(self, change) then
+        return nil
+    end
 
     if selected ~= id then
-        if not retireActive(self, change) or not activeChangeCurrent(self, change) then return nil end
-        if not activeCall(self, change, 'RemoveAllCurrentGlows') then return nil end
-
+        if not retireActive(self, change) or not activeChangeCurrent(self, change) then
+            return nil
+        end
+        if not activeCall(self, change, 'RemoveAllCurrentGlows') then
+            return nil
+        end
         if not commitActive(self, change, self.currentSpec, id, body) or not activeChangeCurrent(self, change) then
             return nil
         end
@@ -574,10 +665,16 @@ local function chooseManualRotation(self, id, change, remember)
         self.skipAnnounce = true
         self.avail_announced = {}
         self.announced = {}
-        if not activeCall(self, change, 'EnableRotationTimer') then return nil end
-        local named, name = activeValue(self, change, 'GetRotationName', id)
-        if not named or not activeBroker(self, change, DataBroker, name) then return nil end
 
+        if not activeCall(self, change, 'EnableRotationTimer') then
+            return nil
+        end
+
+        local named, name = activeValue(self, change, 'GetRotationName', id)
+
+        if not named or not activeBroker(self, change, DataBroker, name) then
+            return nil
+        end
         if not activeObjectCall(self, change, AceEvent, 'SendMessage', 'ROTATIONMASTER_ROTATION', id, name) then
             return nil
         end
@@ -607,8 +704,10 @@ local function chooseManualRotation(self, id, change, remember)
         end
 
         local checked, valid = activeValue(self, change, 'rotationValidConditions', body, self.currentSpec)
-        if not checked then return nil end
 
+        if not checked then
+            return nil
+        end
         if
             not valid
             and not activeCall(self, change, 'warn', L["Active rotation is incomplete and may not work correctly!"])
@@ -616,7 +715,9 @@ local function chooseManualRotation(self, id, change, remember)
             return nil
         end
 
-        if ticket then finishChoiceSelection(ticket) end
+        if ticket then
+            finishChoiceSelection(ticket)
+        end
     end
 
     return true, change
@@ -628,25 +729,45 @@ end
 local function restoreManualChoice(self)
     if choiceNeedsRefresh and choiceNeedsRefresh(self) then
         local change = beginActive(self)
-        if not activeChangeCurrent(self, change) then return true end
+
+        if not activeChangeCurrent(self, change) then
+            return true
+        end
+
         local desired, changed = readDesiredChoice(self)
-        if not activeChangeCurrent(self, change) then return true end
-        if self.adviceErrorReport or self.initializationErrorReport then return true end
+
+        if not activeChangeCurrent(self, change) then
+            return true
+        end
+        if self.adviceErrorReport or self.initializationErrorReport then
+            return true
+        end
 
         if changed then
             local wasManual = self.manualRotation
-            if not activeChangeCurrent(self, change) then return true end
+
+            if not activeChangeCurrent(self, change) then
+                return true
+            end
+
             self.rotationChoiceSuspended = nil
             self.manualRotation = false
 
             if desired then
                 local available = self.GetScopedRotationCoordinator
-                if not activeChangeCurrent(self, change) then return true end
+
+                if not activeChangeCurrent(self, change) then
+                    return true
+                end
+
                 local checked, coordinator, reference, key
 
                 if available then
                     checked, coordinator = activeValue(self, change, 'GetScopedRotationCoordinator')
-                    if not checked then return true end
+
+                    if not checked then
+                        return true
+                    end
                 end
 
                 if coordinator then
@@ -659,27 +780,50 @@ local function restoreManualChoice(self)
                         desired
                     )
 
-                    if not checked then return true end
+                    if not checked then
+                        return true
+                    end
 
                     if reference then
                         checked, key = activeObjectValue(self, change, coordinator, 'Key', reference)
-                        if not checked then return true end
+
+                        if not checked then
+                            return true
+                        end
                     end
                 end
 
-                if not activeChangeCurrent(self, change) then return true end
-                if reference and chooseManualRotation(self, key, change, false) then return true, change end
-                if not activeChangeCurrent(self, change) then return true end
+                if not activeChangeCurrent(self, change) then
+                    return true
+                end
+                if reference and chooseManualRotation(self, key, change, false) then
+                    return true, change
+                end
+                if not activeChangeCurrent(self, change) then
+                    return true
+                end
+
                 self.rotationChoiceSuspended = true
             end
 
             if wasManual and self.currentRotation then
                 local disable = self.DisableRotation
-                if not activeChangeCurrent(self, change) then return true end
+
+                if not activeChangeCurrent(self, change) then
+                    return true
+                end
+
                 local _, nextChange, stopped = disable(self)
-                if stopped == false then return true end
+
+                if stopped == false then
+                    return true
+                end
+
                 change = nextChange or change
-                if not activeChangeCurrent(self, change) then return true end
+
+                if not activeChangeCurrent(self, change) then
+                    return true
+                end
             end
         end
 
@@ -765,7 +909,10 @@ function addon:HandleCommand(str)
     elseif cmd == "set" then
         local change = beginActive(self)
         local name = string.sub(str, npos)
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
 
         if name == "auto" then
             chooseManualRotation(self, nil, change, true)
@@ -780,13 +927,19 @@ function addon:HandleCommand(str)
             end
         else
             local rows = runtimeRows(self, self.currentSpec)
-            if not activeChangeCurrent(self, change) then return end
+
+            if not activeChangeCurrent(self, change) then
+                return
+            end
 
             -- An identifier first (case-insensitive, among selectable rotations),
             -- then the exact name, as before.
             if self.ResolveRotationIdentifier then
                 local key, _, _, ambiguous = self:ResolveRotationIdentifier(self.currentSpec, name, rows)
-                if not activeChangeCurrent(self, change) then return end
+
+                if not activeChangeCurrent(self, change) then
+                    return
+                end
 
                 if key then
                     if not chooseManualRotation(self, key, change, true) and activeChangeCurrent(self, change) then
@@ -807,7 +960,10 @@ function addon:HandleCommand(str)
 
                 -- An identifier of a rotation that cannot be selected now says why.
                 local named, entry = self:ResolveRotationIdentifier(self.currentSpec, name, nil)
-                if not activeChangeCurrent(self, change) then return end
+
+                if not activeChangeCurrent(self, change) then
+                    return
+                end
 
                 if named and entry then
                     self:warn(L["Rotation %s cannot be selected."], string.format(
@@ -824,10 +980,14 @@ function addon:HandleCommand(str)
             local matches = {}
 
             for id, rot in pairs(rows) do
-                if rot.name == name then matches[#matches + 1] = id end
+                if rot.name == name then
+                    matches[#matches + 1] = id
+                end
             end
 
-            if not activeChangeCurrent(self, change) then return end
+            if not activeChangeCurrent(self, change) then
+                return
+            end
 
             if #matches > 1 then
                 self:warn(
@@ -848,7 +1008,10 @@ function addon:HandleCommand(str)
 
             -- Candidates hold only selectable rotations; say why a named one is not.
             local headers = self.ListRotationHeaders and self:ListRotationHeaders(self.currentSpec)
-            if not activeChangeCurrent(self, change) then return end
+
+            if not activeChangeCurrent(self, change) then
+                return
+            end
 
             for _, row in ipairs(type(headers) == 'table' and headers or {}) do
                 if row.name == name and not row.fallback then
@@ -892,9 +1055,16 @@ local questieService, questieEvents, questieEnabled
 
 -- Builds the Questie adapter once, if the integrations module offers one, and applies the saved preference to it.
 function addon:InitializeQuestieIntegration()
-    if questieService then return end
+    if questieService then
+        return
+    end
+
     local factory = self.Integrations and self.Integrations.NewQuestie
-    if type(factory) ~= 'function' then return end
+
+    if type(factory) ~= 'function' then
+        return
+    end
+
     questieService = factory()
     self:SyncQuestieIntegration()
 end
@@ -902,9 +1072,16 @@ end
 -- Applies profile.questie_enabled to the adapter. While enabled it listens for ADDON_LOADED so a Questie that loads
 -- later is refreshed. Returns false when there is no adapter, true otherwise; does nothing if the setting is unchanged.
 function addon:SyncQuestieIntegration()
-    if not questieService then return false end
+    if not questieService then
+        return false
+    end
+
     local enabled = self.db and self.db.profile and self.db.profile.questie_enabled == true or false
-    if enabled == questieEnabled then return true end
+
+    if enabled == questieEnabled then
+        return true
+    end
+
     questieEnabled = enabled
 
     if enabled then
@@ -912,7 +1089,9 @@ function addon:SyncQuestieIntegration()
             questieEvents = CreateFrame('Frame')
 
             questieEvents:SetScript('OnEvent', function(_, event, name)
-                if event == 'ADDON_LOADED' and name == 'Questie' and questieEnabled then questieService:Refresh() end
+                if event == 'ADDON_LOADED' and name == 'Questie' and questieEnabled then
+                    questieService:Refresh()
+                end
             end)
         end
 
@@ -927,13 +1106,19 @@ end
 
 -- The adapter's status record, or an "unavailable" record when no adapter was created.
 function addon:GetQuestieIntegrationStatus()
-    if questieService then return questieService:GetStatus() end
+    if questieService then
+        return questieService:GetStatus()
+    end
+
     return { state = 'unavailable', reason = 'adapter-unavailable', nativeAcceptance = 'unverified' }
 end
 
 -- Asks the adapter to rescan while the integration is enabled; otherwise returns the current status unchanged.
 function addon:RefreshQuestieIntegration()
-    if questieService and questieEnabled then return questieService:Refresh() end
+    if questieService and questieEnabled then
+        return questieService:Refresh()
+    end
+
     return self:GetQuestieIntegrationStatus()
 end
 
@@ -979,7 +1164,10 @@ function addon:OnInitializeInternal()
         end
     end
 
-    if self.RefreshRotationProfileStorage then self:RefreshRotationProfileStorage() end
+    if self.RefreshRotationProfileStorage then
+        self:RefreshRotationProfileStorage()
+    end
+
     self:init()
     self:validate(defaults)
 
@@ -991,15 +1179,22 @@ function addon:OnInitializeInternal()
     DataBroker.text = color.RED .. OFF
 
     self.funcDeserialize = {}
-    if self.InitializeFunctionRegistry then self:InitializeFunctionRegistry() end
+
+    if self.InitializeFunctionRegistry then
+        self:InitializeFunctionRegistry()
+    end
 
     for key, condition in pairs(self.db.global.custom_conditions) do
         addon:register_custom_condition(key, condition)
     end
 
     -- This character's Built In packs register before the catalog is built.
-    if self.LoadBuiltInModule then self:LoadBuiltInModule() end
-    if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
+    if self.LoadBuiltInModule then
+        self:LoadBuiltInModule()
+    end
+    if self.InitializeRotationLibrary then
+        self:InitializeRotationLibrary()
+    end
 
     -- These values are cached for the entire time you are in combat.  Their values
     -- are unlikely to change during combat (and if they do, they will have minimal effect)
@@ -1072,13 +1267,19 @@ function addon:OnInitializeInternal()
 
     self.currentSpell = nil
     self.nextWindow = nil
-    if self.InstallRotationProfileLifecycle then self:InstallRotationProfileLifecycle() end
+
+    if self.InstallRotationProfileLifecycle then
+        self:InstallRotationProfileLifecycle()
+    end
 
     -- This is here because of order of loading.
     getCached = addon.Functions.cache.getCached
 
     self:InitializeQuestieIntegration()
-    if self.InitializeEncounterIntegration then self:InitializeEncounterIntegration() end
+
+    if self.InitializeEncounterIntegration then
+        self:InitializeEncounterIntegration()
+    end
 
     --self:SetupOptions()
 end
@@ -1115,7 +1316,10 @@ end
 -- One warning line naming why `value` cannot be selected for this character.
 function addon:WarnRotationRefusal(value)
     local why = self.ExplainRotationRefusal and self:ExplainRotationRefusal(self.currentSpec, value)
-    if why then self:warn(L['Reason: %s. Type /rm why to check every rotation.'], why) end
+
+    if why then
+        self:warn(L['Reason: %s. Type /rm why to check every rotation.'], why)
+    end
 end
 
 -- The name of rotation `id` in the current specialization (DEFAULT for the fallback), or nil when it is not selectable.
@@ -1224,7 +1428,11 @@ function minimapInitialize()
         info.tooltipTitle = L["Disabled Built In rotations"]
         info.tooltipText = L["Open Rotations, select the Built In and turn it back on to make it selectable."]
         info.tooltipOnButton = true
-        info.func = function() addon:ShowConfig("Rotations") end
+
+        info.func = function()
+            addon:ShowConfig("Rotations")
+        end
+
         UIDropDownMenu_AddButton(info)
     end
 end
@@ -1296,13 +1504,25 @@ end
 -- alone and require the native event catalogue to confirm each optional name.
 -- Returns whether the transition is still current and whether the event was registered.
 local function registerOptionalEvent(owner, change, event)
-    if not activeChangeCurrent(owner, change) then return false end
+    if not activeChangeCurrent(owner, change) then
+        return false
+    end
+
     local utils = C_EventUtils
     local validEvent = type(utils) == 'table' and utils.IsEventValid
-    if not activeChangeCurrent(owner, change) then return false end
-    if type(validEvent) ~= 'function' then return activeChangeCurrent(owner, change), false end
+
+    if not activeChangeCurrent(owner, change) then
+        return false
+    end
+    if type(validEvent) ~= 'function' then
+        return activeChangeCurrent(owner, change), false
+    end
+
     local ok, valid = pcall(validEvent, event)
-    if not activeChangeCurrent(owner, change) then return false end
+
+    if not activeChangeCurrent(owner, change) then
+        return false
+    end
 
     if ok and valid == true then
         local current = activeCall(owner, change, 'RegisterEvent', event)
@@ -1346,16 +1566,24 @@ local castFrame
 -- the client cannot filter by unit; the caller then registers those events the ordinary way.
 local function registerCastEvents(self, wanted)
     if not castFrame then
-        if type(CreateFrame) ~= 'function' then return false end
+        if type(CreateFrame) ~= 'function' then
+            return false
+        end
+
         castFrame = CreateFrame('Frame')
 
         castFrame:SetScript('OnEvent', function(_, event, ...)
             local handler = self[event]
-            if handler then handler(self, event, ...) end
+
+            if handler then
+                handler(self, event, ...)
+            end
         end)
     end
 
-    if not castFrame.RegisterUnitEvent then return false end
+    if not castFrame.RegisterUnitEvent then
+        return false
+    end
 
     for event in pairs(wanted or castEvents) do
         pcall(castFrame.RegisterUnitEvent, castFrame, event, 'player', 'pet')
@@ -1368,18 +1596,26 @@ end
 -- set current afterwards; UnitExists carries no secret annotation.
 local function seedNameplateUnits(self)
     local units = self.nameplateUnits
-    if type(units) ~= 'table' then return end
+
+    if type(units) ~= 'table' then
+        return
+    end
 
     for unit in pairs(units) do
         units[unit] = nil
     end
 
-    if type(UnitExists) ~= 'function' then return end
+    if type(UnitExists) ~= 'function' then
+        return
+    end
 
     for index = 1, 40 do
         local unit = 'nameplate' .. index
         local ok, exists = pcall(UnitExists, unit)
-        if ok and self.Platform:CanReadValue(exists) and exists == true then units[unit] = true end
+
+        if ok and self.Platform:CanReadValue(exists) and exists == true then
+            units[unit] = true
+        end
     end
 end
 
@@ -1397,7 +1633,11 @@ function addon:enable()
     end
 
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     -- BEGIN EQUIPMENT ENABLE LIFETIME
     equipmentSubscription = nil
     local equipmentProfile = self.db.profile
@@ -1405,11 +1645,16 @@ function addon:enable()
 
     -- END EQUIPMENT ENABLE LIFETIME
     for _, v in pairs(events) do
-        if not activeCall(self, change, 'RegisterEvent', v) then return end
+        if not activeCall(self, change, 'RegisterEvent', v) then
+            return
+        end
     end
 
     local client = self.Platform:GetClientInfo()
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     if client.combatDataPolicy == 'probe' then
         local unitCasts = registerCastEvents(self)
@@ -1429,7 +1674,10 @@ function addon:enable()
             end
         end
 
-        if self.nameplateUnits == nil then self.nameplateUnits = {} end
+        if self.nameplateUnits == nil then
+            self.nameplateUnits = {}
+        end
+
         seedNameplateUnits(self)
     end
 
@@ -1443,72 +1691,127 @@ function addon:enable()
         or {}
 
     for _, event in ipairs(extraEvents) do
-        if not activeCall(self, change, 'RegisterEvent', event) then return end
+        if not activeCall(self, change, 'RegisterEvent', event) then
+            return
+        end
     end
 
-    if not registerOptionalEvent(self, change, 'UNIT_EXITED_VEHICLE') then return end
+    if not registerOptionalEvent(self, change, 'UNIT_EXITED_VEHICLE') then
+        return
+    end
 
     -- BEGIN ACTION CONTEXT REGISTRATION
     for _, event in ipairs(actionContextEvents) do
-        if not registerOptionalEvent(self, change, event) then return end
+        if not registerOptionalEvent(self, change, event) then
+            return
+        end
     end
 
-    if self.RefreshActionContext then self:RefreshActionContext() end
+    if self.RefreshActionContext then
+        self:RefreshActionContext()
+    end
 
     -- END ACTION CONTEXT REGISTRATION
     if family == 'tbc' then
-        if not registerOptionalEvent(self, change, 'PLAYER_TALENT_UPDATE') then return end
-        if not registerOptionalEvent(self, change, 'ACTIVE_TALENT_GROUP_CHANGED') then return end
+        if not registerOptionalEvent(self, change, 'PLAYER_TALENT_UPDATE') then
+            return
+        end
+        if not registerOptionalEvent(self, change, 'ACTIVE_TALENT_GROUP_CHANGED') then
+            return
+        end
+
         -- BEGIN EQUIPMENT EVENT REGISTRATION
         local current, registered = registerOptionalEvent(self, change, 'PLAYER_EQUIPMENT_CHANGED')
-        if not current then return end
+
+        if not current then
+            return
+        end
+
         equipmentRegistered = registered
         -- END EQUIPMENT EVENT REGISTRATION
     end
 
     if client.combatDataPolicy == 'probe' then
         reconcileNameplateResume(self, change)
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
     end
 
     if self.RefreshPreviewWindow then
-        if not activeCall(self, change, 'RefreshPreviewWindow') then return end
+        if not activeCall(self, change, 'RefreshPreviewWindow') then
+            return
+        end
     end
 
-    if not activeChangeCurrent(self, change) then return end
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local update = self.UpdateSkill
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local _, nextChange = update(self)
     change = nextChange or change
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     -- BEGIN EQUIPMENT ENABLE COMMIT
-    if not activeCall(self, change, 'EnableRotation') then return end
+    if not activeCall(self, change, 'EnableRotation') then
+        return
+    end
 
     if equipmentRegistered and self.db.profile == equipmentProfile and activeChangeCurrent(self, change) then
         equipmentSubscription = {}
     end
 
     -- END EQUIPMENT ENABLE COMMIT
-    if activeChangeCurrent(self, change) then self:StartAutoSwitchTimer() end
+    if activeChangeCurrent(self, change) then
+        self:StartAutoSwitchTimer()
+    end
 end
 
 -- Stops the addon: cancels the auto-switch timer, retires the active rotation, releases the preview window, clears the
 -- spell and combat histories and the nameplate set, and unregisters every event.
 function addon:disable()
-    if self.initializationErrorReport then return end
+    if self.initializationErrorReport then
+        return
+    end
+
     self:StopAutoSwitchTimer()
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     -- BEGIN EQUIPMENT DISABLE LIFETIME
     equipmentSubscription = nil
     -- END EQUIPMENT DISABLE LIFETIME
     local disable = self.DisableRotation
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local _, nextChange, stopped = disable(self)
     change = nextChange or change
-    if stopped == false or not activeChangeCurrent(self, change) then return end
+
+    if stopped == false or not activeChangeCurrent(self, change) then
+        return
+    end
+
     local available = self.nextWindow
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     if available then
         local spells = self.db.profile.preview_spells
@@ -1532,13 +1835,21 @@ function addon:disable()
         end
     end
 
-    if castFrame and castFrame.UnregisterAllEvents then castFrame:UnregisterAllEvents() end
-    if not activeCall(self, change, 'UnregisterAllEvents') then return end
+    if castFrame and castFrame.UnregisterAllEvents then
+        castFrame:UnregisterAllEvents()
+    end
+
+    if not activeCall(self, change, 'UnregisterAllEvents') then
+        return
+    end
 end
 
 -- AceAddon entry point: enables the rotation when the profile says so; does nothing after a failed initialization.
 function addon:OnEnable()
-    if self.initializationErrorReport then return end
+    if self.initializationErrorReport then
+        return
+    end
+
     self:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version"))
 
     -- Live Status Update Frequency drives the rotation editor's live dots,
@@ -1558,9 +1869,16 @@ end
 -- Whether rotation body `rot` is complete for `spec`: every reachable, enabled step has valid conditions and an action
 -- (or is a Stop or Assisted step), item steps name a non-empty item set, and at least one usable step exists.
 function addon:rotationValidConditions(rot, spec)
-    if type(rot) ~= 'table' or not self.RotationData.GetRotationPriority(rot.priority) then return false end
+    if type(rot) ~= 'table' or not self.RotationData.GetRotationPriority(rot.priority) then
+        return false
+    end
+
     local tree = self.RotationData.IndexRotationSteps(rot, { allowMissingIds = true })
-    if not tree then return false end
+
+    if not tree then
+        return false
+    end
+
     local itemsets, global_itemsets = self.db.profile.itemsets, self.db.global.itemsets
     local itemfound = false
 
@@ -1575,8 +1893,9 @@ function addon:rotationValidConditions(rot, spec)
                     return false
                 end
             else
-                if step.type == nil or not self:validateCondition(step.conditions, spec) then return false end
-
+                if step.type == nil or not self:validateCondition(step.conditions, spec) then
+                    return false
+                end
                 if
                     step.type ~= "stop"
                     and step.action == nil
@@ -1588,7 +1907,10 @@ function addon:rotationValidConditions(rot, spec)
                 if step.type == "item" then
                     if type(step.action) == "string" then
                         local itemset = itemsets[step.action] or global_itemsets[step.action]
-                        if not itemset or type(itemset.items) ~= "table" or #itemset.items == 0 then return false end
+
+                        if not itemset or type(itemset.items) ~= "table" or #itemset.items == 0 then
+                            return false
+                        end
                     elseif type(step.action) ~= "table" or #step.action == 0 then
                         return false
                     end
@@ -1617,25 +1939,42 @@ end
 -- Returns nil and the token when settled, nothing when superseded.
 function addon:SwitchRotation()
     local handled, restoredChange = restoreManualChoice(self)
-    if handled then return nil, restoredChange end
+
+    if handled then
+        return nil, restoredChange
+    end
 
     if not autoSwitchEnabled(self.db.profile) or self.manualRotation then
-        if restoredChange and not activeChangeCurrent(self, restoredChange) then return end
+        if restoredChange and not activeChangeCurrent(self, restoredChange) then
+            return
+        end
+
         return nil, restoredChange
     end
 
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local newRotation
     local selectedSpec, selectedProfile, selectedRotation = self.currentSpec, self.db.profile, self.currentRotation
     local selectionPass, rotations
 
     if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
         selectionPass = mainSelectionPass(self, selectedSpec)
-        if not selectionPass then return end
+
+        if not selectionPass then
+            return
+        end
+
         local why
         rotations, why = selectionPass:Candidates(false)
-        if why then return end
+
+        if why then
+            return
+        end
     else
         rotations = runtimeRows(self, selectedSpec)
     end
@@ -1670,9 +2009,15 @@ function addon:SwitchRotation()
     -- resort when none matches. A Built In you do not want picked is disabled,
     -- or ranked, in its Built In view.
     for _, v in ipairs(self.autoswitchRotation) do
-        if not switchOwnerCurrent() then return end
+        if not switchOwnerCurrent() then
+            return
+        end
+
         local matched = rotations[v] and switchConditionMatches(rotations[v].switch, switchOwnerCurrent)
-        if not switchOwnerCurrent() then return end
+
+        if not switchOwnerCurrent() then
+            return
+        end
 
         if matched then
             newRotation = v
@@ -1687,15 +2032,23 @@ function addon:SwitchRotation()
         newRotation = DEFAULT
     end
 
-    if not current() then return end
+    if not current() then
+        return
+    end
 
     if newRotation then
         if self.currentRotation ~= newRotation then
             local name = newRotation == DEFAULT and DEFAULT or rotations[newRotation].name
-            if not retireActive(self, change) or not activeChangeCurrent(self, change) then return end
-            selectedRotation = nil
-            if not activeCall(self, change, 'RemoveAllCurrentGlows') or not current() then return end
 
+            if not retireActive(self, change) or not activeChangeCurrent(self, change) then
+                return
+            end
+
+            selectedRotation = nil
+
+            if not activeCall(self, change, 'RemoveAllCurrentGlows') or not current() then
+                return
+            end
             if
                 not commitActive(self, change, selectedSpec, newRotation, rotations[newRotation])
                 or not activeChangeCurrent(self, change)
@@ -1707,9 +2060,17 @@ function addon:SwitchRotation()
             self.skipAnnounce = true
             self.avail_announced = {}
             self.announced = {}
-            if not activeCall(self, change, 'EnableRotationTimer') or not current() then return end
-            if not activeBroker(addon, change, DataBroker, name) then return end
-            if not current() then return end
+
+            if not activeCall(self, change, 'EnableRotationTimer') or not current() then
+                return
+            end
+            if not activeBroker(addon, change, DataBroker, name) then
+                return
+            end
+            if not current() then
+                return
+            end
+
             local label = name
 
             -- The name is already known; only the identifier is added (no second pass).
@@ -1723,12 +2084,16 @@ function addon:SwitchRotation()
                     selectedSpec
                 )
 
-                if not labelled then return end
+                if not labelled then
+                    return
+                end
+
                 label = value or name
             end
 
-            if not current() then return end
-
+            if not current() then
+                return
+            end
             if not activeCall(
                 self,
                 change,
@@ -1738,9 +2103,9 @@ function addon:SwitchRotation()
             ) then
                 return
             end
-
-            if not current() then return end
-
+            if not current() then
+                return
+            end
             if not activeObjectCall(
                 self,
                 change,
@@ -1768,9 +2133,15 @@ function addon:SwitchRotation()
             explain = true
         end
 
-        if not current() then return end
+        if not current() then
+            return
+        end
+
         self:DisableRotation()
-        if explain then addon:WarnRotationRefusal(DEFAULT) end
+
+        if explain then
+            addon:WarnRotationRefusal(DEFAULT)
+        end
     end
 end
 
@@ -1784,16 +2155,25 @@ local function autoSwitchCandidate(self)
 
     if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
         local pass = mainSelectionPass(self, spec)
-        if not pass then return nil, false end
+
+        if not pass then
+            return nil, false
+        end
+
         local why
         rotations, why = pass:Candidates(false)
-        if why then return nil, false end
+
+        if why then
+            return nil, false
+        end
     else
         rotations = runtimeRows(self, spec)
     end
 
     for _, v in ipairs(self.autoswitchRotation) do
-        if rotations[v] and switchConditionMatches(rotations[v].switch) then return v, true end
+        if rotations[v] and switchConditionMatches(rotations[v].switch) then
+            return v, true
+        end
     end
 
     if rotations[DEFAULT] ~= nil and self:rotationValidConditions(rotations[DEFAULT], spec) then
@@ -1806,17 +2186,29 @@ end
 -- Whether a switch condition matches now (true/false; nil when it cannot be
 -- evaluated). Commands and menus only; polling uses the paths above.
 function addon:SwitchConditionMatchesNow(condition)
-    if condition == nil then return true end
-    if type(condition) ~= 'table' then return nil end
+    if condition == nil then
+        return true
+    end
+    if type(condition) ~= 'table' then
+        return nil
+    end
+
     local ok, matched = pcall(switchConditionMatches, condition)
-    if not ok then return nil end
+
+    if not ok then
+        return nil
+    end
+
     return matched and true or false
 end
 
 -- /rm why: the rotation automatic switching would choose now (nil when none),
 -- by the same order and checks as the re-check above. Command only.
 function addon:PreviewAutoSwitch()
-    if not self.autoswitchRotation then return nil end
+    if not self.autoswitchRotation then
+        return nil
+    end
+
     return (autoSwitchCandidate(self))
 end
 
@@ -1825,13 +2217,26 @@ end
 -- mode.
 function addon:AutoSwitchTick()
     local profile = self.db.profile
-    if self.initializationErrorReport or self.adviceErrorReport or not profile.enable then return end
+
+    if self.initializationErrorReport or self.adviceErrorReport or not profile.enable then
+        return
+    end
+
     -- A client without one of the bar notifications still settles here, once
     -- per re-check (never per poll); a change runs the full transition.
-    if self.ApplyActionContext and self:ApplyActionContext() then return end
-    if not autoSwitchEnabled(profile) or self.manualRotation then return end
+    if self.ApplyActionContext and self:ApplyActionContext() then
+        return
+    end
+    if not autoSwitchEnabled(profile) or self.manualRotation then
+        return
+    end
+
     local candidate, known = autoSwitchCandidate(self)
-    if known and candidate == self.currentRotation then return end
+
+    if known and candidate == self.currentRotation then
+        return
+    end
+
     self:SwitchRotation()
 end
 
@@ -1840,11 +2245,17 @@ local autoSwitchContext = { module = "events", operation = "autoswitch" }
 
 -- Timer callback: runs AutoSwitchTick under the error recorder and stops the timer after the first failure.
 function addon:AutoSwitchTimer()
-    if not self.Diagnostics then return self:AutoSwitchTick() end
+    if not self.Diagnostics then
+        return self:AutoSwitchTick()
+    end
+
     autoSwitchContext.rotationId = self.currentRotation
     local ok = self.Diagnostics:Call(autoSwitchContext, self.AutoSwitchTick, self)
+
     -- A failing check is recorded once rather than every second.
-    if not ok then self:StopAutoSwitchTimer() end
+    if not ok then
+        self:StopAutoSwitchTimer()
+    end
 end
 
 -- Cancels the repeating auto-switch timer if one is scheduled.
@@ -1860,7 +2271,11 @@ end
 -- keeps SwitchRotation's remembered-choice handling.
 function addon:CheckAutoSwitch()
     local profile = self.db and self.db.profile
-    if not profile or not autoSwitchEnabled(profile) or self.manualRotation then return self:SwitchRotation() end
+
+    if not profile or not autoSwitchEnabled(profile) or self.manualRotation then
+        return self:SwitchRotation()
+    end
+
     return self:AutoSwitchTick()
 end
 
@@ -1869,7 +2284,10 @@ end
 function addon:StartAutoSwitchTimer()
     self:StopAutoSwitchTimer()
     local profile = self.db and self.db.profile
-    if not profile or type(self.ScheduleRepeatingTimer) ~= 'function' then return end
+
+    if not profile or type(self.ScheduleRepeatingTimer) ~= 'function' then
+        return
+    end
 
     -- Migrate the retired Disable Auto-Switching flag to interval 0.
     if profile.disable_autoswitch then
@@ -1891,22 +2309,48 @@ end
 -- Activates a rotation for the current specialization: rescans the buttons, rebuilds the autoswitch list, runs
 -- SwitchRotation and shows the chosen name on the broker. Does nothing without a spec or when one is already active.
 function addon:EnableRotation()
-    if self.currentSpec == nil or self.currentRotation then return end
+    if self.currentSpec == nil or self.currentRotation then
+        return
+    end
+
     local change = beginActive(self)
-    if not activeCall(self, change, 'Fetch') then return end
-    if not activeCall(self, change, 'UpdateAutoSwitch') then return end
+
+    if not activeCall(self, change, 'Fetch') then
+        return
+    end
+    if not activeCall(self, change, 'UpdateAutoSwitch') then
+        return
+    end
+
     local method = self.SwitchRotation
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local _, nextChange = method(self)
     change = nextChange or change
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     if self.currentRotation ~= nil then
         local getName = self.GetRotationName
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
+
         local name = getName(self, self.currentRotation)
-        if not activeChangeCurrent(self, change) then return end
-        if not activeBroker(self, change, DataBroker, name) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
+        if not activeBroker(self, change, DataBroker, name) then
+            return
+        end
+
         activeCall(self, change, 'info', L["Battle rotation enabled"])
     end
 end
@@ -1916,34 +2360,63 @@ end
 -- was superseded or a step refused.
 function addon:DisableRotation()
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+    if not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
 
     -- BEGIN ANALYTICS DISABLE
     if adviceCapture then
         adviceCapture("retire")
-        if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+        if not activeChangeCurrent(self, change) then
+            return nil, nil, false
+        end
     end
 
     -- END ANALYTICS DISABLE
     local selected = self.currentRotation
-    if not retireActive(self, change) or not activeChangeCurrent(self, change) then return nil, nil, false end
+
+    if not retireActive(self, change) or not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
 
     if retireConditionRuntime then
         local previous = lastConditionSession
         retireConditionRuntime(self)
-        if lastConditionSession == previous then lastConditionSession = nil end
-        if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+        if lastConditionSession == previous then
+            lastConditionSession = nil
+        end
+
+        if not activeChangeCurrent(self, change) then
+            return nil, nil, false
+        end
     end
 
-    if not selected then return nil, change, true end
+    if not selected then
+        return nil, change, true
+    end
+
     self.currentSpell = nil
     self.avail_announced = {}
     self.announced = {}
-    if not activeCall(self, change, 'DisableRotationTimer') then return nil, nil, false end
-    if not activeCall(self, change, 'RemoveAllCurrentGlows') then return nil, nil, false end
-    if not activeCall(self, change, 'DestroyAllGlows') then return nil, nil, false end
+
+    if not activeCall(self, change, 'DisableRotationTimer') then
+        return nil, nil, false
+    end
+    if not activeCall(self, change, 'RemoveAllCurrentGlows') then
+        return nil, nil, false
+    end
+    if not activeCall(self, change, 'DestroyAllGlows') then
+        return nil, nil, false
+    end
+
     local availableWindow = self.nextWindow
-    if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+    if not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
 
     if availableWindow then
         local window = self.nextWindow
@@ -1953,33 +2426,50 @@ function addon:DisableRotation()
         end
     end
 
-    if not activeChangeCurrent(self, change) then return nil, nil, false end
-    if not activeBroker(self, change, DataBroker, color.RED .. OFF) then return nil, nil, false end
-
+    if not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
+    if not activeBroker(self, change, DataBroker, color.RED .. OFF) then
+        return nil, nil, false
+    end
     if not activeObjectCall(self, change, AceEvent, 'SendMessage', "ROTATIONMASTER_ROTATION", nil) then
         return nil, nil, false
     end
-
     if not activeObjectCall(self, change, AceEvent, 'SendMessage', "ROTATIONMASTER_SPELL_UPDATE", nil, nil) then
         return nil, nil, false
     end
 
     local weak = _G.WeakAuras
-    if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+    if not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
 
     if weak then
         local available = weak.ScanEvents
-        if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+        if not activeChangeCurrent(self, change) then
+            return nil, nil, false
+        end
 
         if available then
             local scan = weak.ScanEvents
-            if not activeChangeCurrent(self, change) then return nil, nil, false end
+
+            if not activeChangeCurrent(self, change) then
+                return nil, nil, false
+            end
+
             scan("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
         end
     end
 
-    if not activeChangeCurrent(self, change) then return nil, nil, false end
-    if not activeCall(self, change, 'info', L["Battle rotation disabled"]) then return nil, nil, false end
+    if not activeChangeCurrent(self, change) then
+        return nil, nil, false
+    end
+    if not activeCall(self, change, 'info', L["Battle rotation disabled"]) then
+        return nil, nil, false
+    end
+
     return nil, change, true
 end
 
@@ -2037,7 +2527,11 @@ end
 -- registrations follow the rotation timer.
 local function startIdleGate()
     idleGate.dirty = true
-    if idleGate.registered or type(CreateFrame) ~= 'function' then return end
+
+    if idleGate.registered or type(CreateFrame) ~= 'function' then
+        return
+    end
+
     local frames = idleGate.frames
 
     if not frames then
@@ -2085,7 +2579,9 @@ end
 -- Unregisters every gate event and marks the gate dirty so the next start evaluates at once.
 local function stopIdleGate()
     for _, frame in ipairs(idleGate.frames or {}) do
-        if frame.UnregisterAllEvents then frame:UnregisterAllEvents() end
+        if frame.UnregisterAllEvents then
+            frame:UnregisterAllEvents()
+        end
     end
 
     idleGate.registered = false
@@ -2126,7 +2622,9 @@ end
 -- Starts the poll (profile.poll seconds) and the idle gate for the active rotation. Does nothing without a rotation,
 -- when already running, or after an advice error.
 function addon:EnableRotationTimer()
-    if self.adviceErrorReport then return end
+    if self.adviceErrorReport then
+        return
+    end
 
     if self.currentRotation and not self.rotationTimer then
         startIdleGate()
@@ -2205,7 +2703,10 @@ local environmentHandled, environmentGUID = {}, {}
 -- profile's windows. The GUID-keyed unit pass is skipped on restricted clients, where an NPC's GUID is secret.
 local function prepareEvaluation(self)
     self.evaluationProfile:start()
-    if self.RefreshMacroButtons then self:RefreshMacroButtons() end
+
+    if self.RefreshMacroButtons then
+        self:RefreshMacroButtons()
+    end
 
     local now = GetTime()
     local cache = {}
@@ -2235,7 +2736,9 @@ local function prepareEvaluation(self)
 
         for unit, _ in pairs(addon.units) do
             -- Group unit types are resolved from the roster, not unit tokens.
-            if not groupKinds[unit] then unitsGUID[unit] = getCached(cache, UnitGUID, unit) end
+            if not groupKinds[unit] then
+                unitsGUID[unit] = getCached(cache, UnitGUID, unit)
+            end
         end
 
         for guid, entity in pairs(self.unitsInRange) do
@@ -2247,7 +2750,10 @@ local function prepareEvaluation(self)
                 end
             end
 
-            if verbose then addon:verbose("Updating Unit " .. guid .. " (" .. entity.name .. ")") end
+            if verbose then
+                addon:verbose("Updating Unit " .. guid .. " (" .. entity.name .. ")")
+            end
+
             UpdateUnitInfo(cache, entity)
         end
 
@@ -2314,17 +2820,27 @@ end
 -- failing step cannot stop the rest.
 function addon:StopAdviceForError(reportId)
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     -- BEGIN ANALYTICS ERROR
     if adviceCapture then
         adviceCapture("retire")
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
     end
 
     -- END ANALYTICS ERROR
     self.adviceErrorReport = reportId
-    if not retireActive(self, change) or not activeChangeCurrent(self, change) then return end
+
+    if not retireActive(self, change) or not activeChangeCurrent(self, change) then
+        return
+    end
+
     self.currentSpell = nil
     self.avail_announced = {}
     local timer = self.rotationTimer
@@ -2332,25 +2848,41 @@ function addon:StopAdviceForError(reportId)
 
     -- Runs one cleanup step under Diagnostics:Call; returns whether the transition is still current afterwards.
     local function cleanup(operation, callback, ...)
-        if not activeChangeCurrent(self, change) then return false end
+        if not activeChangeCurrent(self, change) then
+            return false
+        end
+
         local diagnostics = self.Diagnostics
         local method = diagnostics.Call
-        if not activeChangeCurrent(self, change) then return false end
+
+        if not activeChangeCurrent(self, change) then
+            return false
+        end
+
         method(diagnostics, { module = "recommendations", operation = operation }, callback, ...)
         return activeChangeCurrent(self, change)
     end
 
-    if timer and not cleanup("cancel-timer", self.CancelTimer, self, timer) then return end
-    if self.nextWindow and not cleanup("hide-preview", self.nextWindow.Hide, self.nextWindow) then return end
-    if not cleanup("clear-glows", self.RemoveAllCurrentGlows, self) then return end
-    if not cleanup("destroy-glows", self.DestroyAllGlows, self) then return end
-
-    if not cleanup("broker-disabled", function() activeBroker(self, change, DataBroker, color.RED .. OFF) end) then
+    if timer and not cleanup("cancel-timer", self.CancelTimer, self, timer) then
         return
     end
-
-    if not cleanup("rotation-cleared", AceEvent.SendMessage, AceEvent, "ROTATIONMASTER_ROTATION", nil) then return end
-
+    if self.nextWindow and not cleanup("hide-preview", self.nextWindow.Hide, self.nextWindow) then
+        return
+    end
+    if not cleanup("clear-glows", self.RemoveAllCurrentGlows, self) then
+        return
+    end
+    if not cleanup("destroy-glows", self.DestroyAllGlows, self) then
+        return
+    end
+    if not cleanup("broker-disabled", function()
+        activeBroker(self, change, DataBroker, color.RED .. OFF)
+    end) then
+        return
+    end
+    if not cleanup("rotation-cleared", AceEvent.SendMessage, AceEvent, "ROTATIONMASTER_ROTATION", nil) then
+        return
+    end
     if not cleanup("suggestion-cleared", AceEvent.SendMessage, AceEvent, "ROTATIONMASTER_SPELL_UPDATE", nil, nil) then
         return
     end
@@ -2370,12 +2902,22 @@ local evaluationContext = { module = "recommendations", operation = "timer" }
 -- Runs one poll under the error recorder; the first error stops advice (StopAdviceForError). Skipped after a failed
 -- initialization or while an advice error is recorded.
 function addon:EvaluateNextAction()
-    if self.initializationErrorReport then return end
-    if not self.Diagnostics then return self:EvaluateNextActionInternal() end
-    if self.adviceErrorReport then return end
+    if self.initializationErrorReport then
+        return
+    end
+    if not self.Diagnostics then
+        return self:EvaluateNextActionInternal()
+    end
+    if self.adviceErrorReport then
+        return
+    end
+
     evaluationContext.rotationId = self.currentRotation
     local ok, reportId = self.Diagnostics:Call(evaluationContext, self.EvaluateNextActionInternal, self)
-    if not ok then self:StopAdviceForError(reportId) end
+
+    if not ok then
+        self:StopAdviceForError(reportId)
+    end
 end
 
 -- ============================================================================
@@ -2427,7 +2969,10 @@ end
 -- Chooses 'lean' or 'standard' (saved in db.global.evaluator; lean is the default and is stored as nil) and drops the
 -- recorded plan. Returns false for any other name.
 function addon:SetEvaluationEngine(engine)
-    if engine ~= 'lean' and engine ~= 'standard' then return false end
+    if engine ~= 'lean' and engine ~= 'standard' then
+        return false
+    end
+
     self.db.global.evaluator = engine ~= 'lean' and engine or nil
     leanPlan = nil
     return true
@@ -2435,7 +2980,10 @@ end
 
 -- The engine in use for /rm perf engine: 'standard', 'lean', or 'lean (building)' while no plan is recorded yet.
 function addon:GetEvaluationEngine()
-    if not leanEnabled(self) then return 'standard' end
+    if not leanEnabled(self) then
+        return 'standard'
+    end
+
     return leanPlan and 'lean' or 'lean (building)'
 end
 
@@ -2449,7 +2997,11 @@ local function compileSteps(list, ordinals)
 
         if step.type == "branch" then
             entry.mode = step.mode or "evaluate"
-            if entry.mode == "evaluate" then entry.conditions = compileConditionPlan(step.conditions) end
+
+            if entry.mode == "evaluate" then
+                entry.conditions = compileConditionPlan(step.conditions)
+            end
+
             entry.onTrue = compileSteps(step.onTrue, ordinals)
             entry.onFalse = compileSteps(step.onFalse, ordinals)
         else
@@ -2467,7 +3019,11 @@ end
 -- Replaces any earlier plan; records nothing when the rotation cannot be indexed.
 local function recordLeanPlan(self, rot, views, spec, key, profile, window, generation, epoch)
     local index = self.RotationData.IndexRotationSteps(rot, { allowMissingIds = true })
-    if not index then return end
+
+    if not index then
+        return
+    end
+
     local ordinals, count = {}, 0
 
     for _, row in ipairs(index.rows) do
@@ -2532,21 +3088,35 @@ end
 local function leanAction(plan, entry, decisionRow)
     local decisionSink = plan.decisionSink
     local cond = entry.step
-    if decisionSink then decisionSink(decisionRow, 'attempt') end
+
+    if decisionSink then
+        decisionSink(decisionRow, 'attempt')
+    end
+
     local action = cond.action
 
     if action == nil or cond.disabled then
         -- Assisted steps carry no action: the spell is Blizzard's suggestion,
         -- read below each poll. An enabled step with an action never gets here.
         if action ~= nil or cond.disabled or cond.type ~= "assisted" then
-            if decisionSink then decisionSink(decisionRow, action == nil and 'noaction' or 'disabled') end
+            if decisionSink then
+                decisionSink(decisionRow, action == nil and 'noaction' or 'disabled')
+            end
+
             return nil, false
         end
     end
 
     local matches = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, cond.id) == "match"
-    if decisionSink then decisionSink(decisionRow, matches and 'matched' or 'notmatched') end
-    if not matches then return nil, false end
+
+    if decisionSink then
+        decisionSink(decisionRow, matches and 'matched' or 'notmatched')
+    end
+
+    if not matches then
+        return nil, false
+    end
+
     local firstMapped, firstItem
     -- Spell rank lists change with SPELLS_CHANGED (a context event) or spell
     -- data loads (the plan's age cap); items follow bags, so stay fresh.
@@ -2554,7 +3124,10 @@ local function leanAction(plan, entry, decisionRow)
 
     if not spellids then
         spellids, itemids = addon:GetSpellIds(cond)
-        if cond.type ~= "item" and action ~= nil then entry.spellids = spellids end
+
+        if cond.type ~= "item" and action ~= nil then
+            entry.spellids = spellids
+        end
     end
 
     for index, id in ipairs(spellids or noIds) do
@@ -2570,13 +3143,24 @@ local function leanAction(plan, entry, decisionRow)
             mapped = addon:FindSpell(scratchSpell)
         end
 
-        if decisionSink then decisionSink(decisionRow, mapped and 'mapped' or 'unmapped') end
+        if decisionSink then
+            decisionSink(decisionRow, mapped and 'mapped' or 'unmapped')
+        end
 
         if mapped then
-            if not firstMapped then firstMapped, firstItem = mapped, itemId end
+            if not firstMapped then
+                firstMapped, firstItem = mapped, itemId
+            end
+
             local ready = plan.actionReady(cond.type, id, itemId)
-            if decisionSink then decisionSink(decisionRow, ready and 'ready' or 'notready') end
-            if ready then return mapped, true, itemId end
+
+            if decisionSink then
+                decisionSink(decisionRow, ready and 'ready' or 'notready')
+            end
+
+            if ready then
+                return mapped, true, itemId
+            end
         end
     end
 
@@ -2607,9 +3191,15 @@ local function leanWalk(plan, list)
                 step.id
             )
 
-            if status == "unavailable" then return "unavailable" end
+            if status == "unavailable" then
+                return "unavailable"
+            end
+
             local ended = leanWalk(plan, status == "match" and entry.onTrue or entry.onFalse)
-            if ended then return ended end
+
+            if ended then
+                return ended
+            end
         elseif not step.disabled then
             if step.type == "stop" then
                 local status = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, step.id)
@@ -2643,8 +3233,14 @@ local function leanPublish(self, plan)
 
     if nativePreview then
         previewWindow:ReleaseChildren()
-        if current() then previewWindow:PauseLayout() end
-        if not current() then return end
+
+        if current() then
+            previewWindow:PauseLayout()
+        end
+
+        if not current() then
+            return
+        end
     end
 
     for n = 1, plan.recommended do
@@ -2654,7 +3250,10 @@ local function leanPublish(self, plan)
             -- BEGIN ANALYTICS PRIMARY ADVICE
             if adviceCapture then
                 adviceCapture("advice", previewWindow, current, cond.type, spellid)
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
             end
 
             -- END ANALYTICS PRIMARY ADVICE
@@ -2664,15 +3263,25 @@ local function leanPublish(self, plan)
             local hidden = cond.type == "assisted" and addon.assistedGlowHidden == true
 
             if not addon:IsGlowing(spellid, itemId, hidden) then
-                if not current() then return end
-                if not profile.disable_buttons then addon:GlowNextSpell(spellid, itemId, hidden) end
-                if not current() then return end
+                if not current() then
+                    return
+                end
+
+                if not profile.disable_buttons then
+                    addon:GlowNextSpell(spellid, itemId, hidden)
+                end
+
+                if not current() then
+                    return
+                end
 
                 if weakAuras and type(weakAuras.ScanEvents) == "function" then
                     weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
                 end
 
-                if not current() then return end
+                if not current() then
+                    return
+                end
 
                 AceEvent:SendMessage(
                     "ROTATIONMASTER_SPELL_UPDATE",
@@ -2685,36 +3294,65 @@ local function leanPublish(self, plan)
             end
         end
 
-        if not current() then return end
-        if nativePreview then previewWindow:AddRecommendation(spellid, itemId) end
-        if not current() then return end
+        if not current() then
+            return
+        end
+
+        if nativePreview then
+            previewWindow:AddRecommendation(spellid, itemId)
+        end
+
+        if not current() then
+            return
+        end
     end
 
     if plan.recommended == 0 then
         -- BEGIN ANALYTICS EMPTY ADVICE
         if adviceCapture then
             adviceCapture("retire")
-            if not current() then return end
+
+            if not current() then
+                return
+            end
         end
 
         -- END ANALYTICS EMPTY ADVICE
         self.currentSpell = nil
-        if not profile.disable_buttons then addon:GlowClear() end
-        if not current() then return end
+
+        if not profile.disable_buttons then
+            addon:GlowClear()
+        end
+
+        if not current() then
+            return
+        end
 
         if weakAuras and type(weakAuras.ScanEvents) == "function" then
             weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
         end
 
-        if not current() then return end
+        if not current() then
+            return
+        end
+
         AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, nil)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
     end
 
     if nativePreview then
         previewWindow:ResumeLayout()
-        if current() then previewWindow:DoLayout() end
-        if not current() then return end
+
+        if current() then
+            previewWindow:DoLayout()
+        end
+
+        if not current() then
+            return
+        end
     end
 
     if plan.rot.cooldowns ~= nil then
@@ -2744,7 +3382,10 @@ local function leanPublish(self, plan)
 
             -- A missing observation with no prior announcement has no output.
             if spellid ~= nil or type(announced) ~= 'table' or announced[cond.id] ~= nil then
-                if not current() then return end
+                if not current() then
+                    return
+                end
+
                 local previous = addon.avail_announced[cond.id]
 
                 if previous and (previous ~= spellid or not enabled) and not enabledCooldowns[previous] then
@@ -2762,7 +3403,10 @@ local function leanPublish(self, plan)
                                 )))
                             end
 
-                            if not current() then return end
+                            if not current() then
+                                return
+                            end
+
                             addon.avail_announced[cond.id] = spellid
 
                             AceEvent:SendMessage(
@@ -2774,7 +3418,9 @@ local function leanPublish(self, plan)
                                 spellid
                             )
 
-                            if not current() then return end
+                            if not current() then
+                                return
+                            end
                         end
 
                         if not enabledCooldowns[spellid] then
@@ -2809,33 +3455,51 @@ local function leanPublish(self, plan)
         end
 
         for spellid, cond in pairs(disabledCooldowns) do
-            if not current() then return end
+            if not current() then
+                return
+            end
+
             local style = cond
 
             if views then
                 style = views[cond]
-                if not style then return end
+
+                if not style then
+                    return
+                end
             end
 
             addon:GlowCooldown(spellid, false, style)
         end
 
         for spellid, cond in pairs(enabledCooldowns) do
-            if not current() then return end
+            if not current() then
+                return
+            end
+
             local style = cond
 
             if views then
                 style = views[cond]
-                if not style then return end
+
+                if not style then
+                    return
+                end
             end
 
             addon:GlowCooldown(spellid, true, style, enabledItems[spellid])
         end
     end
 
-    if not current() then return end
+    if not current() then
+        return
+    end
+
     addon.skipAnnounce = false
-    if type(addon.announced) ~= 'table' or next(addon.announced) ~= nil then addon.announced = {} end
+
+    if type(addon.announced) ~= 'table' or next(addon.announced) ~= nil then
+        addon.announced = {}
+    end
 end
 
 -- Closes every poll, whichever engine ran it. At most every 15 seconds it writes the cache statistics and the
@@ -2843,7 +3507,10 @@ end
 local function reportEvaluation(self)
     if GetTime() - self.lastCacheReport > 15 then
         addon.Functions.cache.ReportCacheStats(addon)
-        if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy() end
+
+        if self.RefreshEvaluationProfilerPolicy then
+            self:RefreshEvaluationProfilerPolicy()
+        end
 
         if not reportEvaluationProfiler or reportEvaluationProfiler(self) then
             addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
@@ -2860,7 +3527,11 @@ end
 -- caller runs the standard path, which records a new plan. Conditions, readiness and cooldowns are read fresh here.
 local function evaluateLean(self)
     local plan = leanPlan
-    if not plan then return false end
+
+    if not plan then
+        return false
+    end
+
     local stale
 
     if
@@ -2910,7 +3581,10 @@ local function evaluateLean(self)
 
     if plan.recommended == 0 and not plan.suppressAttack then
         local attack = self:ResolveImplicitAttack(plan.actionReady)
-        if attack then leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal) end
+
+        if attack then
+            leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal)
+        end
     end
 
     self.evaluationProfile:child("rotation"):stop()
@@ -2944,7 +3618,11 @@ end
 -- not move records a lean plan. Called every poll tick through addon:EvaluateNextAction, which adds the error boundary.
 function addon:EvaluateNextActionInternal()
     local useLean = leanEnabled(self)
-    if useLean and evaluateLean(self) then return end
+
+    if useLean and evaluateLean(self) then
+        return
+    end
+
     local leanGeneration, leanEpoch = useLean and readExecutionGeneration(), leanContextEpoch
     local decisionSink = runtimeDecisionSink
     local selectedRotation, selectedSpec, selectedProfile = self.currentRotation, self.currentSpec, self.db.profile
@@ -2954,9 +3632,16 @@ function addon:EvaluateNextActionInternal()
     -- Asks the dispatch lease, when the managed runtime issued one, whether the poll may continue at a named checkpoint
     -- ('resume', 'step', 'iterator'). The first refusal latches executionFailed, so every later check fails as well.
     local function dispatchCurrent(kind)
-        if executionFailed then return false end
-        if not dispatchLease then return true end
-        if dispatchLease(kind) then return true end
+        if executionFailed then
+            return false
+        end
+        if not dispatchLease then
+            return true
+        end
+        if dispatchLease(kind) then
+            return true
+        end
+
         executionFailed = true
         return false
     end
@@ -2977,10 +3662,14 @@ function addon:EvaluateNextActionInternal()
         end
 
         if handled then
-            if not publicationGuard then return end
+            if not publicationGuard then
+                return
+            end
 
             if dispatchLease then
-                if not dispatchCurrent('resume') then return end
+                if not dispatchCurrent('resume') then
+                    return
+                end
             elseif not publicationGuard() then
                 return
             end
@@ -2995,13 +3684,17 @@ function addon:EvaluateNextActionInternal()
                     dispatchLease and dispatchCurrent
                 )
 
-                if executionFailed then return end
+                if executionFailed then
+                    return
+                end
 
                 -- Owned preparation certifies its producers and invocation.
                 -- Rejected preparation can return before that boundary, so
                 -- the ordinary fallback still needs the full source fence.
                 if conditionSession and notifiedLease then
-                    if not notifiedLease() then return end
+                    if not notifiedLease() then
+                        return
+                    end
                 elseif not publicationGuard() then
                     return
                 end
@@ -3021,8 +3714,14 @@ function addon:EvaluateNextActionInternal()
     if selectedRotation ~= nil and not handled then
         if retireConditionRuntime then
             local previous = lastConditionSession
-            if not retireConditionRuntime(self, previous or false) then return end
-            if lastConditionSession == previous then lastConditionSession = nil end
+
+            if not retireConditionRuntime(self, previous or false) then
+                return
+            end
+
+            if lastConditionSession == previous then
+                lastConditionSession = nil
+            end
 
             if
                 self.currentRotation ~= selectedRotation
@@ -3041,10 +3740,15 @@ function addon:EvaluateNextActionInternal()
                 runtimePass = self:AcquireRotationRuntimePass(selectedSpec)
             end
 
-            if runtimePass then rot = runtimePass:Get(selectedRotation) end
+            if runtimePass then
+                rot = runtimePass:Get(selectedRotation)
+            end
+
             -- Acquiring a pass starts a new observation, which advances the
             -- generation itself; any later advance is a real writer.
-            if useLean then leanGeneration = readExecutionGeneration() end
+            if useLean then
+                leanGeneration = readExecutionGeneration()
+            end
         else
             rot = self:GetRuntimeRotation(selectedSpec, selectedRotation)
         end
@@ -3074,7 +3778,10 @@ function addon:EvaluateNextActionInternal()
         -- false, so a disabled cooldown can clear its glow. decisionRow ('rotation' or 'cooldowns') is the row reported
         -- to the runtime decision sink.
         local function eval(cond, decisionRow)
-            if decisionSink then decisionSink(decisionRow, 'attempt') end
+            if decisionSink then
+                decisionSink(decisionRow, 'attempt')
+            end
+
             local firstMapped, firstItem
             local matches
             local action = cond.action
@@ -3086,25 +3793,42 @@ function addon:EvaluateNextActionInternal()
                     matches = addon:evaluateCondition(cond.conditions, { stepId = cond.id })
                 end
 
-                if decisionSink then decisionSink(decisionRow, matches and 'matched' or 'notmatched') end
+                if decisionSink then
+                    decisionSink(decisionRow, matches and 'matched' or 'notmatched')
+                end
             elseif decisionSink then
                 decisionSink(decisionRow, action == nil and 'noaction' or 'disabled')
             end
 
             if matches then
-                if not dispatchCurrent('step') then return nil, false end
+                if not dispatchCurrent('step') then
+                    return nil, false
+                end
+
                 local spellids, itemids = addon:GetSpellIds(cond)
 
                 for index, id in ipairs(spellids or {}) do
                     local itemId = itemids and itemids[index]
                     local mapped = addon:FindSpell({ id }, cond.type == "item" and { itemId } or nil)
-                    if decisionSink then decisionSink(decisionRow, mapped and 'mapped' or 'unmapped') end
+
+                    if decisionSink then
+                        decisionSink(decisionRow, mapped and 'mapped' or 'unmapped')
+                    end
 
                     if mapped then
-                        if not firstMapped then firstMapped, firstItem = mapped, itemId end
+                        if not firstMapped then
+                            firstMapped, firstItem = mapped, itemId
+                        end
+
                         local ready = actionReady(cond.type, id, itemId)
-                        if decisionSink then decisionSink(decisionRow, ready and 'ready' or 'notready') end
-                        if ready then return mapped, true, itemId end
+
+                        if decisionSink then
+                            decisionSink(decisionRow, ready and 'ready' or 'notready')
+                        end
+
+                        if ready then
+                            return mapped, true, itemId
+                        end
                     end
                 end
             end
@@ -3125,8 +3849,9 @@ function addon:EvaluateNextActionInternal()
         -- started with, no checkpoint has failed and the runtime pass or publication guard still holds. Staged outputs
         -- call it again after every callout that can reenter (glow, message and announcement handlers).
         local function current()
-            if deliveryFailed or executionFailed then return false end
-
+            if deliveryFailed or executionFailed then
+                return false
+            end
             if
                 self.currentRotation ~= selectedRotation
                 or self.currentSpec ~= selectedSpec
@@ -3135,11 +3860,19 @@ function addon:EvaluateNextActionInternal()
             then
                 return false
             end
+            if delivering and deliveryLease then
+                return deliveryLease()
+            end
+            if conditionSession and dispatchLease then
+                return dispatchCurrent('resume')
+            end
+            if publicationGuard then
+                return publicationGuard()
+            end
+            if not runtimePass then
+                return true
+            end
 
-            if delivering and deliveryLease then return deliveryLease() end
-            if conditionSession and dispatchLease then return dispatchCurrent('resume') end
-            if publicationGuard then return publicationGuard() end
-            if not runtimePass then return true end
             return runtimePass:IsCurrent()
         end
 
@@ -3151,7 +3884,10 @@ function addon:EvaluateNextActionInternal()
         if nativePreview then
             stage(function()
                 previewWindow:ReleaseChildren()
-                if current() then previewWindow:PauseLayout() end
+
+                if current() then
+                    previewWindow:PauseLayout()
+                end
             end)
         end
 
@@ -3166,7 +3902,10 @@ function addon:EvaluateNextActionInternal()
                     -- BEGIN ANALYTICS PRIMARY ADVICE
                     if adviceCapture then
                         adviceCapture("advice", previewWindow, current, cond.type, spellid)
-                        if not current() then return end
+
+                        if not current() then
+                            return
+                        end
                     end
 
                     -- END ANALYTICS PRIMARY ADVICE
@@ -3174,15 +3913,25 @@ function addon:EvaluateNextActionInternal()
                     local hidden = cond.type == "assisted" and addon.assistedGlowHidden == true
 
                     if not addon:IsGlowing(spellid, itemId, hidden) then
-                        if not current() then return end
-                        if not self.db.profile.disable_buttons then addon:GlowNextSpell(spellid, itemId, hidden) end
-                        if not current() then return end
+                        if not current() then
+                            return
+                        end
+
+                        if not self.db.profile.disable_buttons then
+                            addon:GlowNextSpell(spellid, itemId, hidden)
+                        end
+
+                        if not current() then
+                            return
+                        end
 
                         if weakAuras and type(weakAuras.ScanEvents) == "function" then
                             weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
                         end
 
-                        if not current() then return end
+                        if not current() then
+                            return
+                        end
 
                         AceEvent:SendMessage(
                             "ROTATIONMASTER_SPELL_UPDATE",
@@ -3195,8 +3944,13 @@ function addon:EvaluateNextActionInternal()
                     end
                 end
 
-                if not current() then return end
-                if nativePreview then previewWindow:AddRecommendation(spellid, itemId) end
+                if not current() then
+                    return
+                end
+
+                if nativePreview then
+                    previewWindow:AddRecommendation(spellid, itemId)
+                end
             end)
         end
 
@@ -3204,16 +3958,25 @@ function addon:EvaluateNextActionInternal()
             self,
             rot,
             function(condition, context)
-                if conditionSession then return conditionSession:EvaluateResult(condition, context) end
+                if conditionSession then
+                    return conditionSession:EvaluateResult(condition, context)
+                end
+
                 return addon:evaluateConditionResult(condition, context)
             end,
             function(cond, index)
                 local spellid, enabled, itemId = eval(cond, 'rotation')
-                if not dispatchCurrent('resume') then return false end
+
+                if not dispatchCurrent('resume') then
+                    return false
+                end
 
                 if enabled then
                     recommend(spellid, cond, index, itemId)
-                    if not nativePreview or preview >= self.db.profile.preview_spells then return false end
+
+                    if not nativePreview or preview >= self.db.profile.preview_spells then
+                        return false
+                    end
                 end
 
                 return true
@@ -3245,27 +4008,41 @@ function addon:EvaluateNextActionInternal()
                 -- BEGIN ANALYTICS EMPTY ADVICE
                 if adviceCapture then
                     adviceCapture("retire")
-                    if not current() then return end
+
+                    if not current() then
+                        return
+                    end
                 end
 
                 -- END ANALYTICS EMPTY ADVICE
                 self.currentSpell = nil
-                if not self.db.profile.disable_buttons then addon:GlowClear() end
-                if not current() then return end
+
+                if not self.db.profile.disable_buttons then
+                    addon:GlowClear()
+                end
+
+                if not current() then
+                    return
+                end
 
                 if weakAuras and type(weakAuras.ScanEvents) == "function" then
                     weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
                 end
 
-                if not current() then return end
+                if not current() then
+                    return
+                end
+
                 AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, nil)
             end)
         end
-
         if nativePreview then
             stage(function()
                 previewWindow:ResumeLayout()
-                if current() then previewWindow:DoLayout() end
+
+                if current() then
+                    previewWindow:DoLayout()
+                end
             end)
         end
 
@@ -3315,7 +4092,10 @@ function addon:EvaluateNextActionInternal()
                         and publicationRawget(announced, observation.condition.id) == nil
 
                     if not inactive then
-                        if not current() then return end
+                        if not current() then
+                            return
+                        end
+
                         local id, cond = observation.id, observation.condition
                         local spellid, enabled, itemId = observation.spellid, observation.enabled, observation.itemId
                         local previous = addon.avail_announced[cond.id]
@@ -3351,7 +4131,10 @@ function addon:EvaluateNextActionInternal()
                                         end
                                     end
 
-                                    if not current() then return end
+                                    if not current() then
+                                        return
+                                    end
+
                                     addon.avail_announced[cond.id] = spellid
 
                                     AceEvent:SendMessage(
@@ -3363,7 +4146,9 @@ function addon:EvaluateNextActionInternal()
                                         spellid
                                     )
 
-                                    if not current() then return end
+                                    if not current() then
+                                        return
+                                    end
                                 end
 
                                 if not enabled_cooldowns[spellid] then
@@ -3407,24 +4192,36 @@ function addon:EvaluateNextActionInternal()
                 end
 
                 for spellid, cond in pairs(disabled_cooldowns) do
-                    if not current() then return end
+                    if not current() then
+                        return
+                    end
+
                     local style = cond
 
                     if conditionSession then
                         style = presentationViews and presentationViews[cond]
-                        if not style then return end
+
+                        if not style then
+                            return
+                        end
                     end
 
                     addon:GlowCooldown(spellid, false, style)
                 end
 
                 for spellid, cond in pairs(enabled_cooldowns) do
-                    if not current() then return end
+                    if not current() then
+                        return
+                    end
+
                     local style = cond
 
                     if conditionSession then
                         style = presentationViews and presentationViews[cond]
-                        if not style then return end
+
+                        if not style then
+                            return
+                        end
                     end
 
                     addon:GlowCooldown(spellid, true, style, enabled_items[spellid])
@@ -3455,7 +4252,10 @@ function addon:EvaluateNextActionInternal()
         end
 
         for _, publish in ipairs(staged) do
-            if not current() then break end
+            if not current() then
+                break
+            end
+
             publish()
         end
 
@@ -3549,7 +4349,10 @@ function addon:GetSpellIds(rot)
         -- one sits on a button maps (Platform/assisted_combat.lua).
         local platform = self.Platform
         local suggestion = platform.GetAssistedSuggestion and platform:GetAssistedSuggestion()
-        if suggestion then return platform:GetAssistedSpellCandidates(suggestion) end
+
+        if suggestion then
+            return platform:GetAssistedSpellCandidates(suggestion)
+        end
     end
 
     return {}
@@ -3580,7 +4383,10 @@ end
 -- bracketed by current() because a glow or lookup callback can reenter and change the active transition.
 function addon:RemoveAllCurrentGlows()
     local spec, id, change = cleanupActive(self)
-    if not id then spec, id = self.currentSpec, self.currentRotation end
+
+    if not id then
+        spec, id = self.currentSpec, self.currentRotation
+    end
 
     -- True while the transition this cleanup belongs to is still the active one (always true when there is none).
     local function current()
@@ -3588,12 +4394,19 @@ function addon:RemoveAllCurrentGlows()
     end
 
     addon:debug(L["Removing all glows."])
-    if not current() then return end
+
+    if not current() then
+        return
+    end
+
     local rotation
 
     if id then
         local get = self.GetRotationForCleanup
-        if not current() then return end
+
+        if not current() then
+            return
+        end
 
         if getMainCleanupBody then
             rotation = getMainCleanupBody(self, spec, id, get)
@@ -3602,29 +4415,54 @@ function addon:RemoveAllCurrentGlows()
         end
     end
 
-    if not current() then return end
+    if not current() then
+        return
+    end
 
     if rotation and rotation.cooldowns then
         for _, rot in pairs(rotation.cooldowns) do
-            if not current() then return end
+            if not current() then
+                return
+            end
+
             local getIDs = addon.GetSpellIds
-            if not current() then return end
+
+            if not current() then
+                return
+            end
+
             local ids = getIDs(addon, rot)
-            if not current() then return end
+
+            if not current() then
+                return
+            end
 
             for _, spellid in pairs(ids) do
-                if not current() then return end
+                if not current() then
+                    return
+                end
+
                 local glow = addon.GlowCooldown
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
+
                 glow(addon, spellid, false)
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
             end
         end
     end
 
     if current() then
         local clear = addon.GlowClear
-        if current() then clear(addon) end
+
+        if current() then
+            clear(addon)
+        end
     end
 end
 
@@ -3639,27 +4477,57 @@ end
 -- the active-transition token, so a reentrant change abandons the rest. Returns nil and the token when it completed.
 function addon:UpdateSkill()
     local change = beginActive(self)
-    if not activeChangeCurrent(self, change) then return end
-    if not activeCall(self, change, 'verbose', "Skill update triggered") then return end
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+    if not activeCall(self, change, 'verbose', "Skill update triggered") then
+        return
+    end
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local selection = self.Platform:GetRotationSpecialization()
     local spec = selection and selection.key
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     if spec ~= self.currentSpec then
         local disable = self.DisableRotation
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
+
         local _, nextChange, stopped = disable(self)
-        if stopped == false then return end
+
+        if stopped == false then
+            return
+        end
+
         change = nextChange or change
-        if not activeChangeCurrent(self, change) then return end
+
+        if not activeChangeCurrent(self, change) then
+            return
+        end
+
         self.manualRotation = false
     end
 
     change = advanceActiveSpec(self, change, spec)
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     self.longtermCache = {}
-    if invalidateChoiceContext then invalidateChoiceContext(self) end
+
+    if invalidateChoiceContext then
+        invalidateChoiceContext(self)
+    end
 
     if not selection then
         self.autoswitchRotation = {}
@@ -3667,7 +4535,10 @@ function addon:UpdateSkill()
     end
 
     local availableTab = self.specTab
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
 
     if availableTab then
         local tab = self.specTab
@@ -3677,15 +4548,31 @@ function addon:UpdateSkill()
         end
     end
 
-    if not activeChangeCurrent(self, change) then return end
-    if not activeCall(self, change, 'UpdateSpecSpells') then return end
-    if not activeCall(self, change, 'UpdateAutoSwitch') then return end
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+    if not activeCall(self, change, 'UpdateSpecSpells') then
+        return
+    end
+    if not activeCall(self, change, 'UpdateAutoSwitch') then
+        return
+    end
+
     local switch = self.SwitchRotation
-    if not activeChangeCurrent(self, change) then return end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+
     local _, nextChange = switch(self)
     change = nextChange or change
-    if not activeChangeCurrent(self, change) then return end
-    if activeCall(self, change, 'ButtonFetch') then return nil, change end
+
+    if not activeChangeCurrent(self, change) then
+        return
+    end
+    if activeCall(self, change, 'ButtonFetch') then
+        return nil, change
+    end
 end
 
 -- Display name of talent slot idx (1 to 21) for a spec. Returns a "[Tier, Column]" placeholder while the name is not
@@ -3694,7 +4581,6 @@ function addon:GetSpecTalentName(spec, idx)
     if idx == nil or idx < 1 or idx > 21 then
         return nil
     end
-
     if
         self.specTalents[spec] == nil or self.specTalents[spec][idx] == nil or self.specTalents[spec][idx].name == nil
     then
@@ -3709,7 +4595,6 @@ function addon:GetSpecTalentIcon(spec, idx)
     if idx == nil or idx < 1 or idx > 21 then
         return nil
     end
-
     if
         self.specTalents[spec] == nil or self.specTalents[spec][idx] == nil or self.specTalents[spec][idx].icon == nil
     then
@@ -3727,7 +4612,9 @@ end
 -- hold an item. Returns true when anything changed and false when it did nothing. It refuses in combat (slots cannot
 -- change then) and while the cursor holds something (it retries in half a second); one pass per set at a time.
 function addon:UpdateBoundButton(id)
-    if InCombatLockdown and InCombatLockdown() then return false end
+    if InCombatLockdown and InCombatLockdown() then
+        return false
+    end
 
     -- Refreshing a slot picks the item up; never replace what the cursor
     -- already holds (a swapped-out action). Retry once it is empty.
@@ -3753,14 +4640,22 @@ function addon:UpdateBoundButton(id)
     end
 
     self.updatingBoundButtons = self.updatingBoundButtons or {}
-    if self.updatingBoundButtons[id] then return false end
+
+    if self.updatingBoundButtons[id] then
+        return false
+    end
+
     self.updatingBoundButtons[id] = true
 
     -- pcall so a client error cannot leave updatingBoundButtons[id] set, which would block every later refresh.
     local ok, changed = pcall(function()
         local bindings = self.db.char.bindings
         local slots = bindings[id]
-        if not slots then return false end
+
+        if not slots then
+            return false
+        end
+
         local itemid = self:FindFirstItemOfItemSet({}, id, true)
         local updated = false
 
@@ -3784,13 +4679,23 @@ function addon:UpdateBoundButton(id)
             end
         end
 
-        if #slots == 0 then bindings[id] = nil end
-        if updated then self:ButtonFetch() end
+        if #slots == 0 then
+            bindings[id] = nil
+        end
+
+        if updated then
+            self:ButtonFetch()
+        end
+
         return updated
     end)
 
     self.updatingBoundButtons[id] = nil
-    if not ok then error(changed, 0) end
+
+    if not ok then
+        error(changed, 0)
+    end
+
     return changed
 end
 
@@ -3837,7 +4742,6 @@ local function wrapEvent(func)
         if invalidateEvaluationContext and (event == nil or runtimeContextEvents[event]) then
             invalidateEvaluationContext()
         end
-
         if invalidateChoiceContext and (event == nil or runtimeContextEvents[event]) then
             invalidateChoiceContext(self)
         end
@@ -3847,13 +4751,22 @@ local function wrapEvent(func)
 
             -- UnitLevel can trail PLAYER_LEVEL_UP; rebuild once more after it settles.
             if event == 'PLAYER_LEVEL_UP' and C_Timer and C_Timer.After then
-                C_Timer.After(2, function() leanContextEpoch = leanContextEpoch + 1 end)
+                C_Timer.After(2, function()
+                    leanContextEpoch = leanContextEpoch + 1
+                end)
             end
         end
 
-        if failed or self.initializationErrorReport then return end
+        if failed or self.initializationErrorReport then
+            return
+        end
+
         self:debug("Event %s fired.", event)
-        if not self.Diagnostics then return func(self, event, ...) end
+
+        if not self.Diagnostics then
+            return func(self, event, ...)
+        end
+
         -- Reused per handler: read only if this dispatch records an error.
         context.event, context.rotationId = event, self.currentRotation
         local ok, reportId = self.Diagnostics:Call(context, func, self, event, ...)
@@ -3879,10 +4792,18 @@ local function wrapCombatEvent(func, restricted)
     local restrictedDispatch = restricted and wrapEvent(restricted)
 
     return function(self, ...)
-        if self.initializationErrorReport then return end
+        if self.initializationErrorReport then
+            return
+        end
+
         combatDataPolicy = combatDataPolicy or self.Platform:GetClientInfo().combatDataPolicy
-        if combatDataPolicy == 'probe' then return dispatch(self, ...) end
-        if restrictedDispatch and combatDataPolicy == 'restricted' then return restrictedDispatch(self, ...) end
+
+        if combatDataPolicy == 'probe' then
+            return dispatch(self, ...)
+        end
+        if restrictedDispatch and combatDataPolicy == 'restricted' then
+            return restrictedDispatch(self, ...)
+        end
     end
 end
 
@@ -3920,7 +4841,10 @@ addon.UPDATE_STEALTH = wrapEvent(addon.SwitchRotation)
 -- the cursor is empty (`expectedItems` names the items to match when the set was just edited), then refetches the
 -- buttons and notifies itemSetCallback. Returns false in combat, where slots cannot change, and true otherwise.
 function addon:UnbindItemSet(id, expectedItems)
-    if InCombatLockdown and InCombatLockdown() then return false end
+    if InCombatLockdown and InCombatLockdown() then
+        return false
+    end
+
     local slots = self.db.char.bindings[id] or {}
     self.db.char.bindings[id] = nil
 
@@ -3930,11 +4854,16 @@ function addon:UnbindItemSet(id, expectedItems)
     -- starts.
     local function clearSlots()
         if type(GetCursorInfo) == 'function' and GetCursorInfo() then
-            if C_Timer and C_Timer.After then C_Timer.After(.5, clearSlots) end
+            if C_Timer and C_Timer.After then
+                C_Timer.After(.5, clearSlots)
+            end
+
             return
         end
 
-        if InCombatLockdown and InCombatLockdown() then return end
+        if InCombatLockdown and InCombatLockdown() then
+            return
+        end
 
         for _, slot in ipairs(slots) do
             local kind, item = GetActionInfo(slot)
@@ -3952,10 +4881,21 @@ function addon:UnbindItemSet(id, expectedItems)
     end
 
     clearSlots()
-    if self.bindingItemSet == id then self.bindingItemSet = nil end
-    if self.EndHighlightSlot then self:EndHighlightSlot() end
+
+    if self.bindingItemSet == id then
+        self.bindingItemSet = nil
+    end
+
+    if self.EndHighlightSlot then
+        self:EndHighlightSlot()
+    end
+
     self:ButtonFetch()
-    if self.itemSetCallback then self.itemSetCallback(id) end
+
+    if self.itemSetCallback then
+        self.itemSetCallback(id)
+    end
+
     return true
 end
 
@@ -3980,14 +4920,19 @@ addon.ACTIONBAR_SLOT_CHANGED = wrapEvent(function(self, _, slot)
                 local kind, action = GetActionInfo(old)
 
                 if kind ~= 'item' or not self:FindItemInItemSet(id, action) then
-                    if old == slot and cursor == 'item' and self:FindItemInItemSet(id, item) then pickup = id end
+                    if old == slot and cursor == 'item' and self:FindItemInItemSet(id, item) then
+                        pickup = id
+                    end
+
                     table.remove(slots, i)
                     changed[id] = true
                 end
             end
         end
 
-        if #slots == 0 then bindings[id] = nil end
+        if #slots == 0 then
+            bindings[id] = nil
+        end
     end
 
     local pending = self.bindingItemSet
@@ -4002,21 +4947,31 @@ addon.ACTIONBAR_SLOT_CHANGED = wrapEvent(function(self, _, slot)
             local found = false
 
             for _, value in ipairs(slots) do
-                if value == slot then found = true end
+                if value == slot then
+                    found = true
+                end
             end
 
-            if not found then slots[#slots + 1] = slot end
+            if not found then
+                slots[#slots + 1] = slot
+            end
+
             changed[pending] = true
         end
     end
 
     if pickup then
         self.bindingItemSet = pickup
-        if self.WatchItemSetBind then self:WatchItemSetBind() end
+
+        if self.WatchItemSetBind then
+            self:WatchItemSetBind()
+        end
     end
 
     for id in pairs(changed) do
-        if bindings[id] and self.FindFirstItemOfItemSet then self:UpdateBoundButton(id) end
+        if bindings[id] and self.FindFirstItemOfItemSet then
+            self:UpdateBoundButton(id)
+        end
     end
 
     if self.itemSetCallback then
@@ -4093,7 +5048,10 @@ addon.PLAYER_CONTROL_LOST = wrapEvent(function(self)
     -- action context transition owns advice for that bar.
     if self.currentRotation and self.ReadActionContext then
         local ok, context = pcall(self.ReadActionContext, self)
-        if ok and context ~= 'player' then return self:ApplyActionContext() end
+
+        if ok and context ~= 'player' then
+            return self:ApplyActionContext()
+        end
     end
 
     self:DisableRotationTimer()
@@ -4125,7 +5083,9 @@ local equipmentEvent = wrapEvent(function(self, _, subscription, profile, change
         return
     end
 
-    if equipmentCoordinator then coordinator = equipmentCoordinator(self) end
+    if equipmentCoordinator then
+        coordinator = equipmentCoordinator(self)
+    end
 
     -- True while the subscription, profile, scope coordinator and transition are all unchanged since the event began.
     local function current()
@@ -4137,8 +5097,9 @@ local equipmentEvent = wrapEvent(function(self, _, subscription, profile, change
         then
             return false
         end
-
-        if equipmentCoordinator and equipmentCoordinator(self) ~= coordinator then return false end
+        if equipmentCoordinator and equipmentCoordinator(self) ~= coordinator then
+            return false
+        end
 
         return self.db.profile == profile
             and self.GetScopedRotationCoordinator == equipmentCoordinator
@@ -4146,23 +5107,45 @@ local equipmentEvent = wrapEvent(function(self, _, subscription, profile, change
             and equipmentSubscription == subscription
     end
 
-    if not current() or self.enabledState ~= true or not current() then return end
+    if not current() or self.enabledState ~= true or not current() then
+        return
+    end
+
     local switch = self.SwitchRotation
-    if not current() or type(switch) ~= 'function' then return end
+
+    if not current() or type(switch) ~= 'function' then
+        return
+    end
+
     local _, nextChange = switch(self)
     change = nextChange or change
-    if not current() or self.currentRotation == nil then return end
+
+    if not current() or self.currentRotation == nil then
+        return
+    end
+
     local evaluate = self.EvaluateNextAction
-    if current() and type(evaluate) == 'function' then evaluate(self) end
+
+    if current() and type(evaluate) == 'function' then
+        evaluate(self)
+    end
 end)
 
 -- The registered entry point. It ignores the event unless the addon is enabled with a live subscription, opens a
 -- transition token, and only then hands over to equipmentEvent.
 addon.PLAYER_EQUIPMENT_CHANGED = function(self, event)
     local subscription = equipmentSubscription
-    if not rawequal(self, addon) or not subscription or self.enabledState ~= true then return end
+
+    if not rawequal(self, addon) or not subscription or self.enabledState ~= true then
+        return
+    end
+
     local profile = self.db.profile
-    if equipmentSubscription ~= subscription or type(profile) ~= 'table' then return end
+
+    if equipmentSubscription ~= subscription or type(profile) ~= 'table' then
+        return
+    end
+
     local change = beginActive(self)
 
     if not activeChangeCurrent(self, change) or equipmentSubscription ~= subscription or self.db.profile ~= profile then
@@ -4179,11 +5162,17 @@ addon.SPELLS_CHANGED = wrapEvent(addon.UpdateSkill)
 -- Drops the cached player level (the condition cache entry and the native UnitLevel cache) so the next read asks the
 -- client again.
 local function invalidatePlayerLevel(self)
-    if type(self.longtermCache) ~= 'table' then return end
+    if type(self.longtermCache) ~= 'table' then
+        return
+    end
+
     self.longtermCache.conditionPlayerLevel = nil
     -- Saved raw condition sources may still use the native cache identity.
     local native = type(UnitLevel) == 'function' and self.longtermCache[UnitLevel]
-    if type(native) == 'table' then native.player = nil end
+
+    if type(native) == 'table' then
+        native.player = nil
+    end
 end
 
 -- Level-up: drops the cached level now and again 10 ms later, then re-runs the auto-switch conditions, rotation
@@ -4196,7 +5185,10 @@ addon.PLAYER_LEVEL_UP = wrapEvent(function(self)
         invalidatePlayerLevel(self)
         self:UpdateAutoSwitch()
         self:SwitchRotation()
-        if self.currentRotation then self:EvaluateNextAction() end
+
+        if self.currentRotation then
+            self:EvaluateNextAction()
+        end
     end, 0.01)
 end)
 
@@ -4327,8 +5319,14 @@ end
 function addon:RefreshActionContext()
     local read = self.ReadActionContext
     local ok, value = true, 'player'
-    if type(read) == 'function' then ok, value = pcall(read, self) end
-    if not ok or type(value) ~= 'string' then value = 'player' end
+
+    if type(read) == 'function' then
+        ok, value = pcall(read, self)
+    end
+    if not ok or type(value) ~= 'string' then
+        value = 'player'
+    end
+
     local changed = actionContext ~= nil and value ~= actionContext
     actionContext = value
     return value, changed
@@ -4341,11 +5339,21 @@ end
 function addon:ApplyActionContext()
     local previous = actionContext or 'player'
     local value, changed = self:RefreshActionContext()
-    if not changed then return false end
+
+    if not changed then
+        return false
+    end
+
     leanContextEpoch = leanContextEpoch + 1
     idleGate.dirty = true
-    if invalidateEvaluationContext then invalidateEvaluationContext() end
-    if invalidateChoiceContext then invalidateChoiceContext(self) end
+
+    if invalidateEvaluationContext then
+        invalidateEvaluationContext()
+    end
+    if invalidateChoiceContext then
+        invalidateChoiceContext(self)
+    end
+
     self:verbose("Action context changed from %s to %s.", previous, value)
     self:ButtonFetch()
     local spec, profile = self.currentSpec, self.db.profile
@@ -4392,7 +5400,9 @@ end
 
 -- Bar-swap notifications: apply the new action context, or just refetch the buttons when the context is unchanged.
 local function actionBarChanged(self)
-    if not self:ApplyActionContext() then self:ButtonFetch() end
+    if not self:ApplyActionContext() then
+        self:ButtonFetch()
+    end
 end
 
 -- Bar swaps go through actionBarChanged; the start and end of a pet battle change the context directly.
@@ -4400,9 +5410,16 @@ addon.UPDATE_VEHICLE_ACTIONBAR = wrapEvent(actionBarChanged)
 addon.UPDATE_OVERRIDE_ACTIONBAR = wrapEvent(actionBarChanged)
 addon.UPDATE_POSSESS_BAR = wrapEvent(actionBarChanged)
 addon.UPDATE_BONUS_ACTIONBAR = wrapEvent(actionBarChanged)
+
 -- A pet battle starting or ending re-reads the action context.
-addon.PET_BATTLE_OPENING_START = wrapEvent(function(self) self:ApplyActionContext() end)
-addon.PET_BATTLE_CLOSE = wrapEvent(function(self) self:ApplyActionContext() end)
+addon.PET_BATTLE_OPENING_START = wrapEvent(function(self)
+    self:ApplyActionContext()
+end)
+
+addon.PET_BATTLE_CLOSE = wrapEvent(function(self)
+    self:ApplyActionContext()
+end)
+
 -- END ACTION CONTEXT
 
 -- ============================================================================
@@ -4423,19 +5440,36 @@ end
 -- stale during the call; nil means the caller must abandon the event.
 local function nameplateReadable(self, snapshot, ticket, value)
     local readable = self.Platform:CanReadValue(value)
-    if not nameplateCurrent(self, snapshot, ticket) then return nil end
+
+    if not nameplateCurrent(self, snapshot, ticket) then
+        return nil
+    end
+
     return not not readable
 end
 
 -- Returns the GUID of a nameplate unit, or nil when the event went stale or the GUID is missing, secret or empty.
 local function nameplateGUID(self, snapshot, ticket, unit)
     local ok, guid = pcall(UnitGUID, unit)
-    if not nameplateCurrent(self, snapshot, ticket) or not ok then return nil end
-    if not nameplateReadable(self, snapshot, ticket, guid) then return nil end
-    if canaccessvalue and type(canaccessvalue) ~= "function" then return nil end
-    if canaccessvalue and not canaccessvalue(guid) then return nil end
-    if not nameplateCurrent(self, snapshot, ticket) then return nil end
-    if type(guid) == "string" and guid ~= "" then return guid end
+
+    if not nameplateCurrent(self, snapshot, ticket) or not ok then
+        return nil
+    end
+    if not nameplateReadable(self, snapshot, ticket, guid) then
+        return nil
+    end
+    if canaccessvalue and type(canaccessvalue) ~= "function" then
+        return nil
+    end
+    if canaccessvalue and not canaccessvalue(guid) then
+        return nil
+    end
+    if not nameplateCurrent(self, snapshot, ticket) then
+        return nil
+    end
+    if type(guid) == "string" and guid ~= "" then
+        return guid
+    end
 end
 
 -- Lists the map entries that still name `unit` under a GUID other than `keep`, each with the canonical unit alias that
@@ -4456,11 +5490,17 @@ local function nameplateChanges(self, snapshot, ticket, unit, keep)
         if type(entry) == "table" and getmetatable(entry) == nil then
             local stored = rawget(entry, "unit")
             local readable = nameplateReadable(self, snapshot, ticket, stored)
-            if readable == nil then return nil end
+
+            if readable == nil then
+                return nil
+            end
 
             if readable and type(stored) == "string" and stored == unit then
                 readable = nameplateReadable(self, snapshot, ticket, change.guid)
-                if readable == nil then return nil end
+
+                if readable == nil then
+                    return nil
+                end
 
                 if readable and type(change.guid) == "string" and change.guid ~= keep then
                     changes[#changes + 1] = change
@@ -4469,21 +5509,35 @@ local function nameplateChanges(self, snapshot, ticket, unit, keep)
         end
     end
 
-    if #changes == 0 then return changes end
+    if #changes == 0 then
+        return changes
+    end
+
     local units, aliases = {}, {}
 
     for alias in pairs(addon.units) do
-        if not (addon.groupUnitKinds and addon.groupUnitKinds[alias]) then units[#units + 1] = alias end
+        if not (addon.groupUnitKinds and addon.groupUnitKinds[alias]) then
+            units[#units + 1] = alias
+        end
     end
 
     for _, alias in ipairs(units) do
         local readable = nameplateReadable(self, snapshot, ticket, alias)
-        if readable == nil then return nil end
+
+        if readable == nil then
+            return nil
+        end
 
         if readable and type(alias) == "string" and alias ~= unit then
             local guid = nameplateGUID(self, snapshot, ticket, alias)
-            if not nameplateCurrent(self, snapshot, ticket) then return nil end
-            if guid and not aliases[guid] then aliases[guid] = alias end
+
+            if not nameplateCurrent(self, snapshot, ticket) then
+                return nil
+            end
+
+            if guid and not aliases[guid] then
+                aliases[guid] = alias
+            end
         end
     end
 
@@ -4508,7 +5562,10 @@ local function applyNameplateChanges(self, snapshot, ticket, unit, changes)
         if rawget(snapshot, change.guid) == change.entry then
             local stored = rawget(change.entry, "unit")
             local readable = nameplateReadable(self, snapshot, ticket, stored)
-            if readable == nil then return false end
+
+            if readable == nil then
+                return false
+            end
 
             if readable and type(stored) == "string" and stored == unit then
                 -- A readability callback may directly replace the field. Never
@@ -4543,7 +5600,11 @@ do
     -- token or unreadable value leaves the old map exactly as it was.
     reconcileNameplateResume = function(self, change)
         local snapshot = self.unitsInRange
-        if kind(snapshot) ~= "table" or meta(snapshot) ~= nil then return end
+
+        if kind(snapshot) ~= "table" or meta(snapshot) ~= nil then
+            return
+        end
+
         local ticket = {}
         nameplateEvent = ticket
         local db, profile = self.db, self.db.profile
@@ -4562,13 +5623,19 @@ do
         protected(function()
             -- Aborts the protected block, leaving the old map intact, as soon as the resume goes stale.
             local function requireCurrent()
-                if not current() then raise("stale nameplate resume", 0) end
+                if not current() then
+                    raise("stale nameplate resume", 0)
+                end
             end
 
             -- Returns value after proving it is readable and not restricted; raises otherwise.
             local function readable(value)
                 requireCurrent()
-                if not self.Platform:CanReadValue(value) then raise("unreadable nameplate resume", 0) end
+
+                if not self.Platform:CanReadValue(value) then
+                    raise("unreadable nameplate resume", 0)
+                end
+
                 requireCurrent()
 
                 if canaccessvalue then
@@ -4586,7 +5653,11 @@ do
             -- only if it is readable.
             local function observe(fn, ...)
                 requireCurrent()
-                if kind(fn) ~= "function" then raise("missing nameplate resume provider", 0) end
+
+                if kind(fn) ~= "function" then
+                    raise("missing nameplate resume provider", 0)
+                end
+
                 local value = fn(...)
                 requireCurrent()
                 return readable(value)
@@ -4609,29 +5680,50 @@ do
             local units = {}
 
             for unit in nextEntry, addon.units do
-                if not (addon.groupUnitKinds and addon.groupUnitKinds[unit]) then units[#units + 1] = unit end
+                if not (addon.groupUnitKinds and addon.groupUnitKinds[unit]) then
+                    units[#units + 1] = unit
+                end
             end
 
             -- GUID of a unit token, or nil when the unit does not exist. Each reading is recorded in `observations` so
             -- it can be verified again just before the commit.
             local function guidFor(unit)
                 local guid = observe(UnitGUID, unit)
-                if guid ~= nil and (kind(guid) ~= "string" or guid == "") then raise("unknown nameplate GUID", 0) end
+
+                if guid ~= nil and (kind(guid) ~= "string" or guid == "") then
+                    raise("unknown nameplate GUID", 0)
+                end
+
                 observations[#observations + 1] = { unit = unit, guid = guid }
                 return guid
             end
 
             for _, unit in items(units) do
                 readable(unit)
-                if kind(unit) ~= "string" then raise("unknown canonical unit", 0) end
+
+                if kind(unit) ~= "string" then
+                    raise("unknown canonical unit", 0)
+                end
+
                 local guid = guidFor(unit)
-                if guid and not aliases[guid] then aliases[guid] = unit end
+
+                if guid and not aliases[guid] then
+                    aliases[guid] = unit
+                end
             end
 
             local api = C_NamePlate
-            if kind(api) ~= "table" then return end
+
+            if kind(api) ~= "table" then
+                return
+            end
+
             local listed = observe(api.GetNamePlates)
-            if kind(listed) ~= "table" or meta(listed) ~= nil then return end
+
+            if kind(listed) ~= "table" or meta(listed) ~= nil then
+                return
+            end
+
             local members = {}
 
             for _, frame in nextEntry, listed do
@@ -4640,11 +5732,23 @@ do
 
             for _, frame in items(members) do
                 readable(frame)
-                if observe(frame.IsForbidden, frame) ~= false then return end
+
+                if observe(frame.IsForbidden, frame) ~= false then
+                    return
+                end
+
                 local unit = observe(frame.GetUnit, frame)
-                if kind(unit) ~= "string" or not match(unit, "^nameplate%d+$") then return end
+
+                if kind(unit) ~= "string" or not match(unit, "^nameplate%d+$") then
+                    return
+                end
+
                 local guid = guidFor(unit)
-                if not guid then return end
+
+                if not guid then
+                    return
+                end
+
                 frames[#frames + 1] = { frame = frame, unit = unit, guid = guid }
             end
 
@@ -4658,7 +5762,11 @@ do
 
                     if guid == nil then
                         local exists = observe(UnitExists, unit)
-                        if kind(exists) ~= "boolean" then return end
+
+                        if kind(exists) ~= "boolean" then
+                            return
+                        end
+
                         observations[#observations].exists = exists
                         obsolete = exists == false
                     end
@@ -4675,7 +5783,10 @@ do
 
             for _, item in items(frames) do
                 local entry = proposed[item.guid]
-                if entry ~= nil and (kind(entry) ~= "table" or meta(entry) ~= nil) then return end
+
+                if entry ~= nil and (kind(entry) ~= "table" or meta(entry) ~= nil) then
+                    return
+                end
 
                 if not entry then
                     entry = CreateUnitInfo({}, item.unit)
@@ -4687,8 +5798,12 @@ do
             end
 
             for _, item in items(observations) do
-                if observe(UnitGUID, item.unit) ~= item.guid then return end
-                if item.exists ~= nil and observe(UnitExists, item.unit) ~= item.exists then return end
+                if observe(UnitGUID, item.unit) ~= item.guid then
+                    return
+                end
+                if item.exists ~= nil and observe(UnitExists, item.unit) ~= item.exists then
+                    return
+                end
             end
 
             for _, item in items(old) do
@@ -4708,21 +5823,33 @@ do
             end
 
             requireCurrent()
-            if meta(snapshot) ~= nil then return end
+
+            if meta(snapshot) ~= nil then
+                return
+            end
+
             local count = 0
 
             for _ in nextEntry, snapshot do
                 count = count + 1
             end
 
-            if count ~= #old then return end
+            if count ~= #old then
+                return
+            end
 
             for _, item in items(old) do
-                if not same(read(snapshot, item.guid), item.entry) then return end
+                if not same(read(snapshot, item.guid), item.entry) then
+                    return
+                end
 
                 if kind(item.entry) == "table" then
-                    if meta(item.entry) ~= item.meta then return end
-                    if item.meta == nil and read(item.entry, "unit") ~= item.unit then return end
+                    if meta(item.entry) ~= item.meta then
+                        return
+                    end
+                    if item.meta == nil and read(item.entry, "unit") ~= item.unit then
+                        return
+                    end
                 end
             end
 
@@ -4733,7 +5860,9 @@ do
             end
 
             for _, item in items(old) do
-                if proposed[item.guid] == nil then write(snapshot, item.guid, nil) end
+                if proposed[item.guid] == nil then
+                    write(snapshot, item.guid, nil)
+                end
             end
 
             for guid, entry in nextEntry, proposed do
@@ -4766,14 +5895,32 @@ addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
     local ticket = {}
     nameplateEvent = ticket
     local snapshot = self.unitsInRange
-    if type(snapshot) ~= "table" or getmetatable(snapshot) ~= nil then return end
-    if not nameplateReadable(self, snapshot, ticket, unit) or type(unit) ~= "string" or unit == "" then return end
+
+    if type(snapshot) ~= "table" or getmetatable(snapshot) ~= nil then
+        return
+    end
+    if not nameplateReadable(self, snapshot, ticket, unit) or type(unit) ~= "string" or unit == "" then
+        return
+    end
+
     local guid = nameplateGUID(self, snapshot, ticket, unit)
-    if not guid then return end
+
+    if not guid then
+        return
+    end
+
     local changes = nameplateChanges(self, snapshot, ticket, unit, guid)
-    if not changes then return end
+
+    if not changes then
+        return
+    end
+
     local previous = rawget(snapshot, guid)
-    if previous ~= nil and (type(previous) ~= "table" or getmetatable(previous) ~= nil) then return end
+
+    if previous ~= nil and (type(previous) ~= "table" or getmetatable(previous) ~= nil) then
+        return
+    end
+
     local previousUnit = previous and rawget(previous, "unit")
 
     if previous and (not nameplateReadable(self, snapshot, ticket, previousUnit) or type(previousUnit) ~= "string") then
@@ -4781,19 +5928,33 @@ addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
     end
 
     local entry = previous or CreateUnitInfo({}, unit)
-    if not nameplateCurrent(self, snapshot, ticket) then return end
-    if not applyNameplateChanges(self, snapshot, ticket, unit, changes) then return end
+
+    if not nameplateCurrent(self, snapshot, ticket) then
+        return
+    end
+    if not applyNameplateChanges(self, snapshot, ticket, unit, changes) then
+        return
+    end
+
     local current = rawget(snapshot, guid)
-    if type(current) ~= type(previous) or not rawequal(current, previous) then return end
+
+    if type(current) ~= type(previous) or not rawequal(current, previous) then
+        return
+    end
 
     if previous then
         local ok, unchanged = pcall(nameplateStoredMatches, previous, previousUnit)
-        if not ok or not unchanged then return end
+
+        if not ok or not unchanged then
+            return
+        end
     end
 
     rawset(entry, "unit", unit)
     rawset(snapshot, guid, entry)
-end, function(self, _, unit) restrictedNameplateUnit(self, unit, true) end)
+end, function(self, _, unit)
+    restrictedNameplateUnit(self, unit, true)
+end)
 
 -- A nameplate went away: retires the entries that still name its token, retargeting each to its canonical unit alias
 -- when one carries the same GUID. Removal can arrive after the token stops resolving, so it works from the stored
@@ -4802,13 +5963,27 @@ addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
     local ticket = {}
     nameplateEvent = ticket
     local snapshot = self.unitsInRange
-    if type(snapshot) ~= "table" or getmetatable(snapshot) ~= nil then return end
-    if not nameplateReadable(self, snapshot, ticket, unit) or type(unit) ~= "string" or unit == "" then return end
+
+    if type(snapshot) ~= "table" or getmetatable(snapshot) ~= nil then
+        return
+    end
+    if not nameplateReadable(self, snapshot, ticket, unit) or type(unit) ~= "string" or unit == "" then
+        return
+    end
+
     local changes = nameplateChanges(self, snapshot, ticket, unit)
-    if not changes then return end
-    if not nameplateCurrent(self, snapshot, ticket) then return end
+
+    if not changes then
+        return
+    end
+    if not nameplateCurrent(self, snapshot, ticket) then
+        return
+    end
+
     applyNameplateChanges(self, snapshot, ticket, unit, changes)
-end, function(self, _, unit) restrictedNameplateUnit(self, unit, false) end)
+end, function(self, _, unit)
+    restrictedNameplateUnit(self, unit, false)
+end)
 
 -- Bag contents changed: refresh the buttons bound to item sets and the cached bag contents.
 addon.BAG_UPDATE = wrapEvent(function(self)
@@ -4862,7 +6037,10 @@ end
 addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, value, type)
     local now = GetTime()
     local wanted = self.historyWanted
-    if wanted and now > wanted.combat then return end
+
+    if wanted and now > wanted.combat then
+        return
+    end
 
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
@@ -4890,10 +6068,18 @@ end, function(self, _, unit, action, severity, value, kind)
     -- action that cannot be read is recorded as unknown (action false), so a
     -- history reader at that position is unavailable rather than wrong.
     local platform = self.Platform
-    if not platform:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then return end
+
+    if not platform:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then
+        return
+    end
+
     local now = GetTime()
     local wanted = self.historyWanted
-    if wanted and now > wanted.combat then return end
+
+    if wanted and now > wanted.combat then
+        return
+    end
+
     local entry = { time = now, action = false }
 
     if
@@ -4904,9 +6090,13 @@ end, function(self, _, unit, action, severity, value, kind)
     then
         entry.action, entry.severity = action, severity
     end
+    if platform:CanReadValue(value) then
+        entry.value = value
+    end
+    if platform:CanReadValue(kind) then
+        entry.type = kind
+    end
 
-    if platform:CanReadValue(value) then entry.value = value end
-    if platform:CanReadValue(kind) then entry.type = kind end
     recordCombatAction(self, unit, entry)
 end)
 
@@ -4955,13 +6145,23 @@ local function spellcast(self, event, unit, castguid, spellid)
                     -- For series rules only (other rules are always enabled here): true while the addon is still
                     -- enabled and IsEnabled is the method captured when the rule started.
                     local function seriesEnabled()
-                        if value.outputs == nil then return true end
-                        if self.IsEnabled ~= seriesLifecycle then return false end
+                        if value.outputs == nil then
+                            return true
+                        end
+                        if self.IsEnabled ~= seriesLifecycle then
+                            return false
+                        end
 
                         if seriesLifecycle ~= nil then
-                            if type(seriesLifecycle) ~= 'function' then return false end
+                            if type(seriesLifecycle) ~= 'function' then
+                                return false
+                            end
+
                             local ok, enabled = pcall(seriesLifecycle, self)
-                            if not ok or enabled ~= true then return false end
+
+                            if not ok or enabled ~= true then
+                                return false
+                            end
                         end
 
                         local state = rawget(self, 'enabledState')
@@ -4988,7 +6188,9 @@ local function spellcast(self, event, unit, castguid, spellid)
                         for idx, sid in ipairs(spellids) do
                             if spellid == sid then
                                 if ent.outputs ~= nil then
-                                    if not current() then return end
+                                    if not current() then
+                                        return
+                                    end
 
                                     -- Reserve the parent once before any card callback.
                                     if self.announced[ent.id] == nil then
@@ -5003,7 +6205,10 @@ local function spellcast(self, event, unit, castguid, spellid)
                                     )
                                         local text = card.value or ''
                                         local link, itemLink
-                                        if text:find('{{target}}', 1, true) and not seriesRecipient then return nil end
+
+                                        if text:find('{{target}}', 1, true) and not seriesRecipient then
+                                            return nil
+                                        end
 
                                         if text:find('{{spell}}', 1, true) then
                                             if
@@ -5014,14 +6219,23 @@ local function spellcast(self, event, unit, castguid, spellid)
                                             end
 
                                             link = spellLink(sid)
-                                            if type(link) ~= 'string' or not live() then return nil end
+
+                                            if type(link) ~= 'string' or not live() then
+                                                return nil
+                                            end
                                         end
 
                                         if text:find('{{item}}', 1, true) then
-                                            if ent.type ~= 'item' then return nil end
+                                            if ent.type ~= 'item' then
+                                                return nil
+                                            end
+
                                             local info = self.Platform:GetItemDisplayInfo(itemids[idx])
                                             itemLink = info and info.link
-                                            if type(itemLink) ~= 'string' or not live() then return nil end
+
+                                            if type(itemLink) ~= 'string' or not live() then
+                                                return nil
+                                            end
                                         end
 
                                         return text:gsub('{{target}}', function() return seriesRecipient end):gsub(
@@ -5063,7 +6277,9 @@ local function spellcast(self, event, unit, castguid, spellid)
                                             end
                                         end
 
-                                        if not current() then return end  -- ANNOUNCEMENT CONDITION BEFORE OUTPUT
+                                        if not current() then  -- ANNOUNCEMENT CONDITION BEFORE OUTPUT
+                                            return
+                                        end
 
                                         -- Reserve before any output callback can reenter this cast.
                                         if self.announced[ent.id] == nil then
@@ -5156,8 +6372,15 @@ end, function(self, _, unit, _, spellid)
     -- is still a cast: it is recorded as unknown (spell false), so a history
     -- reader at that position is unavailable rather than wrong.
     local platform = self.Platform
-    if not platform:CanReadValue(unit) or (unit ~= 'player' and unit ~= 'pet') then return end
-    if not platform:CanReadValue(spellid) or type(spellid) ~= 'number' then spellid = false end
+
+    if not platform:CanReadValue(unit) or (unit ~= 'player' and unit ~= 'pet') then
+        return
+    end
+
+    if not platform:CanReadValue(spellid) or type(spellid) ~= 'number' then
+        spellid = false
+    end
+
     recordSpellCast(self, spellid)
 end)
 
@@ -5232,10 +6455,17 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
     end
 
     local wanted = addon.historyWanted
-    if wanted and GetTime() > wanted.damage then return end
+
+    if wanted and GetTime() > wanted.damage then
+        return
+    end
 
     local kind = event:sub(-5) == "_HEAL" and "heals" or event:sub(-7) == "_DAMAGE" and "damage"
-    if not kind then return end
+
+    if not kind then
+        return
+    end
+
     local prefix = event:match("^[^_]+")
     local offs = (prefix == "SPELL" or prefix == "RANGE") and 4 or prefix == "ENVIRONMENTAL" and 2 or 1
     local entry = addon.damageHistory[destGUID]
@@ -5256,7 +6486,11 @@ end
 -- dispatch this handler (their payload is secure-only).
 addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function()
     local read = type(C_CombatLog) == 'table' and C_CombatLog.GetCurrentEventInfo or nil
-    if type(read) ~= 'function' then read = CombatLogGetCurrentEventInfo end
+
+    if type(read) ~= 'function' then
+        read = CombatLogGetCurrentEventInfo
+    end
+
     handle_combat_log(read())
 end)
 

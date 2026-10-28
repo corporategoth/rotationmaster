@@ -32,7 +32,10 @@ function addon:InstallSettingsLayout(p)
         -- A divider drag redraws the page; keep its splitter alive meanwhile.
         if self.roster then
             self.roster.frame:Hide()
-            if self.roster.splitter and not self.roster.splitter.drag then self.roster.splitter:Hide() end
+
+            if self.roster.splitter and not self.roster.splitter.drag then
+                self.roster.splitter:Hide()
+            end
         end
 
         for _, frame in ipairs(self.columns or {}) do
@@ -74,7 +77,9 @@ function addon:InstallSettingsLayout(p)
             end
         end
 
-        if self.columnSingle then return end
+        if self.columnSingle then
+            return
+        end
 
         -- Each column sizes its own caption column.
         if self.EndLabelScope and self.labelScope then
@@ -82,7 +87,10 @@ function addon:InstallSettingsLayout(p)
             self:BeginLabelScope()
         end
 
-        if self.currentColumn then self.columns[self.currentColumn]:SetHeight(math.max(1, self.y)) end
+        if self.currentColumn then
+            self.columns[self.currentColumn]:SetHeight(math.max(1, self.y))
+        end
+
         self.currentColumn = index
         self.surface = self.columns[index]
         self.width = self.columnWidth
@@ -117,7 +125,10 @@ function addon:InstallSettingsLayout(p)
     -- without a roster.
     function p:UpdateRosterEntry(value, presentation)
         local r = self.roster
-        if not r then return end
+
+        if not r then
+            return
+        end
 
         for _, entry in ipairs(r.entries) do
             if entry.value == value then
@@ -160,12 +171,19 @@ function addon:InstallSettingsLayout(p)
     -- the frame. The rows stay pooled in the roster for the next drawing.
     function p:ReleaseRoster()
         local r = self.roster
-        if not r then return end
+
+        if not r then
+            return
+        end
+
         r.active = false
         r.rebuilding = true
         r.unsavedState = nil
         r.unsavedByValue = {}
-        if r.orderView then r.orderView:Cancel() end
+
+        if r.orderView then
+            r.orderView:Cancel()
+        end
 
         for _, row in ipairs(r.rows) do
             self:RetireRosterRow(row)
@@ -179,7 +197,10 @@ function addon:InstallSettingsLayout(p)
         r.rebuilding = nil
         r.search:ClearFocus()
         r.frame:Hide()
-        if r.splitter and not r.splitter.drag then r.splitter:Hide() end
+
+        if r.splitter and not r.splitter.drag then
+            r.splitter:Hide()
+        end
     end
 
     -- Binds a pooled row to `entry` at list position `index`: places and styles it, shows its icon, validation and
@@ -218,7 +239,10 @@ function addon:InstallSettingsLayout(p)
         addon:SetWorkbenchInvalid(row, entry.invalid, entry.validationMessage)
         row.tooltip = entry.validationMessage
         addon:SetWorkbenchUnsaved(row, self.RosterEntryUnsaved and self:RosterEntryUnsaved(entry) or false)
-        if entry.disabled then row:GetFontString():SetTextColor(.5, .5, .5) end
+
+        if entry.disabled then
+            row:GetFontString():SetTextColor(.5, .5, .5)
+        end
 
         addon:SetUIScript(row, 'OnClick', self:Guard(function()
             if r.active and r.revision == revision and row.rosterLease == lease and self:FlushEdits() then
@@ -328,7 +352,10 @@ function addon:InstallSettingsLayout(p)
         r.refreshing = nil
 
         if not ok then
-            if binding then pcall(self.RetireRosterRow, self, binding) end
+            if binding then
+                pcall(self.RetireRosterRow, self, binding)
+            end
+
             error(why, 0)
         end
     end
@@ -338,12 +365,19 @@ function addon:InstallSettingsLayout(p)
     -- when it is still listed.
     function p:RefreshRoster()
         local r = self.roster
-        if not r then return end
+
+        if not r then
+            return
+        end
+
         local top = r.scroll.workbenchBar:GetValue()
         local anchor = r.matches and r.matches[math.floor(top / 34) + 1]
         local offset = top % 34
         r.rebuilding = true
-        if r.orderView then r.orderView:Cancel() end
+
+        if r.orderView then
+            r.orderView:Cancel()
+        end
 
         for _, row in ipairs(r.rows) do
             self:RetireRosterRow(row)
@@ -385,7 +419,11 @@ function addon:InstallSettingsLayout(p)
     -- pending edits first and runs the action only if that succeeds.
     function p:SetRosterActions(entries, keepManage)
         local r = self.roster
-        if not r then return end
+
+        if not r then
+            return
+        end
+
         r.footerActions = entries
         r.footerManage = keepManage == true
         r.actionButtons = r.actionButtons or {}
@@ -418,7 +456,9 @@ function addon:InstallSettingsLayout(p)
             self.fields[entry.key] = button
 
             addon:SetUIScript(button, 'OnClick', self:Guard(function()
-                if self:FlushEdits() then entry.action() end
+                if self:FlushEdits() then
+                    entry.action()
+                end
             end))
         end
 
@@ -454,14 +494,20 @@ function addon:InstallSettingsLayout(p)
             r.scroll = addon:CreateWorkbenchScrollFrame(r.frame)
             r.child = CreateFrame('Frame', nil, r.scroll)
             r.scroll:SetScrollChild(r.child)
-            r.scroll.workbenchBar:HookScript('OnValueChanged', function() self:RefreshRosterViewport() end)
+
+            r.scroll.workbenchBar:HookScript('OnValueChanged', function()
+                self:RefreshRosterViewport()
+            end)
 
             -- Rows follow the list column; the scroll bar reserves space only when shown.
             function r.scroll.OnWorkbenchColumnResized()
                 self:RefreshRosterViewport()
             end
 
-            r.splitter = addon:CreateWorkbenchSplitter(self.frame, function() self:ResizeSplit() end)
+            r.splitter = addon:CreateWorkbenchSplitter(self.frame, function()
+                self:ResizeSplit()
+            end)
+
             r.empty = r.child:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
             r.empty:SetPoint('TOPLEFT', 6, -6)
             r.empty:SetText(L['No matches.'])
@@ -489,7 +535,9 @@ function addon:InstallSettingsLayout(p)
         local generation = self.generation
 
         self.cleanups[#self.cleanups + 1] = function()
-            if r.generation == generation then self:ReleaseRoster() end
+            if r.generation == generation then
+                self:ReleaseRoster()
+            end
         end
 
         r.search:SetText(self.rosterQuery or '')
@@ -501,7 +549,10 @@ function addon:InstallSettingsLayout(p)
             end
         end))
 
-        addon:SetUIScript(r.search, 'OnEscapePressed', self:Guard(function() r.search:ClearFocus() end))
+        addon:SetUIScript(r.search, 'OnEscapePressed', self:Guard(function()
+            r.search:ClearFocus()
+        end))
+
         r.sourceButtons = r.sourceButtons or {}
 
         for i, entry in ipairs(options.sources or {}) do
@@ -562,7 +613,9 @@ function addon:InstallSettingsLayout(p)
             r.new:Show()
 
             addon:SetUIScript(r.new, 'OnClick', self:Guard(function()
-                if self:FlushEdits() then options.new() end
+                if self:FlushEdits() then
+                    options.new()
+                end
             end))
         else
             r.new:Hide()
@@ -573,7 +626,9 @@ function addon:InstallSettingsLayout(p)
             r.manage:Show()
 
             addon:SetUIScript(r.manage, 'OnClick', self:Guard(function()
-                if self:FlushEdits() then options.manage() end
+                if self:FlushEdits() then
+                    options.manage()
+                end
             end))
         else
             r.manage:Hide()
@@ -662,7 +717,10 @@ function addon:InstallSettingsLayout(p)
     -- the page is drawn again exactly as after a window resize, pending
     -- (even invalid) input included.
     function p:ResizeSplit()
-        if not self.rosterUsed or not self.roster then return end
+        if not self.rosterUsed or not self.roster then
+            return
+        end
+
         self:Layout()
         self:RequestRelayout()
     end

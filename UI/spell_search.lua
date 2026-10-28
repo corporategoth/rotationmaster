@@ -90,20 +90,27 @@ function addon:GetReferenceContextEntries(kind)
 
     -- Adds one entry unless the id is unreadable, not a positive number, already listed, or the list is full.
     local function add(id, context)
-        if not readable(id) or type(id) ~= 'number' or id <= 0 or seen[id] or #entries >= 10 then return end
+        if not readable(id) or type(id) ~= 'number' or id <= 0 or seen[id] or #entries >= 10 then
+            return
+        end
+
         seen[id] = true
         entries[#entries + 1] = { id = id, context = context }
     end
 
     -- Drops the pcall status and returns the results only on success.
     local function returned(ok, ...)
-        if ok then return ... end
+        if ok then
+            return ...
+        end
     end
 
     -- Calls a game function under pcall; returns its results, or nothing when it is missing or errors (an API that is
     -- absent on one client must not break the menu).
     local function call(fn, ...)
-        if type(fn) == 'function' then return returned(pcall(fn, ...)) end
+        if type(fn) == 'function' then
+            return returned(pcall(fn, ...))
+        end
     end
 
     if kind == 'spell' then
@@ -119,7 +126,9 @@ function addon:GetReferenceContextEntries(kind)
         end
 
         for _, entry in ipairs(type(self.spellHistory) == 'table' and self.spellHistory or {}) do
-            if type(entry) == 'table' then add(entry.spell, L['Recently cast: %s']) end
+            if type(entry) == 'table' then
+                add(entry.spell, L['Recently cast: %s'])
+            end
         end
     elseif kind == 'item' then
         for slot, context in pairs({ [13] = L['Trinket 1: %s'], [14] = L['Trinket 2: %s'] }) do
@@ -210,7 +219,10 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- Is the pointer on this field's suggestion list? Mouse focus, not
     -- geometry, so a window over the list does not count.
     local function overPopup()
-        if not popup:IsShown() then return false end
+        if not popup:IsShown() then
+            return false
+        end
+
         local focus
 
         if type(GetMouseFoci) == "function" then
@@ -224,8 +236,13 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end
 
         for _ = 1, 20 do
-            if focus == popup then return true end
-            if type(focus) ~= "table" or type(focus.GetParent) ~= "function" then return false end
+            if focus == popup then
+                return true
+            end
+            if type(focus) ~= "table" or type(focus.GetParent) ~= "function" then
+                return false
+            end
+
             focus = focus:GetParent()
         end
 
@@ -248,7 +265,11 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
             or type(text) == 'string' and (tonumber(text) or tonumber(text:match('|H' .. provider.kind .. ':(%d+)')))
 
         acceptedID = id
-        if id then text = provider.name(id, self:GetUserData('norank')) or provider.missing end
+
+        if id then
+            text = provider.name(id, self:GetUserData('norank')) or provider.missing
+        end
+
         setting = true
         originalText(self, clean(text))
         setting = false
@@ -265,7 +286,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     -- The accepted id while the text is still exactly what was accepted; nil once the user has edited it.
     widget.GetReferenceID = function()
-        if alive and field:GetText() == acceptedText then return acceptedID end
+        if alive and field:GetText() == acceptedText then
+            return acceptedID
+        end
     end
 
     -- Marks the selected row (the one Enter would pick).
@@ -282,25 +305,41 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- Accepts reference `id`: resolves it through the provider, sets the text and fires OnEnterPressed with the
     -- resolved id. Returns true when it was accepted.
     local function commit(id)
-        if not alive or widget.disabled then return end
+        if not alive or widget.disabled then
+            return
+        end
+
         local resolved = provider.resolve(tostring(id), settings())
-        if not resolved then return end
+
+        if not resolved then
+            return
+        end
+
         local name = provider.name(resolved, widget:GetUserData("norank"))
         widget:SetText(resolved)
         widget:Fire("OnEnterPressed", tostring(resolved))
+
         -- A callback may rebuild/release this field; never touch its next owner.
-        if alive then widget:ClearFocus() end
+        if alive then
+            widget:ClearFocus()
+        end
+
         return true
     end
 
     -- Runs the search for the text in the box and fills the suggestion rows and footer. A search with no hits that
     -- the provider can resolve exactly (an id, link or exact name) is retried by that name. Only runs while focused.
     local function query()
-        if not alive or setting or widget.disabled or not field:HasFocus() then return end
+        if not alive or setting or widget.disabled or not field:HasFocus() then
+            return
+        end
 
         if acceptedID and field:GetText() == acceptedText then
             local name = provider.name(acceptedID, widget:GetUserData('norank'))
-            if name and name ~= acceptedText then widget:SetText(acceptedID) end
+
+            if name and name ~= acceptedText then
+                widget:SetText(acceptedID)
+            end
         end
 
         local text = field:GetText()
@@ -311,14 +350,20 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
             dropHint:Hide()
         end
 
-        if text == provider.missing then text = '' end
+        if text == provider.missing then
+            text = ''
+        end
+
         local opts = settings()
         local rows, status = provider.search(text, opts)
 
         if rows and #rows == 0 and text ~= "" then
             local id = provider.resolve(text, opts)
             local name = id and provider.name(id, true)
-            if name then rows, status = provider.search(name, opts) end
+
+            if name then
+                rows, status = provider.search(name, opts)
+            end
         end
 
         matches = rows or {}
@@ -385,13 +430,20 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- Enter pressed: an empty box clears the field; otherwise an exact reference wins, then the selected suggestion,
     -- and with neither the list is refreshed. Tab navigation (`navigated`) makes the selected row win.
     local function enter()
-        if not alive or widget.disabled then return end
+        if not alive or widget.disabled then
+            return
+        end
+
         local text = field:GetText()
 
         if text == "" then
             widget:SetText("")
             widget:Fire("OnEnterPressed", "")
-            if alive then widget:ClearFocus() end
+
+            if alive then
+                widget:ClearFocus()
+            end
+
             return
         end
 
@@ -409,7 +461,10 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- Commits typed-but-unaccepted text (as Enter would). Returns true when nothing was pending, true when the text
     -- was accepted, and nil when it could not be resolved so the caller keeps the page dirty.
     widget.CommitPending = function(self)
-        if not alive or self.disabled or not self:IsPending() then return true end
+        if not alive or self.disabled or not self:IsPending() then
+            return true
+        end
+
         enter()
         return field:GetText() == acceptedText or nil
     end
@@ -417,24 +472,42 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     local onText = field:GetScript("OnTextChanged")
 
     install(field, "OnTextChanged", function(self, ...)
-        if not alive then return end
-        if onText then onText(self, ...) end
-        if alive then query() end
+        if not alive then
+            return
+        end
+
+        if onText then
+            onText(self, ...)
+        end
+        if alive then
+            query()
+        end
     end)
 
     local onFocus = field:GetScript("OnEditFocusGained")
 
     install(field, "OnEditFocusGained", function(self, ...)
-        if not alive then return end
-        if onFocus then onFocus(self, ...) end
+        if not alive then
+            return
+        end
+
+        if onFocus then
+            onFocus(self, ...)
+        end
+
         blurDeferred = false
-        if alive then query() end
+
+        if alive then
+            query()
+        end
     end)
 
     local onLost = field:GetScript("OnEditFocusLost")
 
     install(field, "OnEditFocusLost", function(self, ...)
-        if not alive then return end
+        if not alive then
+            return
+        end
 
         -- A press on a suggestion owns the outcome: the row commits it. Only
         -- a blur elsewhere restores the accepted text and closes the list.
@@ -448,7 +521,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
             hide()
         end
 
-        if onLost then onLost(self, ...) end
+        if onLost then
+            onLost(self, ...)
+        end
     end)
 
     install(field, "OnEnterPressed", enter)
@@ -461,7 +536,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     end)
 
     install(field, "OnTabPressed", function(_, reverse)
-        if not alive or widget.disabled then return end
+        if not alive or widget.disabled then
+            return
+        end
 
         if #matches > 0 then
             selected = ((selected - 1 + (reverse and -1 or 1)) % #matches) + 1
@@ -473,10 +550,17 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- Accepts the spell or item being dragged on the cursor, when its id resolves for this field. The cursor values
     -- are read under pcall and CanReadValue because a restricted client may hide them.
     local function drag()
-        if not alive or type(GetCursorInfo) ~= "function" then return end
+        if not alive or type(GetCursorInfo) ~= "function" then
+            return
+        end
+
         local observed = { pcall(GetCursorInfo) }
         local ok, cursor, first, third = observed[1], observed[2], observed[3], observed[5]
-        if not ok or not addon.Platform:CanReadValue(cursor) then return end
+
+        if not ok or not addon.Platform:CanReadValue(cursor) then
+            return
+        end
+
         local id
 
         if provider.kind == "item" and cursor == "item" then
@@ -487,10 +571,14 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
             id = first
         end
 
-        if not addon.Platform:CanReadValue(id) or type(id) ~= "number" then return end
+        if not addon.Platform:CanReadValue(id) or type(id) ~= "number" then
+            return
+        end
 
         if provider.resolve(tostring(id), settings()) then
-            if commit(id) and type(ClearCursor) == "function" then ClearCursor() end
+            if commit(id) and type(ClearCursor) == "function" then
+                ClearCursor()
+            end
         end
     end
 
@@ -498,7 +586,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     -- GetReferenceContextEntries) in the suggestion rows; a click commits it
     -- exactly like a suggestion.
     local function insertMenu()
-        if not alive or widget.disabled then return end
+        if not alive or widget.disabled then
+            return
+        end
 
         if popup:IsShown() and popup.rmContextMenu then
             hide()
@@ -580,9 +670,15 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
     local onHide = widget.frame:GetScript("OnHide")
 
     install(widget.frame, "OnHide", function(self, ...)
-        if not alive then return end
+        if not alive then
+            return
+        end
+
         hide()
-        if onHide then onHide(self, ...) end
+
+        if onHide then
+            onHide(self, ...)
+        end
     end)
 
     -- A deferred blur ends with the press: a row commits, anything else on
@@ -599,7 +695,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
 
     for _, row in ipairs(popup.rows) do
         addon:SetUIScript(row, "OnMouseDown", function(self, button)
-            if button == "LeftButton" and self.referenceID then commit(self.referenceID) end
+            if button == "LeftButton" and self.referenceID then
+                commit(self.referenceID)
+            end
         end)
 
         addon:SetUIScript(row, "OnMouseUp", finishBlur)
@@ -612,7 +710,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         end)
 
         addon:SetUIScript(row, "OnLeave", function(self)
-            if GameTooltip and GameTooltip:IsOwned(self) then GameTooltip:Hide() end
+            if GameTooltip and GameTooltip:IsOwned(self) then
+                GameTooltip:Hide()
+            end
         end)
     end
 
@@ -645,7 +745,9 @@ function addon:CreateReferenceEditBox(kind, initialSpell)
         self.SetText, self.OnRelease, self.GetReferenceID, self.CommitPending =
             originalText, originalRelease, originalReferenceID, originalCommit
 
-        if originalRelease then return originalRelease(self, ...) end
+        if originalRelease then
+            return originalRelease(self, ...)
+        end
     end
 
     return widget

@@ -247,7 +247,10 @@ end
 -- the meaning of every saved condition) matches only the chosen ID. Hidden on
 -- clients without spell ranks; the stored value still applies there.
 function addon:Widget_AuraRankWidget(value, update)
-    if not self:ClientHasSpellRanks() then return nil end
+    if not self:ClientHasSpellRanks() then
+        return nil
+    end
+
     local check = self:CreateConditionCheckBox()
     check:SetLabel(L["Use this exact spell rank"])
     check:SetWidth(170)
@@ -266,7 +269,10 @@ end
 -- Exact-rank choice for a spell picked by ID where any rank matches by
 -- default (casts, channels). Hidden on clients without spell ranks.
 function addon:Widget_SpellRankWidget(value, update)
-    if not self:ClientHasSpellRanks() then return nil end
+    if not self:ClientHasSpellRanks() then
+        return nil
+    end
+
     local check = self:CreateConditionCheckBox()
     check:SetLabel(L["Use this exact spell rank"])
     check:SetValue(value.ranked == true)
@@ -431,10 +437,15 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     edit_button:SetUserData("cell", { alignV = "bottom" })
 
     edit_button:SetCallback("OnClick", function()
-        if not ownerAlive() then return end
+        if not ownerAlive() then
+            return
+        end
 
         local edit_callback = function()
-            if not ownerAlive() then return end
+            if not ownerAlive() then
+                return
+            end
+
             update_action_image()
 
             if type(value.item) == "string" then
@@ -462,11 +473,18 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                 local selected, expected, items = value.item, itemset, itemset.items
 
                 local function current()
-                    if not ownerAlive() or value.item ~= selected or expected.items ~= items then return false end
+                    if not ownerAlive() or value.item ~= selected or expected.items ~= items then
+                        return false
+                    end
+
                     local personal = addon.db.profile.itemsets
                     local shared = addon.db.global.itemsets
                     local entry = type(personal) == 'table' and personal[selected]
-                    if entry == nil then entry = type(shared) == 'table' and shared[selected] end
+
+                    if entry == nil then
+                        entry = type(shared) == 'table' and shared[selected]
+                    end
+
                     return entry == expected
                 end
 

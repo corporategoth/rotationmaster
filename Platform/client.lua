@@ -14,8 +14,13 @@ addon.Platform = platform
 
 -- Returns true when value is neither a secret value nor inaccessible; the base of every readability decision.
 local function readable(value)
-    if type(issecretvalue) == "function" and issecretvalue(value) then return false end
-    if type(canaccessvalue) == "function" and not canaccessvalue(value) then return false end
+    if type(issecretvalue) == "function" and issecretvalue(value) then
+        return false
+    end
+    if type(canaccessvalue) == "function" and not canaccessvalue(value) then
+        return false
+    end
+
     return true
 end
 
@@ -41,23 +46,39 @@ do
     end
 
     secretsUnrestricted = secretApi and unrestricted
-    if secretsUnrestricted then readable = function() return true end end
+
+    if secretsUnrestricted then
+        readable = function() return true end
+    end
+
     platform.secretsUnrestricted = secretsUnrestricted
 end
 
 -- Returns value when it is readable and a string, number or boolean; nil for anything else (tables, functions,
 -- secrets).
 local function primitive(value)
-    if not readable(value) then return nil end
+    if not readable(value) then
+        return nil
+    end
+
     local kind = type(value)
-    if kind == "string" or kind == "number" or kind == "boolean" then return value end
+
+    if kind == "string" or kind == "number" or kind == "boolean" then
+        return value
+    end
 end
 
 -- Calls fn under pcall and returns its first result as a primitive; nil when fn is missing, throws or returns a secret.
 local function probe(fn, ...)
-    if type(fn) ~= "function" then return nil end
+    if type(fn) ~= "function" then
+        return nil
+    end
+
     local ok, value = pcall(fn, ...)
-    if ok then return primitive(value) end
+
+    if ok then
+        return primitive(value)
+    end
 end
 
 -- ============================================================================
@@ -107,7 +128,9 @@ function platform:GetClientInfo()
         end
     end
 
-    if C_Seasons then info.seasonId = probe(C_Seasons.GetActiveSeason) end
+    if C_Seasons then
+        info.seasonId = probe(C_Seasons.GetActiveSeason)
+    end
 
     if C_GameRules then
         info.gameModeId = probe(C_GameRules.GetCurrentGameModeRecordID)
@@ -165,15 +188,35 @@ end
 -- test harnesses change the project.
 function addon:ClientHasSpellRanks()
     local project = primitive(WOW_PROJECT_ID)
-    if type(project) ~= 'number' then return false end
+
+    if type(project) ~= 'number' then
+        return false
+    end
+
     local constant = WOW_PROJECT_CLASSIC
-    if type(constant) == 'number' and project == constant then return true end
+
+    if type(constant) == 'number' and project == constant then
+        return true
+    end
+
     constant = WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-    if type(constant) == 'number' and project == constant then return true end
+
+    if type(constant) == 'number' and project == constant then
+        return true
+    end
+
     constant = WOW_PROJECT_WRATH_CLASSIC
-    if type(constant) == 'number' and project == constant then return true end
+
+    if type(constant) == 'number' and project == constant then
+        return true
+    end
+
     constant = WOW_PROJECT_CAMELOT
-    if type(constant) == 'number' and project == constant then return true end
+
+    if type(constant) == 'number' and project == constant then
+        return true
+    end
+
     return false
 end
 
@@ -191,7 +234,10 @@ local policyEnvironment
 
 if policyType(policyGetfenv) == 'function' then
     local ok, value = policyProtect(policyGetfenv, ownedClientInfo)
-    if ok and policyType(value) == 'table' then policyEnvironment = value end
+
+    if ok and policyType(value) == 'table' then
+        policyEnvironment = value
+    end
 end
 
 -- Returns the combat data policy for the Platform object current without building the full client metadata table.
@@ -220,35 +266,71 @@ local function readCombatPolicy(current)
     end
 
     local project = primitive(WOW_PROJECT_ID)
-    if type(project) ~= 'number' then return 'unsupported' end
+
+    if type(project) ~= 'number' then
+        return 'unsupported'
+    end
+
     local constant
     constant = WOW_PROJECT_CAMELOT
-    if type(constant) == 'number' and project == constant then return 'restricted' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'restricted'
+    end
+
     constant = WOW_PROJECT_MAINLINE
-    if type(constant) == 'number' and project == constant then return 'restricted' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'restricted'
+    end
+
     constant = WOW_PROJECT_CLASSIC
-    if type(constant) == 'number' and project == constant then return 'probe' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'probe'
+    end
+
     constant = WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-    if type(constant) == 'number' and project == constant then return 'probe' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'probe'
+    end
+
     constant = WOW_PROJECT_MISTS_CLASSIC
-    if type(constant) == 'number' and project == constant then return 'probe' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'probe'
+    end
+
     constant = WOW_PROJECT_CATACLYSM_CLASSIC
-    if type(constant) == 'number' and project == constant then return 'probe' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'probe'
+    end
+
     constant = WOW_PROJECT_WRATH_CLASSIC
-    if type(constant) == 'number' and project == constant then return 'probe' end
+
+    if type(constant) == 'number' and project == constant then
+        return 'probe'
+    end
+
     return 'unsupported'
 end
 
 -- Hands readCombatPolicy to the addon itself and to no other caller (returns nil for any other receiver).
 function addon:ConsumeClientPolicyReader()
-    if self == addon then return readCombatPolicy end
+    if self == addon then
+        return readCombatPolicy
+    end
 end
 
 -- One-time private handoff. Public client metadata keeps its complete shape.
 -- Passes bind a reader that returns the small context pack selection needs (family, expansion, build, policy) and a
 -- flag that is false when GetClientInfo was replaced and its own result was returned instead.
 function addon:BindRotationClientReader(bind)
-    if type(bind) ~= 'function' then return nil, 'invalid-client-reader-binder' end
+    if type(bind) ~= 'function' then
+        return nil, 'invalid-client-reader-binder'
+    end
 
     bind(function(current)
         local method = current.GetClientInfo
@@ -286,7 +368,10 @@ function addon:BindRotationClientReader(bind)
 
         if type(GetBuildInfo) == 'function' then
             local ok, _, build = pcall(GetBuildInfo)
-            if ok then context.build = primitive(build) end
+
+            if ok then
+                context.build = primitive(build)
+            end
         end
 
         if family == 'retail' or family == 'forever' then
@@ -310,7 +395,10 @@ end
 -- Returns true when value may be compared, calculated with or indexed by; otherwise false and "restricted-value".
 -- Every Platform reader and every condition calls this before it touches a game value.
 function platform:CanReadValue(value)
-    if not readable(value) then return false, "restricted-value" end
+    if not readable(value) then
+        return false, "restricted-value"
+    end
+
     return true
 end
 
@@ -327,7 +415,6 @@ local function declaration(namespace, method, label, legacy)
     if type(namespace) == "table" and type(namespace[method]) == "function" then
         return { status = "present", source = label .. "." .. method, readability = "unverified" }
     end
-
     if legacy and type(_G[legacy]) == "function" then
         return { status = "present", source = legacy, readability = "unverified" }
     end
@@ -356,12 +443,16 @@ function platform:GetAssistedAvailability()
     end
 
     local ok, available, reason = pcall(C_AssistedCombat.IsAvailable)
-    if not ok then return { available = false, reason = "availability-probe-error" } end
 
+    if not ok then
+        return { available = false, reason = "availability-probe-error" }
+    end
     if not readable(available) or not readable(reason) then
         return { available = false, reason = "restricted-availability" }
     end
+    if type(available) ~= "boolean" then
+        return { available = false, reason = "invalid-availability-result" }
+    end
 
-    if type(available) ~= "boolean" then return { available = false, reason = "invalid-availability-result" } end
     return { available = available, reason = type(reason) == "string" and reason or nil }
 end

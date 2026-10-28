@@ -103,7 +103,11 @@ local chargeFields = {
 -- name, or nil and a reason. Legacy clients assemble the same record from the multi-return GetSpellInfo.
 function platform:GetSpellInfo(spell)
     local valid, reason = identifier(spell)
-    if not valid then return nil, reason end
+
+    if not valid then
+        return nil, reason
+    end
+
     local ok, record, built
 
     if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
@@ -111,8 +115,13 @@ function platform:GetSpellInfo(spell)
     elseif type(GetSpellInfo) == "function" then
         local name, subtext, icon, cast, min, max, id, original
         ok, name, subtext, icon, cast, min, max, id, original = pcall(GetSpellInfo, spell)
-        if not ok then return nil, "api-error" end
-        if not self:CanReadValue(name) then return nil, "restricted-value" end
+
+        if not ok then
+            return nil, "api-error"
+        end
+        if not self:CanReadValue(name) then
+            return nil, "restricted-value"
+        end
 
         if name ~= nil then
             record = {
@@ -132,18 +141,33 @@ function platform:GetSpellInfo(spell)
         return nil, "missing-api"
     end
 
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(record) then return nil, "restricted-value" end
-    if record == nil then return nil, "spell-data-unavailable" end
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(record) then
+        return nil, "restricted-value"
+    end
+    if record == nil then
+        return nil, "spell-data-unavailable"
+    end
+
     local info, why = own(record, infoFields, built)
-    if not info then return nil, why end
-    if not info.name or info.name == "" then return nil, "invalid-api-result" end
+
+    if not info then
+        return nil, why
+    end
+    if not info.name or info.name == "" then
+        return nil, "invalid-api-result"
+    end
 
     -- Modern metadata omits rank text; keep this optional public decoration
     -- separate from the required spell identity fields.
     if info.subtext == nil and C_Spell and type(C_Spell.GetSpellSubtext) == "function" then
         local textOk, text = pcall(C_Spell.GetSpellSubtext, spell)
-        if textOk and self:CanReadValue(text) and type(text) == "string" then info.subtext = text end
+
+        if textOk and self:CanReadValue(text) and type(text) == "string" then
+            info.subtext = text
+        end
     end
 
     return info
@@ -156,11 +180,23 @@ local familyNames = {}
 -- Returns the localized name shared by every rank of spellID, or nil and a reason. Cached in familyNames.
 function platform:GetSpellFamilyName(spellID)
     local name = familyNames[spellID]
-    if name then return name end
+
+    if name then
+        return name
+    end
+
     local info, reason = self:GetSpellInfo(spellID)
-    if not info then return nil, reason or "spell-data-unavailable" end
+
+    if not info then
+        return nil, reason or "spell-data-unavailable"
+    end
+
     name = info.name
-    if type(name) ~= "string" or name == "" then return nil, "invalid-api-result" end
+
+    if type(name) ~= "string" or name == "" then
+        return nil, "invalid-api-result"
+    end
+
     familyNames[spellID] = name
     return name
 end
@@ -171,24 +207,39 @@ end
 -- client's own localized name, so this holds on every locale.
 -- Returns true or false for the match, or nil and a reason when the observation or either name is unavailable.
 function platform:MatchSpellIdentity(observedID, observedReason, observedName, wanted, exact)
-    if observedID ~= nil and observedID == wanted then return true end
+    if observedID ~= nil and observedID == wanted then
+        return true
+    end
 
     if exact then
-        if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
+        if observedID == nil then
+            return nil, observedReason or "spell-identity-unavailable"
+        end
+
         return false
     end
 
     local name = observedName
 
     if name == nil then
-        if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
+        if observedID == nil then
+            return nil, observedReason or "spell-identity-unavailable"
+        end
+
         local reason
         name, reason = self:GetSpellFamilyName(observedID)
-        if not name then return nil, reason end
+
+        if not name then
+            return nil, reason
+        end
     end
 
     local wantedName, why = self:GetSpellFamilyName(wanted)
-    if not wantedName then return nil, why end
+
+    if not wantedName then
+        return nil, why
+    end
+
     return name == wantedName
 end
 
@@ -200,8 +251,14 @@ end
 -- C_SpellBook.IsSpellKnown with the spell bank enum, or the legacy global when the enum is unavailable.
 function platform:IsSpellKnown(spellID, pet)
     local valid, reason = identifier(spellID, true)
-    if not valid then return nil, reason end
-    if pet ~= nil and type(pet) ~= "boolean" then return nil, "invalid-spell-bank" end
+
+    if not valid then
+        return nil, reason
+    end
+    if pet ~= nil and type(pet) ~= "boolean" then
+        return nil, "invalid-spell-bank"
+    end
+
     local fn, bank
 
     if C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then
@@ -215,7 +272,9 @@ function platform:IsSpellKnown(spellID, pet)
             end
         end
 
-        if self:CanReadValue(bank) and type(bank) == "number" then fn = C_SpellBook.IsSpellKnown end
+        if self:CanReadValue(bank) and type(bank) == "number" then
+            fn = C_SpellBook.IsSpellKnown
+        end
     end
 
     if not fn then
@@ -229,9 +288,17 @@ function platform:IsSpellKnown(spellID, pet)
     end
 
     local ok, known = pcall(fn, spellID, bank)
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(known) then return nil, "restricted-value" end
-    if type(known) ~= "boolean" then return nil, "invalid-api-result" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(known) then
+        return nil, "restricted-value"
+    end
+    if type(known) ~= "boolean" then
+        return nil, "invalid-api-result"
+    end
+
     return known
 end
 
@@ -313,14 +380,32 @@ end
 -- Returns the spell's chat link string, or nil and a reason.
 function platform:GetSpellLink(spell)
     local valid, reason = identifier(spell)
-    if not valid then return nil, reason end
+
+    if not valid then
+        return nil, reason
+    end
+
     local fn = C_Spell and C_Spell.GetSpellLink or GetSpellLink
-    if type(fn) ~= "function" then return nil, "missing-api" end
+
+    if type(fn) ~= "function" then
+        return nil, "missing-api"
+    end
+
     local ok, link = pcall(fn, spell)
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(link) then return nil, "restricted-value" end
-    if link == nil then return nil, "spell-data-unavailable" end
-    if type(link) ~= "string" or link == "" then return nil, "invalid-api-result" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(link) then
+        return nil, "restricted-value"
+    end
+    if link == nil then
+        return nil, "spell-data-unavailable"
+    end
+    if type(link) ~= "string" or link == "" then
+        return nil, "invalid-api-result"
+    end
+
     return link
 end
 
@@ -479,13 +564,26 @@ end
 -- answer 0 or 1, which is converted to a Boolean.
 function platform:IsCurrentSpell(spell)
     local valid, reason = identifier(spell)
-    if not valid then return nil, reason end
+
+    if not valid then
+        return nil, reason
+    end
+
     local native = C_Spell and C_Spell.IsCurrentSpell
     local fn = native or IsCurrentSpell
-    if type(fn) ~= "function" then return nil, "missing-api" end
+
+    if type(fn) ~= "function" then
+        return nil, "missing-api"
+    end
+
     local ok, active = pcall(fn, spell)
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(active) then return nil, "restricted-value" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(active) then
+        return nil, "restricted-value"
+    end
 
     if not native then
         if active == 0 then
@@ -495,7 +593,10 @@ function platform:IsCurrentSpell(spell)
         end
     end
 
-    if type(active) ~= "boolean" then return nil, "invalid-api-result" end
+    if type(active) ~= "boolean" then
+        return nil, "invalid-api-result"
+    end
+
     return active
 end
 

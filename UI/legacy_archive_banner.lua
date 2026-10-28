@@ -34,7 +34,9 @@ function addon:CreateLegacyArchiveBanner(shell, window)
     -- Opens Recover on the Rotations page. Leaving a page with unsaved edits asks first, so the window opens when the
     -- switch completes (never when the player keeps the edits).
     local function openRecovery(pane)
-        if pane and pane.OpenRecovery then pane:OpenRecovery() end
+        if pane and pane.OpenRecovery then
+            pane:OpenRecovery()
+        end
     end
 
     self:SetUIScript(banner.open, 'OnClick', function()
@@ -70,7 +72,10 @@ function addon:CreateLegacyArchiveBanner(shell, window)
     -- Anchor under the tabs at `y` (negative, from the window's top) and
     -- return the vertical space it takes, 0 when hidden.
     function banner:Place(x, y, width)
-        if not self.count then return 0 end
+        if not self.count then
+            return 0
+        end
+
         self.frame:ClearAllPoints()
         self.frame:SetPoint('TOPLEFT', window, 'TOPLEFT', x, y)
         self.frame:SetSize(math.max(1, width), HEIGHT)

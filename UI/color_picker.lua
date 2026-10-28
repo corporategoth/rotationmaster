@@ -104,12 +104,19 @@ function addon:CreateWorkbenchColorPicker(parent)
         picker.numeric[key] = { control = c, slider = slider, dirty = false }
 
         addon:SetUIScript(c, 'OnTextChanged', function(_, user)
-            if user and picker.valid and picker.valid() then picker.numeric[key].dirty = true end
+            if user and picker.valid and picker.valid() then
+                picker.numeric[key].dirty = true
+            end
         end)
 
         addon:SetUIScript(c, 'OnEnterPressed', function()
-            if c:GetText() ~= string.format('%.3f', picker[key]) then picker.numeric[key].dirty = true end
-            if picker:FlushNumbers() then c:ClearFocus() end
+            if c:GetText() ~= string.format('%.3f', picker[key]) then
+                picker.numeric[key].dirty = true
+            end
+
+            if picker:FlushNumbers() then
+                c:ClearFocus()
+            end
         end)
 
         addon:SetUIScript(c, 'OnEscapePressed', function()
@@ -134,7 +141,10 @@ function addon:CreateWorkbenchColorPicker(parent)
     -- Applies every dirty entry box. Returns false (and reddens the box) when a value is not a number from 0 to 1,
     -- or when the picker is no longer valid; true when there was nothing wrong, including nothing to apply.
     function picker:FlushNumbers()
-        if not self.valid or not self.valid() then return false end
+        if not self.valid or not self.valid() then
+            return false
+        end
+
         local nextValues = { h = self.h, a = self.a }
         local dirty = false
 
@@ -169,7 +179,9 @@ function addon:CreateWorkbenchColorPicker(parent)
     -- Sets the color from hue, saturation, value and alpha (clamped to 0 to 1), refreshes the square, marker and entry
     -- boxes, and reports the result as RGB through the owner's change callback.
     function picker:Choose(h, s, v, a)
-        if not self.valid or not self.valid() then return end
+        if not self.valid or not self.valid() then
+            return
+        end
 
         self.h, self.s, self.v, self.a =
             math.max(0, math.min(1, h)),
@@ -196,11 +208,17 @@ function addon:CreateWorkbenchColorPicker(parent)
     -- Picks the color under the mouse cursor in the square; ignored when the cursor APIs are missing or the picker is
     -- no longer valid.
     local function sample()
-        if not GetCursorPosition or not square.GetLeft or not picker.valid or not picker.valid() then return end
+        if not GetCursorPosition or not square.GetLeft or not picker.valid or not picker.valid() then
+            return
+        end
+
         local x, y = GetCursorPosition()
         local scale = square:GetEffectiveScale()
         local left, top = square:GetLeft(), square:GetTop()
-        if not left or not top then return end
+
+        if not left or not top then
+            return
+        end
 
         picker:Choose(
             picker.h,
@@ -217,7 +235,9 @@ function addon:CreateWorkbenchColorPicker(parent)
         end
     end)
 
-    addon:SetUIScript(square, 'OnMouseUp', function() picker.dragging = false end)
+    addon:SetUIScript(square, 'OnMouseUp', function()
+        picker.dragging = false
+    end)
 
     addon:SetUIScript(square, 'OnUpdate', function()
         if picker.dragging then
@@ -230,11 +250,15 @@ function addon:CreateWorkbenchColorPicker(parent)
     end)
 
     addon:SetUIScript(hue, 'OnValueChanged', function(_, value)
-        if not picker.loading then picker:Choose(value, picker.s, picker.v, picker.a) end
+        if not picker.loading then
+            picker:Choose(value, picker.s, picker.v, picker.a)
+        end
     end)
 
     addon:SetUIScript(alpha, 'OnValueChanged', function(_, value)
-        if not picker.loading then picker:Choose(picker.h, picker.s, picker.v, value) end
+        if not picker.loading then
+            picker:Choose(picker.h, picker.s, picker.v, value)
+        end
     end)
 
     -- Hides the picker. Only an accepted close keeps the color; the OnHide handler restores the original otherwise.
@@ -244,11 +268,18 @@ function addon:CreateWorkbenchColorPicker(parent)
     end
 
     addon:SetUIScript(accept, 'OnClick', function()
-        if picker:FlushNumbers() then picker:Close(true) end
+        if picker:FlushNumbers() then
+            picker:Close(true)
+        end
     end)
 
-    addon:SetUIScript(close, 'OnClick', function() picker:Close(false) end)
-    addon:SetUIScript(cancel, 'OnClick', function() picker:Close(false) end)
+    addon:SetUIScript(close, 'OnClick', function()
+        picker:Close(false)
+    end)
+
+    addon:SetUIScript(cancel, 'OnClick', function()
+        picker:Close(false)
+    end)
 
     -- Any hide that was not an accept (cancel, close, Escape, the window registry) puts the original color back, with
     -- the final flag set, and drops the owner's callbacks.

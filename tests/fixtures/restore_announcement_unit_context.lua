@@ -1,23 +1,290 @@
-local outer=dofile('tests/fixtures/restore_final_composition.lua')
+local outer = dofile('tests/fixtures/restore_final_composition.lua')
+
 -- Exact outer macro-unit context before prior whole predecessor proofs.
-local records={["Conditions/character.lua"]={["bytes"]=38116,["changes"]={{["at"]=27796,["current"]="        if top:GetUserData(\"announcementTarget\")==true or value.unit==\"announcementtarget\" then units.announcementtarget=L[\"Announcement target\"] end\010",["previous"]=""}},["hash"]="acb032bd",["marker"]="units.announcementtarget=",["oldBytes"]=37966,["oldHash"]="3be05091"},["Locales/enUS.lua"]={["bytes"]=239063,["changes"]={{["at"]=180590,["current"]="L[\"Announcement target\"] = \"Announcement target\"\010",["previous"]=""}},["hash"]="9a65b09c",["marker"]="L[\"Announcement target\"]",["oldBytes"]=239014,["oldHash"]="0b109ae5"},["UI/condition_unit.lua"]={["bytes"]=1613,["changes"]={{["at"]=463,["current"]="        local choices=units\010        local parent=unit.parent\010        local top\010        for _=1,128 do\010            if not parent then break end\010            top=parent:GetUserData('top')\010            if top then break end\010            parent=parent.parent\010        end\010        if field=='unit' and (value[field]=='announcementtarget' or top and top:GetUserData('announcementTarget')==true) then\010            choices={};for key,label in pairs(units) do choices[key]=label end\010            choices.announcementtarget=L['Announcement target']\010        end\010        unit:SetList(choices, addon.keys(choices))\010",["previous"]="        unit:SetList(units, addon.keys(units))\010"}},["hash"]="1400194b",["marker"]="choices.announcementtarget=",["oldBytes"]=1064,["oldHash"]="7a7da24a"},["main.lua"]={["bytes"]=93471,["changes"]={{["at"]=85499,["current"]="            if value.type~='macro' and (value.value or value.announce == \"audible\" or value.announce == \"gesture\") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == \"pet\" or unit == \"player\") and\010",["previous"]="            if (value.value or value.announce == \"audible\" or value.announce == \"gesture\") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == \"pet\" or unit == \"player\") and\010"}},["hash"]="d93f36d4",["marker"]="value.type~='macro'",["oldBytes"]=93447,["oldHash"]="5f988159"}}
-local deltas={{["after"]=569,["before"]=568,["beforePresent"]=true,["path"]={"conditions","GROUP","callbacks","help","line"}},{["after"]="\010        local top = parent:GetUserData(\"top\")\010        local root = top:GetUserData(\"root\")\010        local funcs = top:GetUserData(\"funcs\")\010        local units=Functions.collections.deepcopy(addon.units)\010        if top:GetUserData(\"announcement\")==true or value.unit==\"spellrecipient\" then units.spellrecipient=L[\"Spell recipient\"] end\010        if top:GetUserData(\"announcementTarget\")==true or value.unit==\"announcementtarget\" then units.announcementtarget=L[\"Announcement target\"] end\010        local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)\010        unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or \"player\") end\010        parent:AddChild(unit)\010        local raid = addon:CreateConditionCheckBox()\010        raid:SetWidth(100)\010        raid:SetLabel(L[\"Raid\"])\010        raid:SetValue(value.raid and true or false)\010        raid:SetCallback(\"OnValueChanged\", function(_, _, v)\010            value.raid = v\010            top:SetStatusText(funcs:print(root, spec))\010        end)\010        parent:AddChild(raid)\010    ",["before"]="\010        local top = parent:GetUserData(\"top\")\010        local root = top:GetUserData(\"root\")\010        local funcs = top:GetUserData(\"funcs\")\010        local units=Functions.collections.deepcopy(addon.units)\010        if top:GetUserData(\"announcement\")==true or value.unit==\"spellrecipient\" then units.spellrecipient=L[\"Spell recipient\"] end\010        local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)\010        unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or \"player\") end\010        parent:AddChild(unit)\010        local raid = addon:CreateConditionCheckBox()\010        raid:SetWidth(100)\010        raid:SetLabel(L[\"Raid\"])\010        raid:SetValue(value.raid and true or false)\010        raid:SetCallback(\"OnValueChanged\", function(_, _, v)\010            value.raid = v\010            top:SetStatusText(funcs:print(root, spec))\010        end)\010        parent:AddChild(raid)\010    ",["beforePresent"]=true,["path"]={"conditions","GROUP","callbacks","widget","code"}},{["after"]=682,["before"]=681,["beforePresent"]=true,["path"]={"conditions","IMMUNE","callbacks","evaluate","line"}},{["after"]=727,["before"]=726,["beforePresent"]=true,["path"]={"conditions","IMMUNE","callbacks","help","line"}},{["after"]=690,["before"]=689,["beforePresent"]=true,["path"]={"conditions","IMMUNE","callbacks","print","line"}},{["after"]=678,["before"]=677,["beforePresent"]=true,["path"]={"conditions","IMMUNE","callbacks","valid","line"}},{["after"]=694,["before"]=693,["beforePresent"]=true,["path"]={"conditions","IMMUNE","callbacks","widget","line"}},{["after"]=620,["before"]=619,["beforePresent"]=true,["path"]={"conditions","RESIST","callbacks","evaluate","line"}},{["after"]=658,["before"]=657,["beforePresent"]=true,["path"]={"conditions","RESIST","callbacks","help","line"}},{["after"]=626,["before"]=625,["beforePresent"]=true,["path"]={"conditions","RESIST","callbacks","print","line"}},{["after"]=614,["before"]=613,["beforePresent"]=true,["path"]={"conditions","RESIST","callbacks","valid","line"}},{["after"]=631,["before"]=630,["beforePresent"]=true,["path"]={"conditions","RESIST","callbacks","widget","line"}},{["after"]=583,["before"]=582,["beforePresent"]=true,["path"]={"conditions","RUNNER","callbacks","evaluate","line"}},{["after"]=601,["before"]=600,["beforePresent"]=true,["path"]={"conditions","RUNNER","callbacks","help","line"}},{["after"]=589,["before"]=588,["beforePresent"]=true,["path"]={"conditions","RUNNER","callbacks","print","line"}},{["after"]=580,["before"]=579,["beforePresent"]=true,["path"]={"conditions","RUNNER","callbacks","valid","line"}},{["after"]=592,["before"]=591,["beforePresent"]=true,["path"]={"conditions","RUNNER","callbacks","widget","line"}},{["after"]="5ac6d4069d1749f94dc52ff3c2e3f81346e15b1a342524b7553d47cb7f9ef4e0",["before"]="8fd5c81a5e36dbd672fbb823282e4d020c9b81f932ba6d00c46f10c956fae8f7",["beforePresent"]=true,["path"]={"modules","Conditions/character.lua","hash"}},{["after"]="\010    if field == nil then\010        field = \"unit\"\010    end\010    local unit = addon:CreateConditionDropdown()\010    unit:SetLabel(L[\"Unit\"])\010    unit:SetCallback(\"OnValueChanged\", function(_, _, v)\010        value[field] = v\010        update()\010    end)\010    unit:SetDisabled(value.disabled)\010    unit.configure = function()\010        local choices=units\010        local parent=unit.parent\010        local top\010        for _=1,128 do\010            if not parent then break end\010            top=parent:GetUserData('top')\010            if top then break end\010            parent=parent.parent\010        end\010        if field=='unit' and (value[field]=='announcementtarget' or top and top:GetUserData('announcementTarget')==true) then\010            choices={};for key,label in pairs(units) do choices[key]=label end\010            choices.announcementtarget=L['Announcement target']\010        end\010        unit:SetList(choices, addon.keys(choices))\010        unit:SetValue(value[field])\010    end\010\010    return unit\010",["before"]="\010    if field == nil then\010        field = \"unit\"\010    end\010    local unit = addon:CreateConditionDropdown()\010    unit:SetLabel(L[\"Unit\"])\010    unit:SetCallback(\"OnValueChanged\", function(_, _, v)\010        value[field] = v\010        update()\010    end)\010    unit:SetDisabled(value.disabled)\010    unit.configure = function()\010        unit:SetList(units, addon.keys(units))\010        unit:SetValue(value[field])\010    end\010\010    return unit\010",["beforePresent"]=true,["path"]={"modules","UI/condition_unit.lua","bindings","Widget_UnitWidget","code"}},{["after"]="8882a7c17d0867c5eadc1917d358da44f35a74f533a1b6e779b8b2c0e845d7da",["before"]="0e6b96a398fbab3dfdcc8b9af43cdec877582738621aacaf60a09e31d5c09e02",["beforePresent"]=true,["path"]={"modules","UI/condition_unit.lua","hash"}}}
-local newUnitHash="8882a7c17d0867c5eadc1917d358da44f35a74f533a1b6e779b8b2c0e845d7da"
-local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-local function equal(a,b)if type(a)~=type(b)then return false end;if type(a)~='table'then return a==b end;for k,v in pairs(a)do if not equal(v,b[k])then return false end end;for k in pairs(b)do if a[k]==nil then return false end end;return true end
-local function copy(v)if type(v)~='table'then return v end;local r={};for k,x in pairs(v)do r[k]=copy(x)end;return r end
-return function(value,path,mode)
- if mode~='catalog' and (path=='main.lua' or path=='Core/conditions.lua') and (value:find('-- BEGIN SWITCH UNIT HANDOFF',1,true) or value:find('-- BEGIN SWITCH UNIT PRESENCE',1,true)) then value=dofile('tests/fixtures/restore_switch_required_units.lua')(value,path)end
- value=outer(value,path,'six',mode)
- value=dofile('tests/fixtures/restore_unit_states.lua')(value,path,mode)
- if mode=='catalog'then
-  if value.modules['UI/condition_unit.lua'].hash~=newUnitHash then return value end
-  for _,d in ipairs(deltas)do local parent=value;for i=1,#d.path-1 do parent=assert(parent[d.path[i]])end;local key=d.path[#d.path];assert(equal(parent[key],d.after),'unrelated contextual unit catalog field');parent[key]=d.beforePresent and copy(d.before)or nil end
-  return value
- end
- local row=records[path];if not row or not value:find(row.marker,1,true) then return value end
- if #value==row.oldBytes and hash(value)==row.oldHash then return value end
- assert(#value==row.bytes and hash(value)==row.hash,'unrelated complete contextual unit source: '..path)
- for i=#row.changes,1,-1 do local c=row.changes[i];assert(value:sub(c.at,c.at+#c.current-1)==c.current);value=value:sub(1,c.at-1)..c.previous..value:sub(c.at+#c.current)end
- assert(#value==row.oldBytes and hash(value)==row.oldHash,'context unit predecessor differs: '..path);return value
+local records = {
+    ["Conditions/character.lua"] = {
+        ["bytes"] = 38116,
+        ["changes"] = {
+            {
+                ["at"] = 27796,
+                ["current"] = "        if top:GetUserData(\"announcementTarget\")==true or value.unit==\"announcementtarget\" then units.announcementtarget=L[\"Announcement target\"] end\010",
+                ["previous"] = "",
+            },
+        },
+        ["hash"] = "acb032bd",
+        ["marker"] = "units.announcementtarget=",
+        ["oldBytes"] = 37966,
+        ["oldHash"] = "3be05091",
+    },
+    ["Locales/enUS.lua"] = {
+        ["bytes"] = 239063,
+        ["changes"] = {
+            {
+                ["at"] = 180590,
+                ["current"] = "L[\"Announcement target\"] = \"Announcement target\"\010",
+                ["previous"] = "",
+            },
+        },
+        ["hash"] = "9a65b09c",
+        ["marker"] = "L[\"Announcement target\"]",
+        ["oldBytes"] = 239014,
+        ["oldHash"] = "0b109ae5",
+    },
+    ["UI/condition_unit.lua"] = {
+        ["bytes"] = 1613,
+        ["changes"] = {
+            {
+                ["at"] = 463,
+                ["current"] = "        local choices=units\010        local parent=unit.parent\010        local top\010        for _=1,128 do\010            if not parent then break end\010            top=parent:GetUserData('top')\010            if top then break end\010            parent=parent.parent\010        end\010        if field=='unit' and (value[field]=='announcementtarget' or top and top:GetUserData('announcementTarget')==true) then\010            choices={};for key,label in pairs(units) do choices[key]=label end\010            choices.announcementtarget=L['Announcement target']\010        end\010        unit:SetList(choices, addon.keys(choices))\010",
+                ["previous"] = "        unit:SetList(units, addon.keys(units))\010",
+            },
+        },
+        ["hash"] = "1400194b",
+        ["marker"] = "choices.announcementtarget=",
+        ["oldBytes"] = 1064,
+        ["oldHash"] = "7a7da24a",
+    },
+    ["main.lua"] = {
+        ["bytes"] = 93471,
+        ["changes"] = {
+            {
+                ["at"] = 85499,
+                ["current"] = "            if value.type~='macro' and (value.value or value.announce == \"audible\" or value.announce == \"gesture\") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == \"pet\" or unit == \"player\") and\010",
+                ["previous"] = "            if (value.value or value.announce == \"audible\" or value.announce == \"gesture\") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == \"pet\" or unit == \"player\") and\010",
+            },
+        },
+        ["hash"] = "d93f36d4",
+        ["marker"] = "value.type~='macro'",
+        ["oldBytes"] = 93447,
+        ["oldHash"] = "5f988159",
+    },
+}
+
+local deltas = {
+    {
+        ["after"] = 569,
+        ["before"] = 568,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "GROUP", "callbacks", "help", "line" },
+    },
+    {
+        ["after"] = "\010        local top = parent:GetUserData(\"top\")\010        local root = top:GetUserData(\"root\")\010        local funcs = top:GetUserData(\"funcs\")\010        local units=Functions.collections.deepcopy(addon.units)\010        if top:GetUserData(\"announcement\")==true or value.unit==\"spellrecipient\" then units.spellrecipient=L[\"Spell recipient\"] end\010        if top:GetUserData(\"announcementTarget\")==true or value.unit==\"announcementtarget\" then units.announcementtarget=L[\"Announcement target\"] end\010        local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)\010        unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or \"player\") end\010        parent:AddChild(unit)\010        local raid = addon:CreateConditionCheckBox()\010        raid:SetWidth(100)\010        raid:SetLabel(L[\"Raid\"])\010        raid:SetValue(value.raid and true or false)\010        raid:SetCallback(\"OnValueChanged\", function(_, _, v)\010            value.raid = v\010            top:SetStatusText(funcs:print(root, spec))\010        end)\010        parent:AddChild(raid)\010    ",
+        ["before"] = "\010        local top = parent:GetUserData(\"top\")\010        local root = top:GetUserData(\"root\")\010        local funcs = top:GetUserData(\"funcs\")\010        local units=Functions.collections.deepcopy(addon.units)\010        if top:GetUserData(\"announcement\")==true or value.unit==\"spellrecipient\" then units.spellrecipient=L[\"Spell recipient\"] end\010        local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)\010        unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or \"player\") end\010        parent:AddChild(unit)\010        local raid = addon:CreateConditionCheckBox()\010        raid:SetWidth(100)\010        raid:SetLabel(L[\"Raid\"])\010        raid:SetValue(value.raid and true or false)\010        raid:SetCallback(\"OnValueChanged\", function(_, _, v)\010            value.raid = v\010            top:SetStatusText(funcs:print(root, spec))\010        end)\010        parent:AddChild(raid)\010    ",
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "GROUP", "callbacks", "widget", "code" },
+    },
+    {
+        ["after"] = 682,
+        ["before"] = 681,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "IMMUNE", "callbacks", "evaluate", "line" },
+    },
+    {
+        ["after"] = 727,
+        ["before"] = 726,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "IMMUNE", "callbacks", "help", "line" },
+    },
+    {
+        ["after"] = 690,
+        ["before"] = 689,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "IMMUNE", "callbacks", "print", "line" },
+    },
+    {
+        ["after"] = 678,
+        ["before"] = 677,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "IMMUNE", "callbacks", "valid", "line" },
+    },
+    {
+        ["after"] = 694,
+        ["before"] = 693,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "IMMUNE", "callbacks", "widget", "line" },
+    },
+    {
+        ["after"] = 620,
+        ["before"] = 619,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RESIST", "callbacks", "evaluate", "line" },
+    },
+    {
+        ["after"] = 658,
+        ["before"] = 657,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RESIST", "callbacks", "help", "line" },
+    },
+    {
+        ["after"] = 626,
+        ["before"] = 625,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RESIST", "callbacks", "print", "line" },
+    },
+    {
+        ["after"] = 614,
+        ["before"] = 613,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RESIST", "callbacks", "valid", "line" },
+    },
+    {
+        ["after"] = 631,
+        ["before"] = 630,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RESIST", "callbacks", "widget", "line" },
+    },
+    {
+        ["after"] = 583,
+        ["before"] = 582,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RUNNER", "callbacks", "evaluate", "line" },
+    },
+    {
+        ["after"] = 601,
+        ["before"] = 600,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RUNNER", "callbacks", "help", "line" },
+    },
+    {
+        ["after"] = 589,
+        ["before"] = 588,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RUNNER", "callbacks", "print", "line" },
+    },
+    {
+        ["after"] = 580,
+        ["before"] = 579,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RUNNER", "callbacks", "valid", "line" },
+    },
+    {
+        ["after"] = 592,
+        ["before"] = 591,
+        ["beforePresent"] = true,
+        ["path"] = { "conditions", "RUNNER", "callbacks", "widget", "line" },
+    },
+    {
+        ["after"] = "5ac6d4069d1749f94dc52ff3c2e3f81346e15b1a342524b7553d47cb7f9ef4e0",
+        ["before"] = "8fd5c81a5e36dbd672fbb823282e4d020c9b81f932ba6d00c46f10c956fae8f7",
+        ["beforePresent"] = true,
+        ["path"] = { "modules", "Conditions/character.lua", "hash" },
+    },
+    {
+        ["after"] = "\010    if field == nil then\010        field = \"unit\"\010    end\010    local unit = addon:CreateConditionDropdown()\010    unit:SetLabel(L[\"Unit\"])\010    unit:SetCallback(\"OnValueChanged\", function(_, _, v)\010        value[field] = v\010        update()\010    end)\010    unit:SetDisabled(value.disabled)\010    unit.configure = function()\010        local choices=units\010        local parent=unit.parent\010        local top\010        for _=1,128 do\010            if not parent then break end\010            top=parent:GetUserData('top')\010            if top then break end\010            parent=parent.parent\010        end\010        if field=='unit' and (value[field]=='announcementtarget' or top and top:GetUserData('announcementTarget')==true) then\010            choices={};for key,label in pairs(units) do choices[key]=label end\010            choices.announcementtarget=L['Announcement target']\010        end\010        unit:SetList(choices, addon.keys(choices))\010        unit:SetValue(value[field])\010    end\010\010    return unit\010",
+        ["before"] = "\010    if field == nil then\010        field = \"unit\"\010    end\010    local unit = addon:CreateConditionDropdown()\010    unit:SetLabel(L[\"Unit\"])\010    unit:SetCallback(\"OnValueChanged\", function(_, _, v)\010        value[field] = v\010        update()\010    end)\010    unit:SetDisabled(value.disabled)\010    unit.configure = function()\010        unit:SetList(units, addon.keys(units))\010        unit:SetValue(value[field])\010    end\010\010    return unit\010",
+        ["beforePresent"] = true,
+        ["path"] = { "modules", "UI/condition_unit.lua", "bindings", "Widget_UnitWidget", "code" },
+    },
+    {
+        ["after"] = "8882a7c17d0867c5eadc1917d358da44f35a74f533a1b6e779b8b2c0e845d7da",
+        ["before"] = "0e6b96a398fbab3dfdcc8b9af43cdec877582738621aacaf60a09e31d5c09e02",
+        ["beforePresent"] = true,
+        ["path"] = { "modules", "UI/condition_unit.lua", "hash" },
+    },
+}
+
+local newUnitHash = "8882a7c17d0867c5eadc1917d358da44f35a74f533a1b6e779b8b2c0e845d7da"
+
+local function hash(s)
+    local n = 0
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+local function equal(a, b)
+    if type(a) ~= type(b) then
+        return false
+    end
+    if type(a) ~= 'table' then
+        return a == b
+    end
+
+    for k, v in pairs(a) do
+        if not equal(v, b[k]) then
+            return false
+        end
+    end
+
+    for k in pairs(b) do
+        if a[k] == nil then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function copy(v)
+    if type(v) ~= 'table' then
+        return v
+    end
+
+    local r = {}
+
+    for k, x in pairs(v) do
+        r[k] = copy(x)
+    end
+
+    return r
+end
+
+return function(value, path, mode)
+    if
+        mode ~= 'catalog'
+        and (path == 'main.lua' or path == 'Core/conditions.lua')
+        and (value:find('-- BEGIN SWITCH UNIT HANDOFF', 1, true) or value:find(
+            '-- BEGIN SWITCH UNIT PRESENCE',
+            1,
+            true
+        ))
+    then
+        value = dofile('tests/fixtures/restore_switch_required_units.lua')(value, path)
+    end
+
+    value = outer(value, path, 'six', mode)
+    value = dofile('tests/fixtures/restore_unit_states.lua')(value, path, mode)
+
+    if mode == 'catalog' then
+        if value.modules['UI/condition_unit.lua'].hash ~= newUnitHash then
+            return value
+        end
+
+        for _, d in ipairs(deltas) do
+            local parent = value
+
+            for i = 1, #d.path - 1 do
+                parent = assert(parent[d.path[i]])
+            end
+
+            local key = d.path[#d.path]
+            assert(equal(parent[key], d.after), 'unrelated contextual unit catalog field')
+            parent[key] = d.beforePresent and copy(d.before) or nil
+        end
+
+        return value
+    end
+
+    local row = records[path]
+
+    if not row or not value:find(row.marker, 1, true) then
+        return value
+    end
+    if #value == row.oldBytes and hash(value) == row.oldHash then
+        return value
+    end
+
+    assert(#value == row.bytes and hash(value) == row.hash, 'unrelated complete contextual unit source: ' .. path)
+
+    for i = #row.changes, 1, -1 do
+        local c = row.changes[i]
+        assert(value:sub(c.at, c.at + #c.current - 1) == c.current)
+        value = value:sub(1, c.at - 1) .. c.previous .. value:sub(c.at + #c.current)
+    end
+
+    assert(#value == row.oldBytes and hash(value) == row.oldHash, 'context unit predecessor differs: ' .. path)
+    return value
 end

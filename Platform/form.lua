@@ -30,10 +30,15 @@ local GHOST_WOLF_FORM, GHOST_WOLF = 16, 2645
 -- Validates a form's spell id: returns it, nil when absent, or nil and a reason code when secret or not a positive
 -- integer.
 local function spellID(self, id)
-    if not self:CanReadValue(id) then return nil, 'restricted-value' end
-    if canaccessvalue and not canaccessvalue(id) then return nil, 'restricted-value' end
-    if id == nil then return nil end
-
+    if not self:CanReadValue(id) then
+        return nil, 'restricted-value'
+    end
+    if canaccessvalue and not canaccessvalue(id) then
+        return nil, 'restricted-value'
+    end
+    if id == nil then
+        return nil
+    end
     if type(id) ~= 'number' or id ~= id or id <= 0 or id == math.huge or id % 1 ~= 0 then
         return nil, 'invalid-api-result'
     end
@@ -45,24 +50,49 @@ end
 -- bar entry first, then the constant form id for forms that have no stance-bar entry (Ghost Wolf).
 function platform:GetPlayerFormSpellObservation()
     local index, reason = self:GetPlayerFormObservation()
-    if index == nil then return nil, reason end
-    if index == 0 then return 0 end
-    if index < 0 or index % 1 ~= 0 then return nil, 'invalid-api-result' end
+
+    if index == nil then
+        return nil, reason
+    end
+    if index == 0 then
+        return 0
+    end
+    if index < 0 or index % 1 ~= 0 then
+        return nil, 'invalid-api-result'
+    end
 
     if type(GetShapeshiftFormInfo) == 'function' then
         local ok, _, _, _, id = pcall(GetShapeshiftFormInfo, index)
-        if not ok then return nil, 'api-error' end
+
+        if not ok then
+            return nil, 'api-error'
+        end
+
         local form, why = spellID(self, id)
-        if form then return form end
-        if why then return nil, why end
+
+        if form then
+            return form
+        end
+        if why then
+            return nil, why
+        end
     end
 
     if type(GetShapeshiftFormID) == 'function' then
         local ok, id = pcall(GetShapeshiftFormID)
-        if not ok then return nil, 'api-error' end
+
+        if not ok then
+            return nil, 'api-error'
+        end
+
         local form, why = spellID(self, id)
-        if why then return nil, why end
-        if form == GHOST_WOLF_FORM then return GHOST_WOLF end
+
+        if why then
+            return nil, why
+        end
+        if form == GHOST_WOLF_FORM then
+            return GHOST_WOLF
+        end
     end
 
     return nil, 'form-identity-unavailable'
@@ -118,12 +148,20 @@ function platform:GetFormSpellCandidates(class)
     local result = {}
     local letter = familyLetter[self:GetClientFamily()]
     local list = letter and classForms[class]
-    if not list then return result end
+
+    if not list then
+        return result
+    end
+
     -- A spell this client does not have is not offered.
-    if type(self.GetSpellInfo) ~= 'function' then return result end
+    if type(self.GetSpellInfo) ~= 'function' then
+        return result
+    end
 
     for _, entry in ipairs(list) do
-        if entry[2]:find(letter, 1, true) and self:GetSpellInfo(entry[1]) then result[#result + 1] = entry[1] end
+        if entry[2]:find(letter, 1, true) and self:GetSpellInfo(entry[1]) then
+            result[#result + 1] = entry[1]
+        end
     end
 
     return result

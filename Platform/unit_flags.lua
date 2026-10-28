@@ -17,7 +17,10 @@ end
 -- the addon table alone; buttons.lua removes that method once the consumers have loaded.
 ---@type fun(...): any
 local consumeClientPolicy = addon.ConsumeClientPolicyReader
-if type(consumeClientPolicy) == 'function' then readClientPolicy = consumeClientPolicy(addon) end
+
+if type(consumeClientPolicy) == 'function' then
+    readClientPolicy = consumeClientPolicy(addon)
+end
 
 -- Closed flag kinds preserve the existing native query and selected unit.
 -- Only readable false existence establishes absence; required unknowns do not.

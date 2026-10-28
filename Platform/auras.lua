@@ -25,9 +25,16 @@ local fields = {
 -- copied; invalid fields are still cleared and marked unavailable.
 -- Returns the validated record, nil for no aura, or nil and a reason code when raw itself is unusable.
 local function normalize(raw, owned)
-    if not platform:CanReadValue(raw) then return nil, "restricted-value" end
-    if raw == nil then return nil end
-    if type(raw) ~= "table" then return nil, "invalid-api-result" end
+    if not platform:CanReadValue(raw) then
+        return nil, "restricted-value"
+    end
+    if raw == nil then
+        return nil
+    end
+    if type(raw) ~= "table" then
+        return nil, "invalid-api-result"
+    end
+
     -- The unavailable map exists only when a field is unavailable.
     local result = owned and platform.secretsUnrestricted and raw or {}
 
@@ -69,7 +76,6 @@ function platform:GetAuraByIndex(unit, index, filter)
     if not self:CanReadValue(unit) or not self:CanReadValue(index) or not self:CanReadValue(filter) then
         return nil, "restricted-value"
     end
-
     if
         type(unit) ~= "string"
         or unit == ""
@@ -106,12 +112,19 @@ function platform:GetAuraByIndex(unit, index, filter)
 
     if not legacy and C_UnitAuras and type(C_UnitAuras.GetAuraDataByIndex) == "function" then
         local ok, raw = pcall(C_UnitAuras.GetAuraDataByIndex, unit, index, filter)
-        if not ok then return nil, "api-error" end
+
+        if not ok then
+            return nil, "api-error"
+        end
+
         return normalize(raw, true)
     end
 
     legacy = legacy or UnitAura
-    if type(legacy) ~= "function" then return nil, "missing-api" end
+
+    if type(legacy) ~= "function" then
+        return nil, "missing-api"
+    end
 
     local ok, name, _, count, dispel, duration, expiration, source, stealable, _, id = pcall(
         legacy,
@@ -120,10 +133,19 @@ function platform:GetAuraByIndex(unit, index, filter)
         filter
     )
 
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(name) then return nil, "restricted-value" end
-    if name == nil then return nil end
-    if self:CanReadValue(stealable) and stealable == nil then stealable = false end
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(name) then
+        return nil, "restricted-value"
+    end
+    if name == nil then
+        return nil
+    end
+
+    if self:CanReadValue(stealable) and stealable == nil then
+        stealable = false
+    end
 
     return normalize({
         name = name,
@@ -140,21 +162,32 @@ end
 -- The first aura with this spell name that the filter admits, or nil.
 function platform:GetAuraBySpellName(unit, name, filter)
     local lookup = C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName
-    if type(lookup) ~= "function" then return nil, "missing-api" end
 
+    if type(lookup) ~= "function" then
+        return nil, "missing-api"
+    end
     if type(unit) ~= "string" or unit == "" or type(name) ~= "string" or name == "" or type(filter) ~= "string" then
         return nil, "invalid-aura-query"
     end
 
     local ok, raw = pcall(lookup, unit, name, filter)
-    if not ok then return nil, "api-error" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+
     return normalize(raw, true)
 end
 
 -- Returns one field of a validated aura, or nil and the reason that field is unavailable (or "invalid-aura-field").
 function platform:ReadAuraField(aura, field)
-    if not fields[field] or type(aura) ~= "table" then return nil, "invalid-aura-field" end
-    if aura.unavailable and aura.unavailable[field] then return nil, aura.unavailable[field] end
+    if not fields[field] or type(aura) ~= "table" then
+        return nil, "invalid-aura-field"
+    end
+    if aura.unavailable and aura.unavailable[field] then
+        return nil, aura.unavailable[field]
+    end
+
     return aura[field]
 end
 
@@ -162,15 +195,30 @@ end
 -- and a reason code when its expiration cannot be read.
 function platform:AuraRemaining(aura, now)
     local expiration, reason = self:ReadAuraField(aura, "expirationTime")
-    if reason then return nil, reason end
-    if expiration == nil then return nil, "aura-time-unavailable" end
-    if not self:CanReadValue(now) then return nil, "restricted-value" end
-    if type(now) ~= "number" or now ~= now or now == math.huge or now == -math.huge then return nil, "invalid-time" end
+
+    if reason then
+        return nil, reason
+    end
+    if expiration == nil then
+        return nil, "aura-time-unavailable"
+    end
+    if not self:CanReadValue(now) then
+        return nil, "restricted-value"
+    end
+    if type(now) ~= "number" or now ~= now or now == math.huge or now == -math.huge then
+        return nil, "invalid-time"
+    end
 
     if expiration == 0 then
         local duration, why = self:ReadAuraField(aura, "duration")
-        if why then return nil, why end
-        if duration == 0 then return math.huge end
+
+        if why then
+            return nil, why
+        end
+        if duration == 0 then
+            return math.huge
+        end
+
         return nil, "aura-time-unavailable"
     end
 

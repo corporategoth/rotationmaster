@@ -42,19 +42,31 @@ end
 -- reached through AND/OR (never under NOT). Bounded, data-only traversal.
 -- Returns true when the body may run in the given context (always true for the player's own bar).
 function data.MatchesBareActionContext(body, context)
-    if context == "player" then return true end
-    if type(body) ~= "table" or not contexts[context] then return false end
+    if context == "player" then
+        return true
+    end
+    if type(body) ~= "table" or not contexts[context] then
+        return false
+    end
+
     local budget = 256
 
     -- Looks for an enabled ACTION_CONTEXT leaf for the context, within a budget of 256 nodes and depth 32.
     local function visit(node, depth)
         budget = budget - 1
-        if budget < 0 or depth > 32 or type(node) ~= "table" or node.disabled == true then return false end
-        if node.type == "ACTION_CONTEXT" then return node.context == context end
+
+        if budget < 0 or depth > 32 or type(node) ~= "table" or node.disabled == true then
+            return false
+        end
+        if node.type == "ACTION_CONTEXT" then
+            return node.context == context
+        end
 
         if (node.type == "AND" or node.type == "OR") and type(node.value) == "table" then
             for _, child in ipairs(node.value) do
-                if visit(child, depth + 1) then return true end
+                if visit(child, depth + 1) then
+                    return true
+                end
             end
         end
 
@@ -81,7 +93,11 @@ function data.NormalizeRotationIdentifier(value)
     end
 
     local id = value:lower()
-    if reservedIdentifiers[id] then return nil, "reserved-identifier" end
+
+    if reservedIdentifiers[id] then
+        return nil, "reserved-identifier"
+    end
+
     return id
 end
 
@@ -91,10 +107,20 @@ end
 function data.SlugRotationIdentifier(name)
     local text = type(name) == "string" and name:lower() or ""
     text = text:gsub("[^%w_%-]+", "-"):gsub("%-%-+", "-"):gsub("^[-_]+", ""):gsub("[-_]+$", "")
-    if text == "" then text = "rotation" end
-    if not text:match("^%a") then text = "r-" .. text end
+
+    if text == "" then
+        text = "rotation"
+    end
+    if not text:match("^%a") then
+        text = "r-" .. text
+    end
+
     text = text:sub(1, 32):gsub("[-_]+$", "")
-    if reservedIdentifiers[text] then text = text .. "-rotation" end
+
+    if reservedIdentifiers[text] then
+        text = text .. "-rotation"
+    end
+
     return text
 end
 
@@ -104,19 +130,29 @@ end
 -- Returns a sorted copy without duplicates, nil for "any", or false when the
 -- value is malformed.
 function data.NormalizeRotationSpecs(value)
-    if value == nil then return nil end
-    if type(value) ~= "table" or getmetatable(value) ~= nil then return false end
+    if value == nil then
+        return nil
+    end
+    if type(value) ~= "table" or getmetatable(value) ~= nil then
+        return false
+    end
+
     local count = 0
 
     for _ in pairs(value) do
         count = count + 1
     end
 
-    if count ~= #value or count > 16 then return false end
+    if count ~= #value or count > 16 then
+        return false
+    end
+
     local seen, list = {}, {}
 
     for _, entry in ipairs(value) do
-        if not integer(entry, 0) or entry >= 2 ^ 31 then return false end
+        if not integer(entry, 0) or entry >= 2 ^ 31 then
+            return false
+        end
 
         if not seen[entry] then
             seen[entry] = true
@@ -124,7 +160,10 @@ function data.NormalizeRotationSpecs(value)
         end
     end
 
-    if #list == 0 then return nil end
+    if #list == 0 then
+        return nil
+    end
+
     table.sort(list)
     return list
 end
@@ -132,11 +171,17 @@ end
 -- Whether a rotation restricted to `specs` applies to specialization value
 -- `value`; nil (unknown) only matches an unrestricted rotation.
 function data.RotationSpecsMatch(specs, value)
-    if type(specs) ~= "table" or #specs == 0 then return true end
-    if value == nil then return false end
+    if type(specs) ~= "table" or #specs == 0 then
+        return true
+    end
+    if value == nil then
+        return false
+    end
 
     for _, entry in ipairs(specs) do
-        if entry == value then return true end
+        if entry == value then
+            return true
+        end
     end
 
     return false
@@ -145,8 +190,12 @@ end
 -- Returns a rotation's priority: 0 when absent, the value when it is a whole number in [-100000, 100000], otherwise
 -- nil (invalid).
 function data.GetRotationPriority(value)
-    if value == nil then return 0 end
-    if integer(value, -100000) and value <= 100000 then return value end
+    if value == nil then
+        return 0
+    end
+    if integer(value, -100000) and value <= 100000 then
+        return value
+    end
 end
 
 -- Returns true for a non-empty string.
@@ -169,7 +218,10 @@ local function sortedKeys(value)
     end
 
     table.sort(keys, function(a, b)
-        if type(a) == type(b) then return a < b end
+        if type(a) == type(b) then
+            return a < b
+        end
+
         return type(a) == "number"
     end)
 
@@ -178,11 +230,17 @@ end
 
 -- Returns true when the value is a table with only positive integer keys and no holes (an empty table counts).
 local function dense(value)
-    if type(value) ~= "table" then return false end
+    if type(value) ~= "table" then
+        return false
+    end
+
     local count, maximum = 0, 0
 
     for key in pairs(value) do
-        if not integer(key, 1) then return false end
+        if not integer(key, 1) then
+            return false
+        end
+
         count, maximum = count + 1, math.max(maximum, key)
     end
 
@@ -200,17 +258,25 @@ local matchesType, matchesTable
 -- Returns true when the value is a table that fits a list schema (every element matches) or a record schema (every
 -- key is declared and its value matches). Depth is capped at 32.
 matchesTable = function(value, schema, depth)
-    if depth > 32 or type(value) ~= "table" then return false end
+    if depth > 32 or type(value) ~= "table" then
+        return false
+    end
 
     if schema[1] ~= nil then
-        if not dense(value) then return false end
+        if not dense(value) then
+            return false
+        end
 
         for _, child in ipairs(value) do
-            if not matchesType(child, schema, depth + 1) then return false end
+            if not matchesType(child, schema, depth + 1) then
+                return false
+            end
         end
     else
         for key, child in pairs(value) do
-            if schema[key] == nil or not matchesType(child, schema[key], depth + 1) then return false end
+            if schema[key] == nil or not matchesType(child, schema[key], depth + 1) then
+                return false
+            end
         end
     end
 
@@ -221,17 +287,27 @@ end
 -- of alternatives. Conditions only need to be tables here; their content is checked separately.
 matchesType = function(value, schema, depth)
     depth = depth or 0
-    if depth > 32 then return false end
+
+    if depth > 32 then
+        return false
+    end
 
     if type(schema) == "string" then
-        if schema == "condition" then return type(value) == "table" end
+        if schema == "condition" then
+            return type(value) == "table"
+        end
+
         local base = schema:match("^(.-)%[%]$")
 
         if base then
-            if not dense(value) then return false end
+            if not dense(value) then
+                return false
+            end
 
             for _, child in ipairs(value) do
-                if not matchesType(child, base, depth + 1) then return false end
+                if not matchesType(child, base, depth + 1) then
+                    return false
+                end
             end
 
             return true
@@ -240,12 +316,18 @@ matchesType = function(value, schema, depth)
         return type(value) == schema
     end
 
-    if type(schema) ~= "table" then return false end
-    if schema[1] == nil then return matchesTable(value, schema, depth + 1) end
+    if type(schema) ~= "table" then
+        return false
+    end
+    if schema[1] == nil then
+        return matchesTable(value, schema, depth + 1)
+    end
 
     for _, alternative in ipairs(schema) do
         if type(alternative) == "table" then
-            if matchesTable(value, alternative, depth + 1) then return true end
+            if matchesTable(value, alternative, depth + 1) then
+                return true
+            end
         elseif matchesType(value, alternative, depth + 1) then
             return true
         end
@@ -280,10 +362,16 @@ local function validate(envelope, options, bodyOnly)
     -- clears supported and kind "unresolved" clears resolved.
     local function issue(code, path, severity, kind, condition, reason)
         severity = severity or "error"
-        if severity == "error" then result.valid = false end
-        if kind == "unsupported" then result.supported = false end
-        if kind == "unresolved" then result.resolved = false end
 
+        if severity == "error" then
+            result.valid = false
+        end
+        if kind == "unsupported" then
+            result.supported = false
+        end
+        if kind == "unresolved" then
+            result.resolved = false
+        end
         if #result.diagnostics < 100 then
             result.diagnostics[#result.diagnostics + 1] = {
                 code = code,
@@ -318,7 +406,10 @@ local function validate(envelope, options, bodyOnly)
 
     -- Returns true for a table; otherwise records missing-field or expected-object and returns false.
     local function object(value, path)
-        if type(value) == "table" then return true end
+        if type(value) == "table" then
+            return true
+        end
+
         issue(value == nil and "missing-field" or "expected-object", path, "error")
         return false
     end
@@ -326,7 +417,9 @@ local function validate(envelope, options, bodyOnly)
     -- Returns true for a dense list. A missing optional list is just false; a missing required one, a non-table and a
     -- list with holes are recorded as errors.
     local function list(value, path, required)
-        if value == nil and not required then return false end
+        if value == nil and not required then
+            return false
+        end
 
         if value == nil then
             issue("missing-field", path, "error")
@@ -355,13 +448,17 @@ local function validate(envelope, options, bodyOnly)
     -- newer version still loads and is reported.
     local function unknown(value, allowed, path)
         for _, key in ipairs(sortedKeys(value)) do
-            if not allowed[key] then issue("unknown-field", path .. "." .. key, "warning", "unsupported") end
+            if not allowed[key] then
+                issue("unknown-field", path .. "." .. key, "warning", "unsupported")
+            end
         end
     end
 
     -- Records an error when an optional field is present with the wrong Lua type.
     local function optionalType(value, kind, path)
-        if value ~= nil and type(value) ~= kind then issue("invalid-field-type", path, "error") end
+        if value ~= nil and type(value) ~= kind then
+            issue("invalid-field-type", path, "error")
+        end
     end
 
     if not bodyOnly then
@@ -425,7 +522,9 @@ local function validate(envelope, options, bodyOnly)
             )
 
             if list(scope.families, "$.applicability.families", true) then
-                if #scope.families == 0 then issue("empty-edition-scope", "$.applicability.families", "error") end
+                if #scope.families == 0 then
+                    issue("empty-edition-scope", "$.applicability.families", "error")
+                end
 
                 for i, family in ipairs(scope.families) do
                     local path = "$.applicability.families[" .. i .. "]"
@@ -442,7 +541,6 @@ local function validate(envelope, options, bodyOnly)
             then
                 issue("unknown-action-context", "$.applicability.actionContext", "warning", "unsupported")
             end
-
             if
                 scope.class ~= nil
                 and check(scope.class, nonempty, "$.applicability.class")
@@ -485,7 +583,9 @@ local function validate(envelope, options, bodyOnly)
 
             for _, key in ipairs({ "specs", "roles", "rulesets" }) do
                 if list(scope[key], "$.applicability." .. key, false) then
-                    if #scope[key] == 0 then issue("empty-selector", "$.applicability." .. key, "error") end
+                    if #scope[key] == 0 then
+                        issue("empty-selector", "$.applicability." .. key, "error")
+                    end
 
                     for i, value in ipairs(scope[key]) do
                         check(
@@ -587,10 +687,19 @@ local function validate(envelope, options, bodyOnly)
     -- an unknown, disabled, function-unavailable or client-unsupported condition is "unresolved" (a warning), its
     -- fields are type-checked against the definition, and required fields must be present.
     condition = function(value, path)
-        if value == nil then return end
-        if not object(value, path) then return end
-        if next(value) == nil then return end
-        if not check(value.type, nonempty, path .. ".type") then return end
+        if value == nil then
+            return
+        end
+        if not object(value, path) then
+            return
+        end
+        if next(value) == nil then
+            return
+        end
+        if not check(value.type, nonempty, path .. ".type") then
+            return
+        end
+
         optionalType(value.disabled, "boolean", path .. ".disabled")
 
         if value.type == "AND" or value.type == "OR" or value.type == "NOT" then
@@ -609,7 +718,10 @@ local function validate(envelope, options, bodyOnly)
             end
         elseif value.type == "NOT" then
             unknown(value, { type = true, disabled = true, value = true, name = true }, path)
-            if object(value.value, path .. ".value") then condition(value.value, path .. ".value") end
+
+            if object(value.value, path .. ".value") then
+                condition(value.value, path .. ".value")
+            end
         else
             local definition = options.conditions and options.conditions[value.type]
 
@@ -618,8 +730,9 @@ local function validate(envelope, options, bodyOnly)
                 return
             end
 
-            if definition.disabled then issue('disabled-condition', path .. '.type', 'warning', 'unresolved') end
-
+            if definition.disabled then
+                issue('disabled-condition', path .. '.type', 'warning', 'unresolved')
+            end
             if definition.functionUnavailable then
                 issue('unavailable-function', path .. '.type', 'warning', 'unresolved')
             end
@@ -649,12 +762,17 @@ local function validate(envelope, options, bodyOnly)
             end
 
             for _, key in ipairs(definition.requiredFields or {}) do
-                if value[key] == nil then issue("missing-field", path .. "." .. key, "error") end
+                if value[key] == nil then
+                    issue("missing-field", path .. "." .. key, "error")
+                end
             end
         end
     end
 
-    if not object(envelope.body, "$.body") then return finish() end
+    if not object(envelope.body, "$.body") then
+        return finish()
+    end
+
     local body = envelope.body
 
     unknown(
@@ -676,14 +794,15 @@ local function validate(envelope, options, bodyOnly)
         "$.body"
     )
 
-    if data.NormalizeRotationSpecs(body.specs) == false then issue('invalid-specs', '$.body.specs', 'error') end
-
+    if data.NormalizeRotationSpecs(body.specs) == false then
+        issue('invalid-specs', '$.body.specs', 'error')
+    end
     if body.identifier ~= nil and data.NormalizeRotationIdentifier(body.identifier) ~= body.identifier then
         issue('invalid-identifier', '$.body.identifier', 'error')
     end
-
-    if not data.GetRotationPriority(body.priority) then issue('invalid-priority', '$.body.priority', 'error') end
-
+    if not data.GetRotationPriority(body.priority) then
+        issue('invalid-priority', '$.body.priority', 'error')
+    end
     if body.revision ~= nil then
         check(
             body.revision,
@@ -713,10 +832,15 @@ local function validate(envelope, options, bodyOnly)
     local rootsValid = true
 
     for _, key in ipairs({ "rotation", "cooldowns" }) do
-        if not list(body[key], "$.body." .. key, true) then rootsValid = false end
+        if not list(body[key], "$.body." .. key, true) then
+            rootsValid = false
+        end
     end
 
-    if not rootsValid then return finish() end
+    if not rootsValid then
+        return finish()
+    end
+
     -- Pure validation preserves future branch metadata as unsupported. Runtime
     -- indexing remains strict, so these records cannot silently execute.
     local tree, problem = data.IndexRotationSteps(body, { allowUnknownBranchFields = true })
@@ -778,7 +902,9 @@ local function validate(envelope, options, bodyOnly)
                             issue("missing-itemset", where .. ".action", "warning", "unresolved")
                         end
                     elseif list(step.action, where .. ".action", true) then
-                        if #step.action == 0 then issue("empty-item-list", where .. ".action", "error") end
+                        if #step.action == 0 then
+                            issue("empty-item-list", where .. ".action", "error")
+                        end
 
                         for j, item in ipairs(step.action) do
                             check(
@@ -794,7 +920,6 @@ local function validate(envelope, options, bodyOnly)
                     if step.action ~= nil then
                         issue("unexpected-assisted-action", where .. ".action", "warning", "unsupported")
                     end
-
                     if row.section ~= "rotation" then
                         issue("assisted-in-optional-list", where .. ".type", "warning", "unsupported")
                     end

@@ -71,10 +71,14 @@ function addon:CreateSettingsForm(parent)
             return self:Valid(token)
         end
 
-        if addon.GuardWorkbenchHelp then return addon:GuardWorkbenchHelp(valid, callback) end
+        if addon.GuardWorkbenchHelp then
+            return addon:GuardWorkbenchHelp(valid, callback)
+        end
 
         return function(...)
-            if valid() then return callback(...) end
+            if valid() then
+                return callback(...)
+            end
         end
     end
 
@@ -82,7 +86,10 @@ function addon:CreateSettingsForm(parent)
     -- else the control's tooltip, else a generic brief for its kind. The bindings are released by the next draw's
     -- cleanups.
     function p:BindHelpBriefs()
-        if not addon.BindWorkbenchHelp then return end
+        if not addon.BindWorkbenchHelp then
+            return
+        end
+
         local token = self.generation
         local used = {}
         local authored = {}
@@ -161,7 +168,10 @@ function addon:CreateSettingsForm(parent)
             self.pool[kind][i] = c
         end
 
-        if c.SetParent then c:SetParent(self.surface or self.child) end
+        if c.SetParent then
+            c:SetParent(self.surface or self.child)
+        end
+
         c:Show()
         return c
     end
@@ -208,9 +218,16 @@ function addon:CreateSettingsForm(parent)
     -- page placed itself, or with a value the page re-anchored, keeps 220 so
     -- its rows stay aligned.
     local function anchorOf(control)
-        if not control.GetPoint or (control.GetNumPoints and control:GetNumPoints() < 1) then return end
+        if not control.GetPoint or (control.GetNumPoints and control:GetNumPoints() < 1) then
+            return
+        end
+
         local point, a, b, c, d = control:GetPoint(1)
-        if type(a) == 'number' then return point, a, b end
+
+        if type(a) == 'number' then
+            return point, a, b
+        end
+
         return point, c, d
     end
 
@@ -227,7 +244,11 @@ function addon:CreateSettingsForm(parent)
     -- keeps column 220.
     function p:LabelControl(control, dx, dw)
         local scope, row = self.labelScope, self.labelRow
-        if not scope or not control then return control end
+
+        if not scope or not control then
+            return control
+        end
+
         local point, x, y = anchorOf(control)
 
         if point ~= 'TOPLEFT' or not x then
@@ -244,7 +265,11 @@ function addon:CreateSettingsForm(parent)
         end
 
         scope.controls[#scope.controls + 1] = { control = control, x = x, y = y, dx = dx or 1, dw = dw or 0 }
-        if row then row.controls = row.controls + 1 end
+
+        if row then
+            row.controls = row.controls + 1
+        end
+
         return control
     end
 
@@ -255,22 +280,35 @@ function addon:CreateSettingsForm(parent)
         local scope = self.labelScope
         self.labelScope = self.labelScopes and table.remove(self.labelScopes) or nil
         self.labelRow = nil
-        if not scope or scope.custom or #scope.rows == 0 then return end
+
+        if not scope or scope.custom or #scope.rows == 0 then
+            return
+        end
+
         local widest = 0
 
         for _, row in ipairs(scope.rows) do
-            if row.controls == 0 then return end
+            if row.controls == 0 then
+                return
+            end
+
             widest = math.max(widest, row.label:GetStringWidth())
         end
 
         for _, entry in ipairs(scope.controls) do
             local point, x, y = anchorOf(entry.control)
-            if point ~= 'TOPLEFT' or x ~= entry.x or y ~= entry.y then return end
+
+            if point ~= 'TOPLEFT' or x ~= entry.x or y ~= entry.y then
+                return
+            end
         end
 
         local column = math.max(60, math.min(220, math.ceil(widest) + 12))
         local delta = 220 - column
-        if delta <= 0 then return end
+
+        if delta <= 0 then
+            return
+        end
 
         for _, row in ipairs(scope.rows) do
             row.label:SetWidth(column - 8)
@@ -280,7 +318,10 @@ function addon:CreateSettingsForm(parent)
             local control = entry.control
             control:ClearAllPoints()
             control:SetPoint('TOPLEFT', entry.x - delta * entry.dx, entry.y)
-            if entry.dw > 0 then control:SetWidth(control:GetWidth() + delta * entry.dw) end
+
+            if entry.dw > 0 then
+                control:SetWidth(control:GetWidth() + delta * entry.dw)
+            end
         end
 
         scope.column = column
@@ -331,13 +372,21 @@ function addon:CreateSettingsForm(parent)
         c:SetPoint('TOPLEFT', 0, -y)
         c:SetWidth(math.max(160, math.min(self.width, 300)))
         c:SetText(text)
-        if c.categoryIcon then c.categoryIcon:Hide() end
-        if icon then c.icon:SetTexture(addon:ControlTexture(icon)) end
+
+        if c.categoryIcon then
+            c.categoryIcon:Hide()
+        end
+        if icon then
+            c.icon:SetTexture(addon:ControlTexture(icon))
+        end
+
         self.fields[key] = c
         c:Enable()
 
         addon:SetUIScript(c, 'OnClick', self:Guard(function()
-            if self:FlushEdits() then action() end
+            if self:FlushEdits() then
+                action()
+            end
         end))
 
         return c
@@ -380,7 +429,9 @@ function addon:CreateSettingsForm(parent)
                         self:Draw()
                     end
                 elseif pageDraft then
-                    if self:FlushEdits() then apply() end
+                    if self:FlushEdits() then
+                        apply()
+                    end
                 else
                     self:ApplyCreation()
                 end
@@ -436,7 +487,9 @@ function addon:CreateSettingsForm(parent)
             self.fields[entry.key] = c
 
             addon:SetUIScript(c, 'OnClick', self:Guard(function()
-                if self:FlushEdits() then entry.action() end
+                if self:FlushEdits() then
+                    entry.action()
+                end
             end))
         end
     end
@@ -467,7 +520,9 @@ function addon:CreateSettingsForm(parent)
             end
         end))
 
-        if not self.closedSections[key] then build() end
+        if not self.closedSections[key] then
+            build()
+        end
     end
 
     -- ============================================================================
@@ -537,13 +592,23 @@ function addon:CreateSettingsForm(parent)
         c:SetText(tostring(value or ''))
         c:SetTextColor(1, 1, 1)
         c:SetTextInsets(4, 4, 0, 0)
-        if c.referenceIcon then c.referenceIcon:Hide() end
-        if c.texturePreview then c.texturePreview:Hide() end
+
+        if c.referenceIcon then
+            c.referenceIcon:Hide()
+        end
+        if c.texturePreview then
+            c.texturePreview:Hide()
+        end
+
         c:ClearFocus()
         addon:SetUIScript(c, 'OnReceiveDrag', nil)
         addon:SetUIScript(c, 'OnMouseDown', nil)
         c.rmOwnsRightClick = nil
-        if c.dropHint then c.dropHint:Hide() end
+
+        if c.dropHint then
+            c.dropHint:Hide()
+        end
+
         addon:SetUIScript(c, 'OnEditFocusGained', nil)
         addon:SetUIScript(c, 'OnEnter', nil)
         addon:SetUIScript(c, 'OnLeave', nil)
@@ -562,14 +627,20 @@ function addon:CreateSettingsForm(parent)
         addon:SetUIScript(c, 'OnTextChanged', self:Guard(function(_, user)
             if user then
                 record.dirty = true
-                if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+                if self.transactionKeys and self.fields.apply then
+                    self.fields.apply:Enable()
+                end
+
                 local v = record.parse(c:GetText())
                 c:SetTextColor(1, v ~= nil and 1 or .35, v ~= nil and 1 or .35)
             end
         end))
 
         addon:SetUIScript(c, 'OnEnterPressed', self:Guard(function()
-            if self:FlushEdits() then c:ClearFocus() end
+            if self:FlushEdits() then
+                c:ClearFocus()
+            end
         end))
 
         addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
@@ -580,7 +651,10 @@ function addon:CreateSettingsForm(parent)
             self:Message('')
         end))
 
-        addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
+        addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function()
+            self:FlushEdits()
+        end))
+
         return c
     end
 
@@ -674,7 +748,10 @@ function addon:CreateSettingsForm(parent)
             baseline = number:GetText(),
             parse = function(text)
                 local n = tonumber(text)
-                if n and n == n and n >= lo and n <= hi and (step < 1 or n % 1 == 0) then return n end
+
+                if n and n == n and n >= lo and n <= hi and (step < 1 or n % 1 == 0) then
+                    return n
+                end
             end,
         }
 
@@ -690,17 +767,25 @@ function addon:CreateSettingsForm(parent)
         addon:SetUIScript(number, 'OnTextChanged', self:Guard(function(_, user)
             if user then
                 record.dirty = true
-                if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+                if self.transactionKeys and self.fields.apply then
+                    self.fields.apply:Enable()
+                end
+
                 local ok = record.parse(number:GetText()) ~= nil
                 number:SetTextColor(1, ok and 1 or .35, ok and 1 or .35)
             end
         end))
 
         addon:SetUIScript(number, 'OnEnterPressed', self:Guard(function()
-            if self:FlushEdits() then number:ClearFocus() end
+            if self:FlushEdits() then
+                number:ClearFocus()
+            end
         end))
 
-        addon:SetUIScript(number, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
+        addon:SetUIScript(number, 'OnEditFocusLost', self:Guard(function()
+            self:FlushEdits()
+        end))
 
         addon:SetUIScript(number, 'OnEscapePressed', self:Guard(function()
             record.dirty = false
@@ -711,7 +796,9 @@ function addon:CreateSettingsForm(parent)
         end))
 
         addon:SetUIScript(c, 'OnValueChanged', self:Guard(function(_, n)
-            if c.setting then return end
+            if c.setting then
+                return
+            end
 
             if step >= 1 then
                 local rounded = math.max(lo, math.min(hi, lo + math.floor((n - lo) / step + .5) * step))
@@ -751,7 +838,10 @@ function addon:CreateSettingsForm(parent)
 
         -- True when the page's accept callback (if any) allows id; an erroring callback counts as a veto.
         local function accepted(id)
-            if not settings.accept then return true end
+            if not settings.accept then
+                return true
+            end
+
             local ok, result = pcall(settings.accept, id)
             return ok and result and true or false
         end
@@ -768,15 +858,25 @@ function addon:CreateSettingsForm(parent)
             caption,
             selected and display(selected) or value or '',
             function(text)
-                if text == '' and allowEmpty then return '' end
+                if text == '' and allowEmpty then
+                    return ''
+                end
+
                 local id = selected and text == display(selected) and selected or provider.resolve(text, settings)
-                if id ~= nil and accepted(id) then return id end
+
+                if id ~= nil and accepted(id) then
+                    return id
+                end
             end,
             function(id)
                 selected = id ~= '' and id or nil
                 c:SetText(display(selected))
                 record.baseline = c:GetText()
-                if paint then paint() end
+
+                if paint then
+                    paint()
+                end
+
                 changed(id)
             end
         )
@@ -820,28 +920,44 @@ function addon:CreateSettingsForm(parent)
 
         -- Takes id from the suggestion menu or the context menu as if it had been typed and committed.
         local function choose(id)
-            if not self:Valid(self.generation) or not accepted(id) then return end
+            if not self:Valid(self.generation) or not accepted(id) then
+                return
+            end
+
             c:SetText(display(id))
             c.dropHint:Hide()
             selected = id
             record.dirty = true
-            if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+            if self.transactionKeys and self.fields.apply then
+                self.fields.apply:Enable()
+            end
+
             paint()
-            if self:FlushEdits() then c:ClearFocus() end
+
+            if self:FlushEdits() then
+                c:ClearFocus()
+            end
         end
 
         -- Opens the suggestion menu for the text in the box, or closes it when nothing matches.
         local function query()
             local rows = {}
             local input = c:GetText()
-            if input == provider.missing then input = '' end
+
+            if input == provider.missing then
+                input = ''
+            end
 
             for _, entry in ipairs(provider.search(input, settings) or {}) do
                 rows[#rows + 1] = { value = entry.id, text = entry.display or entry.name, icon = entry.icon }
             end
 
             if #rows == 0 then
-                if self.menu then self.menu.frame:Hide() end
+                if self.menu then
+                    self.menu.frame:Hide()
+                end
+
                 return
             end
 
@@ -888,7 +1004,9 @@ function addon:CreateSettingsForm(parent)
                 c.dropHint:Hide()
             end
 
-            if user then query() end
+            if user then
+                query()
+            end
         end))
 
         addon:SetUIScript(c, 'OnEditFocusGained', self:Guard(function()
@@ -902,7 +1020,10 @@ function addon:CreateSettingsForm(parent)
         end))
 
         addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
-            if self.menu then self.menu.frame:Hide() end
+            if self.menu then
+                self.menu.frame:Hide()
+            end
+
             escape(c)
         end))
 
@@ -935,18 +1056,27 @@ function addon:CreateSettingsForm(parent)
         end))
 
         addon:SetUIScript(c, 'OnLeave', function()
-            if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end
+            if GameTooltip and GameTooltip:IsOwned(c) then
+                GameTooltip:Hide()
+            end
         end)
 
         -- Takes the spell or item currently on the mouse cursor, if it fits this field and is accepted, and clears the
         -- cursor.
         local function drop()
-            if type(GetCursorInfo) ~= 'function' then return end
+            if type(GetCursorInfo) ~= 'function' then
+                return
+            end
+
             local observed = { pcall(GetCursorInfo) }
             local ok, cursor, first, third = observed[1], observed[2], observed[3], observed[5]
+
             -- Cursor contents are read through pcall and CanReadValue: on restricted clients they can be secret values
             -- that must not be compared or used.
-            if not ok or not addon.Platform:CanReadValue(cursor) then return end
+            if not ok or not addon.Platform:CanReadValue(cursor) then
+                return
+            end
+
             local id
 
             if provider.kind == 'item' and cursor == 'item' then
@@ -970,12 +1100,21 @@ function addon:CreateSettingsForm(parent)
             c:SetText(display(id))
             c.dropHint:Hide()
             record.dirty = true
-            if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+            if self.transactionKeys and self.fields.apply then
+                self.fields.apply:Enable()
+            end
+
             paint()
 
             if self:FlushEdits() then
-                if self.menu then self.menu.frame:Hide() end
-                if type(ClearCursor) == 'function' then ClearCursor() end
+                if self.menu then
+                    self.menu.frame:Hide()
+                end
+                if type(ClearCursor) == 'function' then
+                    ClearCursor()
+                end
+
                 c:ClearFocus()
             end
         end
@@ -1033,7 +1172,10 @@ function addon:CreateSettingsForm(parent)
             self:Draw()
         end)
 
-        if type(value) == 'string' then return end
+        if type(value) == 'string' then
+            return
+        end
+
         local items = type(value) == 'table' and value or type(value) == 'number' and { value } or {}
 
         -- Stores a new copy of the custom list and reports it.
@@ -1088,14 +1230,19 @@ function addon:CreateSettingsForm(parent)
 
         if ok and media and media.HashTable then
             local success, found = pcall(media.HashTable, media, 'sound')
-            if success and type(found) == 'table' then sounds = found end
+
+            if success and type(found) == 'table' then
+                sounds = found
+            end
         end
 
         local entries = { { value = '', text = L['None'] } }
         local names = {}
 
         for name in pairs(sounds) do
-            if type(name) == 'string' then names[#names + 1] = name end
+            if type(name) == 'string' then
+                names[#names + 1] = name
+            end
         end
 
         table.sort(names)
@@ -1104,7 +1251,10 @@ function addon:CreateSettingsForm(parent)
             entries[#entries + 1] = { value = name, text = name }
         end
 
-        if value and sounds[value] == nil then entries[#entries + 1] = { value = value, text = value } end
+        if value and sounds[value] == nil then
+            entries[#entries + 1] = { value = value, text = value }
+        end
+
         local selected = value
 
         local c = self:Choice(key .. 'sound', caption, value or '', entries, function(v)
@@ -1127,7 +1277,10 @@ function addon:CreateSettingsForm(parent)
 
             if (type(path) == 'string' or type(path) == 'number') and type(PlaySoundFile) == 'function' then
                 local played = PlaySoundFile(path, 'Master')
-                if not played then self:Message(L['Sound preview is unavailable.']) end
+
+                if not played then
+                    self:Message(L['Sound preview is unavailable.'])
+                end
             else
                 self:Message(L['Choose an available sound to preview.'])
             end
@@ -1144,7 +1297,11 @@ function addon:CreateSettingsForm(parent)
     -- pad step or committed offset. With anchor set the caller owns the caption column, so the scope is marked custom.
     function p:Position(xvalue, yvalue, changed, anchor)
         local caption
-        if not anchor then caption = L['Position'] end
+
+        if not anchor then
+            caption = L['Position']
+        end
+
         local y = self:Row(caption, 56)
         local ox, oy = xvalue or 0, yvalue or 0
 
@@ -1160,7 +1317,11 @@ function addon:CreateSettingsForm(parent)
         local padX = 220
         -- The anchored variant lays out its own caption column.
         local scope = self.labelScope
-        if anchor and scope then scope.custom = true end
+
+        if anchor and scope then
+            scope.custom = true
+        end
+
         self.labelScope = nil
         local pad = self:Acquire('positionPad', function() return addon:CreateWorkbenchPositionPad(self.child) end)
         pad:ClearAllPoints()
@@ -1168,7 +1329,9 @@ function addon:CreateSettingsForm(parent)
         local token = self.generation
 
         pad:Bind(function(dx, dy, center, amount)
-            if not self:FlushEdits() then return end
+            if not self:FlushEdits() then
+                return
+            end
 
             if center then
                 ox, oy = 0, 0
@@ -1187,7 +1350,10 @@ function addon:CreateSettingsForm(parent)
         -- Parses a finite number or returns nil.
         local function numeric(text)
             local n = tonumber(text)
-            if n and n == n and n > -math.huge and n < math.huge then return n end
+
+            if n and n == n and n > -math.huge and n < math.huge then
+                return n
+            end
         end
 
         -- H and V side by side, splitting the row beside the pad (50/50 with a small gap).
@@ -1228,7 +1394,11 @@ function addon:CreateSettingsForm(parent)
         end
 
         self.labelScope = scope
-        if not anchor then self:LabelControl(pad, 1, 0) end
+
+        if not anchor then
+            self:LabelControl(pad, 1, 0)
+        end
+
         self.y = after
     end
 
@@ -1308,7 +1478,10 @@ function addon:CreateSettingsForm(parent)
             entries,
             nil,
             self:Guard(function(value, text)
-                if not inline then anchor:SetText(text) end
+                if not inline then
+                    anchor:SetText(text)
+                end
+
                 changed(value)
             end),
             function() return self:Valid(token) end,
@@ -1324,7 +1497,10 @@ function addon:CreateSettingsForm(parent)
     -- message shows). Returns whether the form is current and clean. Run before any action that reads or changes the
     -- data.
     function p:FlushEdits()
-        if not self:Valid(self.generation) then return false end
+        if not self:Valid(self.generation) then
+            return false
+        end
+
         local changes = {}
 
         for _, record in ipairs(self.edits) do
@@ -1378,7 +1554,9 @@ function addon:CreateSettingsForm(parent)
                     ok = self:FlushEdits() and self:SaveSettingsDraft()
                 end
 
-                if ok then callback() end
+                if ok then
+                    callback()
+                end
             end, function()
                 self:DiscardSettingsDraft()
                 callback()
@@ -1414,13 +1592,21 @@ function addon:CreateSettingsForm(parent)
             prompt.accept:SetPoint('BOTTOMRIGHT', -120, 12)
             prompt.cancel = addon:CreateWorkbenchButton(prompt.frame, L['Cancel'], 100)
             prompt.cancel:SetPoint('BOTTOMRIGHT', -12, 12)
-            addon:SetUIScript(prompt.cancel, 'OnClick', function() prompt.frame:Hide() end)
+
+            addon:SetUIScript(prompt.cancel, 'OnClick', function()
+                prompt.frame:Hide()
+            end)
+
             prompt.frame:Hide()
         end
 
         local promptWidth = addon:FitWorkbenchPrompt(prompt.frame, self.frame, 430)
         prompt.text:SetWidth(math.max(1, promptWidth - 24))
-        if prompt.discard then prompt.discard:Hide() end
+
+        if prompt.discard then
+            prompt.discard:Hide()
+        end
+
         prompt.accept:SetText(L['Confirm'])
         prompt.accept:ClearAllPoints()
         prompt.accept:SetPoint('BOTTOMRIGHT', -120, 12)
@@ -1495,7 +1681,10 @@ function addon:CreateSettingsForm(parent)
                 baseline = c:GetText(),
                 parse = function(text)
                     local n = tonumber(text)
-                    if n and n == n and n >= 0 and n <= 1 then return n end
+
+                    if n and n == n and n >= 0 and n <= 1 then
+                        return n
+                    end
                 end,
                 changed = function(n)
                     values[channel] = n
@@ -1510,17 +1699,25 @@ function addon:CreateSettingsForm(parent)
             addon:SetUIScript(c, 'OnTextChanged', self:Guard(function(_, user)
                 if user then
                     record.dirty = true
-                    if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+                    if self.transactionKeys and self.fields.apply then
+                        self.fields.apply:Enable()
+                    end
+
                     local valid = record.parse(c:GetText()) ~= nil
                     c:SetTextColor(1, valid and 1 or .35, valid and 1 or .35)
                 end
             end))
 
             addon:SetUIScript(c, 'OnEnterPressed', self:Guard(function()
-                if self:FlushEdits() then c:ClearFocus() end
+                if self:FlushEdits() then
+                    c:ClearFocus()
+                end
             end))
 
-            addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function() self:FlushEdits() end))
+            addon:SetUIScript(c, 'OnEditFocusLost', self:Guard(function()
+                self:FlushEdits()
+            end))
 
             addon:SetUIScript(c, 'OnEscapePressed', self:Guard(function()
                 record.dirty = false
@@ -1565,7 +1762,9 @@ function addon:CreateSettingsForm(parent)
         end))
 
         self.cleanups[#self.cleanups + 1] = function()
-            if swatch.picker.frame:IsShown() then swatch.picker:Close(true) end
+            if swatch.picker.frame:IsShown() then
+                swatch.picker:Close(true)
+            end
         end
 
         return swatch
@@ -1586,7 +1785,10 @@ function addon:CreateSettingsForm(parent)
 
             if not ok then
                 local handler = geterrorhandler and geterrorhandler()
-                if handler then pcall(handler, why) end
+
+                if handler then
+                    pcall(handler, why)
+                end
             end
         end
     end
@@ -1595,11 +1797,22 @@ function addon:CreateSettingsForm(parent)
     -- controls, resets layout state and replays the builder, then binds help and updates the scroll height. Does
     -- nothing when closed.
     function p:Draw()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self.generation = self.generation + 1
-        if self.menu then self.menu.frame:Hide() end
-        if self.prompt then self.prompt.frame:Hide() end
-        if self.textDialog then self.textDialog.frame:Hide() end
+
+        if self.menu then
+            self.menu.frame:Hide()
+        end
+        if self.prompt then
+            self.prompt.frame:Hide()
+        end
+        if self.textDialog then
+            self.textDialog.frame:Hide()
+        end
+
         self:RunCleanups()
 
         for _, list in pairs(self.pool) do
@@ -1613,7 +1826,11 @@ function addon:CreateSettingsForm(parent)
         self.counts = {}
         self.fields = {}
         self.edits = {}
-        if self.ResetLayout then self:ResetLayout() end
+
+        if self.ResetLayout then
+            self:ResetLayout()
+        end
+
         self.y = 4
         self.width = math.max(340, self.frame:GetWidth() - 40)
         self.child:SetWidth(self.width)
@@ -1621,7 +1838,10 @@ function addon:CreateSettingsForm(parent)
         self.labelScope = nil
         self:BeginLabelScope()
         self.builder(self)
-        if self.DraftActions then self:DraftActions() end
+
+        if self.DraftActions then
+            self:DraftActions()
+        end
 
         while self.labelScope do
             self:EndLabelScope()
@@ -1657,7 +1877,10 @@ function addon:CreateSettingsForm(parent)
             self.newGroupName = nil
         end
 
-        if self.profile ~= addon.db.profile or self.global ~= addon.db.global then self.draft = nil end
+        if self.profile ~= addon.db.profile or self.global ~= addon.db.global then
+            self.draft = nil
+        end
+
         self.active = true
         self.profile = addon.db.profile
         self.global = addon.db.global
@@ -1693,7 +1916,9 @@ function addon:CreateSettingsForm(parent)
     -- pending input across as typed (invalid text included) without
     -- committing it, so a resize never loses or silently applies an edit.
     function p:Relayout()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
 
         for _, record in ipairs(self.edits) do
             if record.control.HasFocus and record.control:HasFocus() then
@@ -1709,7 +1934,9 @@ function addon:CreateSettingsForm(parent)
                     end
 
                     for _, current in ipairs(self.edits) do
-                        if current.control.HasFocus and current.control:HasFocus() then return end
+                        if current.control.HasFocus and current.control:HasFocus() then
+                            return
+                        end
                     end
 
                     addon:SetUIScript(waiter, 'OnUpdate', nil)
@@ -1725,7 +1952,9 @@ function addon:CreateSettingsForm(parent)
         for _, record in ipairs(self.edits) do
             if record.dirty then
                 for key, control in pairs(self.fields) do
-                    if control == record.control then pending[key] = control:GetText() end
+                    if control == record.control then
+                        pending[key] = control:GetText()
+                    end
                 end
             end
         end
@@ -1741,7 +1970,10 @@ function addon:CreateSettingsForm(parent)
                     record.dirty = true
                     local valid = record.parse(text) ~= nil
                     control:SetTextColor(1, valid and 1 or .35, valid and 1 or .35)
-                    if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+
+                    if self.transactionKeys and self.fields.apply then
+                        self.fields.apply:Enable()
+                    end
                 end
             end
         end
@@ -1756,14 +1988,21 @@ function addon:CreateSettingsForm(parent)
     -- reflow driver (once per rendered frame at most, never while hidden)
     -- and is skipped when the widths are those last drawn.
     function p:RequestRelayout()
-        if not self.active then return end
-
-        if self:ReflowKey() == self.drawnReflowKey then
-            if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
+        if not self.active then
             return
         end
 
-        if not addon.RequestWorkbenchReflow then return self:Relayout() end
+        if self:ReflowKey() == self.drawnReflowKey then
+            if addon.CancelWorkbenchReflow then
+                addon:CancelWorkbenchReflow(self)
+            end
+
+            return
+        end
+
+        if not addon.RequestWorkbenchReflow then
+            return self:Relayout()
+        end
 
         -- Crossing the one- or two-column breakpoint changes structure: draw
         -- on the next frame, whatever the previous drawing cost.
@@ -1775,7 +2014,9 @@ function addon:CreateSettingsForm(parent)
         end
 
         addon:RequestWorkbenchReflow(self, self.frame, function()
-            if self.active and self:ReflowKey() ~= self.drawnReflowKey then self:Relayout() end
+            if self.active and self:ReflowKey() ~= self.drawnReflowKey then
+                self:Relayout()
+            end
         end)
     end
 
@@ -1795,34 +2036,64 @@ function addon:CreateSettingsForm(parent)
     -- Closes the form: invalidates all callbacks, clears the draft and history, runs cleanups, releases focus and hides
     -- it.
     function p:Release()
-        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
-        if self.ClearSettingsHistory then self:ClearSettingsHistory() end
+        if addon.CancelWorkbenchReflow then
+            addon:CancelWorkbenchReflow(self)
+        end
+        if self.ClearSettingsHistory then
+            self:ClearSettingsHistory()
+        end
+
         self.draft = nil
         self.draftBaseline = nil
         self.draftEffects = nil
         self.active = false
         self.generation = self.generation + 1
-        if self.menu then self.menu.frame:Hide() end
-        if self.prompt then self.prompt.frame:Hide() end
-        if self.textDialog then self.textDialog.frame:Hide() end
+
+        if self.menu then
+            self.menu.frame:Hide()
+        end
+        if self.prompt then
+            self.prompt.frame:Hide()
+        end
+        if self.textDialog then
+            self.textDialog.frame:Hide()
+        end
+
         self:RunCleanups()
 
         for _, list in pairs(self.pool) do
             for _, control in ipairs(list) do
-                if control.ClearFocus then control:ClearFocus() end
+                if control.ClearFocus then
+                    control:ClearFocus()
+                end
             end
         end
 
         self.frame:Hide()
     end
 
-    if addon.InstallSettingsHistory then addon:InstallSettingsHistory(p) end
-    if addon.InstallSettingsDraft then addon:InstallSettingsDraft(p) end
-    if addon.InstallSettingsOrdered then addon:InstallSettingsOrdered(p) end
-    if addon.InstallSettingsRosterOrder then addon:InstallSettingsRosterOrder(p) end
-    if addon.InstallSettingsLayout then addon:InstallSettingsLayout(p) end
-    if addon.InstallSettingsUnsaved then addon:InstallSettingsUnsaved(p) end
-    if addon.InstallSettingsChangeReview then addon:InstallSettingsChangeReview(p) end
+    if addon.InstallSettingsHistory then
+        addon:InstallSettingsHistory(p)
+    end
+    if addon.InstallSettingsDraft then
+        addon:InstallSettingsDraft(p)
+    end
+    if addon.InstallSettingsOrdered then
+        addon:InstallSettingsOrdered(p)
+    end
+    if addon.InstallSettingsRosterOrder then
+        addon:InstallSettingsRosterOrder(p)
+    end
+    if addon.InstallSettingsLayout then
+        addon:InstallSettingsLayout(p)
+    end
+    if addon.InstallSettingsUnsaved then
+        addon:InstallSettingsUnsaved(p)
+    end
+    if addon.InstallSettingsChangeReview then
+        addon:InstallSettingsChangeReview(p)
+    end
+
     p.frame:SetSize(parent:GetWidth(), parent:GetHeight())
     p:Layout()
     return p

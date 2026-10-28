@@ -1,7 +1,8 @@
 -- Exact full runtime stage to Git025e44a. No permissive text removal.
-local rows={}
+local rows = {}
+
 do
- local before=[[local _,addon=...
+    local before = [[local _,addon=...
 local kind,raw,write,identity,meta,iterate=type,rawget,rawset,rawequal,getmetatable,next
 local infinity,protect=math.huge,pcall
 local operation,active
@@ -264,10 +265,16 @@ function addon:BindActiveRotationPublication(receiver)
     return true
 end
 ]]
- local after=before
- after=after:sub(1,14237)..[[    receiver(preparePublication,finishPublication,prepareRebind,finishRebind,runtimeIdentity,runtimeBody)
-]]..after:sub(14316)
- after=after:sub(1,14109)..[[-- Source-private runtime access: the identity body never leaves this module.
+
+    local after = before
+
+    after = after:sub(1, 14237)
+        .. [[    receiver(preparePublication,finishPublication,prepareRebind,finishRebind,runtimeIdentity,runtimeBody)
+]]
+        .. after:sub(14316)
+
+    after = after:sub(1, 14109)
+        .. [[-- Source-private runtime access: the identity body never leaves this module.
 local function runtimeIdentity(owner,spec,key)
     if not owned(owner) or not active or kind(raw(owner,'db'))~='table' then return end
     if not identity(raw(raw(owner,'db'),'profile'),active.profile)
@@ -280,11 +287,14 @@ local function runtimeBody(owner,handle,expected)
     if expected~=nil and not equal(active.body,expected) then return end
     return detached(active.body)
 end
-]]..after:sub(14110)
- rows['Core/rotation_active.lua']={before=before,after=after}
+]]
+        .. after:sub(14110)
+
+    rows['Core/rotation_active.lua'] = { before = before, after = after }
 end
+
 do
- local before=[[local _,addon=...
+    local before = [[local _,addon=...
 local observed,stamp
 local dependencyReader
 local bindDependency=addon.BindRotationDependencyReader
@@ -534,11 +544,17 @@ do
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
 ]]
- local after=before
- after=after:sub(1,13550)..[[ownedDisabledDependency=addon.HasDisabledRotationDependency
 
-]]..after:sub(13551)
- after=after:sub(1,11124)..[[end
+    local after = before
+
+    after = after:sub(1, 13550)
+        .. [[ownedDisabledDependency=addon.HasDisabledRotationDependency
+
+]]
+        .. after:sub(13551)
+
+    after = after:sub(1, 11124)
+        .. [[end
 
 ownedOptions=addon.GetRotationValidationOptions
 -- Constant-time managed publication authority; unknown property layouts and
@@ -558,15 +574,24 @@ runtimeAuthority=function(owner)
     return dependencyReader(owner),db,profile,global,conditions,
         proofRawget(owner,'conditionRegistryVersion'),proofRawget(global,'itemsets'),
         proofRawget(profile,'itemsets'),proofRawget(global,'effects'),proofRawget(profile,'rotationLibrary')
-]]..after:sub(11125)
- after=after:sub(1,10310)..[[    bind(readValidationStamp,sameValidationLayout,proofRawget,proofRawequal,proofType,proofGetmetatable,runtimeAuthority,ownedOptions,ownedDisabledDependency)
-]]..after:sub(10416)
- after=after:sub(1,362)..[[local runtimeAuthority,ownedOptions,ownedDisabledDependency
-]]..after:sub(363)
- rows['Core/rotation_references.lua']={before=before,after=after}
+]]
+        .. after:sub(11125)
+
+    after = after:sub(1, 10310)
+        .. [[    bind(readValidationStamp,sameValidationLayout,proofRawget,proofRawequal,proofType,proofGetmetatable,runtimeAuthority,ownedOptions,ownedDisabledDependency)
+]]
+        .. after:sub(10416)
+
+    after = after:sub(1, 362)
+        .. [[local runtimeAuthority,ownedOptions,ownedDisabledDependency
+]]
+        .. after:sub(363)
+
+    rows['Core/rotation_references.lua'] = { before = before, after = after }
 end
+
 do
- local before=[=[local addon_name, addon = ...
+    local before = [=[local addon_name, addon = ...
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
 local data = addon.RotationData
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
@@ -1310,22 +1335,37 @@ do
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
 ]=]
- local after=before
- after=after:sub(1,16241)..[[    local function runtimeGeneration()
+
+    local after = before
+
+    after = after:sub(1, 16241)
+        .. [[    local function runtimeGeneration()
         return active and active.generation,definitionVersion
     end
     bind(reader,provesGeneration,ownsPrivateContext,runtimeContextGuard,runtimeAuthority,eligible,ownedRotationContext,ownedReadValue,runtimeGeneration);return true
-]]..after:sub(16327)
- after=after:sub(1,1055)..[[            runtimeAuthority,ownedOptions,ownedDisabledDependency=authority,options,disabled
-]]..after:sub(1056)
- after=after:sub(1,634)..[[    bindValidation(addon,function(read,check,raw,identity,kind,meta,authority,options,disabled)
-]]..after:sub(704)
- after=after:sub(1,537)..[[local runtimeAuthority,ownedOptions,ownedDisabledDependency
-]]..after:sub(538)
- rows['Core/rotation_library.lua']={before=before,after=after}
+]]
+        .. after:sub(16327)
+
+    after = after:sub(1, 1055)
+        .. [[            runtimeAuthority,ownedOptions,ownedDisabledDependency=authority,options,disabled
+]]
+        .. after:sub(1056)
+
+    after = after:sub(1, 634)
+        .. [[    bindValidation(addon,function(read,check,raw,identity,kind,meta,authority,options,disabled)
+]]
+        .. after:sub(704)
+
+    after = after:sub(1, 537)
+        .. [[local runtimeAuthority,ownedOptions,ownedDisabledDependency
+]]
+        .. after:sub(538)
+
+    rows['Core/rotation_library.lua'] = { before = before, after = after }
 end
+
 do
- local before=[[local addon_name,addon=...
+    local before = [[local addon_name,addon=...
 local data=addon.RotationData
 local ownedStoreFactory,ownedStoreEnvironment
 local bindOwnedStoreFactory=data.BindOwnedRotationStoreFactory
@@ -2241,8 +2281,12 @@ do
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
 ]]
- local after=before
- after=after:sub(1,67096).."\n"..[[-- Cold-consumed by Core/active_runtime_plan, never a public body getter.
+
+    local after = before
+
+    after = after:sub(1, 67096)
+        .. "\n"
+        .. [[-- Cold-consumed by Core/active_runtime_plan, never a public body getter.
 function addon:BindScopedActiveRuntimePlan(receiver)
     if self~=addon or type(receiver)~='function' then return end
     receiver(function(owner,spec,key)
@@ -2250,8 +2294,11 @@ function addon:BindScopedActiveRuntimePlan(receiver)
         return currentPlanSource(spec,key)
     end,readActiveRuntime)
 end
-]]..after:sub(67097)
- after=after:sub(1,63701)..[[    end,function() contextVersion={} end,function(owner,spec)
+]]
+        .. after:sub(67097)
+
+    after = after:sub(1, 63701)
+        .. [[    end,function() contextVersion={} end,function(owner,spec)
         if owner~=addon or rawget(owner,'AcquireRotationRuntimePass')~=ownedAcquireRuntimePass
             or storeGetfenv(ownedAcquireRuntimePass)~=storeScopeEnvironment
             or rawget(owner,'GetScopedRotationCoordinator')~=ownedScopedCoordinator
@@ -2264,11 +2311,17 @@ end
             or not current or rawget(current,'RuntimePass')~=ownedRuntimePasses[current] then return capturedMethod(owner,spec,key) end
         return current:Cleanup(spec,key,privatePlanPass)
     end)
-]]..after:sub(63744)
- after=after:sub(1,62639)..[[ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
+]]
+        .. after:sub(63744)
+
+    after = after:sub(1, 62639)
+        .. [[ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
 local ownedGetCleanup=addon.GetRotationForCleanup
-]]..after:sub(62767)
- after=after:sub(1,61314)..[[    -- Main alone receives this cold planner; public RuntimePass stays eager.
+]]
+        .. after:sub(62767)
+
+    after = after:sub(1, 61314)
+        .. [[    -- Main alone receives this cold planner; public RuntimePass stays eager.
     local ownedResolve,ownedPass=coordinator.Resolve,coordinator.RuntimePass
     local ownerPlatform=rawget(owner,'Platform')
     local ownerClass=type(ownerPlatform)=='table' and rawget(ownerPlatform,'GetPlayerOwnerClassObservation')
@@ -2348,50 +2401,104 @@ local ownedGetCleanup=addon.GetRotationForCleanup
         end
         return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,authority=authority}
     end
-]]..after:sub(61315)
- after=after:sub(1,57823)..[[            if not private then asset.borrowed=true end
-]]..after:sub(57824)
- after=after:sub(1,54769)..[[                if not private then item.borrowed=true end
-]]..after:sub(54770)
- after=after:sub(1,49301)..[[        local private=request~=nil or privateToken==privatePlanPass
-]]..after:sub(49302)
- after=after:sub(1,49194)..[[    function coordinator:RuntimePass(number,privateToken)
-]]..after:sub(49240)
- after=after:sub(1,43629)..[[        local ok,body=reader:Read(reference.address,c,function(record) exposureVersion={};exposed[record.body]=true;local asset=assets[referenceKey(reference)];if asset then asset.untracked=true end;return record.body end)
-]]..after:sub(43751)
- after=after:sub(1,26767)..[[        if reference and assets[referenceKey(reference)] then local asset=assets[referenceKey(reference)];if privateToken~=privatePlanPass then asset.borrowed=true end;return asset.body end
+]]
+        .. after:sub(61315)
+
+    after = after:sub(1, 57823)
+        .. [[            if not private then asset.borrowed=true end
+]]
+        .. after:sub(57824)
+
+    after = after:sub(1, 54769)
+        .. [[                if not private then item.borrowed=true end
+]]
+        .. after:sub(54770)
+
+    after = after:sub(1, 49301)
+        .. [[        local private=request~=nil or privateToken==privatePlanPass
+]]
+        .. after:sub(49302)
+
+    after = after:sub(1, 49194)
+        .. [[    function coordinator:RuntimePass(number,privateToken)
+]]
+        .. after:sub(49240)
+
+    after = after:sub(1, 43629)
+        .. [[        local ok,body=reader:Read(reference.address,c,function(record) exposureVersion={};exposed[record.body]=true;local asset=assets[referenceKey(reference)];if asset then asset.untracked=true end;return record.body end)
+]]
+        .. after:sub(43751)
+
+    after = after:sub(1, 26767)
+        .. [[        if reference and assets[referenceKey(reference)] then local asset=assets[referenceKey(reference)];if privateToken~=privatePlanPass then asset.borrowed=true end;return asset.body end
         local pass=self:RuntimePass(number,privateToken);return pass and pass:Get(value)
-]]..after:sub(26954)
- after=after:sub(1,26600)..[[    function coordinator:Cleanup(number,value,privateToken)
-]]..after:sub(26648)
- after=after:sub(1,6753)..[[        local pass
+]]
+        .. after:sub(26954)
+
+    after = after:sub(1, 26600)
+        .. [[    function coordinator:Cleanup(number,value,privateToken)
+]]
+        .. after:sub(26648)
+
+    after = after:sub(1, 6753)
+        .. [[        local pass
         local sourcePass=ownedRuntimePasses[coordinator]
         if reference and rawget(coordinator,'RuntimePass')==sourcePass then
             if not activeCurrent(addon,binding.token) then return nil end
             pass=sourcePass(coordinator,binding.spec,privatePlanPass)
             if not activeCurrent(addon,binding.token) then return nil end
         elseif reference then pass=read(coordinator,'RuntimePass',binding.spec) end
-]]..after:sub(6832)
- after=after:sub(1,5485)..[[local ownedScopedCoordinator=addon.GetScopedRotationCoordinator
-]]..after:sub(5486)
- after=after:sub(1,5257)..[[local ownedOwnerContext=addon.GetRotationOwnerContext
-]]..after:sub(5258)
- after=after:sub(1,2561)..[[local exposureVersion={}
-]]..after:sub(2562)
- after=after:sub(1,1765)..[[    bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard,authority,eligible,contextMethod,readValue,generation) runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime=authority,eligible,contextMethod,readValue,generation;libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
-]]..after:sub(2043)
- after=after:sub(1,1603)..[[local privatePlanPass={}
-]]..after:sub(1604)
- after=after:sub(1,1564)..[[local runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime
+]]
+        .. after:sub(6832)
+
+    after = after:sub(1, 5485)
+        .. [[local ownedScopedCoordinator=addon.GetScopedRotationCoordinator
+]]
+        .. after:sub(5486)
+
+    after = after:sub(1, 5257)
+        .. [[local ownedOwnerContext=addon.GetRotationOwnerContext
+]]
+        .. after:sub(5258)
+
+    after = after:sub(1, 2561)
+        .. [[local exposureVersion={}
+]]
+        .. after:sub(2562)
+
+    after = after:sub(1, 1765)
+        .. [[    bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard,authority,eligible,contextMethod,readValue,generation) runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime=authority,eligible,contextMethod,readValue,generation;libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
+]]
+        .. after:sub(2043)
+
+    after = after:sub(1, 1603)
+        .. [[local privatePlanPass={}
+]]
+        .. after:sub(1604)
+
+    after = after:sub(1, 1564)
+        .. [[local runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime
 local currentPlanSource,ownedAcquireRuntimePass
-]]..after:sub(1565)
- after=after:sub(1,1406)..[[        readActiveRuntime,copyActiveRuntime=readRuntime,copyRuntime
-]]..after:sub(1407)
- after=after:sub(1,1198)..[[    addon:BindActiveRotationPublication(function(prepare,finish,rebind,complete,readRuntime,copyRuntime)
-]]..after:sub(1280)
- after=after:sub(1,885)..[[local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind,readActiveRuntime,copyActiveRuntime
-]]..after:sub(980)
- after=after:sub(1,535)..[[-- These public helpers receive the execution body/path in the default sequence.
+]]
+        .. after:sub(1565)
+
+    after = after:sub(1, 1406)
+        .. [[        readActiveRuntime,copyActiveRuntime=readRuntime,copyRuntime
+]]
+        .. after:sub(1407)
+
+    after = after:sub(1, 1198)
+        .. [[    addon:BindActiveRotationPublication(function(prepare,finish,rebind,complete,readRuntime,copyRuntime)
+]]
+        .. after:sub(1280)
+
+    after = after:sub(1, 885)
+        .. [[local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind,readActiveRuntime,copyActiveRuntime
+]]
+        .. after:sub(980)
+
+    after = after:sub(1, 535)
+        .. [[-- These public helpers receive the execution body/path in the default sequence.
 -- Unknown helpers keep the public RuntimePass route before private data escapes.
 local planIndex,planCopy,planPortable,planIpairs=data.IndexRotationSteps,data.CopyData,data.CheckPortable,ipairs
 local function planDataCurrent(owner)
@@ -2400,11 +2507,14 @@ local function planDataCurrent(owner)
         and storeGetfenv(planIndex)==storeScopeEnvironment and storeGetfenv(planCopy)==storeScopeEnvironment
         and storeGetfenv(planPortable)==storeScopeEnvironment
 end
-]]..after:sub(536)
- rows['Core/rotation_scope.lua']={before=before,after=after}
+]]
+        .. after:sub(536)
+
+    rows['Core/rotation_scope.lua'] = { before = before, after = after }
 end
+
 do
- local before=[=[local _,addon=...
+    local before = [=[local _,addon=...
 local platform=addon.Platform
 local direct={['local']='LOCAL',emote='EMOTE',gesture='GESTURE'}
 local conditionRequest=0
@@ -2679,19 +2789,26 @@ function addon:GetAnnouncementEmoteReport()
     return table.concat(lines,'\n')
 end
 ]=]
- local after=before
- after=after:sub(1,14827).."\n"..[[-- Definition-owned consumer identity, cold-consumed by the runtime planner.
+
+    local after = before
+
+    after = after:sub(1, 14827)
+        .. "\n"
+        .. [[-- Definition-owned consumer identity, cold-consumed by the runtime planner.
 local runtimeDispatch=addon.DispatchAnnouncement
 local runtimeDispatchEnvironment=getfenv(1)
 function addon:ConsumeAnnouncementRuntimeSource()
     if self~=addon then return end
     return runtimeDispatch,runtimeDispatchEnvironment
 end
-]]..after:sub(14828)
- rows['Core/announcements.lua']={before=before,after=after}
+]]
+        .. after:sub(14828)
+
+    rows['Core/announcements.lua'] = { before = before, after = after }
 end
+
 do
- local before=[[local _,addon=...
+    local before = [[local _,addon=...
 local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
@@ -2821,13 +2938,19 @@ function addon:BindRotationSequenceReader(bind)
     bind(rawMethod,run,sequenceStatus)
 end
 ]]
- local after=before
- after=after:sub(1,7135)..[[    bind(rawMethod,run,sequenceStatus,ownedSequence)
-]]..after:sub(7175)
- rows['Core/rotation_sequence.lua']={before=before,after=after}
+
+    local after = before
+
+    after = after:sub(1, 7135)
+        .. [[    bind(rawMethod,run,sequenceStatus,ownedSequence)
+]]
+        .. after:sub(7175)
+
+    rows['Core/rotation_sequence.lua'] = { before = before, after = after }
 end
+
 do
- local before=[[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+    local before = [[-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -3760,27 +3883,51 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]]
- local after=before
- after=after:sub(1,26375)..[[if type(publishActivePresentation)=='function' then
+
+    local after = before
+
+    after = after:sub(1, 26375)
+        .. [[if type(publishActivePresentation)=='function' then
     publishActivePresentation(addon,addon.GlowCooldown,getfenv(1))
 end
 
-]]..after:sub(26376)
- after=after:sub(1,401)..[[-- The active-plan receiver is consumed before any library callback. Only the
+]]
+        .. after:sub(26376)
+
+    after = after:sub(1, 401)
+        .. [[-- The active-plan receiver is consumed before any library callback. Only the
 -- literal cooldown publisher below may qualify its private presentation route.
 ---@type fun(...): any
 local publishActivePresentation=addon.BindActiveRuntimePresentationSource
 addon.BindActiveRuntimePresentationSource=nil
-]]..after:sub(402)
- rows['buttons.lua']={before=before,after=after}
+]]
+        .. after:sub(402)
+
+    rows['buttons.lua'] = { before = before, after = after }
 end
-return function(text,path,mode)
- if mode==nil then text=dofile('tests/fixtures/restore_stop_step_type.lua')(text,path)end
- if mode==nil then text=dofile('tests/fixtures/restore_observation_lifecycles.lua')(text,path)end
- if mode==nil then text=dofile('tests/fixtures/restore_execution_generation.lua')(text,path)end
- if mode==nil and (path=='Core/rotation_scope.lua' or path=='Core/rotation_references.lua')then text=dofile('tests/fixtures/restore_active_runtime_continuation.lua')(text,path)end
- local row=rows[path];assert(row,'unknown active runtime source path')
- if mode=='before'then assert(text==nil);return row.before end
- assert(mode==nil and text==row.after,'unrelated active runtime source change: '..path)
- return row.before
+
+return function(text, path, mode)
+    if mode == nil then
+        text = dofile('tests/fixtures/restore_stop_step_type.lua')(text, path)
+    end
+    if mode == nil then
+        text = dofile('tests/fixtures/restore_observation_lifecycles.lua')(text, path)
+    end
+    if mode == nil then
+        text = dofile('tests/fixtures/restore_execution_generation.lua')(text, path)
+    end
+    if mode == nil and (path == 'Core/rotation_scope.lua' or path == 'Core/rotation_references.lua') then
+        text = dofile('tests/fixtures/restore_active_runtime_continuation.lua')(text, path)
+    end
+
+    local row = rows[path]
+    assert(row, 'unknown active runtime source path')
+
+    if mode == 'before' then
+        assert(text == nil)
+        return row.before
+    end
+
+    assert(mode == nil and text == row.after, 'unrelated active runtime source change: ' .. path)
+    return row.before
 end

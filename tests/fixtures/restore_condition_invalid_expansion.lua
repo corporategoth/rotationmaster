@@ -1,9 +1,16 @@
 -- Exact one-shot invalid-field presentation inverse; predecessor proofs remain unchanged.
-local bytes,hash,oldBytes,oldHash=41404,2820911158,37135,3337624042
-local edits={
- {at=41278,current=[====[    if not shell:ExpandInvalid({{}}) then return shell end
-]====],previous=[====[]====]},
- {at=28062,current=[====[        if name=="Replace" or name=="Add" or name=="AddSibling" or name=="Insert" or name=="Duplicate" then
+local bytes, hash, oldBytes, oldHash = 41404, 2820911158, 37135, 3337624042
+
+local edits = {
+    {
+        at = 41278,
+        current = [====[    if not shell:ExpandInvalid({{}}) then return shell end
+]====],
+        previous = [====[]====],
+    },
+    {
+        at = 28062,
+        current = [====[        if name=="Replace" or name=="Add" or name=="AddSibling" or name=="Insert" or name=="Duplicate" then
             local added=paths
             if name=="Add" then
                 local node=at(self.active.working,path)
@@ -13,8 +20,12 @@ local edits={
             end
             if not self:ExpandInvalid(added) then return end
         end
-]====],previous=[====[]====]},
- {at=14206,current=[====[    end
+]====],
+        previous = [====[]====],
+    },
+    {
+        at = 14206,
+        current = [====[    end
     -- Seed editable fields only at entry or for newly added/replaced subtrees.
     -- Redrawing and ordinary field edits retain the user's current fold state.
     function shell:ExpandInvalid(paths)
@@ -78,29 +89,57 @@ local edits={
             end
         end
         return true
-]====],previous=[====[]====]},
- {at=12660,current=[====[        local view=self.view
+]====],
+        previous = [====[]====],
+    },
+    {
+        at = 12660,
+        current = [====[        local view=self.view
         if includeHidden then
             view={};for key,value in pairs(self.view) do view[key]=value end
             view.collapsed={};view.hiddenChildren={}
         end
         local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,view,complete)
-]====],previous=[====[        local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,self.view,complete)
-]====]},
- {at=12442,current=[====[    function shell:Scene(includeHidden)
-]====],previous=[====[    function shell:Scene()
-]====]},
+]====],
+        previous = [====[        local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,self.view,complete)
+]====],
+    },
+    {
+        at = 12442,
+        current = [====[    function shell:Scene(includeHidden)
+]====],
+        previous = [====[    function shell:Scene()
+]====],
+    },
 }
-local function digest(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return n end
-return function(text,path)
- text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
- if path~='UI/condition_editor.lua' then return text end
- if #text==oldBytes and digest(text)==oldHash then return text end
- assert(#text==bytes and digest(text)==hash,'unrelated invalid-field expansion source')
- for _,edit in ipairs(edits)do
-  assert(text:sub(edit.at,edit.at+#edit.current-1)==edit.current,'invalid-field expansion inverse drift')
-  text=text:sub(1,edit.at-1)..edit.previous..text:sub(edit.at+#edit.current)
- end
- assert(#text==oldBytes and digest(text)==oldHash,'invalid-field expansion predecessor mismatch')
- return text
+
+local function digest(s)
+    local n = 5381
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return n
+end
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_workbench_resize.lua')(text, path)
+
+    if path ~= 'UI/condition_editor.lua' then
+        return text
+    end
+    if #text == oldBytes and digest(text) == oldHash then
+        return text
+    end
+
+    assert(#text == bytes and digest(text) == hash, 'unrelated invalid-field expansion source')
+
+    for _, edit in ipairs(edits) do
+        assert(text:sub(edit.at, edit.at + #edit.current - 1) == edit.current, 'invalid-field expansion inverse drift')
+        text = text:sub(1, edit.at - 1) .. edit.previous .. text:sub(edit.at + #edit.current)
+    end
+
+    assert(#text == oldBytes and digest(text) == oldHash, 'invalid-field expansion predecessor mismatch')
+    return text
 end

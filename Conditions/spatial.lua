@@ -71,8 +71,10 @@ end
 -- UnitPosition.
 local function position(cache, unit)
     local ok, y, x, _, instance = protectedRead(cache, UnitPosition, unit)
-    if not ok then return nil, nil, nil, y == "missing-api" and y or "api-error" end
 
+    if not ok then
+        return nil, nil, nil, y == "missing-api" and y or "api-error"
+    end
     if
         not addon.Platform:CanReadValue(x)
         or not addon.Platform:CanReadValue(y)
@@ -80,9 +82,13 @@ local function position(cache, unit)
     then
         return nil, nil, nil, "restricted-value"
     end
+    if x == nil or y == nil or instance == nil then
+        return nil, nil, nil, "position-unavailable"
+    end
+    if not finite(x) or not finite(y) or not finite(instance) then
+        return nil, nil, nil, "invalid-position-result"
+    end
 
-    if x == nil or y == nil or instance == nil then return nil, nil, nil, "position-unavailable" end
-    if not finite(x) or not finite(y) or not finite(instance) then return nil, nil, nil, "invalid-position-result" end
     return y, x, instance
 end
 
@@ -92,25 +98,41 @@ end
 -- straight-line distance (units in different instances are never in range). When the anchor has no position and is
 -- the player, it falls back to LibRangeCheck's bounds for `other`; any other position failure is passed through.
 local function inRange(cache, unit, y, x, instance, positionReason, other, radius)
-    if unit == other then return true, 0 end
+    if unit == other then
+        return true, 0
+    end
 
     if not positionReason then
         local otherY, otherX, otherInstance, reason = position(cache, other)
-        if reason then return nil, reason end
-        if instance ~= otherInstance then return false end
+
+        if reason then
+            return nil, reason
+        end
+        if instance ~= otherInstance then
+            return false
+        end
+
         local distance = ((x - otherX) ^ 2 + (y - otherY) ^ 2) ^ .5
-        if not finite(distance) then return nil, "invalid-position-result" end
+
+        if not finite(distance) then
+            return nil, "invalid-position-result"
+        end
+
         return distance <= radius, distance
     end
 
-    if positionReason ~= "position-unavailable" or unit ~= "player" then return nil, positionReason end
-    local ok, minimum, maximum = protectedRead(cache, rcf, other)
-    if not ok then return nil, "range-provider-error" end
+    if positionReason ~= "position-unavailable" or unit ~= "player" then
+        return nil, positionReason
+    end
 
+    local ok, minimum, maximum = protectedRead(cache, rcf, other)
+
+    if not ok then
+        return nil, "range-provider-error"
+    end
     if not addon.Platform:CanReadValue(minimum) or not addon.Platform:CanReadValue(maximum) then
         return nil, "restricted-value"
     end
-
     if
         minimum ~= nil and (not finite(minimum) or minimum < 0)
         or maximum ~= nil and (not finite(maximum) or maximum < 0)
@@ -118,13 +140,20 @@ local function inRange(cache, unit, y, x, instance, positionReason, other, radiu
     then
         return nil, "invalid-range-result"
     end
+    if minimum == nil and maximum == nil then
+        return nil, "range-unavailable"
+    end
 
-    if minimum == nil and maximum == nil then return nil, "range-unavailable" end
     -- The shipped range checker's successful upper bound is inclusive. A
     -- positive lower bound comes from a failed checker, so equality is outside;
     -- its synthetic zero floor does not prove a failed zero-yard check.
-    if maximum and maximum <= radius then return true, maximum end
-    if minimum and (minimum > radius or minimum > 0 and minimum == radius) then return false end
+    if maximum and maximum <= radius then
+        return true, maximum
+    end
+    if minimum and (minimum > radius or minimum > 0 and minimum == radius) then
+        return false
+    end
+
     return nil, "range-uncertain"
 end
 
@@ -132,9 +161,17 @@ end
 -- unreadable ("raid-roster-unavailable", "restricted-value").
 local function raidGroup(cache, index)
     local ok, _, _, group = protectedRead(cache, GetRaidRosterInfo, index)
-    if not ok then return nil, "raid-roster-unavailable" end
-    if not addon.Platform:CanReadValue(group) then return nil, "restricted-value" end
-    if not finite(group) or group < 1 or group % 1 ~= 0 then return nil, "raid-roster-unavailable" end
+
+    if not ok then
+        return nil, "raid-roster-unavailable"
+    end
+    if not addon.Platform:CanReadValue(group) then
+        return nil, "restricted-value"
+    end
+    if not finite(group) or group < 1 or group % 1 ~= 0 then
+        return nil, "raid-roster-unavailable"
+    end
+
     return group
 end
 
@@ -152,44 +189,81 @@ end
 -- its proven upper bound, never an invented exact distance. Callers must check
 -- completion before using accumulated values; nil+reason invalidates a scan.
 addon.proximity_eval = function(value, cache, func)
-    if not finite(value.distance) or value.distance < 0 then return nil, "invalid-proximity-distance" end
+    if not finite(value.distance) or value.distance < 0 then
+        return nil, "invalid-proximity-distance"
+    end
+
     local exists, reason = booleanRead(cache, UnitExists, value.unit)
-    if exists == nil then return nil, reason end
-    if not exists then return nil, "proximity-anchor-unavailable" end
+
+    if exists == nil then
+        return nil, reason
+    end
+    if not exists then
+        return nil, "proximity-anchor-unavailable"
+    end
+
     local prefix, size, group
     local raid, why = booleanRead(cache, IsInRaid)
-    if raid == nil then return nil, why end
+
+    if raid == nil then
+        return nil, why
+    end
 
     if raid then
         local belongs, issue = booleanRead(cache, UnitPlayerOrPetInRaid, value.unit)
-        if belongs == nil then return nil, issue end
-        if belongs then prefix, size = "raid", 40 end
+
+        if belongs == nil then
+            return nil, issue
+        end
+
+        if belongs then
+            prefix, size = "raid", 40
+        end
     end
 
     if not prefix then
         local grouped, issue = booleanRead(cache, IsInGroup)
-        if grouped == nil then return nil, issue end
+
+        if grouped == nil then
+            return nil, issue
+        end
 
         if grouped then
             local belongs, problem = booleanRead(cache, UnitPlayerOrPetInParty, value.unit)
-            if belongs == nil then return nil, problem end
-            if belongs then prefix, size = "party", 4 end
+
+            if belongs == nil then
+                return nil, problem
+            end
+
+            if belongs then
+                prefix, size = "party", 4
+            end
         elseif value.unit == "player" or value.unit == "pet" then
             prefix, size = "party", 0
         end
     end
 
-    if not prefix then return nil, "proximity-anchor-unavailable" end
+    if not prefix then
+        return nil, "proximity-anchor-unavailable"
+    end
 
     if prefix == "raid" and value.samegroup then
         local ok, index = protectedRead(cache, UnitInRaid, value.unit)
-        if not ok then return nil, "raid-roster-unavailable" end
-        if not addon.Platform:CanReadValue(index) then return nil, "restricted-value" end
+
+        if not ok then
+            return nil, "raid-roster-unavailable"
+        end
+        if not addon.Platform:CanReadValue(index) then
+            return nil, "restricted-value"
+        end
 
         if index == nil then
             for i = 1, size do
                 local matches, issue = booleanRead(cache, UnitIsUnit, value.unit, "raidpet" .. i)
-                if matches == nil then return nil, issue end
+
+                if matches == nil then
+                    return nil, issue
+                end
 
                 if matches then
                     index = i
@@ -203,28 +277,47 @@ addon.proximity_eval = function(value, cache, func)
         end
 
         group, reason = raidGroup(cache, index)
-        if not group then return nil, reason end
+
+        if not group then
+            return nil, reason
+        end
     end
 
     local y, x, instance, positionReason = position(cache, value.unit)
 
     local function visit(unit, index)
         local present, issue = booleanRead(cache, UnitExists, unit)
-        if present == nil then return nil, issue end
-        if not present then return true end
+
+        if present == nil then
+            return nil, issue
+        end
+        if not present then
+            return true
+        end
 
         if group then
             local memberGroup, problem = raidGroup(cache, index)
-            if not memberGroup then return nil, problem end
-            if memberGroup ~= group then return true end
+
+            if not memberGroup then
+                return nil, problem
+            end
+            if memberGroup ~= group then
+                return true
+            end
         end
 
         local inside, distance = inRange(cache, value.unit, y, x, instance, positionReason, unit, value.distance)
-        if inside == nil then return nil, distance end
+
+        if inside == nil then
+            return nil, distance
+        end
 
         if inside then
             local _, problem = func(cache, unit, distance)
-            if problem ~= nil then return nil, problem end
+
+            if problem ~= nil then
+                return nil, problem
+            end
         end
 
         return true
@@ -232,23 +325,35 @@ addon.proximity_eval = function(value, cache, func)
 
     if prefix == "party" then
         local complete, issue = visit("player")
-        if not complete then return nil, issue end
+
+        if not complete then
+            return nil, issue
+        end
     end
 
     for i = 1, size do
         local complete, issue = visit(prefix .. i, i)
-        if not complete then return nil, issue end
+
+        if not complete then
+            return nil, issue
+        end
     end
 
     if value.includepets then
         if prefix == "party" then
             local complete, issue = visit("pet")
-            if not complete then return nil, issue end
+
+            if not complete then
+                return nil, issue
+            end
         end
 
         for i = 1, size do
             local complete, issue = visit(prefix .. "pet" .. i, i)
-            if not complete then return nil, issue end
+
+            if not complete then
+                return nil, issue
+            end
         end
     end
 

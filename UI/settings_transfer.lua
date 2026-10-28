@@ -46,7 +46,9 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
         end
     end
 
-    if d.transferHelpLease ~= lease then return end
+    if d.transferHelpLease ~= lease then
+        return
+    end
 
     if not metadata then
         if d.help then
@@ -71,12 +73,17 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
     -- Full liveness for Help: base() plus the window shown and every caller-supplied validity check passing. base() is
     -- re-tested after each callback because a callback may close the window or switch profile.
     local function current()
-        if not base() or not d.frame:IsShown() or not base() then return false end
+        if not base() or not d.frame:IsShown() or not base() then
+            return false
+        end
 
         for _, valid in ipairs({ ownerValid or false, extraValid or false }) do
             if valid then
                 local ok, value = pcall(valid)
-                if not ok or value ~= true or not base() then return false end
+
+                if not ok or value ~= true or not base() then
+                    return false
+                end
             end
         end
 
@@ -86,28 +93,49 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
 
     -- Wrap OnHide once: when this binding runs again the previous wrapper is unwrapped first so wrappers do not stack.
     local onHide = d.frame:GetScript('OnHide')
-    if onHide == d.transferHelpHideWrapper then onHide = d.transferHelpHideOriginal end
+
+    if onHide == d.transferHelpHideWrapper then
+        onHide = d.transferHelpHideOriginal
+    end
+
     d.transferHelpHideOriginal = onHide
 
     self:SetUIScript(d.frame, 'OnHide', function(...)
         lease.hidden = true
-        if onHide then return onHide(...) end
+
+        if onHide then
+            return onHide(...)
+        end
     end)
 
     d.transferHelpHideWrapper = d.frame:GetScript('OnHide')
-    if not d.help then d.help = self:CreateWorkbenchHelpButton(d.frame, L['Help']) end
-    if not base() then return end
+
+    if not d.help then
+        d.help = self:CreateWorkbenchHelpButton(d.frame, L['Help'])
+    end
+
+    if not base() then
+        return
+    end
+
     d.help:ClearAllPoints()
     d.help:SetPoint('TOPRIGHT', -31, -5)
     d.help:SetSize(20, 20)
     d.help.icon:SetSize(18, 18)
     d.help.tooltip = metadata.brief or L['Help']
     d.help:Show()
-    if not base() then return end
+
+    if not base() then
+        return
+    end
+
     local sections, heading, owner = metadata.sections, metadata.heading or L['Help'], metadata.owner
 
     self:SetUIScript(d.help, 'OnClick', function()
-        if d.transferHelpLease ~= lease then return end
+        if d.transferHelpLease ~= lease then
+            return
+        end
+
         local open = rawget(addon, 'OpenWorkbenchHelp')
 
         if type(open) == 'function' then
@@ -116,7 +144,10 @@ function addon:BindTransferHelp(d, metadata, ownerValid)
                 owner = owner,
                 valid = current,
                 sections = function()
-                    if type(sections) == 'function' then return sections(d) end
+                    if type(sections) == 'function' then
+                        return sections(d)
+                    end
+
                     return sections or {}
                 end,
             })
@@ -189,7 +220,11 @@ function addon:UseExportFont(d)
     local input = d.input
     d.exportFont = nil
     input:SetFontObject('GameFontHighlightSmall')
-    if type(input.SetFont) ~= 'function' then return false end
+
+    if type(input.SetFont) ~= 'function' then
+        return false
+    end
+
     d.exportProbe = d.exportProbe or d.frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     d.exportProbe:Hide()
     local sample = string.rep('0', self.ExportTextWidth)
@@ -197,14 +232,26 @@ function addon:UseExportFont(d)
     local chosen
 
     for _, size in ipairs(EXPORT_FONT_SIZES) do
-        if input:SetFont(EXPORT_FONT, size, '') == false then break end
+        if input:SetFont(EXPORT_FONT, size, '') == false then
+            break
+        end
+
         -- A client that cannot load the file keeps the previous face; GetFont says which one is live.
         local path = type(input.GetFont) == 'function' and input:GetFont()
-        if type(path) == 'string' and not path:lower():find('inconsolata', 1, true) then break end
-        if d.exportProbe:SetFont(EXPORT_FONT, size, '') == false then break end
+
+        if type(path) == 'string' and not path:lower():find('inconsolata', 1, true) then
+            break
+        end
+        if d.exportProbe:SetFont(EXPORT_FONT, size, '') == false then
+            break
+        end
+
         d.exportProbe:SetText(sample)
         chosen = { size = size, width = d.exportProbe:GetStringWidth() }
-        if chosen.width <= limit then break end
+
+        if chosen.width <= limit then
+            break
+        end
     end
 
     if not chosen then
@@ -317,32 +364,79 @@ function addon:CreateWorkbenchTextReport(width, height)
                 and self.reportRequest == request
         end
 
-        if not current() then return end
+        if not current() then
+            return
+        end
+
         local text = tostring(value or '')
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.text = text
         self.chrome:SetContext(title, L['Read-only'], context or addon.pretty_name)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.setting = true
         self.input:SetText(text)
-        if self.reportRequest ~= request then return end
+
+        if self.reportRequest ~= request then
+            return
+        end
+
         self.setting = false
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self:Layout()
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.frame:Show()
         displayed = true
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         addon:OpenPopup(self)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.input:SetFocus()
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.input:SetCursorPosition(0)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.input:HighlightText(0, -1)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         self.scroll.workbenchBar:SetValue(0)
-        if not current() then return end
+
+        if not current() then
+            return
+        end
+
         addon:BindTransferHelp(self, help, current)
     end
 
@@ -357,7 +451,10 @@ function addon:CreateWorkbenchTextReport(width, height)
     end)
 
     addon:SetUIScript(d.input, 'OnCursorChanged', function(_, _, y, _, height)
-        if d.setting or type(y) ~= 'number' then return end
+        if d.setting or type(y) ~= 'number' then
+            return
+        end
+
         local top = -y
         local bar = d.scroll.workbenchBar
         d.scroll:UpdateWorkbenchScroll()
@@ -375,8 +472,13 @@ function addon:CreateWorkbenchTextReport(width, height)
         d.input:HighlightText(0, -1)
     end)
 
-    addon:SetUIScript(d.close, 'OnClick', function() d:Hide() end)
-    addon:SetUIScript(d.input, 'OnEscapePressed', function() d:Hide() end)
+    addon:SetUIScript(d.close, 'OnClick', function()
+        d:Hide()
+    end)
+
+    addon:SetUIScript(d.input, 'OnEscapePressed', function()
+        d:Hide()
+    end)
 
     addon:SetUIScript(d.frame, 'OnHide', function()
         d.reportRequest = nil
@@ -407,7 +509,10 @@ local TRANSFER_APPLY_RIGHT = 220
 -- Sets the width of the import/export dialog `d` and of everything sized from it (the text box, the original-name line,
 -- the name box and the status line). The height never changes.
 local function setTransferWidth(d, width)
-    if d.frame:GetWidth() == width then return end
+    if d.frame:GetWidth() == width then
+        return
+    end
+
     d.frame:SetWidth(width)
     d.scroll:SetWidth(width - 50)
     d.input:SetWidth(width - 60)
@@ -464,11 +569,18 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
 
         addon:SetUIScript(d.frame, 'OnHide', function()
             d.input:ClearFocus()
-            if d.options and d.options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end
-            if d.options and d.options.onClose then d.options.onClose() end
+
+            if d.options and d.options.review and addon.CloseTransferReview then
+                addon:CloseTransferReview(p)
+            end
+            if d.options and d.options.onClose then
+                d.options.onClose()
+            end
         end)
 
-        addon:SetUIScript(d.input, 'OnSizeChanged', function() d.scroll:UpdateWorkbenchScroll() end)
+        addon:SetUIScript(d.input, 'OnSizeChanged', function()
+            d.scroll:UpdateWorkbenchScroll()
+        end)
 
         addon:SetUIScript(d.input, 'OnCursorChanged', function(_, _, y, _, height)
             local top = -y
@@ -501,8 +613,13 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     -- shown, and the caller's own valid() agrees. The first check is repeated after options.valid() because that
     -- callback may close or replace the dialog.
     local function valid()
-        if not p:Valid(token) or p.textDialog ~= d or d.serial ~= serial or not d.frame:IsShown() then return false end
-        if options and options.valid and not options.valid() then return false end
+        if not p:Valid(token) or p.textDialog ~= d or d.serial ~= serial or not d.frame:IsShown() then
+            return false
+        end
+        if options and options.valid and not options.valid() then
+            return false
+        end
+
         return p:Valid(token) and p.textDialog == d and d.serial == serial and d.frame:IsShown()
     end
 
@@ -540,7 +657,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     -- Spanish "Previsualizar importación", would otherwise cover Import). Does nothing for dialogs without a preview or
     -- review.
     local function labels()
-        if not (options.requirePreview or options.review) then return end
+        if not (options.requirePreview or options.review) then
+            return
+        end
+
         local compare = d.mode == 'replace' and options.canReplace and true or false
         d.preview:SetText(compare and L['Compare import'] or L['Preview import'])
         d.preview.tooltip = compare and L['Help.Transfers.compare'] or L['Help.Transfers.preview']
@@ -591,12 +711,19 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     -- Reads the original name out of the pasted text (without running any of it) and shows it, then suggests it as
     -- the new name unless the player has typed one.
     local function preview()
-        if not valid() or not options then return end
+        if not valid() or not options then
+            return
+        end
+
         local ok, name = pcall(options.originalName, d.input:GetText())
         name = ok and type(name) == 'string' and name ~= '' and name or L['Name not supplied']
         d.original:SetText(L['Original name'] .. ': ' .. name)
         d.originalName = name
-        if not d.nameDirty then d.newName = name ~= L['Name not supplied'] and name or options.fallbackName or '' end
+
+        if not d.nameDirty then
+            d.newName = name ~= L['Name not supplied'] and name or options.fallbackName or ''
+        end
+
         destination()
     end
 
@@ -620,7 +747,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
             if options.canReplace then
                 d.mode = d.mode == 'replace' and 'new' or 'replace'
                 destination()
-                if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end
+
+                if options.review and addon.CloseTransferReview then
+                    addon:CloseTransferReview(p)
+                end
             end
         end)
 
@@ -631,13 +761,20 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
             end
         end)
 
-        addon:SetUIScript(d.name, 'OnEscapePressed', function() d.frame:Hide() end)
+        addon:SetUIScript(d.name, 'OnEscapePressed', function()
+            d.frame:Hide()
+        end)
 
         addon:SetUIScript(d.input, 'OnTextChanged', function(_, user)
             if user then
                 preview()
-                if options.review and addon.CloseTransferReview then addon:CloseTransferReview(p) end
-                if options.invalidate then options.invalidate(d) end
+
+                if options.review and addon.CloseTransferReview then
+                    addon:CloseTransferReview(p)
+                end
+                if options.invalidate then
+                    options.invalidate(d)
+                end
             end
         end)
 
@@ -662,7 +799,11 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         d.inspect:Show()
         d.apply:Disable()
         d.inspect:Disable()
-        addon:SetUIScript(d.preview, 'OnClick', function() run(options.preview, d) end)
+
+        addon:SetUIScript(d.preview, 'OnClick', function()
+            run(options.preview, d)
+        end)
+
         addon:SetUIScript(d.inspect, 'OnClick', function() return run(options.inspect, d) end)
     elseif options and options.review and addon.BuildTransferReview then
         -- Looking is optional here: Import is never gated, the buttons only show the import.
@@ -671,7 +812,11 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
         d.inspect:Show()
         d.apply:Enable()
         d.inspect:Enable()
-        addon:SetUIScript(d.preview, 'OnClick', function() run(show, d) end)
+
+        addon:SetUIScript(d.preview, 'OnClick', function()
+            run(show, d)
+        end)
+
         addon:SetUIScript(d.inspect, 'OnClick', function() return run(check, d) end)
     else
         d.preview:Hide()
@@ -688,7 +833,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
 
             if options then
                 preview()
-                if options.invalidate then options.invalidate(d) end
+
+                if options.invalidate then
+                    options.invalidate(d)
+                end
             end
         end
     end)
@@ -702,7 +850,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
     end)
 
     addon:SetUIScript(d.apply, 'OnClick', function()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local settings
 
         if options then
@@ -721,7 +872,10 @@ function addon:ShowSettingsTextTransfer(p, title, text, apply, options)
             return { ok, why }
         end)
 
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         local ok, why = result[1], result[2]
 
         if not ok then

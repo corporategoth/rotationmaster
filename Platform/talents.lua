@@ -30,12 +30,21 @@ end
 -- here checks it first and answers "talent-layout-mismatch" when called on the wrong layout.
 function platform:GetTalentLayout()
     local client = self:GetClientInfo()
-    if client.family == "era" or client.family == "tbc" then return "tree" end
-    if client.family == "retail" or client.family == "forever" then return "traits" end
+
+    if client.family == "era" or client.family == "tbc" then
+        return "tree"
+    end
+    if client.family == "retail" or client.family == "forever" then
+        return "traits"
+    end
 
     if client.family == "progression" then
-        if client.expansion == 2 or client.expansion == 3 then return "tree" end
-        if client.expansion == 4 then return "grid" end
+        if client.expansion == 2 or client.expansion == 3 then
+            return "tree"
+        end
+        if client.expansion == 4 then
+            return "grid"
+        end
     end
 
     return nil, "unsupported-talent-layout"
@@ -43,18 +52,32 @@ end
 
 -- Returns true when the client's talent layout is `wanted`, otherwise nil and "talent-layout-mismatch".
 local function layout(wanted)
-    if platform:GetTalentLayout() ~= wanted then return nil, "talent-layout-mismatch" end
+    if platform:GetTalentLayout() ~= wanted then
+        return nil, "talent-layout-mismatch"
+    end
+
     return true
 end
 
 -- Calls fn(...) under pcall and returns the result when it is a readable integer from 0 to maximum, otherwise nil and
 -- a reason.
 local function count(fn, maximum, ...)
-    if type(fn) ~= "function" then return nil, "missing-api" end
+    if type(fn) ~= "function" then
+        return nil, "missing-api"
+    end
+
     local ok, value = pcall(fn, ...)
-    if not ok then return nil, "api-error" end
-    if not platform:CanReadValue(value) then return nil, "restricted-value" end
-    if not integer(value, 0, maximum) then return nil, "invalid-api-result" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not platform:CanReadValue(value) then
+        return nil, "restricted-value"
+    end
+    if not integer(value, 0, maximum) then
+        return nil, "invalid-api-result"
+    end
+
     return value
 end
 
@@ -67,7 +90,11 @@ end
 -- True when this client is Forever or Retail and has C_Traits.GetGroupDisplayInfoByTreeID.
 local function traitTrees()
     local family = platform:GetClientFamily()
-    if family ~= "forever" and family ~= "retail" then return false end
+
+    if family ~= "forever" and family ~= "retail" then
+        return false
+    end
+
     return type(C_Traits) == "table" and type(C_Traits.GetGroupDisplayInfoByTreeID) == "function"
 end
 
@@ -75,36 +102,55 @@ end
 function platform:GetTalentTreeCount()
     if traitTrees() then
         local groups, why = self:GetTraitTreeGroups()
-        if not groups then return nil, why end
+
+        if not groups then
+            return nil, why
+        end
+
         return #groups
     end
 
     local supported, reason = layout("tree")
-    if not supported then return nil, reason end
+
+    if not supported then
+        return nil, reason
+    end
+
     return count(GetNumTalentTabs, 16, false, false)
 end
 
 -- Returns how many talents tree `tree` (1 to 16) holds on a "tree" layout client, or nil and a reason.
 function platform:GetTreeTalentCount(tree)
     local supported, reason = layout("tree")
-    if not supported then return nil, reason end
-    if not integer(tree, 1, 16) then return nil, "invalid-talent-tree" end
+
+    if not supported then
+        return nil, reason
+    end
+    if not integer(tree, 1, 16) then
+        return nil, "invalid-talent-tree"
+    end
+
     return count(GetNumTalents, 256, tree, false, false)
 end
 
 -- Validates a tree's name, icon and points-spent values and returns { name, icon, pointsSpent }, or nil and a reason.
 local function treeMetadata(name, icon, points)
     for _, value in pairs({ name = name, icon = icon, points = points }) do
-        if not platform:CanReadValue(value) then return nil, "restricted-value" end
+        if not platform:CanReadValue(value) then
+            return nil, "restricted-value"
+        end
     end
 
-    if type(name) ~= "string" or name == "" then return nil, "invalid-api-result" end
-
+    if type(name) ~= "string" or name == "" then
+        return nil, "invalid-api-result"
+    end
     if icon ~= nil and not integer(icon, 0, 2147483647) and type(icon) ~= "string" then
         return nil, "invalid-api-result"
     end
+    if points ~= nil and not integer(points, 0, 512) then
+        return nil, "invalid-api-result"
+    end
 
-    if points ~= nil and not integer(points, 0, 512) then return nil, "invalid-api-result" end
     return { name = name, icon = icon, pointsSpent = points }
 end
 
@@ -112,48 +158,95 @@ end
 -- nil and a reason. Handles both return orders of the legacy GetTalentTabInfo (see the comment inside).
 function platform:GetTalentTreeInfo(tree, group)
     if traitTrees() then
-        if not integer(tree, 1, 16) or not groupValid(group) then return nil, "invalid-talent-query" end
+        if not integer(tree, 1, 16) or not groupValid(group) then
+            return nil, "invalid-talent-query"
+        end
+
         local groups, why = self:GetTraitTreeGroups()
-        if not groups then return nil, why end
+
+        if not groups then
+            return nil, why
+        end
+
         local found = groups[tree]
-        if not found then return nil, "talent-tree-unavailable" end
+
+        if not found then
+            return nil, "talent-tree-unavailable"
+        end
+
         return { name = found.name, icon = found.icon, pointsSpent = found.pointsSpent }
     end
 
     local supported, reason = layout("tree")
-    if not supported then return nil, reason end
-    if not integer(tree, 1, 16) or not groupValid(group) then return nil, "invalid-talent-query" end
+
+    if not supported then
+        return nil, reason
+    end
+    if not integer(tree, 1, 16) or not groupValid(group) then
+        return nil, "invalid-talent-query"
+    end
+
     local native = C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo
     local fn = native or GetTalentTabInfo
-    if type(fn) ~= "function" then return nil, "missing-api" end
+
+    if type(fn) ~= "function" then
+        return nil, "missing-api"
+    end
 
     if native then
         local ok, _, name, _, icon, _, _, points = pcall(fn, tree, false, false, nil, nil, group)
-        if not ok then return nil, "api-error" end
+
+        if not ok then
+            return nil, "api-error"
+        end
+
         return treeMetadata(name, icon, points)
     end
 
     local ok, first, second, third, fourth, fifth = pcall(fn, tree, false, false, group)
-    if not ok then return nil, "api-error" end
-    if not self:CanReadValue(first) then return nil, "restricted-value" end
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not self:CanReadValue(first) then
+        return nil, "restricted-value"
+    end
+
     -- Historical APIs returned name first; current deprecated wrappers return ID first.
-    if type(first) == "string" then return treeMetadata(first, second, third) end
-    if type(first) == "number" then return treeMetadata(second, fourth, fifth) end
+    if type(first) == "string" then
+        return treeMetadata(first, second, third)
+    end
+    if type(first) == "number" then
+        return treeMetadata(second, fourth, fifth)
+    end
+
     return nil, "talent-data-unavailable"
 end
 
 -- Returns the tree with the most points spent (the GetTalentTreeInfo record plus its index), or nil and a reason:
 -- "no-talents-spent" when every tree is at zero and "ambiguous-primary-talent-tree" on a tie for the lead.
 function platform:GetPrimaryTalentTree(group)
-    if not groupValid(group) then return nil, 'invalid-talent-query' end
+    if not groupValid(group) then
+        return nil, 'invalid-talent-query'
+    end
+
     local count, reason = self:GetTalentTreeCount()
-    if count == nil then return nil, reason end
+
+    if count == nil then
+        return nil, reason
+    end
+
     local best, maximum, tied = nil, 0, false
 
     for index = 1, count do
         local info, why = self:GetTalentTreeInfo(index, group)
-        if not info then return nil, why end
-        if not integer(info.pointsSpent, 0, 512) then return nil, 'talent-points-unavailable' end
+
+        if not info then
+            return nil, why
+        end
+        if not integer(info.pointsSpent, 0, 512) then
+            return nil, 'talent-points-unavailable'
+        end
 
         if info.pointsSpent > maximum then
             best = info
@@ -165,8 +258,13 @@ function platform:GetPrimaryTalentTree(group)
         end
     end
 
-    if maximum == 0 then return nil, 'no-talents-spent' end
-    if tied then return nil, 'ambiguous-primary-talent-tree' end
+    if maximum == 0 then
+        return nil, 'no-talents-spent'
+    end
+    if tied then
+        return nil, 'ambiguous-primary-talent-tree'
+    end
+
     return best
 end
 
@@ -177,15 +275,22 @@ end
 -- Validates a talent record's name, icon, talentID and spellID and returns { name, icon, talentID?, spellID? } (an ID
 -- of zero is dropped), or nil and a reason.
 local function identity(data)
-    if not platform:CanReadValue(data) then return nil, "restricted-value" end
-    if type(data) ~= "table" then return nil, "talent-data-unavailable" end
-
-    for _, key in ipairs({ "name", "icon", "talentID", "spellID" }) do
-        if not platform:CanReadValue(data[key]) then return nil, "restricted-value" end
+    if not platform:CanReadValue(data) then
+        return nil, "restricted-value"
+    end
+    if type(data) ~= "table" then
+        return nil, "talent-data-unavailable"
     end
 
-    if type(data.name) ~= "string" or data.name == "" then return nil, "invalid-api-result" end
+    for _, key in ipairs({ "name", "icon", "talentID", "spellID" }) do
+        if not platform:CanReadValue(data[key]) then
+            return nil, "restricted-value"
+        end
+    end
 
+    if type(data.name) ~= "string" or data.name == "" then
+        return nil, "invalid-api-result"
+    end
     if data.icon ~= nil and not integer(data.icon, 0, 2147483647) and type(data.icon) ~= "string" then
         return nil, "invalid-api-result"
     end
@@ -196,8 +301,13 @@ local function identity(data)
         local id = data[key]
 
         if id ~= nil then
-            if not integer(id, 0, 2147483647) then return nil, "invalid-api-result" end
-            if id > 0 then result[key] = id end
+            if not integer(id, 0, 2147483647) then
+                return nil, "invalid-api-result"
+            end
+
+            if id > 0 then
+                result[key] = id
+            end
         end
     end
 
@@ -215,8 +325,10 @@ end
 -- client, or nil and a reason.
 function platform:GetTreeTalentInfo(tree, talent, group)
     local supported, reason = layout("tree")
-    if not supported then return nil, reason end
 
+    if not supported then
+        return nil, reason
+    end
     if not integer(tree, 1, 16) or not integer(talent, 1, 256) or not groupValid(group) then
         return nil, "invalid-talent-query"
     end
@@ -238,11 +350,18 @@ function platform:GetTreeTalentInfo(tree, talent, group)
         return nil, "missing-api"
     end
 
-    if not ok then return nil, "api-error" end
-    local result, why = identity(data)
-    if not result then return nil, why end
-    if not self:CanReadValue(data.rank) or not self:CanReadValue(data.maxRank) then return nil, "restricted-value" end
+    if not ok then
+        return nil, "api-error"
+    end
 
+    local result, why = identity(data)
+
+    if not result then
+        return nil, why
+    end
+    if not self:CanReadValue(data.rank) or not self:CanReadValue(data.maxRank) then
+        return nil, "restricted-value"
+    end
     if not integer(data.maxRank, 1, 64) or not integer(data.rank, 0, data.maxRank) then
         return nil, "invalid-api-result"
     end
@@ -255,10 +374,19 @@ end
 -- "grid" layout client, or nil and a reason.
 function platform:GetGridTalentInfo(index, group)
     local supported, reason = layout("grid")
-    if not supported then return nil, reason end
-    if not integer(index, 1, 18) or not groupValid(group) then return nil, "invalid-talent-query" end
+
+    if not supported then
+        return nil, reason
+    end
+    if not integer(index, 1, 18) or not groupValid(group) then
+        return nil, "invalid-talent-query"
+    end
+
     local fn = C_SpecializationInfo and C_SpecializationInfo.GetTalentInfo
-    if type(fn) ~= "function" then return nil, "missing-api" end
+
+    if type(fn) ~= "function" then
+        return nil, "missing-api"
+    end
 
     local ok, data = pcall(fn, {
         tier = math.floor((index - 1) / 3) + 1,
@@ -267,11 +395,18 @@ function platform:GetGridTalentInfo(index, group)
         isInspect = false,
     })
 
-    if not ok then return nil, "api-error" end
-    local result, why = identity(data)
-    if not result then return nil, why end
-    if not self:CanReadValue(data.selected) then return nil, "restricted-value" end
+    if not ok then
+        return nil, "api-error"
+    end
 
+    local result, why = identity(data)
+
+    if not result then
+        return nil, why
+    end
+    if not self:CanReadValue(data.selected) then
+        return nil, "restricted-value"
+    end
     if type(data.selected) ~= "boolean" or not result.talentID or not result.spellID then
         return nil, "invalid-api-result"
     end
@@ -328,17 +463,31 @@ end
 local function traits(name, ...)
     local namespace = C_Traits
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return false, 'missing-api' end
+
+    if type(fn) ~= 'function' then
+        return false, 'missing-api'
+    end
+
     local ok, value = pcall(fn, ...)
-    if not ok then return false, 'api-error' end
-    if not platform:CanReadValue(value) then return false, 'restricted-value' end
+
+    if not ok then
+        return false, 'api-error'
+    end
+    if not platform:CanReadValue(value) then
+        return false, 'restricted-value'
+    end
+
     return true, value
 end
 
 -- Returns true on Retail and Forever, otherwise nil and "talent-layout-mismatch".
 local function traitsLayout()
     local family = platform:GetClientFamily()
-    if family ~= 'retail' and family ~= 'forever' then return nil, 'talent-layout-mismatch' end
+
+    if family ~= 'retail' and family ~= 'forever' then
+        return nil, 'talent-layout-mismatch'
+    end
+
     return true
 end
 
@@ -346,21 +495,51 @@ end
 -- Returns configID, treeID, or nil and a reason.
 function platform:GetActiveTraitConfig()
     local supported, reason = traitsLayout()
-    if not supported then return nil, reason end
+
+    if not supported then
+        return nil, reason
+    end
+
     local namespace = C_ClassTalents
     local fn = type(namespace) == 'table' and namespace.GetActiveConfigID or nil
-    if type(fn) ~= 'function' then return nil, 'missing-api' end
+
+    if type(fn) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local ok, config = pcall(fn)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(config) then return nil, 'restricted-value' end
-    if config == nil then return nil, 'talent-config-unavailable' end
-    if not traitID(config) then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(config) then
+        return nil, 'restricted-value'
+    end
+    if config == nil then
+        return nil, 'talent-config-unavailable'
+    end
+    if not traitID(config) then
+        return nil, 'invalid-api-result'
+    end
+
     local okInfo, info = traits('GetConfigInfo', config)
-    if not okInfo then return nil, info end
-    if type(info) ~= 'table' or type(info.treeIDs) ~= 'table' then return nil, 'talent-config-unavailable' end
+
+    if not okInfo then
+        return nil, info
+    end
+    if type(info) ~= 'table' or type(info.treeIDs) ~= 'table' then
+        return nil, 'talent-config-unavailable'
+    end
+
     local tree = info.treeIDs[1]
-    if not self:CanReadValue(tree) then return nil, 'restricted-value' end
-    if not traitID(tree) then return nil, 'talent-config-unavailable' end
+
+    if not self:CanReadValue(tree) then
+        return nil, 'restricted-value'
+    end
+    if not traitID(tree) then
+        return nil, 'talent-config-unavailable'
+    end
+
     return config, tree
 end
 
@@ -369,25 +548,45 @@ end
 -- config and tree default to the active ones. Returns the list, or nil and a reason.
 function platform:GetTraitTreeGroups(config, tree)
     local supported, reason = traitsLayout()
-    if not supported then return nil, reason end
+
+    if not supported then
+        return nil, reason
+    end
 
     if config == nil then
         config, tree = self:GetActiveTraitConfig()
-        if not config then return nil, tree end
+
+        if not config then
+            return nil, tree
+        end
     end
 
-    if not traitID(config) or not traitID(tree) then return nil, 'invalid-talent-query' end
+    if not traitID(config) or not traitID(tree) then
+        return nil, 'invalid-talent-query'
+    end
+
     local ok, displays = traits('GetGroupDisplayInfoByTreeID', tree)
-    if not ok then return nil, displays end
-    if type(displays) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, displays
+    end
+    if type(displays) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local groups, ids = {}, {}
 
     for index = 1, #displays do
         local display = displays[index]
-        if not self:CanReadValue(display) or type(display) ~= 'table' then return nil, 'restricted-value' end
+
+        if not self:CanReadValue(display) or type(display) ~= 'table' then
+            return nil, 'restricted-value'
+        end
 
         for _, key in ipairs({ 'groupID', 'orderIndex', 'displayName', 'icon' }) do
-            if not self:CanReadValue(display[key]) then return nil, 'restricted-value' end
+            if not self:CanReadValue(display[key]) then
+                return nil, 'restricted-value'
+            end
         end
 
         if not traitID(display.groupID) or type(display.displayName) ~= 'string' or display.displayName == '' then
@@ -405,21 +604,36 @@ function platform:GetTraitTreeGroups(config, tree)
         ids[#ids + 1] = display.groupID
     end
 
-    if #groups == 0 or #groups > 16 then return nil, 'talent-groups-unavailable' end
+    if #groups == 0 or #groups > 16 then
+        return nil, 'talent-groups-unavailable'
+    end
 
     table.sort(groups, function(a, b)
-        if a.order ~= b.order then return a.order < b.order end
+        if a.order ~= b.order then
+            return a.order < b.order
+        end
+
         return a.position < b.position
     end)
 
     local okSpent, currencies = traits('GetGroupCurrencyInfo', config, ids)
-    if not okSpent then return nil, currencies end
-    if type(currencies) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not okSpent then
+        return nil, currencies
+    end
+    if type(currencies) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local spent = {}
 
     for index = 1, #currencies do
         local info = currencies[index]
-        if not self:CanReadValue(info) or type(info) ~= 'table' then return nil, 'restricted-value' end
+
+        if not self:CanReadValue(info) or type(info) ~= 'table' then
+            return nil, 'restricted-value'
+        end
+
         local list = info.currencyInfos
 
         if not self:CanReadValue(info.traitNodeGroupID) or not self:CanReadValue(list) then
@@ -433,12 +647,16 @@ function platform:GetTraitTreeGroups(config, tree)
             if not self:CanReadValue(first) or type(first) ~= 'table' or not self:CanReadValue(first.spent) then
                 return nil, 'restricted-value'
             end
+            if not integer(first.spent, 0, 512) then
+                return nil, 'invalid-api-result'
+            end
 
-            if not integer(first.spent, 0, 512) then return nil, 'invalid-api-result' end
             points = first.spent
         end
 
-        if traitID(info.traitNodeGroupID) then spent[info.traitNodeGroupID] = points end
+        if traitID(info.traitNodeGroupID) then
+            spent[info.traitNodeGroupID] = points
+        end
     end
 
     -- The Blizzard header shows 0 for a group with no currency record.
@@ -457,18 +675,32 @@ end
 -- Returns { rank, entry, maxRanks, entries? } or nil and a reason.
 function platform:GetTraitNodeState(config, node, withEntries)
     local supported, reason = traitsLayout()
-    if not supported then return nil, reason end
-    if not traitID(config) or not traitID(node) then return nil, 'invalid-talent-query' end
-    local ok, info = traits('GetNodeInfo', config, node)
-    if not ok then return nil, info end
-    if type(info) ~= 'table' then return nil, 'talent-node-unavailable' end
 
-    for _, key in ipairs({ 'ID', 'activeRank', 'maxRanks', 'activeEntry', 'subTreeID', 'subTreeActive' }) do
-        if not self:CanReadValue(info[key]) then return nil, 'restricted-value' end
+    if not supported then
+        return nil, reason
+    end
+    if not traitID(config) or not traitID(node) then
+        return nil, 'invalid-talent-query'
     end
 
-    if info.ID ~= node then return nil, 'talent-node-unavailable' end
+    local ok, info = traits('GetNodeInfo', config, node)
 
+    if not ok then
+        return nil, info
+    end
+    if type(info) ~= 'table' then
+        return nil, 'talent-node-unavailable'
+    end
+
+    for _, key in ipairs({ 'ID', 'activeRank', 'maxRanks', 'activeEntry', 'subTreeID', 'subTreeActive' }) do
+        if not self:CanReadValue(info[key]) then
+            return nil, 'restricted-value'
+        end
+    end
+
+    if info.ID ~= node then
+        return nil, 'talent-node-unavailable'
+    end
     if not integer(info.maxRanks, 0, 64) or not integer(info.activeRank, 0, 64) then
         return nil, 'invalid-api-result'
     end
@@ -480,11 +712,17 @@ function platform:GetTraitNodeState(config, node, withEntries)
             return nil, 'restricted-value'
         end
 
-        if traitID(info.activeEntry.entryID) then entry = info.activeEntry.entryID end
+        if traitID(info.activeEntry.entryID) then
+            entry = info.activeEntry.entryID
+        end
     end
 
     local rank = info.activeRank
-    if info.subTreeID ~= nil and info.subTreeActive ~= true then rank = 0 end
+
+    if info.subTreeID ~= nil and info.subTreeActive ~= true then
+        rank = 0
+    end
+
     local state = { rank = rank, entry = entry, maxRanks = info.maxRanks }
 
     if withEntries then
@@ -495,8 +733,13 @@ function platform:GetTraitNodeState(config, node, withEntries)
         local entries = {}
 
         for _, id in ipairs(info.entryIDs) do
-            if not self:CanReadValue(id) then return nil, 'restricted-value' end
-            if traitID(id) then entries[#entries + 1] = id end
+            if not self:CanReadValue(id) then
+                return nil, 'restricted-value'
+            end
+
+            if traitID(id) then
+                entries[#entries + 1] = id
+            end
         end
 
         state.entries = entries
@@ -513,10 +756,15 @@ end
 -- overrides. Two C_Traits reads, no spell lookup.
 -- Returns the entry info and the definition info tables, or nil and a reason.
 local function entryDefinition(config, entry)
-    if not traitConfig(config) or not traitID(entry) then return nil, 'invalid-talent-query' end
-    local ok, info = traits('GetEntryInfo', config, entry)
-    if not ok then return nil, info end
+    if not traitConfig(config) or not traitID(entry) then
+        return nil, 'invalid-talent-query'
+    end
 
+    local ok, info = traits('GetEntryInfo', config, entry)
+
+    if not ok then
+        return nil, info
+    end
     if
         type(info) ~= 'table'
         or not platform:CanReadValue(info.definitionID)
@@ -524,14 +772,23 @@ local function entryDefinition(config, entry)
     then
         return nil, 'restricted-value'
     end
+    if not traitID(info.definitionID) then
+        return nil, 'talent-entry-unavailable'
+    end
 
-    if not traitID(info.definitionID) then return nil, 'talent-entry-unavailable' end
     local okDef, definition = traits('GetDefinitionInfo', info.definitionID)
-    if not okDef then return nil, definition end
-    if type(definition) ~= 'table' then return nil, 'talent-entry-unavailable' end
+
+    if not okDef then
+        return nil, definition
+    end
+    if type(definition) ~= 'table' then
+        return nil, 'talent-entry-unavailable'
+    end
 
     for _, key in ipairs({ 'spellID', 'overrideName', 'overrideIcon' }) do
-        if not platform:CanReadValue(definition[key]) then return nil, 'restricted-value' end
+        if not platform:CanReadValue(definition[key]) then
+            return nil, 'restricted-value'
+        end
     end
 
     return info, definition
@@ -540,8 +797,14 @@ end
 -- The spell ID a trait entry teaches, or nil and a reason.
 function platform:GetTraitEntrySpell(config, entry)
     local info, definition = entryDefinition(config, entry)
-    if not info then return nil, definition end
-    if not traitID(definition.spellID) then return nil, 'talent-entry-unavailable' end
+
+    if not info then
+        return nil, definition
+    end
+    if not traitID(definition.spellID) then
+        return nil, 'talent-entry-unavailable'
+    end
+
     return definition.spellID
 end
 
@@ -551,7 +814,11 @@ end
 -- Returns { name, icon, spellID?, maxRanks?, entryType? } or nil and a reason.
 function platform:GetTraitEntryIdentity(config, entry)
     local info, definition = entryDefinition(config, entry)
-    if not info then return nil, definition end
+
+    if not info then
+        return nil, definition
+    end
+
     local spell = traitID(definition.spellID) and definition.spellID or nil
 
     local name = type(definition.overrideName) == 'string' and definition.overrideName ~= '' and definition.overrideName
@@ -568,7 +835,9 @@ function platform:GetTraitEntryIdentity(config, entry)
         end
     end
 
-    if not name then return nil, 'talent-entry-unavailable' end
+    if not name then
+        return nil, 'talent-entry-unavailable'
+    end
 
     return {
         name = name,
@@ -584,8 +853,14 @@ end
 -- Returns the GetTraitEntryIdentity record (or { name, icon, spellID } from the saved spell), or nil and a reason.
 function platform:GetTraitTalentIdentity(node, entry, spell)
     local config, why = self:GetActiveTraitConfig()
-    if not config then return nil, why end
-    if not traitID(node) then return nil, 'invalid-talent-query' end
+
+    if not config then
+        return nil, why
+    end
+    if not traitID(node) then
+        return nil, 'invalid-talent-query'
+    end
+
     local identity, reason
 
     if entry == nil then
@@ -611,16 +886,26 @@ function platform:GetTraitTalentIdentity(node, entry, spell)
                 entry = info.entryIDs[1]
             end
 
-            if entry == nil then reason = 'talent-node-unavailable' end
+            if entry == nil then
+                reason = 'talent-node-unavailable'
+            end
         end
     end
 
-    if entry ~= nil then identity, reason = self:GetTraitEntryIdentity(config, entry) end
-    if identity then return identity end
+    if entry ~= nil then
+        identity, reason = self:GetTraitEntryIdentity(config, entry)
+    end
+
+    if identity then
+        return identity
+    end
 
     if traitID(spell) and self.GetSpellInfo then
         local spellInfo = self:GetSpellInfo(spell)
-        if spellInfo then return { name = spellInfo.name, icon = spellInfo.iconID, spellID = spell } end
+
+        if spellInfo then
+            return { name = spellInfo.name, icon = spellInfo.iconID, spellID = spell }
+        end
     end
 
     return nil, reason
@@ -634,10 +919,20 @@ end
 local function classTalents(name, ...)
     local namespace = C_ClassTalents
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return false, 'missing-api' end
+
+    if type(fn) ~= 'function' then
+        return false, 'missing-api'
+    end
+
     local ok, value = pcall(fn, ...)
-    if not ok then return false, 'api-error' end
-    if not platform:CanReadValue(value) then return false, 'restricted-value' end
+
+    if not ok then
+        return false, 'api-error'
+    end
+    if not platform:CanReadValue(value) then
+        return false, 'restricted-value'
+    end
+
     return true, value
 end
 
@@ -649,12 +944,19 @@ local function viewLevel()
 
         if type(fn) == 'function' then
             local ok, level = pcall(fn)
-            if ok and integer(level, 1, 200) then return level end
+
+            if ok and integer(level, 1, 200) then
+                return level
+            end
         end
     end
 
     local ok, level = pcall(UnitLevel, 'player')
-    if ok and integer(level, 1, 200) then return level end
+
+    if ok and integer(level, 1, 200) then
+        return level
+    end
+
     return 80
 end
 
@@ -686,38 +988,65 @@ end
 -- options.ignoreInspect to skip the window check. Returns nil and a reason when no tree can be read.
 function platform:GetTraitSpecTree(specID, options)
     local supported, reason = traitsLayout()
-    if not supported then return nil, reason end
+
+    if not supported then
+        return nil, reason
+    end
+
     local active, tree = self:GetActiveTraitConfig()
     local wanted = self:GetClientFamily() == 'retail' and integer(specID, 1, 2147483647) and specID or nil
 
     if wanted and self.GetPlayerSpecializationID and active then
-        if self:GetPlayerSpecializationID() == wanted then wanted = nil end
+        if self:GetPlayerSpecializationID() == wanted then
+            wanted = nil
+        end
     end
 
     if not wanted then
-        if not active then return nil, tree end
+        if not active then
+            return nil, tree
+        end
+
         return active, tree, 'active'
     end
 
     if self.IsInitialSpecialization and self:IsInitialSpecialization(wanted) then
         return nil, 'talent-tree-unavailable'
     end
-
-    if type(InCombatLockdown) == 'function' and InCombatLockdown() then return nil, 'in-combat' end
-
+    if type(InCombatLockdown) == 'function' and InCombatLockdown() then
+        return nil, 'in-combat'
+    end
     if not (options and options.ignoreInspect) and talentWindowInspecting() then
         return nil, 'talent-window-inspecting'
     end
 
     local okTree, viewTree = classTalents('GetTraitTreeForSpec', wanted)
-    if not okTree then return nil, viewTree end
-    if viewTree == nil then return nil, 'talent-tree-unavailable' end
-    if not traitID(viewTree) then return nil, 'invalid-api-result' end
+
+    if not okTree then
+        return nil, viewTree
+    end
+    if viewTree == nil then
+        return nil, 'talent-tree-unavailable'
+    end
+    if not traitID(viewTree) then
+        return nil, 'invalid-api-result'
+    end
+
     local okView, why = classTalents('InitializeViewLoadout', wanted, viewLevel())
-    if not okView then return nil, why end
+
+    if not okView then
+        return nil, why
+    end
+
     local okInfo, info = traits('GetConfigInfo', VIEW_CONFIG)
-    if not okInfo then return nil, info end
-    if type(info) ~= 'table' then return nil, 'talent-config-unavailable' end
+
+    if not okInfo then
+        return nil, info
+    end
+    if type(info) ~= 'table' then
+        return nil, 'talent-config-unavailable'
+    end
+
     return VIEW_CONFIG, viewTree, 'view'
 end
 
@@ -736,7 +1065,10 @@ local function classSpecBoundary(columns)
         end
     end
 
-    if #distinct < 4 then return nil end
+    if #distinct < 4 then
+        return nil
+    end
+
     table.sort(distinct)
     local gaps = {}
 
@@ -747,7 +1079,9 @@ local function classSpecBoundary(columns)
     local widest, at = 0, nil
 
     for index, gap in ipairs(gaps) do
-        if gap > widest then widest, at = gap, index end
+        if gap > widest then
+            widest, at = gap, index
+        end
     end
 
     local ordered = {}
@@ -758,7 +1092,11 @@ local function classSpecBoundary(columns)
 
     table.sort(ordered)
     local median = ordered[math.ceil(#ordered / 2)]
-    if widest < math.max(500, median * 3) then return nil end
+
+    if widest < math.max(500, median * 3) then
+        return nil
+    end
+
     return (distinct[at] + distinct[at + 1]) / 2
 end
 
@@ -775,10 +1113,20 @@ end
 -- Reads many C_Traits records and allocates freely, so it is for editors and diagnostics, not the poll path.
 function platform:GetTraitTalents(specID, options)
     local config, tree, source = self:GetTraitSpecTree(specID, options)
-    if not config then return nil, tree end
+
+    if not config then
+        return nil, tree
+    end
+
     local ok, nodes = traits('GetTreeNodes', tree)
-    if not ok then return nil, nodes end
-    if type(nodes) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, nodes
+    end
+    if type(nodes) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local trees = source == 'active' and self:GetTraitTreeGroups(config, tree) or nil
     local groupIndex = {}
 
@@ -793,8 +1141,10 @@ function platform:GetTraitTalents(specID, options)
     for index = 1, #nodes do
         local node = nodes[index]
         local okNode, info = traits('GetNodeInfo', config, node)
-        if not okNode then failure = failure or info end
 
+        if not okNode then
+            failure = failure or info
+        end
         if
             okNode
             and type(info) == 'table'
@@ -828,7 +1178,9 @@ function platform:GetTraitTalents(specID, options)
                 end
             end
 
-            if any then heroAllowed = allowed end
+            if any then
+                heroAllowed = allowed
+            end
         end
 
         if not heroAllowed then
@@ -856,7 +1208,9 @@ function platform:GetTraitTalents(specID, options)
                 end
             end
 
-            if any then heroAllowed = allowed end
+            if any then
+                heroAllowed = allowed
+            end
         end
     end
 
@@ -947,8 +1301,12 @@ function platform:GetTraitTalents(specID, options)
                 if not identity then
                     -- A hero selection node has entries without a talent; any other
                     -- entry that cannot be named is counted.
-                    if info.type ~= 3 then skipped = skipped + 1 end
-                    if why ~= 'talent-entry-unavailable' then failure = failure or why end
+                    if info.type ~= 3 then
+                        skipped = skipped + 1
+                    end
+                    if why ~= 'talent-entry-unavailable' then
+                        failure = failure or why
+                    end
                 end
 
                 if identity then
@@ -1004,8 +1362,13 @@ function platform:GetTraitTalents(specID, options)
 
     for _, group in ipairs(groups) do
         table.sort(group.talents, function(a, b)
-            if a.y ~= b.y then return a.y < b.y end
-            if a.x ~= b.x then return a.x < b.x end
+            if a.y ~= b.y then
+                return a.y < b.y
+            end
+            if a.x ~= b.x then
+                return a.x < b.x
+            end
+
             return (a.entry or 0) < (b.entry or 0)
         end)
 
@@ -1056,10 +1419,19 @@ end
 -- patches; spell IDs do not).
 -- Returns the index table, or nil and a reason. A visible node wins over a hidden one that teaches the same spell.
 function platform:GetTraitSpellIndex(config, tree)
-    if not traitID(config) or not traitID(tree) then return nil, 'invalid-talent-query' end
+    if not traitID(config) or not traitID(tree) then
+        return nil, 'invalid-talent-query'
+    end
+
     local ok, nodes = traits('GetTreeNodes', tree)
-    if not ok then return nil, nodes end
-    if type(nodes) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, nodes
+    end
+    if type(nodes) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local selection = 2  -- Enum.TraitNodeType.Selection
     local index = {}
 

@@ -35,7 +35,10 @@ function M.entries(toc, root)
 
     for line in io.lines(root .. toc) do
         line = line:gsub('\r', ''):match('^%s*(.-)%s*$')
-        if line ~= '' and not line:match('^#') then result[#result + 1] = dir .. '/' .. line:gsub('\\', '/') end
+
+        if line ~= '' and not line:match('^#') then
+            result[#result + 1] = dir .. '/' .. line:gsub('\\', '/')
+        end
     end
 
     return result
@@ -90,7 +93,9 @@ function M.list(root)
                     row.files = {}
 
                     for _, path in ipairs(M.entries(row.tocs[1], root)) do
-                        if path ~= module.bind then row.files[#row.files + 1] = path end
+                        if path ~= module.bind then
+                            row.files[#row.files + 1] = path
+                        end
                     end
 
                     module.editions[edition.family] = row

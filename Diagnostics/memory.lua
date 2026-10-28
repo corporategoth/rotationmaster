@@ -23,17 +23,29 @@ local function readable(value)
     local secret = raw(_G, 'issecretvalue')
 
     if secret ~= nil then
-        if kind(secret) ~= 'function' then return false end
+        if kind(secret) ~= 'function' then
+            return false
+        end
+
         local ok, v = protect(secret, value)
-        if not ok or v ~= false then return false end
+
+        if not ok or v ~= false then
+            return false
+        end
     end
 
     local access = raw(_G, 'canaccessvalue')
 
     if access ~= nil then
-        if kind(access) ~= 'function' then return false end
+        if kind(access) ~= 'function' then
+            return false
+        end
+
         local ok, v = protect(access, value)
-        if not ok or v ~= true then return false end
+
+        if not ok or v ~= true then
+            return false
+        end
     end
 
     return true
@@ -46,7 +58,9 @@ end
 
 -- Returns value[key] without invoking metamethods, or nil when value is unreadable or not a table.
 local function field(value, key)
-    if readable(value) and kind(value) == 'table' then return raw(value, key) end
+    if readable(value) and kind(value) == 'table' then
+        return raw(value, key)
+    end
 end
 
 -- True while run is the active, running capture. Checked after every native call, because a callout can stop or
@@ -58,9 +72,16 @@ end
 -- Calls fn under pcall and returns its result only when it is a valid number and the run is still current.
 ---@return number|nil
 local function callNumber(run, fn, ...)
-    if not current(run) or kind(fn) ~= 'function' then return end
+    if not current(run) or kind(fn) ~= 'function' then
+        return
+    end
+
     local ok, value = protect(fn, ...)
-    if not current(run) or not ok or not number(value) or not current(run) then return end
+
+    if not current(run) or not ok or not number(value) or not current(run) then
+        return
+    end
+
     ---@cast value number
     return value
 end
@@ -68,9 +89,16 @@ end
 -- Returns the C_AddOns function of that name, or the legacy global, or nil.
 local function api(name)
     local method = field(raw(_G, 'C_AddOns'), name)
-    if kind(method) == 'function' then return method end
+
+    if kind(method) == 'function' then
+        return method
+    end
+
     method = raw(_G, name)
-    if kind(method) == 'function' then return method end
+
+    if kind(method) == 'function' then
+        return method
+    end
 end
 
 local retainedKeys = {
@@ -95,7 +123,10 @@ local wtmAddonKey = string.lower(addon_name)
 local function sampleSpikes(run, at, dropped)
     local owner = field(field(field(raw(_G, 'WoWTaskManager'), 'Processes'), 'byName'), wtmAddonKey)
     local n, last = field(owner, 'spikes'), field(owner, 'lastSpikeAt')
-    if not current(run) then return end
+
+    if not current(run) then
+        return
+    end
 
     if not number(n) or n % 1 ~= 0 then
         run.wtmOwner = nil
@@ -104,7 +135,10 @@ local function sampleSpikes(run, at, dropped)
         return
     end
 
-    if not current(run) then return end
+    if not current(run) then
+        return
+    end
+
     run.wtmSnapshots = run.wtmSnapshots + 1
 
     if same(run.wtmOwner, owner) and run.wtmCount and n >= run.wtmCount then
@@ -126,15 +160,27 @@ end
 -- Counts the keys of a plain table (no metatable) without calling into it, charging each key to the shared budget.
 -- Returns the count and whether it was capped, or nil when the table is unreadable or the run was retired.
 local function count(run, map, budget)
-    if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then return end
+    if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then
+        return
+    end
+
     local n, key = 0, nil
 
     repeat
-        if budget.n >= NODE_LIMIT then return n, true end
+        if budget.n >= NODE_LIMIT then
+            return n, true
+        end
+
         local value
         key, value = nextKey(map, key)
-        if key == nil then return n, false end
-        if not readable(key) or not current(run) then return end
+
+        if key == nil then
+            return n, false
+        end
+        if not readable(key) or not current(run) then
+            return
+        end
+
         budget.n = budget.n + 1
         n = n + 1
     until n > COUNT_LIMIT
@@ -163,7 +209,11 @@ local function roots(run, row)
     local function nested(root, unitKey, rowKey, child, second)
         local map = raw(addon, root)
         save(unitKey, map)
-        if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then return end
+
+        if not readable(map) or kind(map) ~= 'table' or getmetatable(map) ~= nil then
+            return
+        end
+
         local total, capped, key = 0, false, nil
         local other, otherCapped = 0, false
 
@@ -176,17 +226,32 @@ local function roots(run, row)
 
             local value
             key, value = nextKey(map, key)
-            if key == nil then break end
-            if not readable(key) or not current(run) then return end
+
+            if key == nil then
+                break
+            end
+
+            if not readable(key) or not current(run) then
+                return
+            end
+
             budget.n = budget.n + 1
             local n, cap = count(run, child and field(value, child) or value, budget)
-            if n == nil then return end
+
+            if n == nil then
+                return
+            end
+
             total = total + n
             capped = capped or cap
 
             if second then
                 local x, c = count(run, field(value, second), budget)
-                if x == nil then return end
+
+                if x == nil then
+                    return
+                end
+
                 other = other + x
                 otherCapped = otherCapped or c
             end
@@ -199,7 +264,10 @@ local function roots(run, row)
         end
 
         row[rowKey], row[rowKey .. 'Capped'] = math.min(total, COUNT_LIMIT), capped
-        if second then row.healRows, row.healRowsCapped = math.min(other, COUNT_LIMIT), otherCapped end
+
+        if second then
+            row.healRows, row.healRowsCapped = math.min(other, COUNT_LIMIT), otherCapped
+        end
     end
 
     nested('combatHistory', 'combatUnits', 'combatRows')
@@ -330,8 +398,13 @@ local function render(run, status)
             .. amount(row.wtmLast)
 
         local a, b = counts(row, retainedKeys), counts(row, publicKeys)
-        if a ~= '' then text = text .. ' ' .. a end
-        if b ~= '' then text = text .. ' ' .. b end
+
+        if a ~= '' then
+            text = text .. ' ' .. a
+        end
+        if b ~= '' then
+            text = text .. ' ' .. b
+        end
 
         if reportBytes + #text + 1 > 15500 then
             lines[#lines + 1] = 'Remaining detailed rows omitted to keep report bounded.'
@@ -351,20 +424,35 @@ end
 -- Retires the run, cancels its timers, stores the rendered report and notifies the optional
 -- OnMemoryCaptureFinished hook. Does nothing for a run that is not current.
 local function finish(run, status)
-    if not current(run) then return end
+    if not current(run) then
+        return
+    end
+
     active = nil
     run.phase = 'retired'
-    if status == 'complete' and run.stopRequested then status = 'stopped' end
+
+    if status == 'complete' and run.stopRequested then
+        status = 'stopped'
+    end
+
     local report = render(run, status)
     lastReport = report
     local repeating, timeout = run.timer, run.timeout
     run.timer, run.timeout = nil, nil
-    if repeating then protect(run.cancel, addon, repeating) end
-    if timeout then protect(run.cancel, addon, timeout) end
+
+    if repeating then
+        protect(run.cancel, addon, repeating)
+    end
+    if timeout then
+        protect(run.cancel, addon, timeout)
+    end
 
     if active == nil and latest == run then
         local notify = raw(addon, 'OnMemoryCaptureFinished')
-        if kind(notify) == 'function' then protect(notify, addon, report, status) end
+
+        if kind(notify) == 'function' then
+            protect(notify, addon, report, status)
+        end
     end
 end
 
@@ -380,17 +468,30 @@ local function detail(run, at, heap, refresh)
         wtmSpikes = run.wtmCount,
     }
 
-    if run.wtmLast and run.wtmLast >= run.started then row.wtmLast = run.wtmLast - run.started end
+    if run.wtmLast and run.wtmLast >= run.started then
+        row.wtmLast = run.wtmLast - run.started
+    end
 
     if kind(run.update) == 'function' and kind(run.memory) == 'function' then
         if refresh then
             run.scanAttempts = run.scanAttempts + 1
             local before = callNumber(run, run.ms)
-            if not current(run) then return end
+
+            if not current(run) then
+                return
+            end
+
             local ok = protect(run.update)
-            if not current(run) then return end
+
+            if not current(run) then
+                return
+            end
+
             local ending = callNumber(run, run.ms)
-            if not current(run) then return end
+
+            if not current(run) then
+                return
+            end
 
             if before and ending and ending >= before then
                 row.scanMs = ending - before
@@ -399,8 +500,14 @@ local function detail(run, at, heap, refresh)
                 run.timedScans = run.timedScans + 1
             end
 
-            if ok then row.addonKB = callNumber(run, run.memory, addon_name) end
-            if not current(run) then return end
+            if ok then
+                row.addonKB = callNumber(run, run.memory, addon_name)
+            end
+
+            if not current(run) then
+                return
+            end
+
             row.fresh = row.addonKB ~= nil
 
             if row.fresh then
@@ -411,8 +518,14 @@ local function detail(run, at, heap, refresh)
             end
         else
             row.addonKB = callNumber(run, run.memory, addon_name)
-            if row.addonKB ~= nil then row.attribution = 'cached' end
-            if not current(run) then return end
+
+            if row.addonKB ~= nil then
+                row.attribution = 'cached'
+            end
+
+            if not current(run) then
+                return
+            end
         end
     end
 
@@ -427,20 +540,37 @@ local function detail(run, at, heap, refresh)
     -- Returns "active", "inactive" or "unknown" from the named addon method.
     local function captureState(name)
         local fn = raw(addon, name)
-        if kind(fn) ~= 'function' then return 'unknown' end
+
+        if kind(fn) ~= 'function' then
+            return 'unknown'
+        end
+
         local ok, value = protect(fn, addon)
-        if not current(run) then return 'unknown' end
-        if ok and readable(value) and kind(value) == 'boolean' then return value and 'active' or 'inactive' end
+
+        if not current(run) then
+            return 'unknown'
+        end
+        if ok and readable(value) and kind(value) == 'boolean' then
+            return value and 'active' or 'inactive'
+        end
+
         return 'unknown'
     end
 
     row.cpu, row.runtime = captureState('IsCPUProfileRunning'), captureState('IsCPURuntimeCaptureRunning')
-    if not current(run) then return end
+
+    if not current(run) then
+        return
+    end
+
     local provider = raw(addon, 'GetRetainedMemoryDiagnostic')
 
     if kind(provider) == 'function' then
         local ok, value = protect(provider, addon)
-        if not current(run) then return end
+
+        if not current(run) then
+            return
+        end
 
         if ok then
             for _, key in each(retainedKeys) do
@@ -451,13 +581,19 @@ local function detail(run, at, heap, refresh)
                     row[key .. 'Capped'] = field(value, key .. 'Capped') == true
                 end
 
-                if not current(run) then return end
+                if not current(run) then
+                    return
+                end
             end
         end
     end
 
     protect(roots, run, row)
-    if not current(run) then return end
+
+    if not current(run) then
+        return
+    end
+
     run.rows[#run.rows + 1] = row
     run.nextDetail = at + 30
 end
@@ -466,12 +602,18 @@ end
 -- totals and finishes the run when its time is up. ending is true for the closing tick. Never re-entered
 -- (run.sampling).
 local function sample(run, ending)
-    if not current(run) or run.sampling then return end
+    if not current(run) or run.sampling then
+        return
+    end
+
     run.sampling = true
 
     local ok = protect(function()
         local at = callNumber(run, run.clock)
-        if not at or not current(run) then return end
+
+        if not at or not current(run) then
+            return
+        end
 
         if at < run.started then
             finish(run, 'invalid')
@@ -487,7 +629,10 @@ local function sample(run, ending)
 
             if freshTick then
                 heap = callNumber(run, run.heap, 'count')
-                if not current(run) then return end
+
+                if not current(run) then
+                    return
+                end
 
                 if heap ~= nil and run.heapSamples < run.heapLimit then
                     run.heapSamples = run.heapSamples + 1
@@ -508,7 +653,11 @@ local function sample(run, ending)
                     end
 
                     sampleSpikes(run, at, dropped)
-                    if not current(run) then return end
+
+                    if not current(run) then
+                        return
+                    end
+
                     run.previousHeap = heap
                 else
                     run.failedSamples = run.failedSamples + 1
@@ -530,7 +679,10 @@ local function sample(run, ending)
                 detail(run, at, heap, #run.rows == 0)
             end
 
-            if not current(run) then return end
+            if not current(run) then
+                return
+            end
+
             local after = callNumber(run, run.ms)
 
             if before and after and after >= before then
@@ -541,13 +693,21 @@ local function sample(run, ending)
             end
         end
 
-        if ending or run.elapsed >= run.requested or run.heapSamples >= run.heapLimit then finish(run, 'complete') end
+        if ending or run.elapsed >= run.requested or run.heapSamples >= run.heapLimit then
+            finish(run, 'complete')
+        end
     end)
 
     if current(run) then
         run.sampling = false
-        if not ok then run.failedSamples = run.failedSamples + 1 end
-        if ending then finish(run, 'invalid') end
+
+        if not ok then
+            run.failedSamples = run.failedSamples + 1
+        end
+
+        if ending then
+            finish(run, 'invalid')
+        end
     end
 end
 
@@ -558,17 +718,31 @@ end
 -- Starts a capture of duration seconds (default 600, 1 to 1800). Returns true, or false and a reason code (for
 -- example "already-running", "addon-disabled" or "missing-memory-api"). Only one capture runs at a time.
 function addon:StartMemoryCapture(duration)
-    if self ~= addon then return false, 'foreign-owner' end
+    if self ~= addon then
+        return false, 'foreign-owner'
+    end
+
     local enabled = self.IsEnabled
 
     if kind(enabled) == 'function' then
         local ok, value = protect(enabled, self)
-        if not ok or not readable(value) or value ~= true then return false, 'addon-disabled' end
+
+        if not ok or not readable(value) or value ~= true then
+            return false, 'addon-disabled'
+        end
     end
 
-    if active then return false, 'already-running' end
-    if duration == nil then duration = DEFAULT_DURATION end
-    if not number(duration) or duration < 1 or duration > MAX_DURATION then return false, 'invalid-duration' end
+    if active then
+        return false, 'already-running'
+    end
+
+    if duration == nil then
+        duration = DEFAULT_DURATION
+    end
+
+    if not number(duration) or duration < 1 or duration > MAX_DURATION then
+        return false, 'invalid-duration'
+    end
 
     local run = {
         phase = 'running',
@@ -612,7 +786,10 @@ function addon:StartMemoryCapture(duration)
     active = run
     latest = run
     run.started = callNumber(run, run.clock)
-    if not current(run) then return false, 'capture-retired' end
+
+    if not current(run) then
+        return false, 'capture-retired'
+    end
 
     if not run.started then
         finish(run, 'unavailable')
@@ -621,17 +798,30 @@ function addon:StartMemoryCapture(duration)
 
     run.nextDetail = run.started
     sample(run)
-    if not current(run) then return false, 'capture-retired' end
+
+    if not current(run) then
+        return false, 'capture-retired'
+    end
 
     if run.heapSamples == 0 then
         finish(run, 'unavailable')
         return false, 'unavailable-heap'
     end
 
-    local ok, timer = protect(repeating, addon, function() sample(run) end, 1)
+    local ok, timer = protect(
+        repeating,
+        addon,
+        function()
+            sample(run)
+        end,
+        1
+    )
 
     if not current(run) then
-        if ok and timer then protect(run.cancel, addon, timer) end
+        if ok and timer then
+            protect(run.cancel, addon, timer)
+        end
+
         return false, 'capture-retired'
     end
 
@@ -641,10 +831,21 @@ function addon:StartMemoryCapture(duration)
     end
 
     run.timer = timer
-    local good, handle = protect(timeout, addon, function() sample(run, true) end, duration)
+
+    local good, handle = protect(
+        timeout,
+        addon,
+        function()
+            sample(run, true)
+        end,
+        duration
+    )
 
     if not current(run) then
-        if good and handle then protect(run.cancel, addon, handle) end
+        if good and handle then
+            protect(run.cancel, addon, handle)
+        end
+
         return false, 'capture-retired'
     end
 
@@ -660,7 +861,10 @@ end
 -- Explicit completed boundary; legacy StopMemoryCapture remains cancellation.
 -- Ends the running capture as "stopped" with a final sample, keeping its report. Returns true, or false and a reason.
 function addon:CompleteMemoryCapture()
-    if self ~= addon or not active then return false, 'not-running' end
+    if self ~= addon or not active then
+        return false, 'not-running'
+    end
+
     local run = active
     run.stopRequested = true
 
@@ -676,7 +880,10 @@ end
 -- Cancels the running capture without a final sample (the report says "cancelled"). Returns true, or false and a
 -- reason.
 function addon:StopMemoryCapture()
-    if self ~= addon or not active then return false, 'not-running' end
+    if self ~= addon or not active then
+        return false, 'not-running'
+    end
+
     finish(active, 'cancelled')
     return true
 end
@@ -688,7 +895,12 @@ end
 
 -- Returns the report of the last finished capture, or nil and "running" or "not-captured".
 function addon:GetMemoryCaptureReport()
-    if self ~= addon then return nil, 'foreign-owner' end
-    if active then return nil, 'running' end
+    if self ~= addon then
+        return nil, 'foreign-owner'
+    end
+    if active then
+        return nil, 'running'
+    end
+
     return lastReport, lastReport and nil or 'not-captured'
 end

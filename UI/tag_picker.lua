@@ -92,7 +92,9 @@ function addon:CreateRotationTagPicker(parent, options)
             end)
 
             addon:SetUIScript(chip, 'OnLeave', function()
-                if GameTooltip and GameTooltip:IsOwned(chip) then GameTooltip:Hide() end
+                if GameTooltip and GameTooltip:IsOwned(chip) then
+                    GameTooltip:Hide()
+                end
             end)
 
             local rgba = color(tag)
@@ -108,7 +110,10 @@ function addon:CreateRotationTagPicker(parent, options)
             end
 
             addon:SetUIScript(chip, 'OnClick', function()
-                if not valid() or options.readOnly then return end
+                if not valid() or options.readOnly then
+                    return
+                end
+
                 local tags = addon.RotationData.CopyData(self.tags)
                 table.remove(tags, i)
                 self:Change(tags)
@@ -125,7 +130,10 @@ function addon:CreateRotationTagPicker(parent, options)
         local changed = height ~= self.height
         self.height = height
         frame:SetHeight(height)
-        if changed and options.layout then options.layout(height) end
+
+        if changed and options.layout then
+            options.layout(height)
+        end
     end
 
     -- Sets the picker width (minimum 80) and re-flows.
@@ -145,22 +153,37 @@ function addon:CreateRotationTagPicker(parent, options)
     -- options.changed. Returns false when tags do not normalize.
     function picker:Change(tags)
         local normalized = addon.RotationData.NormalizeRotationTags(tags)
-        if not normalized then return false end
+
+        if not normalized then
+            return false
+        end
+
         self:SetTags(normalized)
         self.input:SetText('')
         self:UpdatePlaceholder()
         self.menu:Hide()
         self.input:ClearFocus()
-        if options.changed then options.changed(addon.RotationData.CopyData(normalized)) end
+
+        if options.changed then
+            options.changed(addon.RotationData.CopyData(normalized))
+        end
+
         return true
     end
 
     -- Adds one tag typed or chosen by the user. Without allowCustom the tag must match a known tag (case-insensitive)
     -- and takes that tag's spelling. Returns whether the tag list changed.
     function picker:Add(tag)
-        if not valid() or options.readOnly then return false end
+        if not valid() or options.readOnly then
+            return false
+        end
+
         local normalized = addon.RotationData.NormalizeRotationTags({ tag })
-        if not normalized then return false end
+
+        if not normalized then
+            return false
+        end
+
         tag = normalized[1]
 
         if not options.allowCustom then
@@ -174,7 +197,9 @@ function addon:CreateRotationTagPicker(parent, options)
                 end
             end
 
-            if not found then return false end
+            if not found then
+                return false
+            end
         end
 
         local tags = addon.RotationData.CopyData(self.tags)
@@ -185,7 +210,10 @@ function addon:CreateRotationTagPicker(parent, options)
     -- Opens the dropdown of known tags that contain the typed text, marking those already selected. Entries get a color
     -- swatch when the owner can set colors; the color dialog is created once and its callbacks re-check validity.
     function picker:Suggest()
-        if not valid() or options.readOnly then return end
+        if not valid() or options.readOnly then
+            return
+        end
+
         local query = (self.input:GetText() or ''):lower()
         local entries = {}
         local selected = {}
@@ -205,7 +233,10 @@ function addon:CreateRotationTagPicker(parent, options)
                             return valid() and (not leaseValid or leaseValid())
                         end
 
-                        if not colorValid() then return end
+                        if not colorValid() then
+                            return
+                        end
+
                         self.colorPicker = self.colorPicker or addon:CreateWorkbenchColorPicker(frame)
 
                         self.colorPicker:Open(
@@ -240,7 +271,9 @@ function addon:CreateRotationTagPicker(parent, options)
             entries,
             nil,
             function(tag)
-                if valid() then self:Add(tag) end
+                if valid() then
+                    self:Add(tag)
+                end
             end,
             valid,
             true
@@ -249,13 +282,20 @@ function addon:CreateRotationTagPicker(parent, options)
 
     addon:SetUIScript(picker.input, 'OnTextChanged', function(_, user)
         picker:UpdatePlaceholder()
-        if user then picker:Suggest() end
+
+        if user then
+            picker:Suggest()
+        end
     end)
 
-    addon:SetUIScript(picker.input, 'OnEditFocusGained', function() picker:Suggest() end)
+    addon:SetUIScript(picker.input, 'OnEditFocusGained', function()
+        picker:Suggest()
+    end)
 
     addon:SetUIScript(picker.input, 'OnEnterPressed', function()
-        if picker:Add(picker.input:GetText()) then picker.input:ClearFocus() end
+        if picker:Add(picker.input:GetText()) then
+            picker.input:ClearFocus()
+        end
     end)
 
     addon:SetUIScript(picker.input, 'OnEscapePressed', function()
@@ -273,14 +313,20 @@ function addon:CreateRotationTagPicker(parent, options)
     end)
 
     addon:SetUIScript(picker.input, 'OnLeave', function()
-        if GameTooltip and GameTooltip:IsOwned(picker.input) then GameTooltip:Hide() end
+        if GameTooltip and GameTooltip:IsOwned(picker.input) then
+            GameTooltip:Hide()
+        end
     end)
 
     -- Closes the menu and any color dialog, drops edit focus and hides the frame.
     function picker:Hide()
         self.menu:Hide()
         self.input:ClearFocus()
-        if self.colorPicker then self.colorPicker:Close(true) end
+
+        if self.colorPicker then
+            self.colorPicker:Close(true)
+        end
+
         frame:Hide()
     end
 
@@ -294,7 +340,10 @@ function addon:CreateRotationTagPicker(parent, options)
     addon:SetUIScript(frame, 'OnHide', function()
         picker.menu:Hide()
         picker.input:ClearFocus()
-        if picker.colorPicker then picker.colorPicker:Close(true) end
+
+        if picker.colorPicker then
+            picker.colorPicker:Close(true)
+        end
     end)
 
     picker:Layout()

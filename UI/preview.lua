@@ -16,7 +16,9 @@ local previewType, previewRaw = type, rawget
 local previewFunctionEnvironment = getfenv
 
 if addon.BindAnalyticsPreviewCapture then
-    addon:BindAnalyticsPreviewCapture(function(sink) previewCapture = sink end)
+    addon:BindAnalyticsPreviewCapture(function(sink)
+        previewCapture = sink
+    end)
 end
 
 -- END ANALYTICS PREVIEW HANDOFF
@@ -38,7 +40,10 @@ local sampleTextures = {
 
 -- True while sample icons are on for the current profile; a profile switch silently turns them off.
 function addon:IsPreviewSampleEnabled()
-    if sampleProfile ~= self.db.profile then sampleProfile = nil end
+    if sampleProfile ~= self.db.profile then
+        sampleProfile = nil
+    end
+
     return sampleProfile ~= nil
 end
 
@@ -114,11 +119,19 @@ function addon:CreateNativePreviewWindow()
                 -- unlocked window; right-click opens the window menu.
                 icon:RegisterForDrag('LeftButton')
                 icon:RegisterForClicks('RightButtonUp')
-                addon:SetUIScript(icon, 'OnDragStart', function() self:BeginMove() end)
-                addon:SetUIScript(icon, 'OnDragStop', function() self:EndMove() end)
+
+                addon:SetUIScript(icon, 'OnDragStart', function()
+                    self:BeginMove()
+                end)
+
+                addon:SetUIScript(icon, 'OnDragStop', function()
+                    self:EndMove()
+                end)
 
                 addon:SetUIScript(icon, 'OnClick', function(_, button)
-                    if button == 'RightButton' then self:OpenMenu() end
+                    if button == 'RightButton' then
+                        self:OpenMenu()
+                    end
                 end)
             end
 
@@ -131,7 +144,10 @@ function addon:CreateNativePreviewWindow()
             self.sampleCount = 0
 
             for _, icon in ipairs(self.icons) do
-                if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end
+                if GameTooltip and GameTooltip:IsOwned(icon) then
+                    GameTooltip:Hide()
+                end
+
                 icon:Hide()
                 icon.sample, icon.spellId, icon.itemId = nil, nil, nil
                 addon:SetUIScript(icon, 'OnEnter', nil)
@@ -141,7 +157,10 @@ function addon:CreateNativePreviewWindow()
             -- Rotation disable also clears directly, outside a publication batch.
             if sampleProfile == self.profile then
                 self:PaintSamples()
-                if self.sampleCount > 0 then self:DoLayout() end
+
+                if self.sampleCount > 0 then
+                    self:DoLayout()
+                end
             end
         end
 
@@ -149,7 +168,10 @@ function addon:CreateNativePreviewWindow()
         function window:ClearSampleIcons()
             for _, icon in ipairs(self.icons) do
                 if icon.sample then
-                    if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end
+                    if GameTooltip and GameTooltip:IsOwned(icon) then
+                        GameTooltip:Hide()
+                    end
+
                     icon:Hide()
                     icon.sample = nil
                     addon:SetUIScript(icon, 'OnEnter', nil)
@@ -176,7 +198,10 @@ function addon:CreateNativePreviewWindow()
                 icon.sample = true
                 icon.spellId, icon.itemId = nil, nil
                 icon.texture:SetTexture(texture)
-                if icon.masqueOwner then icon.masqueSurface.texture:SetTexture(texture) end
+
+                if icon.masqueOwner then
+                    icon.masqueSurface.texture:SetTexture(texture)
+                end
 
                 addon:SetUIScript(icon, 'OnEnter', function()
                     if not self:Valid() or generation ~= self.generation or not icon.sample or not GameTooltip then
@@ -188,7 +213,9 @@ function addon:CreateNativePreviewWindow()
                 end)
 
                 addon:SetUIScript(icon, 'OnLeave', function()
-                    if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end
+                    if GameTooltip and GameTooltip:IsOwned(icon) then
+                        GameTooltip:Hide()
+                    end
                 end)
 
                 icon:Show()
@@ -200,7 +227,10 @@ function addon:CreateNativePreviewWindow()
         -- Sizes the frame to its icons and anchors each icon; writes only values that changed, to avoid resize
         -- feedback.
         function window:DoLayout()
-            if not self.active then return end
+            if not self.active then
+                return
+            end
+
             local n = self.slots or 1
             local size = self.iconSize
             local pad = self.opacity > 0 and 4 or 0
@@ -220,7 +250,10 @@ function addon:CreateNativePreviewWindow()
                 local x, y = pad + (self.vertical and 0 or i - 1) * size, -pad - (self.vertical and i - 1 or 0) * size
                 local pointCount = icon:GetNumPoints()
                 local point, parent, relative, oldx, oldy
-                if pointCount == 1 then point, parent, relative, oldx, oldy = icon:GetPoint(1) end
+
+                if pointCount == 1 then
+                    point, parent, relative, oldx, oldy = icon:GetPoint(1)
+                end
 
                 if
                     pointCount ~= 1
@@ -237,15 +270,21 @@ function addon:CreateNativePreviewWindow()
                 if not sameGeometry(icon:GetWidth(), size) or not sameGeometry(icon:GetHeight(), size) then
                     icon:SetSize(size, size)
                 end
-
-                if icon:GetAlpha() ~= 1 then icon:SetAlpha(1) end
-                if icon.masqueOwner then addon:ResizeMasquePreviewIcon(self, icon) end
+                if icon:GetAlpha() ~= 1 then
+                    icon:SetAlpha(1)
+                end
+                if icon.masqueOwner then
+                    addon:ResizeMasquePreviewIcon(self, icon)
+                end
             end
         end
 
         -- Re-reads the profile (slot count, icon size, orientation, lock, opacity), applies it and lays out again.
         function window:Configure()
-            if not self.active then return end
+            if not self.active then
+                return
+            end
+
             local profile = self.profile
 
             self.slots = addon:IsPreviewSampleEnabled() and (profile.preview_spells or 0) <= 0 and 3 or math.floor(
@@ -260,7 +299,10 @@ function addon:CreateNativePreviewWindow()
             -- Locked or fully transparent, the background never intercepts
             -- the mouse; only the icons keep their own tooltips and clicks.
             self.frame:EnableMouse(not self.locked and self.opacity > 0)
-            if self.locked then self.frame:StopMovingOrSizing() end
+
+            if self.locked then
+                self.frame:StopMovingOrSizing()
+            end
 
             if not self.locked and self.opacity > 0 then
                 self.grip:Show()
@@ -270,10 +312,15 @@ function addon:CreateNativePreviewWindow()
             end
 
             for i, icon in ipairs(self.icons) do
-                if i > self.slots then icon:Hide() end
+                if i > self.slots then
+                    icon:Hide()
+                end
             end
 
-            if addon.ConfigureMasquePreview then addon:ConfigureMasquePreview(self) end
+            if addon.ConfigureMasquePreview then
+                addon:ConfigureMasquePreview(self)
+            end
+
             self:PaintSamples()
             self:DoLayout()
         end
@@ -298,8 +345,14 @@ function addon:CreateNativePreviewWindow()
         -- Shows the next recommended spell (or item, when `itemId` is set) in the first free slot. Called by the poll
         -- for each result; ignored when the window is stale or full. The first icon also reports delivery to analytics.
         function window:AddRecommendation(spellId, itemId)
-            if not self:Valid() or self.count >= self.slots then return end
-            if (self.sampleCount or 0) > 0 then self:ClearSampleIcons() end
+            if not self:Valid() or self.count >= self.slots then
+                return
+            end
+
+            if (self.sampleCount or 0) > 0 then
+                self:ClearSampleIcons()
+            end
+
             self.count = self.count + 1
             local index = self.count
             ---@type any
@@ -329,13 +382,18 @@ function addon:CreateNativePreviewWindow()
             local generation = self.generation
 
             addon:SetUIScript(icon, 'OnEnter', function()
-                if not self:Valid() or generation ~= self.generation or not GameTooltip then return end
+                if not self:Valid() or generation ~= self.generation or not GameTooltip then
+                    return
+                end
+
                 GameTooltip:SetOwner(icon, 'ANCHOR_BOTTOMRIGHT', 3)
                 GameTooltip:SetHyperlink((itemId and 'item:' .. itemId or 'spell:' .. spellId))
             end)
 
             addon:SetUIScript(icon, 'OnLeave', function()
-                if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end
+                if GameTooltip and GameTooltip:IsOwned(icon) then
+                    GameTooltip:Hide()
+                end
             end)
 
             icon:Show()
@@ -384,16 +442,31 @@ function addon:CreateNativePreviewWindow()
                     function()
                         if not observed then
                             frameVisible, iconVisible, textureGet = frame.IsVisible, icon.IsVisible, texture.GetTexture
-                            if previewType(info) == 'table' then displayId = previewRaw(info, 'iconID') end
+
+                            if previewType(info) == 'table' then
+                                displayId = previewRaw(info, 'iconID')
+                            end
+
                             observed = true
                         end
 
-                        if not eligible() then return 'retired' end
+                        if not eligible() then
+                            return 'retired'
+                        end
+
                         local frameShown, iconShown = frameVisible(frame), iconVisible(icon)
                         local rendered = textureGet(texture)
-                        if not eligible() or rendered ~= displayId then return 'retired' end
-                        if frameShown == true and iconShown == true then return 'visible' end
-                        if frameShown == false or iconShown == false then return 'hidden' end
+
+                        if not eligible() or rendered ~= displayId then
+                            return 'retired'
+                        end
+                        if frameShown == true and iconShown == true then
+                            return 'visible'
+                        end
+                        if frameShown == false or iconShown == false then
+                            return 'hidden'
+                        end
+
                         return 'unknown'
                     end,
                     nil,
@@ -408,18 +481,26 @@ function addon:CreateNativePreviewWindow()
         -- Starts a publication batch: no sample icons are painted until ResumeLayout.
         function window:PauseLayout()
             self.sampleBatch = true
-            if (self.sampleCount or 0) > 0 then self:ClearSampleIcons() end
+
+            if (self.sampleCount or 0) > 0 then
+                self:ClearSampleIcons()
+            end
         end
 
         -- Ends a publication batch and repaints samples if nothing real was shown.
         function window:ResumeLayout()
             self.sampleBatch = false
-            if sampleProfile == self.profile then self:PaintSamples() end
+
+            if sampleProfile == self.profile then
+                self:PaintSamples()
+            end
         end
 
         -- Shows the frame if the window is still the live one.
         function window:Show()
-            if self:Valid() then self.frame:Show() end
+            if self:Valid() then
+                self.frame:Show()
+            end
         end
 
         -- Hides the frame; analytics is told the preview retired first, and a retire that replaces the window stops
@@ -428,7 +509,10 @@ function addon:CreateNativePreviewWindow()
             if previewCapture then
                 local generation, profile = self.generation, self.profile
                 previewCapture("retire", self)
-                if self.generation ~= generation or self.profile ~= profile then return end
+
+                if self.generation ~= generation or self.profile ~= profile then
+                    return
+                end
             end
 
             self.frame:Hide()
@@ -440,16 +524,25 @@ function addon:CreateNativePreviewWindow()
             if previewCapture then
                 local generation, profile = self.generation, self.profile
                 previewCapture("retire", self)
-                if self.generation ~= generation or self.profile ~= profile then return end
+
+                if self.generation ~= generation or self.profile ~= profile then
+                    return
+                end
             end
 
-            if sampleProfile == self.profile then sampleProfile = nil end
+            if sampleProfile == self.profile then
+                sampleProfile = nil
+            end
+
             self.sampleBatch = false
             self:ReleaseChildren()
             self.active = false
             self.frame:StopMovingOrSizing()
             self.frame:Hide()
-            if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end
+
+            if addon.ReleaseMasquePreview then
+                addon:ReleaseMasquePreview(self)
+            end
         end
 
         -- Tracks pointer hover over the body or grip; the resize grip is visible only while hovered.
@@ -470,7 +563,11 @@ function addon:CreateNativePreviewWindow()
         function window:EndMove()
             local moving = self.moving
             self.moving = nil
-            if not moving or not self:Valid() or self.locked then return end
+
+            if not moving or not self:Valid() or self.locked then
+                return
+            end
+
             self.frame:StopMovingOrSizing()
             local point, _, relative, x, y = self.frame:GetPoint(1)
             self.profile.preview_window = { point = point, relpoint = relative, xoffs = x, yoffs = y }
@@ -480,7 +577,10 @@ function addon:CreateNativePreviewWindow()
         -- The menu never hides the window: it is shown exactly while Preview
         -- Spells is above zero (or samples are on) and hidden at zero.
         function window:MenuEntries()
-            if not self:Valid() then return nil end
+            if not self:Valid() then
+                return nil
+            end
+
             local locked, generation = self.locked == true, self.generation
 
             -- True while the menu was built for the live window generation.
@@ -494,13 +594,17 @@ function addon:CreateNativePreviewWindow()
                     text = L['Lock position and size'],
                     checked = locked,
                     func = function()
-                        if current() then addon:SetPreviewLocked(not locked) end
+                        if current() then
+                            addon:SetPreviewLocked(not locked)
+                        end
                     end,
                 },
                 {
                     text = L['Open General settings'],
                     func = function()
-                        if current() then addon:ShowConfig('General') end
+                        if current() then
+                            addon:ShowConfig('General')
+                        end
                     end,
                 },
             }
@@ -509,7 +613,10 @@ function addon:CreateNativePreviewWindow()
         -- Pops the right-click menu at the cursor using the shared dropdown API.
         function window:OpenMenu()
             local entries = self:MenuEntries()
-            if not entries then return end
+
+            if not entries then
+                return
+            end
 
             -- The same dropdown API as the minimap menu; every client provides it natively.
             if
@@ -581,18 +688,32 @@ function addon:CreateNativePreviewWindow()
         end
 
         addon:SetUIScript(frame, 'OnSizeChanged', function(_, width, height)
-            if not window.layouting then window:Resize(width, height) end
+            if not window.layouting then
+                window:Resize(width, height)
+            end
         end)
 
-        addon:SetUIScript(frame, 'OnDragStart', function() window:BeginMove() end)
-        addon:SetUIScript(frame, 'OnDragStop', function() window:EndMove() end)
+        addon:SetUIScript(frame, 'OnDragStart', function()
+            window:BeginMove()
+        end)
+
+        addon:SetUIScript(frame, 'OnDragStop', function()
+            window:EndMove()
+        end)
 
         addon:SetUIScript(frame, 'OnMouseUp', function(_, button)
-            if button == 'RightButton' then window:OpenMenu() end
+            if button == 'RightButton' then
+                window:OpenMenu()
+            end
         end)
 
-        addon:SetUIScript(frame, 'OnEnter', function() window:SetHover(true) end)
-        addon:SetUIScript(frame, 'OnLeave', function() window:SetHover(false) end)
+        addon:SetUIScript(frame, 'OnEnter', function()
+            window:SetHover(true)
+        end)
+
+        addon:SetUIScript(frame, 'OnLeave', function()
+            window:SetHover(false)
+        end)
 
         addon:SetUIScript(window.grip, 'OnEnter', function()
             window.gripHovered = true
@@ -611,11 +732,16 @@ function addon:CreateNativePreviewWindow()
         end)
 
         addon:SetUIScript(window.grip, 'OnMouseUp', function()
-            if window:Valid() then window.frame:StopMovingOrSizing() end
+            if window:Valid() then
+                window.frame:StopMovingOrSizing()
+            end
         end)
     end
 
-    if window.active and addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(window) end
+    if window.active and addon.ReleaseMasquePreview then
+        addon:ReleaseMasquePreview(window)
+    end
+
     local profile = self.db.profile
     window.profile = profile
     window.active = true
@@ -646,7 +772,10 @@ end
 -- The flag means "the saved position is headerless"; a drag saves one too.
 -- With no saved position there is nothing to shift and nothing is written.
 function addon:MigratePreviewHeaderGeometry(profile, opacity)
-    if type(profile) ~= 'table' or profile.previewHeaderlessGeometry == true then return end
+    if type(profile) ~= 'table' or profile.previewHeaderlessGeometry == true then
+        return
+    end
+
     local position = profile.preview_window
 
     if type(position) ~= 'table' or type(position.point) ~= 'string' or type(position.relpoint) ~= 'string' then
@@ -676,8 +805,14 @@ end
 function addon:SetPreviewLocked(locked)
     locked = locked == true
     self.db.profile.preview_locked = locked
-    if self.previewLockChanged then self.previewLockChanged(locked) end
-    if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
+
+    if self.previewLockChanged then
+        self.previewLockChanged(locked)
+    end
+    if self.RefreshPreviewWindow then
+        self:RefreshPreviewWindow()
+    end
+
     return locked
 end
 
@@ -711,7 +846,10 @@ end
 -- Returns the resulting enabled state. Non-Boolean input leaves it unchanged.
 -- The mode belongs only to this loaded UI and current profile; no saved field.
 function addon:SetPreviewSampleEnabled(enabled)
-    if type(enabled) ~= 'boolean' then return self:IsPreviewSampleEnabled() end
+    if type(enabled) ~= 'boolean' then
+        return self:IsPreviewSampleEnabled()
+    end
+
     sampleProfile = enabled and self.db.profile or nil
     local window = self.nextWindow
 

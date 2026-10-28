@@ -9,17 +9,31 @@ local _, addon = ...
 -- Wraps the widget's OnRelease so releasing the root closes the whole tree, then restores the original handler.
 function addon:OwnCustomConditionDialog(widget, parent, valid)
     local owner = parent and parent.rmConditionOwner or { active = true, valid = valid, root = widget, widgets = {} }
-    if not owner then return end
+
+    if not owner then
+        return
+    end
+
     widget.rmConditionOwner = owner
     owner.widgets[widget] = true
     local release = widget.OnRelease
 
     widget.OnRelease = function(control, ...)
-        if control == owner.root and owner.active then addon:CloseCustomConditionEditor(control, owner) end
+        if control == owner.root and owner.active then
+            addon:CloseCustomConditionEditor(control, owner)
+        end
+
         owner.widgets[control] = nil
-        if control.rmConditionOwner == owner then control.rmConditionOwner = nil end
+
+        if control.rmConditionOwner == owner then
+            control.rmConditionOwner = nil
+        end
+
         control.OnRelease = release
-        if release then return release(control, ...) end
+
+        if release then
+            return release(control, ...)
+        end
     end
 
     return owner
@@ -35,7 +49,11 @@ end
 -- names the owner to close; without it the widget's own owner is used. A second call, or a stale owner, does nothing.
 function addon:CloseCustomConditionEditor(widget, expected)
     local owner = expected or widget.rmConditionOwner
-    if not owner or not owner.active then return end
+
+    if not owner or not owner.active then
+        return
+    end
+
     -- Clearing active first makes the OnRelease wrapper above a no-op for the root, so Release() below cannot recurse.
     owner.active = false
     local widgets = {}
@@ -45,7 +63,9 @@ function addon:CloseCustomConditionEditor(widget, expected)
     end
 
     for _, child in ipairs(widgets) do
-        if child ~= owner.root and child.rmConditionOwner == owner then child:Hide() end
+        if child ~= owner.root and child.rmConditionOwner == owner then
+            child:Hide()
+        end
     end
 
     local root = owner.root

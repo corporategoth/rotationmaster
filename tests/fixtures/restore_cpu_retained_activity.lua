@@ -1,7 +1,7 @@
 -- Strict whole-file inverse of the capture-only retained/activity diagnostics.
-local blocks={
- ["Diagnostics/cpu.lua"]={
-[====[
+local blocks = {
+    ["Diagnostics/cpu.lua"] = {
+        [====[
 -- BEGIN CPU ACTIVITY DIAGNOSTICS
 local activityProviders,activityFrame,activityAPI={},nil,nil
 local activityEqual,activityCreate=rawequal,CreateFrame
@@ -145,30 +145,30 @@ local function appendActivity(report,run)
 end
 -- END CPU ACTIVITY DIAGNOSTICS
 ]====],
-[====[
+        [====[
  -- BEGIN CPU ACTIVITY STOP
  activityStop(run)
  -- END CPU ACTIVITY STOP
 ]====],
-[====[
+        [====[
    -- BEGIN CPU ACTIVITY END
    if run.activity then run.activity.ended=activityRead() end
    -- END CPU ACTIVITY END
 ]====],
-[====[
+        [====[
    -- BEGIN CPU ACTIVITY APPENDIX
    appendActivity(report,run)
    -- END CPU ACTIVITY APPENDIX
 ]====],
-[====[
+        [====[
  -- BEGIN CPU ACTIVITY START
  local activityOK=proofPcall(activityStart,run)
  if not activityOK then activityStop(run);run.activity=nil end
  -- END CPU ACTIVITY START
 ]====],
- },
- ["Core/spell_catalog.lua"]={
-[====[
+    },
+    ["Core/spell_catalog.lua"] = {
+        [====[
 
 -- BEGIN CPU ACTIVITY HANDOFF
 -- Private capture-only cardinality; no metadata query or per-event bookkeeping.
@@ -188,9 +188,9 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]====],
- },
- ["Core/reference_catalog.lua"]={
-[====[
+    },
+    ["Core/reference_catalog.lua"] = {
+        [====[
 
 -- BEGIN CPU ACTIVITY HANDOFF
 -- Count retained keys directly only when an explicit CPU capture asks.
@@ -210,9 +210,9 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]====],
- },
- ["buttons.lua"]={
-[====[
+    },
+    ["buttons.lua"] = {
+        [====[
 
 -- BEGIN CPU ACTIVITY HANDOFF
 -- Only the private RM button maps and their current logical slots are inspected.
@@ -274,30 +274,48 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]====],
- },
+    },
 }
-local pins={
- ["Diagnostics/cpu.lua"]={25671,"a6968fb2"},
- ["Core/spell_catalog.lua"]={5777,"eb332f95"},
- ["Core/reference_catalog.lua"]={7335,"7b3c6366"},
- ["buttons.lua"]={28024,"0d983d17"},
+
+local pins = {
+    ["Diagnostics/cpu.lua"] = { 25671, "a6968fb2" },
+    ["Core/spell_catalog.lua"] = { 5777, "eb332f95" },
+    ["Core/reference_catalog.lua"] = { 7335, "7b3c6366" },
+    ["buttons.lua"] = { 28024, "0d983d17" },
 }
-return function(text,path)
- if path=='buttons.lua'then
-  text=dofile('tests/fixtures/restore_overlay_animation_dirty.lua')(text,path)
-  if text:find('local publishActivePresentation=',1,true)then text=dofile('tests/fixtures/restore_active_runtime_plan.lua')(text,path)end
- end
- local pin=assert(pins[path],'unknown retained-activity inverse path')
- for _,block in ipairs(blocks[path]) do
-  local a,b=text:find(block,1,true);assert(a,'retained activity block changed: '..path);assert(not text:find(block,b+1,true),'duplicate retained activity block')
-  text=text:sub(1,a-1)..text:sub(b+1)
- end
- if path=='Diagnostics/cpu.lua' then
-  local from=" if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end"
-  local to=" if not ok or not timer then if active==run then active=nil end;return false,'timer-error' end"
-  local a,b=assert(text:find(from,1,true));assert(not text:find(from,b+1,true));text=text:sub(1,a-1)..to..text:sub(b+1)
- end
- local h=0;for i=1,#text do h=(h*33+text:byte(i))%4294967296 end
- assert(#text==pin[1] and string.format('%08x',h)==pin[2],'unrelated retained-activity source delta: '..path)
- return text
+
+return function(text, path)
+    if path == 'buttons.lua' then
+        text = dofile('tests/fixtures/restore_overlay_animation_dirty.lua')(text, path)
+
+        if text:find('local publishActivePresentation=', 1, true) then
+            text = dofile('tests/fixtures/restore_active_runtime_plan.lua')(text, path)
+        end
+    end
+
+    local pin = assert(pins[path], 'unknown retained-activity inverse path')
+
+    for _, block in ipairs(blocks[path]) do
+        local a, b = text:find(block, 1, true)
+        assert(a, 'retained activity block changed: ' .. path)
+        assert(not text:find(block, b + 1, true), 'duplicate retained activity block')
+        text = text:sub(1, a - 1) .. text:sub(b + 1)
+    end
+
+    if path == 'Diagnostics/cpu.lua' then
+        local from = " if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end"
+        local to = " if not ok or not timer then if active==run then active=nil end;return false,'timer-error' end"
+        local a, b = assert(text:find(from, 1, true))
+        assert(not text:find(from, b + 1, true))
+        text = text:sub(1, a - 1) .. to .. text:sub(b + 1)
+    end
+
+    local h = 0
+
+    for i = 1, #text do
+        h = (h * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(#text == pin[1] and string.format('%08x', h) == pin[2], 'unrelated retained-activity source delta: ' .. path)
+    return text
 end

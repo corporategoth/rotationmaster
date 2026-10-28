@@ -28,12 +28,20 @@ end
 -- True when two rotation references name the same rotation: the same Built In id, or the same stored address
 -- (scope, class, owner, specialization, id).
 local function sameReference(a, b)
-    if type(a) ~= 'table' or type(b) ~= 'table' or a.kind ~= b.kind then return false end
-    if a.kind == 'builtin' then return a.id == b.id end
-    if type(a.address) ~= 'table' or type(b.address) ~= 'table' then return false end
+    if type(a) ~= 'table' or type(b) ~= 'table' or a.kind ~= b.kind then
+        return false
+    end
+    if a.kind == 'builtin' then
+        return a.id == b.id
+    end
+    if type(a.address) ~= 'table' or type(b.address) ~= 'table' then
+        return false
+    end
 
     for _, key in ipairs({ 'scope', 'class', 'owner', 'spec', 'id' }) do
-        if a.address[key] ~= b.address[key] then return false end
+        if a.address[key] ~= b.address[key] then
+            return false
+        end
     end
 
     return true
@@ -94,13 +102,22 @@ local function create(parent)
     search:SetPoint("TOPLEFT", left, "TOPLEFT", 0, 0)
 
     addon:SetUIScript(search, "OnTextChanged", function(control)
-        if not browser.active then return end
+        if not browser.active then
+            return
+        end
+
         browser.query = string.lower(string.sub(control:GetText() or "", 1, 128))
         browser:RefreshRows()
-        if browser.list then browser.list.workbenchBar:SetValue(0) end
+
+        if browser.list then
+            browser.list.workbenchBar:SetValue(0)
+        end
     end)
 
-    addon:SetUIScript(search, "OnEscapePressed", function(control) control:ClearFocus() end)
+    addon:SetUIScript(search, "OnEscapePressed", function(control)
+        control:ClearFocus()
+    end)
+
     local filterEntries = { { "all", L["All"] }, { "builtin", L["Built In"] }, { "custom", L["Custom"] } }
 
     for index, entry in ipairs(filterEntries) do
@@ -109,7 +126,10 @@ local function create(parent)
         control:SetPoint("TOPLEFT", left, "TOPLEFT", (index - 1) * 80, -28)
         control.filterIndex = index
         local key = entry[1]
-        addon:SetUIScript(control, "OnClick", function() browser:SetFilter(key) end)
+
+        addon:SetUIScript(control, "OnClick", function()
+            browser:SetFilter(key)
+        end)
     end
 
     browser.selectedTags = {}
@@ -129,14 +149,18 @@ local function create(parent)
         inputInset = 92,
         available = function() return browser.availableTags or {} end,
         valid = function() return browser.active and browser.profile == addon.db.profile end,
-        changed = function(tags) browser:SetTags(tags) end,
+        changed = function(tags)
+            browser:SetTags(tags)
+        end,
         color = function(tag) return addon:GetRotationTagColor(tag) end,
         setColor = function(tag, color)
             addon:SetRotationTagColor(tag, color)
             browser:RefreshRows()
         end,
         layout = function()
-            if browser.active then browser:Layout() end
+            if browser.active then
+                browser:Layout()
+            end
         end,
     })
 
@@ -171,7 +195,9 @@ local function create(parent)
     end
 
     browser.splitter = addon:CreateWorkbenchSplitter(frame, function()
-        if browser.active then browser:Layout() end
+        if browser.active then
+            browser:Layout()
+        end
     end)
 
     local count = label(left)
@@ -180,14 +206,22 @@ local function create(parent)
     browser.newButton = new
 
     addon:SetUIScript(new, "OnClick", function()
-        if not browser.active then return end
+        if not browser.active then
+            return
+        end
 
         browser:RequestLeave(function()
-            if not browser.active then return end
+            if not browser.active then
+                return
+            end
+
             local reference, key = addon:NewRotationDraftTarget(browser.spec)
 
             if not reference then
-                if browser.pane then browser.pane:Message(key) end
+                if browser.pane then
+                    browser.pane:Message(key)
+                end
+
                 return
             end
 
@@ -205,14 +239,21 @@ local function create(parent)
     browser.duplicateButton = duplicate
 
     addon:SetUIScript(duplicate, "OnClick", function()
-        if not browser.active then return end
+        if not browser.active then
+            return
+        end
+
         local owner = browser.editorOwner
 
         browser:RequestLeave(function()
-            if not browser.active or browser.editorOwner ~= owner then return end
+            if not browser.active or browser.editorOwner ~= owner then
+                return
+            end
 
             if browser.nativeDetails and browser.pane then
-                if not browser.pane.workspace.pending then browser.pane.clone.action() end
+                if not browser.pane.workspace.pending then
+                    browser.pane.clone.action()
+                end
             else
                 local builtin = addon:GetDefaultIdForRuntime(browser.spec, browser.selected)
                 local source = browser.allByKey and browser.allByKey[browser.selected]
@@ -226,7 +267,9 @@ local function create(parent)
                     id, why, reference = addon:DuplicateCustomRotation(browser.spec, browser.selected, name)
                 end
 
-                if id then browser:SelectRotation(browser.spec, reference or id, true) end
+                if id then
+                    browser:SelectRotation(browser.spec, reference or id, true)
+                end
             end
         end)
     end)
@@ -237,7 +280,9 @@ local function create(parent)
     addon:SetUIScript(import, "OnClick", function()
         if browser.active then
             browser:RequestLeave(function()
-                if browser.active then addon:ShowRotationTransfer(browser.spec, browser.selected) end
+                if browser.active then
+                    addon:ShowRotationTransfer(browser.spec, browser.selected)
+                end
             end)
         end
     end)
@@ -246,7 +291,10 @@ local function create(parent)
     browser.compareButton = compare
 
     addon:SetUIScript(compare, "OnClick", function()
-        if not browser.active then return end
+        if not browser.active then
+            return
+        end
+
         local owner = browser.editorOwner
 
         browser:RequestLeave(function()
@@ -286,25 +334,42 @@ local function create(parent)
     -- Opens the recovery window after the editor's leave prompt; when a record is adopted the list refreshes, selects
     -- it and refreshes automatic switching and the banner. Does nothing if the browser or profile changed meanwhile.
     function browser:OpenRecovery()
-        if not browser.active or browser.profile ~= addon.db.profile then return end
+        if not browser.active or browser.profile ~= addon.db.profile then
+            return
+        end
+
         local serial, profile = browser.serial, browser.profile
 
         browser:RequestLeave(function()
-            if not browser.active or browser.serial ~= serial or addon.db.profile ~= profile then return end
+            if not browser.active or browser.serial ~= serial or addon.db.profile ~= profile then
+                return
+            end
 
             addon:ShowRotationAdoption(browser, function(reference)
-                if not browser.active or browser.serial ~= serial or addon.db.profile ~= profile then return end
+                if not browser.active or browser.serial ~= serial or addon.db.profile ~= profile then
+                    return
+                end
+
                 browser:RefreshRecovery()
                 browser:Layout()
                 browser:SelectRotation(reference.address.spec, reference, true)
-                if addon.UpdateAutoSwitch then addon:UpdateAutoSwitch() end
-                if addon.SwitchRotation then addon:SwitchRotation() end
-                if addon.RefreshLegacyArchiveBanner then addon:RefreshLegacyArchiveBanner() end
+
+                if addon.UpdateAutoSwitch then
+                    addon:UpdateAutoSwitch()
+                end
+                if addon.SwitchRotation then
+                    addon:SwitchRotation()
+                end
+                if addon.RefreshLegacyArchiveBanner then
+                    addon:RefreshLegacyArchiveBanner()
+                end
             end)
         end)
     end
 
-    addon:SetUIScript(recovery, 'OnClick', function() browser:OpenRecovery() end)
+    addon:SetUIScript(recovery, 'OnClick', function()
+        browser:OpenRecovery()
+    end)
 
     -- ============================================================================
     -- Rows
@@ -322,7 +387,11 @@ local function create(parent)
         if self.pane then
             local pane = self.pane
             self.pane = nil
-            if self.nativeDetails then pane:Release() end
+
+            if self.nativeDetails then
+                pane:Release()
+            end
+
             self.nativeDetails = nil
         end
     end
@@ -386,8 +455,14 @@ local function create(parent)
         -- Joins kind, the given specialization text and the priority into the row's status line.
         local function line(specPart)
             local parts = { kind }
-            if specPart then parts[#parts + 1] = specPart end
-            if priorityText then parts[#parts + 1] = priorityText end
+
+            if specPart then
+                parts[#parts + 1] = specPart
+            end
+            if priorityText then
+                parts[#parts + 1] = priorityText
+            end
+
             return table.concat(parts, ' · ')
         end
 
@@ -410,7 +485,10 @@ local function create(parent)
                 for count = #characters - 1, 0, -1 do
                     status = line(table.concat(characters, '', 1, count) .. '…')
                     control.statusLabel:SetText(status)
-                    if control.statusLabel:GetStringWidth() <= room then break end
+
+                    if control.statusLabel:GetStringWidth() <= room then
+                        break
+                    end
                 end
             end
         end
@@ -448,17 +526,26 @@ local function create(parent)
         local alpha = disabledText and .5 or 1
         control.nameLabel:SetAlpha(alpha)
         control.statusLabel:SetAlpha(alpha)
-        if disabledText then control.nameLabel:SetTextColor(.6, .6, .6) end
+
+        if disabledText then
+            control.nameLabel:SetTextColor(.6, .6, .6)
+        end
+
         local overlapText, tie = nil, false
 
         if not entry.fallback and self.overlaps and addon.DescribeSwitchOverlap then
             overlapText, tie = addon:DescribeSwitchOverlap(self.overlaps[key])
         end
 
-        if addon.SetWorkbenchNotice then addon:SetWorkbenchNotice(control, overlapText and true or false, tie) end
-        local lines = {}
-        if blockedText then lines[#lines + 1] = blockedText end
+        if addon.SetWorkbenchNotice then
+            addon:SetWorkbenchNotice(control, overlapText and true or false, tie)
+        end
 
+        local lines = {}
+
+        if blockedText then
+            lines[#lines + 1] = blockedText
+        end
         if entry.readOnly then
             lines[#lines
                 + 1] = L['Built In: it cannot be edited. Duplicate makes your own copy; Enabled and Priority are your settings for this profile.']
@@ -473,17 +560,27 @@ local function create(parent)
             )
         end
 
-        if specText and status ~= line(specText) then lines[#lines + 1] = line(specText) end
-        if entry.scope then lines[#lines + 1] = entry.scope == 'character' and L['This character'] or L['Class'] end
-        if disabledText then lines[#lines + 1] = disabledText end
-        if overlapText then lines[#lines + 1] = overlapText end
-        local identifier = self.identifiers and self.identifiers[key]
-        if entry.fallback and entry.spec ~= nil and entry.spec ~= addon.currentSpec then identifier = nil end
+        if specText and status ~= line(specText) then
+            lines[#lines + 1] = line(specText)
+        end
+        if entry.scope then
+            lines[#lines + 1] = entry.scope == 'character' and L['This character'] or L['Class']
+        end
+        if disabledText then
+            lines[#lines + 1] = disabledText
+        end
+        if overlapText then
+            lines[#lines + 1] = overlapText
+        end
 
+        local identifier = self.identifiers and self.identifiers[key]
+
+        if entry.fallback and entry.spec ~= nil and entry.spec ~= addon.currentSpec then
+            identifier = nil
+        end
         if identifier then
             lines[#lines + 1] = string.format(L['Identifier: %s (/rm set %s)'], identifier, identifier)
         end
-
         if not entry.fallback then
             lines[#lines
                 + 1] = L['Higher numbers are tried first; equal priorities go by name. Your rotations and Built Ins compete on priority alone.']
@@ -515,7 +612,10 @@ local function create(parent)
             button.tooltip = L['Turn this Built In back on for this profile.']
 
             addon:SetUIScript(button, 'OnClick', function()
-                if not requestValid() or control.browserLease ~= lease then return end
+                if not requestValid() or control.browserLease ~= lease then
+                    return
+                end
+
                 local ok = addon:SetDefaultRotationEnabled(entry.canonicalId, true)
 
                 if ok then
@@ -611,7 +711,10 @@ local function create(parent)
         self.refreshing = nil
 
         if not ok then
-            if binding then pcall(self.RetireRow, self, binding) end
+            if binding then
+                pcall(self.RetireRow, self, binding)
+            end
+
             error(why, 0)
         end
     end
@@ -626,7 +729,10 @@ local function create(parent)
     -- when the filter signature changes) so row handlers from the previous list go stale. Updates the counts and
     -- the Duplicate and Compare buttons.
     function browser:RefreshRows()
-        if not self.active or self.profile ~= addon.db.profile then return end
+        if not self.active or self.profile ~= addon.db.profile then
+            return
+        end
+
         local offset = list.workbenchBar:GetValue()
         local anchor = self.rows and self.rows[math.floor(offset / 48) + 1]
         local anchorOffset = offset % 48
@@ -711,17 +817,28 @@ local function create(parent)
             end
         end
 
-        if self.pendingId and byKey[self.pendingId] and not byKey[self.pendingId].pending then self.pendingId = nil end
+        if self.pendingId and byKey[self.pendingId] and not byKey[self.pendingId].pending then
+            self.pendingId = nil
+        end
+
         self.allByKey = byKey
 
         -- The order automatic switching tries them in: by priority (higher
         -- first), then name, your rotations and Built Ins alike; the fallback,
         -- the last resort, comes last.
         table.sort(all, function(a, b)
-            if a.fallback ~= b.fallback then return b.fallback == true end
+            if a.fallback ~= b.fallback then
+                return b.fallback == true
+            end
+
             local ap, bp = a.priority or -math.huge, b.priority or -math.huge
-            if ap ~= bp then return ap > bp end
-            if a.name ~= b.name then return a.name < b.name end
+
+            if ap ~= bp then
+                return ap > bp
+            end
+            if a.name ~= b.name then
+                return a.name < b.name
+            end
 
             -- Defaults of different specializations: the one you play first.
             if a.fallback and a.spec ~= b.spec then
@@ -763,7 +880,9 @@ local function create(parent)
         local selected = {}
 
         for _, tag in ipairs(self.selectedTags) do
-            if seen[tag:lower()] then selected[#selected + 1] = tag end
+            if seen[tag:lower()] then
+                selected[#selected + 1] = tag
+            end
         end
 
         self.selectedTags = selected
@@ -858,7 +977,10 @@ local function create(parent)
     -- Whether a row shows under the specialization filter. The fallback is
     -- the namespace's own; a pending new rotation always shows.
     function browser:SpecMatches(entry)
-        if self.specValue == 'all' or self.specValue == nil or entry.fallback or entry.pending then return true end
+        if self.specValue == 'all' or self.specValue == nil or entry.fallback or entry.pending then
+            return true
+        end
+
         return addon.RotationData.RotationSpecsMatch(entry.specs, self.specValue)
     end
 
@@ -871,7 +993,9 @@ local function create(parent)
             and addon.Platform:RotationKeyIsSpecValue()
         then
             for _, entry in ipairs(self.specEntries or {}) do
-                if entry.id == value then return value end
+                if entry.id == value then
+                    return value
+                end
             end
         end
 
@@ -904,7 +1028,10 @@ local function create(parent)
     -- Applies a specialization filter value (a specialization id or 'all'): selects that namespace's rotation when the
     -- namespace changes, otherwise just refreshes the list.
     function browser:SetSpecValue(value)
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         self.specValue = value
         addon.rotationListSpec = value
         self:PaintSpecFilter()
@@ -921,7 +1048,10 @@ local function create(parent)
     end
 
     addon:SetUIScript(specFilter, 'OnClick', function()
-        if not browser.active then return end
+        if not browser.active then
+            return
+        end
+
         local entries = {}
 
         for _, entry in ipairs(browser.specEntries or {}) do
@@ -938,7 +1068,9 @@ local function create(parent)
             function(value)
                 if browser.active and browser.serial == serial and value ~= browser.specValue then
                     browser:RequestLeave(function()
-                        if browser.active and browser.serial == serial then browser:SetSpecValue(value) end
+                        if browser.active and browser.serial == serial then
+                            browser:SetSpecValue(value)
+                        end
                     end)
                 end
             end,
@@ -949,9 +1081,16 @@ local function create(parent)
 
     -- Sets the tag filter from a list of tags (normalized; ignored if invalid) and refreshes the list.
     function browser:SetTags(tags)
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         local normalized = addon.RotationData.NormalizeRotationTags(tags or {})
-        if not normalized then return end
+
+        if not normalized then
+            return
+        end
+
         self.selectedTags = normalized
         self.tag = normalized[1]
         self:RefreshRows()
@@ -960,12 +1099,17 @@ local function create(parent)
 
     -- Single-tag convenience over SetTags: a string selects it, nil clears the filter.
     function browser:SetTag(value)
-        if value == nil or type(value) == 'string' then self:SetTags(value and { value } or {}) end
+        if value == nil or type(value) == 'string' then
+            self:SetTags(value and { value } or {})
+        end
     end
 
     -- Sets the kind filter ('all', 'builtin' or 'custom'); other values are ignored.
     function browser:SetFilter(value)
-        if value ~= "all" and value ~= "builtin" and value ~= "custom" then return end
+        if value ~= "all" and value ~= "builtin" and value ~= "custom" then
+            return
+        end
+
         self.filter = value
         self:RefreshRows()
         list.workbenchBar:SetValue(0)
@@ -978,7 +1122,10 @@ local function create(parent)
     -- Runs `callback` once the editor pane agrees to be left (it may prompt about unsaved changes); with no editor it
     -- runs at once. Returns what the pane returns, or true.
     function browser:RequestLeave(callback)
-        if self.nativeDetails and self.pane and self.pane.RequestLeave then return self.pane:RequestLeave(callback) end
+        if self.nativeDetails and self.pane and self.pane.RequestLeave then
+            return self.pane:RequestLeave(callback)
+        end
+
         callback()
         return true
     end
@@ -1002,7 +1149,9 @@ local function create(parent)
     -- caller's staleness check. Falls back to the namespace's fallback rotation, then the first row, when `id` is
     -- missing; an editor failure is shown in place of the pane. Always ends with a roster refresh.
     function browser:SelectRotation(spec, id, approved, requestValid)
-        if not self.active or self.profile ~= addon.db.profile or requestValid and not requestValid() then return end
+        if not self.active or self.profile ~= addon.db.profile or requestValid and not requestValid() then
+            return
+        end
 
         if not approved and self.pane and self.nativeDetails then
             local owner = self.editorOwner
@@ -1023,7 +1172,9 @@ local function create(parent)
             end
         end
 
-        if not found then spec = self:KeyForSpecValue(self.specValue) end
+        if not found then
+            spec = self:KeyForSpecValue(self.specValue)
+        end
 
         -- Moving between specializations' Defaults under "All" keeps the search.
         if spec ~= self.spec and self.specValue ~= 'all' then
@@ -1039,11 +1190,18 @@ local function create(parent)
         local key, fallback
 
         for _, entry in ipairs(headers or {}) do
-            if reference and sameReference(reference, entry.reference) then key = entry.key end
-            if entry.effectiveFallback or not fallback and entry.fallback then fallback = entry.key end
+            if reference and sameReference(reference, entry.reference) then
+                key = entry.key
+            end
+            if entry.effectiveFallback or not fallback and entry.fallback then
+                fallback = entry.key
+            end
         end
 
-        if not key and reference and type(id) == 'string' then key = id end
+        if not key and reference and type(id) == 'string' then
+            key = id
+        end
+
         self.selected = key or fallback or headers and headers[1] and headers[1].key
         addon.configRotationSelection = { spec = spec, id = self.selected }
         self:DropUntouchedNew(self.selected)
@@ -1054,7 +1212,9 @@ local function create(parent)
         -- Callback handed to the editor so it can ask the browser to select another rotation; ignored once this
         -- editor has been replaced.
         local function selected(nextSpec, nextId)
-            if self.active and self.editorOwner == owner then self:SelectRotation(nextSpec, nextId) end
+            if self.active and self.editorOwner == owner then
+                self:SelectRotation(nextSpec, nextId)
+            end
         end
 
         local pane, problem
@@ -1075,7 +1235,10 @@ local function create(parent)
             label:SetText(tostring(problem or L['The native rotation editor is unavailable.']))
             label:Show()
         else
-            if detail.rmEditorError then detail.rmEditorError:Hide() end
+            if detail.rmEditorError then
+                detail.rmEditorError:Hide()
+            end
+
             self.nativeDetails = true
             self.pane = pane
 
@@ -1202,7 +1365,11 @@ local function create(parent)
         self:ReleaseDetails()
         self.pendingId = nil
         search:ClearFocus()
-        if self.tagMenu then self.tagMenu:Release() end
+
+        if self.tagMenu then
+            self.tagMenu:Release()
+        end
+
         specMenu:Hide()
         addon.rotationListSpec = nil
 
@@ -1238,11 +1405,16 @@ local function create(parent)
         -- The namespaces this list can read: yours, and every specialization
         -- where namespaces are specializations (each keeps its own fallback).
         self.specKeys = {}
-        if addon.currentSpec ~= nil then self.specKeys[1] = addon.currentSpec end
+
+        if addon.currentSpec ~= nil then
+            self.specKeys[1] = addon.currentSpec
+        end
 
         if addon.Platform.RotationKeyIsSpecValue and addon.Platform:RotationKeyIsSpecValue() then
             for _, entry in ipairs(self.specEntries) do
-                if entry.id ~= addon.currentSpec then self.specKeys[#self.specKeys + 1] = entry.id end
+                if entry.id ~= addon.currentSpec then
+                    self.specKeys[#self.specKeys + 1] = entry.id
+                end
             end
         end
 
@@ -1252,7 +1424,10 @@ local function create(parent)
             end
         end
 
-        if self.hasSpecFilter then self:PaintSpecFilter() end
+        if self.hasSpecFilter then
+            self:PaintSpecFilter()
+        end
+
         self:RefreshRecovery()
         self:Layout()
         frame:Show()
@@ -1266,7 +1441,9 @@ local function create(parent)
             end
         end
 
-        if not found then spec = self:KeyForSpecValue(self.specValue) end
+        if not found then
+            spec = self:KeyForSpecValue(self.specValue)
+        end
 
         -- Opening a namespace that is another specialization shows that one.
         if
@@ -1294,8 +1471,14 @@ local function create(parent)
         return self
     end
 
-    list.workbenchBar:HookScript('OnValueChanged', function() browser:RefreshViewport() end)
-    addon:SetUIScript(frame, "OnSizeChanged", function() browser:Layout() end)
+    list.workbenchBar:HookScript('OnValueChanged', function()
+        browser:RefreshViewport()
+    end)
+
+    addon:SetUIScript(frame, "OnSizeChanged", function()
+        browser:Layout()
+    end)
+
     return browser
 end
 

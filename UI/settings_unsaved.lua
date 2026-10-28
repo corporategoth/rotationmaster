@@ -14,14 +14,18 @@ local _, addon = ...
 -- Returns the entry of an array whose `id` matches, or nil.
 local function find(list, id)
     for _, value in ipairs(list or {}) do
-        if value.id == id then return value end
+        if value.id == id then
+            return value
+        end
     end
 end
 
 -- True when the array holds `value`; nil counts as empty.
 local function contains(list, value)
     for _, entry in ipairs(list or {}) do
-        if entry == value then return true end
+        if entry == value then
+            return true
+        end
     end
 
     return false
@@ -51,8 +55,12 @@ local function context(p, store, id)
         return setmetatable(result, { __index = profile })
     end
 
-    if p.settingsKey == 'Integrations' then return profile end
-    if p.settingsKey == 'Effects' then return (global.effects or {})[id] end
+    if p.settingsKey == 'Integrations' then
+        return profile
+    end
+    if p.settingsKey == 'Effects' then
+        return (global.effects or {})[id]
+    end
 
     if p.settingsKey == 'ItemSets' then
         local entry = (profile.itemsets or {})[id] or (global.itemsets or {})[id]
@@ -79,7 +87,9 @@ local function context(p, store, id)
         local category = 'DEFAULT'
 
         for _, group in ipairs(profile.condition_groups or {}) do
-            if contains(group.conditions, tag) then category = group.id end
+            if contains(group.conditions, tag) then
+                category = group.id
+            end
         end
 
         return {
@@ -129,7 +139,9 @@ local function rosterLookup(p, store)
     end
 
     for _, entry in ipairs(profile.announces or {}) do
-        if entry.id then result.announces[entry.id] = entry end
+        if entry.id then
+            result.announces[entry.id] = entry
+        end
     end
 
     local ordered
@@ -147,7 +159,10 @@ local function rosterLookup(p, store)
 
     for index, entry in ipairs(ordered or {}) do
         local id = type(entry) == 'table' and entry.id or entry
-        if result.positions[id] == nil then result.positions[id] = index end
+
+        if result.positions[id] == nil then
+            result.positions[id] = index
+        end
     end
 
     return result
@@ -181,22 +196,39 @@ end
 -- Reads the saved value a control key refers to from a record: strips the `entry<N>` and `new_` prefixes and maps the
 -- sequence, item, enabled and action keys onto the record's own fields.
 local function field(object, key)
-    if type(object) ~= 'table' then return nil end
+    if type(object) ~= 'table' then
+        return nil
+    end
+
     key = key:gsub('^entry%d+', ''):gsub('^new_', '')
     local n, property = key:match('^seq(%d+)(.*)$')
 
     if n then
         local entry = (object.sequence or {})[tonumber(n)]
-        if property == '' then return entry end
+
+        if property == '' then
+            return entry
+        end
+
         property = property == 'mag' and 'magnification' or property
         return type(entry) == 'table' and entry[property]
     end
 
     n = key:match('^item(%d+)$')
-    if n then return (object.items or {})[tonumber(n)] end
-    if key:match('^enabled%d+$') then return not object.disabled end
-    if key == 'definition_enabled' then return not (object.custom or {}).disabled end
-    if key == 'action' then return object.spell or object.item end
+
+    if n then
+        return (object.items or {})[tonumber(n)]
+    end
+    if key:match('^enabled%d+$') then
+        return not object.disabled
+    end
+    if key == 'definition_enabled' then
+        return not (object.custom or {}).disabled
+    end
+    if key == 'action' then
+        return object.spell or object.item
+    end
+
     return object[key]
 end
 
@@ -262,7 +294,10 @@ function addon:InstallSettingsUnsaved(p)
             if collection and before == nil and current ~= nil or field(current, key) ~= nil and not defaults[key] then
                 missing = true
             else
-                if not defaults[key] then defaults[key] = { value = addon:CopySettingsData(value) } end
+                if not defaults[key] then
+                    defaults[key] = { value = addon:CopySettingsData(value) }
+                end
+
                 baseline = defaults[key].value
             end
         end
@@ -288,9 +323,17 @@ function addon:InstallSettingsUnsaved(p)
     function p:RosterEntryUnsaved(entry)
         local r = self.roster
         local state = r and r.unsavedState
-        if not state then return false end
+
+        if not state then
+            return false
+        end
+
         local cached = r.unsavedByValue[entry.value]
-        if cached ~= nil then return cached end
+
+        if cached ~= nil then
+            return cached
+        end
+
         local id = entry.value
         local moved = self.settingsKey == 'Conditions' and state.before.positions[id] ~= state.current.positions[id]
         local before = rosterContext(self, self.draftBaseline, id, state.before, state.announces)
@@ -302,10 +345,14 @@ function addon:InstallSettingsUnsaved(p)
 
     -- Repaints the unsaved marker on every visible roster row.
     function p:RefreshRosterMarkers()
-        if not self.roster then return end
+        if not self.roster then
+            return
+        end
 
         for _, row in ipairs(self.roster.rows) do
-            if row.rosterLease then addon:SetWorkbenchUnsaved(row, self:RosterEntryUnsaved(row.rosterEntry)) end
+            if row.rosterLease then
+                addon:SetWorkbenchUnsaved(row, self:RosterEntryUnsaved(row.rosterEntry))
+            end
         end
     end
 
@@ -313,7 +360,10 @@ function addon:InstallSettingsUnsaved(p)
     -- rows), the Announces enabled toggle, the category icon, roster rows and the Apply button. Cheap to call after
     -- each action; does nothing while the form is closed.
     function p:RefreshUnsaved()
-        if not self.active then return end
+        if not self.active then
+            return
+        end
+
         local changedRows = {}
         local pending = false
 
@@ -369,7 +419,11 @@ function addon:InstallSettingsUnsaved(p)
 
                 while parent do
                     changedRows[parent] = true
-                    if parent == self.frame then break end
+
+                    if parent == self.frame then
+                        break
+                    end
+
                     parent = parent:GetParent()
                 end
             end
@@ -384,7 +438,6 @@ function addon:InstallSettingsUnsaved(p)
                 not addon:UnsavedDataEqual(before and before.disabled, current and current.disabled)
             )
         end
-
         if self.settingsKey == 'Conditions' and self.mode == 'categories' then
             addon:SetWorkbenchUnsaved(
                 self.fields.category_icon,
@@ -455,14 +508,21 @@ function addon:InstallSettingsUnsaved(p)
 
             if type(callback) == 'function' then
                 args[index] = function(value, ...)
-                    if binding then binding.value = addon:CopySettingsData(value) end
+                    if binding then
+                        binding.value = addon:CopySettingsData(value)
+                    end
+
                     return callback(value, ...)
                 end
             end
 
             local control = original(self, unpack(args, 1, count))
             local value = args[3]
-            if method == 'Color' and value == nil then value = { r = 1, g = 1, b = 1, a = 1 } end
+
+            if method == 'Color' and value == nil then
+                value = { r = 1, g = 1, b = 1, a = 1 }
+            end
+
             binding = self:BindUnsaved(args[1], control, value, method)
             binding.caption = args[2]
             return control
@@ -502,7 +562,11 @@ function addon:InstallSettingsUnsaved(p)
     -- Forgets the remembered defaults once the draft was saved, so the new saved data becomes the baseline.
     function p:SaveSettingsDraft()
         local ok = save(self)
-        if ok then self.unsavedDefaults = {} end
+
+        if ok then
+            self.unsavedDefaults = {}
+        end
+
         return ok
     end
 end

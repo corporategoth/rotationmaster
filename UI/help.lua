@@ -38,7 +38,10 @@ end
 
 -- True when there is no validity callback, or it runs cleanly and returns exactly true. An error counts as invalid.
 local function validHelp(valid)
-    if not valid then return true end
+    if not valid then
+        return true
+    end
+
     local ok, current = callHelp(valid)
     return ok and current == true
 end
@@ -46,7 +49,9 @@ end
 -- Wraps `callback` so it runs only while `valid` still reports the help subject as current.
 function addon:GuardWorkbenchHelp(valid, callback)
     return function(...)
-        if validHelp(valid) then return callback(...) end
+        if validHelp(valid) then
+            return callback(...)
+        end
     end
 end
 
@@ -60,13 +65,20 @@ end
 function addon:OpenWorkbenchHelp(request)
     local valid = request.valid
     local previous = helpRequest
-    if not validHelp(valid) or previous ~= helpRequest then return end
+
+    if not validHelp(valid) or previous ~= helpRequest then
+        return
+    end
+
     helpRequest = helpRequest + 1
     local token = helpRequest
 
     -- True while this request is still the newest and its subject is still valid.
     local function current()
-        if token ~= helpRequest then return false end
+        if token ~= helpRequest then
+            return false
+        end
+
         local live = validHelp(valid)
         return live and token == helpRequest
     end
@@ -77,7 +89,10 @@ function addon:OpenWorkbenchHelp(request)
 
         if token == helpRequest and d then
             d:ReleaseMount()
-            if token == helpRequest then d.frame:Hide() end
+
+            if token == helpRequest then
+                d.frame:Hide()
+            end
         end
     end
 
@@ -121,12 +136,17 @@ function addon:OpenWorkbenchHelp(request)
         renderContext = context,
     })
 
-    if not document or not current() then return end
+    if not document or not current() then
+        return
+    end
+
     local handle = { frame = document.frame, heading = heading, sections = sections }
 
     -- Hides the window only if this handle's request is still the current one.
     function handle:Hide()
-        if token == helpRequest then document:Hide() end
+        if token == helpRequest then
+            document:Hide()
+        end
     end
 
     return handle
@@ -151,7 +171,10 @@ end
 -- tooltip's owner APIs reject those with "Wrong object type".
 -- True when GameTooltip is currently owned by `control`; false when it is not, or when the owner check rejects it.
 local function tooltipOwned(control)
-    if not GameTooltip then return false end
+    if not GameTooltip then
+        return false
+    end
+
     local ok, owned = pcall(GameTooltip.IsOwned, GameTooltip, control)
     return ok and owned
 end
@@ -165,7 +188,10 @@ end
 -- control's own OnEnter, and descriptor.valid retires it. Returns a clear function that restores the previous scripts;
 -- binding a control again clears its earlier binding first.
 function addon:BindWorkbenchHelp(control, descriptor)
-    if control.rmHelpBinding then control.rmHelpBinding.clear() end
+    if control.rmHelpBinding then
+        control.rmHelpBinding.clear()
+    end
+
     local binding = {}
     control.rmHelpBinding = binding
     local enter, leave = control:GetScript('OnEnter'), control:GetScript('OnLeave')
@@ -178,8 +204,14 @@ function addon:BindWorkbenchHelp(control, descriptor)
 
     -- Hover handler: runs the control's original OnEnter first, then adds or sets the tooltip text.
     local function onEnter(...)
-        if not current() then return end
-        if enter then enter(...) end
+        if not current() then
+            return
+        end
+
+        if enter then
+            enter(...)
+        end
+
         -- A brief may be a function, read each time the tip opens, for a control whose meaning follows a mode.
         local brief = descriptor.brief
 
@@ -188,12 +220,19 @@ function addon:BindWorkbenchHelp(control, descriptor)
             brief = ok and value or nil
         end
 
-        if not current() or not brief or not GameTooltip then return end
+        if not current() or not brief or not GameTooltip then
+            return
+        end
 
         if tooltipOwned(control) then
-            if brief ~= control.tooltip then GameTooltip:AddLine(brief, 1, 1, 1, true) end
+            if brief ~= control.tooltip then
+                GameTooltip:AddLine(brief, 1, 1, 1, true)
+            end
         else
-            if not pcall(GameTooltip.SetOwner, GameTooltip, control, 'ANCHOR_RIGHT') then return end
+            if not pcall(GameTooltip.SetOwner, GameTooltip, control, 'ANCHOR_RIGHT') then
+                return
+            end
+
             GameTooltip:SetText(brief, 1, 1, 1, 1, true)
         end
 
@@ -202,9 +241,16 @@ function addon:BindWorkbenchHelp(control, descriptor)
 
     -- Leave handler: runs the original OnLeave, then hides the tooltip if this control still owns it.
     local function onLeave(...)
-        if not current() then return end
-        if leave then leave(...) end
-        if current() and tooltipOwned(control) then GameTooltip:Hide() end
+        if not current() then
+            return
+        end
+
+        if leave then
+            leave(...)
+        end
+        if current() and tooltipOwned(control) then
+            GameTooltip:Hide()
+        end
     end
 
     addon:SetUIScript(control, 'OnEnter', onEnter)
@@ -215,11 +261,21 @@ function addon:BindWorkbenchHelp(control, descriptor)
     -- Restores the control's original scripts, but only the ones still installed by this binding so a later
     -- replacement by someone else is left alone.
     function binding.clear()
-        if control.rmHelpBinding ~= binding then return end
+        if control.rmHelpBinding ~= binding then
+            return
+        end
+
         control.rmHelpBinding = nil
-        if control:GetScript('OnEnter') == installedEnter then control:SetScript('OnEnter', enter) end
-        if control:GetScript('OnLeave') == installedLeave then control:SetScript('OnLeave', leave) end
-        if tooltipOwned(control) then GameTooltip:Hide() end
+
+        if control:GetScript('OnEnter') == installedEnter then
+            control:SetScript('OnEnter', enter)
+        end
+        if control:GetScript('OnLeave') == installedLeave then
+            control:SetScript('OnLeave', leave)
+        end
+        if tooltipOwned(control) then
+            GameTooltip:Hide()
+        end
     end
 
     return binding.clear
@@ -316,7 +372,6 @@ function addon:WorkbenchInteractionHelp(kind)
                 L['An amber border and warning mark a card whose action no action bar button holds right now. Rotation Master highlights an action by lighting the button that holds it, so that step is skipped (a cooldown is never shown) until you put it on a bar. The warning updates when your bars change. Red still marks invalid data.']
             )
         end
-
         if kind == 'cooldown' then
             result[#result + 1] = section(
                 L['Highlight effects'],
@@ -463,7 +518,11 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
     end
 
     local current = request.current
-    if not current() then return end
+
+    if not current() then
+        return
+    end
+
     local d = self.helpWindow
 
     if not d then
@@ -493,7 +552,9 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
 
         for _, surface in ipairs({ frame, d.scroll }) do
             addon:SetUIScript(surface, 'OnMouseUp', function(_, button)
-                if button == 'RightButton' then hide() end
+                if button == 'RightButton' then
+                    hide()
+                end
             end)
         end
 
@@ -504,7 +565,10 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
             self.mount = nil
             self.mountRelease = nil
             self.mountContext = nil
-            if release then callHelpContext(context, release, mount) end
+
+            if release then
+                callHelpContext(context, release, mount)
+            end
         end
 
         -- Registry-facing hide for the window.
@@ -524,11 +588,19 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
     end
 
     d:ReleaseMount()
-    if not current() then return end
+
+    if not current() then
+        return
+    end
+
     d.heading = heading
     d.sections = sections
     d.chrome:SetContext(heading, L['Help'], owner or addon.pretty_name or L['Rotation Master'])
-    if not current() then return end
+
+    if not current() then
+        return
+    end
+
     local y = 0
     local n = 0
 
@@ -561,7 +633,9 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
         d.rows[i]:Hide()
     end
 
-    if not current() then return end
+    if not current() then
+        return
+    end
 
     if request.render then
         local ok, mount = callHelpContext(request.renderContext, request.render, d.child, current, y, 490)
@@ -570,7 +644,10 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
         -- Accessors may open newer Help: consume once before publishing ownership.
         local readable = ok and type(mount) == 'table' and callHelpContext(request.renderContext, function()
             release = mount.Release
-            if current() then height = mount.height end
+
+            if current() then
+                height = mount.height
+            end
         end)
 
         if
@@ -582,8 +659,13 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
             or height == math.huge
             or type(release) ~= 'function'
         then
-            if type(release) == 'function' then callHelpContext(request.renderContext, release, mount) end
-            if current() then d.frame:Hide() end
+            if type(release) == 'function' then
+                callHelpContext(request.renderContext, release, mount)
+            end
+            if current() then
+                d.frame:Hide()
+            end
+
             return
         end
 
@@ -593,7 +675,10 @@ function addon:ShowWorkbenchHelp(heading, sections, owner, request)
         y = y + height
     end
 
-    if not current() then return end
+    if not current() then
+        return
+    end
+
     d.child:SetHeight(math.max(1, y))
     local visible = math.min(300, math.max(100, y))
     d.frame:SetHeight(38 + visible + 28)
@@ -617,9 +702,16 @@ end
 -- boxes are read-only in effect: any edit is reverted so the player can select and copy but never change a link.
 -- Returns the window record, or nothing when the integration has no links.
 function addon:ShowIntegrationProjectLink(id)
-    if type(self.GetIntegrationProjectLinks) ~= 'function' then return end
+    if type(self.GetIntegrationProjectLinks) ~= 'function' then
+        return
+    end
+
     local links, name = self:GetIntegrationProjectLinks(id)
-    if type(links) ~= 'table' or #links == 0 then return end
+
+    if type(links) ~= 'table' or #links == 0 then
+        return
+    end
+
     local d = self.integrationProjectWindow
 
     if not d then
@@ -655,7 +747,10 @@ function addon:ShowIntegrationProjectLink(id)
         d.scroll:SetScrollChild(d.child)
         d.close = self:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
-        addon:SetUIScript(d.close, 'OnClick', function() frame:Hide() end)
+
+        addon:SetUIScript(d.close, 'OnClick', function()
+            frame:Hide()
+        end)
 
         -- Invalidates every row callback (generation bump) and clears the rows, so stale handlers do nothing.
         function d:Retire()
@@ -677,7 +772,9 @@ function addon:ShowIntegrationProjectLink(id)
             end
         end
 
-        addon:SetUIScript(frame, 'OnHide', function() d:Retire() end)
+        addon:SetUIScript(frame, 'OnHide', function()
+            d:Retire()
+        end)
 
         -- Registry-facing hide and show for the window.
         function d:Hide()
@@ -702,7 +799,9 @@ function addon:ShowIntegrationProjectLink(id)
 
     -- Selects the whole URL of one row so Ctrl+C copies it, and drops the selection from every other row.
     local function selectRow(row)
-        if not current(row) then return end
+        if not current(row) then
+            return
+        end
 
         for _, other in ipairs(d.rows) do
             if other ~= row then
@@ -711,7 +810,10 @@ function addon:ShowIntegrationProjectLink(id)
             end
         end
 
-        if not row.edit:HasFocus() then row.edit:SetFocus() end
+        if not row.edit:HasFocus() then
+            row.edit:SetFocus()
+        end
+
         row.edit:SetCursorPosition(0)
         row.edit:HighlightText(0, -1)
     end
@@ -719,7 +821,10 @@ function addon:ShowIntegrationProjectLink(id)
     local y = 0
 
     for i, entry in ipairs(links) do
-        if i > 32 then break end
+        if i > 32 then
+            break
+        end
+
         local row = d.rows[i]
 
         if not row then
@@ -761,11 +866,19 @@ function addon:ShowIntegrationProjectLink(id)
         row.edit:SetCursorPosition(0)
         row.edit:HighlightText(0, 0)
         row.edit:ClearFocus()
-        addon:SetUIScript(row.copy, 'OnClick', function() selectRow(row) end)
-        addon:SetUIScript(row.edit, 'OnEditFocusGained', function() selectRow(row) end)
+
+        addon:SetUIScript(row.copy, 'OnClick', function()
+            selectRow(row)
+        end)
+
+        addon:SetUIScript(row.edit, 'OnEditFocusGained', function()
+            selectRow(row)
+        end)
 
         addon:SetUIScript(row.edit, 'OnMouseUp', function(_, button)
-            if button == 'LeftButton' then selectRow(row) end
+            if button == 'LeftButton' then
+                selectRow(row)
+            end
         end)
 
         -- Native EditBoxes allow selection/copy; retain the canonical URL across
@@ -779,7 +892,9 @@ function addon:ShowIntegrationProjectLink(id)
         end)
 
         addon:SetUIScript(row.edit, 'OnEscapePressed', function()
-            if current(row) then d:Hide() end
+            if current(row) then
+                d:Hide()
+            end
         end)
 
         y = y + height + 4

@@ -45,10 +45,14 @@ local retiredTags = {
 
 -- Removes every retired tag from list in place; ignores anything that is not a table.
 local function dropRetired(list)
-    if type(list) ~= "table" then return end
+    if type(list) ~= "table" then
+        return
+    end
 
     for index = #list, 1, -1 do
-        if retiredTags[list[index]] then table.remove(list, index) end
+        if retiredTags[list[index]] then
+            table.remove(list, index)
+        end
     end
 end
 
@@ -56,18 +60,28 @@ end
 -- (guarded by profile.worldConditionsSeeded). The first argument is unused so it can serve as an AceDB-style callback.
 function addon:InitializeWorldConditions(_, db)
     local profile = db and db.profile
-    if type(profile) ~= "table" then return end
+
+    if type(profile) ~= "table" then
+        return
+    end
+
     dropRetired(profile.switch_conditions)
 
     for _, category in ipairs(type(profile.condition_groups) == "table" and profile.condition_groups or {}) do
-        if type(category) == "table" then dropRetired(category.conditions) end
+        if type(category) == "table" then
+            dropRetired(category.conditions)
+        end
     end
 
-    if profile.worldConditionsSeeded then return end
+    if profile.worldConditionsSeeded then
+        return
+    end
 
     -- Adds each tag missing from list to its end, preserving the user's order; a list that is not a table is skipped.
     local function append(list, tags)
-        if type(list) ~= "table" then return end
+        if type(list) ~= "table" then
+            return
+        end
 
         for _, tag in ipairs(tags) do
             local found = false
@@ -79,7 +93,9 @@ function addon:InitializeWorldConditions(_, db)
                 end
             end
 
-            if not found then list[#list + 1] = tag end
+            if not found then
+                list[#list + 1] = tag
+            end
         end
     end
 
@@ -100,7 +116,9 @@ local seedOwner = {}
 -- Seeds the current profile and re-seeds on every profile event that can bring in an unseeded profile (new, reset,
 -- switched, copied). Does nothing if db is not an AceDB object.
 function addon:InstallWorldConditions(db)
-    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
+    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
+        return
+    end
 
     for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
         db.RegisterCallback(seedOwner, event, function(_, currentDB)

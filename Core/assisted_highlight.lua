@@ -57,7 +57,10 @@ end
 
 -- True in combat lockdown. An unreadable or unknown answer counts as combat, because the CVar must not be written then.
 local function inCombat()
-    if type(InCombatLockdown) ~= 'function' then return false end
+    if type(InCombatLockdown) ~= 'function' then
+        return false
+    end
+
     local ok, locked = pcall(InCombatLockdown)
     return not ok or (locked ~= false and locked ~= nil)
 end
@@ -66,7 +69,11 @@ end
 function addon:GetAssistedHighlightMode(settings)
     local source = settings or profile()
     local mode = type(source) == 'table' and source.assisted_highlight or nil
-    if MODES[mode] then return mode end
+
+    if MODES[mode] then
+        return mode
+    end
+
     return 'rm'
 end
 
@@ -85,13 +92,28 @@ end
 -- suggestion" step in its rotation list. Every lookup is guarded, so a missing service reads as false.
 local function rotationUsesAssisted(self)
     local id, spec = self.currentRotation, self.currentSpec
-    if id == nil or spec == nil or type(self.GetRotationForCleanup) ~= 'function' then return false end
+
+    if id == nil or spec == nil or type(self.GetRotationForCleanup) ~= 'function' then
+        return false
+    end
+
     local ok, rotation = pcall(self.GetRotationForCleanup, self, spec, id)
-    if not ok or type(rotation) ~= 'table' then return false end
+
+    if not ok or type(rotation) ~= 'table' then
+        return false
+    end
+
     local data = self.RotationData
-    if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' then return false end
+
+    if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' then
+        return false
+    end
+
     local indexed, index = pcall(data.IndexRotationSteps, rotation, { allowMissingIds = true })
-    if not indexed or type(index) ~= 'table' or type(index.rows) ~= 'table' then return false end
+
+    if not indexed or type(index) ~= 'table' or type(index.rows) ~= 'table' then
+        return false
+    end
 
     for _, row in ipairs(index.rows) do
         local step = row.step
@@ -113,9 +135,16 @@ end
 -- True when the CVar should be on now: a mode that uses Blizzard's highlight, a client that supports it, and an active
 -- rotation that has an assisted step.
 local function wanted(self)
-    if self:GetAssistedHighlightMode() == 'rm' or self.currentRotation == nil then return false end
-    if not self:GetAssistedHighlightSupport() then return false end
-    if self.Platform:GetAssistedCombatAvailability() ~= true then return false end
+    if self:GetAssistedHighlightMode() == 'rm' or self.currentRotation == nil then
+        return false
+    end
+    if not self:GetAssistedHighlightSupport() then
+        return false
+    end
+    if self.Platform:GetAssistedCombatAvailability() ~= true then
+        return false
+    end
+
     return rotationUsesAssisted(self)
 end
 
@@ -130,7 +159,11 @@ local function write(value)
     manager.applying = true
     local ok, now, why = pcall(addon.Platform.SetAssistedHighlightCVar, addon.Platform, value)
     manager.applying = false
-    if not ok then return nil, 'api-error' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+
     return now, why
 end
 
@@ -141,7 +174,10 @@ end
 -- Brings the CVar and addon.assistedGlowHidden in line with what the rotation wants. Called on every relevant event,
 -- not per poll. In combat it only marks the work pending; PLAYER_REGEN_ENABLED finishes it.
 function manager:Reconcile()
-    if not self.ready or self.loggingOut or self.applying then return end
+    if not self.ready or self.loggingOut or self.applying then
+        return
+    end
+
     local platform = addon.Platform
 
     if type(platform) ~= 'table' or type(platform.GetAssistedHighlightCVar) ~= 'function' then
@@ -192,14 +228,20 @@ function manager:Reconcile()
                 if now ~= CVAR_ON then
                     -- Not in effect: there is nothing of ours to put back
                     -- unless the client reports something else entirely.
-                    if now == nil or now == current then store.assistedHighlight = nil end
+                    if now == nil or now == current then
+                        store.assistedHighlight = nil
+                    end
                 end
 
                 current = now or current
             end
         elseif record then
             local now = write(record.previous)
-            if now == record.previous then store.assistedHighlight = nil end
+
+            if now == record.previous then
+                store.assistedHighlight = nil
+            end
+
             current = now or current
         end
     elseif want or (store and store.assistedHighlight ~= nil) then
@@ -216,7 +258,11 @@ function manager:Logout()
     self.loggingOut = true
     local store = characterStore()
     local record = store and store.assistedHighlight
-    if not validRecord(record) or inCombat() then return end
+
+    if not validRecord(record) or inCombat() then
+        return
+    end
+
     local current = addon.Platform:GetAssistedHighlightCVar()
 
     if current ~= record.applied then
@@ -225,13 +271,19 @@ function manager:Logout()
     end
 
     local now = write(record.previous)
-    if now == record.previous then record.restoredAtLogout = true end
+
+    if now == record.previous then
+        record.restoredAtLogout = true
+    end
 end
 
 -- A mode chosen in settings also ends a user override from this session.
 -- Public entry for settings changes and rotation switches; clearOverride is true when the user picked a mode.
 function addon:RefreshAssistedHighlight(clearOverride)
-    if clearOverride then manager.userOverride = false end
+    if clearOverride then
+        manager.userOverride = false
+    end
+
     manager:Reconcile()
 end
 
@@ -244,7 +296,9 @@ local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' 
 -- Single event handler for the frame events, the AceDB profile callbacks and the rotation message. The first
 -- PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles before that.
 function manager:OnEvent(event, ...)
-    if event == 'PLAYER_LOGOUT' then return self:Logout() end
+    if event == 'PLAYER_LOGOUT' then
+        return self:Logout()
+    end
 
     if event == 'PLAYER_ENTERING_WORLD' then
         if not self.ready then
@@ -253,7 +307,9 @@ function manager:OnEvent(event, ...)
 
             if type(db) == 'table' and type(db.RegisterCallback) == 'function' then
                 for _, name in ipairs(profileEvents) do
-                    db.RegisterCallback(manager, name, function() manager:Reconcile() end)
+                    db.RegisterCallback(manager, name, function()
+                        manager:Reconcile()
+                    end)
                 end
             end
         end
@@ -262,15 +318,24 @@ function manager:OnEvent(event, ...)
     end
 
     if event == 'CVAR_UPDATE' then
-        if self.applying then return end
+        if self.applying then
+            return
+        end
+
         local name = ...
         local platform = addon.Platform
         local cvar = type(platform) == 'table' and platform.ASSISTED_HIGHLIGHT_CVAR or 'assistedCombatHighlight'
-        if type(name) == 'string' and name:lower() ~= cvar:lower() then return end
+
+        if type(name) == 'string' and name:lower() ~= cvar:lower() then
+            return
+        end
+
         return self:Reconcile()
     end
 
-    if event == 'PLAYER_REGEN_ENABLED' or event == 'ROTATIONMASTER_ROTATION' then return self:Reconcile() end
+    if event == 'PLAYER_REGEN_ENABLED' or event == 'ROTATIONMASTER_ROTATION' then
+        return self:Reconcile()
+    end
 end
 
 if type(CreateFrame) == 'function' then
@@ -283,7 +348,10 @@ if type(CreateFrame) == 'function' then
         and type(frame.SetScript) == 'function'
     then
         manager.frame = frame
-        frame:SetScript('OnEvent', function(_, event, ...) manager:OnEvent(event, ...) end)
+
+        frame:SetScript('OnEvent', function(_, event, ...)
+            manager:OnEvent(event, ...)
+        end)
 
         for _, event in ipairs({ 'PLAYER_ENTERING_WORLD', 'PLAYER_REGEN_ENABLED', 'PLAYER_LOGOUT', 'CVAR_UPDATE' }) do
             pcall(frame.RegisterEvent, frame, event)
@@ -295,6 +363,8 @@ do
     local ok, events = pcall(LibStub, 'AceEvent-3.0', true)
 
     if ok and type(events) == 'table' and type(events.RegisterMessage) == 'function' then
-        events.RegisterMessage(manager, 'ROTATIONMASTER_ROTATION', function(message) manager:OnEvent(message) end)
+        events.RegisterMessage(manager, 'ROTATIONMASTER_ROTATION', function(message)
+            manager:OnEvent(message)
+        end)
     end
 end

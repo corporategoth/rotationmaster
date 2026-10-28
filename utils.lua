@@ -41,8 +41,14 @@ end
 -- registry (addon:RegisterWindowForEscape); if it is absent or declines, falls back to a keyboard handler on the frame
 -- that swallows Escape and passes every other key through to the game.
 addon.HideOnEscape = function(frame)
-    if addon.MakeWindowOpaque then addon:MakeWindowOpaque(frame) end
-    if addon.RegisterWindowForEscape and addon:RegisterWindowForEscape(frame) then return end
+    if addon.MakeWindowOpaque then
+        addon:MakeWindowOpaque(frame)
+    end
+
+    if addon.RegisterWindowForEscape and addon:RegisterWindowForEscape(frame) then
+        return
+    end
+
     frame.frame:EnableKeyboard(true)
     frame.frame:SetPropagateKeyboardInput(true)
 
@@ -287,7 +293,10 @@ function base64enc(data)
 
         return r
     end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-        if (#x < 6) then return '' end
+        if (#x < 6) then
+            return ''
+        end
+
         local c = 0
 
         for i = 1, 6 do
@@ -304,7 +313,10 @@ function base64dec(data)
     data = string.gsub(data, '[^' .. b64_chars .. '=]', '')
 
     return (data:gsub('.', function(x)
-        if (x == '=') then return '' end
+        if (x == '=') then
+            return ''
+        end
+
         local r, f = '', (b64_chars:find(x) - 1)
 
         for i = 6, 1, -1 do
@@ -313,7 +325,10 @@ function base64dec(data)
 
         return r
     end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-        if (#x ~= 8) then return '' end
+        if (#x ~= 8) then
+            return ''
+        end
+
         local c = 0
 
         for i = 1, 8 do
@@ -382,8 +397,12 @@ end
 -- configured before their parent.
 function addon:configure_frame(obj)
     if self.InstallSpellHyperlinks then
-        if obj.label then self:InstallSpellHyperlinks(obj.frame) end
-        if obj.statustext and obj.statustext.GetParent then self:InstallSpellHyperlinks(obj.statustext:GetParent()) end
+        if obj.label then
+            self:InstallSpellHyperlinks(obj.frame)
+        end
+        if obj.statustext and obj.statustext.GetParent then
+            self:InstallSpellHyperlinks(obj.statustext:GetParent())
+        end
     end
 
     if obj.children ~= nil then
@@ -401,7 +420,11 @@ end
 -- Returns the player's rotation specialization index, or nil and a reason when the platform cannot report one.
 function addon:GetSpecialization()
     local selection, reason = self.Platform:GetRotationSpecialization()
-    if not selection then return nil, reason end
+
+    if not selection then
+        return nil, reason
+    end
+
     return selection.index
 end
 
@@ -419,15 +442,24 @@ local itemReleases = setmetatable({}, { __mode = 'k' })
 -- Wraps the widget's OnRelease once so that releasing the widget back to its pool drops its pending update ticket and
 -- restores the original handler. Calling it again on an already watched widget does nothing.
 local function watchItemRelease(widget)
-    if not widget or itemReleases[widget] == widget.OnRelease and widget.OnRelease ~= nil then return end
+    if not widget or itemReleases[widget] == widget.OnRelease and widget.OnRelease ~= nil then
+        return
+    end
+
     local original = widget.OnRelease
     local release
 
     release = function(self, ...)
         itemUpdates[self] = nil
         itemReleases[self] = nil
-        if self.OnRelease == release then self.OnRelease = original end
-        if original then return original(self, ...) end
+
+        if self.OnRelease == release then
+            self.OnRelease = original
+        end
+
+        if original then
+            return original(self, ...)
+        end
     end
 
     itemReleases[widget] = release
@@ -436,7 +468,9 @@ end
 
 -- Returns the widget's current text, or nil when there is no widget or it has no GetText.
 local function itemText(widget)
-    if widget and type(widget.GetText) == 'function' then return widget:GetText() end
+    if widget and type(widget.GetText) == 'function' then
+        return widget:GetText()
+    end
 end
 
 -- Keeps an item tooltip that is already open on the icon in step with the id just shown: re-points it at the new item,
@@ -456,7 +490,10 @@ end
 local function sameItemText(widget, ticket)
     if widget.GetReferenceID then
         local current = widget:GetReferenceID()
-        if current ~= nil or ticket.referenceID ~= nil then return current == ticket.referenceID end
+
+        if current ~= nil or ticket.referenceID ~= nil then
+            return current == ticket.referenceID
+        end
     end
 
     return itemText(widget) == ticket.text
@@ -489,7 +526,10 @@ local function updateItem(self, method, named, image, item, text, icon, attempt,
         return
     end
 
-    if not self.Platform:CanReadValue(item) then item = nil end
+    if not self.Platform:CanReadValue(item) then
+        item = nil
+    end
+
     local id = item and self.Platform:GetItemID(item)
     local info = id and (named or image) and self.Platform:GetItemDisplayInfo(id)
     local complete = id and (not named or info) and (not image or info and info.iconID ~= nil)

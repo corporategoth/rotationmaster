@@ -4,12 +4,29 @@
   python3 tools/format_lua.py UI/foo.lua              print what would change (a unified diff), write nothing
   python3 tools/format_lua.py --write UI/foo.lua      rewrite the file, after proving it compiles identically
   python3 tools/format_lua.py --write --stdout F      print the formatted text instead of writing it
+  python3 tools/format_lua.py --check F...            list the files whose layout differs (exit 1), write nothing
+  python3 tools/format_lua.py --tree [--write|--check]   every file the formatter owns: all tracked Lua except Libs/,
+                                                      LibsAugment/, Locales/, Assets/, Modules/, tools/vendor/, generated
+                                                      files and the test sources other tests read as text
 
-The layout it produces: one statement per line, four-space indentation, a blank line around every multi-line statement,
-lines wrapped at 120 columns at argument, field and and/or boundaries, a function that is the last argument of a call
-hugging that call (`foo(a, function()` ... `end)`), and single-line guard clauses (`if x then return end`) kept when the
-author wrote them on one line and they are short. Comments are kept in place; a comment inside an expression moves to the
-line above its statement. Strings, numbers and parentheses are never touched.
+The layout it produces: one statement per line, four-space indentation, lines wrapped at 120 columns at argument, field
+and and/or boundaries, and a function that is the last argument of a call hugging that call (`foo(a, function()` ...
+`end)`). Comments are kept in place; a comment inside an expression moves to the line above its statement. Strings,
+numbers and parentheses are never touched.
+
+Blocks are never written on one line. Every `if`, `elseif`, `else`, `for`, `while`, `repeat`, `do` and named `function`
+body goes on its own indented lines, so `if x then return end` becomes `if x then` / `return` / `end`; so does a body
+the author wrote after a `;` (`if x then a(); b() end`). The one exception is an anonymous function whose whole body is
+a single `return`, which the author wrote on one line and which fits: `function(a) return a.x end` stays inline wherever
+it appears (a call argument, a table field, the right side of an assignment). An empty body stays on the head's line
+(`function addon:Noop() end`). A comment the author put after a one-line statement (`if x then y end -- note`) moves to the
+statement's first line (`if x then -- note`).
+
+Blank lines. A blank line surrounds every statement that spans several lines (blocks, long calls and tables), the author's
+own blank lines are kept, and statements are never stacked more than one blank line apart. A guard clause is an `if` with
+one condition, no `else` and a body of one plain statement (`return`, `break`, a call, an assignment or a `local`); two
+guard clauses in a row whose bodies are the same kind of statement are written without a blank line between them, so a
+run of six `if ... then return end` guards is eighteen tight lines.
 
 Safety. Before a file is written, both the original and the result are compiled with `luac5.1 -s` (debug information,
 line numbers and comments stripped) and the two bytecode images must be identical, which means the result is the same
@@ -21,7 +38,8 @@ byte for byte. For a file that has such helpers the formatter reads their first 
 and prints those bodies verbatim; only the line around them is reformatted. The generated binding suffix at the end of a
 Conditions file is never touched either.
 
-Exit status: 0 formatted or already formatted, 1 a file was refused (it did not compile identically), 2 could not run.
+Exit status: 0 formatted or already formatted, 1 a file was refused (it did not compile identically) or, with --check, is
+not laid out as the formatter would, 2 could not run.
 """
 import argparse
 import difflib
@@ -35,6 +53,72 @@ ROOT = Path(__file__).resolve().parents[1]
 WIDTH = 120
 INDENT = 4
 GENERATED_BEGIN = '-- BEGIN GENERATED RM SOURCE BINDINGS'
+
+# Files the formatter never touches when it walks the tree (--tree).
+EXEMPT_PREFIXES = ('Libs/', 'LibsAugment/', 'Locales/', 'Assets/', 'Modules/', 'tools/vendor/')
+EXEMPT_FILES = {
+    # Written by a generator.
+    'Data/artwork.lua', 'Data/builtin_sources.lua', 'Data/talent_trees.lua', 'Data/text_bundle_index.lua',
+    'tests/fixtures/client_api.lua', 'tests/fixtures/client_api_era.lua', 'tests/fixtures/client_api_forever.lua',
+    'tests/fixtures/client_api_mists.lua', 'tests/fixtures/client_api_retail.lua', 'tests/fixtures/client_api_tbc.lua',
+    # Golden files and snapshots of earlier source: their text is the point.
+    'tests/fixtures/legacy_rotation_exports.lua', 'tests/fixtures/premade_spec_switches.lua',
+    'tests/fixtures/restore_final_composition.lua', 'tests/fixtures/restore_runtime_plan_runner.lua',
+    'tests/fixtures/removed_builtin_clones.lua', 'tests/fixtures/retail_traits.lua',
+}
+# Test sources that other tests read as text and cut up with string patterns or fixed anchors (tests/startup.lua,
+# tests/fixtures/addon.lua, ...). They keep the dense layout their anchors were written against.
+READ_AS_TEXT_BY_TESTS = {
+    'tests/acquisition_proof_consolidation.lua',
+    'tests/active_runtime_main.lua',
+    'tests/active_runtime_plan.lua',
+    'tests/analytics_capture_controls.lua',
+    'tests/announcement_conditions_events.lua',
+    'tests/announcement_macros.lua',
+    'tests/announcement_series_runtime.lua',
+    'tests/announcement_series_ui.lua',
+    'tests/aura_namespaces.lua',
+    'tests/buttons_namespaces.lua',
+    'tests/cache_mode_lifecycle.lua',
+    'tests/casting_conditions.lua',
+    'tests/condition_editor_ui.lua',
+    'tests/condition_runtime.lua',
+    'tests/condition_subject_help.lua',
+    'tests/cpu.lua',
+    'tests/cpu_native_probe.lua',
+    'tests/cpu_runtime.lua',
+    'tests/custom_authoring_ui.lua',
+    'tests/fixtures/addon.lua',
+    'tests/fixtures/rotation_execution.lua',
+    'tests/fixtures/shaman_starter_pack.lua',
+    'tests/function_data.lua',
+    'tests/functions_ui.lua',
+    'tests/legacy_regressions.lua',
+    'tests/masque_preview.lua',
+    'tests/masque_skin_selection.lua',
+    'tests/memory_boundary_refresh.lua',
+    'tests/nameplate_lifecycle.lua',
+    'tests/platform_analytics_casts.lua',
+    'tests/point_tbc_transport.lua',
+    'tests/rotation_editor_ui.lua',
+    'tests/rotation_import.lua',
+    'tests/rotation_scope_browser_ui.lua',
+    'tests/rotation_scope_runtime.lua',
+    'tests/rotation_scope_transport.lua',
+    'tests/rotation_scope_workspace.lua',
+    'tests/rotation_store_reader.lua',
+    'tests/rotation_validation_adjacent.lua',
+    'tests/rotation_workspace.lua',
+    'tests/runtime_store_native_gate.lua',
+    'tests/schema_repair.lua',
+    'tests/settings_pages.lua',
+    'tests/spell_history_count.lua',
+    'tests/spell_search_ui.lua',
+    'tests/startup.lua',
+    'tests/transfer_subject_help.lua',
+    'tests/workbench_reflow.lua',
+    'tests/zone_text_conditions.lua',
+}
 
 KEYWORDS = {'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if', 'in', 'local', 'nil', 'not',
             'or', 'repeat', 'return', 'then', 'true', 'until', 'while'}
@@ -263,6 +347,11 @@ class Parser:
         if self.is_op(';'):
             semicolon = self.advance()
             trail = trail + self.claim_trail(semicolon)
+        if trail and node.line == node.end_line and node.kind in ('if', 'while', 'numfor', 'genfor', 'do', 'repeat'):
+            # `if x then y end -- note` is split over lines: the note goes on the first one.
+            head = node.clauses[0] if node.kind == 'if' else node
+            head.head_trail = head.head_trail + trail
+            trail = []
         node.lead, node.blank_before, node.lead_gap, node.trail = lead, blank, lead_gap, trail
         node.start_index, node.stop_index = start, self.i
         # Comments nobody claimed (inside an expression, between an operator and its operand, ...) are moved above the
@@ -653,10 +742,11 @@ def suffix(s):
     return ('s', s)
 
 
-def gap(previous, following, forced):
+def gap(previous, following, forced, tight=False):
     """The separator between two statements: a line break, plus a blank line when `forced` or when either statement
-    prints on more than one line (decided by the renderer, which knows the real indentation)."""
-    return ('bg', previous, following, forced)
+    prints on more than one line (decided by the renderer, which knows the real indentation). `tight` (two guard clauses
+    of one kind) drops the second reason."""
+    return ('bg', previous, following, forced, tight)
 
 
 def ifbreak(broken, flat_text):
@@ -860,7 +950,7 @@ def render(doc, width=WIDTH, memo=None, gaps=True):
                 newline(ind)
             elif tag == 'bg':
                 newline(ind)
-                if gaps and (d[3] or spans_lines(d[1], width - ind, memo) or spans_lines(d[2], width - ind, memo)):
+                if gaps and (d[3] or (not d[4] and (spans_lines(d[1], width - ind, memo) or spans_lines(d[2], width - ind, memo)))):
                     newline(ind)
             elif tag == 'ib':
                 piece = d[1] if mode == BREAK else d[2]
@@ -926,7 +1016,8 @@ class Printer:
         if kind == 'field':
             return cat(self.expr(node.base), text('.' + node.name))
         if kind == 'index':
-            return cat(self.expr(node.base), text('['), self.expr(node.key), text(']'))
+            return cat(self.expr(node.base), text('[' + long_string_gap(node.key)), self.expr(node.key),
+                       text(long_string_gap(node.key) + ']'))
         if kind == 'call':
             return cat(self.expr(node.base), self.arguments(node.args))
         if kind == 'method':
@@ -1068,7 +1159,8 @@ class Printer:
             elif field.shorthand:
                 doc = cat(text(field.key.text + ' = '), value)
             else:
-                doc = cat(text('['), self.expr(field.key), text('] = '), value)
+                doc = cat(text('[' + long_string_gap(field.key)), self.expr(field.key),
+                          text(long_string_gap(field.key) + '] = '), value)
             docs.append(doc)
         if has_comments:
             body = []
@@ -1120,14 +1212,14 @@ class Printer:
         return cat(head, *trail, indent(cat(HARD, self.block(body))), HARD, text('end'))
 
     def single_line_body(self, node):
-        """The one statement of a function the author wrote on a single line, when it is a plain statement."""
+        """The `return` of an anonymous function the author wrote on a single line, when that is all it does."""
         body = node.body
         if node.line != node.end_line or len(body.statements) != 1 or body.closing:
             return None
         statement = body.statements[0]
         if statement.lead or statement.trail or statement.hoisted:
             return None
-        if statement.kind not in ('return', 'break', 'callstat', 'assign', 'local'):
+        if statement.kind != 'return':
             return None
         doc = self.statement(statement)
         if self.is_multiline(doc):
@@ -1144,7 +1236,9 @@ class Printer:
         for index, statement in enumerate(statements):
             doc = self.statement(statement)
             if previous is not None:
-                parts.append(gap(previous_doc, doc, statement.blank_before))
+                tight = guard_kind(previous) is not None and guard_kind(previous) == guard_kind(statement) \
+                    and not statement.lead and not statement.hoisted
+                parts.append(gap(previous_doc, doc, statement.blank_before and not tight, tight))
             for comment in statement.hoisted:
                 parts.append(text(comment.text))
                 parts.append(HARD)
@@ -1278,36 +1372,33 @@ class Printer:
             parts.append(self.body(node.else_clause.body))
         parts.append(HARD)
         parts.append(text('end'))
-        full = cat(*parts)
-        single = self.single_line_if(node)
-        if single is not None:
-            return Cond([single, full])
-        return full
-
-    def single_line_if(self, node):
-        """`if x then return end`: kept on one line when the author wrote it that way, it is short and has one plain
-        statement and no else branch."""
-        if node.else_clause is not None or len(node.clauses) != 1:
-            return None
-        clause = node.clauses[0]
-        if node.line != node.end_line or clause.head_trail:
-            return None
-        body = clause.body
-        if len(body.statements) != 1 or body.closing:
-            return None
-        statement = body.statements[0]
-        if statement.lead or statement.trail or statement.hoisted:
-            return None
-        if statement.kind not in ('return', 'break', 'callstat', 'assign', 'local'):
-            return None
-        inner = self.statement(statement)
-        cond = self.expr(clause.cond)
-        if self.is_multiline(inner) or self.is_multiline(cond):
-            return None
-        return cat(text('if '), cond, text(' then '), inner, text(' end'))
+        return cat(*parts)
 
     def chunk(self, block):
         return self.block(block)
+
+
+GUARD_BODIES = ('return', 'break', 'callstat', 'assign', 'local')
+
+
+def guard_kind(statement):
+    """The kind of the one statement a guard clause runs (`return`, `break`, ...), or None when `statement` is not a guard
+    clause: an `if` with a single condition, no `else`, no comment in or on its head and one plain statement inside."""
+    if statement.kind != 'if' or statement.else_clause is not None or len(statement.clauses) != 1:
+        return None
+    clause = statement.clauses[0]
+    body = clause.body
+    if clause.head_trail or len(body.statements) != 1 or body.closing:
+        return None
+    inner = body.statements[0]
+    if inner.lead or inner.trail or inner.hoisted or inner.kind not in GUARD_BODIES:
+        return None
+    return inner.kind
+
+
+def long_string_gap(key):
+    """A space inside the brackets of `t[ [[text]] ]`: without it `[[` would open a long string around the whole key."""
+    return ' ' if key.kind == 'atom' and key.text.startswith('[') else ''
 
 
 def huggable(node):
@@ -1354,26 +1445,41 @@ def frozen_codes(path, revision=None):
             catalog.unlink()
 
 
+_FROZEN_CACHE = {}
+
+
 def read_frozen(catalog, path):
     if not catalog.exists():
         return set()
-    # Helper functions (module bindings) and the callbacks of every condition the module defines: the catalog stores
-    # their text, and saved copies and bundles are compared against it.
+    key = (str(catalog), catalog.stat().st_mtime_ns, catalog.stat().st_size)
+    if key not in _FROZEN_CACHE:
+        _FROZEN_CACHE.clear()
+        _FROZEN_CACHE[key] = read_all_frozen(catalog)
+    return _FROZEN_CACHE[key].get(path, set())
+
+
+def read_all_frozen(catalog):
+    """Per module path, the body texts the catalog records: helper functions (module bindings) and the callbacks of
+    every condition the module defines. Saved copies and bundles are compared against that text."""
     script = (
         "local addon={} local chunk=assert(loadfile(arg[1])) chunk('RotationMaster',addon)\n"
         "local catalog=addon.BuiltinSourceCatalog\n"
-        "local function show(code) if type(code)=='string' then\n"
-        "print((code:gsub('.',function(c) return string.format('%02x',c:byte()) end))) end end\n"
-        "local function callbacks(list) for _,cb in pairs(list or {}) do show(cb.code) end end\n"
-        "local module=catalog and catalog.modules[arg[2]]\n"
-        "if module then for _,b in pairs(module.bindings) do if b.kind=='function' then show(b.code) end end end\n"
-        "for _,c in pairs(catalog and catalog.conditions or {}) do if c.module==arg[2] then callbacks(c.callbacks)\n"
-        "for _,v in pairs(c.variants or {}) do callbacks(v.callbacks) end end end\n")
-    result = subprocess.run(['lua5.1', '-e', 'arg={[1]=%r,[2]=%r}' % (str(catalog), path) + ' ' + script],
-                            capture_output=True, text=True)
+        "local function hex(code) return (code:gsub('.',function(c) return string.format('%02x',c:byte()) end)) end\n"
+        "local function show(path,code) if type(code)=='string' then print(path..' '..hex(code)) end end\n"
+        "local function callbacks(path,list) for _,cb in pairs(list or {}) do show(path,cb.code) end end\n"
+        "for path,module in pairs(catalog and catalog.modules or {}) do\n"
+        "for _,b in pairs(module.bindings) do if b.kind=='function' then show(path,b.code) end end end\n"
+        "for _,c in pairs(catalog and catalog.conditions or {}) do callbacks(c.module,c.callbacks)\n"
+        "for _,v in pairs(c.variants or {}) do callbacks(c.module,v.callbacks) end end\n")
+    result = subprocess.run(['lua5.1', '-e', 'arg={[1]=%r} ' % str(catalog) + script], capture_output=True, text=True)
     if result.returncode != 0:
         raise FormatError('could not read the builtin source catalog: ' + result.stderr.strip())
-    return {bytes.fromhex(line).decode('utf-8') for line in result.stdout.split('\n') if line}
+    found = {}
+    for line in result.stdout.split('\n'):
+        if line:
+            module, code = line.split(' ')
+            found.setdefault(module, set()).add(bytes.fromhex(code).decode('utf-8'))
+    return found
 
 
 def split_generated(src):
@@ -1391,8 +1497,15 @@ def format_source(src, codes=frozenset()):
     """Format `src`. A region between `-- BEGIN GENERATED X` and `-- END GENERATED X` is some generator's output; it is
     set aside as a placeholder statement while the rest is formatted and put back byte for byte."""
     regions = []
+    try:
+        strings = [(token.start, token.end) for token in lex(src) if token.kind == 'str']
+    except FormatError:
+        strings = []
 
     def hide(match):
+        # Marker lines inside a string literal (a fixture that quotes a generated file) are not regions.
+        if any(start <= match.start() < end for start, end in strings):
+            return match.group(0)
         regions.append(match.group(0))
         return '__RM_GENERATED_REGION_%d__()' % (len(regions) - 1)
 
@@ -1468,7 +1581,7 @@ def same_program(before, after):
     return True, ''
 
 
-def process(path, write, to_stdout, list_only, base=None):
+def process(path, write, to_stdout, list_only, base=None, check=False):
     file = Path(path)
     relative = str(file.resolve().relative_to(ROOT)) if file.resolve().is_relative_to(ROOT) else str(file)
     before = git_show(base, relative) if base else file.read_text(encoding='utf-8')
@@ -1477,25 +1590,30 @@ def process(path, write, to_stdout, list_only, base=None):
         after = format_source(before, codes)
         # The layout of the first pass can depend on how the author wrapped things (a table written over several lines
         # stays expanded), so format until the text stops changing, as Prettier effectively does.
-        for _ in range(4):
+        for _ in range(0 if check else 4):
             again = format_source(after, codes)
             if again == after:
                 break
             after = again
         else:
-            raise FormatError('formatting does not settle')
-        if comment_list(before) != comment_list(after):
-            raise FormatError('comments differ after formatting')
-        ok, why = same_program(before, after)
-        if not ok:
-            raise FormatError(why)
+            if not check:
+                raise FormatError('formatting does not settle')
+        if not check:  # --check only compares layout; the proof is for writing
+            if comment_list(before) != comment_list(after):
+                raise FormatError('comments differ after formatting')
+            ok, why = same_program(before, after)
+            if not ok:
+                raise FormatError(why)
     except FormatError as error:
         print('REFUSED %s: %s' % (path, error), file=sys.stderr)
         return 1
     if after == (file.read_text(encoding='utf-8') if file.exists() else None):
-        if not list_only:
+        if not list_only and not check:
             print('unchanged %s' % path, file=sys.stderr)
         return 0
+    if check:
+        print('would reformat %s' % path, file=sys.stderr)
+        return 1
     if list_only:
         print(path)
         return 0
@@ -1510,17 +1628,39 @@ def process(path, write, to_stdout, list_only, base=None):
     return 0
 
 
+def tree_files():
+    """Every Lua file the formatter owns: tracked, not vendored, not generated (listed above, or a first line that says
+    `-- Generated by`), not one of the sources other tests cut up as text."""
+    listing = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '*.lua'], capture_output=True, text=True, check=True)
+    found = []
+    for relative in listing.stdout.splitlines():
+        if relative.startswith(EXEMPT_PREFIXES) or relative in EXEMPT_FILES or relative in READ_AS_TEXT_BY_TESTS:
+            continue
+        with open(ROOT / relative, encoding='utf-8') as handle:
+            head = handle.readline()
+        if head.lower().startswith('-- generated by'):
+            continue
+        found.append(str(ROOT / relative))
+    return found
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('files', nargs='+')
+    parser.add_argument('files', nargs='*')
+    parser.add_argument('--tree', action='store_true', help='all the files the formatter owns (see tree_files)')
     parser.add_argument('--write', action='store_true', help='rewrite the files')
     parser.add_argument('--stdout', action='store_true', help='print the formatted text')
+    parser.add_argument('--check', action='store_true', help='exit 1 when a file is not laid out as the formatter would')
     parser.add_argument('--list', action='store_true', help='only list the files that would change')
     parser.add_argument('--base', metavar='REV', help='read the input (and the helper catalog) from this revision instead of the working tree')
     args = parser.parse_args(argv)
+    if args.tree:
+        args.files = args.files + tree_files()
+    if not args.files:
+        parser.error('name files or pass --tree')
     status = 0
     for path in args.files:
-        status = max(status, process(path, args.write, args.stdout, args.list, args.base))
+        status = max(status, process(path, args.write, args.stdout, args.list, args.base, args.check))
     return status
 
 

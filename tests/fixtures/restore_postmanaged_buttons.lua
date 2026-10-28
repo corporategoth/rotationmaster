@@ -1,5 +1,5 @@
 -- QA only: exact composed successor to separately reviewed animation bytes.
-local current=([=[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+local current = ([=[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -1015,7 +1015,8 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]=]):sub(2)
-local previous=([=[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+
+local previous = ([=[!-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
 -- That addon is writtn by Kaminaris, and is released under the MIT license.
 -- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
 
@@ -2026,8 +2027,13 @@ do
 end
 -- END CPU ACTIVITY HANDOFF
 ]=]):sub(2)
-return function(text,path)
- text=dofile("tests/fixtures/restore_observation_lifecycles.lua")(text,path)
- if path=="buttons.lua"and text==current then return previous end
- return text
+
+return function(text, path)
+    text = dofile("tests/fixtures/restore_observation_lifecycles.lua")(text, path)
+
+    if path == "buttons.lua" and text == current then
+        return previous
+    end
+
+    return text
 end

@@ -63,10 +63,14 @@ function addon:BuildAnnounceSettings(p)
     -- True when value is a valid macro announcement identifier not used by another macro announcement (except is
     -- skipped).
     local function identifierFree(value, except)
-        if not self:IsValidMacroAnnouncementIdentifier(value) then return false end
+        if not self:IsValidMacroAnnouncementIdentifier(value) then
+            return false
+        end
 
         for _, entry in ipairs(values) do
-            if entry ~= except and entry.type == 'macro' and entry.identifier == value then return false end
+            if entry ~= except and entry.type == 'macro' and entry.identifier == value then
+                return false
+            end
         end
 
         return true
@@ -76,19 +80,29 @@ function addon:BuildAnnounceSettings(p)
     -- invalid seed becomes ANNOUNCE.
     local function nextIdentifier(seed)
         seed = self:IsValidMacroAnnouncementIdentifier(seed) and seed or 'ANNOUNCE'
-        if identifierFree(seed) then return seed end
+
+        if identifierFree(seed) then
+            return seed
+        end
+
         seed = seed:sub(1, 48)
 
         for i = 2, #values + 2 do
             local value = seed .. '_' .. i
-            if identifierFree(value) then return value end
+
+            if identifierFree(value) then
+                return value
+            end
         end
     end
 
     -- Stores a field on entry and refreshes its roster label and search text.
     local function update(entry, key, value)
         entry[key] = value
-        if refreshRoster then refreshRoster(entry) end
+
+        if refreshRoster then
+            refreshRoster(entry)
+        end
     end
 
     local outputFields = {
@@ -105,9 +119,16 @@ function addon:BuildAnnounceSettings(p)
     -- becomes false midway.
     local function renewOutputs(entry, current)
         for _, output in ipairs(entry.outputs or {}) do
-            if not current() then return false end
+            if not current() then
+                return false
+            end
+
             local id = self:uuid()
-            if not current() then return false end
+
+            if not current() then
+                return false
+            end
+
             output.id = id
         end
 
@@ -136,11 +157,14 @@ function addon:BuildAnnounceSettings(p)
             then
                 return false
             end
-
-            if p.newAnnounce == entry then return p:Valid(generation) end
+            if p.newAnnounce == entry then
+                return p:Valid(generation)
+            end
 
             for _, candidate in ipairs(store.profile.announces or {}) do
-                if candidate == entry then return p:Valid(generation) end
+                if candidate == entry then
+                    return p:Valid(generation)
+                end
             end
 
             return false
@@ -150,11 +174,15 @@ function addon:BuildAnnounceSettings(p)
 
         -- Applies a field edit to the entry if it is still current.
         local function change(key, value)
-            if parentCurrent() then update(entry, key, value) end
+            if parentCurrent() then
+                update(entry, key, value)
+            end
         end
 
         p:Choice(prefix .. 'type', L['Action Type'], entry.type, types, function(v)
-            if not parentCurrent() then return end
+            if not parentCurrent() then
+                return
+            end
 
             if
                 not source
@@ -164,7 +192,9 @@ function addon:BuildAnnounceSettings(p)
                     or entry.announce == 'whisper'
                     or entry.announce == 'channel')
             then
-                if not materialize() then return end
+                if not materialize() then
+                    return
+                end
             end
 
             entry.type = v
@@ -189,19 +219,27 @@ function addon:BuildAnnounceSettings(p)
                 L['Identifier'],
                 entry.identifier or '',
                 function(value)
-                    if identifierFree(value, entry) then return value end
+                    if identifierFree(value, entry) then
+                        return value
+                    end
                 end,
-                function(v) change('identifier', v) end
+                function(v)
+                    change('identifier', v)
+                end
             )
         elseif entry.type == 'item' then
-            p:ItemSequence(prefix .. 'action', entry.item, function(v) change('item', v) end)
+            p:ItemSequence(prefix .. 'action', entry.item, function(v)
+                change('item', v)
+            end)
         else
             p:Spell(
                 prefix .. 'action',
                 L['Spell'],
                 entry.spell,
                 entry.type == 'pet' and (BOOKTYPE_PET or "pet") or addon.currentSpec,
-                function(v) change('spell', v) end
+                function(v)
+                    change('spell', v)
+                end
             )
 
             if self:ClientHasSpellRanks() then
@@ -210,7 +248,9 @@ function addon:BuildAnnounceSettings(p)
                     prefix .. 'ranked',
                     L['Use this exact spell rank'],
                     entry.ranked,
-                    function(v) change('ranked', v) end,
+                    function(v)
+                        change('ranked', v)
+                    end,
                     nil,
                     L['Unticked, any rank of the spell matches. Ticked, only the rank you chose matches.']
                 )
@@ -218,7 +258,9 @@ function addon:BuildAnnounceSettings(p)
         end
 
         if entry.type ~= 'macro' then
-            p:Choice(prefix .. 'event', L['Event'], entry.event, events, function(v) change('event', v) end)
+            p:Choice(prefix .. 'event', L['Event'], entry.event, events, function(v)
+                change('event', v)
+            end)
         end
 
         local items = source or { entry }
@@ -231,10 +273,14 @@ function addon:BuildAnnounceSettings(p)
 
         -- True while the outputs list still holds exactly the outputs, with the same ids, that this draw displayed.
         local function collectionCurrent()
-            if not parentCurrent() or #items ~= #snapshot then return false end
+            if not parentCurrent() or #items ~= #snapshot then
+                return false
+            end
 
             for i, output in ipairs(snapshot) do
-                if items[i] ~= output or output.id ~= identities[i] then return false end
+                if items[i] ~= output or output.id ~= identities[i] then
+                    return false
+                end
             end
 
             return true
@@ -243,7 +289,10 @@ function addon:BuildAnnounceSettings(p)
         -- Converts a legacy single-output entry into an outputs list (copying each output field into a new output with
         -- a fresh id) and returns the list; returns the existing list when there is one, nil if the entry went stale.
         materialize = function()
-            if source then return items end
+            if source then
+                return items
+            end
+
             local outputs = {}
 
             for i, output in ipairs(items) do
@@ -256,7 +305,9 @@ function addon:BuildAnnounceSettings(p)
                 outputs[i] = copy
             end
 
-            if not parentCurrent() then return end
+            if not parentCurrent() then
+                return
+            end
 
             for _, key in ipairs(outputFields) do
                 entry[key] = nil
@@ -268,17 +319,30 @@ function addon:BuildAnnounceSettings(p)
 
         -- Called after a reorder or insert: converts a legacy entry to an outputs list so the new order is stored.
         local function structuralChange()
-            if parentCurrent() then materialize() end
+            if parentCurrent() then
+                materialize()
+            end
         end
 
         -- Add sits on the Outputs header row; a click appends and a drag drops
         -- into a gap, both through this one insert.
         local function insertOutput(gap)
-            if not collectionCurrent() or #items >= 64 then return end
+            if not collectionCurrent() or #items >= 64 then
+                return
+            end
+
             local output = { id = self:uuid(), announce = 'partyraid', value = '' }
-            if not collectionCurrent() then return end
+
+            if not collectionCurrent() then
+                return
+            end
+
             local outputs = materialize()
-            if not outputs then return end
+
+            if not outputs then
+                return
+            end
+
             table.insert(outputs, math.max(1, math.min(gap, #outputs + 1)), output)
             p:Draw()
         end
@@ -299,7 +363,10 @@ function addon:BuildAnnounceSettings(p)
                 local function outputChange(key, value)
                     if current() then
                         output[key] = value
-                        if refreshRoster then refreshRoster(entry) end
+
+                        if refreshRoster then
+                            refreshRoster(entry)
+                        end
                     end
                 end
 
@@ -344,11 +411,17 @@ function addon:BuildAnnounceSettings(p)
                 end
 
                 local choice = p:Choice(field .. 'channel', L['Announce'], output.announce, choices, function(v)
-                    if not current() then return end
+                    if not current() then
+                        return
+                    end
 
                     if v == 'channel' and not source then
                         local outputs = materialize()
-                        if not outputs then return end
+
+                        if not outputs then
+                            return
+                        end
+
                         outputs[index].announce = v
                     else
                         outputChange('announce', v)
@@ -394,12 +467,22 @@ function addon:BuildAnnounceSettings(p)
                     )
 
                     self:SetUIScript(selector, 'OnClick', p:Guard(function()
-                        if not current() or not p:FlushEdits() or not current() then return end
+                        if not current() or not p:FlushEdits() or not current() then
+                            return
+                        end
+
                         local platform = self.Platform
                         local query = platform and platform.GetJoinedAnnouncementChannels
-                        if not current() then return end
+
+                        if not current() then
+                            return
+                        end
+
                         local ok, found = false, nil
-                        if type(query) == 'function' then ok, found = pcall(query, platform, current) end
+
+                        if type(query) == 'function' then
+                            ok, found = pcall(query, platform, current)
+                        end
 
                         if
                             not current()
@@ -437,7 +520,9 @@ function addon:BuildAnnounceSettings(p)
                             }
                         end
 
-                        if not current() then return end
+                        if not current() then
+                            return
+                        end
 
                         p:ShowChoices(selector, rows, function(v)
                             if current() and output.announce == 'channel' and output.channel_name == name then
@@ -450,7 +535,10 @@ function addon:BuildAnnounceSettings(p)
 
                 if output.announce == 'gesture' then
                     local emotes = self.Platform:GetAnnouncementEmotes()
-                    if not current() then return end
+
+                    if not current() then
+                        return
+                    end
 
                     p:Choice(field .. 'emote', L['Emote'], output.emote, emotes, function(v)
                         outputChange('emote', v)
@@ -461,10 +549,14 @@ function addon:BuildAnnounceSettings(p)
                         kind == 'macro' and L['Use supplied macro target ({{target}})']
                             or L['Use spell recipient ({{target}})'],
                         output.emote_target,
-                        function(v) outputChange('emote_target', v) end
+                        function(v)
+                            outputChange('emote_target', v)
+                        end
                     )
                 elseif output.announce == 'audible' then
-                    p:Sound(field, L['Sound'], output.announce_sound, function(v) outputChange('announce_sound', v) end)
+                    p:Sound(field, L['Sound'], output.announce_sound, function(v)
+                        outputChange('announce_sound', v)
+                    end)
                 else
                     p:Edit(field .. 'text', L['Text'], output.value or '', nil, function(v)
                         outputChange('value', v)
@@ -472,11 +564,18 @@ function addon:BuildAnnounceSettings(p)
                 end
 
                 local summary = self:DescribeCondition(output.conditions or {}, self.currentSpec)
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
+
                 local conditionY = p.y
 
                 local condition = p:Button(field .. 'conditions', summary, function()
-                    if not current() then return end
+                    if not current() then
+                        return
+                    end
+
                     local conditions = output.conditions
                     local draft = self:CopySettingsData(conditions or {})
                     local baseline = self:CopySettingsData(draft)
@@ -490,7 +589,9 @@ function addon:BuildAnnounceSettings(p)
                             and current()
                     end
 
-                    if not editing() then return end
+                    if not editing() then
+                        return
+                    end
 
                     self:ShowConditionEditor(
                         nil,
@@ -525,7 +626,10 @@ function addon:BuildAnnounceSettings(p)
                 p.fields[prefix .. 'output' .. index .. 'duplicate'] = duplicate
 
                 self:SetUIScript(duplicate, 'OnClick', p:Guard(function()
-                    if not current() or #items >= 64 or not p:FlushEdits() or not current() then return end
+                    if not current() or #items >= 64 or not p:FlushEdits() or not current() then
+                        return
+                    end
+
                     local copy
 
                     if source then
@@ -539,9 +643,17 @@ function addon:BuildAnnounceSettings(p)
                     end
 
                     copy.id = self:uuid()
-                    if not current() then return end
+
+                    if not current() then
+                        return
+                    end
+
                     local outputs = materialize()
-                    if not outputs then return end
+
+                    if not outputs then
+                        return
+                    end
+
                     table.insert(outputs, index + 1, copy)
                     p:Draw()
                 end))
@@ -568,9 +680,15 @@ function addon:BuildAnnounceSettings(p)
                 p.fields[field .. 'enabled'] = enabled
 
                 self:SetUIScript(enabled, 'OnClick', p:Guard(function()
-                    if not current() or not p:FlushEdits() or not current() then return end
+                    if not current() or not p:FlushEdits() or not current() then
+                        return
+                    end
+
                     outputChange('disabled', not output.disabled)
-                    if current() then p:Draw() end
+
+                    if current() then
+                        p:Draw()
+                    end
                 end))
 
                 local candidate = output
@@ -584,7 +702,10 @@ function addon:BuildAnnounceSettings(p)
                 end
 
                 local valid = self:IsValidAnnouncementOutput(candidate, kind == 'macro')
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
 
                 self:SetWorkbenchInvalid(
                     row,
@@ -611,7 +732,10 @@ function addon:BuildAnnounceSettings(p)
             }
         )
 
-        if not parentCurrent() then return false end
+        if not parentCurrent() then
+            return false
+        end
+
         return true
     end
 
@@ -633,7 +757,10 @@ function addon:BuildAnnounceSettings(p)
 
     -- Name and icon for an announcement's action, used for the roster label.
     local function entryInfo(entry)
-        if entry.type == 'macro' then return { name = entry.identifier or L['Via Script/Macro'] } end
+        if entry.type == 'macro' then
+            return { name = entry.identifier or L['Via Script/Macro'] }
+        end
+
         return entry.type == 'item' and itemInfo(entry.item) or self.Platform:GetSpellInfo(entry.spell)
     end
 
@@ -686,7 +813,9 @@ function addon:BuildAnnounceSettings(p)
         }
     end
 
-    if not values[p.selection] and not p.creating then p.selection = entries[1] and entries[1].value end
+    if not values[p.selection] and not p.creating then
+        p.selection = entries[1] and entries[1].value
+    end
 
     -- Validates the creation form's draft and appends it to the profile announces list as a new entry with a fresh id.
     -- Shows a message and keeps the form open when the action or outputs are incomplete.
@@ -755,8 +884,13 @@ function addon:BuildAnnounceSettings(p)
 
     -- True while the selected entry and pane selection are the ones this draw captured.
     local function footerCurrent()
-        if not storeCurrent() or p.selection ~= selection then return false end
-        if selected and (values[selection] ~= selected or selected.id ~= selectedID) then return false end
+        if not storeCurrent() or p.selection ~= selection then
+            return false
+        end
+        if selected and (values[selection] ~= selected or selected.id ~= selectedID) then
+            return false
+        end
+
         return storeCurrent() and p.selection == selection
     end
 
@@ -764,21 +898,36 @@ function addon:BuildAnnounceSettings(p)
     -- (duplicate, import/export): flushes pending field edits, snapshots the selected entry and returns a current()
     -- check that also fails if the entry changed meanwhile; nil when the page is stale.
     local function beginFooter()
-        if not footerCurrent() or not p:FlushEdits() or not footerCurrent() then return end
+        if not footerCurrent() or not p:FlushEdits() or not footerCurrent() then
+            return
+        end
+
         local baseline = selected and self:CopySettingsData(selected)
-        if not footerCurrent() then return end
+
+        if not footerCurrent() then
+            return
+        end
 
         -- True while the page and the selected entry are unchanged since beginFooter took its snapshot.
         local function current()
-            if not footerCurrent() then return false end
-            if selected and not self:SettingsDataEqual(selected, baseline) then return false end
+            if not footerCurrent() then
+                return false
+            end
+            if selected and not self:SettingsDataEqual(selected, baseline) then
+                return false
+            end
+
             return footerCurrent()
         end
 
-        if current() then return current end
+        if current() then
+            return current
+        end
     end
 
-    if not footerCurrent() then return end
+    if not footerCurrent() then
+        return
+    end
 
     self:CollectionFooter(
         p,
@@ -792,15 +941,37 @@ function addon:BuildAnnounceSettings(p)
             enabled = selected ~= nil,
             action = function()
                 local current = beginFooter()
-                if not current then return end
+
+                if not current then
+                    return
+                end
+
                 local copy = self:CopySettingsData(selected)
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
+
                 local id = self:uuid()
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
+
                 copy.id = id
-                if not renewOutputs(copy, current) then return end
-                if copy.type == 'macro' then copy.identifier = nextIdentifier(copy.identifier) end
-                if not current() then return end
+
+                if not renewOutputs(copy, current) then
+                    return
+                end
+
+                if copy.type == 'macro' then
+                    copy.identifier = nextIdentifier(copy.identifier)
+                end
+
+                if not current() then
+                    return
+                end
+
                 values[#values + 1] = copy
                 p.selection = #values
                 p:Draw()
@@ -812,9 +983,17 @@ function addon:BuildAnnounceSettings(p)
             icon = 'transfer',
             action = function()
                 local current = beginFooter()
-                if not current then return end
+
+                if not current then
+                    return
+                end
+
                 local codec = self:NewRotationCodec()
-                if not current() then return end
+
+                if not current() then
+                    return
+                end
+
                 local text, why = '', nil
 
                 if selected then
@@ -824,7 +1003,9 @@ function addon:BuildAnnounceSettings(p)
                         announcement = selected,
                     })
 
-                    if not current() then return end
+                    if not current() then
+                        return
+                    end
 
                     if not text then
                         p:Message(why)
@@ -850,9 +1031,16 @@ function addon:BuildAnnounceSettings(p)
                     L['Announces'],
                     text,
                     function(input, settings)
-                        if not transferCurrent() then return false end
+                        if not transferCurrent() then
+                            return false
+                        end
+
                         local decoded, errorText = codec:Decode(input)
-                        if not transferCurrent() then return false end
+
+                        if not transferCurrent() then
+                            return false
+                        end
+
                         local wrapper = decoded and decoded.value
                         local entry = type(wrapper) == 'table' and wrapper.announcement
 
@@ -866,25 +1054,45 @@ function addon:BuildAnnounceSettings(p)
                         then
                             return false, errorText or L['Invalid announcement.']
                         end
-
-                        if not transferCurrent() then return false end
-
+                        if not transferCurrent() then
+                            return false
+                        end
                         if
                             entry.type == 'macro'
                             and not identifierFree(entry.identifier, settings.mode == 'replace' and selected or nil)
                         then
                             return false, L['Use a unique Via Script/Macro identifier.']
                         end
+                        if not transferCurrent() then
+                            return false
+                        end
 
-                        if not transferCurrent() then return false end
                         entry = self:CopySettingsData(entry)
-                        if not transferCurrent() then return false end
+
+                        if not transferCurrent() then
+                            return false
+                        end
+
                         local id = settings.mode == 'replace' and selected and selected.id or self:uuid()
-                        if not transferCurrent() then return false end
+
+                        if not transferCurrent() then
+                            return false
+                        end
+
                         entry.id = id
-                        if not renewOutputs(entry, transferCurrent) then return false end
-                        if not entry.outputs then entry.value = entry.value or '' end
-                        if not transferCurrent() then return false end
+
+                        if not renewOutputs(entry, transferCurrent) then
+                            return false
+                        end
+
+                        if not entry.outputs then
+                            entry.value = entry.value or ''
+                        end
+
+                        if not transferCurrent() then
+                            return false
+                        end
+
                         store.profile.announces = store.profile.announces or {}
 
                         if settings.mode == 'replace' and selected then
@@ -909,7 +1117,10 @@ function addon:BuildAnnounceSettings(p)
                             local entry = decoded and type(decoded.value) == 'table' and decoded.value.announcement
 
                             if type(entry) == 'table' then
-                                if self:SettingsNonempty(entry.name) then return entry.name end
+                                if self:SettingsNonempty(entry.name) then
+                                    return entry.name
+                                end
+
                                 local info = entryInfo(entry)
                                 return info and info.name
                             end
@@ -970,7 +1181,10 @@ function addon:BuildAnnounceSettings(p)
             end)
 
             name:SetWidth(math.max(60, p.width - 220 - 122))
-            if not drawAction('entry' .. i, entry) then return end
+
+            if not drawAction('entry' .. i, entry) then
+                return
+            end
 
             local enabled = p:Acquire('announceEnabled', function()
                 return self:CreateWorkbenchPill(p.child, '', 88)
@@ -1019,8 +1233,13 @@ function addon:BuildAnnounceSettings(p)
             outputs = { { id = self:uuid(), announce = 'partyraid', value = '' } },
         }
 
-        p:Edit('new_name', L['Name'], p.newAnnounce.name or '', nil, function(value) p.newAnnounce.name = value end)
-        if not drawAction('new_', p.newAnnounce) then return end
+        p:Edit('new_name', L['Name'], p.newAnnounce.name or '', nil, function(value)
+            p.newAnnounce.name = value
+        end)
+
+        if not drawAction('new_', p.newAnnounce) then
+            return
+        end
 
         p:CreationActions(addAnnouncement, function()
             p.newAnnounce = nil

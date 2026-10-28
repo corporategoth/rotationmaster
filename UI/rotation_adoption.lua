@@ -55,7 +55,10 @@ local function describe(value)
 
         if kind == 'string' then
             put(string.format('%q', current:sub(1, 65500)))
-            if #current > 65500 then truncated = true end
+
+            if #current > 65500 then
+                truncated = true
+            end
         elseif kind == 'number' or kind == 'boolean' or kind == 'nil' then
             put(tostring(current))
         elseif kind ~= 'table' then
@@ -77,13 +80,21 @@ local function describe(value)
             end
 
             table.sort(keys, function(a, b)
-                if type(a) == type(b) and (type(a) == 'string' or type(a) == 'number') then return a < b end
+                if type(a) == type(b) and (type(a) == 'string' or type(a) == 'number') then
+                    return a < b
+                end
+
                 return type(a) < type(b)
             end)
 
             for _, field in ipairs(keys) do
-                if truncated then break end
-                if not put(string.rep('  ', depth + 1) .. '[') then break end
+                if truncated then
+                    break
+                end
+                if not put(string.rep('  ', depth + 1) .. '[') then
+                    break
+                end
+
                 visit(field, depth + 1)
                 put('] = ')
                 visit(current[field], depth + 1)
@@ -96,7 +107,11 @@ local function describe(value)
     end
 
     visit(value, 0)
-    if truncated then parts[#parts + 1] = '\n' .. L['Archive report truncated; saved data is unchanged.'] end
+
+    if truncated then
+        parts[#parts + 1] = '\n' .. L['Archive report truncated; saved data is unchanged.']
+    end
+
     return table.concat(parts):sub(1, 65536)
 end
 
@@ -140,11 +155,20 @@ function addon:ShowRotationAdoption(owner, onApplied)
         function window:Clear()
             self.active = false
             self.form:Release()
-            if self.report then self.report.frame:Hide() end
+
+            if self.report then
+                self.report.frame:Hide()
+            end
         end
 
-        self:SetUIScript(window.close, 'OnClick', function() window:Hide() end)
-        self:SetUIScript(frame, 'OnHide', function() window:Clear() end)
+        self:SetUIScript(window.close, 'OnClick', function()
+            window:Hide()
+        end)
+
+        self:SetUIScript(frame, 'OnHide', function()
+            window:Clear()
+        end)
+
         frame:Hide()
     end
 
@@ -203,7 +227,9 @@ function addon:ShowRotationAdoption(owner, onApplied)
         )
 
         p:Button('refresh', L['Refresh'], function()
-            if valid() then p:Draw() end
+            if valid() then
+                p:Draw()
+            end
         end)
 
         local rows, why = addon:ListUnassignedRotations()
@@ -238,7 +264,10 @@ function addon:ShowRotationAdoption(owner, onApplied)
             }
 
             entries[#entries + 1] = entry
-            if entry.value == p.selection then selected = row end
+
+            if entry.value == p.selection then
+                selected = row
+            end
         end
 
         if not selected and rows[1] then
@@ -296,13 +325,18 @@ function addon:ShowRotationAdoption(owner, onApplied)
             end
         end
 
-        p:Check('class', L['Class'], scope == 'class', function() choose('class') end)
+        p:Check('class', L['Class'], scope == 'class', function()
+            choose('class')
+        end)
 
         local character = p:Check('character', L['This character'], scope == 'character', function()
             choose('character')
         end)
 
-        if not context or not context.character then character:Disable() end
+        if not context or not context.character then
+            character:Disable()
+        end
+
         local plan, reason
 
         if snapshot then
@@ -319,7 +353,10 @@ function addon:ShowRotationAdoption(owner, onApplied)
         local adopt
 
         adopt = p:Button('adopt', L['Adopt rotation'], function()
-            if not valid() or not plan then return end
+            if not valid() or not plan then
+                return
+            end
+
             local ok, reference = addon:ApplyRotationAdoption(plan)
 
             if not ok then
@@ -331,7 +368,10 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
             local notify = identityCurrent()
             window:Hide()
-            if notify and onApplied then onApplied(addon.RotationData.CopyData(reference)) end
+
+            if notify and onApplied then
+                onApplied(addon.RotationData.CopyData(reference))
+            end
         end)
 
         if not plan then
@@ -346,7 +386,10 @@ function addon:ShowRotationAdoption(owner, onApplied)
         for _, row in ipairs(rows) do
             if row.hasBody then
                 total = total + 1
-                if row.spec == selected.spec then group = group + 1 end
+
+                if row.spec == selected.spec then
+                    group = group + 1
+                end
             end
         end
 
@@ -363,7 +406,10 @@ function addon:ShowRotationAdoption(owner, onApplied)
                         target
                     ),
                     function()
-                        if not valid() then return end
+                        if not valid() then
+                            return
+                        end
+
                         local result, why = addon:AdoptAllUnassignedRotations(scope, options)
 
                         if not result then
@@ -376,7 +422,11 @@ function addon:ShowRotationAdoption(owner, onApplied)
 
                         if #result.failed == 0 then
                             window:Hide()
-                            if notify and onApplied and last then onApplied(addon.RotationData.CopyData(last)) end
+
+                            if notify and onApplied and last then
+                                onApplied(addon.RotationData.CopyData(last))
+                            end
+
                             return
                         end
 
@@ -395,7 +445,9 @@ function addon:ShowRotationAdoption(owner, onApplied)
                             table.concat(names, ', ')
                         ))
 
-                        if notify and onApplied and last then onApplied(addon.RotationData.CopyData(last)) end
+                        if notify and onApplied and last then
+                            onApplied(addon.RotationData.CopyData(last))
+                        end
                     end
                 )
             end
@@ -407,24 +459,33 @@ function addon:ShowRotationAdoption(owner, onApplied)
                     'adoptGroup',
                     string.format(L['Adopt all %d from specialization %d for %s'], group, selected.spec, target),
                     function()
-                        if valid() then run(group, { spec = selected.spec }) end
+                        if valid() then
+                            run(group, { spec = selected.spec })
+                        end
                     end
                 )
             end
 
             local bulk = p:Button('adoptAll', string.format(L['Adopt all %d for %s'], total, target), function()
-                if valid() then run(total) end
+                if valid() then
+                    run(total)
+                end
             end)
 
             if scope == 'character' and (not context or not context.character) then
                 bulk:Disable()
-                if bulkGroup then bulkGroup:Disable() end
+
+                if bulkGroup then
+                    bulkGroup:Disable()
+                end
             end
         end
     end)
 
     self:SetUIScript(window.frame, 'OnUpdate', function()
-        if window.active and window.serial == serial and not valid() then window:Hide() end
+        if window.active and window.serial == serial and not valid() then
+            window:Hide()
+        end
     end)
 
     self:OpenPopup(window)

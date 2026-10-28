@@ -60,10 +60,17 @@ local function constructor()
 
     -- Returns whether item resolves through the reference provider and passes the caller's isvalid test.
     function w:Accept(item)
-        if not self:Valid() then return false end
+        if not self:Valid() then
+            return false
+        end
+
         local provider = addon:GetReferenceProvider(self.editbox)
         local resolved = provider.resolve(tostring(item), { inventory = provider.inventory })
-        if resolved == nil then return false end
+
+        if resolved == nil then
+            return false
+        end
+
         local ok, value = pcall(self.isvalid, resolved)
         return ok and value and true or false
     end
@@ -71,7 +78,9 @@ local function constructor()
     -- True when a field has an uncommitted edit or the draft differs from the list as it was opened.
     function p:IsSettingsDraftDirty()
         for _, record in ipairs(self.edits) do
-            if record.dirty then return true end
+            if record.dirty then
+                return true
+            end
         end
 
         return not addon:SettingsDataEqual(w.baseline, w.draft)
@@ -92,10 +101,17 @@ local function constructor()
     -- Undo (or redo) one step: swaps the draft with the previous (next) snapshot and redraws. No-op when a pending
     -- field edit cannot be flushed or the stack is empty.
     function p:TravelSettingsHistory(redo)
-        if not self:FlushEdits() then return end
+        if not self:FlushEdits() then
+            return
+        end
+
         local from = redo and self.historyRedo or self.historyUndo
         local to = redo and self.historyUndo or self.historyRedo
-        if not from or #from == 0 then return end
+
+        if not from or #from == 0 then
+            return
+        end
+
         to[#to + 1] = self:HistorySnapshot()
         w.draft = table.remove(from)
         self.historyEpoch = (self.historyEpoch or 0) + 1
@@ -132,7 +148,9 @@ local function constructor()
     -- Marks the item fields and cards that differ from the opened list and enables Apply and View changes only while
     -- the draft is dirty.
     function p:RefreshUnsaved()
-        if not self:Valid(self.generation) then return end
+        if not self:Valid(self.generation) then
+            return
+        end
 
         for key, control in pairs(self.fields) do
             local index = key:match('^item(%d+)$')
@@ -174,7 +192,10 @@ local function constructor()
 
     -- Closes the popup once and releases the widget; later calls are ignored.
     function w:Close()
-        if not self.rmActive or self.closed then return end
+        if not self.rmActive or self.closed then
+            return
+        end
+
         self.closed = true
         addon:ReleaseConditionWidget(self)
     end
@@ -183,7 +204,9 @@ local function constructor()
     -- list was changed elsewhere since opening or any item no longer validates. A failing update callback is rethrown
     -- after the popup closes.
     function w:Apply()
-        if not self:Valid() or self.applying or not p:FlushEdits() then return false end
+        if not self:Valid() or self.applying or not p:FlushEdits() then
+            return false
+        end
 
         if type(self.target) ~= 'table' or not addon:SettingsDataEqual(self.target, self.baseline) then
             p:Message(L['The item list changed elsewhere. Close and reopen it before applying.'])
@@ -197,7 +220,10 @@ local function constructor()
             end
         end
 
-        if not self:Valid() then return false end
+        if not self:Valid() then
+            return false
+        end
+
         self.applying = true
 
         for key in pairs(self.target) do
@@ -210,9 +236,17 @@ local function constructor()
 
         local callback = self.update
         local ok, why = true, nil
-        if callback then ok, why = pcall(callback) end
+
+        if callback then
+            ok, why = pcall(callback)
+        end
+
         self:Close()
-        if not ok then error(why, 0) end
+
+        if not ok then
+            error(why, 0)
+        end
+
         return true
     end
 
@@ -224,7 +258,11 @@ local function constructor()
         end
 
         if p:IsSettingsDraftDirty() then
-            p:ConfirmPending(function() self:Apply() end, function() self:Close() end)
+            p:ConfirmPending(function()
+                self:Apply()
+            end, function()
+                self:Close()
+            end)
         else
             self:Close()
         end
@@ -248,7 +286,9 @@ local function constructor()
         local lease = self.rmLease
 
         addon:SetUIScript(w.closeButton, 'OnClick', function()
-            if w.rmLease == lease and w.rmActive then w:RequestClose() end
+            if w.rmLease == lease and w.rmActive then
+                w:RequestClose()
+            end
         end)
 
         addon:SetUIScript(w.helpButton, 'OnClick', function()
@@ -268,7 +308,10 @@ local function constructor()
 
         if p.draftComparisonOwner then
             p.draftComparisonOwner.generation = p.draftComparisonOwner.generation + 1
-            if p.draftComparisonOwner.comparison then p.draftComparisonOwner.comparison.frame:Hide() end
+
+            if p.draftComparisonOwner.comparison then
+                p.draftComparisonOwner.comparison.frame:Hide()
+            end
         end
 
         self.target = nil
@@ -277,7 +320,10 @@ local function constructor()
         self.options = {}
         self.draft = {}
         self.baseline = {}
-        if callback then callback(self) end
+
+        if callback then
+            callback(self)
+        end
     end
 
     addon:SetUIScript(frame, 'OnHide', function()
@@ -318,7 +364,15 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
 
         if type(w.target) ~= 'table' then
             p:Text(L['Choose an item list before editing.'])
-            p:CreationActions(function() end, function() w:Close() end, true)
+
+            p:CreationActions(
+                function() end,
+                function()
+                    w:Close()
+                end,
+                true
+            )
+
             return
         end
 
@@ -352,7 +406,9 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
                     item,
                     w.editbox,
                     { accept = function(value) return w:Accept(value) end },
-                    function(value) items[i] = value end
+                    function(value)
+                        items[i] = value
+                    end
                 )
 
                 field:ClearAllPoints()
@@ -378,7 +434,9 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
                                 p.newItem,
                                 w.editbox,
                                 { accept = function(value) return w:Accept(value) end },
-                                function(value) p.newItem = value end,
+                                function(value)
+                                    p.newItem = value
+                                end,
                                 true
                             ),
                             y,
@@ -389,7 +447,15 @@ function addon:OpenItemListPopup(name, editbox, items, isvalid, update, onclose,
             }
         )
 
-        p:CreationActions(function() w:Apply() end, function() w:Close() end, true)
+        p:CreationActions(
+            function()
+                w:Apply()
+            end,
+            function()
+                w:Close()
+            end,
+            true
+        )
     end)
 
     w.frame:Show()

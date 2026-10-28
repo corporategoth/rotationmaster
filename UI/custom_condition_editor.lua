@@ -55,7 +55,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         d = embedded.editor
     else
         d = self.nativeCustomConditionDialog
-        if d and d.isEmbedded then d = nil end
+
+        if d and d.isEmbedded then
+            d = nil
+        end
     end
 
     if d and not d.closed then
@@ -73,10 +76,18 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     }
 
     d.readOnly = embedded and embedded.readOnly == true
-    if d.readOnly then d.advancedSchema = false end
+
+    if d.readOnly then
+        d.advancedSchema = false
+    end
+
     d.embedded = embedded
     d.isEmbedded = embedded ~= nil
-    if embedded then embedded.editor = d end
+
+    if embedded then
+        embedded.editor = d
+    end
+
     self.nativeCustomConditionDialog = d
     d.closed = false
     d.suspended = nil
@@ -193,7 +204,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             self.suspended = nil
             self.frame:Show()
             self:ShowFooter(true)
-            if not self.embedded then addon:OpenPopup(self) end
+
+            if not self.embedded then
+                addon:OpenPopup(self)
+            end
         end
     end
 
@@ -220,7 +234,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- The code control reports an edit: records the previous text on the undo stack (bounded to 100 entries and 4 MiB),
     -- clears redo and refreshes the buttons. Ignored while text is being loaded programmatically.
     function d:CodeChanged()
-        if self.loadingCode or self.readOnly or not self.code then return end
+        if self.loadingCode or self.readOnly or not self.code then
+            return
+        end
+
         local state = self:CodeState()
         local text = self.code:GetText()
 
@@ -265,7 +282,11 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         local state = self:CodeState()
         local from = redo and state.redo or state.undo
         local to = redo and state.undo or state.redo
-        if #from == 0 then return end
+
+        if #from == 0 then
+            return
+        end
+
         local entry = table.remove(from)
 
         if type(entry) == 'table' and entry.kind == 'function-completion' then
@@ -280,7 +301,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
     -- Copies the visible code text into the buffer state so a pending edit is not lost.
     function d:FlushCode()
-        if self.code and not self.readOnly then self:CodeState().text = self.code:GetText() end
+        if self.code and not self.readOnly then
+            self:CodeState().text = self.code:GetText()
+        end
     end
 
     -- Returns a copy of the whole definition with every callback replaced by its current buffer text; the draft model
@@ -342,10 +365,15 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- false if there is nothing to travel.
     function d:TravelModel(redo)
         local before = addon:CopySettingsData(self.model.value)
-        if not self.model:Travel(redo) then return false end
+
+        if not self.model:Travel(redo) then
+            return false
+        end
 
         for name, state in pairs(self.codeHistory) do
-            if state.text == before[name] then state.text = self.model.value[name] end
+            if state.text == before[name] then
+                state.text = self.model.value[name]
+            end
         end
 
         return true
@@ -354,7 +382,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Commits pending field edits and code text before an action; false when the session is invalid or a field rejects
     -- its value.
     function d:Flush()
-        if not valid() or not p:FlushEdits() then return false end
+        if not valid() or not p:FlushEdits() then
+            return false
+        end
+
         self:FlushCode()
         return true
     end
@@ -362,10 +393,15 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- True when anything differs from the saved definition: a pending new condition, the schema draft, the embedding
     -- owner, the source or any uncommitted field.
     function d:IsDirty()
-        if self.model.creationPending then return true end
-        if self.schemaEditor and self.schemaEditor.active and self.schemaEditor:IsDirty() then return true end
-        if self.embedded and self.embedded.dirty and self.embedded.dirty() then return true end
-
+        if self.model.creationPending then
+            return true
+        end
+        if self.schemaEditor and self.schemaEditor.active and self.schemaEditor:IsDirty() then
+            return true
+        end
+        if self.embedded and self.embedded.dirty and self.embedded.dirty() then
+            return true
+        end
         if not addon:SettingsDataEqual({
             key = self.model.key,
             value = self:PendingSource(),
@@ -375,7 +411,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         end
 
         for _, edit in ipairs(p.edits) do
-            if edit.dirty then return true end
+            if edit.dirty then
+                return true
+            end
         end
 
         return false
@@ -384,11 +422,16 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Re-checks the identifier, the whole definition and each callback's syntax when the inputs changed since the last
     -- check, marking the offending fields and tabs. Compiles only; no callback is run.
     function d:UpdateValidation()
-        if not self.code or self.readOnly then return end
+        if not self.code or self.readOnly then
+            return
+        end
+
         local schemaDirty = false
 
         for _, record in ipairs(p.edits) do
-            if record.control == p.fields.schema and record.dirty then schemaDirty = true end
+            if record.control == p.fields.schema and record.dirty then
+                schemaDirty = true
+            end
         end
 
         local input = {
@@ -410,12 +453,17 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
                 or self.model.value[name]
         end
 
-        if addon:SettingsDataEqual(input, self.validationInput) then return end
+        if addon:SettingsDataEqual(input, self.validationInput) then
+            return
+        end
+
         self.validationInput = addon:CopySettingsData(input)
         local source = addon:CopySettingsData(self.model.value)
         source.description = input.description
-        if input.schemaDirty then source.fields = addon:ParseCustomFieldSchema(input.schema) end
 
+        if input.schemaDirty then
+            source.fields = addon:ParseCustomFieldSchema(input.schema)
+        end
         if source.fields and not addon:SettingsDataEqual(source.fields, self.model.value.fields) then
             source.requiredFields = addon:FilterCustomRequiredFields(source.requiredFields, source.fields)
         end
@@ -477,7 +525,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Gives the code control the symbols of the selected callback (arguments, fields, bindings) for completion, hover
     -- and the debugger, when they changed.
     function d:SyncFunctionContext()
-        if not self.code or not self.code.SetContext then return end
+        if not self.code or not self.code.SetContext then
+            return
+        end
+
         local source = self:PendingSource()
 
         local signature = {
@@ -491,7 +542,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             revision = addon.functionRegistryVersion or 0,
         }
 
-        if addon:SettingsDataEqual(signature, self.functionContextSignature) then return end
+        if addon:SettingsDataEqual(signature, self.functionContextSignature) then
+            return
+        end
+
         self.functionContextSignature = addon:CopySettingsData(signature)
 
         self.code:SetContext({
@@ -509,7 +563,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- and tabs, binding markers, the function context and validation. Runs from the dialog OnUpdate as well as after
     -- edits.
     function d:UpdateActions()
-        if self.closed then return end
+        if self.closed then
+            return
+        end
 
         if #self.model.undo > 0 or #self:CodeState().undo > 0 then
             self.undo:Enable()
@@ -547,7 +603,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             local dirty = not addon:UnsavedDataEqual(entry[2], entry[3])
 
             for _, record in ipairs(p.edits) do
-                if record.control == input and record.dirty then dirty = input:GetText() ~= tostring(entry[3] or '') end
+                if record.control == input and record.dirty then
+                    dirty = input:GetText() ~= tostring(entry[3] or '')
+                end
             end
 
             addon:SetWorkbenchUnsaved(input, dirty)
@@ -602,8 +660,14 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
         addon:SetWorkbenchUnsaved(self.schemaViewport, schemaDirty)
         addon:SetWorkbenchUnsaved(p.fields.schemaGraph, false)
-        if addon.RefreshFunctionBindingMarkers then addon:RefreshFunctionBindingMarkers(p, self) end
-        if self.embedded and self.embedded.updateActions then self.embedded.updateActions(self) end
+
+        if addon.RefreshFunctionBindingMarkers then
+            addon:RefreshFunctionBindingMarkers(p, self)
+        end
+        if self.embedded and self.embedded.updateActions then
+            self.embedded.updateActions(self)
+        end
+
         self:SyncFunctionContext()
         self:UpdateValidation()
     end
@@ -611,27 +675,46 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Ends the session: rolls back a pending binding, closes child dialogs, releases the code control and form and
     -- drops every reference to the draft so the dialog can be reused or collected.
     function d:Close()
-        if self.closed then return end
-        if self.pendingFunctionBinding then self.pendingFunctionBinding:rollback() end
+        if self.closed then
+            return
+        end
+
+        if self.pendingFunctionBinding then
+            self.pendingFunctionBinding:rollback()
+        end
+
         self.closed = true
         self.owner.active = false
         local children = {}
 
         for child in pairs(self.owner.widgets) do
-            if child ~= self then children[#children + 1] = child end
+            if child ~= self then
+                children[#children + 1] = child
+            end
         end
 
         for _, child in ipairs(children) do
             child:Hide()
         end
 
-        if self.schemaEditor and self.schemaEditor.active then self.schemaEditor:Close() end
-        if self.ownedPicker and self.ownedPicker.serial == self.ownedPickerSerial then self.ownedPicker.frame:Hide() end
-        if self.ownedHelp and self.ownedHelp.sections == self.ownedHelpSections then self.ownedHelp:Hide() end
+        if self.schemaEditor and self.schemaEditor.active then
+            self.schemaEditor:Close()
+        end
+        if self.ownedPicker and self.ownedPicker.serial == self.ownedPickerSerial then
+            self.ownedPicker.frame:Hide()
+        end
+        if self.ownedHelp and self.ownedHelp.sections == self.ownedHelpSections then
+            self.ownedHelp:Hide()
+        end
+
         self.ownedPicker = nil
         self.ownedHelp = nil
         self.ownedHelpSections = nil
-        if self.code then pcall(self.code.Release, self.code) end
+
+        if self.code then
+            pcall(self.code.Release, self.code)
+        end
+
         p:Release()
         self.frame:Hide()
 
@@ -639,7 +722,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             button:Hide()
         end
 
-        if self.OnRelease then self:OnRelease() end
+        if self.OnRelease then
+            self:OnRelease()
+        end
+
         addon:SetUIScript(self.frame, 'OnUpdate', nil)
         self.OwnerValid = nil
         self.conditionTestState = nil
@@ -668,8 +754,13 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- when installation fails (the reason is shown). On success it commits the buffers, closes the dialog and calls
     -- update(identifier). Returns true when saved.
     function d:Apply()
-        if self.schemaEditor and self.schemaEditor.active and not self.schemaEditor:Apply() then return false end
-        if self.suspended then return false end
+        if self.schemaEditor and self.schemaEditor.active and not self.schemaEditor:Apply() then
+            return false
+        end
+        if self.suspended then
+            return false
+        end
+
         self.validationRequested = true
 
         if not self:Flush() then
@@ -724,7 +815,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
     -- Closes immediately when nothing changed; otherwise asks to Apply, Discard or Cancel.
     function d:Hide()
-        if self.closed then return end
+        if self.closed then
+            return
+        end
 
         if not valid() then
             self:Close()
@@ -736,7 +829,12 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             return
         end
 
-        p:ConfirmPending(function() self:Apply() end, function() self:Close() end)
+        p:ConfirmPending(function()
+            self:Apply()
+        end, function()
+            self:Close()
+        end)
+
         p.prompt.frame:SetParent(UIParent)
         addon:OpenPopup(p.prompt, d)
     end
@@ -744,7 +842,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Switches the code control to another callback tab, keeping the buffer of the previous one and updating the
     -- signature, documentation and context.
     function d:SelectFunction(name)
-        if not valid() or not addon.CustomConditionCallbacks[name] then return end
+        if not valid() or not addon.CustomConditionCallbacks[name] then
+            return
+        end
+
         self:FlushCode()
         self.selected = name
         self:SetCode(self:CodeState().text)
@@ -773,7 +874,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     -- Opens the graphical schema editor on the given fields. Applying it stages the fields, order and required list in
     -- the draft. Not available when the editor is read-only.
     function d:OpenSchema(fields, fieldOrder, childResume)
-        if self.readOnly then return end
+        if self.readOnly then
+            return
+        end
 
         return addon:ShowFieldSchemaEditor(
             self,
@@ -806,7 +909,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     d.test = d.test or self:CreateWorkbenchButton(frame, L['Test'], 84)
 
     addon:SetUIScript(d.test, 'OnClick', function()
-        if valid() and addon.ShowConditionSourceTest then addon:ShowConditionSourceTest(d) end
+        if valid() and addon.ShowConditionSourceTest then
+            addon:ShowConditionSourceTest(d)
+        end
     end)
 
     d.transfer = d.transfer or self:CreateWorkbenchButton(frame, L['Import/Export'], 126)
@@ -848,22 +953,32 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     end)
 
     addon:SetUIScript(d.apply, 'OnClick', function()
-        if valid() then d:Apply() end
+        if valid() then
+            d:Apply()
+        end
     end)
 
     addon:SetUIScript(d.cancel, 'OnClick', function()
         if valid() then
             d:Close()
-            if embedded and embedded.discard then embedded.discard() end
+
+            if embedded and embedded.discard then
+                embedded.discard()
+            end
         end
     end)
 
     addon:SetUIScript(d.close, 'OnClick', function()
-        if valid() then d:Hide() end
+        if valid() then
+            d:Hide()
+        end
     end)
 
     addon:SetUIScript(d.syntax, 'OnClick', function()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         d.validationRequested = true
 
         if d:Flush() then
@@ -878,7 +993,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     end)
 
     addon:SetUIScript(d.transfer, 'OnClick', function()
-        if valid() and d:Flush() then addon:ShowCustomConditionTransfer(d, update, d.model.key, d:PendingSource()) end
+        if valid() and d:Flush() then
+            addon:ShowCustomConditionTransfer(d, update, d.model.key, d:PendingSource())
+        end
     end)
 
     addon:SetUIScript(d.help, 'OnClick', function()
@@ -930,8 +1047,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
                 d.model.key
             )
         end
-
-        if embedded and embedded.fields then embedded.fields(form, d) end
+        if embedded and embedded.fields then
+            embedded.fields(form, d)
+        end
 
         local availability = form:Acquire('sourceAvailability', function()
             return addon:CreateWorkbenchPill(form.child, '', 96)
@@ -943,7 +1061,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
         addon:SetUIScript(availability, 'OnClick', function()
             if valid() and d:Flush() then
-                d.model:Change(function(model) model.value.disabled = not model.value.disabled end)
+                d.model:Change(function(model)
+                    model.value.disabled = not model.value.disabled
+                end)
+
                 p:Draw()
                 d:UpdateActions()
             end
@@ -957,7 +1078,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             availability:SetPoint('TOPRIGHT', -4, -4)
         end
 
-        if not embedded then form:Row(nil, 24) end
+        if not embedded then
+            form:Row(nil, 24)
+        end
+
         local identityY = form.y
 
         form:Edit(
@@ -969,7 +1093,11 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
                     and text
                     or nil
             end,
-            function(text) d.model:Change(function(model) model.key = text end) end
+            function(text)
+                d.model:Change(function(model)
+                    model.key = text
+                end)
+            end
         )
 
         local identifierLabel = form.pool.labels[form.counts.labels]
@@ -1000,10 +1128,14 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
                 end
             end
 
-            if changed then changed(control, user) end
+            if changed then
+                changed(control, user)
+            end
         end)
 
-        if d.originalKey and d.model.key == d.originalKey then identifier:EnableMouse(false) end
+        if d.originalKey and d.model.key == d.originalKey then
+            identifier:EnableMouse(false)
+        end
 
         if d.readOnly then
             identifier:Disable()
@@ -1014,7 +1146,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         local descriptionY = form.y
 
         form:Edit('description', L['Description'], d.model.value.description, nil, function(text)
-            d.model:Change(function(model) model.value.description = text end)
+            d.model:Change(function(model)
+                model.value.description = text
+            end)
         end)
 
         local descriptionLabel = form.pool.labels[form.counts.labels]
@@ -1032,14 +1166,21 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
         icon:SetSize(52, 52)
 
         addon:SetUIScript(icon, 'OnClick', function()
-            if not valid() then return end
-            if not d:Flush() then return end
+            if not valid() then
+                return
+            end
+            if not d:Flush() then
+                return
+            end
 
             d.ownedPicker = addon:ShowWorkbenchIconPicker(
                 d.model.value.icon,
                 function(texture)
                     if valid() and d:Flush() then
-                        d.model:Change(function(model) model.value.icon = texture end)
+                        d.model:Change(function(model)
+                            model.value.icon = texture
+                        end)
+
                         p:Draw()
                     end
                 end,
@@ -1063,7 +1204,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             availability:Show()
         end
 
-        if embedded and embedded.category then embedded.category(form, d) end
+        if embedded and embedded.category then
+            embedded.category(form, d)
+        end
+
         addon:BuildCustomSourceFields(form, d)
 
         for _, field in ipairs({ 'schemaGraph', 'schema', 'advancedSchema' }) do
@@ -1090,7 +1234,11 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             button.tooltip = labels[name]
             d.functionTabs[name] = button
             button:SetSelected(name == d.selected)
-            addon:SetUIScript(button, 'OnClick', form:Guard(function() d:SelectFunction(name) end))
+
+            addon:SetUIScript(button, 'OnClick', form:Guard(function()
+                d:SelectFunction(name)
+            end))
+
             local caption = button:GetFontString()
             caption:SetFontObject('GameFontHighlightSmall')
             caption:SetWidth(math.max(1, tabWidth - 6))
@@ -1121,7 +1269,9 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             d[entry[1]] = control
 
             addon:SetUIScript(control, 'OnClick', function()
-                if not valid() then return end
+                if not valid() then
+                    return
+                end
 
                 if entry[1] == 'codeUndo' or entry[1] == 'codeRedo' then
                     d:TravelCode(entry[1] == 'codeRedo')
@@ -1255,17 +1405,22 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
             d,
             form.child,
             function()
-                if valid() then d:CodeChanged() end
+                if valid() then
+                    d:CodeChanged()
+                end
             end,
             valid,
             preference
         )
 
-        if d.code.SetReadOnly then d.code:SetReadOnly(d.readOnly) end
-
+        if d.code.SetReadOnly then
+            d.code:SetReadOnly(d.readOnly)
+        end
         if d.code.SetCloseHandler then
             d.code:SetCloseHandler(function(mouse)
-                if not valid() then return end
+                if not valid() then
+                    return
+                end
 
                 if embedded and embedded.closeOwner then
                     embedded.closeOwner(mouse)
@@ -1310,7 +1465,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
         form.cleanups[#form.cleanups + 1] = function()
             if d.code then
-                if d.code.edit then d.code.edit:ClearFocus() end
+                if d.code.edit then
+                    d.code.edit:ClearFocus()
+                end
+
                 d.code.frame:Hide()
             end
         end
@@ -1318,7 +1476,10 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
 
     -- Changes the dialog height (embedded use) and lays the form out again; ignores changes below a tenth of a pixel.
     function d:ResizeHeight(height)
-        if math.abs(self.frame:GetHeight() - height) < .1 then return end
+        if math.abs(self.frame:GetHeight() - height) < .1 then
+            return
+        end
+
         self.frame:SetHeight(height)
         self.body:SetHeight(height - (self.embedded and 0 or 70))
         self.form:SetHeight(self.body:GetHeight())
@@ -1388,7 +1549,11 @@ function addon:condition_edit_box(update, key, source, saveAllowed, embedded)
     p.message:Show()
     frame:Show()
     d:UpdateActions()
-    if resume and resume.schema then d:OpenSchema(d.model.value.fields, d.model.value.fieldOrder, resume.schema) end
+
+    if resume and resume.schema then
+        d:OpenSchema(d.model.value.fields, d.model.value.fieldOrder, resume.schema)
+    end
+
     return d, d.owner
 end
 
@@ -1399,7 +1564,10 @@ end
 -- Loads another definition (an import result) into the open editor `parent` as a staged edit under `key`, discarding
 -- the callback undo history, and redraws. Does nothing if `parent` is not this editor.
 function addon:LayoutCustomConditionEditor(parent, update, key, source)
-    if not parent.nativeCustomEditor then return end
+    if not parent.nativeCustomEditor then
+        return
+    end
+
     parent:FlushCode()
     parent.codeHistory = {}
 

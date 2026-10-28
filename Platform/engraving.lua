@@ -41,9 +41,16 @@ local refreshRequested = false
 -- Returns the named C_Engraving function, or nil when the namespace or the function does not exist.
 local function method(name)
     local namespace = C_Engraving
-    if type(namespace) ~= 'table' then return nil end
+
+    if type(namespace) ~= 'table' then
+        return nil
+    end
+
     local fn = namespace[name]
-    if type(fn) == 'function' then return fn end
+
+    if type(fn) == 'function' then
+        return fn
+    end
 end
 
 -- True for a readable positive whole number (a rune, slot or spell id).
@@ -59,10 +66,20 @@ end
 -- code when it is missing, throws or returns a restricted value.
 local function protected(name, ...)
     local fn = method(name)
-    if not fn then return false, 'missing-api' end
+
+    if not fn then
+        return false, 'missing-api'
+    end
+
     local ok, first, second = pcall(fn, ...)
-    if not ok then return false, 'api-error' end
-    if not platform:CanReadValue(first) or not platform:CanReadValue(second) then return false, 'restricted-value' end
+
+    if not ok then
+        return false, 'api-error'
+    end
+    if not platform:CanReadValue(first) or not platform:CanReadValue(second) then
+        return false, 'restricted-value'
+    end
+
     return true, first, second
 end
 
@@ -72,8 +89,14 @@ end
 -- Returns true, or nil and a reason code ("rune-data-pending" while the list loads).
 function platform:GetEngravingAvailability()
     local ok, enabled = protected('IsEngravingEnabled')
-    if not ok then return nil, enabled end
-    if enabled ~= true then return nil, 'engraving-unavailable' end
+
+    if not ok then
+        return nil, enabled
+    end
+    if enabled ~= true then
+        return nil, 'engraving-unavailable'
+    end
+
     local okCount, _, maximum = protected('GetNumRunesKnown')
 
     if okCount and type(maximum) == 'number' and maximum == 0 then
@@ -92,8 +115,12 @@ end
 -- category (InventoryType), level and the learned spell IDs.
 -- Returns nil and a reason code when data is restricted or lacks a rune id.
 local function rune(data)
-    if not platform:CanReadValue(data) then return nil, 'restricted-value' end
-    if type(data) ~= 'table' then return nil, 'invalid-api-result' end
+    if not platform:CanReadValue(data) then
+        return nil, 'restricted-value'
+    end
+    if type(data) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
 
     for _, key in ipairs({
         'skillLineAbilityID',
@@ -103,17 +130,28 @@ local function rune(data)
         'level',
         'learnedAbilitySpellIDs',
     }) do
-        if not platform:CanReadValue(data[key]) then return nil, 'restricted-value' end
+        if not platform:CanReadValue(data[key]) then
+            return nil, 'restricted-value'
+        end
     end
 
-    if not identifier(data.skillLineAbilityID) then return nil, 'invalid-api-result' end
+    if not identifier(data.skillLineAbilityID) then
+        return nil, 'invalid-api-result'
+    end
+
     local spells = {}
 
     if type(data.learnedAbilitySpellIDs) == 'table' then
         for index = 1, #data.learnedAbilitySpellIDs do
             local spell = data.learnedAbilitySpellIDs[index]
-            if not platform:CanReadValue(spell) then return nil, 'restricted-value' end
-            if identifier(spell) then spells[#spells + 1] = spell end
+
+            if not platform:CanReadValue(spell) then
+                return nil, 'restricted-value'
+            end
+
+            if identifier(spell) then
+                spells[#spells + 1] = spell
+            end
         end
     end
 
@@ -134,9 +172,17 @@ end
 -- partial map is never mistaken for a complete one.
 function platform:GetEngravedRunes()
     local available, why = self:GetEngravingAvailability()
-    if not available then return nil, why end
+
+    if not available then
+        return nil, why
+    end
+
     local get = method('GetRuneForEquipmentSlot')
-    if not get then return nil, 'missing-api' end
+
+    if not get then
+        return nil, 'missing-api'
+    end
+
     local engravable = method('IsEquipmentSlotEngravable')
     local result = { byRune = {}, bySpell = {} }
 
@@ -145,19 +191,34 @@ function platform:GetEngravedRunes()
 
         if engravable then
             local ok, value = pcall(engravable, slot)
-            if not ok then return nil, 'api-error' end
-            if not self:CanReadValue(value) then return nil, 'restricted-value' end
+
+            if not ok then
+                return nil, 'api-error'
+            end
+            if not self:CanReadValue(value) then
+                return nil, 'restricted-value'
+            end
+
             check = value == true
         end
 
         if check then
             local ok, data = pcall(get, slot)
-            if not ok then return nil, 'api-error' end
-            if not self:CanReadValue(data) then return nil, 'restricted-value' end
+
+            if not ok then
+                return nil, 'api-error'
+            end
+            if not self:CanReadValue(data) then
+                return nil, 'restricted-value'
+            end
 
             if data ~= nil then
                 local record, reason = rune(data)
-                if not record then return nil, reason end
+
+                if not record then
+                    return nil, reason
+                end
+
                 result.byRune[record.rune] = slot
 
                 for _, spell in ipairs(record.spells) do
@@ -175,33 +236,58 @@ end
 -- Returns that list, or nil and a reason code. Builds a fresh table of records on every call.
 function platform:GetKnownRunes()
     local available, why = self:GetEngravingAvailability()
-    if not available then return nil, why end
+
+    if not available then
+        return nil, why
+    end
+
     local ok, categories = protected('GetRuneCategories', false, true)
-    if not ok then return nil, categories end
-    if type(categories) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, categories
+    end
+    if type(categories) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local slotName = C_Item and C_Item.GetItemInventorySlotInfo or GetItemInventorySlotInfo
     local groups = {}
 
     for index = 1, #categories do
         local category = categories[index]
-        if not self:CanReadValue(category) then return nil, 'restricted-value' end
+
+        if not self:CanReadValue(category) then
+            return nil, 'restricted-value'
+        end
 
         if identifier(category) then
             local okRunes, list = protected('GetRunesForCategory', category, true)
-            if not okRunes then return nil, list end
-            if type(list) ~= 'table' then return nil, 'invalid-api-result' end
+
+            if not okRunes then
+                return nil, list
+            end
+            if type(list) ~= 'table' then
+                return nil, 'invalid-api-result'
+            end
+
             local name
 
             if type(slotName) == 'function' then
                 local okName, text = pcall(slotName, category)
-                if okName and self:CanReadValue(text) and type(text) == 'string' and text ~= '' then name = text end
+
+                if okName and self:CanReadValue(text) and type(text) == 'string' and text ~= '' then
+                    name = text
+                end
             end
 
             local group = { category = category, name = name, runes = {} }
 
             for position = 1, #list do
                 local record = rune(list[position])
-                if record then group.runes[#group.runes + 1] = record end
+
+                if record then
+                    group.runes[#group.runes + 1] = record
+                end
             end
 
             groups[#groups + 1] = group
@@ -219,11 +305,15 @@ function platform:FindKnownRune(runeID, spellID)
 
     for _, group in ipairs(groups or {}) do
         for _, record in ipairs(group.runes) do
-            if runeID ~= nil and record.rune == runeID then return record, group end
+            if runeID ~= nil and record.rune == runeID then
+                return record, group
+            end
 
             if spellID ~= nil then
                 for _, spell in ipairs(record.spells) do
-                    if spell == spellID then return record, group end
+                    if spell == spellID then
+                        return record, group
+                    end
                 end
             end
         end

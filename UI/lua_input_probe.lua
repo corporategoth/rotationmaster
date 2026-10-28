@@ -86,7 +86,10 @@ function addon:ShowLuaInputProbe()
     -- Switches the sample between the stock chat font ('stock') and the bundled monospace font ('rm'), keeping the
     -- caret position and focus so the player can compare caret behavior in place.
     local function selectFont(mode)
-        if not d.active or d.session ~= session or not d.frame:IsShown() then return end
+        if not d.active or d.session ~= session or not d.frame:IsShown() then
+            return
+        end
+
         local cursor = d.edit:GetCursorPosition()
 
         if mode == 'rm' then
@@ -97,15 +100,26 @@ function addon:ShowLuaInputProbe()
 
         d.fontMode = mode
         d.fontState:SetText(mode == 'rm' and L['RM font'] or L['Stock font'])
-        if d.edit:GetCursorPosition() ~= cursor then d.edit:SetCursorPosition(cursor) end
+
+        if d.edit:GetCursorPosition() ~= cursor then
+            d.edit:SetCursorPosition(cursor)
+        end
+
         d.edit:SetFocus()
     end
 
-    self:SetUIScript(d.stockFont, 'OnClick', function() selectFont('stock') end)
-    self:SetUIScript(d.rmFont, 'OnClick', function() selectFont('rm') end)
+    self:SetUIScript(d.stockFont, 'OnClick', function()
+        selectFont('stock')
+    end)
+
+    self:SetUIScript(d.rmFont, 'OnClick', function()
+        selectFont('rm')
+    end)
 
     self:SetUIScript(d.close, 'OnClick', function()
-        if d.active and d.session == session then d:Hide() end
+        if d.active and d.session == session then
+            d:Hide()
+        end
     end)
 
     d.frame:Show()

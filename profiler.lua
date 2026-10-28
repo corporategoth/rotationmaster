@@ -11,17 +11,30 @@ local string, pairs, protect, kind = string, pairs, pcall, type
 -- Picks the best clock the client has (GetTimePreciseSec, debugprofilestop, GetTime); returns the function and the
 -- factor that converts its result to seconds, or nil when none exists.
 local function clock()
-    if kind(GetTimePreciseSec) == 'function' then return GetTimePreciseSec, 1 end
-    if kind(debugprofilestop) == 'function' then return debugprofilestop, .001 end
-    if kind(GetTime) == 'function' then return GetTime, 1 end
+    if kind(GetTimePreciseSec) == 'function' then
+        return GetTimePreciseSec, 1
+    end
+    if kind(debugprofilestop) == 'function' then
+        return debugprofilestop, .001
+    end
+    if kind(GetTime) == 'function' then
+        return GetTime, 1
+    end
+
     return nil, 1
 end
 
 -- Calls the clock under pcall; returns its reading only if it is a finite non-negative number, otherwise nil.
 local function readClock(fn)
-    if not fn then return end
+    if not fn then
+        return
+    end
+
     local ok, value = protect(fn)
-    if ok and kind(value) == 'number' and value == value and value >= 0 and value < math.huge then return value end
+
+    if ok and kind(value) == 'number' and value == value and value >= 0 and value < math.huge then
+        return value
+    end
 end
 
 -- Shared do-nothing method for the disabled profiler.
@@ -69,7 +82,10 @@ local function Constructor(enabled)
             self.startTime = value and value * scale or 0
         end,
         stop = function(self)
-            if not self._started then return end
+            if not self._started then
+                return
+            end
+
             self._started = false
             local ending = readClock(timer)
             local runtime = self._clockValid and ending and ending * scale - self.startTime
@@ -80,8 +96,13 @@ local function Constructor(enabled)
                 return
             end
 
-            if self.count == 0 or runtime < self.min then self.min = runtime end
-            if runtime > self.max then self.max = runtime end
+            if self.count == 0 or runtime < self.min then
+                self.min = runtime
+            end
+            if runtime > self.max then
+                self.max = runtime
+            end
+
             self.total = self.total + runtime
             self.count = self.count + 1
         end,
@@ -103,14 +124,19 @@ local function Constructor(enabled)
                 self.max * 1000
             )
 
-            if self.unavailable > 0 then rv = rv .. string.format('; %d unavailable', self.unavailable) end
+            if self.unavailable > 0 then
+                rv = rv .. string.format('; %d unavailable', self.unavailable)
+            end
 
             if full then
                 local parts = {}
 
                 for name, child in pairs(self.children) do
                     local summary = child:report(full)
-                    if summary then parts[#parts + 1] = name .. '[' .. summary .. ']' end
+
+                    if summary then
+                        parts[#parts + 1] = name .. '[' .. summary .. ']'
+                    end
                 end
 
                 if #parts > 0 then
@@ -131,7 +157,10 @@ local function Constructor(enabled)
             self.children = {}
         end,
         child = function(self, name)
-            if self.children[name] == nil then self.children[name] = Constructor() end
+            if self.children[name] == nil then
+                self.children[name] = Constructor()
+            end
+
             return self.children[name]
         end,
     }
@@ -159,10 +188,14 @@ end
 
 -- True when owner's current evaluationProfile is still the root this file built, with none of its methods swapped out.
 local function unmodified(owner)
-    if owner.evaluationProfile ~= ownedRoot or not ownedRoot or owner.ProfiledCode ~= ownedFactory then return false end
+    if owner.evaluationProfile ~= ownedRoot or not ownedRoot or owner.ProfiledCode ~= ownedFactory then
+        return false
+    end
 
     for _, name in ipairs(methods) do
-        if ownedRoot[name] ~= ownedMethods[name] then return false end
+        if ownedRoot[name] ~= ownedMethods[name] then
+            return false
+        end
     end
 
     return true
@@ -177,7 +210,10 @@ local function build(owner, mode, initial)
     local before, db = owner.evaluationProfile, owner.db
     local profile = db and db.profile
     local factory = owner.ProfiledCode
-    if not initial and (not unmodified(owner) or mode == ownedMode) then return false end
+
+    if not initial and (not unmodified(owner) or mode == ownedMode) then
+        return false
+    end
 
     if initial and factory ~= ownedFactory then
         -- Exact predecessor initialization for a foreign factory, including its
@@ -216,18 +252,26 @@ end
 -- Called from the periodic report in main.lua: swaps the root profiler when the log level crossed the collecting
 -- threshold. Returns true if it replaced the root.
 function addon:RefreshEvaluationProfilerPolicy()
-    if self ~= addon then return false end
+    if self ~= addon then
+        return false
+    end
+
     return build(self, collecting(self), false)
 end
 
 -- One-shot hand-off to main.lua: returns an initializer for the first root profiler and a report gate for the periodic
 -- report (true means report and reset, false means skip this period). A second call returns nothing.
 function addon:ConsumeLegacyEvaluationProfilerPolicy()
-    if self ~= addon or consumed then return end
+    if self ~= addon or consumed then
+        return
+    end
+
     consumed = true
 
     return function(owner)
-        if owner == addon then return build(owner, collecting(owner), true) end
+        if owner == addon then
+            return build(owner, collecting(owner), true)
+        end
     end,
         function(owner)
             -- Foreign report/reset callbacks retain predecessor dispatch.

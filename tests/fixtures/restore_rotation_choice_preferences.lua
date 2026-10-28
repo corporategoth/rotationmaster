@@ -1,7 +1,14 @@
 -- Strict complete f7cfe4f module inverse of the composed manual-choice slice.
-local rows={
-['main.lua']={bytes=92461,hash='6986a417',oldBytes=91122,oldHash='16746958',edits={
-{at=586,current=[========[
+local rows = {
+    ['main.lua'] = {
+        bytes = 92461,
+        hash = '6986a417',
+        oldBytes = 91122,
+        oldHash = '16746958',
+        edits = {
+            {
+                at = 586,
+                current = [========[
 local prepareChoiceSelection,finishChoiceSelection,readDesiredChoice,choiceNeedsRefresh
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
 local invalidateChoiceDependencies=addon.InvalidateRotationDependencies
@@ -10,9 +17,13 @@ if type(consumeChoices)=='function' then
     prepareChoiceSelection,finishChoiceSelection,readDesiredChoice,choiceNeedsRefresh=consumeChoices(addon)
     addon.ConsumeRotationChoiceSelection=nil
 end
-]========],previous=[========[
-]========]},
-{at=2201,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 2201,
+                current = [========[
 end
 local function activeObjectValue(self,token,object,name,...)
     if not activeChangeCurrent(self,token) then return false end
@@ -20,9 +31,13 @@ local function activeObjectValue(self,token,object,name,...)
     if not activeChangeCurrent(self,token) then return false end
     local value=method(object,...)
     return activeChangeCurrent(self,token),value
-]========],previous=[========[
-]========]},
-{at=10682,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 10682,
+                current = [========[
 -- Chat, menu and cold restoration share the existing active transition path.
 local function chooseManualRotation(self,id,change,remember)
     change=change or beginActive(self)
@@ -117,20 +132,29 @@ local function restoreManualChoice(self)
     return false
 end
 
-]========],previous=[========[
-]========]},
-{at=16872,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 16872,
+                current = [========[
         addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
-]========],previous=[========[
+]========],
+                previous = [========[
         addon:print(L["                          This is reset upon switching specializations."])
-]========]},
-{at=18703,current=[========[
+]========],
+            },
+            {
+                at = 18703,
+                current = [========[
         if name=="auto" then
             chooseManualRotation(self,nil,change,true)
         elseif name==self.currentRotation or name==DEFAULT then
             if not chooseManualRotation(self,name,change,true) and activeChangeCurrent(self,change) and name==DEFAULT then
                 self:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.'])
-]========],previous=[========[
+]========],
+                previous = [========[
         if name == "auto" then
             self.manualRotation = false
             self:SwitchRotation()
@@ -140,18 +164,26 @@ end
         elseif name == DEFAULT then
             if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and not runtimeOne(self,self.currentSpec,DEFAULT) then
                 addon:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.']);return
-]========]},
-{at=19102,current=[========[
+]========],
+            },
+            {
+                at = 19102,
+                current = [========[
         else
             local matches={}
             for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]=id end end
-]========],previous=[========[
-]========]},
-{at=19337,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 19337,
+                current = [========[
             if #matches>1 then self:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
             if #matches==1 then chooseManualRotation(self,matches[1],change,true);return end
             self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
-]========],previous=[========[
+]========],
+                previous = [========[
             local body=runtimeOne(self,self.currentSpec,DEFAULT)
             if not activeChangeCurrent(self,change) or not body then return end
             if not retireActive(self,change) or not activeChangeCurrent(self,change) then return end
@@ -205,15 +237,23 @@ end
                 end
             end
             addon:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."], name)
-]========]},
-{at=24186,current=[========[
+]========],
+            },
+            {
+                at = 24186,
+                current = [========[
     self.rotationChoiceSuspended=nil
-]========],previous=[========[
-]========]},
-{at=26349,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 26349,
+                current = [========[
 local function minimapChangeRotation(_,arg1)
     chooseManualRotation(addon,arg1,nil,true)
-]========],previous=[========[
+]========],
+                previous = [========[
 local function minimapChangeRotation(_, arg1, _, _)
     local change=beginActive(addon)
     if not activeChangeCurrent(addon,change) then return end
@@ -244,47 +284,84 @@ local function minimapChangeRotation(_, arg1, _, _)
         if not named then return end
         activeCall(addon,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name)
     end
-]========]},
-{at=29125,current=[========[
+]========],
+            },
+            {
+                at = 29125,
+                current = [========[
     end
     if addon.rotationChoiceSuspended then
         GameTooltip:AddLine(L['Saved manual choice is unavailable in the current context.'],1,0.8,0.2,true)
-]========],previous=[========[
-]========]},
-{at=35890,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 35890,
+                current = [========[
     local handled,restoredChange=restoreManualChoice(self)
     if handled then return nil,restoredChange end
-]========],previous=[========[
-]========]},
-{at=36069,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 36069,
+                current = [========[
         if restoredChange and not activeChangeCurrent(self,restoredChange) then return end
         return nil,restoredChange
-]========],previous=[========[
+]========],
+                previous = [========[
         return
-]========]},
-{at=64024,current=[========[
+]========],
+            },
+            {
+                at = 64024,
+                current = [========[
     if invalidateChoiceContext then invalidateChoiceContext(self) end
-]========],previous=[========[
-]========]},
-{at=67702,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 67702,
+                current = [========[
         if invalidateChoiceContext and (event==nil or runtimeContextEvents[event]) then invalidateChoiceContext(self) end
-]========],previous=[========[
-]========]},
-{at=72214,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 72214,
+                current = [========[
 addon.VEHICLE_UPDATE = wrapEvent(function(self)
     restoreManualChoice(self)
     self:ButtonFetch()
 end)
-]========],previous=[========[
+]========],
+                previous = [========[
 addon.VEHICLE_UPDATE = wrapEvent(addon.ButtonFetch)
-]========]},
-{at=73067,current=[========[
+]========],
+            },
+            {
+                at = 73067,
+                current = [========[
     restoreManualChoice(self)
-]========],previous=[========[
-]========]},
-}},
-['Core/rotation_scope.lua']={bytes=67096,hash='9b4c4157',oldBytes=66058,oldHash='9703e477',edits={
-{at=536,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+        },
+    },
+    ['Core/rotation_scope.lua'] = {
+        bytes = 67096,
+        hash = '9b4c4157',
+        oldBytes = 66058,
+        oldHash = '9703e477',
+        edits = {
+            {
+                at = 536,
+                current = [========[
 local prepareChoicePublication,finishChoicePublication
 local consumeChoices=addon.ConsumeRotationChoicePublication
 if type(consumeChoices)=='function' then
@@ -292,118 +369,243 @@ if type(consumeChoices)=='function' then
     addon.ConsumeRotationChoicePublication=nil
 end
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
-]========],previous=[========[
-]========]},
-{at=7774,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 7774,
+                current = [========[
     if invalidateChoiceContext then invalidateChoiceContext(addon) end
-]========],previous=[========[
-]========]},
-{at=23447,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 23447,
+                current = [========[
         local choicePublication=prepareChoicePublication and prepareChoicePublication(profile,reference,target)
-]========],previous=[========[
-]========]},
-{at=23602,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 23602,
+                current = [========[
         local readyNow,currentProblem=ready();if not readyNow then return nil,currentProblem end
-]========],previous=[========[
+]========],
+                previous = [========[
         local current,currentProblem=ready();if not current then return nil,currentProblem end
-]========]},
-{at=24425,current=[========[
+]========],
+            },
+            {
+                at = 24425,
+                current = [========[
         if finishChoicePublication then finishChoicePublication(choicePublication,alive and current==coordinator) end
-]========],previous=[========[
-]========]},
-{at=25876,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 25876,
+                current = [========[
         local choicePublication=prepareChoicePublication and prepareChoicePublication(profile,reference,nil)
-]========],previous=[========[
-]========]},
-{at=26207,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 26207,
+                current = [========[
         if finishChoicePublication then finishChoicePublication(choicePublication,alive and current==coordinator) end
-]========],previous=[========[
-]========]},
-{at=26527,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 26527,
+                current = [========[
         assets[index]=nil;expected[token]=nil
         return true
-]========],previous=[========[
+]========],
+                previous = [========[
         assets[index]=nil;expected[token]=nil;return true
-]========]},
-{at=30458,current=[========[
+]========],
+            },
+            {
+                at = 30458,
+                current = [========[
         if finishChoicePublication then finishChoicePublication(nil) end
-]========],previous=[========[
-]========]},
-{at=42970,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 42970,
+                current = [========[
             if finishChoicePublication then finishChoicePublication(nil) end
-]========],previous=[========[
-]========]},
-}},
-['Core/rotation_library.lua']={bytes=44840,hash='f333471e',oldBytes=44694,oldHash='858703e0',edits={
-{at=31,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+        },
+    },
+    ['Core/rotation_library.lua'] = {
+        bytes = 44840,
+        hash = 'f333471e',
+        oldBytes = 44694,
+        oldHash = '858703e0',
+        edits = {
+            {
+                at = 31,
+                current = [========[
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
-]========],previous=[========[
-]========]},
-{at=17833,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 17833,
+                current = [========[
     if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={}
         if invalidateChoiceContext then invalidateChoiceContext(self) end
     end
-]========],previous=[========[
+]========],
+                previous = [========[
     if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={} end
-]========]},
-}},
-['Core/profile_data.lua']={bytes=13665,hash='7e778643',oldBytes=13126,oldHash='d41fb4fc',edits={
-{at=3954,current=[========[
+]========],
+            },
+        },
+    },
+    ['Core/profile_data.lua'] = {
+        bytes = 13665,
+        hash = '7e778643',
+        oldBytes = 13126,
+        oldHash = 'd41fb4fc',
+        edits = {
+            {
+                at = 3954,
+                current = [========[
 local function validRotationChoices(owner,profile)
     local value=type(profile)=='table' and rawget(profile,'rotationChoicePreferences')
     return value==nil or type(owner.ValidateRotationChoicePreferences)=='function' and owner:ValidateRotationChoicePreferences(value)==true
 end
-]========],previous=[========[
-]========]},
-{at=4332,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 4332,
+                current = [========[
     if not validStockTargets(self,value) or not validRotationChoices(self,value) then return false end
-]========],previous=[========[
+]========],
+                previous = [========[
     if not validStockTargets(self,value) then return false end
-]========]},
-{at=6899,current=[========[
+]========],
+            },
+            {
+                at = 6899,
+                current = [========[
         elseif key=='rotationChoicePreferences' then
             -- Closed optional schema checked before generic recursive copying.
-]========],previous=[========[
-]========]},
-{at=11325,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+            {
+                at = 11325,
+                current = [========[
     if not validStockTargets(self,profile) or not validRotationChoices(self,profile) then return nil end
-]========],previous=[========[
+]========],
+                previous = [========[
     if not validStockTargets(self,profile) then return nil end
-]========]},
-{at=12198,current=[========[
+]========],
+            },
+            {
+                at = 12198,
+                current = [========[
     if not validStockTargets(self,profile) or not validRotationChoices(self,profile) then return nil end
-]========],previous=[========[
+]========],
+                previous = [========[
     if not validStockTargets(self,profile) then return nil end
-]========]},
-}},
-['Locales/enUS.lua']={bytes=236594,hash='06a208da',oldBytes=236483,oldHash='6d83822f',edits={
-{at=11256,current=[========[
+]========],
+            },
+        },
+    },
+    ['Locales/enUS.lua'] = {
+        bytes = 236594,
+        hash = '06a208da',
+        oldBytes = 236483,
+        oldHash = '6d83822f',
+        edits = {
+            {
+                at = 11256,
+                current = [========[
 L["                          Manual choices are remembered for this character, specialization and action context."] = true
-]========],previous=[========[
+]========],
+                previous = [========[
 L["                          This is reset upon switching specializations."] = true
-]========]},
-{at=178782,current=[========[
+]========],
+            },
+            {
+                at = 178782,
+                current = [========[
 L['Saved manual choice is unavailable in the current context.'] = true
 
-]========],previous=[========[
-]========]},
-}},
-['RotationMaster.toc']={bytes=7999,hash='fe0a0c59',oldBytes=7962,oldHash='7260f5bc',edits={
-{at=3575,current=[========[
+]========],
+                previous = [========[
+]========],
+            },
+        },
+    },
+    ['RotationMaster.toc'] = {
+        bytes = 7999,
+        hash = 'fe0a0c59',
+        oldBytes = 7962,
+        oldHash = '7260f5bc',
+        edits = {
+            {
+                at = 3575,
+                current = [========[
 Core/rotation_choice_preferences.lua
-]========],previous=[========[
-]========]},
-}},
+]========],
+                previous = [========[
+]========],
+            },
+        },
+    },
 }
-local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
-return function(text,path)
- text=dofile('tests/fixtures/restore_unit_states.lua')(text,path)
- if path=="main.lua" and text:find("-- BEGIN ANNOUNCEMENT CONDITION OWNER",1,true)
-  or path=="Locales/enUS.lua" and text:find('L["Edit announcement conditions"]',1,true)
-  or path=="RotationMaster.toc" and text:find('Platform/announcement_recipient.lua',1,true) then text=dofile("tests/fixtures/restore_announcement_conditions.lua")(text,path) end
- local row=assert(rows[path],'unknown manual-choice inverse path')
- assert(#text==row.bytes and hash(text)==row.hash,'unrelated manual-choice module: '..path)
- for i=#row.edits,1,-1 do local c=row.edits[i];assert(text:sub(c.at,c.at+#c.current-1)==c.current,'manual-choice inverse delta mismatch');text=text:sub(1,c.at-1)..c.previous..text:sub(c.at+#c.current)end
- assert(#text==row.oldBytes and hash(text)==row.oldHash,'manual-choice predecessor mismatch: '..path)
- return text
+
+local function hash(s)
+    local n = 5381
+
+    for i = 1, #s do
+        n = (n * 33 + s:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', n)
+end
+
+return function(text, path)
+    text = dofile('tests/fixtures/restore_unit_states.lua')(text, path)
+
+    if
+        path == "main.lua" and text:find("-- BEGIN ANNOUNCEMENT CONDITION OWNER", 1, true)
+        or path == "Locales/enUS.lua" and text:find('L["Edit announcement conditions"]', 1, true)
+        or path == "RotationMaster.toc" and text:find('Platform/announcement_recipient.lua', 1, true)
+    then
+        text = dofile("tests/fixtures/restore_announcement_conditions.lua")(text, path)
+    end
+
+    local row = assert(rows[path], 'unknown manual-choice inverse path')
+    assert(#text == row.bytes and hash(text) == row.hash, 'unrelated manual-choice module: ' .. path)
+
+    for i = #row.edits, 1, -1 do
+        local c = row.edits[i]
+        assert(text:sub(c.at, c.at + #c.current - 1) == c.current, 'manual-choice inverse delta mismatch')
+        text = text:sub(1, c.at - 1) .. c.previous .. text:sub(c.at + #c.current)
+    end
+
+    assert(#text == row.oldBytes and hash(text) == row.oldHash, 'manual-choice predecessor mismatch: ' .. path)
+    return text
 end

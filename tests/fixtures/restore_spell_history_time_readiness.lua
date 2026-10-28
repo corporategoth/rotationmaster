@@ -1,6 +1,6 @@
 -- Strict inverses of only two consumed-timestamp readiness bodies against actual4d1c4a9.
-local old={
-SPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
+local old = {
+    SPELL_HISTORY_TIME = [====[ -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
@@ -9,7 +9,7 @@ SPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
         end
         return false
     ]====],
-PETSPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
+    PETSPELL_HISTORY_TIME = [====[ -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         local known, knownReason = Functions.cache.getCached(cache, addon.Platform.IsSpellKnown, addon.Platform, spellid, true)
@@ -22,8 +22,9 @@ PETSPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
         return false
     ]====],
 }
-local repaired={
-SPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
+
+local repaired = {
+    SPELL_HISTORY_TIME = [====[ -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
@@ -42,7 +43,7 @@ SPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
         end
         return false
     ]====],
-PETSPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
+    PETSPELL_HISTORY_TIME = [====[ -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         local known, knownReason = Functions.cache.getCached(cache, addon.Platform.IsSpellKnown, addon.Platform, spellid, true)
@@ -65,23 +66,54 @@ PETSPELL_HISTORY_TIME=[====[ -- Cooldown until the spell is available
         return false
     ]====],
 }
-local signatures={
-SPELL_HISTORY_TIME=[====[evaluate = function(value, _, evalStart)]====],
-PETSPELL_HISTORY_TIME=[====[evaluate = function(value, cache, evalStart)]====],
+
+local signatures = {
+    SPELL_HISTORY_TIME = [====[evaluate = function(value, _, evalStart)]====],
+    PETSPELL_HISTORY_TIME = [====[evaluate = function(value, cache, evalStart)]====],
 }
-local hashes={
-SPELL_HISTORY_TIME=[====[1c2d995c]====],
-PETSPELL_HISTORY_TIME=[====[90af9343]====],
+
+local hashes = {
+    SPELL_HISTORY_TIME = [====[1c2d995c]====],
+    PETSPELL_HISTORY_TIME = [====[90af9343]====],
 }
-local paths={['Conditions/spell.lua']='SPELL_HISTORY_TIME',['Conditions/petspell.lua']='PETSPELL_HISTORY_TIME'}
-local function hash(text)local h=5381;for i=1,#text do h=(h*33+text:byte(i))%4294967296 end;return string.format('%08x',h)end
-local function inverse(text,path,callback)
- assert(type(text)=='string','time readiness inverse requires text');local tag=paths[path] or path
- if callback then assert(repaired[tag] and text==repaired[tag],'unexpected time readiness callback');return old[tag]end
- if not tag then for key,body in pairs(repaired)do if text:find(signatures[key]..body..'end,',1,true)then assert(not tag,'ambiguous module');tag=key end end end
- assert(repaired[tag],'unknown readiness module')
- local from,to=signatures[tag]..repaired[tag]..'end,',signatures[tag]..old[tag]..'end,'
- local a,b=text:find(from,1,true);assert(a and not text:find(from,b+1,true),'missing or duplicate readiness callback')
- local restored=text:sub(1,a-1)..to..text:sub(b+1);assert(hash(restored)==hashes[tag],'unrelated module bytes changed');return restored
+
+local paths = { ['Conditions/spell.lua'] = 'SPELL_HISTORY_TIME', ['Conditions/petspell.lua'] = 'PETSPELL_HISTORY_TIME' }
+
+local function hash(text)
+    local h = 5381
+
+    for i = 1, #text do
+        h = (h * 33 + text:byte(i)) % 4294967296
+    end
+
+    return string.format('%08x', h)
 end
-return inverse,old,repaired
+
+local function inverse(text, path, callback)
+    assert(type(text) == 'string', 'time readiness inverse requires text')
+    local tag = paths[path] or path
+
+    if callback then
+        assert(repaired[tag] and text == repaired[tag], 'unexpected time readiness callback')
+        return old[tag]
+    end
+
+    if not tag then
+        for key, body in pairs(repaired) do
+            if text:find(signatures[key] .. body .. 'end,', 1, true) then
+                assert(not tag, 'ambiguous module')
+                tag = key
+            end
+        end
+    end
+
+    assert(repaired[tag], 'unknown readiness module')
+    local from, to = signatures[tag] .. repaired[tag] .. 'end,', signatures[tag] .. old[tag] .. 'end,'
+    local a, b = text:find(from, 1, true)
+    assert(a and not text:find(from, b + 1, true), 'missing or duplicate readiness callback')
+    local restored = text:sub(1, a - 1) .. to .. text:sub(b + 1)
+    assert(hash(restored) == hashes[tag], 'unrelated module bytes changed')
+    return restored
+end
+
+return inverse, old, repaired

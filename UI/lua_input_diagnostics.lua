@@ -16,7 +16,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- missing, the call fails, or the result is not a string, number or boolean (so a secret or userdata value never leaks
 -- into a report).
 local function read(object, method)
-    if not object or type(object[method]) ~= 'function' then return 'unavailable' end
+    if not object or type(object[method]) ~= 'function' then
+        return 'unavailable'
+    end
+
     local ok, value = pcall(object[method], object)
 
     if not ok or type(value) ~= 'string' and type(value) ~= 'number' and type(value) ~= 'boolean' then
@@ -29,10 +32,19 @@ end
 -- Names what a focused frame is in the editor's terms (code EditBox, ScrollFrame, container, none), or else walks up to
 -- 12 parents and returns a "Type[name] > ..." path so an unexpected focus owner can be identified from the report.
 local function focusRole(frame, control)
-    if frame == control.edit then return 'code EditBox' end
-    if frame == control.scroll then return 'code ScrollFrame' end
-    if frame == control.frame then return 'code container' end
-    if not frame then return 'none' end
+    if frame == control.edit then
+        return 'code EditBox'
+    end
+    if frame == control.scroll then
+        return 'code ScrollFrame'
+    end
+    if frame == control.frame then
+        return 'code container'
+    end
+    if not frame then
+        return 'none'
+    end
+
     local path = {}
 
     for _ = 1, 12 do
@@ -43,9 +55,15 @@ local function focusRole(frame, control)
             break
         end
 
-        if type(frame.GetParent) ~= 'function' then break end
+        if type(frame.GetParent) ~= 'function' then
+            break
+        end
+
         frame = frame:GetParent()
-        if not frame then break end
+
+        if not frame then
+            break
+        end
     end
 
     return table.concat(path, ' > ')
@@ -56,8 +74,13 @@ local function ownsControl(code, control)
     local seen = {}
 
     for _ = 1, 8 do
-        if code == control then return true end
-        if type(code) ~= 'table' or seen[code] then return false end
+        if code == control then
+            return true
+        end
+        if type(code) ~= 'table' or seen[code] then
+            return false
+        end
+
         seen[code] = true
         code = code.inner
     end
@@ -75,7 +98,9 @@ local function sourceOwner(addon, control)
 
     -- Adds a candidate source editor owner of the given kind, ignoring a missing one.
     local function add(owner, kind)
-        if owner then candidates[#candidates + 1] = { owner = owner, kind = kind } end
+        if owner then
+            candidates[#candidates + 1] = { owner = owner, kind = kind }
+        end
     end
 
     if pane then
@@ -84,22 +109,36 @@ local function sourceOwner(addon, control)
     end
 
     add(addon.nativeCustomConditionDialog, 'condition')
-    if not shell then add(control.context and control.context.testOwner, 'condition') end
+
+    if not shell then
+        add(control.context and control.context.testOwner, 'condition')
+    end
+
     local historical, fallback
 
     for _, entry in ipairs(candidates) do
         local owner = entry.owner
         local matches = ownsControl(owner.code, control)
-        if matches and not owner.closed then return owner, entry.kind, true end
+
+        if matches and not owner.closed then
+            return owner, entry.kind, true
+        end
 
         if owner.closed then
             fallback = fallback or entry
-            if matches then historical = historical or entry end
+
+            if matches then
+                historical = historical or entry
+            end
         end
     end
 
     local entry = historical or fallback
-    if entry then return entry.owner, entry.kind, false end
+
+    if entry then
+        return entry.owner, entry.kind, false
+    end
+
     return nil, nil, false
 end
 
@@ -124,7 +163,10 @@ function addon:InstallLuaInputDiagnostics(control)
     -- Appends one event to the 32-entry trace with the cursor, byte length and focus state. Consecutive identical polls
     -- are collapsed so the trace shows changes, not time passing. Records only key names, never typed text.
     function control:ObserveInput(event, ...)
-        if self.released then return end
+        if self.released then
+            return
+        end
+
         local edit = self.edit
         local raw = self.nativeGetText or edit.GetText
         local ok, value = pcall(raw, edit)
@@ -135,7 +177,10 @@ function addon:InstallLuaInputDiagnostics(control)
             'HasFocus'
         )
 
-        if event == 'poll' and state == self.inputPoll then return end
+        if event == 'poll' and state == self.inputPoll then
+            return
+        end
+
         self.inputPoll = state
         self.inputCounts[event] = (self.inputCounts[event] or 0) + 1
         local detail = ''
@@ -153,11 +198,17 @@ function addon:InstallLuaInputDiagnostics(control)
             detail = ' user=' .. tostring((...))
         elseif event == 'OnMouseDown' or event == 'OnMouseUp' or event == 'OnArrowPressed' then
             local value = (...)
-            if type(value) == 'string' and value:match('^[A-Za-z]+$') then detail = ' key=' .. value end
+
+            if type(value) == 'string' and value:match('^[A-Za-z]+$') then
+                detail = ' key=' .. value
+            end
         end
 
         self.inputTrace[#self.inputTrace + 1] = event .. ' ' .. state .. detail
-        if #self.inputTrace > 32 then table.remove(self.inputTrace, 1) end
+
+        if #self.inputTrace > 32 then
+            table.remove(self.inputTrace, 1)
+        end
     end
 
     control:ResetInputTrace()
@@ -172,10 +223,14 @@ function addon:InstallLuaInputDiagnostics(control)
         'OnEditFocusLost',
         'OnArrowPressed',
     }) do
-        control.edit:HookScript(event, function(_, ...) control:ObserveInput(event, ...) end)
+        control.edit:HookScript(event, function(_, ...)
+            control:ObserveInput(event, ...)
+        end)
     end
 
-    control.frame:HookScript('OnUpdate', function() control:ObserveInput('poll') end)
+    control.frame:HookScript('OnUpdate', function()
+        control:ObserveInput('poll')
+    end)
 end
 
 -- ============================================================================
@@ -188,7 +243,11 @@ end
 -- no source text.
 function addon:LuaEditorInputReport()
     local control = self.luaInputEditor
-    if not control then return L['No native Lua editor has been opened this session.'] end
+
+    if not control then
+        return L['No native Lua editor has been opened this session.']
+    end
+
     local edit = control.edit
 
     local lines = {
@@ -216,15 +275,24 @@ function addon:LuaEditorInputReport()
 
     if type(GetMouseFoci) == 'function' then
         local ok, list = pcall(GetMouseFoci)
-        if ok and type(list) == 'table' then mouse = list[1] end
+
+        if ok and type(list) == 'table' then
+            mouse = list[1]
+        end
     elseif type(GetMouseFocus) == 'function' then
         local ok, value = pcall(GetMouseFocus)
-        if ok then mouse = value end
+
+        if ok then
+            mouse = value
+        end
     end
 
     if type(GetCurrentKeyBoardFocus) == 'function' then
         local ok, value = pcall(GetCurrentKeyBoardFocus)
-        if ok then keyboard = value end
+
+        if ok then
+            keyboard = value
+        end
     end
 
     lines[#lines + 1] = 'mouseFocus=' .. focusRole(mouse, control)
@@ -306,7 +374,10 @@ function addon:LuaEditorInputReport()
         local painted = input and input.queryEditor
         local source
         local ok, value = pcall(control.nativeGetText or edit.GetText, edit)
-        if ok and type(value) == 'string' then source = value end
+
+        if ok and type(value) == 'string' then
+            source = value
+        end
 
         -- Returns the byte length of a string, or -1 when the value is not a string (never the text itself).
         local function bytes(value)
@@ -318,7 +389,10 @@ function addon:LuaEditorInputReport()
 
         if overlay and type(overlay.GetText) == 'function' then
             local success, text = pcall(overlay.GetText, overlay)
-            if success then overlayText = text end
+
+            if success then
+                overlayText = text
+            end
         end
 
         lines[#lines + 1] = 'provider render attached='
@@ -405,9 +479,15 @@ function addon:LuaEditorInputReport()
 
     -- Returns the result of `frame:method()` or nil when the method is missing or fails.
     local function object(frame, method)
-        if not frame or type(frame[method]) ~= 'function' then return nil end
+        if not frame or type(frame[method]) ~= 'function' then
+            return nil
+        end
+
         local ok, value = pcall(frame[method], frame)
-        if ok then return value end
+
+        if ok then
+            return value
+        end
     end
 
     frameInfo('frame', state and state.gutter)

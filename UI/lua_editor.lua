@@ -34,7 +34,10 @@ local function resolveEditor(self, preferred)
             if not clientRead then
                 clientRead = true
                 local ok, value = pcall(function() return self.Platform and self.Platform:GetClientInfo() end)
-                if ok then client = value end
+
+                if ok then
+                    client = value
+                end
             end
 
             local ok, state = pcall(
@@ -44,7 +47,9 @@ local function resolveEditor(self, preferred)
                 client
             )
 
-            if ok and state == 'unsupported' then return false end
+            if ok and state == 'unsupported' then
+                return false
+            end
         end
 
         return name ~= 'LuaWorkbench'
@@ -56,14 +61,19 @@ local function resolveEditor(self, preferred)
         local names = {}
 
         for name in pairs(providers) do
-            if not editorDisabled(self, name) and available(name) then names[#names + 1] = name end
+            if not editorDisabled(self, name) and available(name) then
+                names[#names + 1] = name
+            end
         end
 
         table.sort(names)
         preferred = names[1] or 'native'
     end
 
-    if editorDisabled(self, preferred) or not available(preferred) then preferred = 'native' end
+    if editorDisabled(self, preferred) or not available(preferred) then
+        preferred = 'native'
+    end
+
     local profile = self.db and self.db.profile
 
     if
@@ -79,7 +89,10 @@ end
 -- Returns the rows { value, text } for the editor preference dropdown: Automatic, Built In highlighting, Plain text,
 -- then every registered provider by name. Runs integration discovery first so late-loading editors appear.
 function addon:ListLuaEditorProviders()
-    if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
+    if self.DiscoverLuaEditorIntegrations then
+        self:DiscoverLuaEditorIntegrations()
+    end
+
     local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
     local entries = {
@@ -106,7 +119,9 @@ end
 -- Hides a frame inside a pcall; a foreign provider frame may be gone or not a real frame.
 local function hideFrame(frame)
     pcall(function()
-        if frame and type(frame.Hide) == 'function' then frame:Hide() end
+        if frame and type(frame.Hide) == 'function' then
+            frame:Hide()
+        end
     end)
 end
 
@@ -152,7 +167,10 @@ end
 -- editor is built, with syntax coloring, completion, diagnostics and the line-number gutter attached when their modules
 -- are loaded.
 function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
-    if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
+    if self.DiscoverLuaEditorIntegrations then
+        self:DiscoverLuaEditorIntegrations()
+    end
+
     preferred = preferred or self.db.profile.lua_editor or 'auto'
     preferred = resolveEditor(self, preferred)
 
@@ -172,11 +190,16 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             local cell = { active = true }
 
             cell.forwardChange = function(...)
-                if cell.active and type(cell.changed) == 'function' then return cell.changed(...) end
+                if cell.active and type(cell.changed) == 'function' then
+                    return cell.changed(...)
+                end
             end
 
             cell.forwardCheck = function(...)
-                if cell.active and type(cell.valid) == 'function' then return cell.valid(...) end
+                if cell.active and type(cell.valid) == 'function' then
+                    return cell.valid(...)
+                end
+
                 return false
             end
 
@@ -204,7 +227,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         -- Releases a provider control and hides its frame; errors from the foreign code are swallowed.
         local function release(control)
             if type(control) == 'table' then
-                if type(control.Release) == 'function' then pcall(control.Release, control) end
+                if type(control.Release) == 'function' then
+                    pcall(control.Release, control)
+                end
+
                 hideFrame(control.frame)
             end
         end
@@ -233,7 +259,11 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 local operation = c.operation
                 retire(lease)
                 release(c.inner)
-                if c.operation ~= operation or c.released then return end
+
+                if c.operation ~= operation or c.released then
+                    return
+                end
+
                 lease = callbackLease(changed, valid)
                 local nextControl = c.fallbackInner
 
@@ -244,7 +274,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
 
                 if c.operation ~= operation or c.released then
-                    if nextControl ~= c.inner then release(nextControl) end
+                    if nextControl ~= c.inner then
+                        release(nextControl)
+                    end
+
                     return
                 end
 
@@ -255,8 +288,13 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 nextControl.frame:SetAllPoints(host)
                 nextControl:SetText(c.lastText)
                 nextControl:SetReadOnly(c.readOnly)
-                if c.closeRequested then nextControl:SetCloseHandler(c.closeRequested) end
-                if c.context then nextControl:SetContext(c.context) end
+
+                if c.closeRequested then
+                    nextControl:SetCloseHandler(c.closeRequested)
+                end
+                if c.context then
+                    nextControl:SetContext(c.context)
+                end
             end
 
             -- Reads the current text from the inner control, switching to the native editor if the provider fails to
@@ -266,7 +304,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 local operation = self.operation
                 local current = self.inner
                 local read, text = pcall(current.GetText, current)
-                if self.operation ~= operation then return self.lastText end
+
+                if self.operation ~= operation then
+                    return self.lastText
+                end
 
                 if not read or type(text) ~= 'string' then
                     fallback()
@@ -326,7 +367,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             -- Stores the handler the owner wants called on Escape or right click and passes it to the inner control.
             function c:SetCloseHandler(callback)
                 self.closeRequested = callback
-                if self.inner.SetCloseHandler then self.inner:SetCloseHandler(callback) end
+
+                if self.inner.SetCloseHandler then
+                    self.inner:SetCloseHandler(callback)
+                end
             end
 
             -- Replaces the text, keeping a copy in lastText so a fallback or a re-acquire can restore it.
@@ -345,14 +389,21 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             -- text, read-only state and context, and shows the control. c.operation guards against a second Acquire or
             -- Release running during the calls.
             function c:Acquire(callback, ownerValid)
-                if self.closing then error('editor-release-in-progress', 0) end
+                if self.closing then
+                    error('editor-release-in-progress', 0)
+                end
+
                 changed, valid = callback, ownerValid
                 local operation = {}
                 self.operation = operation
 
                 if not self.released then
                     setCallbacks(lease, changed, valid)
-                    if type(self.inner.Acquire) == 'function' then self.inner:Acquire(lease.change, lease.check) end
+
+                    if type(self.inner.Acquire) == 'function' then
+                        self.inner:Acquire(lease.change, lease.check)
+                    end
+
                     return
                 end
 
@@ -380,7 +431,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 end
 
                 if self.operation ~= operation then
-                    if created and nextControl ~= self.inner then release(nextControl) end
+                    if created and nextControl ~= self.inner then
+                        release(nextControl)
+                    end
+
                     return
                 end
 
@@ -397,25 +451,48 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                         nextControl.frame:SetAllPoints(host)
                     end)
 
-                    if not attached then fallback() end
+                    if not attached then
+                        fallback()
+                    end
                 else
-                    if created then release(nextControl) end
+                    if created then
+                        release(nextControl)
+                    end
+
                     fallback()
                 end
 
-                if self.operation ~= operation or self.released then return end
+                if self.operation ~= operation or self.released then
+                    return
+                end
+
                 self:SetText(self.lastText)
-                if self.operation ~= operation then return end
+
+                if self.operation ~= operation then
+                    return
+                end
+
                 self:SetReadOnly(self.readOnly)
-                if self.operation ~= operation then return end
-                if self.context then self:SetContext(self.context) end
-                if self.operation == operation and not self.released then self.inner.frame:Show() end
+
+                if self.operation ~= operation then
+                    return
+                end
+
+                if self.context then
+                    self:SetContext(self.context)
+                end
+                if self.operation == operation and not self.released then
+                    self.inner.frame:Show()
+                end
             end
 
             -- Detaches the wrapper from its owner: retires the lease, drops the owner's callbacks and context, keeps
             -- the last text and releases the inner control.
             function c:Release()
-                if self.released then return end
+                if self.released then
+                    return
+                end
+
                 self.operation = {}
                 self.released = true
                 self.closing = true
@@ -425,7 +502,11 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 self.closeRequested = nil
                 self.context = nil
                 local read, text = pcall(self.inner.GetText, self.inner)
-                if read and type(text) == 'string' then self.lastText = text end
+
+                if read and type(text) == 'string' then
+                    self.lastText = text
+                end
+
                 release(self.inner)
                 hideFrame(self.frame)
                 self.closing = nil
@@ -436,12 +517,19 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
                 control.frame:SetAllPoints(host)
             end)
 
-            if not attached then fallback() end
+            if not attached then
+                fallback()
+            end
+
             return c
         end
 
         retire(lease)
-        if ok then release(control) end
+
+        if ok then
+            release(control)
+        end
+
         host:Hide()
     end
 
@@ -489,7 +577,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             c.edit:SetFocus()
         elseif button == 'RightButton' then
             local handler = c.edit:GetScript('OnMouseDown')
-            if handler then handler(c.edit, button) end
+
+            if handler then
+                handler(c.edit, button)
+            end
         end
     end)
 
@@ -499,8 +590,15 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
 
     c.editorDecoration = self:CreateRoundedCardDecoration(c.frame)
     c.editorDecoration:SetColors(.38, .43, .48, 1, .95)
-    addon:SetUIScript(c.edit, 'OnEditFocusGained', function() c.editorDecoration:SetColors(.45, .7, .85, 1, .95) end)
-    addon:SetUIScript(c.edit, 'OnEditFocusLost', function() c.editorDecoration:SetColors(.38, .43, .48, 1, .95) end)
+
+    addon:SetUIScript(c.edit, 'OnEditFocusGained', function()
+        c.editorDecoration:SetColors(.45, .7, .85, 1, .95)
+    end)
+
+    addon:SetUIScript(c.edit, 'OnEditFocusLost', function()
+        c.editorDecoration:SetColors(.38, .43, .48, 1, .95)
+    end)
+
     c.measure = c.frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     c.measure:SetJustifyH('LEFT')
     c.measure:SetJustifyV('TOP')
@@ -510,7 +608,6 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     if c.edit.SetFont then
         c.edit:SetFont('Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata-Regular.ttf', 12, '')
     end
-
     if c.measure.SetFont then
         c.measure:SetFont('Interface\\AddOns\\' .. addon_name .. '\\Fonts\\Inconsolata-Regular.ttf', 12, '')
     end
@@ -519,7 +616,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     -- line-number gutter. `origin` only labels the call in the diagnostic counters; unchanged inputs are skipped
     -- because rewriting equal geometry resets the caret.
     function c:Layout(origin)
-        if self.layingOut then return end
+        if self.layingOut then
+            return
+        end
+
         self.layingOut = true
         self.layoutCounts = self.layoutCounts or { calls = 0, width = 0, content = 0 }
         self.layoutCounts.calls = self.layoutCounts.calls + 1
@@ -552,8 +652,14 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         local frameWidth, frameHeight = self.frame:GetWidth(), self.frame:GetHeight()
         local scale, source = self.frame:GetEffectiveScale(), self:GetText()
         local font, size, flags, measureFont, measureSize, measureFlags
-        if self.edit.GetFont then font, size, flags = self.edit:GetFont() end
-        if self.measure.GetFont then measureFont, measureSize, measureFlags = self.measure:GetFont() end
+
+        if self.edit.GetFont then
+            font, size, flags = self.edit:GetFont()
+        end
+        if self.measure.GetFont then
+            measureFont, measureSize, measureFlags = self.measure:GetFont()
+        end
+
         local spacing = self.edit.GetSpacing and self.edit:GetSpacing()
         local measureSpacing = self.measure.GetSpacing and self.measure:GetSpacing()
         local wanted = addon.db.profile.lua_line_numbers ~= false
@@ -584,7 +690,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
 
         -- The shared track sits beyond the viewport. Reserve its space here,
         -- keeping both the text and the track within the editor card.
-        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+        if self.RefreshLineNumbers then
+            self:RefreshLineNumbers()
+        end
+
         local gutter = self.lineNumbersVisible and 56 or 0
 
         if self.lineNumberLayoutGutter ~= gutter then
@@ -620,7 +729,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         end
 
         self.scroll:UpdateWorkbenchScroll()
-        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+
+        if self.RefreshLineNumbers then
+            self:RefreshLineNumbers()
+        end
 
         self.layoutInput = {
             width = frameWidth,
@@ -668,7 +780,10 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     -- Stores the symbol context and lets the completion module refresh its index from it.
     function c:SetContext(context)
         self.context = context
-        if self.UpdateSymbols then self:UpdateSymbols(context) end
+
+        if self.UpdateSymbols then
+            self:UpdateSymbols(context)
+        end
     end
 
     -- Switches between editable and read-only. In read-only mode the EditBox is disabled and any edit that still
@@ -698,10 +813,20 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
     -- Takes a pooled control back for a new owner with fresh callbacks. Resets layout caches and read-only state,
     -- re-enables syntax coloring and reattaches completion and the gutter, which Release removed.
     function c:Acquire(callback, ownerValid)
-        if self.closing then error('editor-release-in-progress', 0) end
+        if self.closing then
+            error('editor-release-in-progress', 0)
+        end
+
         self.changed, self.valid = callback, ownerValid
-        if not self.released then return end
-        if self.released then self.layingOut = nil end
+
+        if not self.released then
+            return
+        end
+
+        if self.released then
+            self.layingOut = nil
+        end
+
         self.released = false
         self.readOnly = false
         self.readOnlyText = nil
@@ -716,16 +841,25 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             self:ResetInputTrace()
         end
 
-        if self.syntax then pcall(self.syntax.enable, self.edit, self.syntaxColors, 4) end
-        if self.AcquireCompletion then self:AcquireCompletion() end
-        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+        if self.syntax then
+            pcall(self.syntax.enable, self.edit, self.syntaxColors, 4)
+        end
+        if self.AcquireCompletion then
+            self:AcquireCompletion()
+        end
+        if self.RefreshLineNumbers then
+            self:RefreshLineNumbers()
+        end
     end
 
     -- Returns the control to the pool: drops the owner's callbacks, detaches the gutter, completion and syntax
     -- coloring, restores the EditBox's own GetText, SetText and scripts, and empties the text. Every step runs even if
     -- one fails; the first failure is raised at the end.
     function c:Release()
-        if self.released then return end
+        if self.released then
+            return
+        end
+
         self.released = true
         self.closing = true
         self.changed = nil
@@ -736,13 +870,25 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
 
         local function attempt(callback, ...)
             local ok, result = pcall(callback, ...)
-            if not ok and not failed then failed, why = true, result end
+
+            if not ok and not failed then
+                failed, why = true, result
+            end
         end
 
-        if self.ReleaseLineNumbers then attempt(self.ReleaseLineNumbers, self) end
-        if self.ReleaseCompletion then attempt(self.ReleaseCompletion, self) end
+        if self.ReleaseLineNumbers then
+            attempt(self.ReleaseLineNumbers, self)
+        end
+        if self.ReleaseCompletion then
+            attempt(self.ReleaseCompletion, self)
+        end
+
         attempt(self.edit.ClearFocus, self.edit)
-        if self.syntax then pcall(self.syntax.disable, self.edit) end
+
+        if self.syntax then
+            pcall(self.syntax.disable, self.edit)
+        end
+
         self.edit.GetText = self.nativeGetText
         self.edit.SetText = self.nativeSetText
 
@@ -756,11 +902,16 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         self.layoutInput = nil
         self.readOnlyText = nil
         self.closing = nil
-        if failed then error(why, 0) end
+
+        if failed then
+            error(why, 0)
+        end
     end
 
     addon:SetUIScript(c.edit, 'OnTextChanged', function()
-        if c.released then return end
+        if c.released then
+            return
+        end
 
         if c.readOnly and not c.setting and c:GetText() ~= c.readOnlyText then
             c:SetText(c.readOnlyText)
@@ -768,10 +919,15 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
         end
 
         c:Layout('text-changed')
-        if not c.setting and not c.released and c.valid() and c.changed then c.changed(c:GetText()) end
+
+        if not c.setting and not c.released and c.valid() and c.changed then
+            c.changed(c:GetText())
+        end
     end)
 
-    addon:SetUIScript(c.frame, 'OnSizeChanged', function() c:Layout('owner-size') end)
+    addon:SetUIScript(c.frame, 'OnSizeChanged', function()
+        c:Layout('owner-size')
+    end)
 
     addon:SetUIScript(c.edit, 'OnMouseWheel', function(_, delta)
         c.scroll.workbenchBar:SetValue(c.scroll.workbenchBar:GetValue() - delta * 36)
@@ -792,15 +948,25 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
 
     -- Asks the owner to close the editor (Escape or right click), but only while the control is live and valid.
     local function closeEditor(mouse)
-        if c.released or not c.valid() then return end
+        if c.released or not c.valid() then
+            return
+        end
+
         c.edit:ClearFocus()
-        if c.closeRequested then c.closeRequested(mouse) end
+
+        if c.closeRequested then
+            c.closeRequested(mouse)
+        end
     end
 
-    addon:SetUIScript(c.edit, 'OnEscapePressed', function() closeEditor(false) end)
+    addon:SetUIScript(c.edit, 'OnEscapePressed', function()
+        closeEditor(false)
+    end)
 
     addon:SetUIScript(c.edit, 'OnMouseDown', function(_, button)
-        if button == 'RightButton' then closeEditor(true) end
+        if button == 'RightButton' then
+            closeEditor(true)
+        end
     end)
 
     c.edit:SetText('')
@@ -857,10 +1023,16 @@ function addon:CreateWorkbenchLuaEditor(parent, changed, valid, preferred)
             end
         end)
     end
+    if self.InstallLuaInputDiagnostics then
+        self:InstallLuaInputDiagnostics(c)
+    end
+    if self.InstallRMCodeCompletion then
+        self:InstallRMCodeCompletion(c)
+    end
+    if self.InstallNativeLuaLineNumbers then
+        self:InstallNativeLuaLineNumbers(c)
+    end
 
-    if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
-    if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
-    if self.InstallNativeLuaLineNumbers then self:InstallNativeLuaLineNumbers(c) end
     c:SetText('')
     return c
 end
@@ -876,17 +1048,29 @@ end
 function addon:AcquireSourceLuaEditor(owner, parent, changed, valid, preferred)
     local operation = {}
     owner.sourceEditorOperation = operation
-    if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
-    if owner.sourceEditorOperation ~= operation then return owner.code end
+
+    if self.DiscoverLuaEditorIntegrations then
+        self:DiscoverLuaEditorIntegrations()
+    end
+
+    if owner.sourceEditorOperation ~= operation then
+        return owner.code
+    end
+
     preferred = preferred or self.db.profile.lua_editor or 'auto'
     local resolved = resolveEditor(self, preferred)
 
     if resolved == 'LuaWorkbench' and not self:IsLuaWorkbenchIntegrationAvailable() then
         resolved = resolveEditor(self, 'native')
     end
+    if editorDisabled(self, resolved) then
+        resolved = 'plain'
+    end
 
-    if editorDisabled(self, resolved) then resolved = 'plain' end
-    if owner.sourceEditorOperation ~= operation then return owner.code end
+    if owner.sourceEditorOperation ~= operation then
+        return owner.code
+    end
+
     local known = resolved == 'native' or resolved == 'plain' or resolved == 'LuaWorkbench'
     local factory = providers[resolved]
     owner.sourceEditorPool = owner.sourceEditorPool or {}
@@ -902,19 +1086,34 @@ function addon:AcquireSourceLuaEditor(owner, parent, changed, valid, preferred)
 
     if old and old ~= code then
         owner.code = nil
-        if not old.released then pcall(old.Release, old) end
-        if owner.sourceEditorOperation ~= operation then return owner.code end
+
+        if not old.released then
+            pcall(old.Release, old)
+        end
+
+        if owner.sourceEditorOperation ~= operation then
+            return owner.code
+        end
     end
 
     if code then
         local ok = pcall(code.Acquire, code, changed, valid)
-        if owner.sourceEditorOperation ~= operation then return owner.code end
+
+        if owner.sourceEditorOperation ~= operation then
+            return owner.code
+        end
 
         if not ok then
-            if owner.sourceEditorPool[resolved] == entry then owner.sourceEditorPool[resolved] = nil end
+            if owner.sourceEditorPool[resolved] == entry then
+                owner.sourceEditorPool[resolved] = nil
+            end
+
             pcall(code.Release, code)
             code = nil
-            if owner.sourceEditorOperation ~= operation then return owner.code end
+
+            if owner.sourceEditorOperation ~= operation then
+                return owner.code
+            end
         end
     end
 
@@ -922,11 +1121,17 @@ function addon:AcquireSourceLuaEditor(owner, parent, changed, valid, preferred)
         local ok, created = pcall(self.CreateWorkbenchLuaEditor, self, parent, changed, valid, resolved)
 
         if owner.sourceEditorOperation ~= operation then
-            if ok and created ~= owner.code then pcall(created.Release, created) end
+            if ok and created ~= owner.code then
+                pcall(created.Release, created)
+            end
+
             return owner.code
         end
 
-        if not ok then error(created, 0) end
+        if not ok then
+            error(created, 0)
+        end
+
         code = created
 
         if

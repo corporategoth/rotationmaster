@@ -242,10 +242,15 @@ local combatCategory = "b3d7df2c-f257-4a2d-961e-66e49336d109"
 -- bossModConditionsSeeded). Tolerates a malformed profile; the first argument is unused.
 function addon:InitializeBossModConditions(_, db)
     local profile = db and db.profile
-    if type(profile) ~= "table" or profile.bossModConditionsSeeded then return end
+
+    if type(profile) ~= "table" or profile.bossModConditionsSeeded then
+        return
+    end
 
     local function append(list, tags)
-        if type(list) ~= "table" then return end
+        if type(list) ~= "table" then
+            return
+        end
 
         for _, tag in ipairs(tags) do
             local found = false
@@ -257,7 +262,9 @@ function addon:InitializeBossModConditions(_, db)
                 end
             end
 
-            if not found then list[#list + 1] = tag end
+            if not found then
+                list[#list + 1] = tag
+            end
         end
     end
 
@@ -277,7 +284,9 @@ local seedOwner = {}
 -- Seeds the profile now and again whenever AceDB creates, resets, switches to or copies a profile. Called from
 -- init.lua once the database exists.
 function addon:InstallBossModConditions(db)
-    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then return end
+    if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
+        return
+    end
 
     for _, event in ipairs({ "OnNewProfile", "OnProfileReset", "OnProfileChanged", "OnProfileCopied" }) do
         db.RegisterCallback(seedOwner, event, function(_, currentDB)

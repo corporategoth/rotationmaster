@@ -26,10 +26,20 @@ local function recoveryText(value)
     -- Renders one value; keys are sorted so the text is stable between redraws.
     local function render(v, depth)
         nodes = nodes + 1
-        if nodes > 512 or depth > 16 then return '"<limit>"' end
-        if type(v) == 'string' then return types[v] and v or string.format('%q', v) end
-        if type(v) ~= 'table' then return (type(v) == 'number' or type(v) == 'boolean') and tostring(v) or 'nil' end
-        if active[v] then return '"<cycle>"' end
+
+        if nodes > 512 or depth > 16 then
+            return '"<limit>"'
+        end
+        if type(v) == 'string' then
+            return types[v] and v or string.format('%q', v)
+        end
+        if type(v) ~= 'table' then
+            return (type(v) == 'number' or type(v) == 'boolean') and tostring(v) or 'nil'
+        end
+        if active[v] then
+            return '"<cycle>"'
+        end
+
         active[v] = true
         local fields = {}
 
@@ -149,7 +159,10 @@ function addon:BuildCustomSourceFields(form, owner)
     end)
 
     addon:SetUIScript(schema, 'OnCursorChanged', function(_, _, cursorY, _, lineHeight)
-        if not owner.advancedSchema then return end
+        if not owner.advancedSchema then
+            return
+        end
+
         local bar = scroll.workbenchBar
         local top = -cursorY
 
@@ -193,7 +206,9 @@ function addon:BuildCustomSourceFields(form, owner)
         row.tooltip = L['Edit fields']
 
         addon:SetUIScript(row, 'OnClick', form:Guard(function()
-            if not owner:Flush() then return end
+            if not owner:Flush() then
+                return
+            end
 
             if fieldsGraph then
                 local child = owner:OpenSchema(owner.model.value.fields, graph and owner.model.value.fieldOrder or nil)
@@ -237,7 +252,10 @@ function addon:BuildCustomSourceFields(form, owner)
     local changed = schema:GetScript('OnTextChanged')
 
     addon:SetUIScript(schema, 'OnTextChanged', function(...)
-        if changed then changed(...) end
+        if changed then
+            changed(...)
+        end
+
         layoutRaw()
     end)
 

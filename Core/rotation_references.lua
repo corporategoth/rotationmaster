@@ -14,7 +14,9 @@ local bindDependency = addon.BindRotationDependencyReader
 
 if type(bindDependency) == 'function' then
     bindDependency(addon, function(reader)
-        if type(reader) == 'function' then dependencyReader = reader end
+        if type(reader) == 'function' then
+            dependencyReader = reader
+        end
     end)
 
     addon.BindRotationDependencyReader = nil
@@ -61,7 +63,10 @@ local function sameEntries(value, previous, expected)
 
     if type(value) == 'table' then
         for key, item in pairs(value) do
-            if not rawequal(type(item) == 'table' and item or false, previous[key]) then return false end
+            if not rawequal(type(item) == 'table' and item or false, previous[key]) then
+                return false
+            end
+
             count = count + 1
         end
     end
@@ -77,7 +82,10 @@ end
 -- Like sameEntries for the merged shared and personal item sets: a personal entry shadows the shared one of the same
 -- key.
 local function sameItemsets(shared, personal, previous, expected)
-    if not validItemsets(shared, personal) then return expected == 0 end
+    if not validItemsets(shared, personal) then
+        return expected == 0
+    end
+
     local count = 0
 
     if shared then
@@ -85,7 +93,10 @@ local function sameItemsets(shared, personal, previous, expected)
             -- Only actual personal entries shadow shared entries. A missing-key
             -- lookup could materialize an AceDB default and mutate the source.
             if not personal or rawget(personal, key) == nil then
-                if not rawequal(type(item) == 'table' and item or false, previous[key]) then return false end
+                if not rawequal(type(item) == 'table' and item or false, previous[key]) then
+                    return false
+                end
+
                 count = count + 1
             end
         end
@@ -93,7 +104,10 @@ local function sameItemsets(shared, personal, previous, expected)
 
     if personal then
         for key, item in pairs(personal) do
-            if not rawequal(type(item) == 'table' and item or false, previous[key]) then return false end
+            if not rawequal(type(item) == 'table' and item or false, previous[key]) then
+                return false
+            end
+
             count = count + 1
         end
     end
@@ -103,12 +117,18 @@ end
 
 -- Merged copy of shared and personal item sets (personal wins) plus the merged entry count.
 local function itemsetEntries(shared, personal)
-    if not validItemsets(shared, personal) then return {}, 0 end
+    if not validItemsets(shared, personal) then
+        return {}, 0
+    end
+
     local result, count = entries(shared)
 
     if personal then
         for key, item in pairs(personal) do
-            if result[key] == nil then count = count + 1 end
+            if result[key] == nil then
+                count = count + 1
+            end
+
             result[key] = normalized(item)
         end
     end
@@ -132,16 +152,26 @@ local function observeClient(owner)
     local platform = rawget(addon, 'Platform')
     local getter = type(platform) == 'table' and platform.GetClientInfo or nil
     local project = WOW_PROJECT_ID
-    if getter == clientGetter and project == clientProject then return end
+
+    if getter == clientGetter and project == clientProject then
+        return
+    end
+
     local first = clientGetter == nil and clientProject == nil
     clientGetter, clientProject = getter, project
-    if not first then owner.conditionRegistryVersion = (owner.conditionRegistryVersion or 0) + 1 end
+
+    if not first then
+        owner.conditionRegistryVersion = (owner.conditionRegistryVersion or 0) + 1
+    end
 end
 
 -- Asks Core/condition_support.lua whether a condition works on this client; returns its reason, or nil when supported.
 local function support(tag, definition, value)
     local check = addon.GetConditionSupport
-    if type(check) == 'function' then return check(addon, tag, definition, value) end
+
+    if type(check) == 'function' then
+        return check(addon, tag, definition, value)
+    end
 end
 
 -- Observe identities without copying maps on the common unchanged path.
@@ -294,9 +324,16 @@ local function validationLayout(owner, method)
     end
 
     local db = proofRawget(owner, 'db')
-    if proofType(db) ~= 'table' then return end
+
+    if proofType(db) ~= 'table' then
+        return
+    end
+
     local profile, global = proofRawget(db, 'profile'), proofRawget(db, 'global')
-    if not proofPlain(profile) or not proofPlain(global) then return end
+
+    if not proofPlain(profile) or not proofPlain(global) then
+        return
+    end
 
     local conditions, version = proofRawget(owner, 'conditionDefinitions'), proofRawget(
         owner,
@@ -366,14 +403,20 @@ local function readValidationStamp(owner, method, entryMethod)
     end
 
     local value = method(owner)
-    if db then return value, db, profile, global, conditions, shared, personal, effects, version, state end
+
+    if db then
+        return value, db, profile, global, conditions, shared, personal, effects, version, state
+    end
+
     return value
 end
 
 -- Trusted private module handoff, retired by its consumer. This does not
 -- authenticate a hostile replacement of the complete loader/binder itself.
 function addon:BindRotationValidationReader(bind)
-    if type(bind) ~= 'function' then return nil, 'invalid-validation-reader-binder' end
+    if type(bind) ~= 'function' then
+        return nil, 'invalid-validation-reader-binder'
+    end
 
     bind(
         readValidationStamp,
@@ -417,8 +460,9 @@ ownedOptions = addon.GetRotationValidationOptions
 -- Constant-time managed publication authority; unknown property layouts and
 -- public overrides retain the existing eager reader. No membership scan.
 runtimeAuthority = function(owner, continuation)
-    if not dependencyReader or not dependencyIdentity(owner, addon) then return end
-
+    if not dependencyReader or not dependencyIdentity(owner, addon) then
+        return
+    end
     if
         continuation ~= true
         and (proofRawget(owner, 'GetRotationValidationOptions') ~= ownedOptions
@@ -433,9 +477,16 @@ runtimeAuthority = function(owner, continuation)
     end
 
     local db = proofRawget(owner, 'db')
-    if proofType(db) ~= 'table' then return end
+
+    if proofType(db) ~= 'table' then
+        return
+    end
+
     local profile, global = proofRawget(db, 'profile'), proofRawget(db, 'global')
-    if proofType(profile) ~= 'table' or proofType(global) ~= 'table' then return end
+
+    if proofType(profile) ~= 'table' or proofType(global) ~= 'table' then
+        return
+    end
 
     local conditions, shared, personal, effects =
         proofRawget(owner, 'conditionDefinitions'),
@@ -478,35 +529,56 @@ function addon:HasDisabledRotationDependency(body)
         end
     end
 
-    if not hasDisabled then return false end
+    if not hasDisabled then
+        return false
+    end
+
     local tree = self.RotationData.IndexRotationSteps(body, { allowMissingIds = true })
-    if not tree then return true end
+
+    if not tree then
+        return true
+    end
+
     local count = 0
     local condition, declared
 
     -- Walks a value against its schema (a condition, a list of conditions, a union of schemas or a field table) and
     -- returns true when a disabled condition is reached or the value is malformed or nested too deeply.
     declared = function(value, schema, depth)
-        if value == nil then return false end
-        if depth > 64 then return true end
-        if schema == 'condition' then return condition(value, depth + 1) end
+        if value == nil then
+            return false
+        end
+        if depth > 64 then
+            return true
+        end
+        if schema == 'condition' then
+            return condition(value, depth + 1)
+        end
 
         if schema == 'condition[]' then
-            if type(value) ~= 'table' then return true end
+            if type(value) ~= 'table' then
+                return true
+            end
 
             for _, child in ipairs(value) do
-                if condition(child, depth + 1) then return true end
+                if condition(child, depth + 1) then
+                    return true
+                end
             end
         elseif type(schema) == 'table' and type(value) == 'table' then
             if schema[1] ~= nil then
                 -- Union schemas may contain object/list alternatives. Inspect
                 -- only alternatives that declare nested conditions.
                 for _, alternative in ipairs(schema) do
-                    if declared(value, alternative, depth + 1) then return true end
+                    if declared(value, alternative, depth + 1) then
+                        return true
+                    end
                 end
             else
                 for key, kind in pairs(schema) do
-                    if declared(value[key], kind, depth + 1) then return true end
+                    if declared(value[key], kind, depth + 1) then
+                        return true
+                    end
                 end
             end
         end
@@ -517,28 +589,47 @@ function addon:HasDisabledRotationDependency(body)
     -- Checks one condition node: true when it is disabled, malformed, past the depth or node limits, or references a
     -- disabled condition in any of its declared fields. AND, OR and NOT recurse into their operands.
     condition = function(value, depth)
-        if value == nil then return false end
+        if value == nil then
+            return false
+        end
+
         count = count + 1
-        if count > 4096 or depth > 64 or type(value) ~= 'table' then return true end
-        if value.type == 'AND' or value.type == 'OR' then return declared(value.value, 'condition[]', depth + 1) end
-        if value.type == 'NOT' then return condition(value.value, depth + 1) end
+
+        if count > 4096 or depth > 64 or type(value) ~= 'table' then
+            return true
+        end
+        if value.type == 'AND' or value.type == 'OR' then
+            return declared(value.value, 'condition[]', depth + 1)
+        end
+        if value.type == 'NOT' then
+            return condition(value.value, depth + 1)
+        end
+
         local definition = definitions[value.type]
 
         if type(definition) == 'table' then
-            if definition.disabled then return true end
+            if definition.disabled then
+                return true
+            end
 
             for key, kind in pairs(definition.fields or {}) do
-                if declared(value[key], kind, depth + 1) then return true end
+                if declared(value[key], kind, depth + 1) then
+                    return true
+                end
             end
         end
 
         return false
     end
 
-    if condition(body.switch, 0) then return true end
+    if condition(body.switch, 0) then
+        return true
+    end
 
     for _, row in ipairs(tree.rows) do
-        if condition(row.step.conditions, 0) then return true end
+        if condition(row.step.conditions, 0) then
+            return true
+        end
     end
 
     return false

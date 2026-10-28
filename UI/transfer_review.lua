@@ -9,7 +9,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- open. p is the settings pane that owns the comparison.
 function addon:CloseTransferReview(p)
     local d = p and p.comparison
-    if d and d.fromImport and d.frame:IsShown() then d.frame:Hide() end
+
+    if d and d.fromImport and d.frame:IsShown() then
+        d.frame:Hide()
+    end
 end
 
 -- Preview / Compare / Check for the transfer windows that import directly (item
@@ -39,8 +42,14 @@ function addon:BuildTransferReview(p, review)
     -- Runs review.parse on the dialog's input text; returns the candidate, or nil and a reason string.
     local function parse(d)
         local ok, candidate, why = pcall(review.parse, d.input:GetText())
-        if not ok then return nil, tostring(candidate) end
-        if candidate == nil then return nil, why or L['Invalid import.'] end
+
+        if not ok then
+            return nil, tostring(candidate)
+        end
+        if candidate == nil then
+            return nil, why or L['Invalid import.']
+        end
+
         return candidate
     end
 
@@ -81,7 +90,9 @@ function addon:BuildTransferReview(p, review)
             end
         end)
 
-        if not ok then problem = tostring(err) end
+        if not ok then
+            problem = tostring(err)
+        end
 
         if not shown then
             d.status:SetText(string.format(
@@ -112,7 +123,10 @@ function addon:BuildTransferReview(p, review)
 
             if review.notes then
                 local ok, list = pcall(review.notes, candidate, d)
-                if ok then notes = list or {} end
+
+                if ok then
+                    notes = list or {}
+                end
             end
         end
 

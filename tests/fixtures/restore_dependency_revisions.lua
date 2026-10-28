@@ -1,6 +1,6 @@
 -- Exact managed-dependency foundation inverse; frozen HEAD61ad6ad.
-local records={
- ["Core/rotation_references.lua"]=[====[local _,addon=...
+local records = {
+    ["Core/rotation_references.lua"] = [====[local _,addon=...
 local observed,stamp
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
@@ -214,7 +214,7 @@ do
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
 ]====],
- ["Core/conditions.lua"]=[====[local addon_name, addon = ...
+    ["Core/conditions.lua"] = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -640,7 +640,7 @@ function addon:usefulCondition(value)
     return usefulSingle(value)
 end
 ]====],
- ["Core/functions.lua"]=[====[local addon_name,addon=...
+    ["Core/functions.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local reserved={['and']=true,['break']=true,['do']=true,['else']=true,['elseif']=true,['end']=true,['false']=true,['for']=true,['function']=true,['if']=true,['in']=true,['local']=true,['nil']=true,['not']=true,['or']=true,['repeat']=true,['return']=true,['then']=true,['true']=true,['until']=true,['while']=true}
 local function identifier(name)
@@ -881,7 +881,7 @@ function addon:RemoveCustomFunction(id,expected)
     self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;self:RefreshFunctionConsumers();return true
 end
 ]====],
- ["Core/custom_authoring.lua"]=[====[local addon_name,addon=...
+    ["Core/custom_authoring.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local docs={
     evaluate={description=L['Decide whether this condition currently matches.'],args={{'value','table',L['The stored values for this condition.']},{'cache','table',L['Shared data for this evaluation cycle.']},{'evalStart','number',L['Evaluation start time, in seconds from GetTime().']}},returns={'boolean | nil',L['True matches; false or nil does not match.']}},
@@ -1074,7 +1074,7 @@ function addon:NewCustomConditionDraft(key,source)
     return d
 end
 ]====],
- ["Core/function_data.lua"]=[====[local _,addon=...
+    ["Core/function_data.lua"] = [====[local _,addon=...
 local MAX_ENTRIES,MAX_BYTES,MAX_DEPTH=128,1048576,64
 -- Bound and reject hostile data before any recursive copy or source compilation.
 local function portable(value)
@@ -1427,7 +1427,7 @@ function addon:ApplyFunctionBundleImport(plan)
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end;pending[plan]=nil;return true
 end
 ]====],
- ["UI/condition_source_pane.lua"]=[====[local addon_name,addon=...
+    ["UI/condition_source_pane.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clearNew(p) p.creatingCondition=nil;p.newConditionKey=nil;p.newConditionSource=nil end
 function addon:InstallInlineConditionNavigation(p)
@@ -1579,7 +1579,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     return d
 end
 ]====],
- ["UI/settings_collections.lua"]=[====[local addon_name,addon=...
+    ["UI/settings_collections.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:SettingsEntries(values)
     local entries={};for id,value in pairs(values or {}) do if type(value)=='table' then entries[#entries+1]={value=id,text=type(value.name)=='string' and value.name or tostring(id)} end end
@@ -1660,7 +1660,7 @@ function addon:DeleteSavedCustomCondition(key)
     return true
 end
 ]====],
- ["UI/settings_draft.lua"]=[====[local addon_name,addon=...
+    ["UI/settings_draft.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
@@ -1754,7 +1754,7 @@ function addon:InstallSettingsDraft(p)
     end
 end
 ]====],
- ["UI/settings_effects.lua"]=[====[local addon_name,addon=...
+    ["UI/settings_effects.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
 local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
@@ -1872,7 +1872,7 @@ function addon:BuildEffectSettings(p)
     end
 end
 ]====],
- ["UI/settings_items.lua"]=[====[local addon_name,addon=...
+    ["UI/settings_items.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function itemValue(text)
     local value=text:match('^%s*(.-)%s*$');if value=='' then return end
@@ -1962,7 +1962,7 @@ function addon:BuildItemSettings(p)
     end
 end
 ]====],
- ["Core/rotation_lifecycle.lua"]=[====[local addon_name,addon=...
+    ["Core/rotation_lifecycle.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Also called after import overlays: AceDB emits Reset/Copy before the
@@ -2015,7 +2015,7 @@ function addon:InstallRotationProfileLifecycle()
     self.rotationProfileLifecycleInstalled=true
 end
 ]====],
- ["UI/settings_profiles.lua"]=[====[local addon_name,addon=...
+    ["UI/settings_profiles.lua"] = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function nonempty(text) if text:find('%S') and #text<=50 then return text end end
 function addon:BuildProfileSettings(p)
@@ -2118,7 +2118,7 @@ function addon:BuildAboutSettings(p)
     p:Heading(L['Commands']);p:Text('/rm config\n/rm errors\n/rm help')
 end
 ]====],
- ["init.lua"]=[====[local addon_name, addon = ...
+    ["init.lua"] = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -2722,7 +2722,7 @@ function addon:init()
 end
 
 ]====],
- ["validate.lua"]=[====[local addon_name, addon = ...
+    ["validate.lua"] = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -3524,7 +3524,7 @@ function addon:validate(template, fix)
     end
 end
 ]====],
- ["tests/fixtures/addon.lua"]=[====[-- Explicit external boundaries; production constants/utilities/help stay real.
+    ["tests/fixtures/addon.lua"] = [====[-- Explicit external boundaries; production constants/utilities/help stay real.
 local F = {}
 function F.new(product, expansion, class)
     local env = setmetatable({}, {__index = _G})
@@ -3604,14 +3604,17 @@ end
 return F
 ]====],
 }
-local patches={
- ["Core/rotation_references.lua"]={
-  {old=[====[local _,addon=...
+
+local patches = {
+    ["Core/rotation_references.lua"] = {
+        {
+            old = [====[local _,addon=...
 local observed,stamp
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
 -- Lua5.1 accepts a stack level or function; the checker declares only levels.
-]====],current=[====[local _,addon=...
+]====],
+            current = [====[local _,addon=...
 local observed,stamp
 local dependencyReader
 local bindDependency=addon.BindRotationDependencyReader
@@ -3624,23 +3627,28 @@ local managed
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
 -- Lua5.1 accepts a stack level or function; the checker declares only levels.
-]====]},
-  {old=[====[end
+]====],
+        },
+        {
+            old = [====[end
 -- Observe identities without copying maps on the common unchanged path.
 -- Normalized false markers keep malformed/NaN entries stable, as before.
 local function observe(owner)
     local profile,global=owner.db.profile,owner.db.global
     local shared,personal=global.itemsets,profile.itemsets
     local conditions,effects=owner.conditionDefinitions,global.effects
-]====],current=[====[end
+]====],
+            current = [====[end
 -- Observe identities without copying maps on the common unchanged path.
 -- Normalized false markers keep malformed/NaN entries stable, as before.
 local function observeLegacy(owner)
     local profile,global=owner.db.profile,owner.db.global
     local shared,personal=global.itemsets,profile.itemsets
     local conditions,effects=owner.conditionDefinitions,global.effects
-]====]},
-  {old=[====[        effects=effectEntries,effectCount=effectCount}
+]====],
+        },
+        {
+            old = [====[        effects=effectEntries,effectCount=effectCount}
     stamp={}
 end
 -- Internal authority checks need the current stamp, not detached public maps.
@@ -3651,7 +3659,8 @@ function addon:GetRotationValidationStamp()
 end
 local ownedValidationStamp=addon.GetRotationValidationStamp
 -- Even protected metatable metadata can disguise a callback. Only native
-]====],current=[====[        effects=effectEntries,effectCount=effectCount}
+]====],
+            current = [====[        effects=effectEntries,effectCount=effectCount}
     stamp={}
 end
 -- Managed ownership does not require plain/default-free maps. AceDB may
@@ -3684,29 +3693,35 @@ function addon:GetRotationValidationStamp()
 end
 local ownedValidationStamp=addon.GetRotationValidationStamp
 -- Even protected metatable metadata can disguise a callback. Only native
-]====]},
-  {old=[====[        and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
+]====],
+        },
+        {
+            old = [====[        and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
         and proofRawequal(proofRawget(proofEnvironment,'getfenv'),proofGetfenv)
         and proofRawequal(proofGetfenv(ownedValidationStamp),proofEnvironment)
         and proofRawequal(proofGetfenv(observe),proofEnvironment) and proofRawequal(proofGetfenv(normalized),proofEnvironment)
         and proofRawequal(proofGetfenv(entries),proofEnvironment) and proofRawequal(proofGetfenv(sameEntries),proofEnvironment)
         and proofRawequal(proofGetfenv(validItemsets),proofEnvironment) and proofRawequal(proofGetfenv(sameItemsets),proofEnvironment)
         and proofRawequal(proofGetfenv(itemsetEntries),proofEnvironment)
-]====],current=[====[        and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
+]====],
+            current = [====[        and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
         and proofRawequal(proofRawget(proofEnvironment,'getfenv'),proofGetfenv)
         and proofRawequal(proofGetfenv(ownedValidationStamp),proofEnvironment)
         and proofRawequal(proofGetfenv(observe),proofEnvironment) and proofRawequal(proofGetfenv(observeLegacy),proofEnvironment) and proofRawequal(proofGetfenv(normalized),proofEnvironment)
         and proofRawequal(proofGetfenv(entries),proofEnvironment) and proofRawequal(proofGetfenv(sameEntries),proofEnvironment)
         and proofRawequal(proofGetfenv(validItemsets),proofEnvironment) and proofRawequal(proofGetfenv(sameItemsets),proofEnvironment)
         and proofRawequal(proofGetfenv(itemsetEntries),proofEnvironment)
-]====]},
-  {old=[====[        and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
+]====],
+        },
+        {
+            old = [====[        and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
 end
 local function readValidationStamp(owner,method,entryMethod)
     local db,profile,global,conditions,shared,personal,effects,version,state
     -- A successful PRE proof closes the owned scan. POST checks raw layout
     -- again, without repeating globals that no permitted callback can change.
-]====],current=[====[        and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
+]====],
+            current = [====[        and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
 end
 local function readValidationStamp(owner,method,entryMethod)
     if dependencyReader and dependencyIdentity(owner,addon) then
@@ -3715,8 +3730,10 @@ local function readValidationStamp(owner,method,entryMethod)
     local db,profile,global,conditions,shared,personal,effects,version,state
     -- A successful PRE proof closes the owned scan. POST checks raw layout
     -- again, without repeating globals that no permitted callback can change.
-]====]},
-  {old=[====[-- Dependency maps may carry AceDB defaults metatables. Observe their entries,
+]====],
+        },
+        {
+            old = [====[-- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.
 function addon:GetRotationValidationOptions()
     observe(self)
@@ -3728,7 +3745,8 @@ function addon:GetRotationValidationOptions()
 end
 
 -- Legacy bodies have no envelope. Inspect their semantic condition edges too,
-]====],current=[====[-- Dependency maps may carry AceDB defaults metatables. Observe their entries,
+]====],
+            current = [====[-- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.
 function addon:GetRotationValidationOptions()
     local snapshot,current=observe(self)
@@ -3743,49 +3761,60 @@ function addon:GetRotationValidationOptions()
 end
 
 -- Legacy bodies have no envelope. Inspect their semantic condition edges too,
-]====]},
- },
- ["Core/conditions.lua"]={
-  {old=[====[local addon_name, addon = ...
+]====],
+        },
+    },
+    ["Core/conditions.lua"] = {
+        {
+            old = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====],current=[====[local addon_name, addon = ...
+]====],
+            current = [====[local addon_name, addon = ...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====]},
-  {old=[====[
+]====],
+        },
+        {
+            old = [====[
 local conditions = {}
 addon.conditionDefinitions = conditions
 local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
-]====],current=[====[
+]====],
+            current = [====[
 local conditions = {}
 addon.conditionDefinitions = conditions
 if invalidateDependencies then invalidateDependencies(addon,'condition',nil) end
 local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
-]====]},
-  {old=[====[    end
+]====],
+        },
+        {
+            old = [====[    end
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     quarantined[array] = nil
     if not array.disabled and not array.functionUnavailable and array.on_register then
         array.on_register(tag)
-]====],current=[====[    end
+]====],
+            current = [====[    end
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     if invalidateDependencies then invalidateDependencies(addon,'condition',tag) end
     quarantined[array] = nil
     if not array.disabled and not array.functionUnavailable and array.on_register then
         array.on_register(tag)
-]====]},
-  {old=[====[    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
+]====],
+        },
+        {
+            old = [====[    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     if conditions[tag]~=nil then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
@@ -3793,7 +3822,8 @@ local quarantined = setmetatable({}, {__mode="k"})
     if wasDisabled then self:RefreshConditionConsumers() end
 end
 
-]====],current=[====[    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
+]====],
+            current = [====[    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     local removed=conditions[tag]~=nil
@@ -3803,35 +3833,43 @@ end
     if wasDisabled then self:RefreshConditionConsumers() end
 end
 
-]====]},
- },
- ["Core/functions.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["Core/functions.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local reserved={['and']=true,['break']=true,['do']=true,['else']=true,['elseif']=true,['end']=true,['false']=true,['for']=true,['function']=true,['if']=true,['in']=true,['local']=true,['nil']=true,['not']=true,['or']=true,['repeat']=true,['return']=true,['then']=true,['true']=true,['until']=true,['while']=true}
 local function identifier(name)
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local reserved={['and']=true,['break']=true,['do']=true,['else']=true,['elseif']=true,['end']=true,['false']=true,['for']=true,['function']=true,['if']=true,['in']=true,['local']=true,['nil']=true,['not']=true,['or']=true,['repeat']=true,['return']=true,['then']=true,['true']=true,['until']=true,['while']=true}
 local function identifier(name)
-]====]},
-  {old=[====[end
+]====],
+        },
+        {
+            old = [====[end
 function addon:InitializeFunctionRegistry()
     self.functionRegistry=self:BuildFunctionRegistry(self.db.global.custom_functions or {}) or {};self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1
 end
 function addon:FunctionAvailable(id,registry,active,depth,memo)
     registry=registry or self.functionRegistry;if not registry then self:InitializeFunctionRegistry();registry=self.functionRegistry end
-]====],current=[====[end
+]====],
+            current = [====[end
 function addon:InitializeFunctionRegistry()
     self.functionRegistry=self:BuildFunctionRegistry(self.db.global.custom_functions or {}) or {};self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1
     if invalidateDependencies then invalidateDependencies(addon,'function',nil) end
 end
 function addon:FunctionAvailable(id,registry,active,depth,memo)
     registry=registry or self.functionRegistry;if not registry then self:InitializeFunctionRegistry();registry=self.functionRegistry end
-]====]},
-  {old=[====[        if definition.functionBindings and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended and not self:AreFunctionBindingsAvailable(definition.functionBindings,registry) then
+]====],
+        },
+        {
+            old = [====[        if definition.functionBindings and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended and not self:AreFunctionBindingsAvailable(definition.functionBindings,registry) then
             local ok=true;if definition.on_unregister then ok=pcall(definition.on_unregister,id) end
             if not ok then
                 for _,entry in ipairs(cleaned) do entry[2].functionSuspended=nil;if entry[2].on_register then pcall(entry[2].on_register,entry[1]) end end
@@ -3841,7 +3879,8 @@ function addon:FunctionAvailable(id,registry,active,depth,memo)
         end
     end
     return true
-]====],current=[====[        if definition.functionBindings and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended and not self:AreFunctionBindingsAvailable(definition.functionBindings,registry) then
+]====],
+            current = [====[        if definition.functionBindings and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended and not self:AreFunctionBindingsAvailable(definition.functionBindings,registry) then
             local ok=true;if definition.on_unregister then ok=pcall(definition.on_unregister,id) end
             if not ok then
                 for _,entry in ipairs(cleaned) do entry[2].functionSuspended=nil;if invalidateDependencies then invalidateDependencies(addon,'condition',entry[1]) end;if entry[2].on_register then pcall(entry[2].on_register,entry[1]) end end
@@ -3851,8 +3890,10 @@ function addon:FunctionAvailable(id,registry,active,depth,memo)
         end
     end
     return true
-]====]},
-  {old=[====[    for id,definition in pairs(self.conditionDefinitions or {}) do
+]====],
+        },
+        {
+            old = [====[    for id,definition in pairs(self.conditionDefinitions or {}) do
         if definition.functionBindings then
             local ok,why=self:AreFunctionBindingsAvailable(definition.functionBindings)
             definition.functionUnavailable=not ok and why or nil
@@ -3868,7 +3909,8 @@ function addon:FunctionAvailable(id,registry,active,depth,memo)
     if not deferRefresh and self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return successful,not successful and 'function-consumer-registration-failed' or nil,attempted
 end
-]====],current=[====[    for id,definition in pairs(self.conditionDefinitions or {}) do
+]====],
+            current = [====[    for id,definition in pairs(self.conditionDefinitions or {}) do
         if definition.functionBindings then
             local ok,why=self:AreFunctionBindingsAvailable(definition.functionBindings)
             local previousUnavailable=definition.functionUnavailable
@@ -3889,8 +3931,10 @@ end
     if not deferRefresh and self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return successful,not successful and 'function-consumer-registration-failed' or nil,attempted
 end
-]====]},
-  {old=[====[    local registry,problem=self:BuildFunctionRegistry(sources);if not registry then return nil,problem end
+]====],
+        },
+        {
+            old = [====[    local registry,problem=self:BuildFunctionRegistry(sources);if not registry then return nil,problem end
     if not source.disabled then local available,reason=self:FunctionAvailable(id,registry);if not available then return nil,reason end end
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
     self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;self:RefreshFunctionConsumers();return true
@@ -3901,7 +3945,8 @@ function addon:RemoveCustomFunction(id,expected)
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
     self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;self:RefreshFunctionConsumers();return true
 end
-]====],current=[====[    local registry,problem=self:BuildFunctionRegistry(sources);if not registry then return nil,problem end
+]====],
+            current = [====[    local registry,problem=self:BuildFunctionRegistry(sources);if not registry then return nil,problem end
     if not source.disabled then local available,reason=self:FunctionAvailable(id,registry);if not available then return nil,reason end end
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
     self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;if invalidateDependencies then invalidateDependencies(addon,'function',id) end;self:RefreshFunctionConsumers();return true
@@ -3912,56 +3957,68 @@ function addon:RemoveCustomFunction(id,expected)
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
     self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;if invalidateDependencies then invalidateDependencies(addon,'function',id) end;self:RefreshFunctionConsumers();return true
 end
-]====]},
- },
- ["Core/custom_authoring.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["Core/custom_authoring.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local docs={
     evaluate={description=L['Decide whether this condition currently matches.'],args={{'value','table',L['The stored values for this condition.']},{'cache','table',L['Shared data for this evaluation cycle.']},{'evalStart','number',L['Evaluation start time, in seconds from GetTime().']}},returns={'boolean | nil',L['True matches; false or nil does not match.']}},
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local docs={
     evaluate={description=L['Decide whether this condition currently matches.'],args={{'value','table',L['The stored values for this condition.']},{'cache','table',L['Shared data for this evaluation cycle.']},{'evalStart','number',L['Evaluation start time, in seconds from GetTime().']}},returns={'boolean | nil',L['True matches; false or nil does not match.']}},
-]====]},
-  {old=[====[    if self.Diagnostics then ok=self.Diagnostics:Call({module='custom_conditions',operation='register',conditionTag=key,customCode=true},self.RegisterCondition,self,key,definition)
+]====],
+        },
+        {
+            old = [====[    if self.Diagnostics then ok=self.Diagnostics:Call({module='custom_conditions',operation='register',conditionTag=key,customCode=true},self.RegisterCondition,self,key,definition)
     else ok=pcall(self.RegisterCondition,self,key,definition) end
     if not ok then
         if registry then registry[key]=previous end
         -- Trusted hooks can have arbitrary external effects. Restore registry
         -- and saved source; restoring the prior hook's setup is best effort.
         if previous and not previous.disabled and previous.on_register then pcall(previous.on_register,key) end
-]====],current=[====[    if self.Diagnostics then ok=self.Diagnostics:Call({module='custom_conditions',operation='register',conditionTag=key,customCode=true},self.RegisterCondition,self,key,definition)
+]====],
+            current = [====[    if self.Diagnostics then ok=self.Diagnostics:Call({module='custom_conditions',operation='register',conditionTag=key,customCode=true},self.RegisterCondition,self,key,definition)
     else ok=pcall(self.RegisterCondition,self,key,definition) end
     if not ok then
         if registry then local changed=not rawequal(registry[key],previous);registry[key]=previous;if changed and invalidateDependencies then invalidateDependencies(addon,'condition',key) end end
         -- Trusted hooks can have arbitrary external effects. Restore registry
         -- and saved source; restoring the prior hook's setup is best effort.
         if previous and not previous.disabled and previous.on_register then pcall(previous.on_register,key) end
-]====]},
- },
- ["Core/function_data.lua"]={
-  {old=[====[local _,addon=...
+]====],
+        },
+    },
+    ["Core/function_data.lua"] = {
+        {
+            old = [====[local _,addon=...
 local MAX_ENTRIES,MAX_BYTES,MAX_DEPTH=128,1048576,64
 -- Bound and reject hostile data before any recursive copy or source compilation.
 local function portable(value)
-]====],current=[====[local _,addon=...
+]====],
+            current = [====[local _,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local MAX_ENTRIES,MAX_BYTES,MAX_DEPTH=128,1048576,64
 -- Bound and reject hostile data before any recursive copy or source compilation.
 local function portable(value)
-]====]},
-  {old=[====[    local function restoreConsumers()
+]====],
+        },
+        {
+            old = [====[    local function restoreConsumers()
         for id,record in pairs(oldDefinitions) do
             local definition=record.definition;local resume=definition.functionSuspended and not record.suspended
             definition.functionSuspended=record.suspended;definition.functionUnavailable=record.unavailable
             if resume and definition.on_register and not definition.disabled and not record.unavailable then pcall(definition.on_register,id) end
         end
     end
-]====],current=[====[    local function restoreConsumers()
+]====],
+            current = [====[    local function restoreConsumers()
         for id,record in pairs(oldDefinitions) do
             local definition=record.definition;local resume=definition.functionSuspended and not record.suspended
             local changed=definition.functionSuspended~=record.suspended or definition.functionUnavailable~=record.unavailable
@@ -3970,8 +4027,10 @@ local function portable(value)
             if resume and definition.on_register and not definition.disabled and not record.unavailable then pcall(definition.on_register,id) end
         end
     end
-]====]},
-  {old=[====[        local previous=registry[id]
+]====],
+        },
+        {
+            old = [====[        local previous=registry[id]
         if previous and not previous.disabled and not previous.functionUnavailable and not previous.functionSuspended then
             previous.functionSuspended=true
             if previous.on_unregister and not pcall(previous.on_unregister,id) then restoreConsumers();return nil,'condition-cleanup-failed' end
@@ -3981,7 +4040,8 @@ local function portable(value)
     -- Isolate saved tables too: a failing trusted hook may write to these maps.
     self.db.global.custom_conditions=self:CopySettingsData(oldConditions or {})
     self.db.global.function_import_origins=self:CopySettingsData(oldOrigins or {})
-]====],current=[====[        local previous=registry[id]
+]====],
+            current = [====[        local previous=registry[id]
         if previous and not previous.disabled and not previous.functionUnavailable and not previous.functionSuspended then
             previous.functionSuspended=true
             if invalidateDependencies then invalidateDependencies(addon,'condition',id) end
@@ -3993,8 +4053,10 @@ local function portable(value)
     -- Isolate saved tables too: a failing trusted hook may write to these maps.
     self.db.global.custom_conditions=self:CopySettingsData(oldConditions or {})
     self.db.global.function_import_origins=self:CopySettingsData(oldOrigins or {})
-]====]},
-  {old=[====[            local key=record.entry.destinationID;local current=registry[key]
+]====],
+        },
+        {
+            old = [====[            local key=record.entry.destinationID;local current=registry[key]
             if current and current~=(oldDefinitions[key] and oldDefinitions[key].definition) and current.on_unregister and not current.disabled and not current.functionUnavailable then pcall(current.on_unregister,key) end
             registry[key]=oldDefinitions[key] and oldDefinitions[key].definition
         end
@@ -4002,7 +4064,8 @@ local function portable(value)
         restoreConsumers();return nil,failureReason
     end
     local conditionSources=self:CopySettingsData(oldConditions or {});local origins=self:CopySettingsData(oldOrigins or {})
-]====],current=[====[            local key=record.entry.destinationID;local current=registry[key]
+]====],
+            current = [====[            local key=record.entry.destinationID;local current=registry[key]
             if current and current~=(oldDefinitions[key] and oldDefinitions[key].definition) and current.on_unregister and not current.disabled and not current.functionUnavailable then pcall(current.on_unregister,key) end
             registry[key]=oldDefinitions[key] and oldDefinitions[key].definition
             if invalidateDependencies then invalidateDependencies(addon,'condition',key) end
@@ -4012,83 +4075,101 @@ local function portable(value)
         restoreConsumers();return nil,failureReason
     end
     local conditionSources=self:CopySettingsData(oldConditions or {});local origins=self:CopySettingsData(oldOrigins or {})
-]====]},
- },
- ["UI/condition_source_pane.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/condition_source_pane.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clearNew(p) p.creatingCondition=nil;p.newConditionKey=nil;p.newConditionSource=nil end
 function addon:InstallInlineConditionNavigation(p)
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clearNew(p) p.creatingCondition=nil;p.newConditionKey=nil;p.newConditionSource=nil end
 function addon:InstallInlineConditionNavigation(p)
-]====]},
-  {old=[====[            if changed then
+]====],
+        },
+        {
+            old = [====[            if changed then
                 local current=self.conditionDefinitions[identifier];if current and not current.disabled and current.on_unregister then pcall(current.on_unregister,identifier) end
                 self.db.global.custom_conditions[identifier]=previous;self.conditionDefinitions[identifier]=oldDefinition;self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
                 if oldDefinition and not oldDefinition.disabled and oldDefinition.on_register then pcall(oldDefinition.on_register,identifier) end
                 if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
                 p.draft.global.custom_conditions[identifier]=self:CopySettingsData(previous);p.draftBaseline.global.custom_conditions[identifier]=self:CopySettingsData(previous)
-]====],current=[====[            if changed then
+]====],
+            current = [====[            if changed then
                 local current=self.conditionDefinitions[identifier];if current and not current.disabled and current.on_unregister then pcall(current.on_unregister,identifier) end
                 self.db.global.custom_conditions[identifier]=previous;self.conditionDefinitions[identifier]=oldDefinition;self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
                 if invalidateDependencies then invalidateDependencies(addon,'condition',identifier) end
                 if oldDefinition and not oldDefinition.disabled and oldDefinition.on_register then pcall(oldDefinition.on_register,identifier) end
                 if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
                 p.draft.global.custom_conditions[identifier]=self:CopySettingsData(previous);p.draftBaseline.global.custom_conditions[identifier]=self:CopySettingsData(previous)
-]====]},
- },
- ["UI/settings_collections.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/settings_collections.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:SettingsEntries(values)
     local entries={};for id,value in pairs(values or {}) do if type(value)=='table' then entries[#entries+1]={value=id,text=type(value.name)=='string' and value.name or tostring(id)} end end
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:SettingsEntries(values)
     local entries={};for id,value in pairs(values or {}) do if type(value)=='table' then entries[#entries+1]={value=id,text=type(value.name)=='string' and value.name or tostring(id)} end end
-]====]},
-  {old=[====[    -- source and registered definition, rather than leaving an orphaned runtime.
+]====],
+        },
+        {
+            old = [====[    -- source and registered definition, rather than leaving an orphaned runtime.
     local definition=self.conditionDefinitions and self.conditionDefinitions[key]
     local ok,why=pcall(self.UnregisterCondition,self,key)
     if not ok then if self.conditionDefinitions then self.conditionDefinitions[key]=definition end;return false,why end
     self.db.global.custom_conditions[key]=nil
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return true
-]====],current=[====[    -- source and registered definition, rather than leaving an orphaned runtime.
+]====],
+            current = [====[    -- source and registered definition, rather than leaving an orphaned runtime.
     local definition=self.conditionDefinitions and self.conditionDefinitions[key]
     local ok,why=pcall(self.UnregisterCondition,self,key)
     if not ok then if self.conditionDefinitions then local changed=not rawequal(self.conditionDefinitions[key],definition);self.conditionDefinitions[key]=definition;if changed and invalidateDependencies then invalidateDependencies(addon,'condition',key) end end;return false,why end
     self.db.global.custom_conditions[key]=nil
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return true
-]====]},
- },
- ["UI/settings_draft.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/settings_draft.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
-]====]},
-  {old=[====[        end end end
+]====],
+        },
+        {
+            old = [====[        end end end
         if InCombatLockdown and InCombatLockdown() then self:Message(L['Leave combat before applying these settings.']);return false end
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
             if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then addon.db[scope][key]=addon:CopySettingsData(self.draft[scope][key]) end
         end end
         local effects=self.draftEffects;if self.ClearSettingsHistory then self:ClearSettingsHistory() end;self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil
         for _,callback in pairs(effects) do callback() end
-]====],current=[====[        end end end
+]====],
+            current = [====[        end end end
         if InCombatLockdown and InCombatLockdown() then self:Message(L['Leave combat before applying these settings.']);return false end
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
             if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then
@@ -4099,66 +4180,80 @@ local function equal(a,b)
         end end
         local effects=self.draftEffects;if self.ClearSettingsHistory then self:ClearSettingsHistory() end;self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil
         for _,callback in pairs(effects) do callback() end
-]====]},
- },
- ["UI/settings_effects.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/settings_effects.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
 local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
 local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
-]====]},
-  {old=[====[            {key='delete',text=L['Delete'],icon='trash',action=function()
+]====],
+        },
+        {
+            old = [====[            {key='delete',text=L['Delete'],icon='trash',action=function()
                 self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
                     if not (self.db.global.effects or {})[id] then return false,'effect-changed' end
                     self.db.global.effects[id]=nil;return true
                 end)
             end}}
         actionEntries[1].enabled=not isNew;self:CollectionFooter(p,'effect',effects,isNew and nil or id,actionEntries[1],actionEntries[2]);if not isNew then self:SettingsTopDelete(p,actionEntries[3].action) end
-]====],current=[====[            {key='delete',text=L['Delete'],icon='trash',action=function()
+]====],
+            current = [====[            {key='delete',text=L['Delete'],icon='trash',action=function()
                 self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
                     if not (self.db.global.effects or {})[id] then return false,'effect-changed' end
                     self.db.global.effects[id]=nil;if invalidateDependencies then invalidateDependencies(addon,'effect',id) end;return true
                 end)
             end}}
         actionEntries[1].enabled=not isNew;self:CollectionFooter(p,'effect',effects,isNew and nil or id,actionEntries[1],actionEntries[2]);if not isNew then self:SettingsTopDelete(p,actionEntries[3].action) end
-]====]},
- },
- ["UI/settings_items.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/settings_items.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function itemValue(text)
     local value=text:match('^%s*(.-)%s*$');if value=='' then return end
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function itemValue(text)
     local value=text:match('^%s*(.-)%s*$');if value=='' then return end
-]====]},
-  {old=[====[                    if not current then return false,'item-set-changed' end
+]====],
+        },
+        {
+            old = [====[                    if not current then return false,'item-set-changed' end
                     if self.UnbindItemSet then if self:UnbindItemSet(id,self:CopySettingsData(current.items or {}))==false then return false,L['Leave combat before changing action bar bindings.'] end
                     elseif self.db.char and self.db.char.bindings then self.db.char.bindings[id]=nil end
                     profile[id]=nil;global[id]=nil;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end;return true
                 end)
             end}}
 
-]====],current=[====[                    if not current then return false,'item-set-changed' end
+]====],
+            current = [====[                    if not current then return false,'item-set-changed' end
                     if self.UnbindItemSet then if self:UnbindItemSet(id,self:CopySettingsData(current.items or {}))==false then return false,L['Leave combat before changing action bar bindings.'] end
                     elseif self.db.char and self.db.char.bindings then self.db.char.bindings[id]=nil end
                     profile[id]=nil;global[id]=nil;if invalidateDependencies then invalidateDependencies(addon,'itemset',id) end;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end;return true
                 end)
             end}}
 
-]====]},
- },
- ["Core/rotation_lifecycle.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["Core/rotation_lifecycle.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Also called after import overlays: AceDB emits Reset/Copy before the
@@ -4167,7 +4262,8 @@ function addon:RefreshRotationProfileStorage()
     local ok,why=self:InitializeScopedRotationStorage()
     self.rotationStorageError=not ok and why or nil
     if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
@@ -4179,209 +4275,264 @@ function addon:RefreshRotationProfileStorage()
     local ok,why=self:InitializeScopedRotationStorage()
     self.rotationStorageError=not ok and why or nil
     if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
-]====]},
- },
- ["UI/settings_profiles.lua"]={
-  {old=[====[local addon_name,addon=...
+]====],
+        },
+    },
+    ["UI/settings_profiles.lua"] = {
+        {
+            old = [====[local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function nonempty(text) if text:find('%S') and #text<=50 then return text end end
 function addon:BuildProfileSettings(p)
-]====],current=[====[local addon_name,addon=...
+]====],
+            current = [====[local addon_name,addon=...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function nonempty(text) if text:find('%S') and #text<=50 then return text end end
 function addon:BuildProfileSettings(p)
-]====]},
-  {old=[====[        local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
+]====],
+        },
+        {
+            old = [====[        local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
         local ok,why=pcall(function() if operation=='CopyProfile' and not stockOK(saved(name)) then error(L['Invalid stock targets; data preserved.'],0) end;db[operation](db,name);if after then after() end end)
         self.rotationProfileChangeDepth=depth
         if self.RotationProfileChanged then self:RotationProfileChanged()
         elseif self.EnableRotation then self:EnableRotation() end
         if not ok then p:Message(tostring(why));return false end
-]====],current=[====[        local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
+]====],
+            current = [====[        local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
         local ok,why=pcall(function() if operation=='CopyProfile' and not stockOK(saved(name)) then error(L['Invalid stock targets; data preserved.'],0) end;db[operation](db,name);if after then after() end end)
         self.rotationProfileChangeDepth=depth
         if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
         if self.RotationProfileChanged then self:RotationProfileChanged()
         elseif self.EnableRotation then self:EnableRotation() end
         if not ok then p:Message(tostring(why));return false end
-]====]},
- },
- ["init.lua"]={
-  {old=[====[local addon_name, addon = ...
+]====],
+        },
+    },
+    ["init.lua"] = {
+        {
+            old = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====],current=[====[local addon_name, addon = ...
+]====],
+            current = [====[local addon_name, addon = ...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====]},
-  {old=[====[            button2 = NO,
+]====],
+        },
+        {
+            old = [====[            button2 = NO,
             OnAccept = function()
                 addon.db.global.effects = deepcopy(default_effects)
             end,
             showAlert = 1,
             timeout = 0,
-]====],current=[====[            button2 = NO,
+]====],
+            current = [====[            button2 = NO,
             OnAccept = function()
                 addon.db.global.effects = deepcopy(default_effects)
                 if invalidateDependencies then invalidateDependencies(addon,'effect',nil) end
             end,
             showAlert = 1,
             timeout = 0,
-]====]},
-  {old=[====[    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
+]====],
+        },
+        {
+            old = [====[    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
     elseif not addon.InitializeScopedRotationStorage then addon.db.profile.version=PROFILE_VERSION end
     addon.db.global.version = GLOBAL_VERSION
 end
 
-]====],current=[====[    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
+]====],
+            current = [====[    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
     elseif not addon.InitializeScopedRotationStorage then addon.db.profile.version=PROFILE_VERSION end
     addon.db.global.version = GLOBAL_VERSION
     if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
 end
 
-]====]},
- },
- ["validate.lua"]={
-  {old=[====[local addon_name, addon = ...
+]====],
+        },
+    },
+    ["validate.lua"] = {
+        {
+            old = [====[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====],current=[====[local addon_name, addon = ...
+]====],
+            current = [====[local addon_name, addon = ...
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-]====]},
-  {old=[====[        end
+]====],
+        },
+        {
+            old = [====[        end
     end
 
     addon.Functions.collections.cleanArray(toremove)
 end
 
-]====],current=[====[        end
+]====],
+            current = [====[        end
     end
 
     if fix and toremove.data and invalidateDependencies then invalidateDependencies(addon,'all',nil) end
     addon.Functions.collections.cleanArray(toremove)
 end
 
-]====]},
-  {old=[====[        addon:warn("Invalid ID for itemset %s:%s", prefix, name)
+]====],
+        },
+        {
+            old = [====[        addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(itemset)
             return
         end
     end
-]====],current=[====[        addon:warn("Invalid ID for itemset %s:%s", prefix, name)
+]====],
+            current = [====[        addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(itemset)
             if invalidateDependencies then invalidateDependencies(addon,'itemset',name) end
             return
         end
     end
-]====]},
-  {old=[====[        addon:warn("Invalid ID for effect %s:%s", prefix, name)
+]====],
+        },
+        {
+            old = [====[        addon:warn("Invalid ID for effect %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
             return
         end
     end
-]====],current=[====[        addon:warn("Invalid ID for effect %s:%s", prefix, name)
+]====],
+            current = [====[        addon:warn("Invalid ID for effect %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
             if invalidateDependencies then invalidateDependencies(addon,'effect',name) end
             return
         end
     end
-]====]},
-  {old=[====[        addon:warn("No effect type for %s:%s", prefix, name)
+]====],
+        },
+        {
+            old = [====[        addon:warn("No effect type for %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
         end
         return
     end
-]====],current=[====[        addon:warn("No effect type for %s:%s", prefix, name)
+]====],
+            current = [====[        addon:warn("No effect type for %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
             if invalidateDependencies then invalidateDependencies(addon,'effect',name) end
         end
         return
     end
-]====]},
-  {old=[====[                -- repair. Selection notices this registry version next pass.
+]====],
+        },
+        {
+            old = [====[                -- repair. Selection notices this registry version next pass.
                 definition.disabled=true
                 addon.conditionRegistryVersion=(addon.conditionRegistryVersion or 0)+1
             end
         end
     end
-]====],current=[====[                -- repair. Selection notices this registry version next pass.
+]====],
+            current = [====[                -- repair. Selection notices this registry version next pass.
                 definition.disabled=true
                 addon.conditionRegistryVersion=(addon.conditionRegistryVersion or 0)+1
                 if invalidateDependencies then invalidateDependencies(addon,'condition',name) end
             end
         end
     end
-]====]},
-  {old=[====[end
+]====],
+        },
+        {
+            old = [====[end
 
 function addon:validate(template, fix)
     local DB = _G[self.savedVariableName or "RotationMasterDB"]
 
     local glob_template = addon.Functions.collections.deepcopy(template.global)
-]====],current=[====[end
+]====],
+            current = [====[end
 
 function addon:validate(template, fix)
     if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
     local DB = _G[self.savedVariableName or "RotationMasterDB"]
 
     local glob_template = addon.Functions.collections.deepcopy(template.global)
-]====]},
-  {old=[====[            apply_remove(toremove, data.disabled_conditions, fix)
+]====],
+        },
+        {
+            old = [====[            apply_remove(toremove, data.disabled_conditions, fix)
         end
     end
 end
-]====],current=[====[            apply_remove(toremove, data.disabled_conditions, fix)
+]====],
+            current = [====[            apply_remove(toremove, data.disabled_conditions, fix)
         end
     end
     if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
 end
-]====]},
- },
- ["tests/fixtures/addon.lua"]={
-  {old=[====[        local chunk=assert(loadfile(path)); setfenv(chunk, env); return chunk('rotationmaster',addon)
+]====],
+        },
+    },
+    ["tests/fixtures/addon.lua"] = {
+        {
+            old = [====[        local chunk=assert(loadfile(path)); setfenv(chunk, env); return chunk('rotationmaster',addon)
     end
     dofile('tests/fixtures/native_ui.lua')(env)
     load('globals.lua');load('Platform/client.lua');load('Platform/rotation_owner.lua');load('Platform/groups.lua');load('Platform/roster_class.lua');load('Platform/role.lua');load('Platform/mobinfo2.lua');load('Platform/casting.lua');load('Platform/unit_health.lua');load('Platform/unit_stat.lua');load('Platform/health_forecast.lua');load('Platform/unit_level.lua');load('Platform/unit_power.lua');load('Platform/player_movement.lua');load('Platform/unit_attackability.lua');load('Platform/unit_flags.lua');load('Platform/player_flags.lua');load('Platform/form.lua');load('Platform/points.lua');load('Platform/runes.lua');load('Platform/unit_identity.lua');load('Platform/unit_metadata.lua');load('Platform/creature_type.lua');load('Platform/unit_presence.lua');load('Platform/pet.lua');load('Platform/threat.lua');load('Platform/instance.lua');load('Platform/zone_pvp.lua');load('Platform/loss_of_control.lua');load('Platform/items.lua');load('Platform/glyphs.lua');load('Platform/specializations.lua')
     load('Locales/enUS.lua'); load('constants.lua');load('Data/artwork.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Functions/trends.lua');load('Functions/forecast.lua'); load('utils.lua');load('Core/level_conditions.lua');load('Core/point_conditions.lua');load('Core/class_group_conditions.lua');load('Core/creature_conditions.lua');load('Core/health_forecast_conditions.lua');load('Core/threat_count_conditions.lua')
     load('UI/controls.lua');load('UI/condition_widgets.lua');load('UI/condition_observation.lua');load('UI/condition_icon.lua');load('UI/condition_position.lua');load('UI/condition_display.lua');load('UI/drag_presentation.lua');load('Core/unsaved_changes.lua');load('UI/unsaved.lua');load('Core/stock_targets.lua');load('UI/stock_profile_safety.lua');load('UI/settings_stock.lua');load('UI/settings_draft.lua');load('UI/collection_compare.lua');load('UI/draft_changes.lua');load('UI/draft_change_controls.lua');load('UI/window.lua');load('UI/selector.lua');load('UI/tag_picker.lua');load('UI/checkbox.lua');load('UI/condition_inputs.lua');load('UI/condition_layout.lua');load('UI/condition_table.lua');load('UI/condition_unit.lua');load('Core/item_conditions.lua');load('Core/rotation_references.lua');load('Help/common.lua'); load('Help/conditional.lua'); load('Core/presentation.lua');load('Core/condition_description.lua'); load('Core/spell_catalog.lua');load('Core/spell_search.lua');load('Core/reference_catalog.lua');load('Core/category_data.lua');load('Core/announcement_data.lua');load('Core/profile_data.lua');load('Core/collection_data.lua');load('Core/custom_condition_data.lua');load('Core/functions.lua');load('UI/spell_search.lua');load('UI/spell_icon.lua')
     return {env=env, addon=addon, load=load, widget=widget, translations=translations, libraries=libraries}
-]====],current=[====[        local chunk=assert(loadfile(path)); setfenv(chunk, env); return chunk('rotationmaster',addon)
+]====],
+            current = [====[        local chunk=assert(loadfile(path)); setfenv(chunk, env); return chunk('rotationmaster',addon)
     end
     dofile('tests/fixtures/native_ui.lua')(env)
     load('globals.lua');load('Core/dependency_revisions.lua');load('Platform/client.lua');load('Platform/rotation_owner.lua');load('Platform/groups.lua');load('Platform/roster_class.lua');load('Platform/role.lua');load('Platform/mobinfo2.lua');load('Platform/casting.lua');load('Platform/unit_health.lua');load('Platform/unit_stat.lua');load('Platform/health_forecast.lua');load('Platform/unit_level.lua');load('Platform/unit_power.lua');load('Platform/player_movement.lua');load('Platform/unit_attackability.lua');load('Platform/unit_flags.lua');load('Platform/player_flags.lua');load('Platform/form.lua');load('Platform/points.lua');load('Platform/runes.lua');load('Platform/unit_identity.lua');load('Platform/unit_metadata.lua');load('Platform/creature_type.lua');load('Platform/unit_presence.lua');load('Platform/pet.lua');load('Platform/threat.lua');load('Platform/instance.lua');load('Platform/zone_pvp.lua');load('Platform/loss_of_control.lua');load('Platform/items.lua');load('Platform/glyphs.lua');load('Platform/specializations.lua')
     load('Locales/enUS.lua'); load('constants.lua');load('Data/artwork.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Functions/trends.lua');load('Functions/forecast.lua'); load('utils.lua');load('Core/level_conditions.lua');load('Core/point_conditions.lua');load('Core/class_group_conditions.lua');load('Core/creature_conditions.lua');load('Core/health_forecast_conditions.lua');load('Core/threat_count_conditions.lua')
     load('UI/controls.lua');load('UI/condition_widgets.lua');load('UI/condition_observation.lua');load('UI/condition_icon.lua');load('UI/condition_position.lua');load('UI/condition_display.lua');load('UI/drag_presentation.lua');load('Core/unsaved_changes.lua');load('UI/unsaved.lua');load('Core/stock_targets.lua');load('UI/stock_profile_safety.lua');load('UI/settings_stock.lua');load('UI/settings_draft.lua');load('UI/collection_compare.lua');load('UI/draft_changes.lua');load('UI/draft_change_controls.lua');load('UI/window.lua');load('UI/selector.lua');load('UI/tag_picker.lua');load('UI/checkbox.lua');load('UI/condition_inputs.lua');load('UI/condition_layout.lua');load('UI/condition_table.lua');load('UI/condition_unit.lua');load('Core/item_conditions.lua');load('Core/rotation_references.lua');load('Help/common.lua'); load('Help/conditional.lua'); load('Core/presentation.lua');load('Core/condition_description.lua'); load('Core/spell_catalog.lua');load('Core/spell_search.lua');load('Core/reference_catalog.lua');load('Core/category_data.lua');load('Core/announcement_data.lua');load('Core/profile_data.lua');load('Core/collection_data.lua');load('Core/custom_condition_data.lua');load('Core/functions.lua');load('UI/spell_search.lua');load('UI/spell_icon.lua')
     return {env=env, addon=addon, load=load, widget=widget, translations=translations, libraries=libraries}
-]====]},
- },
+]====],
+        },
+    },
 }
-return function(text,path,baseline)
- if path=='UI/settings_collections.lua' and not baseline then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end
- local old=assert(records[path],'unknown dependency-revision module')
- if baseline then assert(text==nil);return old end
- assert(type(text)=='string')
- for _,patch in ipairs(patches[path])do
-  local first,last=text:find(patch.current,1,true);assert(first,'exact dependency-revision block missing: '..path)
-  assert(not text:find(patch.current,last+1,true),'dependency-revision block repeated: '..path)
-  text=text:sub(1,first-1)..patch.old..text:sub(last+1)
- end
- assert(text==old,'module changed outside dependency revisions: '..path)
- return old
+
+return function(text, path, baseline)
+    if path == 'UI/settings_collections.lua' and not baseline then
+        text = dofile('tests/fixtures/restore_questie_wiring.lua')(text, path)
+    end
+
+    local old = assert(records[path], 'unknown dependency-revision module')
+
+    if baseline then
+        assert(text == nil)
+        return old
+    end
+
+    assert(type(text) == 'string')
+
+    for _, patch in ipairs(patches[path]) do
+        local first, last = text:find(patch.current, 1, true)
+        assert(first, 'exact dependency-revision block missing: ' .. path)
+        assert(not text:find(patch.current, last + 1, true), 'dependency-revision block repeated: ' .. path)
+        text = text:sub(1, first - 1) .. patch.old .. text:sub(last + 1)
+    end
+
+    assert(text == old, 'module changed outside dependency revisions: ' .. path)
+    return old
 end

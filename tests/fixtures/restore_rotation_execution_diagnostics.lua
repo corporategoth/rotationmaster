@@ -1,11 +1,19 @@
 -- Strict inverse of private diagnostics and the sole approved table-index qualification.
-local changes={
- ["Data/plain.lua"]={bytes=5327,hash="c6694bc9",patches={
-  {old=[=[    bind(portableOwned)
-]=],new=[=[    bind(portableOwned,portableStatus)
-]=]},
-  {old=[=[function addon:BindRotationPortableReader(bind)
-]=],new=[=[-- Capture-only explanation of the existing proof; never authorizes execution.
+local changes = {
+    ["Data/plain.lua"] = {
+        bytes = 5327,
+        hash = "c6694bc9",
+        patches = {
+            {
+                old = [=[    bind(portableOwned)
+]=],
+                new = [=[    bind(portableOwned,portableStatus)
+]=],
+            },
+            {
+                old = [=[function addon:BindRotationPortableReader(bind)
+]=],
+                new = [=[-- Capture-only explanation of the existing proof; never authorizes execution.
 local function portableStatus(namespace)
     local result={reason="ready",raw={}}
     local function check(reason,ok) if result.reason=="ready" and not ok then result.reason=reason end end
@@ -28,19 +36,35 @@ local function portableStatus(namespace)
     return result
 end
 function addon:BindRotationPortableReader(bind)
-]=]},
- }},
- ["Data/rotation_tree.lua"]={bytes=10433,hash="b42ec0c8",patches={
-  {old=[=[    check("string-index-global",indexEqual(indexStringMethods,indexString))
-]=],new=[=[    result.globalString=indexEqual(indexStringMethods,indexString)
+]=],
+            },
+        },
+    },
+    ["Data/rotation_tree.lua"] = {
+        bytes = 10433,
+        hash = "b42ec0c8",
+        patches = {
+            {
+                old = [=[    check("string-index-global",indexEqual(indexStringMethods,indexString))
+]=],
+                new = [=[    result.globalString=indexEqual(indexStringMethods,indexString)
     check("string-index-table",indexType(indexStringMethods)=="table")
-]=]},
-  {old=[=[and indexType(indexStringMeta)=="table" and indexEqual(indexStringMethods,indexString)]=],new=[=[and indexType(indexStringMeta)=="table" and indexType(indexStringMethods)=="table"]=]},
-  {old=[=[    bind(read,retire)
-]=],new=[=[    bind(read,retire,indexStatus)
-]=]},
-  {old=[=[local function witness(body)
-]=],new=[=[-- A pure explanation of captured ownership facts, sampled only by the profiler.
+]=],
+            },
+            {
+                old = [=[and indexType(indexStringMeta)=="table" and indexEqual(indexStringMethods,indexString)]=],
+                new = [=[and indexType(indexStringMeta)=="table" and indexType(indexStringMethods)=="table"]=],
+            },
+            {
+                old = [=[    bind(read,retire)
+]=],
+                new = [=[    bind(read,retire,indexStatus)
+]=],
+            },
+            {
+                old = [=[local function witness(body)
+]=],
+                new = [=[-- A pure explanation of captured ownership facts, sampled only by the profiler.
 local function indexStatus(namespace)
     local portable=portableStatus and portableStatus(data) or {reason="unbound",raw={}}
     local result={reason="ready",raw={}}
@@ -79,20 +103,36 @@ local function indexStatus(namespace)
     return {portable=portable,index=result}
 end
 local function witness(body)
-]=]},
-  {old=[=[    bindPortable(addon,function(reader) portableOwned=reader end)
-]=],new=[=[    bindPortable(addon,function(reader,status) portableOwned,portableStatus=reader,status end)
-]=]},
-  {old=[=[local portableOwned
-]=],new=[=[local portableOwned,portableStatus
-]=]},
- }},
- ["Core/rotation_sequence.lua"]={bytes=5508,hash="433ab371",patches={
-  {old=[=[    bind(rawMethod,run)
-]=],new=[=[    bind(rawMethod,run,sequenceStatus)
-]=]},
-  {old=[=[function addon:BindRotationSequenceReader(bind)
-]=],new=[=[-- Source-owned status carries no body, cache, method, or profile references.
+]=],
+            },
+            {
+                old = [=[    bindPortable(addon,function(reader) portableOwned=reader end)
+]=],
+                new = [=[    bindPortable(addon,function(reader,status) portableOwned,portableStatus=reader,status end)
+]=],
+            },
+            {
+                old = [=[local portableOwned
+]=],
+                new = [=[local portableOwned,portableStatus
+]=],
+            },
+        },
+    },
+    ["Core/rotation_sequence.lua"] = {
+        bytes = 5508,
+        hash = "433ab371",
+        patches = {
+            {
+                old = [=[    bind(rawMethod,run)
+]=],
+                new = [=[    bind(rawMethod,run,sequenceStatus)
+]=],
+            },
+            {
+                old = [=[function addon:BindRotationSequenceReader(bind)
+]=],
+                new = [=[-- Source-owned status carries no body, cache, method, or profile references.
 local function sequenceStatus(owner)
     local result={reason="ready",raw={}}
     local function check(reason,ok) if result.reason=="ready" and not ok then result.reason=reason end end
@@ -117,17 +157,30 @@ local function sequenceStatus(owner)
     status.sequence=result;return status
 end
 function addon:BindRotationSequenceReader(bind)
-]=]},
-  {old=[=[    bindIndex(addon,function(read,retire) readIndex,retireIndex=read,retire end)
-]=],new=[=[    bindIndex(addon,function(read,retire,status) readIndex,retireIndex,indexStatus=read,retire,status end)
-]=]},
-  {old=[=[local readIndex,retireIndex
-]=],new=[=[local readIndex,retireIndex,indexStatus
-]=]},
- }},
- ["main.lua"]={bytes=65745,hash="eb7c7581",patches={
-  {old=[=[local DBIcon = LibStub("LibDBIcon-1.0")
-]=],new=[=[-- One-time private handoff to the earlier-loaded optional CPU sampler.
+]=],
+            },
+            {
+                old = [=[    bindIndex(addon,function(read,retire) readIndex,retireIndex=read,retire end)
+]=],
+                new = [=[    bindIndex(addon,function(read,retire,status) readIndex,retireIndex,indexStatus=read,retire,status end)
+]=],
+            },
+            {
+                old = [=[local readIndex,retireIndex
+]=],
+                new = [=[local readIndex,retireIndex,indexStatus
+]=],
+            },
+        },
+    },
+    ["main.lua"] = {
+        bytes = 65745,
+        hash = "eb7c7581",
+        patches = {
+            {
+                old = [=[local DBIcon = LibStub("LibDBIcon-1.0")
+]=],
+                new = [=[-- One-time private handoff to the earlier-loaded optional CPU sampler.
 local bindCPUStatus=addon.BindCPUExecutionIndexDiagnostic
 if type(bindCPUStatus)=="function" then
     bindCPUStatus(addon,function()
@@ -138,37 +191,65 @@ if type(bindCPUStatus)=="function" then
     addon.BindCPUExecutionIndexDiagnostic=nil
 end
 local DBIcon = LibStub("LibDBIcon-1.0")
-]=]},
-  {old=[=[    bindSequence(addon,function(rawMethod,run) sequenceRawMethod,sequenceRun=rawMethod,run end)
-]=],new=[=[    bindSequence(addon,function(rawMethod,run,status) sequenceRawMethod,sequenceRun,sequenceStatus=rawMethod,run,status end)
-]=]},
-  {old=[=[local sequenceRawMethod,sequenceRun
-]=],new=[=[local sequenceRawMethod,sequenceRun,sequenceStatus
-]=]},
- }},
- ["Diagnostics/cpu.lua"]={bytes=17351,hash="e89d3c97",patches={
-  {old=[=[ run.timer=timer;run.executionIndexProof=executionIndexProof();lastReport=nil
-]=],new=[=[ run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
-]=]},
-  {old=[=[ local first="Execution index proof start: "..started
-]=],new=[=[ local first="Execution index proof start: "..(started or "probe-unavailable")
-]=]},
-  {old=[=[  return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; string-index="..shape("capturedIndex").."/"..shape("currentIndex")
-]=],new=[=[  local alias=proofType(index)=="table" and proofRawget(index,"globalString")
+]=],
+            },
+            {
+                old = [=[    bindSequence(addon,function(rawMethod,run) sequenceRawMethod,sequenceRun=rawMethod,run end)
+]=],
+                new = [=[    bindSequence(addon,function(rawMethod,run,status) sequenceRawMethod,sequenceRun,sequenceStatus=rawMethod,run,status end)
+]=],
+            },
+            {
+                old = [=[local sequenceRawMethod,sequenceRun
+]=],
+                new = [=[local sequenceRawMethod,sequenceRun,sequenceStatus
+]=],
+            },
+        },
+    },
+    ["Diagnostics/cpu.lua"] = {
+        bytes = 17351,
+        hash = "e89d3c97",
+        patches = {
+            {
+                old = [=[ run.timer=timer;run.executionIndexProof=executionIndexProof();lastReport=nil
+]=],
+                new = [=[ run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
+]=],
+            },
+            {
+                old = [=[ local first="Execution index proof start: "..started
+]=],
+                new = [=[ local first="Execution index proof start: "..(started or "probe-unavailable")
+]=],
+            },
+            {
+                old = [=[  return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; string-index="..shape("capturedIndex").."/"..shape("currentIndex")
+]=],
+                new = [=[  local alias=proofType(index)=="table" and proofRawget(index,"globalString")
   return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; string-index="..shape("capturedIndex").."/"..shape("currentIndex").."; string-global="..(alias==true and "1" or alias==false and "0" or "?")
-]=]},
-  {old=[=["string-index-global"]=],new=[=["string-index-table"]=]},
-  {old=[=[ run.timer=timer;lastReport=nil
-]=],new=[=[ run.timer=timer;run.executionIndexProof=executionIndexProof();lastReport=nil
-]=]},
-  {old=[=[   text=table.concat(report,'\n')
-]=],new=[=[   -- BEGIN EXECUTION INDEX DIAGNOSTICS
+]=],
+            },
+            { old = [=["string-index-global"]=], new = [=["string-index-table"]=] },
+            {
+                old = [=[ run.timer=timer;lastReport=nil
+]=],
+                new = [=[ run.timer=timer;run.executionIndexProof=executionIndexProof();lastReport=nil
+]=],
+            },
+            {
+                old = [=[   text=table.concat(report,'\n')
+]=],
+                new = [=[   -- BEGIN EXECUTION INDEX DIAGNOSTICS
    appendExecutionIndexProof(report,run.executionIndexProof,executionIndexProof())
    -- END EXECUTION INDEX DIAGNOSTICS
    text=table.concat(report,'\n')
-]=]},
-  {old=[=[local MAX_FUNCTIONS,MAX_SCAN,TOP=384,512,20
-]=],new=[=[-- Fixed, source-free proof snapshots. The installer is retired by main;
+]=],
+            },
+            {
+                old = [=[local MAX_FUNCTIONS,MAX_SCAN,TOP=384,512,20
+]=],
+                new = [=[-- Fixed, source-free proof snapshots. The installer is retired by main;
 -- this reader is private and is never invoked outside capture boundaries.
 local proofType,proofRawget,proofPcall=type,rawget,pcall
 local executionIndexDiagnostic
@@ -226,17 +307,31 @@ local function appendExecutionIndexProof(report,started,ended)
  end
 end
 local MAX_FUNCTIONS,MAX_SCAN,TOP=384,512,20
-]=]},
- }},
+]=],
+            },
+        },
+    },
 }
-return function(text,path)
- local change=assert(changes[path],"unknown diagnostic source")
- for _,patch in ipairs(change.patches) do
-  local first,last=text:find(patch.new,1,true)
-  assert(first and not text:find(patch.new,last+1,true),"diagnostic delta missing/repeated: "..path)
-  text=text:sub(1,first-1)..patch.old..text:sub(last+1)
- end
- local hash=0;for i=1,#text do hash=(hash*33+text:byte(i))%4294967296 end
- assert(#text==change.bytes and string.format("%08x",hash)==change.hash,"unrelated diagnostic source delta: "..path)
- return text
+
+return function(text, path)
+    local change = assert(changes[path], "unknown diagnostic source")
+
+    for _, patch in ipairs(change.patches) do
+        local first, last = text:find(patch.new, 1, true)
+        assert(first and not text:find(patch.new, last + 1, true), "diagnostic delta missing/repeated: " .. path)
+        text = text:sub(1, first - 1) .. patch.old .. text:sub(last + 1)
+    end
+
+    local hash = 0
+
+    for i = 1, #text do
+        hash = (hash * 33 + text:byte(i)) % 4294967296
+    end
+
+    assert(
+        #text == change.bytes and string.format("%08x", hash) == change.hash,
+        "unrelated diagnostic source delta: " .. path
+    )
+
+    return text
 end

@@ -36,11 +36,16 @@ local bind = rawget(addon, 'BindCacheDiagnosticDispatcher')
 
 if type(bind) == 'function' then
     local ok = pcall(bind, addon, function(selectMode)
-        if type(selectMode) == 'function' then dispatch = selectMode end
+        if type(selectMode) == 'function' then
+            dispatch = selectMode
+        end
     end)
 
     rawset(addon, 'BindCacheDiagnosticDispatcher', nil)
-    if not ok then dispatch = nil end
+
+    if not ok then
+        dispatch = nil
+    end
 end
 
 local finalized, initialized = false, false
@@ -48,21 +53,37 @@ local finalized, initialized = false, false
 -- Applies the saved choice, once, by firing the switch Functions/cache.lua handed over. Returns true, or false and a
 -- reason code; later calls report the first outcome and never change the mode again.
 function addon:InitializeCacheDiagnosticMode(global)
-    if self ~= addon then return false, 'invalid-owner' end
+    if self ~= addon then
+        return false, 'invalid-owner'
+    end
 
     if finalized then
-        if initialized then return true end
+        if initialized then
+            return true
+        end
+
         return false, 'cache-mode-unavailable'
     end
 
-    if type(global) ~= 'table' then return false, 'cache-mode-unavailable' end
+    if type(global) ~= 'table' then
+        return false, 'cache-mode-unavailable'
+    end
+
     finalized = true
     local selectMode = dispatch
     dispatch = nil
-    if type(selectMode) ~= 'function' then return false, 'cache-mode-unavailable' end
+
+    if type(selectMode) ~= 'function' then
+        return false, 'cache-mode-unavailable'
+    end
+
     local direct = directRequested(global)
     local ok, selected = pcall(selectMode, direct)
-    if not ok or selected ~= true then return false, 'cache-mode-unavailable' end
+
+    if not ok or selected ~= true then
+        return false, 'cache-mode-unavailable'
+    end
+
     loaded = direct and 'direct' or 'cached'
     initialized = true
     return true
@@ -71,9 +92,16 @@ end
 -- Returns the mode in effect this session ("cached" or "direct"), the mode the saved choice asks for, and whether
 -- they differ (a reload is then needed).
 function addon:GetCacheDiagnosticMode()
-    if self ~= addon then return nil, 'invalid-owner' end
+    if self ~= addon then
+        return nil, 'invalid-owner'
+    end
+
     local global = readyGlobal()
-    if type(global) ~= 'table' then global = savedGlobal() end
+
+    if type(global) ~= 'table' then
+        global = savedGlobal()
+    end
+
     local requested = directRequested(global) and 'direct' or 'cached'
     return loaded, requested, loaded ~= requested
 end
@@ -81,10 +109,19 @@ end
 -- Saves the choice for the next session ("cached" or "direct"); does not change the mode in effect. Returns true, or
 -- false and a reason code.
 function addon:SetCacheDiagnosticMode(mode)
-    if self ~= addon then return false, 'invalid-owner' end
-    if mode ~= 'cached' and mode ~= 'direct' then return false, 'invalid-cache-mode' end
+    if self ~= addon then
+        return false, 'invalid-owner'
+    end
+    if mode ~= 'cached' and mode ~= 'direct' then
+        return false, 'invalid-cache-mode'
+    end
+
     local global = readyGlobal()
-    if type(global) ~= 'table' then return false, 'cache-mode-unavailable' end
+
+    if type(global) ~= 'table' then
+        return false, 'cache-mode-unavailable'
+    end
+
     rawset(global, 'diagnosticCacheBypass', mode == 'direct')
     return true
 end

@@ -98,18 +98,30 @@ do
     -- no memoizing, to measure the cache's cost. Only the first call binds; Diagnostics/cache_mode.lua calls it at
     -- load and then removes this method from addon.
     function addon:BindCacheDiagnosticDispatcher(bind)
-        if self ~= addon or type(bind) ~= "function" or bound then return end
+        if self ~= addon or type(bind) ~= "function" or bound then
+            return
+        end
+
         bound = true
         local selected = false
 
         bind(function(direct)
-            if selected or type(direct) ~= "boolean" then return false end
+            if selected or type(direct) ~= "boolean" then
+                return false
+            end
+
             selected = true
 
             if direct then
                 getCachedInternal = function(_, _recordnil, func, ...)
-                    if type(func) == 'string' then func = _G[func] end
-                    if type(func) ~= 'function' then return end
+                    if type(func) == 'string' then
+                        func = _G[func]
+                    end
+
+                    if type(func) ~= 'function' then
+                        return
+                    end
+
                     return func(...)
                 end
             end

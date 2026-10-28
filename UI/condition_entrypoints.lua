@@ -9,7 +9,10 @@ local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Asks a condition editor frame to re-measure itself after its content changed. Returns what the frame's
 -- rmCompactRefresh returns, or nil and a reason when the frame is not a native editor frame.
 function addon.LayoutConditionFrame(frame)
-    if frame and type(frame.rmCompactRefresh) == 'function' then return frame.rmCompactRefresh() end
+    if frame and type(frame.rmCompactRefresh) == 'function' then
+        return frame.rmCompactRefresh()
+    end
+
     return nil, L['Unsupported condition editor frame.']
 end
 

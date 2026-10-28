@@ -13,7 +13,10 @@ local scaledWindows = setmetatable({}, { __mode = 'k' })
 
 -- Clamps a saved scale to the allowed 0.7 to 1.3 range (anything else reads as 1) and rounds it to two decimals.
 local function scaleValue(value)
-    if type(value) ~= 'number' or value ~= value or value < .7 or value > 1.3 then return 1 end
+    if type(value) ~= 'number' or value ~= value or value < .7 or value > 1.3 then
+        return 1
+    end
+
     return math.floor(value * 100 + .5) / 100
 end
 
@@ -23,7 +26,10 @@ end
 -- the smaller of `wanted` and the scale at which the frame's width and height equal the screen's, to two decimals and
 -- never below 0.5.
 local function fittedScale(frame, wanted)
-    if frame.rmFitsOwnSize or not UIParent then return wanted end
+    if frame.rmFitsOwnSize or not UIParent then
+        return wanted
+    end
+
     local fit = wanted
 
     for _, pair in ipairs({
@@ -37,7 +43,10 @@ local function fittedScale(frame, wanted)
         end
     end
 
-    if fit >= wanted then return wanted end
+    if fit >= wanted then
+        return wanted
+    end
+
     return math.max(.5, math.floor(fit * 100 + 1e-6) / 100)
 end
 
@@ -63,7 +72,10 @@ end
 -- keeps overlapping configuration windows readable.
 function addon:MakeWindowOpaque(widget)
     local frame = widget and (widget.frame or widget)
-    if not frame or not frame.CreateTexture then return end
+
+    if not frame or not frame.CreateTexture then
+        return
+    end
 
     if not frame.rmOpaqueBackground then
         local background = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
@@ -81,7 +93,10 @@ function addon:MakeWindowOpaque(widget)
 
         widget.OnRelease = function(control, ...)
             frame.rmOpaqueBackground:Hide()
-            if frame.SetAlpha then frame:SetAlpha(alpha) end
+
+            if frame.SetAlpha then
+                frame:SetAlpha(alpha)
+            end
 
             if scaledWindows[frame] then
                 scaledWindows[frame] = nil
@@ -90,11 +105,17 @@ function addon:MakeWindowOpaque(widget)
 
             control.rmOpaqueActive = nil
             control.OnRelease = original
-            if original then return original(control, ...) end
+
+            if original then
+                return original(control, ...)
+            end
         end
     end
 
-    if frame.SetAlpha then frame:SetAlpha(1) end
+    if frame.SetAlpha then
+        frame:SetAlpha(1)
+    end
+
     self:ApplyWorkbenchScale(frame)
     frame.rmOpaqueBackground:Show()
 end
@@ -145,9 +166,15 @@ local serial = 0
 
 -- Returns the frame for a widget table (its `.frame`) or for a bare frame, or nil for anything else.
 local function frameOf(value)
-    if type(value) ~= 'table' then return nil end
-    if type(value.frame) == 'table' then return value.frame end
-    if type(value.GetFrameLevel) == 'function' then return value end
+    if type(value) ~= 'table' then
+        return nil
+    end
+    if type(value.frame) == 'table' then
+        return value.frame
+    end
+    if type(value.GetFrameLevel) == 'function' then
+        return value
+    end
 end
 
 -- Returns the frame level, or 0 for an object without one.
@@ -171,9 +198,16 @@ local function entryFor(value)
     local frame = frameOf(value)
 
     for _ = 1, 200 do
-        if not frame then return nil end
+        if not frame then
+            return nil
+        end
+
         local entry = entryOf[frame]
-        if entry then return entry end
+
+        if entry then
+            return entry
+        end
+
         frame = type(frame.GetParent) == 'function' and frame:GetParent() or nil
     end
 end
@@ -186,7 +220,11 @@ end
 -- Drawn right now (the frame and every ancestor shown). Windows that only look shown, inside a hidden pane, do not take part.
 local function isVisible(entry)
     local frame = entry.frame
-    if type(frame.IsVisible) == 'function' then return frame:IsVisible() and true or false end
+
+    if type(frame.IsVisible) == 'function' then
+        return frame:IsVisible() and true or false
+    end
+
     return frame:IsShown()
 end
 
@@ -234,13 +272,18 @@ local function topOf(frame, strata, pruned)
     -- Visits the descendants of `node` (depth limited to 64) and raises `top` to the highest level found in the strata,
     -- skipping nested registered windows when `pruned`.
     local function walk(node, depth)
-        if depth > 64 or type(node.GetChildren) ~= 'function' then return end
+        if depth > 64 or type(node.GetChildren) ~= 'function' then
+            return
+        end
 
         for _, child in ipairs({ node:GetChildren() }) do
             if not (pruned and entryOf[child]) then
                 if strataOf(child) == strata then
                     local level = levelOf(child)
-                    if level > top then top = level end
+
+                    if level > top then
+                        top = level
+                    end
                 end
 
                 walk(child, depth + 1)
@@ -262,15 +305,23 @@ local function belongsTo(other, entry)
     local current, hops = other.opener, 0
 
     while current and hops < 24 do
-        if current == entry then return true end
+        if current == entry then
+            return true
+        end
+
         current, hops = current.opener, hops + 1
     end
 
     local frame = type(other.frame.GetParent) == 'function' and other.frame:GetParent() or nil
 
     for _ = 1, 200 do
-        if not frame then return false end
-        if frame == entry.frame then return true end
+        if not frame then
+            return false
+        end
+        if frame == entry.frame then
+            return true
+        end
+
         frame = type(frame.GetParent) == 'function' and frame:GetParent() or nil
     end
 
@@ -283,7 +334,10 @@ local function liveOpener(entry)
     local current, hops = entry.opener, 0
 
     while current and hops < 24 do
-        if isVisible(current) then return current end
+        if isVisible(current) then
+            return current
+        end
+
         current, hops = current.opener, hops + 1
     end
 end
@@ -291,10 +345,15 @@ end
 -- Returns the strata an entry needs: its own, raised to the strata of its opener or of any foreign frame it must clear.
 local function wantedStrata(entry, opener)
     local want = entry.strata
-    if opener and rank(strataOf(opener.frame)) > rank(want) then want = strataOf(opener.frame) end
+
+    if opener and rank(strataOf(opener.frame)) > rank(want) then
+        want = strataOf(opener.frame)
+    end
 
     for _, foreign in ipairs(entry.over) do
-        if rank(strataOf(foreign)) > rank(want) then want = strataOf(foreign) end
+        if rank(strataOf(foreign)) > rank(want) then
+            want = strataOf(foreign)
+        end
     end
 
     return want
@@ -310,12 +369,18 @@ local function compact()
     local order = {}
 
     for _, entry in ipairs(dialogs) do
-        if entry.layered and isVisible(entry) then order[#order + 1] = entry end
+        if entry.layered and isVisible(entry) then
+            order[#order + 1] = entry
+        end
     end
 
     table.sort(order, function(a, b)
         local first, second = levelOf(a.frame), levelOf(b.frame)
-        if first ~= second then return first < second end
+
+        if first ~= second then
+            return first < second
+        end
+
         return a.serial < b.serial
     end)
 
@@ -334,17 +399,26 @@ end
 -- lifting only what is out of order and keeping the relative order of what moved. Re-entrant calls return at once; when
 -- a level hit the ceiling it compacts the stack and settles again.
 local function settle()
-    if settling then return end
+    if settling then
+        return
+    end
+
     settling = true
     local order = {}
 
     for _, entry in ipairs(dialogs) do
-        if entry.layered and isVisible(entry) then order[#order + 1] = entry end
+        if entry.layered and isVisible(entry) then
+            order[#order + 1] = entry
+        end
     end
 
     table.sort(order, function(a, b)
         local first, second = levelOf(a.frame), levelOf(b.frame)
-        if first ~= second then return first < second end
+
+        if first ~= second then
+            return first < second
+        end
+
         return a.serial < b.serial
     end)
 
@@ -352,7 +426,10 @@ local function settle()
 
     -- Places one entry above its opener (placed first, recursively) and above the foreign frames it must clear.
     local function fix(entry, depth)
-        if done[entry] then return end
+        if done[entry] then
+            return
+        end
+
         done[entry] = true
         local opener = depth <= 24 and liveOpener(entry) or nil
         local need = 0
@@ -364,14 +441,23 @@ local function settle()
 
         for _, foreign in ipairs(entry.over) do
             local value = topOf(foreign, strataOf(foreign), false) + LEVEL_GAP
-            if value > need then need = value end
+
+            if value > need then
+                need = value
+            end
         end
 
-        if need == 0 then return end
+        if need == 0 then
+            return
+        end
+
         setStrata(entry, wantedStrata(entry, opener))
 
         if levelOf(entry.frame) < need then
-            if lifted + LEVEL_GAP > need then need = lifted + LEVEL_GAP end
+            if lifted + LEVEL_GAP > need then
+                need = lifted + LEVEL_GAP
+            end
+
             setLevel(entry, need)
             lifted = extentOf(entry)
         end
@@ -404,13 +490,19 @@ local function frontLevel(entry)
         )
             == strataOf(entry.frame) then
             local value = extentOf(other)
-            if value > top then top = value end
+
+            if value > top then
+                top = value
+            end
         end
     end
 
     for _, foreign in ipairs(entry.over) do
         local value = topOf(foreign, strataOf(foreign), false)
-        if value > top then top = value end
+
+        if value > top then
+            top = value
+        end
     end
 
     return top
@@ -451,7 +543,9 @@ local function resolveOpener(entry, opening)
         opener = best
     end
 
-    if opener == entry or opener and belongsTo(opener, entry) then opener = nil end
+    if opener == entry or opener and belongsTo(opener, entry) then
+        opener = nil
+    end
 
     if opener or opening or entry.hint then
         entry.opener = opener
@@ -487,8 +581,12 @@ local function present(entry, opening)
 
     if levelOf(frame) <= floor then
         -- Let the client act first (it also clears frames outside RM), then guarantee the order.
-        if type(frame.Raise) == 'function' and touchable(frame) then frame:Raise() end
-        if levelOf(frame) <= floor then setLevel(entry, floor + LEVEL_GAP) end
+        if type(frame.Raise) == 'function' and touchable(frame) then
+            frame:Raise()
+        end
+        if levelOf(frame) <= floor then
+            setLevel(entry, floor + LEVEL_GAP)
+        end
     end
 
     settle()
@@ -507,12 +605,15 @@ local function scan()
             if entry.escape and (not level or current >= level) then
                 target, level, selected = entry.frame, current, entry
             end
-
-            if entry.layered and (not frontValue or current >= frontValue) then front, frontValue = entry, current end
+            if entry.layered and (not frontValue or current >= frontValue) then
+                front, frontValue = entry, current
+            end
 
             -- A foreign panel it must clear (Blizzard's) was raised by a click: not a registry change.
             for _, foreign in ipairs(entry.over) do
-                if levelOf(foreign) >= current then foreignRaised = true end
+                if levelOf(foreign) >= current then
+                    foreignRaised = true
+                end
             end
         end
     end
@@ -570,7 +671,10 @@ end
 -- Creates, once, the proxy frame registered in UISpecialFrames and the OnUpdate watcher. Returns false on a client
 -- without UISpecialFrames.
 local function ensureEscape()
-    if type(UISpecialFrames) ~= "table" then return false end
+    if type(UISpecialFrames) ~= "table" then
+        return false
+    end
+
     local registered = false
 
     for _, name in pairs(UISpecialFrames) do
@@ -580,7 +684,9 @@ local function ensureEscape()
         end
     end
 
-    if not registered then UISpecialFrames[#UISpecialFrames + 1] = escapeProxyName end
+    if not registered then
+        UISpecialFrames[#UISpecialFrames + 1] = escapeProxyName
+    end
 
     if not escapeProxy then
         -- CloseSpecialWindows hides its registered Frame directly. A private
@@ -593,7 +699,10 @@ local function ensureEscape()
         escapeProxy.syncing = false
 
         escapeProxy:SetScript('OnHide', function()
-            if escapeProxy.syncing or escapeProxy.closing then return end
+            if escapeProxy.syncing or escapeProxy.closing then
+                return
+            end
+
             local target = escapeProxy.target
             escapeProxy.closing = true
 
@@ -612,9 +721,12 @@ local function ensureEscape()
 
     if not watcher then
         watcher = CreateFrame("Frame", nil, UIParent)
+
         -- Native SetToplevel can raise any already-shown window on a child
         -- click without OnShow. Observe only RM roots while they are open.
-        watcher:SetScript("OnUpdate", function() updateEscapeTarget() end)
+        watcher:SetScript("OnUpdate", function()
+            updateEscapeTarget()
+        end)
     end
 
     return true
@@ -624,7 +736,11 @@ end
 -- target). Idempotent: returns the existing entry. Does not place it.
 local function register(widget, options)
     local frame = widget and (widget.frame or widget)
-    if type(frame) ~= 'table' or not frame.GetScript or not frame.IsShown then return nil end
+
+    if type(frame) ~= 'table' or not frame.GetScript or not frame.IsShown then
+        return nil
+    end
+
     local wantEscape = options.escape ~= false
     -- A frame is one entry however many throwaway widget tables name it.
     local entry = widget.rmLayerEntry or entryOf[frame]
@@ -665,7 +781,10 @@ local function register(widget, options)
     widget.rmLayerEntry = entry
     entryOf[frame] = entry
     dialogs[#dialogs + 1] = entry
-    if entry.layered then setStrata(entry, entry.strata) end
+
+    if entry.layered then
+        setStrata(entry, entry.strata)
+    end
 
     -- Click-raise belongs to windows that hang from UIParent; the registry
     -- puts any popup its opened back above it (see updateEscapeTarget).
@@ -682,7 +801,10 @@ local function register(widget, options)
 
     local show = function(self, ...)
         addon:ApplyWorkbenchScale(self)
-        if onShow then onShow(self, ...) end
+
+        if onShow then
+            onShow(self, ...)
+        end
 
         if widget.rmLayerEntry == entry then
             releaseGuessed(entry)
@@ -691,7 +813,10 @@ local function register(widget, options)
     end
 
     local hide = function(self, ...)
-        if onHide then onHide(self, ...) end
+        if onHide then
+            onHide(self, ...)
+        end
+
         entry.hint = nil
         entry.over = {}
         entry.placed = false
@@ -709,16 +834,30 @@ local function register(widget, options)
         control.OnRelease = release
 
         for _, other in ipairs(dialogs) do
-            if other.opener == entry then other.opener = entry.opener end
+            if other.opener == entry then
+                other.opener = entry.opener
+            end
         end
 
-        if frame:GetScript("OnShow") == show then frame:SetScript("OnShow", onShow) end
-        if frame:GetScript("OnHide") == hide then frame:SetScript("OnHide", onHide) end
+        if frame:GetScript("OnShow") == show then
+            frame:SetScript("OnShow", onShow)
+        end
+        if frame:GetScript("OnHide") == hide then
+            frame:SetScript("OnHide", onHide)
+        end
+
         frame:SetFrameLevel(entry.level)
         frame:SetFrameStrata(entry.originalStrata)
-        if lastFront == entry then lastFront = nil end
+
+        if lastFront == entry then
+            lastFront = nil
+        end
+
         updateEscapeTarget()
-        if release then return release(control, ...) end
+
+        if release then
+            return release(control, ...)
+        end
     end
 
     return entry
@@ -737,8 +876,15 @@ end
 function addon:OpenPopup(widget, opener, options)
     options = options or {}
     local entry = register(widget, options)
-    if not entry then return false end
-    if opener then entry.hint = opener end
+
+    if not entry then
+        return false
+    end
+
+    if opener then
+        entry.hint = opener
+    end
+
     releaseGuessed(entry)
 
     if options.over then
@@ -751,7 +897,10 @@ function addon:OpenPopup(widget, opener, options)
         end
     end
 
-    if isShown(entry) then present(entry, false) end
+    if isShown(entry) then
+        present(entry, false)
+    end
+
     return true
 end
 
@@ -759,12 +908,20 @@ end
 -- of windows that opened it come forward, their popups staying above them.
 function addon:RaiseWindow(widget)
     local entry = entryFor(widget)
-    if not entry or not isShown(entry) then return false end
+
+    if not entry or not isShown(entry) then
+        return false
+    end
+
     local root, hops = entry, 0
 
     while hops < 24 do
         local up = liveOpener(root)
-        if not up then break end
+
+        if not up then
+            break
+        end
+
         root, hops = up, hops + 1
     end
 
@@ -775,7 +932,10 @@ end
 -- Put a foreign frame (a Blizzard panel this addon opened) in front of every
 -- RM window except `except` (the popup that must stay above it).
 function addon:RaiseForeignWindow(frame, except)
-    if type(frame) ~= 'table' or not touchable(frame) then return false end
+    if type(frame) ~= 'table' or not touchable(frame) then
+        return false
+    end
+
     local excluded = entryFor(except)
     local top = 0
 
@@ -784,14 +944,16 @@ function addon:RaiseForeignWindow(frame, except)
             entry ~= excluded and entry.layered and isVisible(entry) and not (excluded and belongsTo(entry, excluded))
         then
             local value = extentOf(entry)
-            if value > top then top = value end
+
+            if value > top then
+                top = value
+            end
         end
     end
 
     if rank(strataOf(frame)) < rank(WINDOW_STRATA) and type(frame.SetFrameStrata) == 'function' then
         pcall(frame.SetFrameStrata, frame, WINDOW_STRATA)
     end
-
     if levelOf(frame) <= top and type(frame.SetFrameLevel) == 'function' then
         pcall(frame.SetFrameLevel, frame, math.min(LEVEL_CEILING, top + LEVEL_GAP))
     end
@@ -826,10 +988,21 @@ end
 -- it is already shown. Returns whether it is an Escape target.
 function addon:RegisterWindowForEscape(widget)
     local frame = widget and (widget.frame or widget)
-    if frame then frame.rmEscapeOwner = widget end
+
+    if frame then
+        frame.rmEscapeOwner = widget
+    end
+
     local entry = register(widget, { escape = true })
-    if not entry then return false end
-    if isShown(entry) then present(entry, false) end
+
+    if not entry then
+        return false
+    end
+
+    if isShown(entry) then
+        present(entry, false)
+    end
+
     return entry.escape == true
 end
 
@@ -842,7 +1015,10 @@ end
 -- owner-bound Help has gone away. A click whose pointer is over a control flagged `rmOwnsRightClick` (reference fields,
 -- the spell icon) is left to that control. Installs a polling watcher (one per frame, idempotent).
 function addon:EnableWorkbenchRightClickClose(frame)
-    if frame.rmRightClickWatcher then return end
+    if frame.rmRightClickWatcher then
+        return
+    end
+
     local watcher = CreateFrame('Frame', nil, frame)
     frame.rmRightClickWatcher = watcher
     watcher:EnableMouse(false)
@@ -851,7 +1027,10 @@ function addon:EnableWorkbenchRightClickClose(frame)
 
     addon:SetUIScript(frame, 'OnShow', function(...)
         rightDown = IsMouseButtonDown and IsMouseButtonDown('RightButton') or false
-        if onShow then onShow(...) end
+
+        if onShow then
+            onShow(...)
+        end
     end)
 
     addon:SetUIScript(watcher, 'OnUpdate', function()
@@ -887,10 +1066,15 @@ function addon:EnableWorkbenchRightClickClose(frame)
                     break
                 end
 
-                if not focus or type(focus.GetParent) ~= 'function' then break end
+                if not focus or type(focus.GetParent) ~= 'function' then
+                    break
+                end
 
                 -- A control that gives a right click its own meaning keeps it (the main window honors the same flag).
-                if focus.rmOwnsRightClick then break end
+                if focus.rmOwnsRightClick then
+                    break
+                end
+
                 focus = focus:GetParent()
             end
 
@@ -912,7 +1096,10 @@ end
 -- Only the header receives movement gestures. Body EditBoxes and controls keep
 -- their native mouse selection, dragging and right-click behavior.
 function addon:EnableWorkbenchTitleDrag(frame)
-    if frame.rmWorkbenchTitleDrag then return frame.rmWorkbenchTitleDrag end
+    if frame.rmWorkbenchTitleDrag then
+        return frame.rmWorkbenchTitleDrag
+    end
+
     frame:SetMovable(true)
     frame:SetClampedToScreen(true)
     local drag = CreateFrame('Frame', nil, frame)
@@ -930,7 +1117,10 @@ function addon:EnableWorkbenchTitleDrag(frame)
     end
 
     addon:SetUIScript(drag, 'OnDragStart', function(_, button)
-        if button and button ~= 'LeftButton' or not frame:IsShown() then return end
+        if button and button ~= 'LeftButton' or not frame:IsShown() then
+            return
+        end
+
         drag.moving = true
         frame:StartMoving()
     end)
@@ -938,7 +1128,9 @@ function addon:EnableWorkbenchTitleDrag(frame)
     addon:SetUIScript(drag, 'OnDragStop', stop)
 
     addon:SetUIScript(drag, 'OnMouseUp', function(_, button)
-        if button == 'LeftButton' and drag.moving then stop() end
+        if button == 'LeftButton' and drag.moving then
+            stop()
+        end
     end)
 
     addon:SetUIScript(drag, 'OnHide', stop)
@@ -1015,7 +1207,10 @@ function addon:CreateWorkbenchDialogChrome(frame, title, help)
 
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
     local version = type(getter) == 'function' and getter(addon_name, 'Version') or L['Development']
-    if not version or version:find('@', 1, true) then version = L['Development'] end
+
+    if not version or version:find('@', 1, true) then
+        version = L['Development']
+    end
 
     local client = addon.Platform and addon.Platform.GetClientInfo and addon.Platform:GetClientInfo() or {}
 

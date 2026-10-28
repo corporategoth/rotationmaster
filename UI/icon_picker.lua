@@ -123,7 +123,9 @@ local function catalogs()
         end
     end
 
-    if #known.icons > 0 then groups[#groups + 1] = known end
+    if #known.icons > 0 then
+        groups[#groups + 1] = known
+    end
 
     for _, source in ipairs({
         { L['Game icons'], C_Macro and C_Macro.GetMacroIcons or GetMacroIcons },
@@ -134,7 +136,10 @@ local function catalogs()
             local ok, returned = pcall(source[2], values)
 
             if ok then
-                if type(returned) == 'table' then values = returned end
+                if type(returned) == 'table' then
+                    values = returned
+                end
+
                 local row = { name = source[1], icons = {} }
                 local unique = {}
 
@@ -153,7 +158,9 @@ local function catalogs()
                     end
                 end
 
-                if #row.icons > 0 then groups[#groups + 1] = row end
+                if #row.icons > 0 then
+                    groups[#groups + 1] = row
+                end
             end
         end
     end
@@ -184,7 +191,11 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
         d.chrome = self:CreateWorkbenchDialogChrome(frame, d.title)
         d.close = self:CreateWorkbenchIconButton(frame, 'close', L['Close'])
         d.close:SetPoint('TOPRIGHT', -5, -5)
-        self:SetUIScript(d.close, 'OnClick', function() frame:Hide() end)
+
+        self:SetUIScript(d.close, 'OnClick', function()
+            frame:Hide()
+        end)
+
         d.search = self:CreateWorkbenchEditBox(frame)
         self:AttachWorkbenchSearchHint(d.search)
         d.search:SetPoint('TOPLEFT', 166, -38)
@@ -197,10 +208,15 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
         d.next:SetPoint('BOTTOMRIGHT', -30, 28)
         d.pageLabel = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
         d.pageLabel:SetPoint('BOTTOMLEFT', 166, 32)
-        self:SetUIScript(frame, 'OnHide', function() d.search:ClearFocus() end)
+
+        self:SetUIScript(frame, 'OnHide', function()
+            d.search:ClearFocus()
+        end)
 
         self:SetUIScript(frame, 'OnMouseUp', function(_, button)
-            if button == 'RightButton' then frame:Hide() end
+            if button == 'RightButton' then
+                frame:Hide()
+            end
         end)
 
         frame:Hide()
@@ -221,14 +237,19 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
     -- Redraws the current page of matches for the selected category and search text (54 icons per page, 9 per row).
     -- Each draw bumps d.revision so a click handler from an earlier draw cannot choose an icon that has since moved.
     local function draw()
-        if not valid() then return end
+        if not valid() then
+            return
+        end
+
         d.revision = (d.revision or 0) + 1
         local revision = d.revision
         d.matches = {}
         local query = (d.search:GetText() or ''):lower()
 
         for _, entry in ipairs(d.categories[selectedCategory].icons) do
-            if entry.name:lower():find(query, 1, true) then d.matches[#d.matches + 1] = entry end
+            if entry.name:lower():find(query, 1, true) then
+                d.matches[#d.matches + 1] = entry
+            end
         end
 
         local pages = math.max(1, math.ceil(#d.matches / 54))
@@ -316,7 +337,9 @@ function addon:ShowWorkbenchIconPicker(current, choose, ownerValid)
         end
     end)
 
-    self:SetUIScript(d.search, 'OnEscapePressed', function() d.frame:Hide() end)
+    self:SetUIScript(d.search, 'OnEscapePressed', function()
+        d.frame:Hide()
+    end)
 
     self:SetUIScript(d.prev, 'OnClick', function()
         if valid() then

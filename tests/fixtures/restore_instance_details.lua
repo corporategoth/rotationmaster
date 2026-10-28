@@ -3,7 +3,7 @@
 -- helpers placed before it) is replaced by the registration as it was before
 -- those fields. Apply it first; the older inverses (restore_environment_selector_repairs,
 -- restore_instance_repairs) then find the bodies they expect.
-local current=[==[
+local current = [==[
 -- The difficulty IDs the INSTANCE editor offers, in the order they are listed.
 -- The game names each one (GetDifficultyInfo, in the player's language) and an
 -- ID the client does not know is left out. 0 is "not in an instance".
@@ -182,7 +182,8 @@ addon:RegisterCondition("INSTANCE", {
 })
 
 ]==]
-local previous=[==[
+
+local previous = [==[
 addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
     icon = addon.Artwork.condition["INSTANCE"],
@@ -247,8 +248,9 @@ addon:RegisterCondition("INSTANCE", {
 })
 
 ]==]
+
 -- The generated source getter at the foot of the module names the new locals as well.
-local currentGetter=[==[
+local currentGetter = [==[
         if name=="DIFFICULTIES" then return DIFFICULTIES end
         if name=="color" then return color end
         if name=="difficultyKind" then return difficultyKind end
@@ -256,12 +258,15 @@ local currentGetter=[==[
         if name=="helpers" then return helpers end
         if name=="validWhole" then return validWhole end
 ]==]
-local previousGetter=[==[
+
+local previousGetter = [==[
         if name=="color" then return color end
         if name=="helpers" then return helpers end
 ]==]
+
 -- The evaluate and widget callback bodies the exported source of INSTANCE carries now.
-local evaluateBody='\n'..[==[
+local evaluateBody = '\n'
+    .. [==[
         local extra = value.difficulty ~= nil or value.instanceID ~= nil
         -- The kind of instance, as before; with no kind chosen and a difficulty
         -- or an ID given, the kind is not part of the question.
@@ -289,7 +294,9 @@ local evaluateBody='\n'..[==[
         end
         return true
     ]==]
-local widgetBody='\n'..[==[
+
+local widgetBody = '\n'
+    .. [==[
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
@@ -362,12 +369,18 @@ local widgetBody='\n'..[==[
         end
         parent:AddChild(note)
     ]==]
-local function swap(text,from,to,what)
-    local start,ending=text:find(from,1,true)
-    assert(start and not text:find(from,ending+1,true),'unexpected INSTANCE details '..what..'/count')
-    return text:sub(1,start-1)..to..text:sub(ending+1)
+
+local function swap(text, from, to, what)
+    local start, ending = text:find(from, 1, true)
+    assert(start and not text:find(from, ending + 1, true), 'unexpected INSTANCE details ' .. what .. '/count')
+    return text:sub(1, start - 1) .. to .. text:sub(ending + 1)
 end
+
 return function(text)
-    assert(type(text)=='string','instance details inverse needs source text')
-    return swap(swap(text,current,previous,'block'),currentGetter,previousGetter,'getter')
-end,previous,current,evaluateBody,widgetBody
+    assert(type(text) == 'string', 'instance details inverse needs source text')
+    return swap(swap(text, current, previous, 'block'), currentGetter, previousGetter, 'getter')
+end,
+    previous,
+    current,
+    evaluateBody,
+    widgetBody

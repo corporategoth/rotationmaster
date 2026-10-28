@@ -106,8 +106,13 @@ addon.units = {
 -- fixture) the old per-project answer stands: everything but Classic Era.
 local platform = addon.Platform
 local hasFocus
-if platform and platform.IsFocusUnitSupported then hasFocus = platform:IsFocusUnitSupported() end
-if hasFocus == nil then hasFocus = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) end
+
+if platform and platform.IsFocusUnitSupported then
+    hasFocus = platform:IsFocusUnitSupported()
+end
+if hasFocus == nil then
+    hasFocus = (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC)
+end
 
 if hasFocus then
     addon.units["focus"] = L["your focus target"]

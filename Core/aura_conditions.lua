@@ -15,7 +15,10 @@ local cacheKey = {}
 -- Returns the aura at `index` of the unit's `filter` list, or nil at the end of the list; the second result is a
 -- reason when the read failed. With a cache, each (unit, filter, index) is read once per evaluation pass.
 local function query(cache, unit, index, filter)
-    if not cache then return platform:GetAuraByIndex(unit, index, filter) end
+    if not cache then
+        return platform:GetAuraByIndex(unit, index, filter)
+    end
+
     -- Only normalized observations enter this per-evaluation cache. Avoid the
     -- legacy CRC cache's tostring/tuple path for restricted native records.
     local units = cache[cacheKey]
@@ -70,18 +73,34 @@ local function matchesAura(aura, value, mode, identity)
 
     if mode == "stealable" then
         local stealable, why = platform:ReadAuraField(aura, "isStealable")
-        if why then return nil, why end
-        if stealable == nil then return nil, "aura-stealability-unavailable" end
+
+        if why then
+            return nil, why
+        end
+        if stealable == nil then
+            return nil, "aura-stealability-unavailable"
+        end
+
         matches = stealable
     elseif mode == "dispel" then
         local dispel, why = platform:ReadAuraField(aura, "dispelName")
-        if why then return nil, why end
+
+        if why then
+            return nil, why
+        end
+
         matches = dispel == value.debufftype or (value.debufftype == "Enrage" and dispel == "")
     else
         local field = type(value.spell) == "number" and "spellID" or "name"
         local spell, why = platform:ReadAuraField(aura, field)
-        if why then return nil, why end
-        if spell == nil then return nil, "aura-identity-unavailable" end
+
+        if why then
+            return nil, why
+        end
+        if spell == nil then
+            return nil, "aura-identity-unavailable"
+        end
+
         matches = spell == value.spell
 
         if not matches and field == 'spellID' and value.anyrank == true then
@@ -97,17 +116,30 @@ local function matchesAura(aura, value, mode, identity)
                 end
             end
 
-            if not identity.name then return nil, identity.reason or 'spell-data-unavailable' end
+            if not identity.name then
+                return nil, identity.reason or 'spell-data-unavailable'
+            end
+
             local name, reason = platform:ReadAuraField(aura, 'name')
-            if reason then return nil, reason end
-            if name == nil then return nil, 'aura-identity-unavailable' end
+
+            if reason then
+                return nil, reason
+            end
+            if name == nil then
+                return nil, 'aura-identity-unavailable'
+            end
+
             matches = name == identity.name
         end
     end
 
     if matches and (value.ownbuff or value.owndebuff) then
         local source, why = platform:ReadAuraField(aura, "sourceUnit")
-        if why then return nil, why end
+
+        if why then
+            return nil, why
+        end
+
         matches = source == "player"
     end
 
@@ -125,8 +157,13 @@ local spellNames = {}
 -- of that name, so no match), "found" and the aura, or nothing when the walk must decide (restricted values, an
 -- unresolvable name, a different rank, or a mode that needs more than presence, remaining time or stacks).
 local function lookupByName(value, filter, mode)
-    if not platform.secretsUnrestricted or type(platform.GetAuraBySpellName) ~= "function" then return end
-    if mode ~= "present" and mode ~= "remaining" and mode ~= "stacks" then return end
+    if not platform.secretsUnrestricted or type(platform.GetAuraBySpellName) ~= "function" then
+        return
+    end
+    if mode ~= "present" and mode ~= "remaining" and mode ~= "stacks" then
+        return
+    end
+
     local spell, name = value.spell, nil
 
     if type(spell) == "string" then
@@ -146,14 +183,29 @@ local function lookupByName(value, filter, mode)
         end
     end
 
-    if not name then return end
+    if not name then
+        return
+    end
+
     local own = value.ownbuff or value.owndebuff
     local aura, reason = platform:GetAuraBySpellName(value.unit, name, own and filter .. "|PLAYER" or filter)
-    if reason then return end
-    if not aura then return "none" end
-    if aura.unavailable then return end
-    if type(spell) == "number" and value.anyrank ~= true and aura.spellID ~= spell then return end
-    if own and aura.sourceUnit ~= "player" then return end
+
+    if reason then
+        return
+    end
+    if not aura then
+        return "none"
+    end
+    if aura.unavailable then
+        return
+    end
+    if type(spell) == "number" and value.anyrank ~= true and aura.spellID ~= spell then
+        return
+    end
+    if own and aura.sourceUnit ~= "player" then
+        return
+    end
+
     return "found", aura
 end
 
@@ -166,12 +218,22 @@ end
 local function auraResult(aura, value, mode, start)
     if mode == "remaining" then
         local remaining, why = platform:AuraRemaining(aura, start or GetTime())
-        if remaining == nil then return nil, why end
+
+        if remaining == nil then
+            return nil, why
+        end
+
         return addon.Functions.values.compare(value.operator, remaining, value.value)
     elseif mode == "stacks" then
         local stacks, why = platform:ReadAuraField(aura, "applications")
-        if why then return nil, why end
-        if stacks == nil then return nil, "aura-stacks-unavailable" end
+
+        if why then
+            return nil, why
+        end
+        if stacks == nil then
+            return nil, "aura-stacks-unavailable"
+        end
+
         return addon.Functions.values.compare(value.operator, stacks, value.value)
     end
 
@@ -186,38 +248,70 @@ local identity = {}
 -- (a missing unit is false), or nil and a reason. For presence-style modes a field read that fails only counts if no
 -- other aura matches; the other modes fail at once. The scan stops at 256 auras.
 function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
-    if type(UnitExists) ~= "function" then return nil, "missing-api" end
-    local ok, exists = pcall(UnitExists, value.unit)
-    if not ok then return nil, "api-error" end
-    if not platform:CanReadValue(exists) then return nil, "restricted-value" end
-    if exists == nil or exists == false then return false end
-    if exists ~= true and exists ~= 1 then return nil, "invalid-api-result" end
+    if type(UnitExists) ~= "function" then
+        return nil, "missing-api"
+    end
 
-    if mode == "dispel" and value.dispellable then filter = "HARMFUL|RAID" end
+    local ok, exists = pcall(UnitExists, value.unit)
+
+    if not ok then
+        return nil, "api-error"
+    end
+    if not platform:CanReadValue(exists) then
+        return nil, "restricted-value"
+    end
+    if exists == nil or exists == false then
+        return false
+    end
+    if exists ~= true and exists ~= 1 then
+        return nil, "invalid-api-result"
+    end
+
+    if mode == "dispel" and value.dispellable then
+        filter = "HARMFUL|RAID"
+    end
+
     local direct, found = lookupByName(value, filter, mode)
-    if direct == "none" then return false end
-    if direct == "found" then return auraResult(found, value, mode, start) end
+
+    if direct == "none" then
+        return false
+    end
+    if direct == "found" then
+        return auraResult(found, value, mode, start)
+    end
+
     local existential = mode == "present" or mode == "dispel" or mode == "stealable"
     local pendingReason
     identity.resolved, identity.name, identity.reason = nil, nil, nil
 
     for index = 1, 256 do
         local aura, reason = query(cache, value.unit, index, filter)
-        if reason then return nil, reason end
+
+        if reason then
+            return nil, reason
+        end
 
         if not aura then
-            if pendingReason then return nil, pendingReason end
+            if pendingReason then
+                return nil, pendingReason
+            end
+
             return false
         end
 
         local matches, why = matchesAura(aura, value, mode, identity)
 
         if why then
-            if not existential then return nil, why end
+            if not existential then
+                return nil, why
+            end
+
             pendingReason = pendingReason or why
         end
 
-        if matches then return auraResult(aura, value, mode, start) end
+        if matches then
+            return auraResult(aura, value, mode, start)
+        end
     end
 
     return nil, pendingReason or "aura-scan-limit"

@@ -18,14 +18,19 @@ function data.NewImportSession(codec, options)
 
     -- Validates a candidate as an envelope or as a bare body, depending on how it decoded.
     local function validation(candidate)
-        if candidate.kind == "envelope" then return data.ValidateEnvelope(candidate.value, options) end
+        if candidate.kind == "envelope" then
+            return data.ValidateEnvelope(candidate.value, options)
+        end
+
         return data.ValidateBody(candidate.value, options)
     end
 
     -- Returns a detached copy of the staged candidate with its token, or nil when nothing is staged. A bare body has an
     -- unknown scope; only an envelope declares one.
     local function snapshot()
-        if not current then return nil end
+        if not current then
+            return nil
+        end
 
         return {
             token = current.token,
@@ -53,7 +58,10 @@ function data.NewImportSession(codec, options)
     function session:Stage(text)
         self:Clear()
         local decoded, why = codec:Decode(text)
-        if not decoded then return nil, why end
+
+        if not decoded then
+            return nil, why
+        end
 
         current = {
             token = generation,
@@ -70,21 +78,39 @@ function data.NewImportSession(codec, options)
     -- and 'stale-import', 'invalid-import', 'unsupported-import' or 'unresolved-import'. Only a ready candidate may
     -- be applied.
     function session:GetReady(token)
-        if not current or token ~= current.token then return nil, "stale-import" end
+        if not current or token ~= current.token then
+            return nil, "stale-import"
+        end
+
         local result = validation(current)
-        if not result.valid then return nil, "invalid-import" end
-        if not result.supported then return nil, "unsupported-import" end
-        if not result.resolved then return nil, "unresolved-import" end
+
+        if not result.valid then
+            return nil, "invalid-import"
+        end
+        if not result.supported then
+            return nil, "unsupported-import"
+        end
+        if not result.resolved then
+            return nil, "unresolved-import"
+        end
+
         local envelope = current.kind == "envelope" and data.CopyData(current.value) or nil
         local body = data.CopyData(envelope and envelope.body or current.value)
-        if envelope then envelope.body = nil end
+
+        if envelope then
+            envelope.body = nil
+        end
+
         return { kind = current.kind, body = body, manifest = envelope }
     end
 
     -- Compares a saved rotation body (left) with the staged candidate (right) and returns the diff record, or nil and a
     -- reason ('stale-import', 'no-previewable-body' or a comparison error code). Works on data only.
     function session:Compare(token, body, inheritedTags)
-        if not current or token ~= current.token then return nil, "stale-import" end
+        if not current or token ~= current.token then
+            return nil, "stale-import"
+        end
+
         local incoming
 
         if current.kind == "envelope" then
@@ -93,9 +119,16 @@ function data.NewImportSession(codec, options)
             incoming = current.value
         end
 
-        if type(incoming) ~= "table" then return nil, "no-previewable-body" end
+        if type(incoming) ~= "table" then
+            return nil, "no-previewable-body"
+        end
+
         local left, why = data.RotationComparisonValue(body, inheritedTags)
-        if not left then return nil, why.code end
+
+        if not left then
+            return nil, why.code
+        end
+
         local right = data.RotationComparisonValue(incoming, current.kind == 'envelope' and current.value.tags or nil)
         local diff = data.DiffRotations(left, right)
         return { key = "import", left = left, right = right, diff = diff }
@@ -106,17 +139,32 @@ function data.NewImportSession(codec, options)
     -- Nothing is validated, registered or evaluated here; a problem with the
     -- data is for the caller to report, never a reason to mutate the candidate.
     function session:Preview(token)
-        if not current or token ~= current.token then return nil, "stale-import" end
+        if not current or token ~= current.token then
+            return nil, "stale-import"
+        end
+
         local envelope = current.kind == "envelope"
         local incoming = envelope and current.value.body or current.value
-        if type(incoming) ~= "table" then return nil, "no-previewable-body" end
+
+        if type(incoming) ~= "table" then
+            return nil, "no-previewable-body"
+        end
+
         local body, why = data.CopyData(incoming)
-        if not body then return nil, why.code end
+
+        if not body then
+            return nil, why.code
+        end
+
         local manifest
 
         if envelope then
             manifest, why = data.CopyData(current.value)
-            if not manifest then return nil, why.code end
+
+            if not manifest then
+                return nil, why.code
+            end
+
             manifest.body = nil
         end
 

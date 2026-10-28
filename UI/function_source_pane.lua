@@ -42,7 +42,10 @@ local function splitType(value)
         end
     end
 
-    if #parts == 0 and nullable then return 'nil', false end
+    if #parts == 0 and nullable then
+        return 'nil', false
+    end
+
     return #parts > 0 and table.concat(parts, ' | ') or 'any', nullable
 end
 
@@ -108,7 +111,10 @@ end
 -- changes asks to Apply or Discard, the editor follows the pane size and release drops it. The original methods are
 -- captured and called, never replaced outright.
 function addon:InstallInlineFunctionNavigation(p)
-    if p.functionNavigation then return end
+    if p.functionNavigation then
+        return
+    end
+
     p.functionNavigation = true
     local draw, leave, release, layout = p.Draw, p.RequestLeave, p.Release, p.Layout
 
@@ -133,9 +139,14 @@ function addon:InstallInlineFunctionNavigation(p)
 
         if d and not d.closed and d.OwnerValid() and d:IsDirty() then
             self:ConfirmPending(function()
-                if d.OwnerValid() and d:Apply() then callback() end
+                if d.OwnerValid() and d:Apply() then
+                    callback()
+                end
             end, function()
-                if not d.OwnerValid() then return end
+                if not d.OwnerValid() then
+                    return
+                end
+
                 d:Close()
                 self.inlineFunction = nil
                 self:DiscardSettingsDraft()
@@ -210,7 +221,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     if not d.readOnly then
         d.value.code = self:NormalizeLuaSourceForEditor(d.value.code)
-        if self.FunctionEditorName then d.value.name = self:FunctionEditorName(key, d.value) end
+
+        if self.FunctionEditorName then
+            d.value.name = self:FunctionEditorName(key, d.value)
+        end
     end
 
     d.codeExpanded = false
@@ -258,7 +272,11 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- Returns a copy of the draft with the code text taken from the code control.
     function d:PendingSource()
         local value = addon:CopySettingsData(self.value)
-        if not self.readOnly and self.code and not self.code.released then value.code = self.code:GetText() end
+
+        if not self.readOnly and self.code and not self.code.released then
+            value.code = self.code:GetText()
+        end
+
         return value
     end
 
@@ -269,7 +287,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         for _, record in ipairs(form.edits) do
             if record.dirty then
                 for name, control in pairs(form.fields) do
-                    if control == record.control then raw[name] = record.control:GetText() end
+                    if control == record.control then
+                        raw[name] = record.control:GetText()
+                    end
                 end
             end
         end
@@ -290,11 +310,17 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- True when the draft differs from the baseline: a new function, a changed source or an uncommitted field. Always
     -- false for a read-only function.
     function d:IsDirty()
-        if self.readOnly then return false end
-        if self.isNew or not addon:SettingsDataEqual(self:PendingSource(), self.baseline) then return true end
+        if self.readOnly then
+            return false
+        end
+        if self.isNew or not addon:SettingsDataEqual(self:PendingSource(), self.baseline) then
+            return true
+        end
 
         for _, record in ipairs(form.edits) do
-            if record.dirty and record.control:GetText() ~= record.baseline then return true end
+            if record.dirty and record.control:GetText() ~= record.baseline then
+                return true
+            end
         end
 
         return false
@@ -308,7 +334,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- The code control reports an edit: records the previous body on the undo stack (100 entries), clears redo and
     -- refreshes the buttons. Ignored while text is being loaded.
     function d:CodeChanged()
-        if self.loading or self.readOnly or not self.code then return end
+        if self.loading or self.readOnly or not self.code then
+            return
+        end
+
         local text = self.code:GetText()
 
         if text ~= self.value.code then
@@ -337,7 +366,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     -- Undo (or redo) of the code body, including function-completion entries that restore binding changes.
     function d:TravelCode(redo)
-        if not valid() or self.readOnly then return end
+        if not valid() or self.readOnly then
+            return
+        end
+
         local from, to = redo and self.redo or self.undo, redo and self.undo or self.redo
 
         if #from > 0 then
@@ -356,10 +388,17 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     -- Refreshes the signature line and, if its height changed, moves the code area to match.
     function d:UpdateSignature()
-        if not self.signature then return end
+        if not self.signature then
+            return
+        end
+
         local text = addon:FunctionSignature(self.key, self.value)
         local width = math.max(1, form.width)
-        if self.signature:GetText() == text and math.abs(self.signature:GetWidth() - width) < .1 then return end
+
+        if self.signature:GetText() == text and math.abs(self.signature:GetWidth() - width) < .1 then
+            return
+        end
+
         local oldHeight = self.signature:GetHeight()
         self.signature:SetWidth(width)
         self.signature:SetText(text)
@@ -383,7 +422,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- binding markers, the code context for completion and the syntax validation result. Compiles only; the body is not
     -- run.
     function d:UpdateActions()
-        if not valid() or not self.apply then return end
+        if not valid() or not self.apply then
+            return
+        end
+
         self:UpdateSignature()
         local dirty = self:IsDirty()
         enable(self.apply, dirty)
@@ -477,20 +519,33 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- The Functions draft owns its source baseline; generic profile bindings
     -- would otherwise reset metadata rails after each guarded callback.
     function form:RefreshUnsaved()
-        if valid() then d:UpdateActions() end
+        if valid() then
+            d:UpdateActions()
+        end
     end
 
     -- Ends the session: rolls back a pending binding, releases the code control and form and hides the footer buttons.
     function d:Close()
-        if self.closed then return end
+        if self.closed then
+            return
+        end
+
         self.closed = true
-        if self.pendingFunctionBinding then self.pendingFunctionBinding:rollback() end
-        if self.code then self.code:Release() end
+
+        if self.pendingFunctionBinding then
+            self.pendingFunctionBinding:rollback()
+        end
+        if self.code then
+            self.code:Release()
+        end
+
         form:Release()
         self.frame:Hide()
 
         for _, control in ipairs({ self.apply, self.cancel, self.viewChanges, self.codeExpand, form.message }) do
-            if control then control:Hide() end
+            if control then
+                control:Hide()
+            end
         end
 
         addon:SetUIScript(self.frame, 'OnUpdate', nil)
@@ -500,7 +555,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     -- fails (the reason is shown). On success it clears the draft, selects the function and redraws the page. Returns
     -- true when saved.
     function d:Apply()
-        if not valid() or self.readOnly or not self:Flush() then return false end
+        if not valid() or self.readOnly or not self:Flush() then
+            return false
+        end
 
         if InCombatLockdown and InCombatLockdown() then
             form:Message(L['Leave combat before applying these settings.'])
@@ -526,8 +583,14 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
     -- Commits the current text and redraws the form, used after any change that adds, removes or reorders rows.
     local function refresh()
-        if not valid() or not d:Flush() then return end
-        if not d.readOnly then d.value.code = d.code:GetText() end
+        if not valid() or not d:Flush() then
+            return
+        end
+
+        if not d.readOnly then
+            d.value.code = d.code:GetText()
+        end
+
         form:Draw()
         d:UpdateActions()
     end
@@ -586,7 +649,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     local function metadata(field, caption, values)
         -- Returns a new empty entry: a "return" record, or an argument with the first unused name "argumentN".
         local function factory()
-            if field == 'returns' then return { type = 'any', description = '' } end
+            if field == 'returns' then
+                return { type = 'any', description = '' }
+            end
+
             local used = {}
 
             for _, entry in ipairs(values) do
@@ -621,10 +687,16 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         -- the order.
         local function append()
             local gap = #values + 1
-            if field == 'args' and values[#values] and values[#values].name == '...' then gap = #values end
+
+            if field == 'args' and values[#values] and values[#values].name == '...' then
+                gap = #values
+            end
 
             local function apply()
-                if not valid() or d.readOnly then return end
+                if not valid() or d.readOnly then
+                    return
+                end
+
                 table.insert(values, gap, factory())
                 d.metadataCollapsed[field] = false
                 refresh()
@@ -641,7 +713,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
 
         -- Starts dragging a new card into the list; expands a collapsed section first.
         local function beginInsert()
-            if d.readOnly or not valid() or not d:Flush() then return end
+            if d.readOnly or not valid() or not d:Flush() then
+                return
+            end
 
             if d.metadataCollapsed[field] then
                 d.metadataCollapsed[field] = false
@@ -834,7 +908,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                 form.fields[prefix .. 'duplicate'] = row.duplicate
 
                 addon:SetUIScript(row.duplicate, 'OnClick', form:Guard(function()
-                    if d.readOnly or not d:Flush() then return end
+                    if d.readOnly or not d:Flush() then
+                        return
+                    end
+
                     local copy = addon:CopySettingsData(record)
                     local position = index + 1
 
@@ -856,7 +933,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                         end
 
                         copy.name = name
-                        if record.name == '...' then position = index end
+
+                        if record.name == '...' then
+                            position = index
+                        end
                     end
 
                     table.insert(values, position, copy)
@@ -867,7 +947,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             end,
             function()
                 if not d.readOnly then
-                    if d.code then d.value.code = d.code:GetText() end
+                    if d.code then
+                        d.value.code = d.code:GetText()
+                    end
+
                     d:UpdateActions()
                 end
             end,
@@ -935,7 +1018,11 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                         L['Delete this function? Existing dependents will become unavailable.'],
                         function()
                             local current = (addon.db.global.custom_functions or {})[id]
-                            if not current then return false, 'function-changed' end
+
+                            if not current then
+                                return false, 'function-changed'
+                            end
+
                             local ok, why = addon:RemoveCustomFunction(id, addon:CopySettingsData(current))
 
                             if ok then
@@ -987,7 +1074,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                 L['Name'],
                 d.value.name or '',
                 not d.readOnly and function(value)
-                    if addon:IsCustomFunctionIdentifier(value) then return value end
+                    if addon:IsCustomFunctionIdentifier(value) then
+                        return value
+                    end
                 end or nil,
                 function(value)
                     d.value.name = value
@@ -1002,7 +1091,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             input.rmFunctionValue = function() return d.value.name end
             input.rmFunctionBaseline = d.baseline.name
             enable(input, not d.readOnly)
-            if not d.readOnly and addon.ConfigureFunctionNameInput then addon:ConfigureFunctionNameInput(f, input) end
+
+            if not d.readOnly and addon.ConfigureFunctionNameInput then
+                addon:ConfigureFunctionNameInput(f, input)
+            end
 
             input = description('description', L['Description'], d.value.description or '', function(value)
                 d.value.description = value
@@ -1049,7 +1141,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             button:SetText(actionLabels[entry[1]])
 
             addon:SetUIScript(button, 'OnClick', function()
-                if not valid() then return end
+                if not valid() then
+                    return
+                end
 
                 if entry[1] == 'codeUndo' or entry[1] == 'codeRedo' then
                     d:TravelCode(entry[1] == 'codeRedo')
@@ -1086,7 +1180,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
             d,
             f.child,
             function()
-                if valid() then d:CodeChanged() end
+                if valid() then
+                    d:CodeChanged()
+                end
             end,
             valid,
             preference
@@ -1107,7 +1203,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
                 local shell = addon.configWindow
 
                 if valid() and shell and shell.pane == p then
-                    if mouse then shell.rightDown = true end
+                    if mouse then
+                        shell.rightDown = true
+                    end
+
                     shell:Hide()
                 end
             end)
@@ -1152,7 +1251,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
         end
 
         f.cleanups[#f.cleanups + 1] = function()
-            if d.code and d.code.edit then d.code.edit:ClearFocus() end
+            if d.code and d.code.edit then
+                d.code.edit:ClearFocus()
+            end
         end
     end)
 
@@ -1171,7 +1272,9 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     d.viewChanges:SetPoint('RIGHT', d.apply, 'LEFT', -6, 0)
 
     self:SetUIScript(d.apply, 'OnClick', function()
-        if valid() then d:Apply() end
+        if valid() then
+            d:Apply()
+        end
     end)
 
     self:SetUIScript(d.cancel, 'OnClick', function()
@@ -1207,7 +1310,10 @@ function addon:BuildInlineFunction(p, key, source, readOnly)
     form.message:SetPoint('RIGHT', d.viewChanges, 'LEFT', -8, 0)
     form.message:SetHeight(20)
     form.message:Show()
-    p.cleanups[#p.cleanups + 1] = function() d:Close() end
+
+    p.cleanups[#p.cleanups + 1] = function()
+        d:Close()
+    end
 
     self:SetUIScript(d.frame, 'OnUpdate', function()
         if not valid() then

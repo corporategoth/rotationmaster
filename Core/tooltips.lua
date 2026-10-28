@@ -84,7 +84,10 @@ end
 
 -- True in combat lockdown; an unreadable answer counts as combat so nothing is rebuilt then.
 local function inCombat()
-    if type(InCombatLockdown) ~= 'function' then return false end
+    if type(InCombatLockdown) ~= 'function' then
+        return false
+    end
+
     local ok, locked = pcall(InCombatLockdown)
     return not ok or (locked ~= false and locked ~= nil)
 end
@@ -97,10 +100,18 @@ end
 -- master, itemsets, rotations, conditions, limit (no table: this runs per tooltip).
 local function readSettings(source)
     local p = source or profile()
-    if type(p) ~= 'table' then return false, false, false, false, DEFAULT_LIMIT end
+
+    if type(p) ~= 'table' then
+        return false, false, false, false, DEFAULT_LIMIT
+    end
+
     local master = p.tooltips ~= false
     local limit = tonumber(p.tooltip_limit)
-    if not limit or limit ~= limit then limit = DEFAULT_LIMIT end
+
+    if not limit or limit ~= limit then
+        limit = DEFAULT_LIMIT
+    end
+
     limit = math.max(MIN_LIMIT, math.min(MAX_LIMIT, math.floor(limit)))
 
     return master,
@@ -118,7 +129,9 @@ end
 
 -- Returns the value as a positive whole number (a numeric string is accepted), or nil.
 local function wholeNumber(value)
-    if type(value) == 'string' then value = tonumber(value) end
+    if type(value) == 'string' then
+        value = tonumber(value)
+    end
 
     if type(value) == 'number' and value == value and value > 0 and value < math.huge and value % 1 == 0 then
         return value
@@ -128,7 +141,11 @@ end
 -- Returns the rotation validation stamp that tells when indexes are stale, or nil when it cannot be read.
 local function validationStamp()
     local read = addon.GetRotationValidationStamp
-    if type(read) ~= 'function' then return nil end
+
+    if type(read) ~= 'function' then
+        return nil
+    end
+
     local ok, stamp = pcall(read, addon)
     return ok and stamp or nil
 end
@@ -142,17 +159,33 @@ end
 -- item cached; until then the index is marked incomplete and retried.
 -- Returns the item ID for one entry, or nil (and marks state.incomplete when a name is not cached yet).
 local function entryItemId(entry, state)
-    if type(entry) == 'number' then return wholeNumber(entry) end
-    if type(entry) ~= 'string' or entry == '' then return nil end
+    if type(entry) == 'number' then
+        return wholeNumber(entry)
+    end
+    if type(entry) ~= 'string' or entry == '' then
+        return nil
+    end
+
     local text = entry:match('item:(%d+)')
-    if text then return wholeNumber(text) end
+
+    if text then
+        return wholeNumber(text)
+    end
+
     local id = wholeNumber(entry)
-    if id then return id end
+
+    if id then
+        return id
+    end
+
     local platform = addon.Platform
 
     if type(platform) == 'table' and type(platform.GetItemID) == 'function' then
         local ok, resolved = pcall(platform.GetItemID, platform, entry)
-        if ok and wholeNumber(resolved) then return resolved end
+
+        if ok and wholeNumber(resolved) then
+            return resolved
+        end
     end
 
     state.incomplete = true
@@ -161,7 +194,11 @@ end
 -- Returns the per-profile and the shared item set tables (either may be nil).
 local function setMaps()
     local db = addon.db
-    if type(db) ~= 'table' then return nil, nil end
+
+    if type(db) ~= 'table' then
+        return nil, nil
+    end
+
     local profileSets = type(db.profile) == 'table' and db.profile.itemsets or nil
     local globalSets = type(db.global) == 'table' and db.global.itemsets or nil
     return type(profileSets) == 'table' and profileSets or nil, type(globalSets) == 'table' and globalSets or nil
@@ -179,7 +216,9 @@ local function eachSet(callback)
 
     if shared then
         for key, set in pairs(shared) do
-            if not personal or rawget(personal, key) == nil then callback(key, set) end
+            if not personal or rawget(personal, key) == nil then
+                callback(key, set)
+            end
         end
     end
 end
@@ -188,7 +227,11 @@ end
 local function resolveSet(key)
     local personal, shared = setMaps()
     local set = personal and rawget(personal, key)
-    if set == nil and shared then set = rawget(shared, key) end
+
+    if set == nil and shared then
+        set = rawget(shared, key)
+    end
+
     return set
 end
 
@@ -204,7 +247,9 @@ local function buildSets()
     local seen = {}
 
     eachSet(function(_, set)
-        if not validSet(set) then return end
+        if not validSet(set) then
+            return
+        end
 
         for _, entry in ipairs(set.items) do
             local id = entryItemId(entry, state)
@@ -229,7 +274,11 @@ local function buildSets()
     for _, names in pairs(byItem) do
         table.sort(names, function(a, b)
             local x, y = a:lower(), b:lower()
-            if x == y then return a < b end
+
+            if x == y then
+                return a < b
+            end
+
             return x < y
         end)
     end
@@ -275,7 +324,10 @@ local function referenceItems(reference, state)
         end
     elseif type(list) == 'number' then
         local id = wholeNumber(list)
-        if id then ids = { id } end
+
+        if id then
+            ids = { id }
+        end
     end
 
     return ids
@@ -285,15 +337,26 @@ end
 -- Only steps that can run (reachable and enabled) count. The condition walk is bounded in depth and node count.
 local function indexBody(body, ref, index, includeConditions, state)
     local data = addon.RotationData
-    if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' or type(body) ~= 'table' then return end
+
+    if type(data) ~= 'table' or type(data.IndexRotationSteps) ~= 'function' or type(body) ~= 'table' then
+        return
+    end
+
     local ok, tree = pcall(data.IndexRotationSteps, body, { allowMissingIds = true, allowUnknownBranchFields = true })
-    if not ok or type(tree) ~= 'table' or type(tree.rows) ~= 'table' then return end
+
+    if not ok or type(tree) ~= 'table' or type(tree.rows) ~= 'table' then
+        return
+    end
+
     local budget = MAX_CONDITION_NODES
     local walk
 
     -- Collects the spells and items a condition tree names, skipping condition types whose field is not hoverable.
     walk = function(node, depth)
-        if type(node) ~= 'table' or depth > MAX_CONDITION_DEPTH or budget <= 0 then return end
+        if type(node) ~= 'table' or depth > MAX_CONDITION_DEPTH or budget <= 0 then
+            return
+        end
+
         budget = budget - 1
         local kind = node.type
 
@@ -307,7 +370,10 @@ local function indexBody(body, ref, index, includeConditions, state)
             walk(node.value, depth + 1)
         elseif not SKIP_CONDITION[kind] then
             local spell = wholeNumber(node.spell)
-            if spell then addEntry(index.spells, spell, { rotation = ref, condition = true }) end
+
+            if spell then
+                addEntry(index.spells, spell, { rotation = ref, condition = true })
+            end
 
             if node.item ~= nil then
                 local ids = referenceItems(node.item, state)
@@ -329,7 +395,10 @@ local function indexBody(body, ref, index, includeConditions, state)
 
             if kind == 'spell' or kind == 'pet' or kind == 'any' then
                 local spell = wholeNumber(step.action)
-                if spell then addEntry(index.spells, spell, { rotation = ref, ranked = step.ranked == true }) end
+
+                if spell then
+                    addEntry(index.spells, spell, { rotation = ref, ranked = step.ranked == true })
+                end
             elseif kind == 'item' then
                 local ids = referenceItems(step.action, state)
 
@@ -340,7 +409,9 @@ local function indexBody(body, ref, index, includeConditions, state)
                 end
             end
 
-            if includeConditions then walk(step.conditions, 0) end
+            if includeConditions then
+                walk(step.conditions, 0)
+            end
         end
     end
 end
@@ -348,7 +419,11 @@ end
 -- Returns the rotation name as shown elsewhere (Built In names are localized); never empty.
 local function displayName(name)
     local shown = type(addon.RotationDisplayName) == 'function' and addon:RotationDisplayName(name) or name
-    if type(shown) ~= 'string' or shown == '' then shown = name end
+
+    if type(shown) ~= 'string' or shown == '' then
+        shown = name
+    end
+
     return type(shown) == 'string' and shown ~= '' and shown or L['Unnamed rotation']
 end
 
@@ -360,7 +435,9 @@ local function buildUses(rows, includeConditions, spec)
 
     -- Adds one rotation body to the index under a reference carrying its name, enabled state and priority.
     local function refer(name, enabled, priority, body)
-        if type(body) ~= 'table' then return end
+        if type(body) ~= 'table' then
+            return
+        end
 
         local ref = {
             name = displayName(name),
@@ -433,7 +510,10 @@ function manager:Sets()
         fresh = false
     end
 
-    if fresh or inCombat() then return current end
+    if fresh or inCombat() then
+        return current
+    end
+
     local built = buildSets()
     built.stamp, built.profile, built.itemData, built.built = stamp, profileTable, self.itemData, now()
     self.sets = built
@@ -462,17 +542,29 @@ function manager:Uses(includeConditions)
         fresh = false
     end
 
-    if inCombat() then return current end
-    if spec == nil or type(addon.ListRotationHeaders) ~= 'function' then return current end
+    if inCombat() then
+        return current
+    end
+    if spec == nil or type(addon.ListRotationHeaders) ~= 'function' then
+        return current
+    end
+
     local rows, roster
     local time = now()
-    if fresh and time - current.checked < ROSTER_RECHECK then return current end
+
+    if fresh and time - current.checked < ROSTER_RECHECK then
+        return current
+    end
+
     local ok
     ok, rows, roster = pcall(addon.ListRotationHeaders, addon, spec)
 
     if not ok or type(rows) ~= 'table' then
         -- Not ready (profile not bound yet): keep what we have, ask again soon.
-        if current then current.checked = time end
+        if current then
+            current.checked = time
+        end
+
         return current
     end
 
@@ -497,10 +589,19 @@ end
 
 -- Sort order for the rotations listed on a tooltip: enabled first, then higher priority, then name.
 local function byWeight(a, b)
-    if a.enabled ~= b.enabled then return a.enabled end
-    if a.priority ~= b.priority then return a.priority > b.priority end
+    if a.enabled ~= b.enabled then
+        return a.enabled
+    end
+    if a.priority ~= b.priority then
+        return a.priority > b.priority
+    end
+
     local x, y = a.name:lower(), b.name:lower()
-    if x ~= y then return x < y end
+
+    if x ~= y then
+        return x < y
+    end
+
     return a.name < b.name
 end
 
@@ -527,7 +628,10 @@ local function collect(index, candidates, includeConditions)
         end
     end
 
-    if found then table.sort(found, byWeight) end
+    if found then
+        table.sort(found, byWeight)
+    end
+
     return found
 end
 
@@ -580,7 +684,11 @@ end
 -- "Label: A, B, C (+2 more)"; names already formatted, total counts them all.
 local function line(label, names, total)
     local text = table.concat(names, ', ')
-    if total > #names then text = text .. ' ' .. string.format(L['(+%d more)'], total - #names) end
+
+    if total > #names then
+        text = text .. ' ' .. string.format(L['(+%d more)'], total - #names)
+    end
+
     return CYAN .. label .. ':' .. RESET .. ' ' .. text
 end
 
@@ -612,7 +720,11 @@ end
 -- `kind` is 'item' or 'spell'. Returns a list of lines, or nil when there is nothing to add.
 function manager:Lines(kind, id)
     local master, wantSets, wantRotations, includeConditions, limit = readSettings()
-    if not master or not (wantSets or wantRotations) then return nil end
+
+    if not master or not (wantSets or wantRotations) then
+        return nil
+    end
+
     local lines
 
     if kind == 'item' and wantSets then
@@ -627,7 +739,9 @@ function manager:Lines(kind, id)
                 sets.text[id] = text
             end
 
-            if text then lines = { text } end
+            if text then
+                lines = { text }
+            end
         end
     end
 
@@ -668,7 +782,10 @@ end
 -- Adds this module's lines for the hovered thing to the tooltip. Returns how many lines were added.
 local function append(tooltip, kind, id)
     local lines = manager:Lines(kind, id)
-    if not lines then return 0 end
+
+    if not lines then
+        return 0
+    end
 
     for _, text in ipairs(lines) do
         tooltip:AddLine(text, 1, 1, 1, true)
@@ -680,7 +797,10 @@ end
 -- Runs fn through the diagnostics collector (else pcall). An error retires the feature for the session so a broken
 -- tooltip hook cannot repeat. Returns the number of lines fn added.
 local function guarded(fn, ...)
-    if manager.failed then return 0 end
+    if manager.failed then
+        return 0
+    end
+
     local diagnostics = addon.Diagnostics
     local ok, added
 
@@ -705,7 +825,10 @@ end
 
 -- True when the tooltip is forbidden to addons (or the check fails); such a tooltip must not be touched.
 local function forbidden(tooltip)
-    if type(tooltip) ~= 'table' or type(tooltip.IsForbidden) ~= 'function' then return false end
+    if type(tooltip) ~= 'table' or type(tooltip.IsForbidden) ~= 'function' then
+        return false
+    end
+
     local ok, value = pcall(tooltip.IsForbidden, tooltip)
     return not ok or value == true
 end
@@ -714,11 +837,23 @@ end
 -- `data.id` is a game value, so it is checked readable before use.
 function manager:OnProcessed(tooltip, kind, data)
     local master, wantSets, wantRotations = readSettings()
-    if not master or not (wantSets or wantRotations) or self.failed then return end
-    if not watched(tooltip) or type(data) ~= 'table' or not readable(data) then return end
+
+    if not master or not (wantSets or wantRotations) or self.failed then
+        return
+    end
+    if not watched(tooltip) or type(data) ~= 'table' or not readable(data) then
+        return
+    end
+
     local id = data.id
-    if type(id) ~= 'number' or not readable(id) or id ~= id or id <= 0 or id % 1 ~= 0 then return end
-    if forbidden(tooltip) then return end
+
+    if type(id) ~= 'number' or not readable(id) or id ~= id or id <= 0 or id % 1 ~= 0 then
+        return
+    end
+    if forbidden(tooltip) then
+        return
+    end
+
     guarded(append, tooltip, kind, id)
 end
 
@@ -730,27 +865,55 @@ local shown = setmetatable({}, { __mode = 'k' })
 -- display (the shown flag), and re-shows the tooltip so it resizes to fit the new line.
 function manager:OnScript(tooltip, kind)
     local master, wantSets, wantRotations = readSettings()
-    if not master or not (wantSets or wantRotations) or self.failed then return end
-    if not watched(tooltip) or shown[tooltip] or forbidden(tooltip) then return end
+
+    if not master or not (wantSets or wantRotations) or self.failed then
+        return
+    end
+    if not watched(tooltip) or shown[tooltip] or forbidden(tooltip) then
+        return
+    end
+
     local id
 
     if kind == 'item' then
         local getter = tooltip.GetItem
-        if type(getter) ~= 'function' then return end
+
+        if type(getter) ~= 'function' then
+            return
+        end
+
         local _, link = getter(tooltip)
-        if type(link) ~= 'string' or not readable(link) then return end
+
+        if type(link) ~= 'string' or not readable(link) then
+            return
+        end
+
         id = wholeNumber(link:match('item:(%d+)'))
     else
         local getter = tooltip.GetSpell
-        if type(getter) ~= 'function' then return end
+
+        if type(getter) ~= 'function' then
+            return
+        end
+
         local _, spell = getter(tooltip)
-        if not readable(spell) then return end
+
+        if not readable(spell) then
+            return
+        end
+
         id = wholeNumber(spell)
     end
 
-    if not id then return end
+    if not id then
+        return
+    end
+
     shown[tooltip] = true
-    if guarded(append, tooltip, kind, id) > 0 and type(tooltip.Show) == 'function' then tooltip:Show() end
+
+    if guarded(append, tooltip, kind, id) > 0 and type(tooltip.Show) == 'function' then
+        tooltip:Show()
+    end
 end
 
 -- ============================================================================
@@ -774,15 +937,22 @@ local function processorMode()
     then
         return 'processor', processor, types
     end
-
-    if type(GameTooltip) == 'table' and type(GameTooltip.HookScript) == 'function' then return 'scripts' end
+    if type(GameTooltip) == 'table' and type(GameTooltip.HookScript) == 'function' then
+        return 'scripts'
+    end
 end
 
 -- Registers the hooks once for the mode processorMode chose. Returns true, or false and a reason.
 function manager:Install()
-    if self.installed then return true end
+    if self.installed then
+        return true
+    end
+
     local mode, processor, types = processorMode()
-    if not mode then return false, 'no-tooltip-api' end
+
+    if not mode then
+        return false, 'no-tooltip-api'
+    end
 
     if mode == 'processor' then
         local ok1 = pcall(processor.AddTooltipPostCall, types.Item, function(tooltip, data)
@@ -793,7 +963,9 @@ function manager:Install()
             manager:OnProcessed(tooltip, 'spell', data)
         end)
 
-        if not (ok1 and ok2) then return false, 'registration-failed' end
+        if not (ok1 and ok2) then
+            return false, 'registration-failed'
+        end
     else
         for _, tooltip in ipairs({ GameTooltip, ItemRefTooltip }) do
             if type(tooltip) == 'table' and type(tooltip.HookScript) == 'function' then
@@ -805,7 +977,9 @@ function manager:Install()
                     manager:OnScript(self, 'spell')
                 end)
 
-                pcall(tooltip.HookScript, tooltip, 'OnTooltipCleared', function(self) shown[self] = nil end)
+                pcall(tooltip.HookScript, tooltip, 'OnTooltipCleared', function(self)
+                    shown[self] = nil
+                end)
             end
         end
     end
@@ -823,7 +997,10 @@ local eventNames = { 'SPELLS_CHANGED', 'GET_ITEM_INFO_RECEIVED' }
 -- Registers or unregisters the events that invalidate the indexes, only when the state changes.
 function manager:SetEvents(active)
     local frame = self.frame
-    if not frame or self.eventsActive == active then return end
+
+    if not frame or self.eventsActive == active then
+        return
+    end
 
     for _, event in ipairs(eventNames) do
         pcall(active and frame.RegisterEvent or frame.UnregisterEvent, frame, event)
@@ -843,7 +1020,10 @@ function manager:Refresh()
     local active = master and (wantSets or wantRotations)
 
     if active then
-        if not self.installed then self:Install() end
+        if not self.installed then
+            self:Install()
+        end
+
         self:SetEvents(true)
     else
         self:SetEvents(false)
@@ -871,7 +1051,9 @@ function manager:OnEvent(event)
 
             if type(db) == 'table' and type(db.RegisterCallback) == 'function' then
                 for _, name in ipairs(profileEvents) do
-                    db.RegisterCallback(manager, name, function() manager:Refresh() end)
+                    db.RegisterCallback(manager, name, function()
+                        manager:Refresh()
+                    end)
                 end
             end
         end
@@ -884,7 +1066,10 @@ function manager:OnEvent(event)
     elseif event == 'SPELLS_CHANGED' then
         -- Base and override spells move with talents; the lines depend on them.
         local uses = self.uses
-        if uses then uses.spellText = {} end
+
+        if uses then
+            uses.spellText = {}
+        end
     end
 end
 
@@ -898,7 +1083,11 @@ if type(CreateFrame) == 'function' then
         and type(frame.SetScript) == 'function'
     then
         manager.frame = frame
-        frame:SetScript('OnEvent', function(_, event) manager:OnEvent(event) end)
+
+        frame:SetScript('OnEvent', function(_, event)
+            manager:OnEvent(event)
+        end)
+
         pcall(frame.RegisterEvent, frame, 'PLAYER_ENTERING_WORLD')
     end
 end

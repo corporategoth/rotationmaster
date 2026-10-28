@@ -22,9 +22,15 @@ end
 -- Calls callback(step) for every step (cooldowns, rotation and nested Branch arms) of an envelope's body. Returns
 -- true, or nil and the indexing error when the steps cannot be indexed. The callback may edit the step in place.
 local function steps(envelope, callback)
-    if type(envelope) ~= "table" or type(envelope.body) ~= "table" then return end
+    if type(envelope) ~= "table" or type(envelope.body) ~= "table" then
+        return
+    end
+
     local index, why = data.IndexRotationSteps(envelope.body)
-    if not index then return nil, why end
+
+    if not index then
+        return nil, why
+    end
 
     for _, row in ipairs(index.rows) do
         callback(row.step)
@@ -55,12 +61,22 @@ local function validLineage(value)
 
     -- Validate historical envelope structure independently of today's condition
     -- catalog. An unavailable old condition must not erase source evidence.
-    if not data.ValidateEnvelope(value.baseline).valid then return false end
+    if not data.ValidateEnvelope(value.baseline).valid then
+        return false
+    end
+
     local baselineIds = {}
-    if not steps(value.baseline, function(step) baselineIds[step.id] = true end) then return false end
+
+    if not steps(value.baseline, function(step)
+        baselineIds[step.id] = true
+    end) then
+        return false
+    end
 
     for key, origin in pairs(value.stepOrigins) do
-        if not id(key) or not id(origin) or not baselineIds[origin] then return false end
+        if not id(key) or not id(origin) or not baselineIds[origin] then
+            return false
+        end
     end
 
     return true
@@ -79,8 +95,14 @@ end
 function data.NewCatalog(options)
     options = options or {}
     local state = options.state
-    if state == nil then state = {} end
-    if type(state) ~= "table" or getmetatable(state) ~= nil then return nil, "invalid-catalog-state" end
+
+    if state == nil then
+        state = {}
+    end
+
+    if type(state) ~= "table" or getmetatable(state) ~= nil then
+        return nil, "invalid-catalog-state"
+    end
 
     for _, key in ipairs({ "custom", "preferences", "lineage" }) do
         if state[key] ~= nil and (type(state[key]) ~= "table" or getmetatable(state[key]) ~= nil) then
@@ -90,7 +112,9 @@ function data.NewCatalog(options)
 
     if state.custom then
         for key in pairs(state.custom) do
-            if not id(key) then return nil, "invalid-custom-id" end
+            if not id(key) then
+                return nil, "invalid-custom-id"
+            end
         end
     end
 
@@ -114,8 +138,14 @@ function data.NewCatalog(options)
     -- 'unknown-rotation'.
     local function owned(reference)
         local kind, key = resolve(reference)
-        if kind == "builtin" then return nil, "read-only" end
-        if not key or state.custom[key] == nil then return nil, "unknown-rotation" end
+
+        if kind == "builtin" then
+            return nil, "read-only"
+        end
+        if not key or state.custom[key] == nil then
+            return nil, "unknown-rotation"
+        end
+
         return key
     end
 
@@ -123,14 +153,21 @@ function data.NewCatalog(options)
     -- the envelope's own disabled flag.
     local function enabled(kind, key, envelope)
         if kind == "builtin" then
-            if withdrawn[key] then return false end
+            if withdrawn[key] then
+                return false
+            end
+
             -- A saved choice wins; an entry without one (e.g. only a priority)
             -- leaves the shipped default in force.
             local preference = state.preferences[key]
 
             if preference ~= nil then
-                if type(preference) ~= "table" or getmetatable(preference) ~= nil then return false end
-                if preference.enabled ~= nil then return preference.enabled == true end
+                if type(preference) ~= "table" or getmetatable(preference) ~= nil then
+                    return false
+                end
+                if preference.enabled ~= nil then
+                    return preference.enabled == true
+                end
             end
         end
 
@@ -149,7 +186,10 @@ function data.NewCatalog(options)
             source = state.custom[key]
         end
 
-        if source == nil then return nil end
+        if source == nil then
+            return nil
+        end
+
         local validation = data.ValidateEnvelope(source, options.validation)
         local cleanSource, copyError = data.CopyData(source)
 
@@ -178,7 +218,9 @@ function data.NewCatalog(options)
             withdrawn = withdrawn[key] ~= nil and kind == "builtin",
         }
 
-        if view.withdrawn then view.withdrawalReason = withdrawn[key] end
+        if view.withdrawn then
+            view.withdrawalReason = withdrawn[key]
+        end
 
         if type(cleanSource) == "table" then
             view.nameKey = type(cleanSource.nameKey) == "string" and cleanSource.nameKey ~= "" and cleanSource.nameKey
@@ -233,7 +275,11 @@ function data.NewCatalog(options)
         end
 
         local copy, why = data.CopyData(envelope)
-        if not copy then return nil, why.code, validation end
+
+        if not copy then
+            return nil, why.code, validation
+        end
+
         return copy
     end
 
@@ -244,9 +290,17 @@ function data.NewCatalog(options)
         -- definition. Retain its source; snapshots expose current diagnostics and
         -- runtime eligibility keeps it inert. Custom saves remain strictly checked.
         local copy, why, validation = storable(envelope, true)
-        if not copy then return false, why, validation end
+
+        if not copy then
+            return false, why, validation
+        end
+
         local previous = builtins[copy.id]
-        if previous and copy.revision <= previous.revision then return false, "revision-not-newer" end
+
+        if previous and copy.revision <= previous.revision then
+            return false, "revision-not-newer"
+        end
+
         builtins[copy.id] = copy
         return true
     end
@@ -254,7 +308,11 @@ function data.NewCatalog(options)
     -- Returns the full view of one rotation (including a copy of its envelope), or nil when unknown.
     function catalog:Get(reference)
         local kind, key = resolve(reference)
-        if not key then return nil end
+
+        if not key then
+            return nil
+        end
+
         return snapshot(kind, key, false)
     end
 
@@ -272,7 +330,10 @@ function data.NewCatalog(options)
         end
 
         table.sort(rows, function(a, b)
-            if a.id == b.id then return a.builtin and not b.builtin end
+            if a.id == b.id then
+                return a.builtin and not b.builtin
+            end
+
             return a.id < b.id
         end)
 
@@ -282,26 +343,44 @@ function data.NewCatalog(options)
     -- Switches a rotation on or off. A Built In stores a preference; a custom rotation is saved with its disabled flag
     -- changed (so it gets a new revision). Returns true, or false and a reason.
     function catalog:SetEnabled(reference, value)
-        if type(value) ~= "boolean" then return false, "invalid-enabled-value" end
+        if type(value) ~= "boolean" then
+            return false, "invalid-enabled-value"
+        end
+
         local kind, key = resolve(reference)
-        if not key then return false, "unknown-rotation" end
+
+        if not key then
+            return false, "unknown-rotation"
+        end
 
         if kind == "builtin" then
-            if not builtins[key] then return false, "unknown-rotation" end
-            if withdrawn[key] then return false, "withdrawn-built-in" end
-
+            if not builtins[key] then
+                return false, "unknown-rotation"
+            end
+            if withdrawn[key] then
+                return false, "withdrawn-built-in"
+            end
             if type(state.preferences[key]) == "table" and getmetatable(state.preferences[key]) ~= nil then
                 return false, "invalid-preference"
             end
 
-            if type(state.preferences[key]) ~= "table" then state.preferences[key] = {} end
+            if type(state.preferences[key]) ~= "table" then
+                state.preferences[key] = {}
+            end
+
             state.preferences[key].enabled = value
             return true
         end
 
         local view = self:Get(reference)
-        if not view then return false, "unknown-rotation" end
-        if not view.validation.valid or type(view.envelope.body) ~= "table" then return false, "invalid-envelope" end
+
+        if not view then
+            return false, "unknown-rotation"
+        end
+        if not view.validation.valid or type(view.envelope.body) ~= "table" then
+            return false, "invalid-envelope"
+        end
+
         view.envelope.body.disabled = not value
         return self:Save(reference, view.envelope)
     end
@@ -320,12 +399,17 @@ function data.NewCatalog(options)
         -- Recursive step of savedSeal; shared tables are copied once and a cycle makes the copy fail.
         local function copy(current, depth)
             nodes = nodes + 1
-            if nodes > 20000 or depth > 64 then return nil end
+
+            if nodes > 20000 or depth > 64 then
+                return nil
+            end
+
             local kind = sealType(current)
 
             if kind ~= 'table' then
-                if kind == 'nil' or kind == 'boolean' or kind == 'string' then return current end
-
+                if kind == 'nil' or kind == 'boolean' or kind == 'string' then
+                    return current
+                end
                 if kind == 'number' and current == current and current ~= sealInfinity and current ~= -sealInfinity then
                     return current
                 end
@@ -333,8 +417,13 @@ function data.NewCatalog(options)
                 return nil
             end
 
-            if sealMeta(current) ~= nil or visiting[current] then return nil end
-            if copies[current] then return copies[current] end
+            if sealMeta(current) ~= nil or visiting[current] then
+                return nil
+            end
+            if copies[current] then
+                return copies[current]
+            end
+
             local result = {}
             copies[current] = result
             visiting[current] = true
@@ -348,7 +437,11 @@ function data.NewCatalog(options)
                 end
 
                 local child = copy(sealRaw(current, key), depth + 1)
-                if child == nil then return nil end
+
+                if child == nil then
+                    return nil
+                end
+
                 result[key] = child
             end
 
@@ -364,14 +457,23 @@ function data.NewCatalog(options)
     -- Deep equality using the raw primitives. In 'envelope' mode the envelope and body revisions are ignored; 'exact'
     -- compares everything.
     local function sameSavedValue(a, b, mode)
-        if sealType(a) ~= sealType(b) then return false end
-        if sealType(a) ~= 'table' then return a == b end
-        if sealMeta(a) ~= nil or sealMeta(b) ~= nil then return false end
+        if sealType(a) ~= sealType(b) then
+            return false
+        end
+        if sealType(a) ~= 'table' then
+            return a == b
+        end
+        if sealMeta(a) ~= nil or sealMeta(b) ~= nil then
+            return false
+        end
 
         for key, value in sealNext, a do
             if not (key == 'revision' and (mode == 'envelope' or mode == 'body')) then
                 local child = mode == 'envelope' and key == 'body' and 'body' or 'exact'
-                if not sameSavedValue(value, sealRaw(b, key), child) then return false end
+
+                if not sameSavedValue(value, sealRaw(b, key), child) then
+                    return false
+                end
             end
         end
 
@@ -390,10 +492,20 @@ function data.NewCatalog(options)
     -- call overridable helpers). Returns true, or false and a reason.
     function catalog:Save(reference, envelope)
         local key, why = owned(reference)
-        if not key then return false, why end
+
+        if not key then
+            return false, why
+        end
+
         local copy, reason, validation = storable(envelope)
-        if not copy then return false, reason, validation end
-        if copy.id ~= key then return false, "id-mismatch" end
+
+        if not copy then
+            return false, reason, validation
+        end
+        if copy.id ~= key then
+            return false, "id-mismatch"
+        end
+
         local custom = state.custom
         local previous = custom[key]
 
@@ -403,7 +515,10 @@ function data.NewCatalog(options)
 
             if type(oldBody) == 'table' then
                 baseline = savedSeal(previous)
-                if not baseline then return false, 'invalid-rotation-body' end
+
+                if not baseline then
+                    return false, 'invalid-rotation-body'
+                end
             end
 
             -- True while the stored rotation is still the one that was read at the start of the save.
@@ -421,8 +536,13 @@ function data.NewCatalog(options)
             if baseline then
                 local problem
                 comparison, problem = data.CopyData(oldBody)
-                if not comparison then return false, problem and problem.code or 'invalid-rotation-body' end
-                if not unchanged() then return false, 'rotation-changed-externally' end
+
+                if not comparison then
+                    return false, problem and problem.code or 'invalid-rotation-body'
+                end
+                if not unchanged() then
+                    return false, 'rotation-changed-externally'
+                end
             end
 
             local changed = baseline and not sameSavedValue(baseline, copy, 'envelope') or false
@@ -434,8 +554,13 @@ function data.NewCatalog(options)
                 changed
             )
 
-            if not body then return false, problem end
-            if not unchanged() then return false, 'rotation-changed-externally' end
+            if not body then
+                return false, problem
+            end
+            if not unchanged() then
+                return false, 'rotation-changed-externally'
+            end
+
             copy.body = body
             local revision = type(previous) == "table" and previous.revision
 
@@ -454,20 +579,39 @@ function data.NewCatalog(options)
     -- are stamped as an import. Returns true, or false and a reason.
     function catalog:AddCustom(envelope)
         local copy, why, validation = storable(envelope)
-        if not copy then return false, why, validation end
-        if builtins[copy.id] then return false, "read-only" end
-        if state.custom[copy.id] ~= nil then return false, "duplicate-id" end
+
+        if not copy then
+            return false, why, validation
+        end
+        if builtins[copy.id] then
+            return false, "read-only"
+        end
+        if state.custom[copy.id] ~= nil then
+            return false, "duplicate-id"
+        end
+
         local custom = state.custom
 
         if copy.schemaVersion == 1 then
             local body, reason = data.PrepareRotationContentRevision(copy.body, nil, 'import')
-            if not body then return false, reason end
+
+            if not body then
+                return false, reason
+            end
+
             copy.body = body
         end
 
-        if not rawequal(state.custom, custom) then return false, 'rotation-changed-externally' end
-        if builtins[copy.id] then return false, 'read-only' end
-        if state.custom[copy.id] ~= nil then return false, 'duplicate-id' end
+        if not rawequal(state.custom, custom) then
+            return false, 'rotation-changed-externally'
+        end
+        if builtins[copy.id] then
+            return false, 'read-only'
+        end
+        if state.custom[copy.id] ~= nil then
+            return false, 'duplicate-id'
+        end
+
         state.custom[copy.id] = copy
         return true
     end
@@ -475,10 +619,20 @@ function data.NewCatalog(options)
     -- Renames a custom rotation by saving it with the new name (the envelope name key and the body name both change).
     function catalog:Rename(reference, name)
         local key, why = owned(reference)
-        if not key then return false, why end
-        if type(name) ~= "string" or name == "" then return false, "invalid-name" end
+
+        if not key then
+            return false, why
+        end
+        if type(name) ~= "string" or name == "" then
+            return false, "invalid-name"
+        end
+
         local view = self:Get({ kind = "custom", id = key })
-        if not view.envelope or type(view.envelope.body) ~= "table" then return false, "invalid-envelope" end
+
+        if not view.envelope or type(view.envelope.body) ~= "table" then
+            return false, "invalid-envelope"
+        end
+
         view.envelope.nameKey, view.envelope.body.name = name, name
         return self:Save({ kind = "custom", id = key }, view.envelope)
     end
@@ -486,7 +640,11 @@ function data.NewCatalog(options)
     -- Deletes a custom rotation and its clone lineage. Built Ins cannot be deleted.
     function catalog:Delete(reference)
         local key, why = owned(reference)
-        if not key then return false, why end
+
+        if not key then
+            return false, why
+        end
+
         state.custom[key], state.lineage[key] = nil, nil
         return true
     end
@@ -494,8 +652,14 @@ function data.NewCatalog(options)
     -- Marks a registered Built In as withdrawn, with a reason shown to the user; a withdrawn Built In is never enabled.
     function catalog:WithdrawBuiltin(reference, reason)
         local kind, key = resolve(reference)
-        if kind ~= "builtin" or not builtins[key] then return false, "unknown-built-in" end
-        if type(reason) ~= "string" or reason == "" then return false, "missing-withdrawal-reason" end
+
+        if kind ~= "builtin" or not builtins[key] then
+            return false, "unknown-built-in"
+        end
+        if type(reason) ~= "string" or reason == "" then
+            return false, "missing-withdrawal-reason"
+        end
+
         withdrawn[key] = reason
         return true
     end
@@ -505,15 +669,23 @@ function data.NewCatalog(options)
     -- comparisons use. Every id already in use anywhere is reserved first. Returns the new id, or nil and a reason.
     function catalog:Clone(reference, name)
         local source = self:Get(reference)
-        if not source then return nil, "unknown-rotation" end
-        if source.lineageError then return nil, "invalid-lineage" end
 
+        if not source then
+            return nil, "unknown-rotation"
+        end
+        if source.lineageError then
+            return nil, "invalid-lineage"
+        end
         if not source.validation.valid or not source.envelope or source.envelope.schemaVersion ~= 1 then
             return nil, "unsupported-source"
         end
+        if type(options.newId) ~= "function" then
+            return nil, "missing-id-provider"
+        end
+        if name ~= nil and (type(name) ~= "string" or name == "") then
+            return nil, "invalid-name"
+        end
 
-        if type(options.newId) ~= "function" then return nil, "missing-id-provider" end
-        if name ~= nil and (type(name) ~= "string" or name == "") then return nil, "invalid-name" end
         local used = {}
 
         for _, rows in ipairs({ builtins, state.custom }) do
@@ -533,21 +705,33 @@ function data.NewCatalog(options)
 
         if source.lineage and type(source.lineage.stepOrigins) == "table" then
             for _, origin in pairs(source.lineage.stepOrigins) do
-                if id(origin) then used[origin] = true end
+                if id(origin) then
+                    used[origin] = true
+                end
             end
         end
 
         -- Allocates one unused id from the injected provider (nil and a reason when it fails or collides).
         local function fresh()
             local ok, value = pcall(options.newId)
-            if not ok or not id(value) then return nil, "invalid-id-provider" end
-            if used[value] then return nil, "id-collision" end
+
+            if not ok or not id(value) then
+                return nil, "invalid-id-provider"
+            end
+            if used[value] then
+                return nil, "id-collision"
+            end
+
             used[value] = true
             return value
         end
 
         local newId, why = fresh()
-        if not newId then return nil, why end
+
+        if not newId then
+            return nil, why
+        end
+
         local clone = source.envelope
         local baseline = source.lineage and source.lineage.baseline or data.CopyData(source.envelope)
 
@@ -562,11 +746,18 @@ function data.NewCatalog(options)
 
         clone.id, clone.revision = newId, 1
         clone.body.revision = 1
-        if name then clone.nameKey, clone.body.name = name, name end
+
+        if name then
+            clone.nameKey, clone.body.name = name, name
+        end
+
         local failed
 
         local indexed, indexError = steps(clone, function(step)
-            if failed then return end
+            if failed then
+                return
+            end
+
             local original = step.id
             local generated, reason = fresh()
 
@@ -584,12 +775,25 @@ function data.NewCatalog(options)
             end
         end)
 
-        if not indexed then return nil, indexError and indexError.code or "invalid-priority-list" end
-        if failed then return nil, failed end
+        if not indexed then
+            return nil, indexError and indexError.code or "invalid-priority-list"
+        end
+        if failed then
+            return nil, failed
+        end
+
         local cleanLineage, problem = data.CopyData(lineage)
-        if not cleanLineage then return nil, problem.code end
+
+        if not cleanLineage then
+            return nil, problem.code
+        end
+
         local ok, reason = self:AddCustom(clone)
-        if not ok then return nil, reason end
+
+        if not ok then
+            return nil, reason
+        end
+
         state.lineage[newId] = cleanLineage
         return newId
     end

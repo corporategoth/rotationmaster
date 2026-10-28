@@ -9,7 +9,9 @@
 local addon_name, addon = ...
 
 -- Skip these if we're not a shaman .. no point having totem conditions for other classes.
-if select(2, UnitClass("player")) ~= "SHAMAN" then return end
+if select(2, UnitClass("player")) ~= "SHAMAN" then
+    return
+end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color

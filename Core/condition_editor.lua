@@ -38,20 +38,30 @@ local commands = {
 -- True when two portable plain-data trees are equal by value. Non-portable data (functions, cycles) is never equal, so
 -- such a draft always reads as changed.
 local function unchanged(left, right)
-    if not data.CheckPortable(left) or not data.CheckPortable(right) then return false end
+    if not data.CheckPortable(left) or not data.CheckPortable(right) then
+        return false
+    end
 
     -- Conditions may legally use names such as body.rotation for their own
     -- fields. Compare plain values without envelope/step identity semantics.
     local function equal(a, b)
-        if type(a) ~= type(b) then return false end
-        if type(a) ~= "table" then return a == b end
+        if type(a) ~= type(b) then
+            return false
+        end
+        if type(a) ~= "table" then
+            return a == b
+        end
 
         for key, value in pairs(a) do
-            if not equal(value, b[key]) then return false end
+            if not equal(value, b[key]) then
+                return false
+            end
         end
 
         for key in pairs(b) do
-            if a[key] == nil then return false end
+            if a[key] == nil then
+                return false
+            end
         end
 
         return true
@@ -103,17 +113,27 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     end
 
     local readOnly = options.readOnly == true
-    if targetValid ~= nil and type(targetValid) ~= "function" then return nil, "invalid-editor-owner" end
+
+    if targetValid ~= nil and type(targetValid) ~= "function" then
+        return nil, "invalid-editor-owner"
+    end
 
     -- True when the owner of the condition still exists; a throwing owner check counts as gone.
     local function targetExists()
-        if not targetValid then return true end
+        if not targetValid then
+            return true
+        end
+
         local ok, exists = pcall(targetValid)
         return ok and exists == true
     end
 
     local draft, why = data.NewConditionDraft(original, self.conditionDefinitions)
-    if not draft then return nil, why end
+
+    if not draft then
+        return nil, why
+    end
+
     local baseline = draft:Snapshot()
     local closed = false
     -- History belongs to this unsaved draft. Bound both the number of edits
@@ -122,8 +142,13 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
 
     -- Rough byte cost of a value, used only to bound how much undo history one draft may retain.
     local function weight(value)
-        if type(value) == "string" then return 32 + #value end
-        if type(value) ~= "table" then return 16 end
+        if type(value) == "string" then
+            return 32 + #value
+        end
+        if type(value) ~= "table" then
+            return 16
+        end
+
         local total = 64
 
         for key, child in pairs(value) do
@@ -143,7 +168,11 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- Removes and returns an entry (the newest unless an index is given), releasing its weight.
     local function pop(stack, index)
         local entry = table.remove(stack, index or #stack)
-        if entry then historyBytes = historyBytes - entry.bytes end
+
+        if entry then
+            historyBytes = historyBytes - entry.bytes
+        end
+
         return entry
     end
 
@@ -193,9 +222,16 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- Runs a whitelisted draft command. A command that really changes the draft pushes the prior state on the undo
     -- stack and clears redo. Returns the draft's own ok, result, or nil and a reason when closed, read-only or unknown.
     function session:Command(name, path, value)
-        if closed then return nil, "condition-editor-closed" end
-        if readOnly then return nil, "readonly-condition" end
-        if not commands[name] then return nil, "invalid-editor-command" end
+        if closed then
+            return nil, "condition-editor-closed"
+        end
+        if readOnly then
+            return nil, "readonly-condition"
+        end
+        if not commands[name] then
+            return nil, "invalid-editor-command"
+        end
+
         local before = draft:Snapshot()
         local ok, result = draft[name](draft, path, value)
 
@@ -221,13 +257,24 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
 
     -- Moves one history step: restores the newest entry of source and stacks the current state on destination.
     local function travel(source, destination)
-        if closed then return nil, "condition-editor-closed" end
-        if readOnly then return nil, "readonly-condition" end
-        if #source == 0 then return nil, "condition-history-empty" end
+        if closed then
+            return nil, "condition-editor-closed"
+        end
+        if readOnly then
+            return nil, "readonly-condition"
+        end
+        if #source == 0 then
+            return nil, "condition-history-empty"
+        end
+
         local entry = source[#source]
         local current = draft:Snapshot()
         local ok, problem = draft:Replace({}, entry.value)
-        if not ok then return nil, problem end
+
+        if not ok then
+            return nil, problem
+        end
+
         pop(source)
         push(destination, current)
         trim()
@@ -254,22 +301,42 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
     -- twice around the validator because it runs custom code: the draft must not have been mutated by it and the
     -- original and its owner must not have changed meanwhile.
     function session:Apply()
-        if closed then return nil, "condition-editor-closed" end
-        if readOnly then return nil, "readonly-condition" end
-        if not targetExists() then return nil, "condition-target-missing" end
-        if not unchanged(baseline, original) then return nil, "condition-changed-externally" end
+        if closed then
+            return nil, "condition-editor-closed"
+        end
+        if readOnly then
+            return nil, "readonly-condition"
+        end
+        if not targetExists() then
+            return nil, "condition-target-missing"
+        end
+        if not unchanged(baseline, original) then
+            return nil, "condition-changed-externally"
+        end
+
         local snapshot = draft:Snapshot()
         local body = { name = "Condition draft", switch = snapshot, rotation = {}, cooldowns = {} }
         local result = data.ValidateBody(body, addon:GetImportValidationOptions())
-        if not result.valid then return nil, "invalid-condition-data", result end
-        if not result.supported then return nil, "unsupported-condition-data", result end
-        if not result.resolved then return nil, "unresolved-condition-data", result end
+
+        if not result.valid then
+            return nil, "invalid-condition-data", result
+        end
+        if not result.supported then
+            return nil, "unsupported-condition-data", result
+        end
+        if not result.resolved then
+            return nil, "unresolved-condition-data", result
+        end
+
         local candidate = data.CopyData(snapshot)
 
         -- Runs the announcement or the ordinary condition validator on the candidate copy; it may run custom code,
         -- hence the checks around it.
         local function validate()
-            if options.announcementTarget then return addon:validateAnnouncementCondition(candidate, spec) end
+            if options.announcementTarget then
+                return addon:validateAnnouncementCondition(candidate, spec)
+            end
+
             return addon:validateCondition(candidate, spec)
         end
 
@@ -285,11 +352,21 @@ function addon:NewConditionEditSession(spec, original, targetValid, options)
             ok, valid = pcall(validate)
         end
 
-        if not ok then return nil, "condition-validation-error" end
-        if not unchanged(snapshot, candidate) then return nil, "validation-mutated-condition" end
-        if not valid then return nil, "invalid-condition-fields" end
-        if not targetExists() then return nil, "condition-target-missing" end
-        if not unchanged(baseline, original) then return nil, "condition-changed-externally" end
+        if not ok then
+            return nil, "condition-validation-error"
+        end
+        if not unchanged(snapshot, candidate) then
+            return nil, "validation-mutated-condition"
+        end
+        if not valid then
+            return nil, "invalid-condition-fields"
+        end
+        if not targetExists() then
+            return nil, "condition-target-missing"
+        end
+        if not unchanged(baseline, original) then
+            return nil, "condition-changed-externally"
+        end
 
         for key in pairs(original) do
             original[key] = nil

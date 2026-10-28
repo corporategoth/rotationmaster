@@ -13,8 +13,13 @@ local _, addon = ...
 -- True when `items` is a usable item reference for an announcement: a string of at most 128 bytes (an item set), or a
 -- dense list of at most 256 entries of positive integer item ids or strings of at most 1024 bytes.
 function addon:IsValidAnnouncementItemReference(items)
-    if type(items) == 'string' then return #items > 0 and #items <= 128 end
-    if type(items) ~= 'table' or #items == 0 or #items > 256 then return false end
+    if type(items) == 'string' then
+        return #items > 0 and #items <= 128
+    end
+    if type(items) ~= 'table' or #items == 0 or #items > 256 then
+        return false
+    end
+
     local count = 0
 
     for key, item in pairs(items) do
@@ -43,7 +48,10 @@ end
 
 -- Cold configuration/import check; no retained lookup registry or polling work.
 function addon:AreMacroAnnouncementIdentifiersUnique(entries)
-    if type(entries) ~= 'table' then return false end
+    if type(entries) ~= 'table' then
+        return false
+    end
+
     local seen = {}
 
     for _, entry in ipairs(entries) do
@@ -74,7 +82,9 @@ end
 -- conditions that pass the portable-data and body validators. `macro` is true for a macro series, the only kind that
 -- may use say, yell, whisper or channel.
 function addon:IsValidAnnouncementOutput(value, macro)
-    if type(value) ~= 'table' or getmetatable(value) ~= nil or not outputIdentity(value.id) then return false end
+    if type(value) ~= 'table' or getmetatable(value) ~= nil or not outputIdentity(value.id) then
+        return false
+    end
 
     local allowed = {
         id = true,
@@ -89,7 +99,9 @@ function addon:IsValidAnnouncementOutput(value, macro)
     }
 
     for key in pairs(value) do
-        if not allowed[key] then return false end
+        if not allowed[key] then
+            return false
+        end
     end
 
     if not ({
@@ -107,33 +119,30 @@ function addon:IsValidAnnouncementOutput(value, macro)
     })[value.announce] then
         return false
     end
-
     if
         value.disabled ~= nil and type(value.disabled) ~= 'boolean'
         or value.emote_target ~= nil and type(value.emote_target) ~= 'boolean'
     then
         return false
     end
-
-    if value.value ~= nil and (type(value.value) ~= 'string' or #value.value > 4096) then return false end
-
+    if value.value ~= nil and (type(value.value) ~= 'string' or #value.value > 4096) then
+        return false
+    end
     if value.announce_sound ~= nil and (type(value.announce_sound) ~= 'string' or #value.announce_sound > 256) then
         return false
     end
-
     if
         value.emote ~= nil
         and (type(value.emote) ~= 'string' or #value.emote > 64 or not value.emote:match('^[A-Z][A-Z0-9_]*$'))
     then
         return false
     end
-
-    if value.announce == 'gesture' and value.emote == nil then return false end
-
+    if value.announce == 'gesture' and value.emote == nil then
+        return false
+    end
     if value.announce == 'audible' and (not value.announce_sound or not value.announce_sound:find('%S')) then
         return false
     end
-
     if
         value.channel_name ~= nil
         and (type(value.channel_name) ~= 'string'
@@ -143,8 +152,9 @@ function addon:IsValidAnnouncementOutput(value, macro)
     then
         return false
     end
-
-    if value.announce == 'channel' and value.channel_name == nil then return false end
+    if value.announce == 'channel' and value.channel_name == nil then
+        return false
+    end
 
     if value.conditions ~= nil then
         if type(value.conditions) ~= 'table' or not self.RotationData.CheckPortable(value.conditions) then
@@ -155,7 +165,9 @@ function addon:IsValidAnnouncementOutput(value, macro)
             conditions = self.conditionDefinitions,
         })
 
-        if not result.valid or not result.supported then return false end
+        if not result.valid or not result.supported then
+            return false
+        end
     end
 
     return true
@@ -169,7 +181,9 @@ end
 -- with a unique id. Spell, pet and item series need a known event; a macro series needs an identifier and none of the
 -- spell, item, ranked or event fields. `requireIdentity` demands a UUID id on the series itself.
 local function validSeries(owner, value, requireIdentity)
-    if getmetatable(value) ~= nil or requireIdentity and not outputIdentity(value.id) then return false end
+    if getmetatable(value) ~= nil or requireIdentity and not outputIdentity(value.id) then
+        return false
+    end
 
     local allowed = {
         id = true,
@@ -185,14 +199,21 @@ local function validSeries(owner, value, requireIdentity)
     }
 
     for key in pairs(value) do
-        if not allowed[key] then return false end
+        if not allowed[key] then
+            return false
+        end
     end
 
     for _, key in ipairs({ 'disabled', 'ranked' }) do
-        if value[key] ~= nil and type(value[key]) ~= 'boolean' then return false end
+        if value[key] ~= nil and type(value[key]) ~= 'boolean' then
+            return false
+        end
     end
 
-    if value.name ~= nil and (type(value.name) ~= 'string' or #value.name > 256) then return false end
+    if value.name ~= nil and (type(value.name) ~= 'string' or #value.name > 256) then
+        return false
+    end
+
     local macro = value.type == 'macro'
 
     if macro then
@@ -210,13 +231,19 @@ local function validSeries(owner, value, requireIdentity)
     elseif value.identifier ~= nil or type(value.event) ~= 'string' or not (owner.events or {})[value.event] then
         return false
     elseif value.type == 'item' then
-        if not owner:IsValidAnnouncementItemReference(value.item) then return false end
+        if not owner:IsValidAnnouncementItemReference(value.item) then
+            return false
+        end
     elseif type(value.spell) ~= 'number' or value.spell <= 0 or value.spell == math.huge or value.spell % 1 ~= 0 then
         return false
     end
 
     local outputs = value.outputs
-    if type(outputs) ~= 'table' or getmetatable(outputs) ~= nil or #outputs > 64 then return false end
+
+    if type(outputs) ~= 'table' or getmetatable(outputs) ~= nil or #outputs > 64 then
+        return false
+    end
+
     local count, seen = 0, {}
 
     for index, output in pairs(outputs) do
@@ -242,9 +269,12 @@ end
 -- announcement that carries its own announce mode, text, sound, emote and conditions. `requireIdentity` demands a UUID
 -- id, as the saved profile does. Note the single form allows say and yell for every type and whisper only for macros.
 function addon:IsValidAnnouncement(value, requireIdentity)
-    if type(value) ~= 'table' then return false end
-    if value.outputs ~= nil then return validSeries(self, value, requireIdentity) end
-
+    if type(value) ~= 'table' then
+        return false
+    end
+    if value.outputs ~= nil then
+        return validSeries(self, value, requireIdentity)
+    end
     if
         requireIdentity
         and (type(value.id) ~= 'string'
@@ -272,7 +302,9 @@ function addon:IsValidAnnouncement(value, requireIdentity)
     }
 
     for key in pairs(value) do
-        if not allowed[key] then return false end
+        if not allowed[key] then
+            return false
+        end
     end
 
     local macro = value.type == 'macro'
@@ -309,27 +341,32 @@ function addon:IsValidAnnouncement(value, requireIdentity)
     end
 
     for _, key in ipairs({ 'disabled', 'ranked' }) do
-        if value[key] ~= nil and type(value[key]) ~= 'boolean' then return false end
+        if value[key] ~= nil and type(value[key]) ~= 'boolean' then
+            return false
+        end
     end
 
-    if value.name ~= nil and (type(value.name) ~= 'string' or #value.name > 256) then return false end
-    if value.value ~= nil and (type(value.value) ~= 'string' or #value.value > 4096) then return false end
-
+    if value.name ~= nil and (type(value.name) ~= 'string' or #value.name > 256) then
+        return false
+    end
+    if value.value ~= nil and (type(value.value) ~= 'string' or #value.value > 4096) then
+        return false
+    end
     if value.announce_sound ~= nil and (type(value.announce_sound) ~= 'string' or #value.announce_sound > 256) then
         return false
     end
-
-    if value.emote_target ~= nil and type(value.emote_target) ~= 'boolean' then return false end
-
+    if value.emote_target ~= nil and type(value.emote_target) ~= 'boolean' then
+        return false
+    end
     if
         value.emote ~= nil
         and (type(value.emote) ~= 'string' or #value.emote > 64 or not value.emote:match('^[A-Z][A-Z0-9_]*$'))
     then
         return false
     end
-
-    if value.announce == 'gesture' and value.emote == nil then return false end
-
+    if value.announce == 'gesture' and value.emote == nil then
+        return false
+    end
     if value.announce == 'audible' and (not value.announce_sound or not value.announce_sound:find('%S')) then
         return false
     end
@@ -343,10 +380,17 @@ function addon:IsValidAnnouncement(value, requireIdentity)
             conditions = self.conditionDefinitions,
         })
 
-        if not result.valid or not result.supported then return false end
+        if not result.valid or not result.supported then
+            return false
+        end
     end
 
-    if macro then return true end
-    if value.type ~= 'item' then return type(value.spell) == 'number' and value.spell > 0 and value.spell % 1 == 0 end
+    if macro then
+        return true
+    end
+    if value.type ~= 'item' then
+        return type(value.spell) == 'number' and value.spell > 0 and value.spell % 1 == 0
+    end
+
     return self:IsValidAnnouncementItemReference(value.item)
 end

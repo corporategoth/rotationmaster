@@ -41,9 +41,16 @@ local platform = addon.Platform
 -- Returns the named C_AssistedCombat function, or nil when the namespace or the function does not exist.
 local function method(name)
     local namespace = C_AssistedCombat
-    if type(namespace) ~= 'table' then return nil end
+
+    if type(namespace) ~= 'table' then
+        return nil
+    end
+
     local fn = namespace[name]
-    if type(fn) == 'function' then return fn end
+
+    if type(fn) == 'function' then
+        return fn
+    end
 end
 
 -- True for a positive whole number, the only shape a spell id may have.
@@ -55,11 +62,23 @@ end
 -- second value is Blizzard's own failure text when it does not.
 function platform:GetAssistedCombatAvailability()
     local fn = method('IsAvailable')
-    if not fn then return nil, 'missing-api' end
+
+    if not fn then
+        return nil, 'missing-api'
+    end
+
     local ok, available, reason = pcall(fn)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(available) or not self:CanReadValue(reason) then return nil, 'restricted-value' end
-    if type(available) ~= 'boolean' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(available) or not self:CanReadValue(reason) then
+        return nil, 'restricted-value'
+    end
+    if type(available) ~= 'boolean' then
+        return nil, 'invalid-api-result'
+    end
+
     return available, type(reason) == 'string' and reason ~= '' and reason or nil
 end
 
@@ -68,32 +87,70 @@ end
 -- false: available, but nothing is suggested right now.
 function platform:GetAssistedSuggestion()
     local next = method('GetNextCastSpell')
-    if not next then return nil, 'missing-api' end
+
+    if not next then
+        return nil, 'missing-api'
+    end
+
     local available, why = self:GetAssistedCombatAvailability()
-    if available == false then return nil, 'assisted-unavailable' end
-    if available == nil and why ~= 'missing-api' then return nil, why end
+
+    if available == false then
+        return nil, 'assisted-unavailable'
+    end
+    if available == nil and why ~= 'missing-api' then
+        return nil, why
+    end
+
     local ok, spell = pcall(next, false)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(spell) then return nil, 'restricted-value' end
-    if spell == nil or spell == 0 then return false end
-    if not spellID(spell) then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(spell) then
+        return nil, 'restricted-value'
+    end
+    if spell == nil or spell == 0 then
+        return false
+    end
+    if not spellID(spell) then
+        return nil, 'invalid-api-result'
+    end
+
     return spell
 end
 
 -- The specialization's Assisted Combat rotation set, as a fresh array.
 function platform:GetAssistedRotationSpells()
     local fn = method('GetRotationSpells')
-    if not fn then return nil, 'missing-api' end
+
+    if not fn then
+        return nil, 'missing-api'
+    end
+
     local ok, spells = pcall(fn)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(spells) then return nil, 'restricted-value' end
-    if type(spells) ~= 'table' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(spells) then
+        return nil, 'restricted-value'
+    end
+    if type(spells) ~= 'table' then
+        return nil, 'invalid-api-result'
+    end
+
     local result = {}
 
     for index = 1, #spells do
         local spell = spells[index]
-        if not self:CanReadValue(spell) then return nil, 'restricted-value' end
-        if not spellID(spell) then return nil, 'invalid-api-result' end
+
+        if not self:CanReadValue(spell) then
+            return nil, 'restricted-value'
+        end
+        if not spellID(spell) then
+            return nil, 'invalid-api-result'
+        end
+
         result[index] = spell
     end
 
@@ -103,12 +160,26 @@ end
 -- The spell behind the one-button assistant action, false when none.
 function platform:GetAssistedActionSpell()
     local fn = method('GetActionSpell')
-    if not fn then return nil, 'missing-api' end
+
+    if not fn then
+        return nil, 'missing-api'
+    end
+
     local ok, spell = pcall(fn)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(spell) then return nil, 'restricted-value' end
-    if spell == nil or spell == 0 then return false end
-    if not spellID(spell) then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(spell) then
+        return nil, 'restricted-value'
+    end
+    if spell == nil or spell == 0 then
+        return false
+    end
+    if not spellID(spell) then
+        return nil, 'invalid-api-result'
+    end
+
     return spell
 end
 
@@ -120,23 +191,41 @@ end
 local function relation(self, name, spell)
     local namespace = C_Spell
     local fn = type(namespace) == 'table' and namespace[name] or nil
-    if type(fn) ~= 'function' then return nil, 'missing-api' end
+
+    if type(fn) ~= 'function' then
+        return nil, 'missing-api'
+    end
+
     local ok, value = pcall(fn, spell)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(value) then return nil, 'restricted-value' end
-    if not spellID(value) then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(value) then
+        return nil, 'restricted-value'
+    end
+    if not spellID(value) then
+        return nil, 'invalid-api-result'
+    end
+
     return value
 end
 
 -- Spell IDs under which the suggestion may sit on an action button: the
 -- suggestion itself, then its base spell and its current override.
 function platform:GetAssistedSpellCandidates(spell)
-    if not spellID(spell) then return {} end
+    if not spellID(spell) then
+        return {}
+    end
+
     local result = { spell }
 
     for _, name in ipairs({ 'GetBaseSpell', 'GetOverrideSpell' }) do
         local other = relation(self, name, spell)
-        if other and other ~= result[1] and other ~= result[2] then result[#result + 1] = other end
+
+        if other and other ~= result[1] and other ~= result[2] then
+            result[#result + 1] = other
+        end
     end
 
     return result
@@ -146,13 +235,28 @@ end
 -- the other (Hammer of Light suggested while the condition names Wake of
 -- Ashes, or the reverse), so two spells match when they share a base spell.
 function platform:IsAssistedSpellMatch(spell, suggestion)
-    if not spellID(spell) or not spellID(suggestion) then return nil, 'invalid-spell' end
-    if spell == suggestion then return true end
+    if not spellID(spell) or not spellID(suggestion) then
+        return nil, 'invalid-spell'
+    end
+    if spell == suggestion then
+        return true
+    end
+
     local suggestedBase, suggestedWhy = relation(self, 'GetBaseSpell', suggestion)
-    if suggestedBase == spell then return true end
+
+    if suggestedBase == spell then
+        return true
+    end
+
     local chosenBase, chosenWhy = relation(self, 'GetBaseSpell', spell)
-    if chosenBase and (chosenBase == suggestion or chosenBase == suggestedBase) then return true end
-    if suggestedWhy == 'restricted-value' or chosenWhy == 'restricted-value' then return nil, 'restricted-value' end
+
+    if chosenBase and (chosenBase == suggestion or chosenBase == suggestedBase) then
+        return true
+    end
+    if suggestedWhy == 'restricted-value' or chosenWhy == 'restricted-value' then
+        return nil, 'restricted-value'
+    end
+
     return false
 end
 
@@ -167,9 +271,16 @@ local rotationSet, rotationDirty, rotationWatcher = {}, true, nil
 -- Creates, once, the event frame that marks the cached rotation set stale. Returns the frame, or false when no frame
 -- could be made or no event registered; the caller then rereads on every call instead of trusting the cache.
 local function watchRotationSet()
-    if rotationWatcher ~= nil then return rotationWatcher end
+    if rotationWatcher ~= nil then
+        return rotationWatcher
+    end
+
     rotationWatcher = false
-    if type(CreateFrame) ~= 'function' then return false end
+
+    if type(CreateFrame) ~= 'function' then
+        return false
+    end
+
     local ok, frame = pcall(CreateFrame, 'Frame')
 
     if
@@ -181,14 +292,22 @@ local function watchRotationSet()
         return false
     end
 
-    frame:SetScript('OnEvent', function() rotationDirty = true end)
+    frame:SetScript('OnEvent', function()
+        rotationDirty = true
+    end)
+
     local watching = false
 
     for _, event in ipairs({ 'SPELLS_CHANGED', 'PLAYER_SPECIALIZATION_CHANGED' }) do
-        if pcall(frame.RegisterEvent, frame, event) then watching = true end
+        if pcall(frame.RegisterEvent, frame, event) then
+            watching = true
+        end
     end
 
-    if watching then rotationWatcher = frame end
+    if watching then
+        rotationWatcher = frame
+    end
+
     return rotationWatcher
 end
 
@@ -199,11 +318,22 @@ local function rotationMembership(self)
 
     if rotationDirty or not watched then
         local fn = method('GetRotationSpells')
-        if not fn then return nil, 'missing-api' end
+
+        if not fn then
+            return nil, 'missing-api'
+        end
+
         local ok, spells = pcall(fn)
-        if not ok then return nil, 'api-error' end
-        if not self:CanReadValue(spells) then return nil, 'restricted-value' end
-        if type(spells) ~= 'table' then return nil, 'invalid-api-result' end
+
+        if not ok then
+            return nil, 'api-error'
+        end
+        if not self:CanReadValue(spells) then
+            return nil, 'restricted-value'
+        end
+        if type(spells) ~= 'table' then
+            return nil, 'invalid-api-result'
+        end
 
         for spell in pairs(rotationSet) do
             rotationSet[spell] = nil
@@ -236,18 +366,43 @@ end
 -- base spell count too (Wake of Ashes while Hammer of Light is listed, or the
 -- reverse). Unavailable when Assisted Combat is not offered here.
 function platform:IsAssistedRotationSpell(spell)
-    if not spellID(spell) then return nil, 'invalid-spell' end
+    if not spellID(spell) then
+        return nil, 'invalid-spell'
+    end
+
     local available, why = self:GetAssistedCombatAvailability()
-    if available == false then return nil, 'assisted-unavailable' end
-    if available == nil and why ~= 'missing-api' then return nil, why end
+
+    if available == false then
+        return nil, 'assisted-unavailable'
+    end
+    if available == nil and why ~= 'missing-api' then
+        return nil, why
+    end
+
     local set, reason = rotationMembership(self)
-    if not set then return nil, reason end
-    if set[spell] then return true end
+
+    if not set then
+        return nil, reason
+    end
+    if set[spell] then
+        return true
+    end
+
     local override, overrideWhy = relation(self, 'GetOverrideSpell', spell)
-    if override and set[override] then return true end
+
+    if override and set[override] then
+        return true
+    end
+
     local base, baseWhy = relation(self, 'GetBaseSpell', spell)
-    if base and set[base] then return true end
-    if overrideWhy == 'restricted-value' or baseWhy == 'restricted-value' then return nil, 'restricted-value' end
+
+    if base and set[base] then
+        return true
+    end
+    if overrideWhy == 'restricted-value' or baseWhy == 'restricted-value' then
+        return nil, 'restricted-value'
+    end
+
     return false
 end
 
@@ -271,20 +426,41 @@ platform.ASSISTED_HIGHLIGHT_CVAR = HIGHLIGHT_CVAR
 -- Returns C_CVar[name] or the legacy global of the same name, or nil when neither exists.
 local function cvarFunction(name)
     local namespace = C_CVar
-    if type(namespace) == 'table' and type(namespace[name]) == 'function' then return namespace[name] end
+
+    if type(namespace) == 'table' and type(namespace[name]) == 'function' then
+        return namespace[name]
+    end
+
     local legacy = _G[name]
-    if type(legacy) == 'function' then return legacy end
+
+    if type(legacy) == 'function' then
+        return legacy
+    end
 end
 
 -- The CVar's raw value ("0" or "1"), or nil plus a reason.
 function platform:GetAssistedHighlightCVar()
     local get = cvarFunction('GetCVar')
-    if not get then return nil, 'missing-api' end
+
+    if not get then
+        return nil, 'missing-api'
+    end
+
     local ok, value = pcall(get, HIGHLIGHT_CVAR)
-    if not ok then return nil, 'api-error' end
-    if not self:CanReadValue(value) then return nil, 'restricted-value' end
-    if value == nil then return nil, 'missing-cvar' end
-    if type(value) ~= 'string' and type(value) ~= 'number' then return nil, 'invalid-api-result' end
+
+    if not ok then
+        return nil, 'api-error'
+    end
+    if not self:CanReadValue(value) then
+        return nil, 'restricted-value'
+    end
+    if value == nil then
+        return nil, 'missing-cvar'
+    end
+    if type(value) ~= 'string' and type(value) ~= 'number' then
+        return nil, 'invalid-api-result'
+    end
+
     return tostring(value)
 end
 
@@ -293,26 +469,48 @@ end
 -- unavailable for the current specialization is a separate, changing fact
 -- (GetAssistedCombatAvailability).
 function platform:GetAssistedHighlightSupport()
-    if type(C_AssistedCombat) ~= 'table' or not method('GetNextCastSpell') then return nil, 'missing-api' end
-    if not cvarFunction('SetCVar') then return nil, 'missing-api' end
+    if type(C_AssistedCombat) ~= 'table' or not method('GetNextCastSpell') then
+        return nil, 'missing-api'
+    end
+    if not cvarFunction('SetCVar') then
+        return nil, 'missing-api'
+    end
+
     local value, why = self:GetAssistedHighlightCVar()
-    if value == nil then return nil, why end
-    if type(AssistedCombatManager) ~= 'table' then return nil, 'missing-highlighter' end
+
+    if value == nil then
+        return nil, why
+    end
+    if type(AssistedCombatManager) ~= 'table' then
+        return nil, 'missing-highlighter'
+    end
+
     return true
 end
 
 -- Writes the CVar, outside combat only (never from protected-state code),
 -- and reads it back. Returns the value now in effect, or nil plus a reason.
 function platform:SetAssistedHighlightCVar(value)
-    if type(value) ~= 'string' then return nil, 'invalid-value' end
+    if type(value) ~= 'string' then
+        return nil, 'invalid-value'
+    end
 
     if type(InCombatLockdown) == 'function' then
         local ok, locked = pcall(InCombatLockdown)
-        if not ok or locked ~= false and locked ~= nil then return nil, 'combat-lockdown' end
+
+        if not ok or locked ~= false and locked ~= nil then
+            return nil, 'combat-lockdown'
+        end
     end
 
     local set = cvarFunction('SetCVar')
-    if not set then return nil, 'missing-api' end
-    if not pcall(set, HIGHLIGHT_CVAR, value) then return nil, 'api-error' end
+
+    if not set then
+        return nil, 'missing-api'
+    end
+    if not pcall(set, HIGHLIGHT_CVAR, value) then
+        return nil, 'api-error'
+    end
+
     return self:GetAssistedHighlightCVar()
 end

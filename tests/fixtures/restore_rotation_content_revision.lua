@@ -1,6 +1,7 @@
 -- Exact whole-module inverse for the persisted rotation revision slice (61ad6ad).
-local rows={
- ['Data/validation.lua']={old=[======[local _, addon = ...
+local rows = {
+    ['Data/validation.lua'] = {
+        old = [======[local _, addon = ...
 local data = addon.RotationData
 
 local families = {retail=true, era=true, progression=true, tbc=true, forever=true}
@@ -314,7 +315,8 @@ end
 function data.ValidateBody(body,options)
     return validate({body=body},options,true)
 end
-]======],current=[======[local _, addon = ...
+]======],
+        current = [======[local _, addon = ...
 local data = addon.RotationData
 
 local families = {retail=true, era=true, progression=true, tbc=true, forever=true}
@@ -629,8 +631,10 @@ end
 function data.ValidateBody(body,options)
     return validate({body=body},options,true)
 end
-]======]},
- ['Data/diff.lua']={old=[======[local _, addon = ...
+]======],
+    },
+    ['Data/diff.lua'] = {
+        old = [======[local _, addon = ...
 local data = addon.RotationData
 
 local function failure(code, path)
@@ -859,7 +863,8 @@ function data.CompareClone(clone, source)
     end
     return result
 end
-]======],current=[======[local _, addon = ...
+]======],
+        current = [======[local _, addon = ...
 local data = addon.RotationData
 
 local function failure(code, path)
@@ -1089,8 +1094,10 @@ function data.CompareClone(clone, source)
     end
     return result
 end
-]======]},
- ['Data/catalog.lua']={old=[======[local _, addon = ...
+]======],
+    },
+    ['Data/catalog.lua'] = {
+        old = [======[local _, addon = ...
 local data = addon.RotationData
 
 local function id(value)
@@ -1360,7 +1367,8 @@ function data.NewCatalog(options)
     end
     return catalog
 end
-]======],current=[======[local _, addon = ...
+]======],
+        current = [======[local _, addon = ...
 local data = addon.RotationData
 
 local function id(value)
@@ -1707,8 +1715,10 @@ function data.NewCatalog(options)
     end
     return catalog
 end
-]======]},
- ['Core/rotation_scope.lua']={old=[======[local addon_name,addon=...
+]======],
+    },
+    ['Core/rotation_scope.lua'] = {
+        old = [======[local addon_name,addon=...
 local data=addon.RotationData
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof
@@ -2396,7 +2406,8 @@ do
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]======],current=[======[local addon_name,addon=...
+]======],
+        current = [======[local addon_name,addon=...
 local data=addon.RotationData
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof
@@ -3109,8 +3120,10 @@ do
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]======]},
- ['Core/rotation_library.lua']={old=[======[local addon_name, addon = ...
+]======],
+    },
+    ['Core/rotation_library.lua'] = {
+        old = [======[local addon_name, addon = ...
 local data = addon.RotationData
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
@@ -3759,7 +3772,8 @@ do
  if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]======],current=[======[local addon_name, addon = ...
+]======],
+        current = [======[local addon_name, addon = ...
 local data = addon.RotationData
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
@@ -4417,8 +4431,10 @@ do
  if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
-]======]},
- ['Core/rotation_workspace.lua']={old=[======[local _,addon=...
+]======],
+    },
+    ['Core/rotation_workspace.lua'] = {
+        old = [======[local _,addon=...
 local data=addon.RotationData
 local profiles={}
 local function equal(a,b)
@@ -4650,7 +4666,8 @@ function addon:ListPendingRotationDrafts(spec)
     end
     return result
 end
-]======],current=[======[local _,addon=...
+]======],
+        current = [======[local _,addon=...
 local data=addon.RotationData
 local profiles={}
 local function equal(a,b)
@@ -4882,8 +4899,10 @@ function addon:ListPendingRotationDrafts(spec)
     end
     return result
 end
-]======]},
- ['Core/rotation_editor.lua']={old=[======[local _,addon=...
+]======],
+    },
+    ['Core/rotation_editor.lua'] = {
+        old = [======[local _,addon=...
 local data=addon.RotationData
 
 local function equal(left,right)
@@ -5029,7 +5048,8 @@ function addon:NewRotationEditSession(spec,original,options)
     end
     return session
 end
-]======],current=[======[local _,addon=...
+]======],
+        current = [======[local _,addon=...
 local data=addon.RotationData
 
 local function equal(left,right)
@@ -5187,8 +5207,10 @@ function addon:NewRotationEditSession(spec,original,options)
     end
     return session
 end
-]======]},
- ['Core/imports.lua']={old=[======[local _,addon=...
+]======],
+    },
+    ['Core/imports.lua'] = {
+        old = [======[local _,addon=...
 local data=addon.RotationData
 local function plain(value) return type(value)=="table" and getmetatable(value)==nil end
 local function settings(self)
@@ -5364,7 +5386,8 @@ function addon:GetRotationExportData(spec,id)
     if reason~="not-imported" then return nil,reason end
     return data.CopyData(self:GetEditableRotation(spec,id))
 end
-]======],current=[======[local _,addon=...
+]======],
+        current = [======[local _,addon=...
 local data=addon.RotationData
 local function plain(value) return type(value)=="table" and getmetatable(value)==nil end
 local function settings(self)
@@ -5548,8 +5571,10 @@ function addon:GetRotationExportData(spec,id)
     if reason~="not-imported" then return nil,reason end
     return data.CopyData(self:GetEditableRotation(spec,id))
 end
-]======]},
- ['validate.lua']={old=[======[local addon_name, addon = ...
+]======],
+    },
+    ['validate.lua'] = {
+        old = [======[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -6350,7 +6375,8 @@ function addon:validate(template, fix)
         end
     end
 end
-]======],current=[======[local addon_name, addon = ...
+]======],
+        current = [======[local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -7152,10 +7178,13 @@ function addon:validate(template, fix)
         end
     end
 end
-]======]},
+]======],
+    },
 }
-return function(text,path)
- local row=rows[path];assert(row,'unknown persistent-revision inverse path: '..tostring(path))
- assert(text==row.current,'unrelated persistent-revision source delta: '..path)
- return row.old
+
+return function(text, path)
+    local row = rows[path]
+    assert(row, 'unknown persistent-revision inverse path: ' .. tostring(path))
+    assert(text == row.current, 'unrelated persistent-revision source delta: ' .. path)
+    return row.old
 end
