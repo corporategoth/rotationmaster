@@ -13,7 +13,9 @@ end
 
 local L = LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
--- Returns the text when it has a visible character and at most 50 characters, else nil (a usable profile name).
+-- Returns the text when it is a usable profile name.
+-- @param text string  The typed name.
+-- @return string|nil  The text when it has a visible character and at most 50 characters; otherwise nil.
 local function nonempty(text)
     if text:find('%S') and #text <= 50 then
         return text
@@ -24,9 +26,10 @@ end
 -- Profiles page
 -- ============================================================================
 
--- Builds the Profiles page into the settings form `p`: roster of profiles, the footer (new, duplicate, import/export,
+-- Builds the Profiles page into the settings form: roster of profiles, the footer (new, duplicate, import/export,
 -- compare), the creation form, and the actions for the selected profile. State lives on `p` (selection, creating,
 -- newProfileName, profileSource, importProfile) and survives redraws.
+-- @param p table  The settings form pane.
 function addon:BuildProfileSettings(p)
     local db = self.db
     local current = db:GetCurrentProfile()
@@ -43,8 +46,10 @@ function addon:BuildProfileSettings(p)
         p.selection = current
     end
 
-    -- Copies an imported profile over `destination` field by field; the color, minimap and preview_window tables merge
+    -- Copies an imported profile over a destination field by field; the color, minimap and preview_window tables merge
     -- into the existing tables so defaults the import lacks survive, every other key is replaced by a copy.
+    -- @param destination table  The profile table to write into.
+    -- @param incoming table  The imported profile.
     local function overlay(destination, incoming)
         for key, value in pairs(incoming) do
             if
@@ -61,15 +66,20 @@ function addon:BuildProfileSettings(p)
         end
     end
 
-    -- The live profile table for `name` (the active profile is db.profile, others live in db.profiles).
+    -- Returns the live profile table for a name (the active profile is db.profile, others live in db.profiles).
+    -- @param name string  The profile name.
+    -- @return table|nil  The profile table; nil when there is no such profile.
     local function saved(name)
         return name == db:GetCurrentProfile() and db.profile or db.profiles[name]
     end
 
     -- Runs a profile operation on the database (SetProfile, CopyProfile, ResetProfile) safely. The rotation is switched
     -- off for the duration, dependency caches are invalidated and the rotation is rebuilt even when the operation
-    -- fails, so the engine never keeps state from the old profile. `after` runs inside the protected call. Returns
-    -- true after redrawing, or false with the error shown as a message.
+    -- fails, so the engine never keeps state from the old profile.
+    -- @param operation string  The AceDB method name ('SetProfile', 'CopyProfile' or 'ResetProfile').
+    -- @param name string|nil  The profile name passed to the operation.
+    -- @param after function|nil  Runs inside the protected call after the operation.
+    -- @return boolean  True after redrawing; false with the error shown as a message.
     local function change(operation, name, after)
         if self.DisableRotation then
             self:DisableRotation()
@@ -165,6 +175,9 @@ function addon:BuildProfileSettings(p)
             key = 'transfer',
             text = L['Import/Export'],
             icon = 'transfer',
+            -- Opens the import/export dialog for the selected profile, encoded as an 'RM-Profile' wrapper. The import
+            -- callback validates the pasted profile through the migration planner, then replaces the selected profile
+            -- (refused if it changed while the dialog was open) or prepares a new profile with the chosen name.
             action = function()
                 local codec = self:NewRotationCodec()
                 local text, why = '', nil
@@ -392,6 +405,8 @@ function addon:BuildProfileSettings(p)
             p.newProfileName = text
         end)
 
+        -- Creation form handlers: Apply creates the profile (a copy of the source, an import, or a blank one) and
+        -- switches to it and back through the safe profile change; Cancel closes the form.
         p:CreationActions(function()
             local name = nonempty(p.newProfileName or '')
 
@@ -526,12 +541,15 @@ end
 -- About page
 -- ============================================================================
 
--- Builds the About page into the settings form `p`: version, author, credits and the project links read from the TOC
+-- Builds the About page into the settings form: version, author, credits and the project links read from the TOC
 -- metadata. The link boxes revert any edit so they can be selected and copied but never changed.
+-- @param p table  The settings form pane.
 function addon:BuildAboutSettings(p)
     local getter = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
 
-    -- A non-empty TOC metadata string for `key`, or nil (a missing or failing API counts as absent).
+    -- Returns a TOC metadata string (a missing or failing API counts as absent).
+    -- @param key string  The TOC field name.
+    -- @return string|nil  The value; nil when missing or empty.
     local function meta(key)
         if type(getter) == 'function' then
             local ok, value = pcall(getter, addon_name, key)

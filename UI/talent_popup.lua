@@ -32,17 +32,23 @@ local QUESTION = 'Interface\\Icons\\INV_Misc_QuestionMark'
 -- Helpers
 -- ============================================================================
 
--- True when the client lets addons read `value` (restricted clients return secret values in combat).
+-- Tells whether the client lets addons read a value (restricted clients return secret values in combat).
+-- @param value any  The value to test.
+-- @return boolean  True when the value is readable.
 local function readable(value)
     return platform:CanReadValue(value)
 end
 
--- True for a readable positive whole number in the range of a trait id (node, entry, spell).
+-- Tells whether a value is a readable positive whole number in the range of a trait id (node, entry, spell).
+-- @param value any  The value to test.
+-- @return boolean  True for a valid trait id.
 local function traitID(value)
     return readable(value) and type(value) == 'number' and value > 0 and value < 2147483648 and value % 1 == 0
 end
 
--- Runs outside the click that asked for it (Blizzard's button handler).
+-- Runs a function outside the click that asked for it (Blizzard's button handler): on the next frame when C_Timer
+-- exists, otherwise at once.
+-- @param fn function  The function to run.
 local function after(fn)
     if C_Timer and type(C_Timer.After) == 'function' then
         C_Timer.After(0, fn)
@@ -51,7 +57,10 @@ local function after(fn)
     end
 end
 
--- Player-facing text for a failure code from a provider; unknown codes get the generic "use the Talent list" text.
+-- Returns the player-facing text for a failure code from a provider; unknown codes get the generic "use the Talent
+-- list" text.
+-- @param why string|nil  The failure code.
+-- @return string  The localized text.
 local function reasonText(why)
     if why == 'in-combat' then
         return L['The talent tree cannot be shown during combat.']
@@ -66,8 +75,12 @@ local function reasonText(why)
     return L['The talent tree cannot be shown right now. Use the Talent list instead.']
 end
 
--- Calls a method of a Blizzard object under pcall and returns its result only when it is readable; a missing method,
--- an error or a secret value all give nil, so a changed Blizzard frame degrades to "unavailable" instead of erroring.
+-- Calls a method of a Blizzard object under pcall and returns its result only when it is readable; a missing method, an
+-- error or a secret value all give nil, so a changed Blizzard frame degrades to "unavailable" instead of erroring.
+-- @param object any  The Blizzard object.
+-- @param method string  The method name.
+-- @param ... any  The arguments passed after the object.
+-- @return any  The method's result; nil when missing, failing or unreadable.
 local function field(object, method, ...)
     if type(object) ~= 'table' or type(object[method]) ~= 'function' then
         return nil
@@ -87,6 +100,7 @@ end
 local endSession
 
 -- Returns the one shared window, creating it on first use. Hiding it ends the session (endSession).
+-- @return table  The window record.
 local function getWindow()
     local d = addon.talentTreeWindow
 
@@ -146,7 +160,9 @@ local function getWindow()
     return d
 end
 
--- Shows or hides a region according to `flag`.
+-- Shows or hides a region according to a flag.
+-- @param region table  The region.
+-- @param flag any  Truthy shows it.
 local function visible(region, flag)
     if flag then
         region:Show()
@@ -155,7 +171,13 @@ local function visible(region, flag)
     end
 end
 
--- Returns the pooled switcher button at `index` of `list` (creating it), set to `text` and `width` and shown.
+-- Returns the pooled switcher button at an index of a list (creating it), set to the text and width and shown.
+-- @param list table  The pool of buttons.
+-- @param d table  The window record.
+-- @param index number  The position in the pool.
+-- @param text string  The button text.
+-- @param width number  The button width.
+-- @return table  The button.
 local function bar(list, d, index, text, width)
     local button = list[index]
 
@@ -170,8 +192,9 @@ local function bar(list, d, index, text, width)
     return button
 end
 
--- Places the switchers, the status line and (drawn tree) the canvas for the
--- provider in use, and sizes the window to fit.
+-- Places the switchers, the status line and (drawn tree) the canvas for the provider in use, and sizes the window to
+-- fit.
+-- @param d table  The window record.
 local function layout(d)
     local frame, handle = d.frame, d.handle
     local width = 760
@@ -269,6 +292,7 @@ local function layout(d)
 end
 
 -- Writes the status line: the failure reason, or the click hint with the current selection's name, or nothing.
+-- @param d table  The window record.
 local function showStatus(d)
     local text
 
@@ -288,14 +312,17 @@ local function showStatus(d)
     d.status:SetText(text)
 end
 
--- The context a provider receives (Platform/talent_tree.lua).
--- It is bound to the session's serial, so a click or close from a provider that outlived its session is ignored.
+-- Builds the context a provider receives (Platform/talent_tree.lua). It is bound to the session's serial, so a click or
+-- close from a provider that outlived its session is ignored.
+-- @param d table  The window record.
+-- @return table  The context { spec, hero, selection, specs, window, onSelect, onClose }.
 local function context(d)
     local request, serial = d.request, d.serial
     local ctx = { spec = d.spec, hero = d.hero, selection = request.selection, specs = request.specs, window = d }
 
     -- A talent was chosen (or `false` to clear it). Only the first choice of a session counts; the callback and the
     -- window close are deferred out of the click.
+    -- @param selection table|boolean  The chosen { node, entry, spell, name, icon }, or false to clear.
     function ctx.onSelect(selection)
         if d.serial ~= serial or not d.frame:IsShown() or d.chosen then
             return
@@ -320,7 +347,7 @@ local function context(d)
         end)
     end
 
-    -- The provider's own window closed (for example by Escape): close this window too.
+    -- Handles the provider's own window closing (for example by Escape): closes this window too.
     function ctx.onClose()
         if d.serial == serial and d.frame:IsShown() then
             d.frame:Hide()
@@ -332,6 +359,7 @@ end
 
 -- Asks the active provider to redraw for the current spec and hero tree, records why it could not (d.failure), and
 -- refreshes the strip and the status line.
+-- @param d table  The window record.
 local function reload(d)
     if not d.handle then
         return
@@ -352,6 +380,7 @@ end
 
 -- Ends the session when the window hides: bumps the serial so stale provider callbacks die, closes the provider (which
 -- gives Blizzard's window back as it was), clears the drawn slots and the tooltip, and tells the requester.
+-- @param d table  The window record.
 function endSession(d)
     local handle, request = d.handle, d.request
     d.handle = nil
@@ -376,8 +405,10 @@ function endSession(d)
     end
 end
 
--- Opens the first provider (by priority) that can show a tree for this client. Returns true on success; otherwise
--- keeps the first failure reason for the status line and returns false.
+-- Opens the first provider (by priority) that can show a tree for this client. When none can, keeps the first failure
+-- reason for the status line.
+-- @param d table  The window record.
+-- @return boolean  True on success; false otherwise.
 local function start(d)
     d.frame:ClearAllPoints()
     d.frame:SetPoint('TOP', UIParent, 'TOP', 0, -40)
@@ -403,10 +434,12 @@ local function start(d)
     return false
 end
 
--- request = { owner (any table, to tell whose tree this is), spec, hero, selection={node,entry,spell}, selectionName, name,
---   specs={{id,name,icon}}, onSelect(selection), onSpec(spec), onClose() }
--- Opens the window for `request` (replacing any tree already open) and returns it; nil for a malformed request.
--- The window opens above the owner through the window registry.
+-- Opens the window for a request (replacing any tree already open). The window opens above the owner through the window
+-- registry.
+-- @param request table  { owner (any table, to tell whose tree this is), spec, hero, selection = { node, entry, spell
+--   },
+-- selectionName, name, specs = { { id, name, icon } }, onSelect(selection), onSpec(spec), onClose() }.
+-- @return table|nil  The window record; nil for a malformed request.
 function addon:OpenTalentTree(request)
     if type(request) ~= 'table' then
         return nil
@@ -424,7 +457,8 @@ function addon:OpenTalentTree(request)
     d.serial = d.serial + 1
     d.chosen = nil
 
-    -- A specialization button was clicked: switch the tree, telling the requester so its own spec field follows.
+    -- Handles a specialization button click: switches the tree, telling the requester so its own spec field follows.
+    -- @param spec number  The specialization id.
     function d.OnSpec(spec)
         if not d.request or d.handle and d.handle.spec == spec then
             return
@@ -439,7 +473,8 @@ function addon:OpenTalentTree(request)
         reload(d)
     end
 
-    -- A hero tree button was clicked: show that hero tree.
+    -- Handles a hero tree button click: shows that hero tree.
+    -- @param hero number  The hero tree id.
     function d.OnHero(hero)
         if not d.request then
             return
@@ -456,7 +491,8 @@ function addon:OpenTalentTree(request)
     return d
 end
 
--- Closes the tree window, but only when it belongs to `owner` (any window when `owner` is nil).
+-- Closes the tree window, but only when it belongs to the owner.
+-- @param owner table|nil  The requester's owner; nil closes any tree window.
 function addon:CloseTalentTree(owner)
     local d = addon.talentTreeWindow
 
@@ -465,8 +501,11 @@ function addon:CloseTalentTree(owner)
     end
 end
 
--- The condition's talent changed elsewhere (the Talent list): follow it.
--- Ignored unless the open tree belongs to `owner`.
+-- Follows a change of the condition's talent made elsewhere (the Talent list). Ignored unless the open tree belongs to
+-- the owner.
+-- @param owner table  The requester's owner.
+-- @param selection table|nil  The new selection { node, entry, spell }.
+-- @param name string|nil  The selection's name.
 function addon:RefreshTalentTree(owner, selection, name)
     local d = addon.talentTreeWindow
 
@@ -486,6 +525,8 @@ local A  -- the one session
 
 -- Returns Blizzard's PlayerSpellsFrame and its TalentsFrame (loading the UI when needed), or nil when the frame is
 -- missing or lacks any method this provider calls. The method check is the guard against a Blizzard UI change.
+-- @return table|nil  The PlayerSpellsFrame.
+-- @return table|nil  Its TalentsFrame.
 local function blizzardFrame()
     local frame = rawget(_G, 'PlayerSpellsFrame')
 
@@ -526,6 +567,7 @@ end
 local ring, watcher
 
 -- Returns the gold ring frame that marks the selected talent in Blizzard's window, creating it once.
+-- @return table  The ring frame.
 local function ringFrame()
     if ring then
         return ring
@@ -561,6 +603,8 @@ local function ringFrame()
 end
 
 -- Turns Blizzard's own glow on a talent button on or off, if the button has one.
+-- @param button any  The talent button.
+-- @param flag boolean  True turns the glow on.
 local function glow(button, flag)
     if type(button) == 'table' and type(button.SetGlowing) == 'function' then
         pcall(button.SetGlowing, button, flag)
@@ -597,9 +641,11 @@ local function placeRing()
     end
 end
 
--- What a clicked talent button stands for: node, the chosen entry of a choice
--- node, and the spell. Blizzard's choice entries answer for their base button.
--- Returns { node, entry, spell }, or nil for anything that is not a plain talent of this session's frame (a hero
+-- Works out what a clicked talent button stands for: node, the chosen entry of a choice node, and the spell. Blizzard's
+-- choice entries answer for their base button.
+-- @param button any  The clicked talent button.
+-- @return table|nil  { node, entry, spell }; nil for anything that is not a plain talent of this session's frame (a
+--   hero
 -- subtree selector, a button of another talent frame, an unreadable value).
 local function identify(button)
     if type(button) ~= 'table' then
@@ -632,8 +678,12 @@ local function identify(button)
     return { node = node, entry = kind == SELECTION and entry or nil, spell = spell }
 end
 
--- EventRegistry "TalentButton.OnClick" handler: a left click on a talent of our session becomes the selection. The
--- identify call is under pcall so a Blizzard change cannot raise an error inside Blizzard's own click handler.
+-- Handles the EventRegistry "TalentButton.OnClick" callback: a left click on a talent of our session becomes the
+-- selection. The identify call is under pcall so a Blizzard change cannot raise an error inside Blizzard's own click
+-- handler.
+-- @param _ any  Unused (the registry's owner).
+-- @param button any  The clicked talent button.
+-- @param mouse string  The mouse button.
 local function onTalentClick(_, button, mouse)
     if not A or A.closing or mouse ~= 'LeftButton' then
         return
@@ -656,7 +706,7 @@ end
 
 local closeBlizzard
 
--- Blizzard's window was closed by the player: ends our session without closing it a second time.
+-- Handles Blizzard's window being closed by the player: ends our session without closing it a second time.
 local function onWindowClosed()
     if not A or A.closing then
         return
@@ -668,7 +718,8 @@ local function onWindowClosed()
     ctx.onClose()
 end
 
--- Returns Blizzard's EventRegistry when it has the callback methods this provider needs, otherwise nil.
+-- Returns Blizzard's EventRegistry when it has the callback methods this provider needs.
+-- @return table|nil  The registry; nil otherwise.
 local function registry()
     local events = rawget(_G, 'EventRegistry')
 
@@ -681,8 +732,11 @@ local function registry()
     end
 end
 
--- Puts Blizzard's talent window in view mode for the wanted spec and hero tree and places our control strip above it.
--- Returns true, or nil and a failure code. A loadout string the client refuses falls back stepwise (see attempts).
+-- Puts Blizzard's talent window in view mode for the wanted spec and hero tree and places our control strip above it. A
+-- loadout string the client refuses falls back stepwise (see attempts).
+-- @param ctx table  The provider context.
+-- @return boolean|nil  True on success; nil on failure.
+-- @return string|nil  The failure code when the first value is nil.
 local function showBlizzard(ctx)
     local frame, talents = A.frame, A.talents
     local view, why = platform:GetTraitView(ctx.spec, { ignoreInspect = true })
@@ -773,8 +827,8 @@ local function showBlizzard(ctx)
     return true
 end
 
--- Ends the Blizzard session and restores Blizzard's window as it was found: callbacks removed, ring and glow gone,
--- view mode left, strata and level put back, the old tab selected and the window hidden again if we opened it.
+-- Ends the Blizzard session and restores Blizzard's window as it was found: callbacks removed, ring and glow gone, view
+-- mode left, strata and level put back, the old tab selected and the window hidden again if we opened it.
 function closeBlizzard()
     local session = A
 
@@ -836,11 +890,13 @@ end
 
 local blizzard = { families = { retail = true, forever = true }, priority = 10 }
 
--- Opt-in only: in the first real-client test Blizzard's view showed the player's own
--- purchased talents, greyed every row it counted as locked and gave no usable click
--- (docs/talent-selector.md section 3). Turn it on with
---   /run RotationMaster.db.global.talent_popup_provider='blizzard'
--- Provider availability: true only when the opt-in setting above is on and Blizzard's window and event registry exist.
+-- Tells whether the provider is available: true only when the opt-in setting is on and Blizzard's window and event
+-- registry exist.
+-- @return boolean  True when the provider can be used.
+--
+-- Opt-in only: in the first real-client test Blizzard's view showed the player's own purchased talents, greyed every
+-- row it counted as locked and gave no usable click (docs/talent-selector.md section 3). Turn it on with /run
+-- RotationMaster.db.global.talent_popup_provider='blizzard'
 function blizzard.available()
     local db = addon.db
     local choice = db and db.global and db.global.talent_popup_provider
@@ -852,8 +908,11 @@ function blizzard.available()
         and registry() ~= nil
 end
 
--- Provider open: starts a session on Blizzard's window and returns a handle (heroes, spec, hero, Reload, Close), or
--- nil and a failure code (in combat, window busy with someone else's build or staged changes, unavailable).
+-- Provider open: starts a session on Blizzard's window.
+-- @param ctx table  The provider context.
+-- @return table|nil  A handle { heroes, spec, hero, Reload, Close }.
+-- @return string|nil  A failure code when the handle is nil (in combat, window busy with someone else's build or staged
+-- changes, unavailable).
 function blizzard.open(ctx)
     if type(InCombatLockdown) == 'function' and InCombatLockdown() then
         return nil, 'in-combat'
@@ -923,7 +982,11 @@ function blizzard.open(ctx)
         handle.heroes, handle.spec, handle.hero = A.view.heroes, A.view.spec, A.heroID
     end
 
-    -- Redraws Blizzard's window for a new context; returns true, or nil and a failure code.
+    -- Redraws Blizzard's window for a new context.
+    -- @param _ any  Unused (the handle).
+    -- @param context table  The new provider context.
+    -- @return boolean|nil  True on success; nil on failure.
+    -- @return string|nil  The failure code when the first value is nil.
     function handle.Reload(_, context)
         if not A then
             return nil, 'talent-window-unavailable'
@@ -965,7 +1028,9 @@ platform:RegisterTalentTreeProvider('blizzard', blizzard)
 local NODE, HALF, GAP = 34, 24, 4
 local PANE_GAP = 1500  -- tenths of a pixel: the empty strip between the class and specialization trees
 
--- True when the client has an atlas of that name (the art differs by client version).
+-- Tells whether the client has an atlas of that name (the art differs by client version).
+-- @param name any  The atlas name.
+-- @return boolean  True when it exists.
 local function atlasExists(name)
     return type(name) == 'string'
         and C_Texture
@@ -973,7 +1038,10 @@ local function atlasExists(name)
         and C_Texture.GetAtlasInfo(name) ~= nil
 end
 
--- Sets an atlas on a texture when both exist; returns whether it was applied so callers can fall back to plain art.
+-- Sets an atlas on a texture when both exist.
+-- @param texture table  The texture.
+-- @param name string  The atlas name.
+-- @return boolean  Whether it was applied, so callers can fall back to plain art.
 local function setAtlas(texture, name)
     if type(texture.SetAtlas) == 'function' and atlasExists(name) then
         local ok = pcall(texture.SetAtlas, texture, name, false)
@@ -983,7 +1051,10 @@ local function setAtlas(texture, name)
     return false
 end
 
--- Square for an ability, circle for a passive (Blizzard's SpendSquare / SpendCircle entry types).
+-- Returns the slot shape for an entry type: square for an ability, circle for a passive (Blizzard's SpendSquare /
+-- SpendCircle entry types).
+-- @param entryType number|nil  The trait node entry type.
+-- @return string  'square' or 'circle'.
 local function shapeOf(entryType)
     local enum = rawget(_G, 'Enum')
     local kinds = type(enum) == 'table' and enum['TraitNodeEntryType'] or nil
@@ -996,6 +1067,11 @@ local function shapeOf(entryType)
 end
 
 -- Colors the four border edges of a slot (the plain-texture look and the selected ring).
+-- @param slot table  The talent slot.
+-- @param r number  Red, 0 to 1.
+-- @param g number  Green, 0 to 1.
+-- @param b number  Blue, 0 to 1.
+-- @param a number  Alpha, 0 to 1.
 local function setEdges(slot, r, g, b, a)
     for _, edge in ipairs(slot.edges) do
         edge:SetColorTexture(r, g, b, a)
@@ -1004,6 +1080,7 @@ end
 
 -- Paints a slot for its current selected and hovered state, with Blizzard's art when available and plain edges
 -- otherwise.
+-- @param slot table  The talent slot.
 local function paintSlot(slot)
     local selected = slot.selected
 
@@ -1038,8 +1115,11 @@ local function paintSlot(slot)
     end
 end
 
--- Creates the pooled talent button at `index`: icon, art, hover, border, rank text, the tooltip on hover and the
--- click that chooses it (or clears the choice when it is already selected). Slots are reused across redraws.
+-- Creates the pooled talent button at an index: icon, art, hover, border, rank text, the tooltip on hover and the click
+-- that chooses it (or clears the choice when it is already selected). Slots are reused across redraws.
+-- @param d table  The window record.
+-- @param index number  The pool position.
+-- @return table  The slot.
 local function newSlot(d, index)
     local slot = CreateFrame('Button', nil, d.content)
     slot:RegisterForClicks('LeftButtonUp')
@@ -1083,6 +1163,8 @@ local function newSlot(d, index)
     slot.rank = slot:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
     slot.rank:SetPoint('BOTTOMRIGHT', 3, -3)
 
+    -- Shows the talent's tooltip (spell, ranks, choice note) and a click hint, and paints the hovered look.
+    -- @param self table  The slot.
     addon:SetUIScript(slot, 'OnEnter', function(self)
         self.hovered = true
         paintSlot(self)
@@ -1125,6 +1207,8 @@ local function newSlot(d, index)
         end
     end)
 
+    -- Chooses the talent through the context (clicking the chosen talent again clears the choice).
+    -- @param self table  The slot.
     addon:SetUIScript(slot, 'OnClick', function(self)
         local data = self.data
 
@@ -1150,7 +1234,10 @@ local function newSlot(d, index)
     return slot
 end
 
--- Sizes and art for one entry: full size for a talent, half size for either of a choice's two.
+-- Sizes a slot and chooses its art: full size for a talent, half size for either of a choice's two.
+-- @param slot table  The talent slot.
+-- @param size number  The slot size.
+-- @param shape string  'square' or 'circle'.
 local function styleSlot(slot, size, shape)
     slot:SetSize(size, size)
 
@@ -1189,12 +1276,16 @@ end
 
 local drawn = { families = { retail = true, forever = true }, priority = 50 }
 
--- Provider availability: whether the client lets addons read the trait tree.
+-- Tells whether the client lets addons read the trait tree.
+-- @return boolean  True when the drawn provider can be used.
 function drawn.available()
     return platform:CanReadTraitTree()
 end
 
--- Returns the pooled pane title font string at `index`, creating it.
+-- Returns the pooled pane title font string at an index, creating it.
+-- @param d table  The window record.
+-- @param index number  The pool position.
+-- @return table  The font string.
 local function label(d, index)
     local text = d.paneLabels[index]
 
@@ -1206,9 +1297,11 @@ local function label(d, index)
     return text
 end
 
--- The class, hero and specialization panes: hero nodes are their own pane, and the
--- others split at the widest empty strip (the class tree on the left, the specialization's on the right).
--- Returns a list of { kind, x } with the horizontal center of each pane for its title.
+-- Splits the shown nodes into the class, hero and specialization panes: hero nodes are their own pane, and the others
+-- split at the widest empty strip (the class tree on the left, the specialization's on the right).
+-- @param nodes table[]  The shown nodes.
+-- @param hero number|nil  The hero tree being shown.
+-- @return table[]  The panes, each { kind, x } with the horizontal center of each pane for its title.
 local function panes(nodes, hero)
     local result = {}
     local plain, heroNodes = {}, {}
@@ -1232,7 +1325,9 @@ local function panes(nodes, hero)
         end
     end
 
-    -- Adds a pane record centered on the nodes in `list`, if there are any.
+    -- Adds a pane record centered on the nodes in a list, if there are any.
+    -- @param list table[]  The nodes.
+    -- @param kind string  'class', 'spec', 'tree' or 'hero'.
     local function box(list, kind)
         if #list == 0 then
             return
@@ -1269,9 +1364,12 @@ local function panes(nodes, hero)
     return result
 end
 
--- Draws the tree for ctx.spec and the chosen hero tree into the canvas, scaled to fit: pooled talent slots, pane
--- titles and the faint requirement lines. Returns the view and the hero id shown, or nil and a failure code when
--- the client cannot give a tree.
+-- Draws the tree for the context's spec and the chosen hero tree into the canvas, scaled to fit: pooled talent slots,
+-- pane titles and the faint requirement lines.
+-- @param d table  The window record.
+-- @param ctx table  The provider context.
+-- @return table|nil  The view; nil when the client cannot give a tree.
+-- @return number|string|nil  The hero id shown, or the failure code when the view is nil.
 local function draw(d, ctx)
     local view, why = platform:GetTraitView(ctx.spec)
 
@@ -1473,8 +1571,10 @@ local function draw(d, ctx)
     return view, hero
 end
 
--- Provider open: draws the tree in the control window's canvas and returns a handle (heroes, spec, hero, Reload,
--- Close), or nil and a failure code (in combat, or no tree available).
+-- Provider open: draws the tree in the control window's canvas.
+-- @param ctx table  The provider context.
+-- @return table|nil  A handle { heroes, spec, hero, Reload, Close }.
+-- @return string|nil  A failure code when the handle is nil (in combat, or no tree available).
 function drawn.open(ctx)
     local d = ctx.window
 
@@ -1488,7 +1588,11 @@ function drawn.open(ctx)
     layout(d)
     local handle = {}
 
-    -- Redraws the tree for a new context; returns true, or nil and a failure code.
+    -- Redraws the tree for a new context.
+    -- @param _ any  Unused (the handle).
+    -- @param context table  The new provider context.
+    -- @return boolean|nil  True on success; nil on failure.
+    -- @return string|nil  The failure code when the first value is nil.
     function handle.Reload(_, context)
         if type(InCombatLockdown) == 'function' and InCombatLockdown() then
             return nil, 'in-combat'
