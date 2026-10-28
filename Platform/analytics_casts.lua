@@ -304,6 +304,10 @@ local function cleanup(s)
     cleaning = true
     local good = not s.timerAmbiguous
 
+    -- Calls a release step under pcall; any failure marks the whole cleanup as not good.
+    -- @param fn function|nil  The function to call; anything else counts as a failure.
+    -- @param ... any  The arguments passed to fn.
+    -- @return any  The first result of fn; nil when fn is not a function or raised.
     local function invoke(fn, ...)
         if type(fn) ~= 'function' then
             good = false
@@ -831,6 +835,9 @@ local function startWitness(s, key, spell)
             return 'unknown'
         end
 
+        -- Checks that the native lookups captured above have not been replaced since.
+        -- @return boolean  True when UnitCastingInfo, C_Spell and C_Spell.IsAutoRepeatSpell are all still the same
+        --   objects.
         local function same()
             if not rawequal(call(s, function() return UnitCastingInfo end), casting) then
                 return false
@@ -842,6 +849,9 @@ local function startWitness(s, key, spell)
             return rawequal(call(s, function() return spells.IsAutoRepeatSpell end), repeatSpell)
         end
 
+        -- Reads the player's current cast once and compares it with the event being witnessed.
+        -- @return string  "unknown" when the read is unusable or the natives changed, "mismatch" when it is another
+        --   cast, "excluded" when it is a trade-skill cast, "matched" when it is the event's cast.
         local function observe()
             ---@type any
             local tuple = call(s, function()

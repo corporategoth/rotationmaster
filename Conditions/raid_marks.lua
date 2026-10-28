@@ -64,6 +64,9 @@ end
 
 -- Returns whether a saved `mark` is valid: "any", "none", or a list of one to eight different mark names separated by
 -- single commas.
+-- @param mark any  The saved mark field.
+-- @return boolean  True for "any", "none" or a valid list; false for anything else, including an empty or over-long
+--   string, an unknown or repeated name.
 local function validMark(mark)
     if mark == "any" or mark == "none" then return true end
     if type(mark) ~= "string" or mark == "" or #mark > 64 then return false end
@@ -79,6 +82,8 @@ local function validMark(mark)
 end
 
 -- Returns the localized names of the marks in a saved list, joined with commas, skull first.
+-- @param mark string  A saved mark list that passed validMark.
+-- @return string  The names of the listed marks, such as "Skull, Moon".
 local function markListText(mark)
     local names = {}
 
@@ -131,6 +136,11 @@ addon:RegisterCondition("MARKED", {
         end
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} a raid mark"], L["%s {{!has|does not have}} a raid mark"]), unit)
     end,
+    -- Builds the editor controls for the MARKED condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the unit selector, the any / none / one-of dropdown and the eight mark checkboxes (used only by the
     -- one-of choice); help draws the help page.
     widget = function(parent, spec, value)
@@ -238,6 +248,11 @@ addon:RegisterCondition("MARK_COUNT", {
         if value.filter == "friendly" then subject = L["the number of marked friendly units"] end
         return Functions.presentation.compareString(value.operator, subject, Functions.presentation.nullable(value.value))
     end,
+    -- Builds the editor controls for the MARK_COUNT condition's fields.
+    -- @param parent table  The editor group the controls are added to.
+    -- @param spec any  The specialization the condition is being edited for.
+    -- @param value table  The saved condition fields; the controls edit it in place.
+    --
     -- widget builds the filter dropdown and an operator-and-value control; help draws the help page.
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -277,9 +292,8 @@ local COMBAT_CATEGORY = "b3d7df2c-f257-4a2d-961e-66e49336d109"
 
 -- Adds MARKED and MARK_COUNT to the Combat category of a profile created before they existed, once per profile
 -- (profile.raidMarkConditionsSeeded); removing them later stays saved. New and reset profiles get them from init.lua.
--- Arguments:
---   _ (any): unused, so the function can serve as an AceDB-style callback.
---   db (table): the AceDB object whose current profile is seeded.
+-- @param _ any  Unused, so the function can serve as an AceDB-style callback.
+-- @param db table|nil  The AceDB object whose current profile is seeded; nil or one without a profile is ignored.
 function addon:InitializeRaidMarkConditions(_, db)
     local profile = db and db.profile
 
@@ -312,8 +326,7 @@ end
 local seedOwner = {}
 
 -- Seeds the current profile and re-seeds on every profile event that can bring in an unseeded profile.
--- Arguments:
---   db (table): the AceDB object; anything without RegisterCallback is ignored.
+-- @param db table|nil  The AceDB object; anything without RegisterCallback is ignored.
 function addon:InstallRaidMarkConditions(db)
     if type(db) ~= "table" or type(db.RegisterCallback) ~= "function" then
         return

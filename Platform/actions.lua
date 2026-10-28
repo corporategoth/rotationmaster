@@ -85,9 +85,10 @@ end
 -- Finds the spellbook slot of a spell for the legacy slot-based range APIs.
 -- @param id number  The spell id.
 -- @param bank string  Which book to search: "spell", "pet" or "any".
--- @return number|nil  The slot; nil on failure.
--- @return string|nil  The book type ("pet" or "spell" constants); the reason code when the first return is nil
---   ("spell-not-in-book" when the spell is not found).
+-- @return number|nil  The spellbook slot; nil on failure.
+-- @return string|nil  The book type the slot is in (BOOKTYPE_PET or BOOKTYPE_SPELL, else "pet" or "spell"); nil on
+--   failure.
+-- @return string|nil  The reason code on failure ("spell-not-in-book" when the spell is not found); nil on success.
 local function findSlot(id, bank)
     local pet=bank=="pet"
     local slot,reason=call(FindSpellBookSlotBySpellID,id,pet)

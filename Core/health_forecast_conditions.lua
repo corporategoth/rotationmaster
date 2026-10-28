@@ -42,6 +42,7 @@ local function readField(platform, object, key)
 end
 
 -- Reads a unit's current or maximum health through the cached Platform observation.
+-- @param self table  The addon (the receiver of GetConditionHealthForecast); its Platform supplies the observations.
 -- @param unit string  The unit token to read.
 -- @param kind string  'current' or 'maximum'.
 -- @param cache table|nil  The evaluation-pass cache.

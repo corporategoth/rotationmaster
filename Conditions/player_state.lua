@@ -36,8 +36,7 @@ addon.builtinCallbackBindings["Conditions/player_state.lua"] = {
 local STATE_ORDER = { "mounted", "swimming", "flying", "falling", "resting", "dead", "ghost" }
 
 -- Returns the editor labels of the player states, keyed by state name.
--- @return table{mounted=string,swimming=string,flying=string,falling=string,resting=string,dead=string,ghost=string}
---     The localized label of each state.
+-- @return table  The localized label of each state, keyed by state name (the STATE_ORDER entries).
 local function stateNames()
     return {
         mounted = L["Mounted"], swimming = L["Swimming"], flying = L["Flying"], falling = L["Falling"],

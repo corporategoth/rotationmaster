@@ -631,6 +631,7 @@ local classic_events = {}
 -- ============================================================================
 
 -- Applies a manual rotation choice (or returns to automatic selection).
+-- @param self table  The addon.
 -- @param id string|nil  The rotation to select; nil returns to automatic selection and gives SwitchRotation's results.
 -- @param change table|nil  An open transition token; one is begun when omitted.
 -- @param remember boolean|nil  True to save the choice for this character, specialization and action context.
@@ -2376,6 +2377,7 @@ end
 local autoSwitchContext = { module = "events", operation = "autoswitch" }
 
 -- Timer callback: runs AutoSwitchTick under the error recorder and stops the timer after the first failure.
+-- @return nil  Nothing: without Diagnostics it returns the result of AutoSwitchTick, which returns none.
 function addon:AutoSwitchTimer()
     if not self.Diagnostics then
         return self:AutoSwitchTick()

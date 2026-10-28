@@ -354,6 +354,8 @@ function addon:InstallSettingsRosterOrder(p)
         -- @param id any  The id of the entry to drag.
         -- @param title string  The ghost card's title.
         -- @param tail boolean|nil  True carries every later entry too; nil defaults to the Ctrl key state.
+        -- @return nil  Nothing: when another order view owns the list it returns that view's Begin result, which is
+        --   also none.
         function view:Begin(id, title, tail)
             if tail == nil then
                 tail = IsControlKeyDown and IsControlKeyDown() or false

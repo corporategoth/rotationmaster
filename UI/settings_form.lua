@@ -2203,6 +2203,7 @@ function addon:CreateSettingsForm(parent)
     -- Requests a redraw after a geometry change: geometry is laid out at once; drawing again waits for the shared
     -- reflow driver (once per rendered frame at most, never while hidden) and is skipped when the widths are those last
     -- drawn.
+    -- @return nil  Nothing: the path without a reflow driver returns the result of Relayout, which returns none.
     function p:RequestRelayout()
         if not self.active then
             return

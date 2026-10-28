@@ -54,18 +54,15 @@ local function canRead()
 end
 
 -- Tells whether a unit type name is one of the raid mark unit types.
--- Arguments:
---   kind (any): a saved unit field.
--- Returns:
---   isMark (boolean): true for skull ... star and anymark.
+-- @param kind any  A saved unit field.
+-- @return boolean  True for skull ... star and anymark.
 function platform:IsRaidMarkUnitKind(kind)
     return type(kind) == 'string' and (MARK_INDEX[kind] ~= nil or kind == ANYMARK)
 end
 
 -- Tells why raid marks cannot be read on this client.
--- Returns:
---   reason (string|nil): nil when marks can be read; 'unsupported-policy' on a client with no known data policy;
---     'missing-api' when the client has no GetRaidTargetIndex.
+-- @return string|nil  nil when marks can be read; 'unsupported-policy' on a client with no known data policy;
+--   'missing-api' when the client has no GetRaidTargetIndex.
 function platform:GetRaidMarkSupport()
     local policy = self:GetCombatDataPolicy()
 
@@ -78,10 +75,8 @@ function platform:GetRaidMarkSupport()
 end
 
 -- Asks the event catalog whether the client knows an event.
--- Arguments:
---   event (string): an event name.
--- Returns:
---   known (boolean|nil): true or false as the catalog answers; nil when the client has no catalog or it failed.
+-- @param event string  An event name.
+-- @return boolean|nil  True or false as the catalog answers; nil when the client has no catalog or it failed.
 local function eventKnown(event)
     local utils = env.C_EventUtils
 
@@ -104,10 +99,11 @@ local EVENTS = {
     'PLAYER_SOFT_FRIEND_CHANGED', 'PLAYER_ENTERING_WORLD'
 }
 
--- Describes what this client offers for following marks, for /rm debug marks and for tests. Allocates; not for the poll.
--- Returns:
---   capabilities (table): { read, set, command, tokenFromGUID (booleans), events = { [event] = true|false|nil } }
---     where an event is true or false as the event catalog answers and nil when the client has no catalog.
+-- Describes what this client offers for following marks, for /rm debug marks and for tests. Allocates; not for the
+-- poll.
+-- @return table  { read = boolean, set = boolean, command = boolean, tokenFromGUID = boolean,
+--   events = { [event] = boolean|nil } } where an event is true or false as the event catalog answers and nil when the
+--   client has no catalog.
 function platform:GetRaidMarkCapabilities()
     local events = {}
 
@@ -133,11 +129,10 @@ end
 -- ============================================================================
 
 -- Reads the mark a unit token carries right now.
--- Arguments:
---   unit (string): a unit token such as 'target' or 'raid3'; the unit need not exist.
--- Returns:
---   mark (number|nil): 0 for no mark, 1 (star) to 8 (skull); nil when it cannot be read.
---   reason (string|nil): why mark is nil: 'missing-api', 'api-error', 'restricted-value' or 'invalid-api-result'.
+-- @param unit string  A unit token such as 'target' or 'raid3'; the unit need not exist.
+-- @return number|nil  0 for no mark, 1 (star) to 8 (skull); nil when it cannot be read.
+-- @return string|nil  Why the first return is nil: 'missing-api', 'invalid-unit' (unit is not a string), 'api-error',
+--   'restricted-value' or 'invalid-api-result'; nil otherwise.
 --
 -- The one place that calls GetRaidTargetIndex. A missing mark is 0 (the game returns nil for it).
 function platform:GetUnitRaidMark(unit)
@@ -207,6 +202,10 @@ local function clock()
 end
 
 -- Calls a game function that answers a boolean about two units; true, false, or nil when it cannot be read.
+-- @param fn function|nil  The game function to call (UnitCanAttack or UnitIsFriend); anything else answers nil.
+-- @param ... any  The arguments passed to fn.
+-- @return boolean|nil  True for true or 1; false for false, 0 or nil; nil when fn is missing, raised or answered a
+--   restricted value (or any other value).
 local function readBoolean(fn, ...)
     if type(fn) ~= 'function' then
         return nil
@@ -226,6 +225,9 @@ local function readBoolean(fn, ...)
 end
 
 -- Reads the GUID of a unit token; nil when it cannot be read (an NPC's GUID is secret on a restricted client).
+-- @param token string  The unit token.
+-- @return string|nil  The unit's GUID; nil when UnitGUID is missing, raised, was restricted or answered something that
+--   is not a non-empty string.
 local function readGUID(token)
     local read = env.UnitGUID
 
@@ -241,10 +243,8 @@ local function readGUID(token)
 end
 
 -- Finds the token that stands for a GUID right now, where the client can say.
--- Arguments:
---   guid (string): a unit GUID.
--- Returns:
---   token (string|nil): the unit token, or nil when the unit is not in reach or the client cannot answer.
+-- @param guid string  A unit GUID.
+-- @return string|nil  The unit token, or nil when the unit is not in reach or the client cannot answer.
 local function tokenFromGUID(guid)
     local find = env.UnitTokenFromGUID
 
@@ -260,6 +260,7 @@ local function tokenFromGUID(guid)
 end
 
 -- Forgets what the table knows about one mark.
+-- @param entry table  The record of the mark, cleared in place.
 local function drop(entry)
     entry.held, entry.reachable = false, false
     entry.guid, entry.token, entry.lastToken, entry.enemy, entry.friend = nil, nil, nil, nil, nil
@@ -276,11 +277,10 @@ local function changed()
 end
 
 -- Records that the unit behind `token` holds mark `index`, and forgets any other mark the same unit was recorded with.
--- Arguments:
---   index (number): the mark, 1 to 8.
---   token (string): a token that reads that mark now.
--- Returns:
---   nothing; the table is updated in place and changed() is called when anything differs.
+-- @param index number  The mark, 1 to 8.
+-- @param token string  A token that reads that mark now.
+--
+-- The table is updated in place and changed() is called when anything differs.
 local function hold(index, token)
     local entry = entries[index]
     local guid = readGUID(token)
@@ -311,11 +311,10 @@ local function hold(index, token)
 end
 
 -- Looks for the unit of a recorded mark after its token stopped holding it.
--- Arguments:
---   index (number): the mark, 1 to 8.
--- Returns:
---   nothing; the record is re-pointed at a token that still holds the mark, dropped when its unit is in reach and no
---   longer carries the mark, or kept by GUID and flagged out of reach otherwise.
+-- @param index number  The mark, 1 to 8.
+--
+-- The record is re-pointed at a token that still holds the mark, dropped when its unit is in reach and no longer
+-- carries the mark, or kept by GUID and flagged out of reach otherwise.
 local function relocate(index)
     local entry = entries[index]
 
@@ -353,10 +352,7 @@ local function relocate(index)
 end
 
 -- Reads one token and brings the table up to date for it.
--- Arguments:
---   token (string): a token whose unit may have changed.
--- Returns:
---   nothing.
+-- @param token string  A token whose unit may have changed.
 local function tokenChanged(token)
     local mark = platform:GetUnitRaidMark(token)
 
@@ -403,6 +399,9 @@ for index = 1, 5 do
 end
 
 -- Reads one token during a rescan and remembers the first token seen carrying each mark.
+-- @param token string  The unit token to read.
+--
+-- A token that is restricted counts in watch.unreadable; any other unreadable token is ignored.
 local function visit(token)
     local mark, why = platform:GetUnitRaidMark(token)
 
@@ -420,9 +419,8 @@ local function visit(token)
 end
 
 -- Reads the size of the group.
--- Returns:
---   raid (boolean): whether the group is a raid.
---   size (number): the members, 0 when alone or when the client cannot say.
+-- @return boolean  Whether the group is a raid.
+-- @return number  The members, capped at 40; 0 when alone or when the client cannot say.
 local function groupSize()
     local count, raid = env.GetNumGroupMembers, env.IsInRaid
 
@@ -454,9 +452,9 @@ local function groupSize()
 end
 
 -- Rebuilds the table from every token the client can reach.
--- Returns:
---   nothing; for each mark the first token that carries it is recorded, a mark held but seen nowhere is looked up by
---   its GUID, and watch.unreadable counts the tokens that could not be read (the table is then incomplete).
+--
+-- For each mark the first token that carries it is recorded, a mark held but seen nowhere is looked up by its GUID, and
+-- watch.unreadable counts the tokens that could not be read (the table is then incomplete).
 local function rescan()
     watch.scans = watch.scans + 1
     watch.unreadable = 0
@@ -548,6 +546,12 @@ end
 local stopWatch
 
 -- Reads one event and brings the table up to date. Runs only while the watch is active.
+-- @param event string  The event name.
+-- @param unit string|nil  The unit token the event carries, where it has one; an unreadable or non-string value is
+--   ignored.
+-- @return nil  Nothing: the expired-lease path returns the result of stopWatch, which returns none.
+--
+-- An event that arrives after the lease ran out stops the watch instead of being handled.
 local function onEvent(event, unit)
     if clock() - watch.lastUse > LEASE then
         return stopWatch()
@@ -588,6 +592,7 @@ end
 
 -- The lease check scheduled while the watch runs; stops the watch once nothing has asked for marks for LEASE seconds,
 -- otherwise looks again when the lease would run out.
+-- @return nil  Nothing: the expired-lease path returns the result of stopWatch, which returns none.
 local function leaseCheck()
     watch.timer = false
 
@@ -610,8 +615,7 @@ local function leaseCheck()
 end
 
 -- Registers the events and takes a first full rescan.
--- Returns:
---   active (boolean): false when the client cannot make a frame or register an event.
+-- @return boolean  True once the watch is running; false when the client cannot make a frame or register an event.
 local function startWatch()
     if type(env.CreateFrame) ~= 'function' then
         return false
@@ -691,8 +695,8 @@ stopWatch = function()
 end
 
 -- Records that something is asking about marks, starting the watch if it is not running.
--- Returns:
---   active (boolean): whether the table is being kept current.
+-- @return boolean  Whether the table is being kept current; false (without retrying for 5 seconds) when the watch
+--   could not be started.
 local function touch()
     local now = clock()
     watch.lastUse = now
@@ -717,8 +721,7 @@ function platform:ReleaseRaidMarks()
 end
 
 -- Tells whether the events are registered.
--- Returns:
---   watching (boolean): true while the table is being kept current.
+-- @return boolean  True while the table is being kept current.
 function platform:IsRaidMarkWatching()
     return watch.active == true
 end
@@ -728,12 +731,10 @@ end
 -- ============================================================================
 
 -- Finds the token that holds a mark now, verifying it with one read.
--- Arguments:
---   index (number): the mark, 1 to 8.
--- Returns:
---   token (string|nil): the token holding the mark.
---   reason (string|nil): 'no-marked-unit' when no unit is known to hold it, 'unreadable' when the table cannot say,
---     'no-token' when the unit is known but out of reach.
+-- @param index number  The mark, 1 to 8.
+-- @return string|nil  The token holding the mark.
+-- @return string|nil  Why the first return is nil: 'no-marked-unit' when no unit is known to hold it, 'unreadable'
+--   when the table cannot say, 'no-token' when the unit is known but out of reach; nil otherwise.
 local function resolveIndex(index)
     local entry = entries[index]
 
@@ -774,12 +775,11 @@ local function resolveIndex(index)
 end
 
 -- Turns a mark unit type into the token of the unit that carries the mark right now.
--- Arguments:
---   kind (string): skull, cross, square, moon, triangle, diamond, circle, star or anymark.
--- Returns:
---   token (string|nil): the unit token, such as 'target' or 'raid7'.
---   reason (string|nil): why there is none: 'invalid-group-unit', 'missing-api', 'unsupported-policy',
---     'no-marked-unit', 'unreadable' or 'no-token'.
+-- @param kind string  skull, cross, square, moon, triangle, diamond, circle, star or anymark; any other value answers
+--   'invalid-group-unit'.
+-- @return string|nil  The unit token, such as 'target' or 'raid7'.
+-- @return string|nil  Why there is none: 'invalid-group-unit', 'missing-api', 'unsupported-policy', 'no-marked-unit',
+--   'unreadable' or 'no-token'; nil when there is a token.
 --
 -- anymark answers the first mark in skull, cross, square, moon, triangle, diamond, circle, star order that has a
 -- reachable unit; when none does, the reason of the highest-priority mark the table knows (else 'no-marked-unit').
@@ -827,13 +827,11 @@ function platform:ResolveRaidMarkUnit(kind)
 end
 
 -- Counts the marks the table knows a unit for.
--- Arguments:
---   filter (string|nil): nil or 'any' for every marked unit; 'enemy' for the ones you can attack; 'friendly' for the
---     friendly ones.
--- Returns:
---   count (number|nil): the marked units known, out-of-reach ones included; nil when it cannot be counted.
---   reason (string|nil): 'missing-api', 'unsupported-policy', 'unreadable' when a token could not be read or a
---     filter fact is unknown for a marked unit.
+-- @param filter string|nil  nil or 'any' for every marked unit; 'enemy' for the ones you can attack; 'friendly' for
+--   the friendly ones.
+-- @return number|nil  The marked units known, out-of-reach ones included; nil when it cannot be counted.
+-- @return string|nil  Why the count is nil: 'missing-api', 'unsupported-policy', or 'unreadable' when a token could not
+--   be read or a filter fact is unknown for a marked unit; nil otherwise.
 function platform:GetRaidMarkCount(filter)
     local unsupported = self:GetRaidMarkSupport()
 
@@ -879,9 +877,9 @@ function platform:GetRaidMarkCount(filter)
 end
 
 -- Copies the table and the watch for /rm debug marks and for tests. Allocates; never called by the poll.
--- Returns:
---   snapshot (table): { watching, now, scans, updates, unreadable, lastScan, starts, stops, registered = { [event] = boolean },
---     marks = { [1..8] = { held, guid, token, lastToken, reachable, age, enemy, friend } } }
+-- @return table  { watching, now, scans, updates, unreadable, lastScan, starts, stops, failedAt,
+--   registered = { [event] = boolean },
+--   marks = { [1..8] = { held, guid, token, lastToken, reachable, age, enemy, friend } } }
 function platform:GetRaidMarkSnapshot()
     local now = clock()
     local marks, registered = {}, {}
@@ -921,8 +919,7 @@ function platform:GetRaidMarkSnapshot()
 end
 
 -- Starts following marks for the debug report and returns the snapshot; the same lease applies as for any question.
--- Returns:
---   snapshot (table): see GetRaidMarkSnapshot.
+-- @return table  The snapshot; see GetRaidMarkSnapshot.
 function platform:ObserveRaidMarks()
     if not self:GetRaidMarkSupport() then
         touch()

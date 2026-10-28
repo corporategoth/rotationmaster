@@ -469,9 +469,16 @@ end
 -- @param method function  The GetRotationValidationStamp method to call.
 -- @param entryMethod function  The method as the caller first saw it.
 -- @return table  The stamp.
--- @return table|nil  When the owned scan can be proved callback-free, the roots seen before the read (db, profile,
---   global, conditions, shared, personal, effects, version, state as nine values), so the caller can confirm afterwards
---   that they did not change; nothing otherwise.
+-- @return table|nil  The db seen before the read; nil (with the eight below) when the owned scan could not be proved
+--   callback-free, so the caller has nothing to confirm afterwards.
+-- @return table|nil  The profile seen before the read.
+-- @return table|nil  The global table seen before the read.
+-- @return table|nil  The condition definitions seen before the read.
+-- @return table|nil  The shared item sets seen before the read.
+-- @return table|nil  The per-profile item sets seen before the read.
+-- @return table|nil  The effects seen before the read.
+-- @return number|nil  The condition registry version seen before the read.
+-- @return table|nil  The profile's rotation library state seen before the read.
 --
 -- A successful PRE proof closes the owned scan. POST checks raw layout again, without repeating globals that no
 -- permitted callback can change.

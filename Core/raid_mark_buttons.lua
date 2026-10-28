@@ -21,11 +21,10 @@ local function inCombat()
 end
 
 -- Makes the hidden secure button for a pseudo spell id if it does not exist yet.
--- Arguments:
---   id (number): a pseudo spell id from Platform:GetMarkActionId.
--- Returns:
---   ready (boolean): true when the button exists after the call.
---   reason (string|nil): why not: 'invalid-mark-step', 'combat', 'missing-api' or 'name-taken'.
+-- @param id number  A pseudo spell id from Platform:GetMarkActionId.
+-- @return boolean  True when the button exists after the call.
+-- @return string|nil  Why not: 'invalid-mark-step', 'combat', 'missing-api' or 'name-taken'; nil when the button
+--   exists.
 --
 -- Out of combat only. The first button also turns on the recognition of Set Mark macros on the action bars and asks for
 -- a rescan, so a macro placed before the first evaluation is found.
@@ -83,10 +82,8 @@ function addon:EnsureMarkButton(id)
 end
 
 -- Gives the spell ids of a Set Mark step for the engines: its one pseudo spell id, after making sure its button exists.
--- Arguments:
---   step (table): a rotation step of type mark.
--- Returns:
---   ids (table): { id } for a valid step on a client that can place marks, otherwise empty.
+-- @param step table  A rotation step of type mark.
+-- @return number[]  { id } for a valid step on a client that can place marks, otherwise empty.
 function addon:GetMarkStepSpellIds(step)
     local id = platform:GetMarkStepActionId(step)
 
@@ -99,11 +96,9 @@ function addon:GetMarkStepSpellIds(step)
 end
 
 -- Tells why a rotation step cannot work on this client.
--- Arguments:
---   step (table): any rotation step.
--- Returns:
---   reason (string|nil): nil for every step but a Set Mark step that cannot run: 'invalid-mark-step' when its unit or
---     mark is not on the whitelist, 'unsupported-unit', or the client reason ('missing-api', 'unsupported-policy').
+-- @param step any  Any rotation step; anything that is not a Set Mark step is supported.
+-- @return string|nil  nil for every step but a Set Mark step that cannot run: 'invalid-mark-step' when its unit or
+--   mark is not on the whitelist, 'unsupported-unit', or the client reason ('missing-api', 'unsupported-policy').
 function addon:GetStepSupport(step)
     if type(step) ~= 'table' or step.type ~= 'mark' then
         return nil
@@ -119,10 +114,8 @@ function addon:GetStepSupport(step)
 end
 
 -- Describes a Set Mark step in words for cards, reports and tooltips.
--- Arguments:
---   step (table): a rotation step of type mark.
--- Returns:
---   text (string): "Set Skull on your target", "Clear the mark on your target", or "Set Mark" while it is not filled in.
+-- @param step table  A rotation step of type mark; anything that is not a table reads as not filled in.
+-- @return string  "Set Skull on your target", "Clear the mark on your target", or "Set Mark" while it is not filled in.
 function addon:DescribeMarkStep(step)
     if type(step) ~= 'table' then
         return L['Set Mark']
@@ -142,10 +135,8 @@ function addon:DescribeMarkStep(step)
 end
 
 -- Describes the pseudo spell id of a Set Mark step in words, for the preview window's tooltip.
--- Arguments:
---   id (any): a spell id or pseudo spell id.
--- Returns:
---   text (string|nil): the same sentence as DescribeMarkStep; nil for a real spell id.
+-- @param id any  A spell id or pseudo spell id.
+-- @return string|nil  The same sentence as DescribeMarkStep; nil for a real spell id.
 function addon:DescribeMarkAction(id)
     local unit, mark = platform:DecodeMarkActionId(id)
 
@@ -158,10 +149,8 @@ function addon:DescribeMarkAction(id)
 end
 
 -- Gives the icon a Set Mark step shows on its card.
--- Arguments:
---   step (table): a rotation step of type mark.
--- Returns:
---   texture (string): the chosen mark's icon, or the generic question mark while it is not filled in.
+-- @param step table  A rotation step of type mark.
+-- @return string  The chosen mark's icon, or the generic question mark while it is not filled in.
 function addon:GetMarkStepIcon(step)
     local mark = type(step) == 'table' and type(step.action) == 'string' and platform.RaidMarkActions.marks[step.action]
     return platform:GetRaidMarkTexture(mark or 0)
@@ -169,13 +158,11 @@ end
 
 -- Starts the Bind flow for a pair: makes the character macro that presses the step's button, if it does not exist, and
 -- puts it on the cursor so the player can drop it on an action bar slot.
--- Arguments:
---   unit (string): a unit token from the whitelist.
---   action (string): a mark word or none.
--- Returns:
---   ok (boolean): true when the macro is on the cursor.
---   detail (string): the macro name when ok, else the reason: 'invalid-mark-step', 'unsupported', 'combat', 'cursor',
---     'macros-full', 'missing-api' or 'api-error'.
+-- @param unit string  A unit token from the whitelist.
+-- @param action string  A mark word or none.
+-- @return boolean  True when the macro is on the cursor.
+-- @return string  The macro name when the first return is true, else the reason: 'invalid-mark-step', 'unsupported',
+--   'combat', 'cursor', 'macros-full', 'missing-api' or 'api-error'.
 function addon:BeginMarkBind(unit, action)
     local mark = type(action) == 'string' and platform.RaidMarkActions.marks[action]
     local id = type(unit) == 'string' and mark and platform:GetMarkActionId(unit, mark)

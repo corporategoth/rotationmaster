@@ -432,6 +432,9 @@ function addon:CreateNativePreviewWindow()
                 local frame, icons, texture = captureFrame, captureIcons, captureTexture
                 local frameVisible, iconVisible, textureGet, displayId, observed
 
+                -- Whether the preview state captured for the delivery record is still the live state.
+                -- @return boolean  True when the preview, its icon, texture and the captured natives are all unchanged.
+                --
                 -- Pure captured-state checks run again after every native read.
                 -- Initial property reads are inside the collector's protected call.
                 local function eligible()

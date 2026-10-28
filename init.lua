@@ -350,6 +350,7 @@ local function eachSavedBody(visit)
 
     -- Visits the old-format bodies of one saved profile.
     -- @param p any  The saved profile; a profile already seen is skipped.
+    -- @return nil  Nothing: the rotations branch returns the result of bodies, which returns none.
     --
     -- A profile that has no rotationStore still holds its rotations in the old root; one that has it keeps only the
     -- archive (rotationStore.legacy.rotations) in the old format.

@@ -85,11 +85,9 @@ platform.RaidMarkActions = { units = ACTION_UNITS, marks = MARK_NUMBER, none = N
 -- ============================================================================
 
 -- Builds the pseudo spell id of a (unit, mark) pair.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to clear the mark, 1 (star) to 8 (skull).
--- Returns:
---   id (number|nil): the pseudo spell id; nil when either argument is not on the whitelist.
+-- @param unit string  One of the whitelisted unit tokens; any other value, including nil, answers nil.
+-- @param mark number  0 to clear the mark, 1 (star) to 8 (skull); a non-integer or out-of-range value answers nil.
+-- @return number|nil  The pseudo spell id; nil when either argument is not on the whitelist.
 function platform:GetMarkActionId(unit, mark)
     local ordinal = type(unit) == 'string' and UNIT_ORDINAL[unit]
 
@@ -101,11 +99,9 @@ function platform:GetMarkActionId(unit, mark)
 end
 
 -- Splits a pseudo spell id back into its unit and mark.
--- Arguments:
---   id (number): any number; a real spell id answers nil.
--- Returns:
---   unit (string|nil): the whitelisted unit token.
---   mark (number|nil): 0 to 8.
+-- @param id any  Any value; a real spell id, a non-number or a non-integer answers nil.
+-- @return string|nil  The whitelisted unit token; nil when id is not a Set Mark pseudo id.
+-- @return number|nil  The mark, 0 to 8; nil together with the unit.
 function platform:DecodeMarkActionId(id)
     if type(id) ~= 'number' or id < ACTION_BASE or id % 1 ~= 0 then
         return nil
@@ -123,19 +119,15 @@ function platform:DecodeMarkActionId(id)
 end
 
 -- Tells whether a number is the pseudo spell id of a Set Mark step.
--- Arguments:
---   id (any): a value from the bar index or a step.
--- Returns:
---   isMark (boolean): true when id decodes to a (unit, mark) pair.
+-- @param id any  A value from the bar index or a step.
+-- @return boolean  True when id decodes to a (unit, mark) pair.
 function platform:IsMarkActionId(id)
     return self:DecodeMarkActionId(id) ~= nil
 end
 
 -- Tells whether a unit can be offered for a Set Mark step on this client.
--- Arguments:
---   unit (any): a saved unit field.
--- Returns:
---   offered (boolean): true when unit is on the whitelist and the client has it (focus needs a focus target).
+-- @param unit any  A saved unit field.
+-- @return boolean  True when unit is on the whitelist and the client has it (focus needs a focus target).
 function platform:IsMarkActionUnit(unit)
     if type(unit) ~= 'string' or not UNIT_ORDINAL[unit] then
         return false
@@ -148,8 +140,7 @@ function platform:IsMarkActionUnit(unit)
 end
 
 -- Lists the units the editor offers for a Set Mark step on this client. Allocates; not for the poll.
--- Returns:
---   units (table): whitelisted unit tokens in editor order.
+-- @return string[]  The whitelisted unit tokens this client supports, in editor order.
 function platform:GetMarkActionUnits()
     local units = {}
 
@@ -163,12 +154,11 @@ function platform:GetMarkActionUnits()
 end
 
 -- Turns a saved Set Mark step into its pseudo spell id.
--- Arguments:
---   step (table): a rotation step; step.unit is a unit token and step.action a mark name or none.
--- Returns:
---   id (number|nil): the pseudo spell id.
---   reason (string|nil): 'invalid-mark-step' when either field is not on the whitelist, 'unsupported-unit' when the
---     unit is not available on this client.
+-- @param step table  A rotation step; step.unit is a unit token and step.action a mark name or none. Anything that is
+--   not a table answers 'invalid-mark-step'.
+-- @return number|nil  The pseudo spell id; nil on failure.
+-- @return string|nil  The reason code when the first return is nil: 'invalid-mark-step' when either field is not on
+--   the whitelist, 'unsupported-unit' when the unit is not available on this client; nil otherwise.
 function platform:GetMarkStepActionId(step)
     if type(step) ~= 'table' then
         return nil, 'invalid-mark-step'
@@ -189,10 +179,9 @@ function platform:GetMarkStepActionId(step)
 end
 
 -- Gives the localized name of a mark.
--- Arguments:
---   mark (number): 0 for none, 1 (star) to 8 (skull).
--- Returns:
---   name (string|nil): the game's own name (RAID_TARGET_N), else the English name; nil outside 0 to 8.
+-- @param mark number  0 for none, 1 (star) to 8 (skull).
+-- @return string|nil  The game's own name (RAID_TARGET_N, or NONE for 0), else the English name; nil outside 0 to 8 and
+--   for a non-integer.
 function platform:GetRaidMarkName(mark)
     if type(mark) ~= 'number' or mark < 0 or mark > 8 or mark % 1 ~= 0 then
         return nil
@@ -214,10 +203,8 @@ function platform:GetRaidMarkName(mark)
 end
 
 -- Gives the texture of a mark.
--- Arguments:
---   mark (number): 0 for none, 1 (star) to 8 (skull).
--- Returns:
---   texture (string): the game's raid target icon, or the generic question mark for none and out-of-range numbers.
+-- @param mark number  0 for none, 1 (star) to 8 (skull).
+-- @return string  The game's raid target icon; the generic question mark for none and out-of-range numbers.
 function platform:GetRaidMarkTexture(mark)
     if type(mark) == 'number' and mark >= 1 and mark <= 8 and mark % 1 == 0 then
         return 'Interface\\TargetingFrame\\UI-RaidTargetingIcon_' .. mark
@@ -227,10 +214,9 @@ function platform:GetRaidMarkTexture(mark)
 end
 
 -- Describes a pseudo spell id the way GetSpellInfo describes a spell, so the preview window and reports can name it.
--- Arguments:
---   id (any): a number; a real spell id answers nil.
--- Returns:
---   info (table|nil): { name, iconID, mark, unit } for a Set Mark id (name is the mark's name), nil otherwise.
+-- @param id any  A number; a real spell id answers nil.
+-- @return table|nil  { name = string, iconID = string, mark = number, unit = string } for a Set Mark id (name is the
+--   mark's name, iconID its texture); nil otherwise.
 function platform:GetMarkActionInfo(id)
     local unit, mark = self:DecodeMarkActionId(id)
 
@@ -246,11 +232,9 @@ end
 -- ============================================================================
 
 -- Gives the macro line that places a mark; the only text a Set Mark button ever runs.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to clear the mark, 1 to 8.
--- Returns:
---   text (string|nil): "/tm [@unit] N"; nil when either argument is not on the whitelist.
+-- @param unit string  One of the whitelisted unit tokens.
+-- @param mark number  0 to clear the mark, 1 to 8.
+-- @return string|nil  "/tm [@unit] N"; nil when either argument is not on the whitelist.
 function platform:GetMarkMacroText(unit, mark)
     local ordinal = type(unit) == 'string' and UNIT_ORDINAL[unit]
 
@@ -262,23 +246,20 @@ function platform:GetMarkMacroText(unit, mark)
 end
 
 -- Gives the global name of the hidden secure button for a pair.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to 8.
--- Returns:
---   name (string|nil): "RM_Mark_<unit>_<mark name>", for example RM_Mark_target_skull; nil when not on the whitelist.
+-- @param unit string  One of the whitelisted unit tokens.
+-- @param mark number  0 to 8.
+-- @return string|nil  "RM_Mark_<unit>_<mark name>", for example RM_Mark_target_skull; nil when not on the whitelist.
 function platform:GetMarkButtonName(unit, mark)
     local id = self:GetMarkActionId(unit, mark)
     return id and BUTTON_NAME[id] or nil
 end
 
 -- Gives the macro a player puts on an action bar to press the button.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to 8.
--- Returns:
---   name (string|nil): the macro name, at most sixteen ASCII characters, such as "RM skull/tgt".
---   body (string|nil): "/click RM_Mark_<unit>_<mark name>".
+-- @param unit string  One of the whitelisted unit tokens.
+-- @param mark number  0 to 8.
+-- @return string|nil  The macro name, at most sixteen ASCII characters, such as "RM skull/tgt"; nil when not on the
+--   whitelist.
+-- @return string|nil  The macro body, "/click RM_Mark_<unit>_<mark name>"; nil together with the name.
 function platform:GetMarkBarMacro(unit, mark)
     local id = self:GetMarkActionId(unit, mark)
 
@@ -298,25 +279,21 @@ end
 local tracking = false
 
 -- Turns the recognition of Set Mark macros on the bars on or off.
--- Arguments:
---   on (boolean): true once a Set Mark step is in use.
+-- @param on boolean  True once a Set Mark step is in use; anything else turns recognition off.
 function platform:SetMarkActionTracking(on)
     tracking = on == true
 end
 
 -- Tells whether Set Mark macros on the bars are being recognized.
--- Returns:
---   on (boolean): the state last set.
+-- @return boolean  The state last set.
 function platform:IsMarkActionTracking()
     return tracking
 end
 
 -- Recognizes a macro whose body presses a Set Mark button.
--- Arguments:
---   macro (number|string): a macro index or name, as the bar reports it.
--- Returns:
---   id (number|nil): the pseudo spell id of the first "/click RM_Mark_..." line; nil when tracking is off, the macro
---     cannot be read or holds no such line.
+-- @param macro number|string  A macro index or name, as the bar reports it; anything else answers nil.
+-- @return number|nil  The pseudo spell id of the first "/click RM_Mark_..." line; nil when tracking is off, the macro
+--   cannot be read or holds no such line.
 --
 -- The body is only compared with the whitelisted button names; it is never parsed further or run.
 function platform:GetMarkMacroActionId(macro)
@@ -358,9 +335,8 @@ end
 -- ============================================================================
 
 -- Tells why a Set Mark step cannot work on this client.
--- Returns:
---   reason (string|nil): nil when the client has the target marker command or SetRaidTarget; 'unsupported-policy' on
---     a client with no known data policy; 'missing-api' otherwise.
+-- @return string|nil  nil when the client has the target marker command or SetRaidTarget; 'unsupported-policy' on a
+--   client with no known data policy; 'missing-api' otherwise.
 function platform:GetMarkActionSupport()
     local policy = self:GetCombatDataPolicy()
 
@@ -384,6 +360,11 @@ function platform:GetMarkActionSupport()
 end
 
 -- Calls a game function that answers a boolean; true, false, or nil when it is missing or unreadable.
+-- @param fn function|nil  The game function to call (looked up in the game environment by the caller); anything that
+--   is not a function answers nil.
+-- @param ... any  The arguments passed to fn.
+-- @return boolean|nil  True for true or 1; false for false, 0 or nil; nil when fn is missing, raised or answered a
+--   restricted value (or any other value).
 local function ask(fn, ...)
     if type(fn) ~= 'function' then
         return nil
@@ -403,9 +384,9 @@ local function ask(fn, ...)
 end
 
 -- Tells whether you may place raid marks now: anyone in a party or alone, only the leader and assistants in a raid.
--- Returns:
---   allowed (boolean|nil): true or false as the group rule says; nil when the client cannot say.
---   reason (string|nil): 'missing-api' or 'restricted-value' when allowed is nil.
+-- @return boolean|nil  True or false as the group rule says; nil when the client cannot say.
+-- @return string|nil  'missing-api' when the first return is nil (a group query is missing or unreadable); nil
+--   otherwise.
 function platform:CanSetRaidMark()
     local raid = ask(env.IsInRaid)
 
@@ -436,12 +417,10 @@ end
 
 -- Tells whether a Set Mark step has something to do now: the unit exists, does not already carry the mark, and you may
 -- place marks.
--- Arguments:
---   id (number): the pseudo spell id of the step.
--- Returns:
---   ready (boolean): true when the step may be recommended; false otherwise, and when the answer cannot be read.
---   reason (string|nil): why ready is false: 'invalid-mark-step', a support reason, 'no-unit', 'already-marked',
---     'no-mark-permission', or the reason a read failed.
+-- @param id number  The pseudo spell id of the step.
+-- @return boolean  True when the step may be recommended; false otherwise, and when the answer cannot be read.
+-- @return string|nil  Why the first return is false: 'invalid-mark-step', a support reason, 'unsupported-unit',
+--   'no-unit', 'already-marked', 'no-mark-permission', or the reason a read failed; nil when true.
 --
 -- The group rule is applied only when the client can answer it; a client that cannot is given the benefit of the doubt.
 function platform:IsMarkActionReady(id)
@@ -492,12 +471,11 @@ end
 -- ============================================================================
 
 -- Finds the macro for a pair among the player's macros.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to 8.
--- Returns:
---   index (number|nil): the macro index; nil when there is none or the client cannot say.
---   reason (string|nil): 'invalid-mark-step' or 'missing-api' when index is nil for a reason other than absence.
+-- @param unit string  One of the whitelisted unit tokens.
+-- @param mark number  0 to 8.
+-- @return number|nil  The macro index; nil when there is none or the client cannot say.
+-- @return string|nil  'invalid-mark-step' or 'missing-api' when the index is nil for a reason other than absence; nil
+--   otherwise, including when the macro is simply absent.
 function platform:FindMarkBarMacro(unit, mark)
     local name = self:GetMarkBarMacro(unit, mark)
 
@@ -519,12 +497,11 @@ function platform:FindMarkBarMacro(unit, mark)
 end
 
 -- Makes the macro for a pair (a character macro) if it does not exist yet.
--- Arguments:
---   unit (string): one of the whitelisted unit tokens.
---   mark (number): 0 to 8.
--- Returns:
---   index (number|nil): the macro index.
---   reason (string|nil): 'invalid-mark-step', 'missing-api', 'api-error' or 'macros-full' when index is nil.
+-- @param unit string  One of the whitelisted unit tokens.
+-- @param mark number  0 to 8.
+-- @return number|nil  The macro index, of the existing macro when there already is one; nil on failure.
+-- @return string|nil  'invalid-mark-step', 'missing-api', 'api-error' or 'macros-full' when the index is nil; nil
+--   otherwise.
 --
 -- Out of combat only; the caller checks. The body is the click line built from the whitelist.
 function platform:CreateMarkBarMacro(unit, mark)
@@ -564,10 +541,9 @@ function platform:CreateMarkBarMacro(unit, mark)
 end
 
 -- Puts a macro on the cursor so the player can drop it on an action bar slot.
--- Arguments:
---   index (number): a macro index from FindMarkBarMacro or CreateMarkBarMacro.
--- Returns:
---   ok (boolean): whether the client accepted the call.
+-- @param index number  A macro index from FindMarkBarMacro or CreateMarkBarMacro.
+-- @return boolean  Whether the client accepted the call; false when PickupMacro is missing, index is not a number or
+--   the call raised.
 function platform:PickupMarkBarMacro(index)
     local pickup = env.PickupMacro
 

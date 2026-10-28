@@ -8,6 +8,8 @@
 local _, addon = ...
 
 -- Shows a boolean as yes or no, and nil as unknown.
+-- @param value boolean|nil  The value to show.
+-- @return string  'yes', 'no' or 'unknown'.
 local function yes(value)
     if value == nil then
         return 'unknown'
@@ -17,6 +19,8 @@ local function yes(value)
 end
 
 -- Shows any value for the report.
+-- @param value any  The value to show.
+-- @return string  tostring(value); '-' when value is nil.
 local function show(value)
     if value == nil then
         return '-'
@@ -26,13 +30,14 @@ local function show(value)
 end
 
 -- Builds the report lines.
--- Returns:
---   lines (table): the report, one string per line.
+-- @return string[]  The report, one string per line.
 function addon:BuildRaidMarkDiagnostic()
     local platform = self.Platform
     local lines = {}
 
     -- Appends one formatted line.
+    -- @param format string  A string.format pattern.
+    -- @param ... any  The values the pattern formats.
     local function add(format, ...)
         lines[#lines + 1] = string.format(format, ...)
     end

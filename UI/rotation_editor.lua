@@ -2299,6 +2299,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
         -- Moves the priority by `delta` within the allowed range: a draft edit on your own rotation, an immediate
         -- override on a Built In. Ignored for the fallback and previews.
         -- @param delta number  The amount to add (1 or -1).
+        -- @return nil  Nothing: the Built In branch returns the result of setBuiltinPriority, which returns none.
         local function stepPriority(delta)
             if not alive() or workspace.fallback or workspace.preview then
                 return
@@ -2929,6 +2930,7 @@ function addon:CreateRotationEditor(parent, spec, id, onSelect, detached)
     -- rendered frame at most, by geometry alone: bound cards are re-placed, never released and bound again. The diagram
     -- keeps its card widths, so that is all it needs. List and cooldown cards take the viewport width, which rewraps
     -- their text, so once the size has settled they are bound again (measured) in one render.
+    -- @return nil  Nothing: the immediate re-render path returns the result of Render, which returns none.
     function pane:Resized()
         if not self.active then
             return

@@ -46,6 +46,7 @@ end
 local function noop() end
 
 -- Child accessor of the disabled profiler.
+-- @param self table  The disabled profiler.
 -- @return table  The profiler itself, so chained child():start() calls stay no-ops.
 local function nopChild(self)
     return self
@@ -94,6 +95,7 @@ local function Constructor(enabled)
             self.startTime = value and value * scale or 0
         end,
         -- Stops the measurement and adds it to the totals.
+        -- @param self table  The profiler; nothing happens unless start was called first.
         --
         -- A measurement with an unreadable clock or a negative duration is counted as unavailable instead of raising.
         stop = function(self)
@@ -122,6 +124,7 @@ local function Constructor(enabled)
             self.count = self.count + 1
         end,
         -- Describes the measurements as text.
+        -- @param self table  The profiler.
         -- @param full boolean|nil  True to include the children.
         -- @return string|nil  The summary; nil when nothing was measured and nothing was unavailable.
         report = function(self, full)

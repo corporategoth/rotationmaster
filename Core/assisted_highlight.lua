@@ -319,6 +319,7 @@ local profileEvents = { 'OnProfileChanged', 'OnProfileCopied', 'OnProfileReset' 
 -- Single event handler for the frame events, the AceDB profile callbacks and the rotation message.
 -- @param event string  The event name.
 -- @param ... any  The event's arguments.
+-- @return nil  Always nothing: it returns the result of Logout or Reconcile, and neither returns a value.
 --
 -- The first PLAYER_ENTERING_WORLD marks the manager ready and registers the profile callbacks; nothing reconciles
 -- before that.

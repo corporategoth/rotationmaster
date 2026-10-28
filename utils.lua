@@ -176,6 +176,7 @@ end
 -- ============================================================================
 
 -- Reads the configured log level.
+-- @param self table  The addon, whose db supplies the profile.
 -- @return number  profile.loglevel (4 verbose, 3 debug, 2 info, 1 warn, 0 quiet); 2 when the database or profile is
 --   not available. Never writes the default back.
 local function getLogLevel(self)
@@ -561,6 +562,7 @@ end
 
 -- Fills an editor's item text widget and icon widget from an item and retries while the client is still loading item
 -- data.
+-- @param self table  The addon; its Platform decides whether the item can be read.
 -- @param method string  The name of the public wrapper below, which the retry timer calls back.
 -- @param named boolean  True to show the item name (else the id) in the text widget.
 -- @param image boolean  True to set the icon as an image (else write the id into it).
