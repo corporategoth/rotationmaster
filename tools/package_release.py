@@ -20,7 +20,9 @@ changelog. Nothing outside the checkout is read.
 
 `--check` fails when the package holds a path that is not for the game (tests, tools, docs, .claude,
 sources, secrets), lacks a required file, has a TOC that disagrees with the supported clients or lists
-a file that is missing, or has a file or zip over the size limits.
+a file that is missing, or has a file or zip over the size limits. A package may hold only what the
+client loads (.lua .xml .toc .tga .blp .ttf) and licence or notice files; it fails on any other file,
+on code no TOC or XML include loads, and on a texture or font no loaded code names.
 """
 import argparse
 import fnmatch
@@ -380,8 +382,19 @@ def check_layout(layout, meta, version, source_root=ROOT, interfaces=None, max_f
             problems.append(f'development file in the package: {name}')
         elif base.endswith(FORBIDDEN_SUFFIXES):
             problems.append(f'file type that is not for the game: {name}')
+        elif not (base.endswith(LOADABLE_SUFFIXES) or NOTICE_FILE.fullmatch(base)):
+            problems.append(f'neither a file the game loads nor a licence or notice: {name}')
         if len(layout[name]) > max_file_kb * 1024:
             problems.append(f'{name} is {len(layout[name]) // 1024} KB (limit {max_file_kb} KB)')
+    folders = {}
+    for name in names:
+        top, _, below = name.partition('/')
+        if below:
+            folders.setdefault(top, []).append(below)
+    for top, inside in sorted(folders.items()):
+        unloaded, unnamed = unused_files(inside, lambda below: layout[f'{top}/{below}'].decode('utf-8', 'replace'))
+        problems += [f'{top}/{below}: no TOC or XML loads this file' for below in unloaded]
+        problems += [f'{top}/{below}: no loaded code names this texture or font' for below in unnamed]
     for required in REQUIRED:
         if required not in names:
             problems.append(f'required file is missing: {required}')

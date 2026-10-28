@@ -147,8 +147,35 @@ class Check(unittest.TestCase):
 
     def test_a_vendored_library_may_keep_its_own_docs_folder(self):
         layout = minimal_layout()
-        layout['RotationMaster/Libs/AceX/docs/readme.txt'] = b'x'
+        layout['RotationMaster/Libs/AceX/docs/LICENSE'] = b'x'
         self.assertEqual(self.problems(layout), [])
+
+    def test_only_what_the_game_loads_and_licence_or_notice_files_are_allowed(self):
+        for name in ('Assets/Conditions/provenance.json', 'Assets/Conditions/README.md', 'Libs/UPSTREAM.json', 'Libs/X/README.textile',
+                     'Locales/bundles.json', 'Fonts/readme.txt', 'Data/talent_trees.json', 'Sounds/hit.ogg', 'Libs/X/NOTES', 'Libs/X/LICENSE.html'):
+            layout = minimal_layout()
+            layout['RotationMaster/' + name] = b'x'
+            self.assertEqual([p for p in self.problems(layout) if 'neither a file the game loads' in p],
+                             [f'neither a file the game loads nor a licence or notice: RotationMaster/{name}'], name)
+
+    def test_licence_notice_and_loadable_files_are_allowed(self):
+        layout = minimal_layout()
+        layout['RotationMaster/main.lua'] = b'a("Fonts/F"); b("Textures/t"); c("plus")\n'
+        for name in ('Libs/Ace3-LICENSE.txt', 'Libs/X/LICENSE', 'Libs/X/COPYING', 'Libs/X/license.txt', 'Fonts/F.ttf', 'Textures/t.blp',
+                     'Assets/Controls/plus.tga'):
+            layout['RotationMaster/' + name] = b'x'
+        self.assertEqual(self.problems(layout), [])
+
+    def test_code_no_toc_loads_and_textures_no_code_names_fail(self):
+        layout = minimal_layout()
+        layout['RotationMaster/Libs/dead.lua'] = b'return 1\n'
+        layout['RotationMaster/Textures/unused.tga'] = b'x'
+        layout['RotationMaster_Mage/orphan.xml'] = b'<Ui/>\n'
+        problems = self.problems(layout)
+        self.assertIn('RotationMaster/Libs/dead.lua: no TOC or XML loads this file', problems)
+        self.assertIn('RotationMaster_Mage/orphan.xml: no TOC or XML loads this file', problems)
+        self.assertIn('RotationMaster/Textures/unused.tga: no loaded code names this texture or font', problems)
+        self.assertEqual(len(problems), 3)
 
     def test_missing_required_files_and_modules_fail(self):
         for path in ('RotationMaster/LICENSE', 'RotationMaster/Fonts/OFL.txt', 'RotationMaster/THIRD_PARTY_NOTICES.md',
@@ -220,6 +247,53 @@ class Check(unittest.TestCase):
         second = P.write_zip(layout, out / 'b.zip', INFO)
         self.assertEqual(first.read_bytes(), second.read_bytes())
         self.assertEqual(P.read_zip(first), layout)
+
+
+class Lean(unittest.TestCase):
+    """The package built from this repository holds what the game loads and licence or notice files, and each ignore
+    rule that keeps the rest out is needed."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.meta = P.parse_pkgmeta(ROOT / '.pkgmeta')
+        cls.info = P.project_info(ROOT, tag='2.0.0-beta.1')
+        cls.layout, cls.problems = cls.package(cls.meta['ignore'])
+
+    @classmethod
+    def package(cls, ignore):
+        meta = dict(cls.meta, ignore=ignore)
+        layout = P.build_files(ROOT, meta, cls.info)
+        return layout, P.check_layout(layout, meta, '2.0.0-beta.1', ROOT)
+
+    def test_every_licence_and_notice_file_in_git_ships(self):
+        self.assertEqual(self.problems, [])
+        notices = [name for name in P.tracked_files(ROOT) if P.NOTICE_FILE.fullmatch(name.rsplit('/', 1)[-1])
+                   and name.split('/')[0] not in ('tests', 'tools', 'docs', 'Modules') and not name.startswith('.')]
+        self.assertIn('LICENSE', notices)
+        self.assertIn('Libs/Ace3-LICENSE.txt', notices)
+        self.assertEqual([name for name in notices if f'RotationMaster/{name}' not in self.layout], [])
+
+    def test_dropping_a_rule_from_the_ignore_list_fails_the_check(self):
+        # Rules that keep a kind of file out, each with a file only it keeps out.
+        rules = {'Assets/*.json': 'Assets/Conditions/v2/provenance.json', 'Assets/*.md': 'Assets/Branding/README.md',
+                 'Libs/*.json': 'Libs/UPSTREAM.json', 'Libs/*/README.*': 'Libs/LibDataBroker-1.1/README.textile',
+                 'Locales/*.json': 'Locales/bundles.json'}
+        for rule in rules:
+            self.assertIn(rule, self.meta['ignore'])
+        _, problems = self.package([item for item in self.meta['ignore'] if item not in rules])
+        for rule, name in rules.items():
+            self.assertIn(f'neither a file the game loads nor a licence or notice: RotationMaster/{name}', problems, rule)
+        # The derived entries: companion textures, and code no TOC or XML loads.
+        derived = [item for item in self.meta['ignore'] if item.endswith(('-64.tga', '-128.tga', '.lua')) and '*' not in item]
+        self.assertTrue(any(item.endswith('-64.tga') for item in derived) and any(item.endswith('.lua') for item in derived))
+        _, problems = self.package([item for item in self.meta['ignore'] if item not in derived])
+        self.assertEqual(len(problems), len(derived), problems[:3])
+        self.assertTrue(all('no loaded code names' in p or 'no TOC or XML loads' in p for p in problems))
+
+    def test_a_stray_file_in_the_package_fails_the_check(self):
+        layout = dict(self.layout, **{'RotationMaster/Assets/Stray/notes.json': b'{}'})
+        problems = P.check_layout(layout, self.meta, '2.0.0-beta.1', ROOT)
+        self.assertEqual(problems, ['neither a file the game loads nor a licence or notice: RotationMaster/Assets/Stray/notes.json'])
 
 
 class LoadGraph(unittest.TestCase):
