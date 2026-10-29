@@ -57,8 +57,8 @@ Korean, Brazilian Portuguese, Russian, Simplified Chinese and Traditional Chines
 
 ## Install and get started
 
-- **CurseForge, Wago Addons or WowUp:** search for Rotation Master. Select the beta release channel for beta versions.
-- **WoWInterface:** stable releases only.
+- **[CurseForge](https://www.curseforge.com/wow/addons/rotation-master), [Wago Addons](https://addons.wago.io/addons/rotation-master) or WowUp:** install Rotation Master with your addon manager. Select the beta release channel for beta versions.
+- **[WoWInterface](https://www.wowinterface.com/downloads/info25079-RotationMaster.html):** stable releases only.
 - **Manual install:** download a release zip and extract all of its folders into the client's `Interface/AddOns` directory.
   The package includes the main addon, class modules and language modules.
 
