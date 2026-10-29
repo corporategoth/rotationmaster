@@ -954,6 +954,7 @@ def main():
             [sys.executable, 'tests/test_verify.py'],
             [sys.executable, 'tests/test_catalog_check.py'],
             [sys.executable, 'tests/test_locale_bundles.py'],
+            [sys.executable, 'tests/test_locale_english_keys.py'],
             [sys.executable, 'tests/test_locale_ids.py'],
             [sys.executable, 'tests/test_migrate_locale_ids.py'],
             [sys.executable, 'tests/test_lint.py'],
