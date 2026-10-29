@@ -508,6 +508,18 @@ end
 -- Requirement table
 -- ============================================================================
 
+-- Checks whether the client can read raid markers.
+-- @return string|nil  The support reason, or nil when marker reads are supported.
+local function raidMarkSupport()
+    local platform = addon.Platform
+
+    if not platform or type(platform.GetRaidMarkSupport) ~= 'function' then
+        return 'missing-api'
+    end
+
+    return platform:GetRaidMarkSupport()
+end
+
 local requirements = {
     SELF_LEVEL = { FAMILY, UNIT, { 'UnitLevel' } },
     LEVEL = { FAMILY, UNIT, { 'UnitLevel' } },
@@ -667,8 +679,8 @@ local requirements = {
     PET_HAPPINESS = { POLICY, PET_HAPPINESS_EDITION, { 'GetPetHappiness' } },
     STAGGER = { POLICY, STAGGER_EDITION, { 'UnitStagger' } },
     ECLIPSE = { POLICY, ECLIPSE_EDITION, { 'UnitClass' }, eclipse },
-    MARKED = { POLICY, UNIT, function() return addon.Platform:GetRaidMarkSupport() end },
-    MARK_COUNT = { POLICY, function() return addon.Platform:GetRaidMarkSupport() end },
+    MARKED = { POLICY, UNIT, raidMarkSupport },
+    MARK_COUNT = { POLICY, raidMarkSupport },
     ZONE = { { 'GetZoneText' }, { 'GetSubZoneText' } },
 }
 
