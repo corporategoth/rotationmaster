@@ -89,6 +89,11 @@ assert(main['Class name'] == 'Klassenname')
             (module / 'Locales/deDE.lua').write_text('L["rm.tbc.shaman.test.Name"] = "Name"\n')
             self.assertTrue(any('missing rm.tbc.shaman.test.Description' in issue for issue in builtin_locales.check(root)))
 
+    def test_class_specific_names_keep_their_original_game_terms(self):
+        directory = Path(__file__).resolve().parents[1] / 'Modules/RotationMaster_Shaman/Locales'
+        for locale, expected in [('koKR', '정기'), ('ruRU', 'Стихии'), ('zhCN', '元素')]:
+            self.assertEqual(builtin_locales.read(directory / f'{locale}.lua')['rm.era.shaman.elemental.Name'], expected)
+
 
 if __name__ == '__main__':
     unittest.main()
