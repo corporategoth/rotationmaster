@@ -1907,6 +1907,21 @@ end
 -- Bar addon scans
 -- ============================================================================
 
+-- Indexes a stance or aura button by its form spell, ignoring unavailable observations.
+-- @param button table|nil  The stance button.
+-- @param index number  The form index.
+local function AddStanceButton(button, index)
+    if not button or type(GetShapeshiftFormInfo) ~= 'function' then
+        return
+    end
+
+    local ok, _, _, _, spell = pcall(GetShapeshiftFormInfo, index)
+
+    if ok then
+        AddButton(spell, button)
+    end
+end
+
 -- Bartender4: indexes its pet and stance buttons (its action buttons come through LibActionButton).
 local function FetchBartender4()
     -- Non-pet buttons are done via. LibActionButton
@@ -1920,8 +1935,7 @@ local function FetchBartender4()
         button = _G['BT4StanceButton' .. i]
 
         if button then
-            local spell = select(4, GetShapeshiftFormInfo(button:GetID()))
-            AddButton(spell, button)
+            AddStanceButton(button, button:GetID())
         end
     end
 end
@@ -2327,7 +2341,7 @@ function addon:ListButtonProviders()
     return list
 end
 
--- Blizzard's own bars: indexes the action bars, the pet bar and the vehicle and override bar.
+-- Blizzard's own bars: indexes action, pet, stance, vehicle and override buttons.
 --
 -- A stock button hidden behind a replacement bar that draws the same slot is skipped.
 local function FetchBlizzard()
@@ -2355,6 +2369,7 @@ local function FetchBlizzard()
 
     for i = 1, 10 do
         AddPetButton(_G['PetActionButton' .. i], i)
+        AddStanceButton(_G['StanceButton' .. i], i)
     end
 
     -- Vehicle and override bars (Wrath and later) show their own buttons.

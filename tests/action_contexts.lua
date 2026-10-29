@@ -486,6 +486,28 @@ test('vehicle abilities outside both spellbooks are ready through their override
     assert(ready('spell', 77777) == false, 'cooling bound action reported ready')
 end)
 
+test('Blizzard stance and aura buttons map their spell and tolerate failed observations', function()
+    local _, a, e = fixture()
+    local button = e.CreateFrame('Button', nil, e.UIParent)
+    button.GetID = function() return 1 end
+    e.StanceButton1 = button
+
+    e.GetShapeshiftFormInfo = function(index)
+        assert(index == 1)
+        return 1, 'Devotion Aura', false, 465
+    end
+
+    a:Fetch()
+    assert(a:FindSpell({ 465 }) == 465, 'Blizzard stance or aura button was not indexed')
+
+    e.GetShapeshiftFormInfo = function()
+        error('unavailable stance')
+    end
+
+    assert(pcall(a.Fetch, a), 'a failed stance observation interrupted the bar scan')
+    assert(a:FindSpell({ 465 }) == nil, 'stale stance action survived a fresh scan')
+end)
+
 print(pass .. ' passed, ' .. fail .. ' failed')
 
 if fail > 0 then
