@@ -28,11 +28,12 @@ repos:
     hooks:
       # These two rewrite files. A few files predate them (a missing final newline, an extra blank line at the end)
       # and other suites hash their bytes, so they stay as they are; every other file, and every new one, is held to it.
+      # Generated locale comments preserve English whitespace for their hashes; trimming them corrupts the source text.
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-        exclude: &whitespace_legacy '^(\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|constants\.lua$|globals\.lua$|docs/architecture/condition-modernization-audit\.md$)'
+        exclude: '^(Locales/(deDE|esES|esMX|frFR|itIT|koKR|ptBR|ruRU|zhCN|zhTW)\.lua$|\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|constants\.lua$|globals\.lua$|docs/architecture/condition-modernization-audit\.md$)'
       - id: end-of-file-fixer
-        exclude: *whitespace_legacy
+        exclude: '^(\.github/|Assets/Controls/.*\.svg$|init\.lua$|locales\.xml$|LICENSE$|constants\.lua$|globals\.lua$|docs/architecture/condition-modernization-audit\.md$)'
       - id: check-yaml
       - id: check-json
       - id: check-xml

@@ -1,13 +1,42 @@
 # Rotation Master
 
-Rotation Master is a World of Warcraft addon that tells you the next spell or item to use and lights the matching button on
-your action bars. You describe a *rotation* as an ordered list of steps with conditions, or start from one of about 155
-*Built In* rotations, and the addon follows your game: your target, your cooldowns, your talents, your gear.
+[![Buy Me Coffee][coffee-image]][coffee]
 
-Version 2.0 is a rewrite of the 1.x addon (new editor, Built In rotations for five client families, Retail and Forever support,
-ten languages). It is released as a beta first: see [docs/release/BETA.md](docs/release/BETA.md) before installing.
+[![Tests][tests-badge]][tests]
+[![GitHub Release][release-badge]][releases]
+[![GitHub Activity][activity-badge]][commits]
+[![License: MIT + Attribution][license-badge]][license]
 
-## Supported clients
+[![WoW Retail and Forever][modern-badge]][client-support]
+[![WoW Classic][classic-badge]][client-support]
+
+Rotation Master is a World of Warcraft addon that highlights the next spell or item in a rotation you choose. Start with a
+Built In rotation for your class, or create your own in game. You press the buttons: the addon does not cast spells or play
+for you.
+
+<p align="center">
+  <img src="Assets/Branding/rotation-master-small.png" alt="Rotation Master logo" width="240">
+</p>
+
+Version 2.0 is a rewrite of the 1.x addon and is being prepared as a beta. See the [beta guide](docs/release/BETA.md) for
+installation, testing and known issues.
+
+## What it does
+
+- **Build rotations in game.** Put spells and items in priority order, add conditions, and use Branch and Stop steps to
+  handle different situations. Start with one of about 155 Built In rotations and adjust it for your character.
+- **Choose when to use them.** Keep several rotations and select one manually or let Rotation Master switch when a
+  rotation's conditions match.
+- **Highlight your actions.** Light matching buttons on supported action bars, show cooldowns alongside your main
+  rotation, and optionally display a movable recommendation preview.
+- **Understand and share your rules.** Combine conditions with AND, OR and Unless, inspect their current match state,
+  compare rotations, and import or export Rotation Master data. Advanced users can also write custom Lua conditions.
+- **Configure extras.** Create item sets, announcements, highlight effects and profiles, with optional integrations for
+  other addons.
+
+Built In rotations are starting points, not guarantees of the best action for every character, encounter or play style.
+
+## Supported WoW clients
 
 | Client | Interface |
 | --- | --- |
@@ -20,19 +49,25 @@ ten languages). It is released as a beta first: see [docs/release/BETA.md](docs/
 | Retail (Midnight) 12.1 | 120105 |
 | WoW Forever 1.60 | 16001 |
 
-What has been run in a real client and what has not is in [docs/quality/client-support.md](docs/quality/client-support.md).
-The game language is used automatically (English, German, Spanish, Latin American Spanish, French, Italian, Korean,
-Brazilian Portuguese, Russian, Simplified and Traditional Chinese).
+These are the clients targeted by the beta; they have not all been verified in game. See [client support][client-support]
+for what has actually been tested. Retail and Forever restrict some game information and addon actions, so available
+conditions vary. Raid-marker units, marker conditions and Set Mark are unavailable on those two clients.
 
-## Install
+Rotation Master uses your game language automatically: English, German, Spanish, Latin American Spanish, French, Italian,
+Korean, Brazilian Portuguese, Russian, Simplified Chinese and Traditional Chinese.
 
-- **CurseForge, Wago Addons, WowUp:** search for Rotation Master. Betas appear only if you choose the beta release type.
+## Install and get started
+
+- **CurseForge, Wago Addons or WowUp:** search for Rotation Master. Select the beta release channel for beta versions.
 - **WoWInterface:** stable releases only.
-- **By hand:** download the zip from the release page, close the game and extract it into `Interface/AddOns`. The zip holds 18
-  folders (`RotationMaster`, one `RotationMaster_<Class>` per class, four `RotationMaster_*Text` translation folders); all
-  of them must be there.
+- **Manual install:** download a release zip and extract all of its folders into the client's `Interface/AddOns` directory.
+  The package includes the main addon, class modules and language modules.
 
-Open the settings and rotation editor with `/rm config`. `/rm help` lists the commands.
+In game, type `/rm config`, open **Rotations**, and choose a Built In rotation or create one. Place the relevant spells and
+items on a supported action bar. `/rm help` lists the commands; `/rm debug glow` explains why a recommendation is or is not
+lighting a button, and `/rm errors` opens the addon error report.
+
+[Documentation and rotation sharing](https://rotationmaster.neuromancy.net/) · [Report an issue](https://github.com/corporategoth/rotationmaster/issues) · [Discord](https://discord.gg/4aKZSpUMet)
 
 ## WowSims is not supported
 
@@ -42,38 +77,46 @@ consider beneath them: they indicated that community submissions supporting smal
 are not wanted. Rotation Master therefore no longer supports their project, and the pull requests sent to their repositories
 were closed. Rotations move between players as Rotation Master exports, which is the only transfer format.
 
-## Documentation
+## Developer information
 
 | For | Start at |
 | --- | --- |
-| Testers | [docs/release/BETA.md](docs/release/BETA.md) |
-| Contributors | [CONTRIBUTING.md](CONTRIBUTING.md), then [docs/dev/](docs/dev/architecture.md) |
-| Translators | [docs/translators/README.md](docs/translators/README.md) |
-| Maintainers | [docs/release/RELEASING.md](docs/release/RELEASING.md) |
-| Topic references | [docs/architecture/](docs/architecture), [docs/quality/](docs/quality), [Modules/README.md](Modules/README.md) |
+| Testers | [Beta guide](docs/release/BETA.md) |
+| Contributors | [CONTRIBUTING.md](CONTRIBUTING.md) and [developer docs](docs/dev/architecture.md) |
+| Translators | [Translator guide](docs/translators/README.md) |
+| Maintainers | [Release guide](docs/release/RELEASING.md) |
+| Topic references | [Architecture](docs/architecture/), [quality](docs/quality/) and [Built In modules](Modules/README.md) |
 
-## Building and testing
+Requirements for the offline checks are Python 3, Lua 5.1 and LuaJIT:
 
 ```sh
-python3 tools/setup_lint.py        # once: the pinned static checker
-python3 tools/check --static       # about 20 seconds
-python3 tools/check_all.py --baseline tools/known_failures.txt   # the whole suite, Lua 5.1 and LuaJIT (tens of minutes)
+python3 tools/setup_lint.py
+python3 tools/check --static
+python3 tools/check_all.py --baseline tools/known_failures.txt
 python3 tools/package_release.py --check
 ```
 
-Requirements are `python3`, `lua5.1` and `luajit`. See [docs/dev/running-things.md](docs/dev/running-things.md).
-
-## Source, issues and contact
-
-The source of truth is the project's Gitea repository; the GitHub repository is a mirror. Report problems with the issue
-tracker linked from the addon's TOC, on the [Discord](https://discord.gg/4aKZSpUMet), or by email to feedback@neuromancy.net.
+See [running the checks](docs/dev/running-things.md) for details. The project's Gitea repository is the source of truth;
+GitHub is a mirror.
 
 ## License
 
-A modified MIT license, "MIT + Attribution" ([LICENSE](LICENSE)), Copyright 2018-2026 Preston A. Elder: use, copy, fork,
-modify and redistribute freely, but a derivative's credits or About pages, including in game, must acknowledge
-Rotation Master and its original author, PreZ. Versions up to 1.4.3e were plain MIT
-and may continue to be used under it. Vendored libraries keep their own
-licenses (`Libs/UPSTREAM.json`, `Libs/Ace3-LICENSE.txt`); the monospace font is under the SIL OFL (`Fonts/OFL.txt`).
-Built In rotations written from the WowSims simulators' APLs carry the simulators' MIT notice in `THIRD_PARTY_NOTICES.md`,
-which ships with the addon.
+Rotation Master is released under [MIT + Attribution](LICENSE), copyright 2018–2026 Preston A. Elder. Derivatives must
+acknowledge Rotation Master and its original author, PreZ, in any credits or About pages, including in game. Versions through
+1.4.3e remain plain MIT. Vendored libraries and the font retain their own licenses; see `Libs/UPSTREAM.json`,
+`Libs/Ace3-LICENSE.txt` and `Fonts/OFL.txt`. Built In rotations derived from WowSims APLs carry the simulators' MIT notice in
+`THIRD_PARTY_NOTICES.md`.
+
+[coffee-image]: https://cdn.buymeacoffee.com/buttons/default-orange.png
+[coffee]: https://buymeacoffee.com/corporategoth
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/corporategoth/rotationmaster/checks.yml?branch=master&label=tests&style=for-the-badge
+[tests]: https://github.com/corporategoth/rotationmaster/actions/workflows/checks.yml
+[release-badge]: https://img.shields.io/github/v/release/corporategoth/rotationmaster?style=for-the-badge
+[releases]: https://github.com/corporategoth/rotationmaster/releases
+[activity-badge]: https://img.shields.io/github/commit-activity/y/corporategoth/rotationmaster?style=for-the-badge
+[commits]: https://github.com/corporategoth/rotationmaster/commits/master
+[license-badge]: https://img.shields.io/badge/license-MIT%20%2B%20Attribution-blue?style=for-the-badge
+[license]: LICENSE
+[modern-badge]: https://img.shields.io/badge/WoW-Retail%20%7C%20Forever-blue?style=for-the-badge
+[classic-badge]: https://img.shields.io/badge/WoW-Classic%20%7C%20TBC%20%7C%20Progression-orange?style=for-the-badge
+[client-support]: docs/quality/client-support.md

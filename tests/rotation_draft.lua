@@ -92,6 +92,10 @@ test('insert and duplicate allocate fresh recursive identities and preserve opaq
     assert(ok and id == 'new-4')
     v = d:Snapshot()
     assert(v.rotation[2].id == id and v.rotation[2].onTrue[1].id == 'new-5' and v.rotation[3].id == 'new-1')
+    assert(d:Command('SetCondition', 'new-5', { type = 'CUSTOM', payload = { label = 'changed copy' } }))
+    v = d:Snapshot()
+    assert(v.rotation[2].onTrue[1].conditions.payload.label == 'changed copy')
+    assert(v.rotation[1].onTrue[1].conditions.payload == nil, 'duplicate changed its original')
     assert(data.IndexRotationSteps(v))
 end)
 

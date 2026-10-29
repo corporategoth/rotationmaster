@@ -69,6 +69,13 @@ test('healer maintenance checks the requested unit, caster and charges', functio
     assert(not f.addon:evaluateCondition(value('BUFF_STACKS', { ownbuff = false })))
 end)
 
+test('remaining time accepts another caster unless own buff is selected', function()
+    local f = fixture(true)
+    buff(f, { { name = 'Earth Shield', spellId = 974, sourceUnit = 'party2', duration = 600, expirationTime = 103 } })
+    assert(f.addon:evaluateCondition(value('BUFF_REMAIN', { ownbuff = false })))
+    assert(not f.addon:evaluateCondition(value('BUFF_REMAIN', { ownbuff = true })))
+end)
+
 test('shared aura comparisons dispatch through the canonical values namespace', function()
     local f = fixture(true)
     local a = f.addon
